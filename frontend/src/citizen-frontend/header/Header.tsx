@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { desktopMin } from 'lib-components/breakpoints'
@@ -41,6 +42,9 @@ export default React.memo(function Header() {
     if (user) refreshUnreadPedagogicalDocumentsCount()
   }, [refreshUnreadPedagogicalDocumentsCount, user])
 
+  const location = useLocation()
+  const hideLoginButton = location.pathname === '/login'
+
   return (
     <HeaderContainer showMenu={showMenu}>
       <CityLogo />
@@ -48,12 +52,14 @@ export default React.memo(function Header() {
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadPedagogicalDocuments={unreadPedagogicalDocumentsCount ?? 0}
+        hideLoginButton={hideLoginButton}
       />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount ?? 0}
+        hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>
   )

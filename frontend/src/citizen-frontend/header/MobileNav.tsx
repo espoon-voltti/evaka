@@ -45,13 +45,15 @@ type Props = {
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
   unreadPedagogicalDocumentsCount: number
+  hideLoginButton: boolean
 }
 
 export default React.memo(function MobileNav({
   showMenu,
   setShowMenu,
   unreadMessagesCount,
-  unreadPedagogicalDocumentsCount
+  unreadPedagogicalDocumentsCount,
+  hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
   const t = useTranslation()
@@ -105,7 +107,7 @@ export default React.memo(function MobileNav({
                       <Gap size="xs" horizontal />
                       {t.header.logout}
                     </Logout>
-                  ) : (
+                  ) : hideLoginButton ? null : (
                     <Login to="/login" onClick={close} data-qa="login-btn">
                       <FontAwesomeIcon icon={faSignIn} size="lg" />
                       <Gap size="xs" horizontal />

@@ -35,13 +35,16 @@ import { getLogoutUri } from './const'
 interface Props {
   unreadMessagesCount: number
   unreadPedagogicalDocuments: number
+  hideLoginButton: boolean
 }
 
 export default React.memo(function DesktopNav({
   unreadMessagesCount,
-  unreadPedagogicalDocuments
+  unreadPedagogicalDocuments,
+  hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
+
   const t = useTranslation()
   return (
     <UnwrapResult result={user} loading={() => null}>
@@ -98,7 +101,7 @@ export default React.memo(function DesktopNav({
             <LanguageMenu />
             {user ? (
               <UserMenu user={user} />
-            ) : (
+            ) : hideLoginButton ? null : (
               <Login to="/login" data-qa="login-btn">
                 <Icon icon={faSignIn} />
                 <Gap size="xs" horizontal />
