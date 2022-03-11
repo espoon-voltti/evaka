@@ -12,35 +12,37 @@ import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
+import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
+
+import ReportHolidayLabel from './ReportHolidayLabel'
 
 interface Props {
   close: () => void
   openReservations: () => void
   openAbsences: (initialDate: LocalDate | undefined) => void
   openHolidays: () => void
-  isHolidayFormActive: boolean
 }
 
 export default React.memo(function ActionPickerModal({
   close,
   openReservations,
   openAbsences,
-  openHolidays,
-  isHolidayFormActive
+  openHolidays
 }: Props) {
   const i18n = useTranslation()
   const onCreateAbsences = useCallback(
     () => openAbsences(undefined),
     [openAbsences]
   )
+  const { questionnaireAvailable } = useHolidayPeriods()
 
   return (
     <ModalBackground onClick={close}>
       <Container>
-        {isHolidayFormActive && (
+        {questionnaireAvailable && (
           <Action onClick={openHolidays} data-qa="calendar-action-holidays">
-            {i18n.calendar.newHoliday}
+            <ReportHolidayLabel />
             <IconBackground>
               <FontAwesomeIcon icon={faTreePalm} size="1x" />
             </IconBackground>

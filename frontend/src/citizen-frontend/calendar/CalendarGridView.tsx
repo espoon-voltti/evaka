@@ -21,6 +21,7 @@ import { useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
+import ReportHolidayLabel from './ReportHolidayLabel'
 import { Reservations } from './calendar-elements'
 
 export interface Props {
@@ -28,7 +29,6 @@ export interface Props {
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
   onReportHolidaysClicked: () => void
-  isHolidayFormActive: boolean
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
@@ -40,7 +40,6 @@ export default React.memo(function CalendarGridView({
   onCreateReservationClicked,
   onCreateAbsencesClicked,
   onReportHolidaysClicked,
-  isHolidayFormActive,
   selectedDate,
   selectDate,
   includeWeekends,
@@ -73,30 +72,24 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const {
-    holidayPeriods: holidayPeriodResult,
-    activeFixedPeriodQuestionnaire
-  } = useHolidayPeriods()
+  const { holidayPeriods: holidayPeriodResult, questionnaireAvailable } =
+    useHolidayPeriods()
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
   )
-  const showBanner = useMemo<boolean>(
-    () => activeFixedPeriodQuestionnaire.getOrElse(false) != undefined,
-    [activeFixedPeriodQuestionnaire]
-  )
 
   return (
     <>
-      <StickyHeader ref={headerRef} bannerIsVisible={showBanner}>
+      <StickyHeader ref={headerRef} bannerIsVisible={!!questionnaireAvailable}>
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
             <ButtonContainer>
-              {isHolidayFormActive && (
+              {questionnaireAvailable && (
                 <InlineButton
                   onClick={onReportHolidaysClicked}
-                  text={i18n.calendar.newHoliday}
+                  text={<ReportHolidayLabel iconRight />}
                   icon={faTreePalm}
                   data-qa="open-holiday-modal"
                 />

@@ -267,7 +267,6 @@ const en: Translations = {
       }
     },
     holidayModal: {
-      title: 'Report holiday',
       additionalInformation: 'Read more',
       holidayFor: 'Holiday for:',
       childOnHoliday: 'Child is on holiday',

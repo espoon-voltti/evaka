@@ -21,6 +21,7 @@ import {
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
+import RequireAuth from '../RequireAuth'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { useHolidayPeriods } from '../holiday-periods/state'
@@ -109,11 +110,10 @@ const Page = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const fixedPeriodQuestionnaire = useMemo(
+  const questionnaire = useMemo(
     () => activeFixedPeriodQuestionnaire.getOrElse(undefined),
     [activeFixedPeriodQuestionnaire]
   )
-  const isHolidayFormActive = !!fixedPeriodQuestionnaire
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
@@ -138,7 +138,6 @@ const Page = React.memo(function CalendarPage() {
           onCreateReservationClicked={openReservationModal}
           onCreateAbsencesClicked={openAbsenceModal}
           onReportHolidaysClicked={openHolidayModal}
-          isHolidayFormActive={isHolidayFormActive}
           selectedDate={selectedDate}
           selectDate={selectDate}
           includeWeekends={response.includesWeekends}
@@ -161,7 +160,6 @@ const Page = React.memo(function CalendarPage() {
           openReservations={openReservationModal}
           openAbsences={openAbsenceModal}
           openHolidays={openHolidayModal}
-          isHolidayFormActive={isHolidayFormActive}
         />
       )}
       {openModal?.type === 'reservations' && (
@@ -180,14 +178,20 @@ const Page = React.memo(function CalendarPage() {
           availableChildren={response.children}
         />
       )}
-      {openModal?.type === 'holidays' && fixedPeriodQuestionnaire && (
-        <FixedPeriodSelectionModal
-          close={closeModal}
-          reload={loadDefaultRange}
-          questionnaire={fixedPeriodQuestionnaire.questionnaire}
-          availableChildren={response.children}
-          eligibleChildren={fixedPeriodQuestionnaire.eligibleChildren}
-        />
+      {openModal?.type === 'holidays' && questionnaire && (
+        <RequireAuth
+          strength={
+            questionnaire.questionnaire.requiresStrongAuth ? 'STRONG' : 'WEAK'
+          }
+        >
+          <FixedPeriodSelectionModal
+            close={closeModal}
+            reload={loadDefaultRange}
+            questionnaire={questionnaire.questionnaire}
+            availableChildren={response.children}
+            eligibleChildren={questionnaire.eligibleChildren}
+          />
+        </RequireAuth>
       )}
     </>
   ))

@@ -82,14 +82,14 @@ export default React.memo(function BannerWrapper() {
         loading={() => null}
         failure={() => null}
       >
-        {(activePeriod) => {
-          return activePeriod ? (
+        {(questionnaire) =>
+          questionnaire ? (
             <HolidayPeriodBanner
-              period={activePeriod.questionnaire.period}
-              reservationDeadline={activePeriod.questionnaire.active.end}
+              period={questionnaire.questionnaire.period}
+              reservationDeadline={questionnaire.questionnaire.active.end}
             />
           ) : null
-        }}
+        }
       </UnwrapResult>
     </BannerBackground>
   )

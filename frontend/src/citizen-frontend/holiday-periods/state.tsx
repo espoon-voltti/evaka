@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { head } from 'lodash'
 import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
@@ -14,16 +15,20 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { getActiveQuestionnaires, getHolidayPeriods } from './api'
 
+type QuestionnaireAvailability = boolean | 'with-strong-auth'
+
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
   activeFixedPeriodQuestionnaire: Result<
     FixedPeriodQuestionnaireWithChildren | undefined
   >
+  questionnaireAvailable: QuestionnaireAvailability
 }
 
 const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
-  activeFixedPeriodQuestionnaire: Loading.of()
+  activeFixedPeriodQuestionnaire: Loading.of(),
+  questionnaireAvailable: false
 }
 
 export const HolidayPeriodsContext =
@@ -46,12 +51,24 @@ export const HolidayPeriodsContextProvider = React.memo(
       [user]
     )
 
+    const activeFixedPeriodQuestionnaire = activeQuestionnaires.map(head)
+    const questionnaireAvailable = activeFixedPeriodQuestionnaire
+      .map<QuestionnaireAvailability>((val) =>
+        !val || !user
+          ? false
+          : val.questionnaire.requiresStrongAuth && user.userType !== 'ENDUSER'
+          ? 'with-strong-auth'
+          : true
+      )
+      .getOrElse(false)
+
     const value = useMemo(
       () => ({
-        activeFixedPeriodQuestionnaire: activeQuestionnaires.map((v) => v[0]),
-        holidayPeriods
+        activeFixedPeriodQuestionnaire,
+        holidayPeriods,
+        questionnaireAvailable
       }),
-      [activeQuestionnaires, holidayPeriods]
+      [activeFixedPeriodQuestionnaire, holidayPeriods, questionnaireAvailable]
     )
 
     return (
