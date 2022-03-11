@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef } from 'react'
+import React, { Fragment, useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -35,34 +35,52 @@ export default React.memo(function WeekElem({
   const i18n = useTranslation()
   return (
     <div>
-      <WeekDiv>
+      <WeekTitle>
         {i18n.common.datetime.week} {weekNumber}
-      </WeekDiv>
+      </WeekTitle>
       <div>
         {dailyReservations.map((d) => (
-          <DayElem
-            dailyReservations={d}
-            key={d.date.formatIso()}
-            selectDate={selectDate}
-            isReservable={dayIsReservable(d)}
-            isHolidayPeriod={dayIsHolidayPeriod(d.date)}
-          />
+          <Fragment key={d.date.formatIso()}>
+            {d.date.date === 1 && (
+              <MonthTitle>
+                {i18n.common.datetime.months[d.date.month - 1]}
+              </MonthTitle>
+            )}
+            <DayElem
+              dailyReservations={d}
+              key={d.date.formatIso()}
+              selectDate={selectDate}
+              isReservable={dayIsReservable(d)}
+              isHolidayPeriod={dayIsHolidayPeriod(d.date)}
+            />
+          </Fragment>
         ))}
       </div>
     </div>
   )
 })
 
-const WeekDiv = styled.div`
+const titleStyles = css`
+  margin: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: ${defaultMargins.s} 0 ${defaultMargins.xs};
-  background-color: ${colors.main.m4};
-  color: ${colors.main.m1};
-  font-weight: ${fontWeights.semibold};
-  font-size: 0.875rem;
+  padding: ${defaultMargins.s};
+  background-color: ${(p) => p.theme.colors.main.m4};
   border-bottom: 1px solid ${colors.grayscale.g15};
+  color: ${(p) => p.theme.colors.grayscale.g100};
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-weight: ${fontWeights.semibold};
+`
+
+const WeekTitle = styled(H3)`
+  font-size: 1em;
+  ${titleStyles}
+`
+
+const MonthTitle = styled(H2)`
+  font-size: 1.25em;
+  ${titleStyles}
 `
 
 interface DayProps {
@@ -161,6 +179,6 @@ const HistoryOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.3;
-  background-color: ${colors.main.m4};
+  opacity: 0.6;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
