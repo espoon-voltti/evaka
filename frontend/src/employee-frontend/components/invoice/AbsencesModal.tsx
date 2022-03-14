@@ -83,6 +83,7 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
       title={i18n.absences.modal.absenceSummaryTitle}
       icon={faAbacus}
       close={() => clearUiMode()}
+      closeLabel={i18n.common.cancel}
     >
       {renderResult(absences, (absences) => (
         <Section>

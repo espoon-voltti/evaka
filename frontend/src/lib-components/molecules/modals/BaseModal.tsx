@@ -32,6 +32,7 @@ export type ModalType = 'info' | 'success' | 'warning' | 'danger'
 
 interface Props extends ModalBaseProps {
   close: () => void
+  closeLabel: string
 }
 
 export default React.memo(function BaseModal(props: Props) {
@@ -67,7 +68,11 @@ export default React.memo(function BaseModal(props: Props) {
             )}
           </ModalTitle>
           {props.children}
-          <CloseButton icon={faTimes} onClick={props.close} />
+          <CloseButton
+            icon={faTimes}
+            onClick={props.close}
+            altText={props.closeLabel}
+          />
         </ModalContainer>
       </ModalWrapper>
     </ModalBackground>

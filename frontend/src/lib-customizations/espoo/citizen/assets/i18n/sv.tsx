@@ -1301,6 +1301,7 @@ const sv: Translations = {
   fileDownload: {
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    modalClose: 'Stäng',
     download: 'Ladda ner'
   },
   personalDetails: {

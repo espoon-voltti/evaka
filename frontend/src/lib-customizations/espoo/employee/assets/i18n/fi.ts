@@ -2776,7 +2776,8 @@ export const fi = {
     download: {
       modalHeader: 'Tiedoston käsittely on kesken',
       modalMessage:
-        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
+        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
+      modalClose: 'Sulje'
     }
   },
   messages: {

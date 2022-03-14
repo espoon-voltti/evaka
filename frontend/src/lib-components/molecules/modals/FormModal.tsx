@@ -38,7 +38,7 @@ export default React.memo(function FormModal({
   )
 
   return (
-    <BaseModal {...props} close={rejectAction}>
+    <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       <form onSubmit={onSubmit}>{children}</form>
       <ModalButtons $singleButton={!('reject' in props)}>
         <Button
@@ -82,7 +82,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
   ...props
 }: AsyncModalProps) {
   return (
-    <BaseModal {...props} close={rejectAction}>
+    <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}
       <ModalButtons $singleButton={!('reject' in props)}>
         <Button

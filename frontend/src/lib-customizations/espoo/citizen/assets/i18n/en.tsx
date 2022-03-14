@@ -1349,6 +1349,7 @@ const en: Translations = {
   fileDownload: {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later',
+    modalClose: 'Close',
     download: 'Download'
   },
   personalDetails: {

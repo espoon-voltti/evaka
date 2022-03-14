@@ -22,7 +22,7 @@ type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &
           label: string
         }
       }
-    | { close: () => void }
+    | { close: () => void; closeLabel: string }
   )
 
 export default React.memo(function InfoModal({ children, ...props }: Props) {
@@ -35,6 +35,13 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
           : props.reject
           ? props.reject.action
           : props.resolve.action
+      }
+      closeLabel={
+        'close' in props
+          ? props.closeLabel
+          : props.reject
+          ? props.reject.label
+          : props.resolve.label
       }
       mobileFullScreen={false}
     >
