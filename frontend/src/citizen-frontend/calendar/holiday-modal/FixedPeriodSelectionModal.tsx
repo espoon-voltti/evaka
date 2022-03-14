@@ -74,6 +74,7 @@ export default React.memo(function FixedPeriodSelectionModal({
       resolveLabel={i18n.common.confirm}
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
+      data-qa="fixed-period-selection-modal"
     >
       <FixedSpaceColumn>
         <HolidaySection>
@@ -98,9 +99,10 @@ export default React.memo(function FixedPeriodSelectionModal({
                 onSelectPeriod={selectPeriod(child.id)}
               />
             ) : questionnaire.conditions.continuousPlacement ? (
-              i18n.calendar.holidayModal.notEligible(
-                questionnaire.conditions.continuousPlacement
-              )
+              <div data-qa="not-eligible">
+                i18n.calendar.holidayModal.notEligible(
+                questionnaire.conditions.continuousPlacement )
+              </div>
             ) : null}
           </HolidaySection>
         ))}

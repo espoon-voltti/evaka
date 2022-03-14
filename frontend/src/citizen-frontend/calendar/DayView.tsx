@@ -543,7 +543,11 @@ const Absence = React.memo(function Absence({
   absence: AbsenceType
 }) {
   const i18n = useTranslation()
-  return <span>{i18n.calendar.absences[absence] ?? i18n.calendar.absent}</span>
+  return (
+    <span data-qa="absence">
+      {i18n.calendar.absences[absence] ?? i18n.calendar.absent}
+    </span>
+  )
 })
 
 const Reservations = React.memo(function Reservations({

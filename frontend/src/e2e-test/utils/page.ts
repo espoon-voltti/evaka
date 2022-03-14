@@ -308,7 +308,12 @@ export class Select extends Element {
   #input = this.find('select')
 
   async selectOption(
-    value: string | string[] | { value: string } | { label: string }
+    value:
+      | string
+      | string[]
+      | { value: string }
+      | { label: string }
+      | { index: number }
   ) {
     await this.#input.locator.selectOption(value)
   }
