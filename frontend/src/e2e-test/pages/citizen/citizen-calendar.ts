@@ -21,6 +21,12 @@ export default class CitizenCalendarPage {
   #dayCell = (date: LocalDate) =>
     this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
 
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="calendar-page"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
   async openReservationsModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
@@ -48,7 +54,9 @@ export default class CitizenCalendarPage {
     } else {
       await this.page.findByDataQa('open-holiday-modal').click()
     }
-    return new HolidayModal(this.page)
+    return new HolidayModal(
+      this.page.findByDataQa('fixed-period-selection-modal')
+    )
   }
 
   async assertHolidayModalButtonVisible() {
@@ -64,7 +72,7 @@ export default class CitizenCalendarPage {
 
   async openDayView(date: LocalDate) {
     await this.#dayCell(date).click()
-    return new DayView(this.page)
+    return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
   async assertReservations(
@@ -205,33 +213,44 @@ class AbsencesModal {
   }
 }
 
-class DayView {
-  constructor(private readonly page: Page) {}
+class DayView extends Element {
+  constructor(private readonly page: Page, root: Element) {
+    super(root)
+  }
 
-  #root = this.page.find('[data-qa="calendar-dayview"]')
-  #editButton = this.#root.find('[data-qa="edit"]')
-  #createAbsenceButton = this.#root.find('[data-qa="create-absence"]')
+  #editButton = this.findByDataQa('edit')
+  #createAbsenceButton = this.findByDataQa('create-absence')
 
   #reservationsOfChild(childId: UUID) {
-    return this.#root.find(`[data-qa="reservations-of-${childId}"]`)
+    return this.findByDataQa(`reservations-of-${childId}`)
   }
 
   async assertNoReservation(childId: UUID) {
     await this.#reservationsOfChild(childId)
-      .find(`[data-qa="no-reservations"]`)
+      .findByDataQa('no-reservations')
       .waitUntilVisible()
   }
 
   async assertReservations(childId: UUID, value: string) {
-    const reservations = this.#reservationsOfChild(childId).find(
-      `[data-qa="reservations"]`
+    await waitUntilEqual(
+      () =>
+        this.#reservationsOfChild(childId).findByDataQa('reservations')
+          .textContent,
+      value
     )
-    await waitUntilEqual(() => reservations.textContent, value)
+  }
+
+  async assertAbsence(childId: UUID, value: string) {
+    await waitUntilEqual(
+      () =>
+        this.#reservationsOfChild(childId).findByDataQa('absence').textContent,
+      value
+    )
   }
 
   async edit() {
     await this.#editButton.click()
-    return new DayViewEditor(this.#root)
+    return new DayViewEditor(this)
   }
 
   async createAbsence() {
@@ -240,13 +259,11 @@ class DayView {
   }
 }
 
-class DayViewEditor {
-  constructor(private readonly root: Element) {}
-
-  #saveButton = this.root.find('[data-qa="save"]')
+class DayViewEditor extends Element {
+  #saveButton = this.findByDataQa('save')
 
   #reservationsOfChild(childId: UUID) {
-    return this.root.find(`[data-qa="reservations-of-${childId}"]`)
+    return this.findByDataQa(`reservations-of-${childId}`)
   }
 
   async fillReservationTimes(
@@ -255,10 +272,10 @@ class DayViewEditor {
     endTime: string
   ) {
     const child = this.#reservationsOfChild(childId)
-    await new TextInput(child.find('[data-qa="first-reservation-start"]')).fill(
+    await new TextInput(child.findByDataQa('first-reservation-start')).fill(
       startTime
     )
-    await new TextInput(child.find('[data-qa="first-reservation-end"]')).fill(
+    await new TextInput(child.findByDataQa('first-reservation-end')).fill(
       endTime
     )
   }
@@ -268,19 +285,40 @@ class DayViewEditor {
   }
 }
 
-class HolidayModal {
-  constructor(private readonly page: Page) {}
-
+class HolidayModal extends Element {
+  #childSection = (childId: string) =>
+    this.findByDataQa(`holiday-section-${childId}`)
   #childHolidaySelect = (childId: string) =>
-    new Select(
-      this.page
-        .findByDataQa(`holiday-section-${childId}`)
-        .findByDataQa('period-select')
-    )
-  #modalSendButton = this.page.findByDataQa('modal-okBtn')
+    new Select(this.#childSection(childId).findByDataQa('period-select'))
+  #modalSendButton = this.findByDataQa('modal-okBtn')
+
+  async markHolidays(values: { child: { id: string }; option: string }[]) {
+    for (const { child, option } of values) {
+      await this.#childHolidaySelect(child.id).selectOption(option)
+    }
+    await this.#modalSendButton.click()
+    await this.waitUntilHidden()
+  }
+
+  async markNoHolidays(children: { id: string }[]) {
+    for (const child of children) {
+      await this.#childHolidaySelect(child.id).selectOption({ index: 0 })
+    }
+    await this.#modalSendButton.click()
+    await this.waitUntilHidden()
+  }
 
   async markHoliday(child: { id: string }, option: string) {
-    await this.#childHolidaySelect(child.id).selectOption(option)
-    await this.#modalSendButton.click()
+    await this.markHolidays([{ child, option }])
+  }
+
+  async markNoHoliday(child: { id: string }) {
+    await this.markNoHolidays([child])
+  }
+
+  async assertNotEligible(child: { id: string }) {
+    await this.#childSection(child.id)
+      .findByDataQa('not-eligible')
+      .waitUntilVisible()
   }
 }

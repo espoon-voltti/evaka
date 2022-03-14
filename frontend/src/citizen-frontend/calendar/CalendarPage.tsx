@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { isLoading, Result } from 'lib-common/api'
 import {
   DailyReservationData,
   ReservationsResponse
@@ -118,7 +118,7 @@ const Page = React.memo(function CalendarPage() {
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return renderResult(data, (response) => (
-    <>
+    <div data-qa="calendar-page" data-isloading={isLoading(data)}>
       <HolidayPeriodBanner />
       <MobileAndTablet>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
@@ -193,7 +193,7 @@ const Page = React.memo(function CalendarPage() {
           />
         </RequireAuth>
       )}
-    </>
+    </div>
   ))
 })
 
