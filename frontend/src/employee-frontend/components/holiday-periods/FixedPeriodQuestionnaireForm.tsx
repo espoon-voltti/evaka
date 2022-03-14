@@ -24,6 +24,7 @@ import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -310,22 +311,20 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
         {i18n.holidayQuestionnaires.types.FIXED_PERIOD}
       </H1>
       <ListGrid>
-        <Label>{i18n.holidayQuestionnaires.holidayPeriod} *</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.holidayPeriod} *</Label>
         <FixedSpaceRow>
           {holidayPeriods.map((h) => (
-            <SelectionChip
-              data-qa={`period-${h.period.format()}`}
+            <Radio
               key={h.id}
-              text={h.period.formatCompact()}
-              selected={form.holidayPeriodId === h.id}
-              onChange={(selected) =>
-                selected ? update({ holidayPeriodId: h.id }) : null
-              }
+              data-qa={`period-${h.period.format()}`}
+              label={h.period.formatCompact()}
+              checked={form.holidayPeriodId === h.id}
+              onChange={() => update({ holidayPeriodId: h.id })}
             />
           ))}
         </FixedSpaceRow>
 
-        <Label>{i18n.holidayQuestionnaires.absenceType} *</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.absenceType} *</Label>
         <FixedSpaceRow>
           <SelectionChip
             text={i18n.absences.absenceTypes.FREE_ABSENCE}
@@ -333,10 +332,11 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             onChange={(selected) =>
               selected ? update({ absenceType: 'FREE_ABSENCE' }) : null
             }
+            showIcon={false}
           />
         </FixedSpaceRow>
 
-        <Label>{i18n.holidayQuestionnaires.active} *</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.active} *</Label>
         <FixedSpaceRow alignItems="center">
           <DatePicker
             info={useMemo(
@@ -367,9 +367,21 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           />
         </FixedSpaceRow>
 
-        {/* TODO strong auth checkbox*/}
+        <Label inputRow>{i18n.holidayQuestionnaires.requiresStrongAuth}</Label>
+        <FixedSpaceRow>
+          <Radio
+            label={i18n.common.yes}
+            checked={form.requiresStrongAuth}
+            onChange={() => update({ requiresStrongAuth: true })}
+          />
+          <Radio
+            label={i18n.common.no}
+            checked={!form.requiresStrongAuth}
+            onChange={() => update({ requiresStrongAuth: false })}
+          />
+        </FixedSpaceRow>
 
-        <Label>{i18n.holidayQuestionnaires.title} *</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.title} *</Label>
         <TextArea
           value={form.titleFi}
           onChange={(titleFi) => update({ titleFi })}
@@ -381,7 +393,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.title} SV</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.title} SV</Label>
         <TextArea
           value={form.titleSv}
           onChange={(titleSv) => update({ titleSv })}
@@ -393,7 +405,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.title} EN</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.title} EN</Label>
         <TextArea
           value={form.titleEn}
           onChange={(titleEn) => update({ titleEn })}
@@ -405,7 +417,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.description} *</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.description} *</Label>
         <TextArea
           value={form.descriptionFi}
           onChange={(descriptionFi) => update({ descriptionFi })}
@@ -417,7 +429,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.description} SV</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.description} SV</Label>
         <TextArea
           value={form.descriptionSv}
           onChange={(descriptionSv) => update({ descriptionSv })}
@@ -429,7 +441,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.description} EN</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.description} EN</Label>
         <TextArea
           value={form.descriptionEn}
           onChange={(descriptionEn) => update({ descriptionEn })}
@@ -441,7 +453,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.descriptionLink}</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink}</Label>
         <InputField
           width="L"
           placeholder="https://example.com"
@@ -456,7 +468,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.descriptionLink} SV</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink} SV</Label>
         <InputField
           width="L"
           value={form.descriptionLinkSv}
@@ -470,7 +482,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.descriptionLink} EN</Label>
+        <Label inputRow>{i18n.holidayQuestionnaires.descriptionLink} EN</Label>
         <InputField
           width="L"
           value={form.descriptionLinkEn}
@@ -484,7 +496,9 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.fixedPeriodOptions} *</Label>
+        <Label inputRow>
+          {i18n.holidayQuestionnaires.fixedPeriodOptions} *
+        </Label>
         <TextArea
           required
           value={form.periodOptions}
@@ -504,7 +518,9 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             .join(', ')}
         </InformationText>
 
-        <Label>{i18n.holidayQuestionnaires.fixedPeriodOptionLabel} *</Label>
+        <Label inputRow>
+          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} *
+        </Label>
         <TextArea
           required
           value={form.periodOptionLabelFi}
@@ -522,7 +538,9 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.fixedPeriodOptionLabel} SV</Label>
+        <Label inputRow>
+          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} SV
+        </Label>
         <TextArea
           value={form.periodOptionLabelSv}
           onChange={(fixedPeriodOptionLabelSv) =>
@@ -536,7 +554,9 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.fixedPeriodOptionLabel} EN</Label>
+        <Label inputRow>
+          {i18n.holidayQuestionnaires.fixedPeriodOptionLabel} EN
+        </Label>
         <TextArea
           value={form.periodOptionLabelEn}
           onChange={(fixedPeriodOptionLabelEn) =>
@@ -550,7 +570,9 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         />
 
-        <Label>{i18n.holidayQuestionnaires.conditionContinuousPlacement}</Label>
+        <Label inputRow>
+          {i18n.holidayQuestionnaires.conditionContinuousPlacement}
+        </Label>
         <FixedSpaceRow alignItems="center">
           <DatePicker
             info={useMemo(
