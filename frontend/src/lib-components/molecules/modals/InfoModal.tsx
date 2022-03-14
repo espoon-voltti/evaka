@@ -48,6 +48,12 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
       {children}
       {'resolve' in props ? (
         <ModalButtons $singleButton={!props.reject}>
+          <InlineButton
+            data-qa="modal-okBtn"
+            onClick={props.resolve.action}
+            disabled={props.resolve.disabled}
+            text={props.resolve.label}
+          />
           {props.reject && (
             <>
               <InlineButton
@@ -58,12 +64,6 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
               <Gap horizontal size="xs" />
             </>
           )}
-          <InlineButton
-            data-qa="modal-okBtn"
-            onClick={props.resolve.action}
-            disabled={props.resolve.disabled}
-            text={props.resolve.label}
-          />
         </ModalButtons>
       ) : (
         <Gap size="X3L" />

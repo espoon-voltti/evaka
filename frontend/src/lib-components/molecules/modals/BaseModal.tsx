@@ -81,7 +81,7 @@ export default React.memo(function BaseModal(props: Props) {
 
 export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   margin-top: ${defaultMargins.XXL};
   margin-bottom: ${defaultMargins.X3L};
   justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};

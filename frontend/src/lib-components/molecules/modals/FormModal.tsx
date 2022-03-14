@@ -42,18 +42,18 @@ export default React.memo(function FormModal({
       <form onSubmit={onSubmit}>{children}</form>
       <ModalButtons $singleButton={!('reject' in props)}>
         <Button
-          onClick={rejectAction}
-          data-qa="modal-cancelBtn"
-          text={rejectLabel}
-        />
-        <Gap horizontal size="xs" />
-        <Button
           primary
           type="submit"
           data-qa="modal-okBtn"
           onClick={resolveAction}
           disabled={resolveDisabled}
           text={resolveLabel}
+        />
+        <Gap horizontal size="xs" />
+        <Button
+          onClick={rejectAction}
+          data-qa="modal-cancelBtn"
+          text={rejectLabel}
         />
       </ModalButtons>
     </BaseModal>
@@ -85,12 +85,6 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}
       <ModalButtons $singleButton={!('reject' in props)}>
-        <Button
-          onClick={rejectAction}
-          data-qa="modal-cancelBtn"
-          text={rejectLabel}
-        />
-        <Gap horizontal size="xs" />
         <AsyncButton
           primary
           text={resolveLabel}
@@ -98,6 +92,12 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
           onClick={resolveAction}
           onSuccess={onSuccess}
           data-qa="modal-okBtn"
+        />
+        <Gap horizontal size="xs" />
+        <Button
+          onClick={rejectAction}
+          data-qa="modal-cancelBtn"
+          text={rejectLabel}
         />
       </ModalButtons>
     </BaseModal>
