@@ -146,7 +146,7 @@ const sv: Translations = {
       title: 'Ansök om plats',
       paragraph: 'Med stark autentisering via suomi.fi kan du',
       infoBoxText:
-        'I samband med den starka autentisering hämtas den identifierades, andra förmyndares, samt minderåriga barns person- och addressuppgifter',
+        'I samband med den starka autentiseringen hämtas den identifierades, andra förmyndares, samt minderåriga barns person- och addressuppgifter',
       infoBullets: [
         'ansöka om, eller kontrollera tidigare ansökan om, plats till småbarnspedagogiken, förskolan, eller klubbverksamheten för ditt barn',
         'se bilder och dokument angående ditt barns småbarnspedagogik eller förskola',
