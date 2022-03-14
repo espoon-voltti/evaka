@@ -17,7 +17,7 @@ import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { bannerHeightDesktop, headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
@@ -46,6 +46,7 @@ export default React.memo(function CalendarGridView({
   dayIsReservable
 }: Props) {
   const i18n = useTranslation()
+  const [lang] = useLang()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
   const headerRef = useRef<HTMLDivElement>(null)
   const todayRef = useRef<HTMLButtonElement>()
@@ -160,7 +161,13 @@ export default React.memo(function CalendarGridView({
                         data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
                       >
                         <DayCellHeader>
-                          <DayCellDate inactive={!dayIsReservable(d)}>
+                          <DayCellDate
+                            inactive={!dayIsReservable(d)}
+                            aria-label={d.date.formatExotic(
+                              'EEEE do MMMM',
+                              lang
+                            )}
+                          >
                             {d.date.format('d.M.')}
                           </DayCellDate>
                         </DayCellHeader>

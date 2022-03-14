@@ -126,8 +126,12 @@ const DayElem = React.memo(function DayElem({
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
       <DayColumn spacing="xxs" inactive={!isReservable}>
-        <div>{dailyReservations.date.format('EEEEEE', lang)}</div>
-        <div>{dailyReservations.date.format('d.M.')}</div>
+        <div aria-label={dailyReservations.date.formatExotic('EEEE', lang)}>
+          {dailyReservations.date.format('EEEEEE', lang)}
+        </div>
+        <div aria-label={dailyReservations.date.formatExotic('do MMMM', lang)}>
+          {dailyReservations.date.format('d.M.')}
+        </div>
       </DayColumn>
       <Gap size="s" horizontal />
       <div data-qa="reservations">
