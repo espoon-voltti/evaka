@@ -137,14 +137,21 @@ export default {
     title: 'Espoon kaupungin varhaiskasvatus',
     login: {
       title: 'Kirjaudu eVakaan',
-      paragraph: 'Hoida lapsesi päivittäisiä varhaiskasvatusasioita eVakassa.',
+      paragraph:
+        'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään'
     },
     applying: {
       title: 'Hae paikkaa',
-      paragraph:
-        'Hae lapsellesi varhaiskasvatus-, esiopetus- tai kerhopaikkaa (vaatii vahvan tunnistautumisen).',
-      link: 'Tee hakemus',
+      paragraph: 'Tunnistautumalla eVakaan vahvasti Suomi:fissä voit',
+      infoBoxText:
+        'Tunnistautumisen yhteydessä väestötietojärjestelmästä haetaan kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.  ',
+      infoBullets: [
+        'hakea lapsellesi varhaiskasvatus-, esiopetus- tai kerhopaikkaa tai tarkastella aiemmin tekemääsi hakemusta',
+        'tarkastella lapsesi varhaiskasvatukseen tai esiopetukseen liittyviä kuvia ja muita dokumentteja',
+        'ilmoittaa omat tai lapsesi tulotiedot.'
+      ],
+      link: 'Tunnistaudu',
       mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
       mapLink: 'Yksiköt kartalla'
     }
