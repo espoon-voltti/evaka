@@ -144,9 +144,15 @@ const en: Translations = {
     },
     applying: {
       title: 'Applications',
-      paragraph:
-        'Apply to early childhood education, pre-primary education and clubs (requires strong authentication).',
-      link: 'Apply',
+      paragraph: 'By using strong suomi.fi-authentication in eVaka, you can',
+      infoBoxText:
+        'When using strong authentication the personal data and address information of the registrant, the second guardian and the dependants are retrieved from the population data service.',
+      infoBullets: [
+        'apply for an early childhood, pre-school or club place for your child or view a previous application',
+        'view pictures and other documents related to your child’s early childhood or pre-school education',
+        "report your or your child's income information"
+      ],
+      link: 'Authenticate',
       mapText: 'Look up the units that you can apply to in eVaka on the map.',
       mapLink: 'Units on the map'
     }

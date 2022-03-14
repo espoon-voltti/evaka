@@ -144,9 +144,15 @@ const sv: Translations = {
     },
     applying: {
       title: 'Ansök om plats',
-      paragraph:
-        'Ansök om en plats till småbarnspedagogiken, förskolan, eller klubbverksamheten åt ditt barn (kräver stark identifiering).',
-      link: 'Ansök',
+      paragraph: 'Med stark autentisering via suomi.fi kan du',
+      infoBoxText:
+        'I samband med den starka autentisering hämtas den identifierades, andra förmyndares, samt minderåriga barns person- och addressuppgifter',
+      infoBullets: [
+        'ansöka om, eller kontrollera tidigare ansökan om, plats till småbarnspedagogiken, förskolan, eller klubbverksamheten för ditt barn',
+        'se bilder och dokument angående ditt barns småbarnspedagogik eller förskola',
+        'anmäla ditt eller ditt barns inkomstuppgifter'
+      ],
+      link: 'Autentisera',
       mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
       mapLink: 'Enheter på kartan'
     }
