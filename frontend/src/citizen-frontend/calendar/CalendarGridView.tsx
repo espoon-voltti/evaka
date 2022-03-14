@@ -72,16 +72,23 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const { holidayPeriods: holidayPeriodResult, questionnaireAvailable } =
-    useHolidayPeriods()
+  const {
+    holidayPeriods: holidayPeriodResult,
+    questionnaireAvailable,
+    holidayBanner
+  } = useHolidayPeriods()
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
   )
+  const showBanner = useMemo(
+    () => holidayBanner.map<boolean>((b) => b.type !== 'none').getOrElse(false),
+    [holidayBanner]
+  )
 
   return (
     <>
-      <StickyHeader ref={headerRef} bannerIsVisible={!!questionnaireAvailable}>
+      <StickyHeader ref={headerRef} bannerIsVisible={showBanner}>
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>

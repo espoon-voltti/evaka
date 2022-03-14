@@ -158,7 +158,9 @@ export default {
   },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>
-      `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`
+      `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`,
+    fixedPeriodCta: (deadline: string) =>
+      `Vastaa poissaolokyselyyn ${deadline} mennessä.`
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',

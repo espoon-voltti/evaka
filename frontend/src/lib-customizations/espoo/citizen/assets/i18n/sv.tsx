@@ -159,7 +159,9 @@ const sv: Translations = {
   },
   ctaBanner: {
     holidayPeriodCta: (period: string, deadline: string) =>
-      `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`
+      `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`,
+    fixedPeriodCta: (deadline: string) =>
+      `Answer the absence questionnarie before ${deadline}.`
   },
   errorPage: {
     reload: 'Ladda om sidan',
