@@ -1435,7 +1435,8 @@ const sv: Translations = {
     addNew: 'Ny inkomstutredning',
     incomeInfo: 'Inkomstuppgifter',
     childIncomeInfo: 'Giltigheten av barnets inkomstinformation',
-    incomeStatementMissing: 'Inkomstutredningen saknas eller är föråldrad.',
+    incomeStatementMissing:
+      'Om ditt barn har inkomst, anmäl det med en inkomstredovisning.',
     incomesRegisterConsent:
       'Jag samtycker till att uppgifterna som rör mina inkomster kontrolleras i inkomstregistret samt hos FPA vid behov',
     incomeType: {

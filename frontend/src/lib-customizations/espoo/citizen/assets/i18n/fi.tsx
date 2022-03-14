@@ -1419,7 +1419,8 @@ export default {
     addNew: 'Uusi tuloselvitys',
     incomeInfo: 'Tulotiedot',
     childIncomeInfo: 'Lapsen tulotietojen voimassaoloaika',
-    incomeStatementMissing: 'Tuloselvitys puuttuu tai on vanhentunut.',
+    incomeStatementMissing:
+      'Jos lapsellasi on tuloja, ilmoita se tuloselvityksellä.',
     incomesRegisterConsent:
       'Hyväksyn, että tuloihini liittyviä tietoja tarkastellaan tulorekisteristä, sekä Kelasta tarvittaessa',
     incomeType: {

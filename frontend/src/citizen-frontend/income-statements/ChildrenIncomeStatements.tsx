@@ -15,7 +15,7 @@ import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButto
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Dimmed, H1, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -135,7 +135,7 @@ const ChildIncomeStatementsTable = React.memo(
               />
             </>
           ) : (
-            <AlertBox
+            <InfoBox
               message={t.income.incomeStatementMissing}
               data-qa="child-income-statement-missing-warning"
             />
