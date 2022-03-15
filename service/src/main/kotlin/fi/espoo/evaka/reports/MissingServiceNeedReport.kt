@@ -48,7 +48,8 @@ private fun Database.Read.getMissingServiceNeedRows(
         """
         SELECT 
             ca.name AS care_area_name, daycare.name AS unit_name, unit_id,
-            child_id, first_name, last_name, unit_id, sum(days_without_sn) AS days_without_sn 
+            child_id, first_name, last_name, unit_id, sum(days_without_sn) AS days_without_sn,
+            CASE WHEN daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'true' ELSE 'false' END AS is_private_service_voucher_daycare
         FROM (
           SELECT DISTINCT
             child_id,
@@ -79,10 +80,11 @@ private fun Database.Read.getMissingServiceNeedRows(
           WHERE days - days_with_sn > 0
         ) results
         JOIN person ON person.id = child_id
-        JOIN daycare ON daycare.id = unit_id AND daycare.invoiced_by_municipality
+        JOIN daycare ON daycare.id = unit_id 
+            AND (daycare.invoiced_by_municipality OR daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER')
         JOIN care_area ca ON ca.id = daycare.care_area_id
         ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
-        GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
+        GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id, is_private_service_voucher_daycare
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
@@ -91,7 +93,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         .bind("to", to)
         .map { rs, _ ->
             MissingServiceNeedReportRow(
-                careAreaName = rs.getString("care_area_name"),
+                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palveluseteli" else rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 childId = ChildId(rs.getUUID("child_id")),
