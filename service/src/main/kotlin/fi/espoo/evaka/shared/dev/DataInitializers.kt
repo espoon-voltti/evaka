@@ -1090,3 +1090,14 @@ VALUES (:id, :childId, :date, :startTime, :endTime, :createdBy)
 RETURNING id
 """
 ).let(::AttendanceReservationId)
+
+fun Database.Transaction.insertTestGuardianBlocklistEntry(entry: DevGuardianBlocklistEntry) {
+    createUpdate(
+        """
+INSERT INTO guardian_blocklist (guardian_id, child_id)
+VALUES (:guardianId, :childId)
+        """.trimIndent()
+    )
+        .bindKotlin(entry)
+        .execute()
+}

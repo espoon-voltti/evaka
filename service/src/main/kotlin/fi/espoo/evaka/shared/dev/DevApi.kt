@@ -1485,3 +1485,5 @@ data class PostVasuDocBody(
     val childId: ChildId,
     val templateId: VasuTemplateId
 )
+
+data class DevGuardianBlocklistEntry(val guardianId: PersonId, val childId: ChildId)
