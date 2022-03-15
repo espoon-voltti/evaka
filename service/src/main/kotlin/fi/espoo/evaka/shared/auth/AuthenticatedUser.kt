@@ -18,7 +18,6 @@ import java.util.UUID
 sealed class AuthenticatedUser : RoleContainer {
     open val isEndUser = false
     open val isAdmin = false
-    open val isSystemInternalUser = false
 
     abstract val id: UUID
     abstract val type: AuthenticatedUserType
@@ -66,7 +65,6 @@ sealed class AuthenticatedUser : RoleContainer {
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = emptySet()
-        override val isSystemInternalUser = true
         override val type = AuthenticatedUserType.system
         override fun toString(): String = "SystemInternalUser"
     }
