@@ -224,7 +224,7 @@ export default React.memo(function NotesModal({
   )
 
   return (
-    <PlainModal>
+    <PlainModal margin={`${defaultMargins.XL} auto`}>
       <HeaderContainer>
         <Tabs>{tabs}</Tabs>
         <CloseContainer>

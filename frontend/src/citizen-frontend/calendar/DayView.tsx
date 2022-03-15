@@ -29,6 +29,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  ModalCloseButton,
+  PlainModal
+} from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -44,7 +48,6 @@ import {
 
 import { useLang, useTranslation } from '../localization'
 
-import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
 
@@ -166,7 +169,8 @@ export default React.memo(function DayView({
   )
 
   return (
-    <CalendarModal close={navigate(close)} data-qa="calendar-dayview">
+    <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
+      <Gap size="XL" />
       <Content highlight={date.isEqual(LocalDate.today())}>
         <DayPicker>
           <IconButton
@@ -285,15 +289,18 @@ export default React.memo(function DayView({
           />
         ) : null}
       </Content>
-      <BottomBar>
-        <AbsenceButton
-          text={i18n.calendar.newAbsence}
-          icon={faUserMinus}
-          onClick={onCreateAbsence}
-          data-qa="create-absence"
-        />
-      </BottomBar>
-    </CalendarModal>
+      <AbsenceButton
+        text={i18n.calendar.newAbsence}
+        icon={faUserMinus}
+        onClick={onCreateAbsence}
+        data-qa="create-absence"
+      />
+      <ModalCloseButton
+        close={navigate(close)}
+        closeLabel={i18n.common.closeModal}
+        data-qa="day-view-close-button"
+      />
+    </PlainModal>
   )
 })
 
@@ -637,11 +644,6 @@ const NoReservation = styled.span`
 const Separator = styled.div`
   border-top: 2px dotted ${(p) => p.theme.colors.grayscale.g15};
   margin: ${defaultMargins.s} 0;
-`
-
-const BottomBar = styled.div`
-  background: ${(p) => p.theme.colors.grayscale.g0};
-  border-top: 2px solid ${(p) => p.theme.colors.grayscale.g15};
 `
 
 const AbsenceButton = styled(InlineButton)`

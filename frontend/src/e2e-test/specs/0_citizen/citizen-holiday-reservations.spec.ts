@@ -222,6 +222,7 @@ describe('Holiday periods', () => {
       const dayView = await calendar.openDayView(LocalDate.of(2035, 12, 26))
       await dayView.assertAbsence(child.id, 'Poissa')
       await dayView.assertAbsence(child2.id, 'Poissa')
+      await dayView.close()
 
       holidayModal = await calendar.openHolidayModal()
       await holidayModal.assertSelectedFixedPeriods(selections)

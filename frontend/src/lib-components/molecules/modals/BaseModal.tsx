@@ -68,11 +68,7 @@ export default React.memo(function BaseModal(props: Props) {
             )}
           </ModalTitle>
           {props.children}
-          <CloseButton
-            icon={faTimes}
-            onClick={props.close}
-            altText={props.closeLabel}
-          />
+          <ModalCloseButton close={props.close} closeLabel={props.closeLabel} />
         </ModalContainer>
       </ModalWrapper>
     </ModalBackground>
@@ -98,9 +94,29 @@ const CloseButton = styled(IconButton)`
   color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
+export const ModalCloseButton = React.memo(function ModalCloseButton({
+  close,
+  closeLabel,
+  'data-qa': dataQa
+}: {
+  close: () => void
+  closeLabel: string
+  'data-qa'?: string
+}) {
+  return (
+    <CloseButton
+      icon={faTimes}
+      onClick={close}
+      altText={closeLabel}
+      data-qa={dataQa}
+    />
+  )
+})
+
 const ModalContainer = styled.div<{
   mobileFullScreen?: boolean
   noPadding?: boolean
+  margin: string
 }>`
   position: relative;
   width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
@@ -111,8 +127,7 @@ const ModalContainer = styled.div<{
   border-radius: 2px;
   ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.XXL}`)};
   ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.XXL}`)};
-  margin-left: ${defaultMargins.xxs};
-  margin-right: ${defaultMargins.xxs};
+  margin: ${(p) => p.margin};
   overflow-y: auto;
 
   @media (max-width: ${tabletMin}) {
@@ -173,13 +188,14 @@ const ModalTitle = styled.div`
 
 const StaticallyPositionedModal = styled(ModalWrapper)`
   justify-content: flex-start;
-  padding-top: ${defaultMargins.XL};
 `
 
 type PlainModalProps = Pick<
   ModalBaseProps,
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children'
->
+> & {
+  margin: string
+}
 
 export const PlainModal = React.memo(function PlainModal(
   props: PlainModalProps
@@ -194,6 +210,7 @@ export const PlainModal = React.memo(function PlainModal(
         <ModalContainer
           noPadding
           mobileFullScreen={props.mobileFullScreen}
+          margin={props.margin}
           data-qa="modal"
         >
           {props.children}
