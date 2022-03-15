@@ -137,13 +137,13 @@ const sv: Translations = {
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
     login: {
-      title: 'Logga in i eVaka',
+      title: 'Logga in i eVaka med usernamn',
       paragraph:
         'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
       link: 'Logga in'
     },
     applying: {
-      title: 'Ansök om plats',
+      title: 'Logga in i eVaka via Suomi.fi',
       paragraph: 'Med stark autentisering via suomi.fi kan du',
       infoBoxText:
         'I samband med den starka autentiseringen hämtas den identifierades, andra förmyndares, samt minderåriga barns person- och addressuppgifter',
