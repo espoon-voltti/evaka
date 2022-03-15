@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -45,7 +46,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     private final val child = testChild_1
     private final val child2 = testChild_2
     private final val parent = testAdult_1
-    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw)
+    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw, CitizenAuthLevel.STRONG)
 
     private final val daycareId = testDaycare.id
     private final val daycare2Id = testDaycare2.id

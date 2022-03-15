@@ -18,9 +18,6 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
             is AuthenticatedUser.Citizen -> {
                 gen.writeObjectField("id", value.id.toString())
             }
-            is AuthenticatedUser.WeakCitizen -> {
-                gen.writeObjectField("id", value.id.toString())
-            }
             is AuthenticatedUser.Employee -> {
                 gen.writeObjectField("id", value.id.toString())
                 gen.writeObjectField("globalRoles", value.globalRoles)

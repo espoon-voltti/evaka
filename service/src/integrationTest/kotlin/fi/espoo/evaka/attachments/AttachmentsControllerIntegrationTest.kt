@@ -16,6 +16,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_5
@@ -28,7 +29,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest() {
-    private val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
+    private val user = AuthenticatedUser.Citizen(testAdult_5.id.raw, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     private fun beforeEach() {

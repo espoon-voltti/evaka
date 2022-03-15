@@ -25,6 +25,7 @@ import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
@@ -75,7 +76,7 @@ class ScheduledJobsTest : FullApplicationTest() {
     fun `Draft application and attachments older than 30 days is cleaned up`() {
         val id_to_be_deleted = ApplicationId(UUID.randomUUID())
         val id_not_to_be_deleted = ApplicationId(UUID.randomUUID())
-        val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
+        val user = AuthenticatedUser.Citizen(testAdult_5.id.raw, CitizenAuthLevel.STRONG)
 
         db.transaction { tx ->
             tx.insertApplication(guardian = testAdult_5, applicationId = id_to_be_deleted)

@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -75,10 +76,10 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val employee2Id = EmployeeId(UUID.randomUUID())
     private val employee1 = AuthenticatedUser.Employee(id = employee1Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val employee2 = AuthenticatedUser.Employee(id = employee2Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val person1 = AuthenticatedUser.Citizen(id = person1Id.raw)
-    private val person2 = AuthenticatedUser.Citizen(id = person2Id.raw)
-    private val person3 = AuthenticatedUser.Citizen(id = person3Id.raw)
-    private val person4 = AuthenticatedUser.Citizen(id = person4Id.raw)
+    private val person1 = AuthenticatedUser.Citizen(id = person1Id.raw, CitizenAuthLevel.STRONG)
+    private val person2 = AuthenticatedUser.Citizen(id = person2Id.raw, CitizenAuthLevel.STRONG)
+    private val person3 = AuthenticatedUser.Citizen(id = person3Id.raw, CitizenAuthLevel.STRONG)
+    private val person4 = AuthenticatedUser.Citizen(id = person4Id.raw, CitizenAuthLevel.STRONG)
     private val groupId = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)

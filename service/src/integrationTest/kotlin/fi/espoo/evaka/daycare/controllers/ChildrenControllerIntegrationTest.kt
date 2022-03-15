@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -65,7 +66,7 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `get additional info throws forbidden with enduser`() {
-        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.Citizen(UUID.randomUUID())) }
+        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)) }
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {

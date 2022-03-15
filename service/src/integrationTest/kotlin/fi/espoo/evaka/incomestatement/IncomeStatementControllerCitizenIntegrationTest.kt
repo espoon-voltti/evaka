@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -38,7 +39,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
-    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun beforeEach() {
@@ -461,7 +462,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `create an income statement with someone else's attachment`() {
-        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id.raw)
+        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id.raw, CitizenAuthLevel.STRONG)
         val attachmentId = uploadAttachment(someoneElse)
 
         createIncomeStatement(

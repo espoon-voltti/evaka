@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
@@ -204,7 +205,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to get parentships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
@@ -213,7 +214,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to update parentship`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
@@ -225,7 +226,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to delete parentship`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }

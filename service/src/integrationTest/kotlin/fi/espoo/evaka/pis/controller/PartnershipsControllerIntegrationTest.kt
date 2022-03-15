@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
@@ -211,7 +212,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to get partnerships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
@@ -223,7 +224,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to create a partnership`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody =
@@ -236,7 +237,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to update partnerships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         val partnership = db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
@@ -250,7 +251,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to delete a partnership`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
         val partnership = db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }

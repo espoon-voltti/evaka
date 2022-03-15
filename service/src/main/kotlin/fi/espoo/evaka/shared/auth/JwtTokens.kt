@@ -21,8 +21,8 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
         .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }
         .toSet()
     return when (type) {
-        AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(id)
-        AuthenticatedUserType.citizen_weak -> AuthenticatedUser.WeakCitizen(id)
+        AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(id, CitizenAuthLevel.STRONG)
+        AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(id, CitizenAuthLevel.WEAK)
         AuthenticatedUserType.employee -> AuthenticatedUser.Employee(id, roles)
         AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(id, employeeId)
         AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser

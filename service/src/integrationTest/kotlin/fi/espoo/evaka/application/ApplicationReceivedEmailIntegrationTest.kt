@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -53,7 +54,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     private val validClubForm = ClubFormV0.fromForm2(validClubApplication.form, false, false)
 
     private val serviceWorker = AuthenticatedUser.Employee(testAdult_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
     private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
     private val guardianAsDaycareAdult = Adult(
         firstName = guardian.firstName,

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -54,7 +55,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
     private val groupStaffId = EmployeeId(UUID.randomUUID())
     private val groupStaff = AuthenticatedUser.Employee(groupStaffId.raw, setOf())
 
-    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
 
     val groupId = GroupId(UUID.randomUUID())
 

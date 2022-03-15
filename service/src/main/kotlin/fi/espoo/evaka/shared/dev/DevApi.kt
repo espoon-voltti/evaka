@@ -114,6 +114,7 @@ import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -377,7 +378,7 @@ class DevApi(
                     tx.fetchApplicationDetails(decision.applicationId) ?: throw NotFound("application not found")
                 applicationStateService.rejectDecision(
                     tx,
-                    AuthenticatedUser.Citizen(application.guardianId.raw),
+                    AuthenticatedUser.Citizen(application.guardianId.raw, CitizenAuthLevel.STRONG),
                     application.id,
                     id,
                     isEnduser = true
