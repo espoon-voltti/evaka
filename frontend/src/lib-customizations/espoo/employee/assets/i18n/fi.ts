@@ -2112,7 +2112,7 @@ export const fi = {
     },
     absenceTypeInfo: {
       OTHER_ABSENCE:
-        'Käytetään tavallisissa päiväkodeissa aina, kun poissaolosta on ilmoitettu, mukaan lukien säännölliset vapaat ja loma-aika.',
+        'Käytetään aina, kun huoltaja on ilmoittanut poissaolosta mukaan lukien säännölliset vapaat ja loma-aika. Käytetään myös vuoroyksiköissä lasten lomamerkinnöissä tai muissa poissaoloissa, jotka ovat suunniteltujen läsnäolovarausten ulkopuolella.',
       SICKLEAVE:
         '11 päivää ylittävä yhtäjaksoinen sairauspoissaolo vaikuttaa alentavasti maksuun.',
       UNKNOWN_ABSENCE:
