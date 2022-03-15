@@ -283,7 +283,9 @@ const sv: Translations = {
       emptySelection: 'Ingen gratis ledighet',
       notEligible: (period: FiniteDateRange) =>
         `Enkäten rör inte barnet, eftersom hen inte varit i småbarnspedagogiken oavbrutet under tiden ${period.format()}.`
-    }
+    },
+    previousDay: 'Föregående dag',
+    nextDay: 'Nästa dag'
   },
   messages: {
     inboxTitle: 'Inkorg',

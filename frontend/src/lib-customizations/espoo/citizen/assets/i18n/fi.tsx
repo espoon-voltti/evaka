@@ -282,7 +282,9 @@ export default {
       emptySelection: 'Ei maksutonta poissaoloa',
       notEligible: (period: FiniteDateRange) =>
         `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`
-    }
+    },
+    previousDay: 'Edellinen päivä',
+    nextDay: 'Seuraava päivä'
   },
   messages: {
     inboxTitle: 'Viestit',

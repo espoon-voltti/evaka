@@ -173,12 +173,14 @@ export default React.memo(function DayView({
             icon={faChevronLeft}
             onClick={navigateToPrevDate}
             disabled={!previousDate}
+            altText={i18n.calendar.previousDay}
           />
           <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
           <IconButton
             icon={faChevronRight}
             onClick={navigateToNextDate}
             disabled={!nextDate}
+            altText={i18n.calendar.nextDay}
           />
         </DayPicker>
         <Gap size="m" />

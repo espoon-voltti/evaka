@@ -283,7 +283,9 @@ const en: Translations = {
       emptySelection: 'No free absences',
       notEligible: (period: FiniteDateRange) =>
         `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`
-    }
+    },
+    previousDay: 'Previous day',
+    nextDay: 'Next day'
   },
   messages: {
     inboxTitle: 'Inbox',
