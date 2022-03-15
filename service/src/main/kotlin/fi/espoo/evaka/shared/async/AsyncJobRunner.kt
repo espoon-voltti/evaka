@@ -179,7 +179,3 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         this.executor.shutdownNow()
     }
 }
-
-private fun Database.Transaction.setLockTimeout(duration: Duration) = createUpdate(
-    "SET LOCAL lock_timeout = <durationInMs>"
-).define("durationInMs", "'${duration.toMillis()}ms'").execute()

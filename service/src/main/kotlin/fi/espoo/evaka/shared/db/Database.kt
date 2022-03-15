@@ -10,6 +10,7 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.PreparedBatch
 import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.core.statement.Update
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 
 // What does it mean when a function accepts a Database/Database.* parameter?
@@ -120,6 +121,9 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = handle.createQuery(sql)
+
+        fun setLockTimeout(duration: Duration) = handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
+        fun setStatementTimeout(duration: Duration) = handle.execute("SET LOCAL statement_timeout = '${duration.toMillis()}ms'")
     }
 
     /**
@@ -127,7 +131,7 @@ class Database(private val jdbi: Jdbi) {
      *
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
-    class Transaction internal constructor(handle: Handle, private val hooks: TransactionHooks) : Database.Read(handle) {
+    class Transaction internal constructor(handle: Handle, private val hooks: TransactionHooks) : Read(handle) {
         private var savepointId: Long = 0
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"

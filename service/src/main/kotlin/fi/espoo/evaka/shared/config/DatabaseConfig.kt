@@ -42,6 +42,7 @@ class DatabaseConfig {
             }
         return HikariDataSource(
             HikariConfig().apply {
+                connectionInitSql = "SET SESSION statement_timeout = '${env.defaultStatementTimeout.toMillis()}ms'"
                 jdbcUrl = env.url
                 username = env.username
                 password = env.password.value

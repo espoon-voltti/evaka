@@ -29,7 +29,12 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
     ): List<StartingPlacementsRow> {
         Audit.StartingPlacementsReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
-        return db.connect { dbc -> dbc.read { it.getStartingPlacementsRows(year, month) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getStartingPlacementsRows(year, month)
+            }
+        }
     }
 }
 

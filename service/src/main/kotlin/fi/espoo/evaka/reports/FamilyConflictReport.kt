@@ -24,7 +24,12 @@ class FamilyConflictReportController(private val acl: AccessControlList, private
     fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser): List<FamilyConflictReportRow> {
         Audit.FamilyConflictReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_FAMILY_CONFLICT_REPORT)
-        return db.connect { dbc -> dbc.read { it.getFamilyConflicts(acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getFamilyConflicts(acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

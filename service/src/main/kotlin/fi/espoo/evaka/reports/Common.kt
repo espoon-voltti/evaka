@@ -7,6 +7,9 @@ package fi.espoo.evaka.reports
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
+import java.time.Duration
+
+val REPORT_STATEMENT_TIMEOUT: Duration = Duration.ofMinutes(10)
 
 fun getPrimaryUnitType(careTypes: Set<String>): UnitType? {
     if (careTypes.contains("FAMILY")) return UnitType.FAMILY

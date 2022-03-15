@@ -34,7 +34,12 @@ class MissingServiceNeedReportController(private val acl: AccessControlList, pri
         accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_SERVICE_NEED_REPORT)
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
-        return db.connect { dbc -> dbc.read { it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

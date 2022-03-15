@@ -31,6 +31,7 @@ class SextetReportController(private val accessControl: AccessControl) {
 
         return db.connect { dbc ->
             dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.sextetReport(
                     LocalDate.of(year, 1, 1),
                     LocalDate.of(year, 12, 31),

@@ -25,7 +25,12 @@ class VardaErrorReport(private val accessControl: AccessControl) {
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_VARDA_REPORT)
-        return db.connect { dbc -> dbc.read { it.getVardaErrors() } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getVardaErrors()
+            }
+        }
     }
 }
 

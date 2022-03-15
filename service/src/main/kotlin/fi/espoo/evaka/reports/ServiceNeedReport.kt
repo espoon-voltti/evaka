@@ -27,7 +27,12 @@ class ServiceNeedReport(private val acl: AccessControlList, private val accessCo
     ): List<ServiceNeedReportRow> {
         Audit.ServiceNeedReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_REPORT)
-        return db.connect { dbc -> dbc.read { it.getServiceNeedRows(date, acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

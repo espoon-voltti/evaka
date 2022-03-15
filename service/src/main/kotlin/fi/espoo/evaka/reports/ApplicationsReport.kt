@@ -34,7 +34,12 @@ class ApplicationsReportController(private val accessControl: AccessControl, pri
         accessControl.requirePermissionFor(user, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.connect { dbc -> dbc.read { it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

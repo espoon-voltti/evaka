@@ -13,6 +13,7 @@ import org.springframework.core.io.UrlResource
 import software.amazon.awssdk.regions.Region
 import java.net.URI
 import java.security.KeyStore
+import java.time.Duration
 import java.time.LocalDate
 import java.util.Locale
 
@@ -81,6 +82,7 @@ data class DatabaseEnv(
     val flywayUsername: String,
     val flywayPassword: Sensitive<String>,
     val leakDetectionThreshold: Long,
+    val defaultStatementTimeout: Duration,
     val maximumPoolSize: Int,
     val logSql: Boolean
 ) {
@@ -95,6 +97,7 @@ data class DatabaseEnv(
                 "evaka.database.leak_detection_threshold",
                 "spring.datasource.hikari.leak-detection-threshold"
             ) ?: 0,
+            defaultStatementTimeout = env.lookup("evaka.database.default_statement_timeout") ?: Duration.ofSeconds(60),
             maximumPoolSize = env.lookup("evaka.database.maximum_pool_size", "spring.datasource.hikari.maximumPoolSize")
                 ?: 10,
             logSql = env.lookup("evaka.database.log_sql") ?: false
