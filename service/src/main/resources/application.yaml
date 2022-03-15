@@ -44,6 +44,8 @@ spring:
       max-request-size: "10MB"
 server:
   port: 8888
+  tomcat:
+    connection-timeout: "70s"
 management:
   endpoints:
     enabled-by-default: false
