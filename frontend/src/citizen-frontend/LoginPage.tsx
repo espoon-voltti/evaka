@@ -8,15 +8,16 @@ import { Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { ExpandingInfoBox } from 'lib-components/molecules/ExpandingInfo'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faInfo, farMap } from 'lib-icons'
+import { farMap } from 'lib-icons'
 
 import Footer from './Footer'
 import { useUser } from './auth/state'
@@ -54,10 +55,8 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <FlexRow>
               <P noMargin>{i18n.loginPage.applying.paragraph}</P>
-              <StyledRoundIcon
-                content={faInfo}
-                size="s"
-                color={colors.status.info}
+              <InfoButton
+                aria-label={i18n.common.openExpandingInfo}
                 onClick={() => setShowInfoBoxText(!showInfoBoxText)}
               />
             </FlexRow>
@@ -101,8 +100,5 @@ const MapLink = styled(LinkWrapperInlineBlock)`
 
 const FlexRow = styled.div`
   display: flex;
-`
-
-const StyledRoundIcon = styled(RoundIcon)`
-  margin-left: ${defaultMargins.xs};
+  gap: ${defaultMargins.xs};
 `
