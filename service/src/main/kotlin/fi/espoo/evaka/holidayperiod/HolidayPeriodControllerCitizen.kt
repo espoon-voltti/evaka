@@ -49,7 +49,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/questionnaire")
     fun getActiveQuestionnaires(
         db: Database,
-        user: AuthenticatedUser.Citizen,
+        user: AuthenticatedUser,
         evakaClock: EvakaClock,
     ): List<FixedPeriodQuestionnaireWithChildren> {
         Audit.HolidayPeriodsList.log()
