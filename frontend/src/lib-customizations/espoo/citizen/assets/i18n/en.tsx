@@ -1488,7 +1488,8 @@ const en: Translations = {
     addNew: 'New income statement',
     incomeInfo: 'Income information',
     childIncomeInfo: "Validity of the child's income information",
-    incomeStatementMissing: 'Income statement missing or outdated',
+    incomeStatementMissing:
+      'If your child has income, report it with an income statement.',
     incomesRegisterConsent:
       'I agree that information related to my income will be checked from the Incomes Register and Kela if necessary',
     incomeType: {
