@@ -65,18 +65,18 @@ class HttpFilterConfig {
             chain.doFilter(request, response)
         }
 
-        private fun HttpServletRequest.requiresAuthentication(): Boolean {
-            if (isHealthCheck()) return false
-            if (requestURI.startsWith("/public/")) return false
-            if (mockIntegrationEnabled && requestURI.startsWith("/mock-integration/")) return false
-            if (devApiEnabled && requestURI.startsWith("/dev-api/")) return false
-            return true
+        private fun HttpServletRequest.requiresAuthentication(): Boolean = when {
+            isHealthCheck() -> false
+            requestURI.startsWith("/public/") -> false
+            mockIntegrationEnabled && requestURI.startsWith("/mock-integration/") -> false
+            devApiEnabled && requestURI.startsWith("/dev-api/") -> false
+            else -> true
         }
 
-        private fun HttpServletRequest.isAuthorized(user: AuthenticatedUser): Boolean {
-            if (requestURI.startsWith("/system/")) return user is AuthenticatedUser.SystemInternalUser
-            if (requestURI.startsWith("/citizen/")) return user is AuthenticatedUser.Citizen
-            return true
+        private fun HttpServletRequest.isAuthorized(user: AuthenticatedUser): Boolean = when {
+            requestURI.startsWith("/system/") -> user is AuthenticatedUser.SystemInternalUser
+            requestURI.startsWith("/citizen/") -> user is AuthenticatedUser.Citizen
+            else -> true
         }
     }
 }
