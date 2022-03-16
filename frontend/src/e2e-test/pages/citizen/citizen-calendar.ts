@@ -316,6 +316,17 @@ class HolidayModal extends Element {
     await this.markNoHolidays([child])
   }
 
+  async assertSelectedFixedPeriods(
+    values: { child: { id: string }; option: string }[]
+  ) {
+    for (const { child, option } of values) {
+      await waitUntilEqual(
+        () => this.#childHolidaySelect(child.id).selectedOption,
+        option
+      )
+    }
+  }
+
   async assertNotEligible(child: { id: string }) {
     await this.#childSection(child.id)
       .findByDataQa('not-eligible')

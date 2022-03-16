@@ -9,7 +9,7 @@ import { useUser } from 'citizen-frontend/auth/state'
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  FixedPeriodQuestionnaireWithChildren,
+  ActiveQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
@@ -25,18 +25,18 @@ export type HolidayBanner =
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
-  activeFixedPeriodQuestionnaire: Result<
-    FixedPeriodQuestionnaireWithChildren | undefined
-  >
+  activeFixedPeriodQuestionnaire: Result<ActiveQuestionnaire | undefined>
   questionnaireAvailable: QuestionnaireAvailability
   holidayBanner: Result<HolidayBanner>
+  refreshQuestionnaires: () => void
 }
 
 const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
   activeFixedPeriodQuestionnaire: Loading.of(),
   questionnaireAvailable: false,
-  holidayBanner: Loading.of()
+  holidayBanner: Loading.of(),
+  refreshQuestionnaires: () => null
 }
 
 export const HolidayPeriodsContext =
@@ -53,7 +53,7 @@ export const HolidayPeriodsContextProvider = React.memo(
       () => (user ? getHolidayPeriods() : Promise.resolve(Success.of([]))),
       [user]
     )
-    const [activeQuestionnaires] = useApiState(
+    const [activeQuestionnaires, refreshQuestionnaires] = useApiState(
       () =>
         user ? getActiveQuestionnaires() : Promise.resolve(Success.of([])),
       [user]
@@ -99,13 +99,15 @@ export const HolidayPeriodsContextProvider = React.memo(
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayBanner
+        holidayBanner,
+        refreshQuestionnaires
       }),
       [
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayBanner
+        holidayBanner,
+        refreshQuestionnaires
       ]
     )
 

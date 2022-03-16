@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -119,6 +119,7 @@ class PersonIntegrationTest : PureJdbiTest() {
             PersonReference("fridge_child", "child_id"),
             PersonReference("fridge_child", "head_of_child"),
             PersonReference("fridge_partner", "person_id"),
+            PersonReference("holiday_questionnaire_answer", "child_id"),
             PersonReference("income", "person_id"),
             PersonReference("income_statement", "person_id"),
             PersonReference("invoice", "codebtor"),

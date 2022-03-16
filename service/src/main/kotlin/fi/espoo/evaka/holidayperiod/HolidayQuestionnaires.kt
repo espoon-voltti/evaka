@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -60,4 +61,10 @@ data class FixedPeriodQuestionnaireBody(
     val periodOptions: List<FiniteDateRange>,
     @Json
     val periodOptionLabel: Translatable,
+)
+
+data class HolidayQuestionnaireAnswer(
+    val questionnaireId: HolidayQuestionnaireId,
+    val childId: ChildId,
+    val fixedPeriod: FiniteDateRange?
 )

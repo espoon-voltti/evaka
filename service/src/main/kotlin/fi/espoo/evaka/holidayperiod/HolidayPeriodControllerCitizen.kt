@@ -7,9 +7,9 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.reservations.AbsenceInsert
-import fi.espoo.evaka.reservations.clearAbsencesWithinPeriod
 import fi.espoo.evaka.reservations.clearOldAbsencesExcludingFreeAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
+import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -28,9 +28,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-data class FixedPeriodQuestionnaireWithChildren(
+data class ActiveQuestionnaire(
     val questionnaire: FixedPeriodQuestionnaire,
     val eligibleChildren: List<ChildId>,
+    val previousAnswers: List<HolidayQuestionnaireAnswer>
 )
 
 @RestController
@@ -51,7 +52,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-    ): List<FixedPeriodQuestionnaireWithChildren> {
+    ): List<ActiveQuestionnaire> {
         Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
         return db.connect { dbc ->
@@ -71,9 +72,10 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     listOf()
                 } else {
                     listOf(
-                        FixedPeriodQuestionnaireWithChildren(
-                            activeQuestionnaire,
-                            eligibleChildren,
+                        ActiveQuestionnaire(
+                            questionnaire = activeQuestionnaire,
+                            eligibleChildren = eligibleChildren,
+                            previousAnswers = tx.getQuestionnaireAnswers(activeQuestionnaire.id, eligibleChildren)
                         )
                     )
                 }
@@ -110,9 +112,10 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 val absences = body.fixedPeriods.entries
                     .mapNotNull { (childId, period) ->
                         if (period != null) AbsenceInsert(
-                            childId,
-                            period,
-                            questionnaire.absenceType
+                            childId = childId,
+                            dateRange = period,
+                            absenceType = questionnaire.absenceType,
+                            questionnaireId = questionnaire.id
                         ) else null
                     }
                     .onEach { (_, period) ->
@@ -125,8 +128,14 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     tx.clearOldReservations(it)
                     tx.clearOldAbsencesExcludingFreeAbsences(it)
                 }
-                tx.clearAbsencesWithinPeriod(questionnaire.period, questionnaire.absenceType, childIds)
+                tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
                 tx.insertAbsences(PersonId(user.id), absences)
+                tx.insertQuestionnaireAnswers(
+                    PersonId(user.id),
+                    body.fixedPeriods.entries.map { (childId, period) ->
+                        HolidayQuestionnaireAnswer(questionnaire.id, childId, period)
+                    }
+                )
             }
         }
     }
