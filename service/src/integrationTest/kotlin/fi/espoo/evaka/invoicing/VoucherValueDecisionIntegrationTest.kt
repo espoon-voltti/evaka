@@ -311,6 +311,28 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `value decision is ended when child switches to preschool`() {
+        createPlacement(startDate, endDate, type = PlacementType.DAYCARE)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(endDate, decisions.first().validTo)
+        }
+
+        val newStartDate = now.toLocalDate().minusDays(1)
+        createPlacement(newStartDate, endDate, type = PlacementType.PRESCHOOL)
+        endDecisions(now = newStartDate.plusDays(1))
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(startDate, decisions.first().validFrom)
+            assertEquals(newStartDate.minusDays(1), decisions.first().validTo)
+        }
+    }
+
+    @Test
     fun `value decision search`() {
         createPlacement(startDate, endDate)
 
@@ -410,9 +432,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         endDate: LocalDate,
         unitId: DaycareId = testVoucherDaycare.id,
         childId: ChildId = testChild_1.id,
+        type: PlacementType = PlacementType.DAYCARE
     ): PlacementId {
         val body = PlacementCreateRequestBody(
-            type = PlacementType.DAYCARE,
+            type = type,
             childId = childId,
             unitId = unitId,
             startDate = startDate,

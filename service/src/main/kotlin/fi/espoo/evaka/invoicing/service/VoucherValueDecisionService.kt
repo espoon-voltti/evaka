@@ -119,12 +119,17 @@ class VoucherValueDecisionService(
             """
 SELECT id FROM voucher_value_decision decision
 LEFT JOIN LATERAL (
-    SELECT range_merge(daterange(placement.start_date, placement.end_date, '[]')) combined_range
-    FROM placement
-    JOIN daycare ON daycare.id = placement.unit_id
-    WHERE placement.child_id = decision.child_id
+    SELECT range_merge(daterange(p.start_date, p.end_date, '[]') * daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')) combined_range
+    FROM placement p
+    JOIN daycare ON daycare.id = p.unit_id
+    LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+    LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
+    WHERE p.child_id = decision.child_id
     AND daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type
-    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(placement.start_date, placement.end_date, '[]')
+    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(p.start_date, p.end_date, '[]')
+    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')
+    AND coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficient) > 0
 ) placements ON true
 WHERE decision.status = 'SENT'::voucher_value_decision_status
 AND (placements.combined_range IS NULL OR (
@@ -142,16 +147,22 @@ AND (placements.combined_range IS NULL OR (
                 val mergedPlacementPeriods = tx
                     .createQuery(
                         """
-SELECT daterange(start_date, end_date, '[]')
-FROM placement
-WHERE child_id = :childId AND unit_id = :unitId AND :dateRange && daterange(start_date, end_date, '[]')
-ORDER BY start_date ASC
+SELECT daterange(p.start_date, p.end_date, '[]') * daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')
+FROM placement p
+LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
+WHERE child_id = :childId AND unit_id = :unitId
+AND :dateRange && daterange(p.start_date, p.end_date, '[]')
+AND :dateRange && daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')
+AND coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficient) > 0
 """
                     )
                     .bind("childId", decision.child.id)
                     .bind("unitId", decision.placement.unitId)
                     .bind("dateRange", DateRange(decision.validFrom, decision.validTo))
                     .mapTo<FiniteDateRange>()
+                    .sortedBy { it.start }
                     .fold(listOf<FiniteDateRange>()) { periods, period ->
                         when {
                             periods.isEmpty() -> listOf(period)
