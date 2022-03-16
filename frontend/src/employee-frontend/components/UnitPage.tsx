@@ -145,8 +145,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
     [id, i18n, unitData, unitInformation]
   )
 
-  const RedirectToUnitInfo = useCallback(
-    () => <Redirect to={`/units/${id}/unit-info`} />,
+  const RedirectToAttendances = useCallback(
+    () => <Redirect to={`/units/${id}/attendances`} />,
     [id]
   )
 
@@ -187,7 +187,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             )}
           />
-          <Route path="/" render={() => <RedirectToUnitInfo />} />
+          <Route path="/" render={() => <RedirectToAttendances />} />
         </Switch>
       </Container>
     </>
