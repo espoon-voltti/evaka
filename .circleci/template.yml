@@ -65,7 +65,7 @@ aliases:
   - &reuse_image fsfe/reuse:0.13.0 # NOTE: Update bin/add-license-headers.sh to match
   - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:17.0
-  - &postgres_image cimg/postgres:13.4
+  - &postgres_image cimg/postgres:14.1
   - &redis_image cimg/redis:5.0
   - &s3mock_image adobe/s3mock:2.3.3
   - &ubuntu_machine_image ubuntu-2004:202107-02

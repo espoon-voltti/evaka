@@ -6,7 +6,7 @@ version: '3.5'
 
 services:
   keycloak-postgres:
-    image: postgres
+    image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
