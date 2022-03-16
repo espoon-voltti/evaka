@@ -107,9 +107,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       {
-        id: 'unit-info',
-        link: `/units/${id}/unit-info`,
-        label: i18n.unit.tabs.unitInfo
+        id: 'calendar',
+        link: `/units/${id}/calendar`,
+        label: i18n.unit.tabs.attendances
       },
       {
         id: 'groups',
@@ -118,11 +118,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         counter: unitData
           .map((data) => data.missingGroupPlacements.length)
           .getOrElse(undefined)
-      },
-      {
-        id: 'calendar',
-        link: `/units/${id}/calendar`,
-        label: i18n.unit.tabs.calendar
       },
       ...(unitInformation.isSuccess &&
       unitInformation.value.permittedActions.has('READ_DETAILED')
@@ -140,7 +135,12 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
                 .getOrElse(0)
             }
           ]
-        : [])
+        : []),
+      {
+        id: 'unit-info',
+        link: `/units/${id}/unit-info`,
+        label: i18n.unit.tabs.unitInfo
+      }
     ],
     [id, i18n, unitData, unitInformation]
   )
