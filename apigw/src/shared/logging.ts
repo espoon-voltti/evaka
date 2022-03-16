@@ -6,7 +6,6 @@ import { Express, Request } from 'express'
 import { merge } from 'lodash'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
-import pinoPretty from 'pino-pretty'
 import * as queryString from 'query-string'
 import {
   appBuild,
@@ -51,11 +50,15 @@ const APP_LOGGER_OPTS: pino.LoggerOptions = {
   }
 }
 
-const PRETTY_OPTS = {
-  prettyPrint: {
-    levelFirst: true
-  },
-  prettifier: pinoPretty
+const PRETTY_OPTS: Partial<pino.LoggerOptions> = {
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      levelFirst: true,
+      timestampKey: '@timestamp',
+      messageKey: 'message'
+    }
+  }
 }
 
 const logger = pino(
