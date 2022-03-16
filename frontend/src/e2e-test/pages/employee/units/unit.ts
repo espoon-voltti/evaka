@@ -32,15 +32,10 @@ type UnitProviderType =
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
-  #unitName = this.page.find('[data-qa="unit-name"]')
-  #visitingAddress = this.page.find('[data-qa="unit-visiting-address"]')
-
   #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   #groupsTab = this.page.find('[data-qa="groups-tab"]')
   #attendancesTab = this.page.find('[data-qa="attendances-tab"]')
   #applicationProcessTab = this.page.find('[data-qa="application-process-tab"]')
-
-  #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
 
   static async openUnit(page: Page, id: string): Promise<UnitPage> {
     await page.goto(`${config.employeeUrl}/units/${id}`)
@@ -50,56 +45,18 @@ export class UnitPage {
   }
 
   async navigateToUnit(id: string) {
-    await this.page.goto(`${config.employeeUrl}/units/${id}`)
+    await this.page.goto(`${config.employeeUrl}/units/${id}/unit-info`)
   }
 
   async waitUntilLoaded() {
     await this.page
-      .find('[data-qa="unit-information"][data-isloading="false"]')
-      .waitUntilVisible()
-    await this.page
-      .find('[data-qa="daycare-acl"][data-isloading="false"]')
+      .find('[data-qa="unit-attendances"][data-isloading="false"]')
       .waitUntilVisible()
   }
 
-  occupancies = new UnitOccupanciesSection(
-    this.page.find('[data-qa="occupancies"]')
-  )
-
-  async assertUnitName(expectedName: string) {
-    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
-  }
-
-  async assertVisitingAddress(expectedAddress: string) {
-    await waitUntilEqual(() => this.#visitingAddress.innerText, expectedAddress)
-  }
-
-  async openUnitInformation() {
+  async openUnitInformation(): Promise<UnitInfoPage> {
     await this.#unitInfoTab.click()
-  }
-
-  supervisorAcl = new AclSection(
-    this.page,
-    this.page.find('[data-qa="daycare-acl-supervisors"]')
-  )
-  specialEducationTeacherAcl = new AclSection(
-    this.page,
-    this.page.find('[data-qa="daycare-acl-set"]')
-  )
-  staffAcl = new StaffAclSection(
-    this.page,
-    this.page.find('[data-qa="daycare-acl-staff"]')
-  )
-  mobileAcl = new MobileDevicesSection(
-    this.page,
-    this.page.find('[data-qa="daycare-mobile-devices"]')
-  )
-
-  async openUnitDetails(): Promise<UnitDetailsPage> {
-    await this.#unitDetailsLink.click()
-    const unitDetails = new UnitDetailsPage(this.page)
-    await unitDetails.waitUntilLoaded()
-    return unitDetails
+    return new UnitInfoPage(this.page)
   }
 
   async openApplicationProcessTab(): Promise<ApplicationProcessPage> {
@@ -121,37 +78,50 @@ export class UnitPage {
   }
 }
 
-export class UnitOccupanciesSection extends Element {
-  #elem = (
-    which: 'minimum' | 'maximum' | 'no-valid-values',
-    type: 'confirmed' | 'planned'
-  ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
+export class UnitInfoPage {
+  constructor(private readonly page: Page) {}
 
-  async assertNoValidValues() {
-    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
-    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+  #unitName = this.page.find('[data-qa="unit-name"]')
+  #visitingAddress = this.page.find('[data-qa="unit-visiting-address"]')
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="unit-information"][data-isloading="false"]')
+      .waitUntilVisible()
   }
 
-  async assertConfirmed(minimum: string, maximum: string) {
-    await waitUntilEqual(
-      () => this.#elem('minimum', 'confirmed').innerText,
-      minimum
-    )
-    await waitUntilEqual(
-      () => this.#elem('maximum', 'confirmed').innerText,
-      maximum
-    )
+  async assertUnitName(expectedName: string) {
+    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
   }
 
-  async assertPlanned(minimum: string, maximum: string) {
-    await waitUntilEqual(
-      () => this.#elem('minimum', 'planned').innerText,
-      minimum
-    )
-    await waitUntilEqual(
-      () => this.#elem('maximum', 'planned').innerText,
-      maximum
-    )
+  async assertVisitingAddress(expectedAddress: string) {
+    await waitUntilEqual(() => this.#visitingAddress.innerText, expectedAddress)
+  }
+
+  supervisorAcl = new AclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-supervisors"]')
+  )
+  specialEducationTeacherAcl = new AclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-set"]')
+  )
+  staffAcl = new StaffAclSection(
+    this.page,
+    this.page.find('[data-qa="daycare-acl-staff"]')
+  )
+  mobileAcl = new MobileDevicesSection(
+    this.page,
+    this.page.find('[data-qa="daycare-mobile-devices"]')
+  )
+
+  #unitDetailsLink = this.page.find('[data-qa="unit-details-link"]')
+
+  async openUnitDetails(): Promise<UnitDetailsPage> {
+    await this.#unitDetailsLink.click()
+    const unitDetails = new UnitDetailsPage(this.page)
+    await unitDetails.waitUntilLoaded()
+    return unitDetails
   }
 }
 

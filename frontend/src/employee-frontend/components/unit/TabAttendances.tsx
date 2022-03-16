@@ -6,6 +6,8 @@ import React, { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { UserContext } from 'employee-frontend/state/user'
+import { isLoading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useQuery } from 'lib-common/utils/useQuery'
@@ -13,15 +15,21 @@ import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H2, H3 } from 'lib-components/typography'
+import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
+import { UnitData } from '../../api/unit'
+import UnitDataFilters from '../../components/unit/UnitDataFilters'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
+import { requireRole } from '../../utils/roles'
 import { UUID_REGEX } from '../../utils/validation/validations'
 import Absences from '../absences/Absences'
+import { renderResult } from '../async-rendering'
+import { DataList } from '../common/DataList'
 
 import GroupSelector from './tab-attendances/GroupSelector'
+import Occupancy from './tab-unit-information/Occupancy'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 
 type Mode = 'week' | 'month'
@@ -41,9 +49,11 @@ const GroupSelectorWrapper = styled.div`
 export default React.memo(function TabAttendances() {
   const { i18n } = useTranslation()
   const { id: unitId } = useParams<{ id: UUID }>()
-  const { unitInformation } = useContext(UnitContext)
+  const { unitInformation, unitData, filters, setFilters } =
+    useContext(UnitContext)
   const [mode, setMode] = useState<Mode>('month')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
+  const { roles } = useContext(UserContext)
 
   const groupParam = useQuery().get('group')
   const defaultGroup =
@@ -60,62 +70,132 @@ export default React.memo(function TabAttendances() {
     .getOrElse(false)
 
   return (
-    <ContentArea opaque>
-      <TopRow>
+    <>
+      <ContentArea
+        opaque
+        data-qa="unit-attendances"
+        data-isloading={isLoading(unitData)}
+      >
         <H2>{i18n.unit.attendances.title}</H2>
-        {reservationEnabled && (
-          <FixedSpaceRow spacing="xs">
-            {(['week', 'month'] as const).map((m) => (
-              <ChoiceChip
-                key={m}
-                data-qa={`choose-calendar-mode-${m}`}
-                text={i18n.unit.attendances.modes[m]}
-                selected={mode === m}
-                onChange={() => setMode(m)}
-              />
-            ))}
-          </FixedSpaceRow>
+        <H3>{i18n.unit.occupancies}</H3>
+        <Gap size="s" />
+        <FixedSpaceRow alignItems="center">
+          <Label>{i18n.unit.filters.title}</Label>
+          <UnitDataFilters
+            canEdit={requireRole(
+              roles,
+              'ADMIN',
+              'SERVICE_WORKER',
+              'UNIT_SUPERVISOR',
+              'FINANCE_ADMIN'
+            )}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </FixedSpaceRow>
+        <Gap size="s" />
+        <DataList>
+          <div>
+            <label>{i18n.unit.info.caretakers.titleLabel}</label>
+            <span data-qa="unit-total-caretaker-count">
+              <Caretakers unitData={unitData} />
+            </span>
+          </div>
+        </DataList>
+        <Gap />
+        {renderResult(unitData, (unitData) =>
+          unitData.unitOccupancies ? (
+            <Occupancy
+              filters={filters}
+              occupancies={unitData.unitOccupancies}
+            />
+          ) : null
         )}
-      </TopRow>
+      </ContentArea>
+      <Gap size="s" />
+      <ContentArea opaque>
+        <TopRow>
+          <H3 noMargin data-qa="attendances-unit-name">
+            {unitInformation.isSuccess
+              ? unitInformation.value.daycare.name
+              : ' '}
+          </H3>
+          {reservationEnabled && (
+            <FixedSpaceRow spacing="xs">
+              {(['week', 'month'] as const).map((m) => (
+                <ChoiceChip
+                  key={m}
+                  data-qa={`choose-calendar-mode-${m}`}
+                  text={i18n.unit.attendances.modes[m]}
+                  selected={mode === m}
+                  onChange={() => setMode(m)}
+                />
+              ))}
+            </FixedSpaceRow>
+          )}
+        </TopRow>
+        <Gap size="xs" />
+        <GroupSelectorWrapper>
+          <GroupSelector
+            unitId={unitId}
+            selected={groupId}
+            onSelect={setGroupId}
+            data-qa="attendances-group-select"
+          />
+        </GroupSelectorWrapper>
 
-      <H3 noMargin data-qa="attendances-unit-name">
-        {unitInformation.isSuccess ? unitInformation.value.daycare.name : ' '}
-      </H3>
-      <Gap size="xs" />
-      <GroupSelectorWrapper>
-        <GroupSelector
-          unitId={unitId}
-          selected={groupId}
-          onSelect={setGroupId}
-          data-qa="attendances-group-select"
-        />
-      </GroupSelectorWrapper>
+        {mode === 'month' && groupId !== null && groupId !== 'no-group' && (
+          <Absences
+            groupId={groupId}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            reservationEnabled={reservationEnabled}
+          />
+        )}
 
-      {mode === 'month' && groupId !== null && groupId !== 'no-group' && (
-        <Absences
-          groupId={groupId}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          reservationEnabled={reservationEnabled}
-        />
-      )}
-
-      {mode === 'week' && groupId !== null && (
-        <UnitAttendanceReservationsView
-          unitId={unitId}
-          groupId={groupId}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          isShiftCareUnit={unitInformation
-            .map(({ daycare }) => daycare.roundTheClock)
-            .getOrElse(false)}
-          operationalDays={
-            unitInformation
-              .map(({ daycare }) => daycare.operationDays)
-              .getOrElse(null) ?? [1, 2, 3, 4, 5]
-          }
-        />
-      )}
-    </ContentArea>
+        {mode === 'week' && groupId !== null && (
+          <UnitAttendanceReservationsView
+            unitId={unitId}
+            groupId={groupId}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            isShiftCareUnit={unitInformation
+              .map(({ daycare }) => daycare.roundTheClock)
+              .getOrElse(false)}
+            operationalDays={
+              unitInformation
+                .map(({ daycare }) => daycare.operationDays)
+                .getOrElse(null) ?? [1, 2, 3, 4, 5]
+            }
+          />
+        )}
+      </ContentArea>
+    </>
   )
+})
+
+const Caretakers = React.memo(function Caretakers({
+  unitData
+}: {
+  unitData: Result<UnitData>
+}) {
+  const { i18n } = useTranslation()
+
+  const formatNumber = (num: number) =>
+    parseFloat(num.toFixed(2)).toLocaleString()
+
+  return unitData
+    .map((unitData) => {
+      const min = formatNumber(unitData.caretakers.unitCaretakers.minimum)
+      const max = formatNumber(unitData.caretakers.unitCaretakers.maximum)
+
+      return min === max ? (
+        <span>
+          {min} {i18n.unit.info.caretakers.unitOfValue}
+        </span>
+      ) : (
+        <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
+      )
+    })
+    .getOrElse(null)
 })
