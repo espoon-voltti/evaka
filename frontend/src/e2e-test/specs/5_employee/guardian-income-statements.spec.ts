@@ -40,7 +40,6 @@ beforeEach(async () => {
 
   page = await Page.open()
   await employeeLogin(page, financeAdmin.data)
-  await page.goto(config.employeeUrl + '/profile/' + personId)
 })
 
 describe('Guardian income statements', () => {
@@ -69,6 +68,7 @@ describe('Guardian income statements', () => {
       }
     ])
 
+    await page.goto(config.employeeUrl + '/profile/' + personId)
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
 
