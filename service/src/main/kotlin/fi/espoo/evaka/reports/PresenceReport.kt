@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -43,7 +43,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
+fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
     // language=sql
     val sql =
         """
@@ -57,13 +57,14 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
             daycare.id AS daycare_id,
             p.social_security_number,
             dg.name AS daycareGroupName,
-            NOT EXISTS (SELECT 1 FROM absence a WHERE t = a.date AND a.child_id = p.id) AS present
+            NOT (a.categories @> absence_categories(pl.type) AND a.categories <@ absence_categories(pl.type)) AS present
         FROM days
         LEFT JOIN daycare_group_placement dgp ON daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
         LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
         LEFT JOIN daycare ON dg.daycare_id = daycare.id
         LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id
+        LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM absence a WHERE p.id = a.child_id AND a.date = t::date) a ON true
         LEFT JOIN holiday h ON t = h.date
         WHERE dw = ANY(daycare.operation_days) AND
           (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND
