@@ -9,18 +9,23 @@ import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.result.ResultBearing
 import org.jdbi.v3.core.result.RowView
 
-data class Paged<T>(val data: List<T>, val total: Int, val pages: Int)
+data class Paged<T>(val data: List<T>, val total: Int, val pages: Int) {
+    companion object {
+        fun <T> forPageSize(data: List<T>, total: Int, pageSize: Int): Paged<T> =
+            Paged(
+                data,
+                total,
+                if (total % pageSize == 0) total / pageSize else total / pageSize + 1
+            )
+    }
+}
 
 fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =
     if (this.isEmpty()) {
         Paged(listOf(), 0, 1)
     } else {
         val count = this.first().count
-        Paged(
-            this.map { it.data },
-            count,
-            if (count % pageSize == 0) count / pageSize else count / pageSize + 1
-        )
+        Paged.forPageSize(this.map { it.data }, count, pageSize)
     }
 
 fun <T> ResultBearing.mapToPaged(pageSize: Int, countColumn: String, mapper: (row: RowView) -> T): Paged<T> =
