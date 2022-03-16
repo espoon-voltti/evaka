@@ -7,8 +7,10 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
@@ -17,19 +19,21 @@ import java.util.UUID
 data class AbsenceInsert(
     val childId: ChildId,
     val dateRange: FiniteDateRange,
-    val absenceType: AbsenceType
+    val absenceType: AbsenceType,
+    val questionnaireId: HolidayQuestionnaireId? = null
 )
 
 fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>) {
     val batch = prepareBatch(
         """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
         SELECT
             :childId,
             :date,
             category,
             :absenceType,
-            :userId
+            :userId,
+            :questionnaireId
         FROM (
             SELECT unnest(absence_categories(type)) AS category
             FROM placement
@@ -39,13 +43,14 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
         """.trimIndent()
     )
 
-    absenceInserts.forEach { (childId, dateRange, absenceType) ->
+    absenceInserts.forEach { (childId, dateRange, absenceType, questionnaireId) ->
         dateRange.dates().forEach { date ->
             batch
                 .bind("childId", childId)
                 .bind("date", date)
                 .bind("absenceType", absenceType)
                 .bind("userId", userId)
+                .bindNullable("questionnaireId", questionnaireId)
                 .add()
         }
     }
@@ -53,13 +58,12 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
     batch.execute()
 }
 
-fun Database.Transaction.clearAbsencesWithinPeriod(period: FiniteDateRange, absenceType: AbsenceType, childIds: Set<ChildId>) {
+fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId: HolidayQuestionnaireId, childIds: Set<ChildId>) {
     this.createUpdate(
-        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND :period @> date AND absence_type = :absenceType"
+        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
     )
         .bind("childIds", childIds.toTypedArray())
-        .bind("period", period)
-        .bind("absenceType", absenceType)
+        .bind("questionnaireId", questionnaireId)
         .execute()
 }
 

@@ -98,7 +98,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `active questionnaire is eligible for children that fulfil the continous placement condition`() {
+    fun `active questionnaire is eligible for children that fulfil the continuous placement condition`() {
         val child2 = testChild_2
         val child3 = testChild_3
         val child4 = testChild_4
@@ -154,6 +154,34 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `questionnaire answer is saved and returned with active questionnaire`() {
+        val id = createFixedPeriodQuestionnaire(
+            freePeriodQuestionnaire.copy(
+                holidayPeriodId = createHolidayPeriod(summerPeriod).id
+            )
+        )
+
+        val response = getActiveQuestionnaires(mockToday)
+
+        assertEquals(1, response.size)
+        assertEquals(listOf(), response[0].previousAnswers)
+
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+        reportFreePeriods(id, freeAbsence(firstOption.start, firstOption.end))
+
+        val expectedAnswer = HolidayQuestionnaireAnswer(id, child1.id, FiniteDateRange(firstOption.start, firstOption.end))
+        assertEquals(
+            listOf(expectedAnswer),
+            db.read { it.getQuestionnaireAnswers(id, listOf(child1.id, testChild_2.id)) }
+        )
+
+        assertEquals(
+            listOf(expectedAnswer),
+            getActiveQuestionnaires(mockToday)[0].previousAnswers
+        )
+    }
+
+    @Test
     fun `free absences cannot be saved outside of a free period`() {
         val id = createFixedPeriodQuestionnaire(
             freePeriodQuestionnaire.copy(
@@ -187,7 +215,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `can save free absences in before the questionnaire deadline`() {
+    fun `can answer questionnaire before the deadline`() {
         val id = createFixedPeriodQuestionnaire(
             freePeriodQuestionnaire.copy(
                 holidayPeriodId = createHolidayPeriod(summerPeriod).id
@@ -238,11 +266,11 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun getActiveQuestionnaires(mockedDay: LocalDate): List<FixedPeriodQuestionnaireWithChildren> {
+    private fun getActiveQuestionnaires(mockedDay: LocalDate): List<ActiveQuestionnaire> {
         val (_, _, res) = http.get("/citizen/holiday-period/questionnaire")
             .asUser(authenticatedParent)
             .withMockedTime(HelsinkiDateTime.of(mockedDay, LocalTime.of(0, 0)))
-            .responseObject<List<FixedPeriodQuestionnaireWithChildren>>(jsonMapper)
+            .responseObject<List<ActiveQuestionnaire>>(jsonMapper)
         return res.get()
     }
 

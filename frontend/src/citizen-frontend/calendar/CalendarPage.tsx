@@ -50,7 +50,11 @@ const Page = React.memo(function CalendarPage() {
   const location = useLocation()
   const user = useUser()
 
-  const { holidayPeriods, activeFixedPeriodQuestionnaire } = useHolidayPeriods()
+  const {
+    holidayPeriods,
+    activeFixedPeriodQuestionnaire,
+    refreshQuestionnaires
+  } = useHolidayPeriods()
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
   const [openModal, setOpenModal] = useState<
@@ -76,6 +80,11 @@ const Page = React.memo(function CalendarPage() {
     []
   )
   const closeModal = useCallback(() => setOpenModal(undefined), [])
+
+  const refreshOnQuestionnaireAnswer = useCallback(() => {
+    refreshQuestionnaires()
+    loadDefaultRange()
+  }, [loadDefaultRange, refreshQuestionnaires])
 
   const dateParam = new URLSearchParams(location.search).get('day')
   const selectedDate = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
@@ -186,10 +195,11 @@ const Page = React.memo(function CalendarPage() {
         >
           <FixedPeriodSelectionModal
             close={closeModal}
-            reload={loadDefaultRange}
+            reload={refreshOnQuestionnaireAnswer}
             questionnaire={questionnaire.questionnaire}
             availableChildren={response.children}
             eligibleChildren={questionnaire.eligibleChildren}
+            previousAnswers={questionnaire.previousAnswers}
           />
         </RequireAuth>
       )}

@@ -10,7 +10,8 @@ import { useLang, useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   FixedPeriodQuestionnaire,
-  FixedPeriodsBody
+  FixedPeriodsBody,
+  HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
@@ -24,8 +25,18 @@ import { PeriodSelector } from './PeriodSelector'
 
 type FormState = FixedPeriodsBody['fixedPeriods']
 
-const initializeForm = (children: ReservationChild[]): FormState =>
-  children.reduce((acc, child) => ({ ...acc, [child.id]: null }), {})
+const initializeForm = (
+  children: ReservationChild[],
+  previousAnswers: HolidayQuestionnaireAnswer[]
+): FormState =>
+  children.reduce(
+    (acc, child) => ({
+      ...acc,
+      [child.id]:
+        previousAnswers.find((a) => a.childId === child.id)?.fixedPeriod ?? null
+    }),
+    {}
+  )
 
 interface Props {
   close: () => void
@@ -33,6 +44,7 @@ interface Props {
   questionnaire: FixedPeriodQuestionnaire
   availableChildren: ReservationChild[]
   eligibleChildren: UUID[]
+  previousAnswers: HolidayQuestionnaireAnswer[]
 }
 
 export default React.memo(function FixedPeriodSelectionModal({
@@ -40,13 +52,14 @@ export default React.memo(function FixedPeriodSelectionModal({
   reload,
   questionnaire,
   availableChildren,
-  eligibleChildren
+  eligibleChildren,
+  previousAnswers
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
   const [fixedPeriods, setFixedPeriods] = useState<FormState>(() =>
-    initializeForm(availableChildren)
+    initializeForm(availableChildren, previousAnswers)
   )
 
   const selectPeriod = useCallback(

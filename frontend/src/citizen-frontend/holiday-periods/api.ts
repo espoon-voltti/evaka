@@ -4,11 +4,11 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  deserializeFixedPeriodQuestionnaireAndChildren,
+  deserializeActiveQuestionnaire,
   deserializeHolidayPeriod
 } from 'lib-common/api-types/holiday-period'
 import {
-  FixedPeriodQuestionnaireWithChildren,
+  ActiveQuestionnaire,
   FixedPeriodsBody,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
@@ -25,15 +25,11 @@ export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
 }
 
 export function getActiveQuestionnaires(): Promise<
-  Result<FixedPeriodQuestionnaireWithChildren[]>
+  Result<ActiveQuestionnaire[]>
 > {
   return client
-    .get<JsonOf<FixedPeriodQuestionnaireWithChildren[]>>(
-      `/citizen/holiday-period/questionnaire`
-    )
-    .then((res) =>
-      Success.of(res.data.map(deserializeFixedPeriodQuestionnaireAndChildren))
-    )
+    .get<JsonOf<ActiveQuestionnaire[]>>(`/citizen/holiday-period/questionnaire`)
+    .then((res) => Success.of(res.data.map(deserializeActiveQuestionnaire)))
     .catch((e) => Failure.fromError(e))
 }
 

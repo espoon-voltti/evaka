@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  ActiveQuestionnaire,
   FixedPeriodQuestionnaire,
-  FixedPeriodQuestionnaireWithChildren,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 
@@ -42,10 +42,15 @@ export const deserializeFixedPeriodQuestionnaire = ({
   periodOptions: periodOptions.map((o) => FiniteDateRange.parseJson(o))
 })
 
-export const deserializeFixedPeriodQuestionnaireAndChildren = ({
+export const deserializeActiveQuestionnaire = ({
   questionnaire,
-  eligibleChildren
-}: JsonOf<FixedPeriodQuestionnaireWithChildren>): FixedPeriodQuestionnaireWithChildren => ({
+  eligibleChildren,
+  previousAnswers
+}: JsonOf<ActiveQuestionnaire>): ActiveQuestionnaire => ({
   questionnaire: deserializeFixedPeriodQuestionnaire(questionnaire),
-  eligibleChildren
+  eligibleChildren,
+  previousAnswers: previousAnswers.map(({ fixedPeriod, ...rest }) => ({
+    ...rest,
+    fixedPeriod: fixedPeriod ? FiniteDateRange.parseJson(fixedPeriod) : null
+  }))
 })

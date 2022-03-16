@@ -12,6 +12,15 @@ import { Translatable } from './shared'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire
+*/
+export interface ActiveQuestionnaire {
+  eligibleChildren: UUID[]
+  previousAnswers: HolidayQuestionnaireAnswer[]
+  questionnaire: FixedPeriodQuestionnaire
+}
+
+/**
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaire
 */
 export interface FixedPeriodQuestionnaire {
@@ -47,14 +56,6 @@ export interface FixedPeriodQuestionnaireBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireWithChildren
-*/
-export interface FixedPeriodQuestionnaireWithChildren {
-  eligibleChildren: UUID[]
-  questionnaire: FixedPeriodQuestionnaire
-}
-
-/**
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {
@@ -76,6 +77,15 @@ export interface HolidayPeriod {
 export interface HolidayPeriodBody {
   period: FiniteDateRange
   reservationDeadline: LocalDate | null
+}
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
+*/
+export interface HolidayQuestionnaireAnswer {
+  childId: UUID
+  fixedPeriod: FiniteDateRange | null
+  questionnaireId: UUID
 }
 
 /**

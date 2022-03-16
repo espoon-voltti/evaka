@@ -139,3 +139,46 @@ fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) 
     this.createUpdate("DELETE FROM holiday_period_questionnaire WHERE id = :id")
         .bind("id", id)
         .execute()
+
+fun Database.Transaction.insertQuestionnaireAnswers(modifiedBy: PersonId, answers: List<HolidayQuestionnaireAnswer>) {
+    val batch = prepareBatch(
+        """
+INSERT INTO holiday_questionnaire_answer (
+    questionnaire_id,
+    child_id,
+    fixed_period,
+    modified_by
+)
+VALUES (
+    :questionnaireId,
+    :childId,
+    :fixedPeriod,
+    :modifiedBy
+)
+ON CONFLICT(questionnaire_id, child_id)
+    DO UPDATE SET fixed_period = EXCLUDED.fixed_period,
+                  modified_by  = EXCLUDED.modified_by
+"""
+    )
+
+    answers.forEach { answer ->
+        batch.bindKotlin(answer)
+            .bind("modifiedBy", modifiedBy)
+            .add()
+    }
+
+    batch.execute()
+}
+
+fun Database.Read.getQuestionnaireAnswers(id: HolidayQuestionnaireId, childIds: List<ChildId>): List<HolidayQuestionnaireAnswer> =
+    this.createQuery(
+        """
+SELECT questionnaire_id, child_id, fixed_period
+FROM holiday_questionnaire_answer
+WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
+        """.trimIndent()
+    )
+        .bind("questionnaireId", id)
+        .bind("childIds", childIds.toTypedArray())
+        .mapTo<HolidayQuestionnaireAnswer>()
+        .list()

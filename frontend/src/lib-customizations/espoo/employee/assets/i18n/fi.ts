@@ -2359,6 +2359,7 @@ export const fi = {
         'fridge_child.child_id': 'Päämiehiä',
         'fridge_child.head_of_child': 'Jääkaappi- lapsia',
         'fridge_partner.person_id': 'Jääkaappi- puolisoja',
+        'holiday_questionnaire_answer.child_id': 'Kyselyvastauksia',
         'income.person_id': 'Tulo- tietoja',
         'income_statement.person_id': 'Tulo -ilmoituksia',
         'invoice.codebtor': 'Laskuja (kanssa -velallinen)',

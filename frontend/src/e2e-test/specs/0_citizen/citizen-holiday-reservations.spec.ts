@@ -211,10 +211,11 @@ describe('Holiday periods', () => {
       await assertFreeAbsences(false)
 
       let holidayModal = await calendar.openHolidayModal()
-      await holidayModal.markHolidays([
+      const selections = [
         { child, option: '26.12.2035 - 01.01.2036' },
         { child: child2, option: '26.12.2035 - 01.01.2036' }
-      ])
+      ]
+      await holidayModal.markHolidays(selections)
 
       await assertFreeAbsences(true)
 
@@ -223,7 +224,13 @@ describe('Holiday periods', () => {
       await dayView.assertAbsence(child2.id, 'Poissa')
 
       holidayModal = await calendar.openHolidayModal()
+      await holidayModal.assertSelectedFixedPeriods(selections)
       await holidayModal.markNoHolidays([child, child2])
+
+      holidayModal = await calendar.openHolidayModal()
+      await holidayModal.assertSelectedFixedPeriods(
+        selections.map((s) => ({ ...s, option: 'Ei maksutonta poissaoloa' }))
+      )
 
       await assertFreeAbsences(false)
     })
