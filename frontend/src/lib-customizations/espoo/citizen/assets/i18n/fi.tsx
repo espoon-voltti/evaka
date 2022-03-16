@@ -89,7 +89,8 @@ export default {
         'Marraskuu',
         'Joulukuu'
       ]
-    }
+    },
+    closeModal: 'Sulje ponnahdusikkuna'
   },
   header: {
     nav: {

@@ -45,6 +45,7 @@ export default React.memo(function BaseModal(props: Props) {
       >
         <ModalContainer
           mobileFullScreen={props.mobileFullScreen}
+          margin="auto"
           data-qa="modal"
         >
           <ModalTitle>

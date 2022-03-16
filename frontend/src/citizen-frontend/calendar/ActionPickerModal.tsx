@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
@@ -38,33 +39,35 @@ export default React.memo(function ActionPickerModal({
   const { questionnaireAvailable } = useHolidayPeriods()
 
   return (
-    <ModalBackground onClick={close}>
-      <Container>
-        {questionnaireAvailable && (
-          <Action onClick={openHolidays} data-qa="calendar-action-holidays">
-            <ReportHolidayLabel />
+    <ModalAccessibilityWrapper>
+      <ModalBackground onClick={close}>
+        <Container>
+          {questionnaireAvailable && (
+            <Action onClick={openHolidays} data-qa="calendar-action-holidays">
+              <ReportHolidayLabel />
+              <IconBackground>
+                <FontAwesomeIcon icon={faTreePalm} size="1x" />
+              </IconBackground>
+            </Action>
+          )}
+          <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
+            {i18n.calendar.newAbsence}
             <IconBackground>
-              <FontAwesomeIcon icon={faTreePalm} size="1x" />
+              <FontAwesomeIcon icon={faUserMinus} size="1x" />
             </IconBackground>
           </Action>
-        )}
-        <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
-          {i18n.calendar.newAbsence}
-          <IconBackground>
-            <FontAwesomeIcon icon={faUserMinus} size="1x" />
-          </IconBackground>
-        </Action>
-        <Action
-          onClick={openReservations}
-          data-qa="calendar-action-reservations"
-        >
-          {i18n.calendar.newReservationBtn}
-          <IconBackground>
-            <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
-          </IconBackground>
-        </Action>
-      </Container>
-    </ModalBackground>
+          <Action
+            onClick={openReservations}
+            data-qa="calendar-action-reservations"
+          >
+            {i18n.calendar.newReservationBtn}
+            <IconBackground>
+              <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
+            </IconBackground>
+          </Action>
+        </Container>
+      </ModalBackground>
+    </ModalAccessibilityWrapper>
   )
 })
 

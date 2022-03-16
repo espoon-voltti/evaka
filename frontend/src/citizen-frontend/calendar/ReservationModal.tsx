@@ -33,6 +33,7 @@ import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
@@ -128,219 +129,223 @@ export default React.memo(function ReservationModal({
   )
 
   return (
-    <AsyncFormModal
-      mobileFullScreen
-      title={i18n.calendar.reservationModal.title}
-      resolveAction={(cancel) => {
-        if (validationResult.errors) {
-          setShowAllErrors(true)
-          return cancel()
-        } else {
-          return postReservations(validationResult.requestPayload)
-        }
-      }}
-      onSuccess={() => {
-        onReload()
-        onClose()
-      }}
-      resolveLabel={i18n.common.confirm}
-      resolveDisabled={formData.selectedChildren.length === 0}
-      rejectAction={onClose}
-      rejectLabel={i18n.common.cancel}
-    >
-      <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-      <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
-      <Gap size="xs" />
-      <FixedSpaceFlexWrap>
-        {availableChildren.map((child) => (
-          <SelectionChip
-            key={child.id}
-            text={formatPreferredName(child)}
-            selected={formData.selectedChildren.includes(child.id)}
-            onChange={(selected) => {
-              if (selected) {
-                updateForm({
-                  selectedChildren: [...formData.selectedChildren, child.id]
-                })
-              } else {
-                updateForm({
-                  selectedChildren: formData.selectedChildren.filter(
-                    (id) => id !== child.id
-                  )
-                })
-              }
-            }}
-            data-qa={`child-${child.id}`}
-          />
-        ))}
-      </FixedSpaceFlexWrap>
-
-      <H2>{i18n.calendar.reservationModal.repetition}</H2>
-      <Label>{i18n.common.select}</Label>
-      <Select<Repetition>
-        items={['DAILY', 'WEEKLY', 'IRREGULAR']}
-        selectedItem={formData.repetition}
-        onChange={(value) => {
-          if (value) updateForm({ repetition: value })
-        }}
-        getItemLabel={(item) =>
-          i18n.calendar.reservationModal.repetitions[item]
-        }
-        data-qa="repetition"
-      />
-
-      <H2>{i18n.calendar.reservationModal.dateRange}</H2>
-      <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
-      <FixedSpaceRow>
-        <DatePicker
-          date={formData.startDate}
-          onChange={(date) => updateForm({ startDate: date })}
-          locale={lang}
-          isValidDate={isValidDate}
-          info={errorToInputInfo(
-            validationResult.errors?.startDate,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!showAllErrors}
-          data-qa="start-date"
-        />
-        <DatePickerSpacer />
-        <DatePicker
-          date={formData.endDate}
-          onChange={(date) => updateForm({ endDate: date })}
-          locale={lang}
-          isValidDate={isValidDate}
-          info={errorToInputInfo(
-            validationResult.errors?.endDate,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={
-            LocalDate.parseFiOrNull(formData.startDate) ??
-            reservableDays[0]?.start
+    <ModalAccessibilityWrapper>
+      <AsyncFormModal
+        mobileFullScreen
+        title={i18n.calendar.reservationModal.title}
+        resolveAction={(cancel) => {
+          if (validationResult.errors) {
+            setShowAllErrors(true)
+            return cancel()
+          } else {
+            return postReservations(validationResult.requestPayload)
           }
-          data-qa="end-date"
-        />
-      </FixedSpaceRow>
-      <Gap size="m" />
-
-      <TimeInputGrid>
-        {formData.repetition === 'DAILY' && (
-          <TimeInputs
-            label={
-              <Label>{`${
-                i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
-              }-${
-                i18n.common.datetime.weekdaysShort[
-                  includedDays[includedDays.length - 1] - 1
-                ]
-              }`}</Label>
-            }
-            times={formData.dailyTimes}
-            updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
-            validationErrors={validationResult.errors?.dailyTimes}
-            showAllErrors={showAllErrors}
-            allowExtraTimeRange={childrenInShiftCare}
-            dataQaPrefix="daily"
-          />
-        )}
-
-        {formData.repetition === 'WEEKLY' &&
-          formData.weeklyTimes.map((times, index) =>
-            includedDays.includes(index + 1) ? (
-              <TimeInputs
-                key={`day-${index}`}
-                label={
-                  <Checkbox
-                    label={i18n.common.datetime.weekdaysShort[index]}
-                    checked={!!times}
-                    onChange={(checked) =>
-                      updateForm({
-                        weeklyTimes: [
-                          ...formData.weeklyTimes.slice(0, index),
-                          checked
-                            ? [
-                                {
-                                  startTime: '',
-                                  endTime: ''
-                                }
-                              ]
-                            : undefined,
-                          ...formData.weeklyTimes.slice(index + 1)
-                        ]
-                      })
-                    }
-                  />
-                }
-                times={times}
-                updateTimes={(times) =>
+        }}
+        onSuccess={() => {
+          onReload()
+          onClose()
+        }}
+        resolveLabel={i18n.common.confirm}
+        resolveDisabled={formData.selectedChildren.length === 0}
+        rejectAction={onClose}
+        rejectLabel={i18n.common.cancel}
+      >
+        <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
+        <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
+        <Gap size="xs" />
+        <FixedSpaceFlexWrap>
+          {availableChildren.map((child) => (
+            <SelectionChip
+              key={child.id}
+              text={formatPreferredName(child)}
+              selected={formData.selectedChildren.includes(child.id)}
+              onChange={(selected) => {
+                if (selected) {
                   updateForm({
-                    weeklyTimes: [
-                      ...formData.weeklyTimes.slice(0, index),
-                      times,
-                      ...formData.weeklyTimes.slice(index + 1)
-                    ]
+                    selectedChildren: [...formData.selectedChildren, child.id]
+                  })
+                } else {
+                  updateForm({
+                    selectedChildren: formData.selectedChildren.filter(
+                      (id) => id !== child.id
+                    )
                   })
                 }
-                validationErrors={validationResult.errors?.weeklyTimes?.[index]}
-                showAllErrors={showAllErrors}
-                allowExtraTimeRange={childrenInShiftCare}
-                dataQaPrefix={`weekly-${index}`}
-              />
-            ) : null
+              }}
+              data-qa={`child-${child.id}`}
+            />
+          ))}
+        </FixedSpaceFlexWrap>
+
+        <H2>{i18n.calendar.reservationModal.repetition}</H2>
+        <Label>{i18n.common.select}</Label>
+        <Select<Repetition>
+          items={['DAILY', 'WEEKLY', 'IRREGULAR']}
+          selectedItem={formData.repetition}
+          onChange={(value) => {
+            if (value) updateForm({ repetition: value })
+          }}
+          getItemLabel={(item) =>
+            i18n.calendar.reservationModal.repetitions[item]
+          }
+          data-qa="repetition"
+        />
+
+        <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+        <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+        <FixedSpaceRow>
+          <DatePicker
+            date={formData.startDate}
+            onChange={(date) => updateForm({ startDate: date })}
+            locale={lang}
+            isValidDate={isValidDate}
+            info={errorToInputInfo(
+              validationResult.errors?.startDate,
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="start-date"
+          />
+          <DatePickerSpacer />
+          <DatePicker
+            date={formData.endDate}
+            onChange={(date) => updateForm({ endDate: date })}
+            locale={lang}
+            isValidDate={isValidDate}
+            info={errorToInputInfo(
+              validationResult.errors?.endDate,
+              i18n.validationErrors
+            )}
+            hideErrorsBeforeTouched={!showAllErrors}
+            initialMonth={
+              LocalDate.parseFiOrNull(formData.startDate) ??
+              reservableDays[0]?.start
+            }
+            data-qa="end-date"
+          />
+        </FixedSpaceRow>
+        <Gap size="m" />
+
+        <TimeInputGrid>
+          {formData.repetition === 'DAILY' && (
+            <TimeInputs
+              label={
+                <Label>{`${
+                  i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
+                }-${
+                  i18n.common.datetime.weekdaysShort[
+                    includedDays[includedDays.length - 1] - 1
+                  ]
+                }`}</Label>
+              }
+              times={formData.dailyTimes}
+              updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
+              validationErrors={validationResult.errors?.dailyTimes}
+              showAllErrors={showAllErrors}
+              allowExtraTimeRange={childrenInShiftCare}
+              dataQaPrefix="daily"
+            />
           )}
 
-        {formData.repetition === 'IRREGULAR' ? (
-          shiftCareRange ? (
-            shiftCareRange.map((date, index) => (
-              <Fragment key={`shift-care-${date.formatIso()}`}>
-                {index !== 0 && date.getIsoDayOfWeek() === 1 ? (
-                  <Separator />
-                ) : null}
-                {index === 0 || date.getIsoDayOfWeek() === 1 ? (
-                  <Week>
-                    {i18n.common.datetime.week} {date.getIsoWeek()}
-                  </Week>
-                ) : null}
-                {includedDays.includes(date.getIsoDayOfWeek()) && (
-                  <TimeInputs
-                    label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-                    times={
-                      formData.irregularTimes[date.formatIso()] ?? [
-                        {
-                          startTime: '',
-                          endTime: ''
-                        }
+          {formData.repetition === 'WEEKLY' &&
+            formData.weeklyTimes.map((times, index) =>
+              includedDays.includes(index + 1) ? (
+                <TimeInputs
+                  key={`day-${index}`}
+                  label={
+                    <Checkbox
+                      label={i18n.common.datetime.weekdaysShort[index]}
+                      checked={!!times}
+                      onChange={(checked) =>
+                        updateForm({
+                          weeklyTimes: [
+                            ...formData.weeklyTimes.slice(0, index),
+                            checked
+                              ? [
+                                  {
+                                    startTime: '',
+                                    endTime: ''
+                                  }
+                                ]
+                              : undefined,
+                            ...formData.weeklyTimes.slice(index + 1)
+                          ]
+                        })
+                      }
+                    />
+                  }
+                  times={times}
+                  updateTimes={(times) =>
+                    updateForm({
+                      weeklyTimes: [
+                        ...formData.weeklyTimes.slice(0, index),
+                        times,
+                        ...formData.weeklyTimes.slice(index + 1)
                       ]
-                    }
-                    updateTimes={(times) =>
-                      updateForm({
-                        irregularTimes: {
-                          ...formData.irregularTimes,
-                          [date.formatIso()]: times
-                        }
-                      })
-                    }
-                    validationErrors={
-                      validationResult.errors?.irregularTimes?.[
-                        date.formatIso()
-                      ]
-                    }
-                    showAllErrors={showAllErrors}
-                    allowExtraTimeRange={childrenInShiftCare}
-                    dataQaPrefix={`irregular-${date.formatIso()}`}
-                  />
-                )}
-              </Fragment>
-            ))
-          ) : (
-            <MissingDateRange>
-              {i18n.calendar.reservationModal.missingDateRange}
-            </MissingDateRange>
-          )
-        ) : null}
-      </TimeInputGrid>
-    </AsyncFormModal>
+                    })
+                  }
+                  validationErrors={
+                    validationResult.errors?.weeklyTimes?.[index]
+                  }
+                  showAllErrors={showAllErrors}
+                  allowExtraTimeRange={childrenInShiftCare}
+                  dataQaPrefix={`weekly-${index}`}
+                />
+              ) : null
+            )}
+
+          {formData.repetition === 'IRREGULAR' ? (
+            shiftCareRange ? (
+              shiftCareRange.map((date, index) => (
+                <Fragment key={`shift-care-${date.formatIso()}`}>
+                  {index !== 0 && date.getIsoDayOfWeek() === 1 ? (
+                    <Separator />
+                  ) : null}
+                  {index === 0 || date.getIsoDayOfWeek() === 1 ? (
+                    <Week>
+                      {i18n.common.datetime.week} {date.getIsoWeek()}
+                    </Week>
+                  ) : null}
+                  {includedDays.includes(date.getIsoDayOfWeek()) && (
+                    <TimeInputs
+                      label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
+                      times={
+                        formData.irregularTimes[date.formatIso()] ?? [
+                          {
+                            startTime: '',
+                            endTime: ''
+                          }
+                        ]
+                      }
+                      updateTimes={(times) =>
+                        updateForm({
+                          irregularTimes: {
+                            ...formData.irregularTimes,
+                            [date.formatIso()]: times
+                          }
+                        })
+                      }
+                      validationErrors={
+                        validationResult.errors?.irregularTimes?.[
+                          date.formatIso()
+                        ]
+                      }
+                      showAllErrors={showAllErrors}
+                      allowExtraTimeRange={childrenInShiftCare}
+                      dataQaPrefix={`irregular-${date.formatIso()}`}
+                    />
+                  )}
+                </Fragment>
+              ))
+            ) : (
+              <MissingDateRange>
+                {i18n.calendar.reservationModal.missingDateRange}
+              </MissingDateRange>
+            )
+          ) : null}
+        </TimeInputGrid>
+      </AsyncFormModal>
+    </ModalAccessibilityWrapper>
   )
 })
 

@@ -22,7 +22,7 @@ import EvakaLogo from './EvakaLogo'
 import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 
-export default React.memo(function Header() {
+export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const [showMenu, setShowMenu] = useState(false)
   const user = useUser()
 
@@ -46,7 +46,7 @@ export default React.memo(function Header() {
   const hideLoginButton = location.pathname === '/login'
 
   return (
-    <HeaderContainer showMenu={showMenu}>
+    <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
       <CityLogo />
       <EvakaLogo />
       <DesktopNav

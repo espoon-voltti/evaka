@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
-import React, { useMemo, useState, createContext } from 'react'
+import React, { useMemo, useState, createContext, useCallback } from 'react'
 
 import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 
@@ -36,20 +36,22 @@ export interface OverlayState {
   errorMessage: ErrorMessage | null
   setErrorMessage: (message: ErrorMessage | null) => void
   clearErrorMessage: () => void
-
   infoMessage: InfoMessage | null
   setInfoMessage: (message: InfoMessage | null) => void
   clearInfoMessage: () => void
+  modalOpen: boolean
+  setModalOpen: (v: boolean) => void
 }
 
 const defaultState = {
   errorMessage: null,
   setErrorMessage: () => undefined,
   clearErrorMessage: () => undefined,
-
   infoMessage: null,
   setInfoMessage: () => undefined,
-  clearInfoMessage: () => undefined
+  clearInfoMessage: () => undefined,
+  modalOpen: false,
+  setModalOpen: () => undefined
 }
 
 export const OverlayContext = createContext<OverlayState>(defaultState)
@@ -57,10 +59,12 @@ export const OverlayContext = createContext<OverlayState>(defaultState)
 export const OverlayContextProvider = React.memo(
   function OverlayContextProvider({ children }: { children: React.ReactNode }) {
     const [errorMessage, setErrorMessage] = useState<ErrorMessage | null>(null)
-    const clearErrorMessage = () => setErrorMessage(null)
+    const clearErrorMessage = useCallback(() => setErrorMessage(null), [])
 
     const [infoMessage, setInfoMessage] = useState<InfoMessage | null>(null)
-    const clearInfoMessage = () => setInfoMessage(null)
+    const clearInfoMessage = useCallback(() => setInfoMessage(null), [])
+
+    const [modalOpen, setModalOpen] = useState<boolean>(false)
 
     const value = useMemo(
       () => ({
@@ -69,9 +73,18 @@ export const OverlayContextProvider = React.memo(
         clearErrorMessage,
         infoMessage,
         setInfoMessage,
-        clearInfoMessage
+        clearInfoMessage,
+        modalOpen: errorMessage !== null || infoMessage !== null || modalOpen,
+        setModalOpen
       }),
-      [errorMessage, setErrorMessage, infoMessage, setInfoMessage]
+      [
+        errorMessage,
+        clearErrorMessage,
+        infoMessage,
+        clearInfoMessage,
+        modalOpen,
+        setModalOpen
+      ]
     )
 
     return (
