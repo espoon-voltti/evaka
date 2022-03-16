@@ -17,7 +17,6 @@ if (tracingEnabled) {
     env: volttiEnv,
     service: serviceName,
     version: appCommit,
-    enabled: tracingEnabled,
     hostname: traceAgentHostname,
     port: traceAgentPort,
     logInjection: true,
