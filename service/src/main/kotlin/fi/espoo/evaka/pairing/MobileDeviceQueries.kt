@@ -25,7 +25,7 @@ SELECT
     md.employee_id IS NOT NULL AS personal_device
 FROM mobile_device md
 LEFT JOIN daycare_acl_view acv ON md.employee_id = acv.employee_id
-WHERE id = :id AND deleted = false
+WHERE id = :id
 GROUP BY md.id, md.name, md.employee_id
 """
     )
@@ -35,19 +35,19 @@ GROUP BY md.id, md.name, md.employee_id
 }
 
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQuery(
-    "SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token AND deleted = false"
+    "SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token"
 ).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
     ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
-    return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId AND deleted = false")
+    return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<MobileDevice>()
         .list()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {
-    return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId AND deleted = false")
+    return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId")
         .bind("employeeId", employeeId)
         .mapTo<MobileDevice>()
         .toList()
@@ -62,8 +62,8 @@ fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
         .updateExactlyOne(notFoundMsg = "Device $id not found")
 }
 
-fun Database.Transaction.softDeleteDevice(id: MobileDeviceId) {
-    // language=sql
-    val sql = "UPDATE mobile_device SET deleted = true WHERE id = :id"
-    createUpdate(sql).bind("id", id).execute()
-}
+fun Database.Transaction.deleteDevice(id: MobileDeviceId) = createUpdate(
+    """
+DELETE FROM mobile_device WHERE id = :id
+    """.trimIndent()
+).bind("id", id).execute()

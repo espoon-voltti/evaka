@@ -777,29 +777,14 @@ RETURNING id
         }
     }
 
-    data class MobileDeviceReq(
-        val id: MobileDeviceId,
-        val unitId: DaycareId,
-        val name: String,
-        val deleted: Boolean,
-        val longTermToken: UUID
-    )
-
     @PostMapping("/mobile/devices")
     fun postMobileDevice(
         db: Database,
-        @RequestBody body: MobileDeviceReq
+        @RequestBody body: DevMobileDevice
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                it.createUpdate(
-                    """
-INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
-VALUES(:id, :unitId, :name, :deleted, :longTermToken)
-                    """.trimIndent()
-                )
-                    .bindKotlin(body)
-                    .execute()
+                it.insertTestMobileDevice(body)
             }
         }
     }
@@ -1440,7 +1425,6 @@ data class DevMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
     val unitId: DaycareId,
     val name: String = "Laite",
-    val deleted: Boolean = false,
     val longTermToken: UUID? = null
 )
 

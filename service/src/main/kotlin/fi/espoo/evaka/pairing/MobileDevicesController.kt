@@ -83,7 +83,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     ) {
         Audit.MobileDevicesDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.MobileDevice.DELETE, id)
-        db.connect { dbc -> dbc.transaction { it.softDeleteDevice(id) } }
+        db.connect { dbc -> dbc.transaction { it.deleteDevice(id) } }
     }
 
     @PostMapping("/mobile-devices/pin-login")
