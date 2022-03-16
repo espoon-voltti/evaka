@@ -93,7 +93,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         .bind("to", to)
         .map { rs, _ ->
             MissingServiceNeedReportRow(
-                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palveluseteli" else rs.getString("care_area_name"),
+                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palvelusetelialue" else rs.getString("care_area_name"),
                 unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 childId = ChildId(rs.getUUID("child_id")),
