@@ -3098,7 +3098,7 @@ __metadata:
     express-session: ^1.17.2
     fast-json-parse: ^1.0.3
     fast-xml-parser: ^4.0.6
-    helmet: ^4.6.0
+    helmet: ^5.0.2
     jest: ^27.5.1
     jest-junit: ^13.0.0
     jsonwebtoken: ^8.5.1
@@ -3688,10 +3688,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"helmet@npm:^4.6.0":
-  version: 4.6.0
-  resolution: "helmet@npm:4.6.0"
-  checksum: 139ad678d1cab207b043c206f50f6744eff2ef1f463e4626d36718b45b337485c77d10260ef9d89d292fa678da5153d86b08172b3b365cc8e680241015ed3a49
+"helmet@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "helmet@npm:5.0.2"
+  checksum: 3fe107f3f73fb6a79173e5599f87a016c69f1c7cc46bcde1c60043ea36e64f893434592890d3c0be68f1d35731f2f2f22094a1cfd70438f9d35740861071dcf3
   languageName: node
   linkType: hard
 

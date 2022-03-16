@@ -29,7 +29,7 @@
     "express-session": "^1.17.2",
     "fast-json-parse": "^1.0.3",
     "fast-xml-parser": "^4.0.6",
-    "helmet": "^4.6.0",
+    "helmet": "^5.0.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "make-error-cause": "^2.3.0",
