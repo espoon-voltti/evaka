@@ -29,7 +29,12 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
     ): List<ChildAgeLanguageReportRow> {
         Audit.ChildAgeLanguageReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
-        return db.connect { dbc -> dbc.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

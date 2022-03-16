@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.TemporalAdjusters
@@ -38,6 +39,8 @@ import java.time.temporal.TemporalAdjusters
 @Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
+        tx.setStatementTimeout(Duration.ofMinutes(10))
+        tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
         val invoices = draftInvoiceGenerator.generateDraftInvoices(

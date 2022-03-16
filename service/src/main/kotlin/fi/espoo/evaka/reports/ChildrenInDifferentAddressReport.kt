@@ -31,7 +31,12 @@ class ChildrenInDifferentAddressReportController(
     ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
-        return db.connect { dbc -> dbc.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

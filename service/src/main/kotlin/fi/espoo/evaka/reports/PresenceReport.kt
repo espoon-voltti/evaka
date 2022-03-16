@@ -34,7 +34,12 @@ class PresenceReportController(private val accessControl: AccessControl) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
-        return db.connect { dbc -> dbc.read { it.getPresenceRows(from, to) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getPresenceRows(from, to)
+            }
+        }
     }
 }
 

@@ -31,7 +31,12 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList, pr
     ): List<MissingHeadOfFamilyReportRow> {
         Audit.MissingHeadOfFamilyReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT)
-        return db.connect { dbc -> dbc.read { it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))
+            }
+        }
     }
 }
 

@@ -30,7 +30,12 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
     ): List<PlacementSketchingReportRow> {
         Audit.PlacementSketchingReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_PLACEMENT_SKETCHING_REPORT)
-        return db.connect { dbc -> dbc.read { it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate)
+            }
+        }
     }
 }
 

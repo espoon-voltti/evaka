@@ -30,7 +30,12 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.connect { dbc -> dbc.read { it.getEndedPlacementsRows(from, to) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getEndedPlacementsRows(from, to)
+            }
+        }
     }
 }
 

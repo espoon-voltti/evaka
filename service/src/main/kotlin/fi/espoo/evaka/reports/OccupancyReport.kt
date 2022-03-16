@@ -44,6 +44,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
 
         return db.connect { dbc ->
             dbc.read { tx ->
+                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.calculateUnitOccupancyReport(
                     LocalDate.now(),
                     careAreaId,

@@ -39,6 +39,7 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
         return db.connect { dbc ->
             dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 AssistanceNeedsAndActionsReport(
                     bases = it.getAssistanceBasisOptions(),
                     actions = it.getAssistanceActionOptions(),

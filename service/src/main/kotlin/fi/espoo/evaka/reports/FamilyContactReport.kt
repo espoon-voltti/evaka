@@ -28,7 +28,12 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
     ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
         accessControl.requirePermissionFor(user, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
-        return db.connect { dbc -> dbc.read { it.getFamilyContacts(unitId) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getFamilyContacts(unitId)
+            }
+        }
     }
 }
 

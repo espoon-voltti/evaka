@@ -32,7 +32,12 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.connect { dbc -> dbc.read { it.getDecisionsRows(FiniteDateRange(from, to)) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getDecisionsRows(FiniteDateRange(from, to))
+            }
+        }
     }
 }
 

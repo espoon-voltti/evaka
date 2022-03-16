@@ -56,6 +56,7 @@ class ServiceVoucherValueReportController(
 
         return db.connect { dbc ->
             dbc.read { tx ->
+                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 val snapshotTime = tx.getSnapshotDate(year, month)
                 val rows = if (snapshotTime != null) {
                     tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)

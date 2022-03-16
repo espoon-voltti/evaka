@@ -23,7 +23,12 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
     fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser): List<DuplicatePeopleReportRow> {
         Audit.DuplicatePeopleReportRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
-        return db.connect { dbc -> dbc.read { it.getDuplicatePeople() } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getDuplicatePeople()
+            }
+        }
     }
 }
 
