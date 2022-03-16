@@ -47,7 +47,6 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser))
-        resolvers.add(asArgumentResolver<AuthenticatedUser.WeakCitizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getEvakaClock() })

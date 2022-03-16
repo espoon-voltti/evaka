@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -133,7 +134,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id.raw),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG),
                 today,
                 applicationId,
                 ApplicationType.DAYCARE,
@@ -163,7 +164,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id.raw),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG),
                 today,
                 applicationId,
                 ApplicationType.DAYCARE,
@@ -194,7 +195,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val applicationDate = secondTerm.applicationPeriod.start.minusWeeks(1)
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id.raw),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG),
                 applicationDate,
                 applicationId,
                 ApplicationType.PRESCHOOL,
@@ -210,7 +211,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val applicationDate = secondTerm.applicationPeriod.start
             service.initializeApplicationForm(
                 tx,
-                AuthenticatedUser.Citizen(testAdult_1.id.raw),
+                AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG),
                 applicationDate,
                 applicationId,
                 ApplicationType.PRESCHOOL,
@@ -301,14 +302,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         assertDueDate(applicationId, null) // missing attachment
 
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw)))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)))
         db.transaction { tx ->
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.minusWeeks(1))
                 .execute()
         }
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw)))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)))
         // then
         assertDueDate(applicationId, now.plusWeeks(2).toLocalDate()) // end date >= earliest attachment.receivedAt
     }
@@ -326,8 +327,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
         }
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw), AttachmentType.EXTENDED_CARE))
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw), AttachmentType.URGENCY))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG), AttachmentType.EXTENDED_CARE))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG), AttachmentType.URGENCY))
 
         // then
         assertDueDate(applicationId, null) // application not sent
@@ -1913,7 +1914,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser.Citizen(testAdult_5.id.raw)
+            val user = AuthenticatedUser.Citizen(testAdult_5.id.raw, CitizenAuthLevel.STRONG)
             service.acceptDecision(
                 tx,
                 user,
@@ -1942,7 +1943,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         workflowForPreschoolDaycareDecisions()
 
         db.transaction { tx ->
-            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
             // when
             assertThrows<Forbidden> {
                 service.acceptDecision(
@@ -1964,7 +1965,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+            val user = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
             assertThrows<Forbidden> {
                 service.rejectDecision(
                     tx,

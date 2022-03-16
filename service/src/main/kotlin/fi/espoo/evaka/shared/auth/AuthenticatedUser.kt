@@ -18,7 +18,6 @@ import java.util.UUID
 sealed class AuthenticatedUser : RoleContainer {
     open val isEndUser = false
     open val isAdmin = false
-    open val isSystemInternalUser = false
 
     abstract val id: UUID
     abstract val type: AuthenticatedUserType
@@ -28,24 +27,18 @@ sealed class AuthenticatedUser : RoleContainer {
     val idHash: HashCode
         get() = Hashing.sha256().hashString(id.toString(), Charsets.UTF_8)
 
-    data class Citizen(override val id: UUID) : AuthenticatedUser() {
-        val authLevel: CitizenAuthLevel
-            get() = CitizenAuthLevel.STRONG
+    data class Citizen(override val id: UUID, val authLevel: CitizenAuthLevel) : AuthenticatedUser() {
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
-        override val roles: Set<UserRole> = setOf(UserRole.END_USER)
+        override val roles: Set<UserRole> = when (authLevel) {
+            CitizenAuthLevel.STRONG -> setOf(UserRole.END_USER)
+            CitizenAuthLevel.WEAK -> setOf(UserRole.CITIZEN_WEAK)
+        }
         override val isEndUser = true
-        override val type = AuthenticatedUserType.citizen
-    }
-
-    data class WeakCitizen(override val id: UUID) : AuthenticatedUser() {
-        val authLevel: CitizenAuthLevel
-            get() = CitizenAuthLevel.WEAK
-        override val evakaUserId: EvakaUserId
-            get() = EvakaUserId(id)
-        override val roles: Set<UserRole> = setOf(UserRole.CITIZEN_WEAK)
-        override val isEndUser = true
-        override val type = AuthenticatedUserType.citizen_weak
+        override val type = when (authLevel) {
+            CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen
+            CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_weak
+        }
     }
 
     data class Employee private constructor(override val id: UUID, val globalRoles: Set<UserRole>, val allScopedRoles: Set<UserRole>) : AuthenticatedUser() {
@@ -72,7 +65,6 @@ sealed class AuthenticatedUser : RoleContainer {
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = emptySet()
-        override val isSystemInternalUser = true
         override val type = AuthenticatedUserType.system
         override fun toString(): String = "SystemInternalUser"
     }

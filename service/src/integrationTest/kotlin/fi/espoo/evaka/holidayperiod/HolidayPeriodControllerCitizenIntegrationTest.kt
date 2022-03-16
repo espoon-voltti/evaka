@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -56,7 +57,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
 
     private final val child1 = testChild_1
     private final val parent = testAdult_1
-    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw)
+    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun setUp() {

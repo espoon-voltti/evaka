@@ -1019,14 +1019,6 @@ WHERE application_id = :applicationId
         .mapTo<ApplicationAttachment>()
         .toList()
 
-fun Database.Read.isOwnApplication(user: AuthenticatedUser.Citizen, applicationId: ApplicationId): Boolean {
-    return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
-        .bind("id", applicationId)
-        .bind("userId", user.id)
-        .mapTo<Int>()
-        .any()
-}
-
 fun Database.Transaction.cancelAllActiveTransferApplicationsAfterDate(childId: ChildId, preferredStartDateMinDate: LocalDate): List<ApplicationId> = createUpdate(
     //language=sql
     """

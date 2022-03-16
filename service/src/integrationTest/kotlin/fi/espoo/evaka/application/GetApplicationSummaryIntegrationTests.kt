@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -79,7 +80,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         }
 
         if (attachment) {
-            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id.raw))
+            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id.raw, CitizenAuthLevel.STRONG))
         }
     }
 }

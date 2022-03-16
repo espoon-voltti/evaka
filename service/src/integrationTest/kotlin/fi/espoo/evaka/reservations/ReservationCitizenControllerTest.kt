@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -212,7 +213,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
         val (_, res, _) = http.post("/citizen/reservations")
             .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
             .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
             .response()
 
@@ -222,7 +223,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     private fun postAbsences(request: AbsenceRequest) {
         val (_, res, _) = http.post("/citizen/absences")
             .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
             .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
             .response()
 
@@ -237,7 +238,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             )
             }"
         )
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
             .responseObject<ReservationsResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)

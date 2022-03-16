@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -52,7 +53,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     lateinit var scheduledJobs: ScheduledJobs
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw)
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
     private val testSpecialEducationTeacherId = EmployeeId(UUID.randomUUID())
     private val testSpecialEducationTeacher = AuthenticatedUser.Employee(testSpecialEducationTeacherId.raw, setOf())
 
