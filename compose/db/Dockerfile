@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 ARG BASE_IMAGE=library/postgres
-ARG BASE_IMAGE_VERSION=13-alpine
+ARG BASE_IMAGE_VERSION=14-alpine
 
 
 FROM ${BASE_IMAGE}:${BASE_IMAGE_VERSION} AS ext_builder
