@@ -34,7 +34,7 @@ import { TitleContext, TitleState } from '../state/title'
 import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
-import TabCalendar from './unit/TabCalendar'
+import TabAttendances from './unit/TabAttendances'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -107,8 +107,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       {
-        id: 'calendar',
-        link: `/units/${id}/calendar`,
+        id: 'attendances',
+        link: `/units/${id}/attendances`,
         label: i18n.unit.tabs.attendances
       },
       {
@@ -174,8 +174,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           />
           <Route
             exact
-            path="/units/:id/calendar"
-            render={() => <TabCalendar />}
+            path="/units/:id/attendances"
+            render={() => <TabAttendances />}
           />
           <Route
             exact

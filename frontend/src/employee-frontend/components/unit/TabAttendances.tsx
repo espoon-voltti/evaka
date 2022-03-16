@@ -21,7 +21,7 @@ import { UnitContext } from '../../state/unit'
 import { UUID_REGEX } from '../../utils/validation/validations'
 import Absences from '../absences/Absences'
 
-import GroupSelector from './tab-calendar/GroupSelector'
+import GroupSelector from './tab-attendances/GroupSelector'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 
 type Mode = 'week' | 'month'
@@ -38,7 +38,7 @@ const GroupSelectorWrapper = styled.div`
   margin-bottom: ${defaultMargins.m};
 `
 
-export default React.memo(function TabCalendar() {
+export default React.memo(function TabAttendances() {
   const { i18n } = useTranslation()
   const { id: unitId } = useParams<{ id: UUID }>()
   const { unitInformation } = useContext(UnitContext)
@@ -62,14 +62,14 @@ export default React.memo(function TabCalendar() {
   return (
     <ContentArea opaque>
       <TopRow>
-        <H2>{i18n.unit.calendar.title}</H2>
+        <H2>{i18n.unit.attendances.title}</H2>
         {reservationEnabled && (
           <FixedSpaceRow spacing="xs">
             {(['week', 'month'] as const).map((m) => (
               <ChoiceChip
                 key={m}
                 data-qa={`choose-calendar-mode-${m}`}
-                text={i18n.unit.calendar.modes[m]}
+                text={i18n.unit.attendances.modes[m]}
                 selected={mode === m}
                 onChange={() => setMode(m)}
               />
@@ -78,7 +78,7 @@ export default React.memo(function TabCalendar() {
         )}
       </TopRow>
 
-      <H3 noMargin data-qa="calendar-unit-name">
+      <H3 noMargin data-qa="attendances-unit-name">
         {unitInformation.isSuccess ? unitInformation.value.daycare.name : ' '}
       </H3>
       <Gap size="xs" />
@@ -87,7 +87,7 @@ export default React.memo(function TabCalendar() {
           unitId={unitId}
           selected={groupId}
           onSelect={setGroupId}
-          data-qa="calendar-group-select"
+          data-qa="attendances-group-select"
         />
       </GroupSelectorWrapper>
 

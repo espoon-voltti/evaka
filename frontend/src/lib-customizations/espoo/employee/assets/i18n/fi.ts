@@ -1502,7 +1502,7 @@ export const fi = {
       endDate: 'Päättymispäivämäärä',
       groupName: 'Ryhmä'
     },
-    calendar: {
+    attendances: {
       title: 'Varaukset ja läsnäolot',
       noGroup: 'Ei ryhmää',
       modes: {

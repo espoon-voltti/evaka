@@ -13,7 +13,7 @@ import {
   TextInput
 } from '../../../utils/page'
 
-export class UnitCalendarPage {
+export class UnitAttendancesPage {
   constructor(private readonly page: Page) {}
 
   #reservationCell = (date: LocalDate, row: number) =>

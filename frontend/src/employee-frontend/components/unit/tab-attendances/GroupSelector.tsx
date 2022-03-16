@@ -55,7 +55,7 @@ export default React.memo(function GroupSelector({
       groups
         .map((gs) =>
           item === 'no-group'
-            ? i18n.unit.calendar.noGroup
+            ? i18n.unit.attendances.noGroup
             : gs.find(({ id }) => id === item)?.name ?? ''
         )
         .getOrElse(''),
