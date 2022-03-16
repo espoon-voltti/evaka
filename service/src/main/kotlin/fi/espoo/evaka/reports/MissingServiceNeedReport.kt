@@ -49,7 +49,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         SELECT 
             ca.name AS care_area_name, daycare.name AS unit_name, unit_id,
             child_id, first_name, last_name, unit_id, sum(days_without_sn) AS days_without_sn,
-            CASE WHEN daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'true' ELSE 'false' END AS is_private_service_voucher_daycare
+            daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' AS is_private_service_voucher_daycare        
         FROM (
           SELECT DISTINCT
             child_id,
