@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Request } from 'express'
-import { parse } from 'fast-xml-parser'
+import { XMLParser } from 'fast-xml-parser'
 import { logDebug, logError } from '../../../logging'
 import {
   PassportSamlError,
@@ -46,10 +46,11 @@ export function parseDescriptionFromSamlError(
     return
   }
 
-  const statusObject: StatusObject = parse(error.statusXml, {
+  const parser = new XMLParser({
     ignoreAttributes: false,
     parseAttributeValue: true
   })
+  const statusObject: StatusObject = parser.parse(error.statusXml)
 
   if (!statusObject) {
     logError(
