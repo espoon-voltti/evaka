@@ -216,9 +216,17 @@ class PersonController(
         Audit.PersonUpdate.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.ADD_SSN, personId)
 
+        val person = db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
+            ?: throw NotFound("Person with id $personId not found")
+
+        if (person.ssnAddingDisabled) {
+            accessControl.requirePermissionFor(user, Action.Person.ENABLE_SSN_ADDING, personId)
+        }
+
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
+
         return PersonJSON.from(
             db.connect { dbc ->
                 dbc.transaction {
@@ -236,7 +244,8 @@ class PersonController(
         @RequestBody body: DisableSsnRequest
     ) {
         Audit.PersonUpdate.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.DISABLE_SSN, personId)
+        if (!body.disabled) accessControl.requirePermissionFor(user, Action.Person.ENABLE_SSN_ADDING, personId)
+        else accessControl.requirePermissionFor(user, Action.Person.DISABLE_SSN_ADDING, personId)
 
         db.connect { dbc -> dbc.transaction { personService.disableSsn(it, personId, body.disabled) } }
     }

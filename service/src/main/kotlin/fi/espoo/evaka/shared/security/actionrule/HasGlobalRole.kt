@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -59,15 +58,6 @@ WHERE attachment.id = ANY(:ids)
 AND evaka_user.type = 'EMPLOYEE'
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
-
-    fun andPersonHasSsnAddingEnabled() = DatabaseActionRule(
-        this,
-        Query<PersonId> { tx, _, ids ->
-            tx.createQuery("SELECT id FROM person WHERE id = ANY(:ids) AND ssn_adding_disabled IS FALSE")
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
         }
