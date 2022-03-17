@@ -33,6 +33,8 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
             is AuthenticatedUser.Employee -> filter(tx, user, targets).associateWith { Deferred }
             else -> emptyMap()
         }
+
+        override fun classifier(): Any = filter.javaClass
     }
     private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)

@@ -62,6 +62,8 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
                 .mapValues { (_, rolesInUnit) -> Deferred(rolesInUnit) }
             else -> emptyMap()
         }
+
+        override fun classifier(): Any = getUnitRoles.javaClass
     }
     private data class Deferred(private val rolesInUnit: Set<UserRole>) : DatabaseActionRule.Deferred<HasUnitRole> {
         override fun evaluate(params: HasUnitRole): AccessControlDecision = if (rolesInUnit.any { params.oneOf.contains(it) }) {
@@ -414,6 +416,8 @@ AND curriculum_document.id = ANY(:ids)
                     inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
+
+            override fun classifier(): Any = this.javaClass
         }
     )
 

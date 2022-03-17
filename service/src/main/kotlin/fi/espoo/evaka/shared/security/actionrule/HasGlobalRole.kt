@@ -38,6 +38,8 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
             is AuthenticatedUser.Employee -> filter(tx, user, targets).associateWith { Deferred(user.globalRoles) }
             else -> emptyMap()
         }
+
+        override fun classifier(): Any = filter.javaClass
     }
     private class Deferred(private val globalRoles: Set<UserRole>) : DatabaseActionRule.Deferred<HasGlobalRole> {
         override fun evaluate(params: HasGlobalRole): AccessControlDecision = if (globalRoles.any { params.oneOf.contains(it) }) {

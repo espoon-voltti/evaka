@@ -29,6 +29,8 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
             is AuthenticatedUser.Citizen -> user.authLevel
             else -> null
         }?.let { authLevel -> filter(tx, PersonId(user.id), targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+
+        override fun classifier(): Any = filter.javaClass
     }
     private class Deferred(private val authLevel: CitizenAuthLevel) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =

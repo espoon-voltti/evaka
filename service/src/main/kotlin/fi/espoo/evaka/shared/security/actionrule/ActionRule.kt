@@ -64,10 +64,12 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  * database queries in this scenario.
  */
 data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>) : ScopedActionRule<T> {
-    val classifier: Pair<Class<*>, Class<*>>
-        get() = Pair(params.javaClass, query.javaClass)
+    data class Classifier(val paramsClass: Class<*>, val queryClass: Class<*>, val queryClassifier: Any)
+    val classifier: Classifier
+        get() = Classifier(params.javaClass, query.javaClass, query.classifier())
 
     interface Query<T, P> {
+        fun classifier(): Any
         fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, Deferred<P>>
     }
     interface Deferred<P> {
