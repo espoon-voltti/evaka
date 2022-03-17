@@ -150,7 +150,8 @@ const en: Translations = {
       infoBullets: [
         'apply for an early childhood, pre-school or club place for your child or view a previous application',
         'view pictures and other documents related to your child’s early childhood or pre-school education',
-        "report your or your child's income information"
+        "report your or your child's income information",
+        'accept or reject a decision, if you made the application'
       ],
       link: 'Authenticate',
       mapText: 'Look up the units that you can apply to in eVaka on the map.',

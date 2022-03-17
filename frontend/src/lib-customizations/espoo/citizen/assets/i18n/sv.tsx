@@ -150,7 +150,8 @@ const sv: Translations = {
       infoBullets: [
         'ansöka om, eller kontrollera tidigare ansökan om, plats till småbarnspedagogiken, förskolan, eller klubbverksamheten för ditt barn',
         'se bilder och dokument angående ditt barns småbarnspedagogik eller förskola',
-        'anmäla ditt eller ditt barns inkomstuppgifter'
+        'anmäla ditt eller ditt barns inkomstuppgifter',
+        'acceptera eller avslå ett beslut, om du gjort ansökan'
       ],
       link: 'Autentisera',
       mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
