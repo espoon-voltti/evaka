@@ -198,7 +198,10 @@ export default React.memo(function ApplicationPage() {
                   />
                 )}
               </ApplicationArea>
-              {applicationData.permittedActions.has('READ_NOTES') && (
+              {(applicationData.permittedActions.has('READ_NOTES') ||
+                applicationData.permittedActions.has(
+                  'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
+                )) && (
                 <NotesArea opaque={false}>
                   <ApplicationNotes
                     applicationId={applicationId}

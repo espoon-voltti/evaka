@@ -31,6 +31,26 @@ ORDER BY n.created
         .toList()
 }
 
+fun Database.Read.getApplicationSpecialEducationTeacherNotes(applicationId: ApplicationId): List<ApplicationNote> {
+    // language=SQL
+    val sql =
+        """
+SELECT
+    n.id, n.application_id, n.content,
+    n.created, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
+    n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name
+FROM application_note n
+WHERE application_id = :applicationId
+AND created_by IN (SELECT employee_id FROM daycare_acl WHERE role = 'SPECIAL_EDUCATION_TEACHER'::user_role)
+ORDER BY n.created
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("applicationId", applicationId)
+        .mapTo<ApplicationNote>()
+        .toList()
+}
+
 fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: EvakaUserId): ApplicationNote {
     // language=SQL
     val sql =
