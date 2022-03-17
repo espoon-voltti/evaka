@@ -137,7 +137,7 @@ const sv: Translations = {
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
     login: {
-      title: 'Logga in i eVaka med usernamn',
+      title: 'Logga in i eVaka med användarnamn',
       paragraph:
         'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
       link: 'Logga in'
