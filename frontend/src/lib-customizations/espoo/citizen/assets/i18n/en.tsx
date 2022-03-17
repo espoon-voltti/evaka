@@ -137,13 +137,13 @@ const en: Translations = {
   loginPage: {
     title: 'City of Espoo early childhood education',
     login: {
-      title: 'Log in to eVaka',
+      title: 'Sign in to eVaka with username',
       paragraph:
         'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in'
     },
     applying: {
-      title: 'Applications',
+      title: 'Sign in to eVaka using Suomi.fi',
       paragraph: 'By using strong suomi.fi-authentication in eVaka, you can',
       infoBoxText:
         'When using strong authentication the personal data and address information of the registrant, the second guardian and the dependants are retrieved from the population data service.',
