@@ -41,6 +41,16 @@ export interface ArrivalRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.Attendance
+*/
+export interface Attendance {
+  arrived: Date
+  departed: Date | null
+  groupId: UUID
+  id: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.AttendanceReservation
 */
 export interface AttendanceReservation {
@@ -131,6 +141,14 @@ export interface ContactInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.CurrentDayStaffAttendanceResponse
+*/
+export interface CurrentDayStaffAttendanceResponse {
+  extraAttendances: ExternalStaffMember[]
+  staff: StaffMember[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureRequest
 */
 export interface DepartureRequest {
@@ -139,7 +157,28 @@ export interface DepartureRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalStaffArrivalRequest
+* Generated from fi.espoo.evaka.attendance.EmployeeAttendance
+*/
+export interface EmployeeAttendance {
+  attendances: Attendance[]
+  employeeId: UUID
+  firstName: string
+  lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.ExternalAttendance
+*/
+export interface ExternalAttendance {
+  arrived: Date
+  departed: Date | null
+  groupId: UUID
+  id: UUID
+  name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffArrivalRequest
 */
 export interface ExternalStaffArrivalRequest {
   arrived: string
@@ -148,7 +187,7 @@ export interface ExternalStaffArrivalRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalStaffDepartureRequest
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffDepartureRequest
 */
 export interface ExternalStaffDepartureRequest {
   attendanceId: UUID
@@ -193,7 +232,7 @@ export interface Staff {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffArrivalRequest
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffArrivalRequest
 */
 export interface StaffArrivalRequest {
   employeeId: UUID
@@ -206,12 +245,12 @@ export interface StaffArrivalRequest {
 * Generated from fi.espoo.evaka.attendance.StaffAttendanceResponse
 */
 export interface StaffAttendanceResponse {
-  extraAttendances: ExternalStaffMember[]
-  staff: StaffMember[]
+  extraAttendances: ExternalAttendance[]
+  staff: EmployeeAttendance[]
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffDepartureRequest
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
   pinCode: string

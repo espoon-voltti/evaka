@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,8 +11,9 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import java.util.UUID
 
-data class StaffAttendanceResponse(
+data class CurrentDayStaffAttendanceResponse(
     val staff: List<StaffMember>,
     val extraAttendances: List<ExternalStaffMember>,
 )
@@ -43,4 +44,31 @@ data class StaffMemberAttendance(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?
+)
+
+data class ExternalAttendance(
+    val id: StaffAttendanceExternalId,
+    val name: String,
+    val groupId: GroupId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+)
+
+data class Attendance(
+    val id: UUID,
+    val groupId: GroupId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+)
+
+data class EmployeeAttendance(
+    val employeeId: EmployeeId,
+    val firstName: String,
+    val lastName: String,
+    val attendances: List<Attendance>
+)
+
+data class StaffAttendanceResponse(
+    val staff: List<EmployeeAttendance>,
+    val extraAttendances: List<ExternalAttendance>,
 )

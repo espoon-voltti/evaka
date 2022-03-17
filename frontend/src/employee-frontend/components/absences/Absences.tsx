@@ -6,9 +6,11 @@ import { flatMap, partition } from 'lodash'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { Loading } from 'lib-common/api'
 import {
   AbsenceCategory,
   AbsenceDelete,
+  AbsenceGroup,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -69,10 +71,12 @@ export default React.memo(function Absences({
 
   const [absences, loadAbsences] = useApiState(
     () =>
-      getGroupAbsences(groupId, {
-        year: selectedYear,
-        month: selectedMonth
-      }),
+      groupId !== 'staff'
+        ? getGroupAbsences(groupId, {
+            year: selectedYear,
+            month: selectedMonth
+          })
+        : Promise.resolve(Loading.of<AbsenceGroup>()),
     [groupId, selectedYear, selectedMonth]
   )
 

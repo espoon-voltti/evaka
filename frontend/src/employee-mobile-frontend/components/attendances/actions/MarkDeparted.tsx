@@ -130,7 +130,7 @@ export default React.memo(function MarkDeparted() {
 
   const markDepartedWithAbsence = useCallback(
     (absenceType: AbsenceType) =>
-      postDeparture(unitId, childId, absenceType, time),
+      postDeparture(unitId, childId, { absenceType, departed: time }),
     [unitId, childId, time]
   )
 

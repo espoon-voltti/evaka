@@ -6,9 +6,7 @@ import classNames from 'classnames'
 import { sortBy } from 'lodash'
 import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import styled, { css } from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import {
   Child,
   ChildDailyRecords,
@@ -16,12 +14,7 @@ import {
 } from 'lib-common/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { fontWeights, H4 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { faCheck } from 'lib-icons'
+import { Table, Tbody } from 'lib-components/layout/Table'
 
 import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import { Translations, useTranslation } from '../../../state/i18n'
@@ -29,6 +22,15 @@ import { formatName } from '../../../utils'
 import { AgeIndicatorIcon } from '../../common/AgeIndicatorIcon'
 
 import ChildDay from './ChildDay'
+import {
+  AttendanceTableHeader,
+  NameWrapper,
+  DayTd,
+  DayTr,
+  EditStateIndicator,
+  NameTd,
+  StyledTd
+} from './attendance-elements'
 import { useUnitReservationEditState } from './reservation-table-edit-state'
 
 interface Props {
@@ -40,9 +42,9 @@ interface Props {
   reloadReservations: () => void
 }
 
-export default React.memo(function ReservationsTable(props: Props) {
+export default React.memo(function ChildReservationsTable(props: Props) {
   const { operationalDays, onMakeReservationForChild, selectedDate } = props
-  const { i18n, lang } = useTranslation()
+  const { i18n } = useTranslation()
   const { editState, stopEditing, startEditing, ...editCallbacks } =
     useUnitReservationEditState(
       props.allDayRows,
@@ -64,23 +66,7 @@ export default React.memo(function ReservationsTable(props: Props) {
 
   return (
     <Table>
-      <Thead>
-        <Tr>
-          <CustomTh>{i18n.unit.attendanceReservations.childName}</CustomTh>
-          {operationalDays.map(({ date, isHoliday }) => (
-            <DateTh shrink key={date.formatIso()} faded={isHoliday}>
-              <Date centered highlight={date.isToday()}>
-                {date.format('EEEEEE dd.MM.', lang)}
-              </Date>
-              <DayHeader>
-                <span>{i18n.unit.attendanceReservations.startTime}</span>
-                <span>{i18n.unit.attendanceReservations.endTime}</span>
-              </DayHeader>
-            </DateTh>
-          ))}
-          <CustomTh shrink />
-        </Tr>
-      </Thead>
+      <AttendanceTableHeader operationalDays={operationalDays} />
       <Tbody>
         {allDayRows.flatMap(({ child, dailyData }) => {
           const multipleRows = dailyData.length > 1
@@ -98,7 +84,7 @@ export default React.memo(function ReservationsTable(props: Props) {
               >
                 <NameTd partialRow={multipleRows} rowIndex={index}>
                   {index == 0 && (
-                    <ChildName>
+                    <NameWrapper>
                       <AgeIndicatorIcon
                         isUnder3={
                           selectedDate.differenceInYears(child.dateOfBirth) < 3
@@ -112,7 +98,7 @@ export default React.memo(function ReservationsTable(props: Props) {
                           true
                         )}
                       </Link>
-                    </ChildName>
+                    </NameWrapper>
                   )}
                 </NameTd>
                 {operationalDays.map((day) => (
@@ -163,23 +149,6 @@ export default React.memo(function ReservationsTable(props: Props) {
   )
 })
 
-const EditStateIndicator = React.memo(function EditStateIndicator({
-  status,
-  stopEditing
-}: {
-  status: Result<void>
-  stopEditing: () => void
-}) {
-  return (
-    <IconButton
-      icon={faCheck}
-      onClick={stopEditing}
-      disabled={status.isLoading}
-      data-qa="inline-editor-state-button"
-    />
-  )
-})
-
 const RowMenu = React.memo(function RowMenu({
   i18n,
   child,
@@ -211,79 +180,3 @@ const RowMenu = React.memo(function RowMenu({
     />
   )
 })
-
-const CustomTh = styled(Th)<{ shrink?: boolean }>`
-  vertical-align: bottom;
-  ${(p) =>
-    p.shrink &&
-    css`
-      width: 0; // causes the column to take as little space as possible
-    `}
-`
-
-const DateTh = styled(CustomTh)<{ faded: boolean }>`
-  ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
-`
-
-const DayHeader = styled.div`
-  display: flex;
-  justify-content: space-evenly;
-  gap: ${defaultMargins.xs};
-`
-
-const StyledTd = styled(Td)<{ partialRow: boolean; rowIndex: number }>`
-  border-right: 1px solid ${colors.grayscale.g15};
-  vertical-align: middle;
-  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: dashed;`}
-  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
-`
-
-const DayTd = styled(StyledTd)`
-  padding: 0;
-`
-
-const DayTr = styled(Tr)`
-  > ${DayTd}.is-today {
-    border-left: 2px solid ${colors.status.success};
-    border-right: 2px solid ${colors.status.success};
-  }
-
-  &:first-child {
-    > ${DayTd}.is-today {
-      border-top: 2px solid ${colors.status.success};
-    }
-  }
-  &:last-child {
-    > ${DayTd}.is-today {
-      border-bottom: 2px solid ${colors.status.success};
-    }
-  }
-`
-
-const NameTd = styled(StyledTd)`
-  width: 350px;
-  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: none;`}
-  ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: none;`}
-`
-
-const ChildName = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  align-items: center;
-
-  a {
-    margin-left: ${defaultMargins.xs};
-  }
-`
-
-const Date = styled(H4)<{ highlight: boolean }>`
-  margin: 0 0 ${defaultMargins.s};
-  ${(p) =>
-    p.highlight &&
-    css`
-      color: ${colors.main.m2};
-      font-weight: ${fontWeights.semibold};
-    `}
-`

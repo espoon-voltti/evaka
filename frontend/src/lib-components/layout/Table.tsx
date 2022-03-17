@@ -61,7 +61,7 @@ export const Td = styled.td<{
   ${(p) => (p.color ? `color: ${p.color};` : '')}
 `
 
-interface TrProps {
+export interface TrProps {
   onClick?: () => void
 }
 

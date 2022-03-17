@@ -16,8 +16,8 @@ import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   unitId: UUID
-  selected: UUID | 'no-group' | null
-  onSelect: (val: UUID | 'no-group') => void
+  selected: UUID | 'no-group' | 'staff' | null
+  onSelect: (val: UUID | 'no-group' | 'staff') => void
   'data-qa'?: string
 }
 
@@ -45,7 +45,8 @@ export default React.memo(function GroupSelector({
             .map(({ id }) => id)
         )
         .getOrElse([]),
-      'no-group'
+      'no-group',
+      'staff'
     ],
     [groups, selected]
   )
@@ -53,11 +54,16 @@ export default React.memo(function GroupSelector({
   const getItemLabel = useCallback(
     (item: string | null) =>
       groups
-        .map((gs) =>
-          item === 'no-group'
-            ? i18n.unit.attendances.noGroup
-            : gs.find(({ id }) => id === item)?.name ?? ''
-        )
+        .map((gs) => {
+          switch (item) {
+            case 'no-group':
+              return i18n.unit.attendances.noGroup
+            case 'staff':
+              return i18n.unit.attendances.staff
+            default:
+              return gs.find(({ id }) => id === item)?.name ?? ''
+          }
+        })
         .getOrElse(''),
     [i18n, groups]
   )

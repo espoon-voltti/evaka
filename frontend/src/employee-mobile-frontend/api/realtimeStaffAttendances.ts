@@ -4,10 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import {
+  CurrentDayStaffAttendanceResponse,
   ExternalStaffArrivalRequest,
   ExternalStaffDepartureRequest,
   StaffArrivalRequest,
-  StaffAttendanceResponse,
   StaffDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
@@ -17,11 +17,14 @@ import { client } from './client'
 
 export async function getUnitStaffAttendances(
   unitId: UUID
-): Promise<Result<StaffAttendanceResponse>> {
+): Promise<Result<CurrentDayStaffAttendanceResponse>> {
   return client
-    .get<JsonOf<StaffAttendanceResponse>>(`/realtime-staff-attendances`, {
-      params: { unitId }
-    })
+    .get<JsonOf<CurrentDayStaffAttendanceResponse>>(
+      `/mobile/realtime-staff-attendances`,
+      {
+        params: { unitId }
+      }
+    )
     .then((res) =>
       Success.of({
         staff: res.data.staff.map((staff) => ({
@@ -49,7 +52,7 @@ export async function postStaffArrival(
   request: StaffArrivalRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/realtime-staff-attendances/arrival`, request)
+    .post(`/mobile/realtime-staff-attendances/arrival`, request)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -59,7 +62,10 @@ export async function postStaffDeparture(
   request: StaffDepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/realtime-staff-attendances/${attendanceId}/departure`, request)
+    .post(
+      `/mobile/realtime-staff-attendances/${attendanceId}/departure`,
+      request
+    )
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -68,7 +74,7 @@ export async function postExternalStaffArrival(
   body: ExternalStaffArrivalRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/realtime-staff-attendances/arrival-external`, body)
+    .post(`/mobile/realtime-staff-attendances/arrival-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -77,7 +83,7 @@ export async function postExternalStaffDeparture(
   body: ExternalStaffDepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post(`/realtime-staff-attendances/departure-external`, body)
+    .post(`/mobile/realtime-staff-attendances/departure-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

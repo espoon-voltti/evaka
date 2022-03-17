@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -11,9 +12,11 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import java.util.UUID
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> = createQuery(
     """
@@ -105,6 +108,7 @@ fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, dep
     .bind("departed", departureTime)
     .updateExactlyOne()
 
+@ExcludeCodeGen
 data class ExternalStaffArrival(
     val name: String,
     val groupId: GroupId,
@@ -122,6 +126,7 @@ fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival):
     .mapTo<StaffAttendanceExternalId>()
     .one()
 
+@ExcludeCodeGen
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,
     val departed: HelsinkiDateTime
@@ -135,3 +140,62 @@ fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDepartu
 )
     .bindKotlin(params)
     .updateExactlyOne()
+
+@ExcludeCodeGen
+data class RawAttendance(
+    val id: UUID,
+    val groupId: GroupId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+    val employeeId: EmployeeId,
+    val firstName: String,
+    val lastName: String,
+)
+
+fun Database.Read.getStaffAttendancesForDateRange(unitId: DaycareId, range: FiniteDateRange): List<RawAttendance> =
+    createQuery(
+        """ 
+SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, emp.first_name, emp.last_name 
+FROM staff_attendance_realtime sa
+JOIN employee emp ON sa.employee_id = emp.id
+WHERE tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
+        """.trimIndent()
+    )
+        .bind("unitId", unitId)
+        .bind("start", range.start)
+        .bind("end", range.end)
+        .mapTo<RawAttendance>()
+        .list()
+
+@ExcludeCodeGen
+data class RawEmployee(
+    val id: EmployeeId,
+    val firstName: String,
+    val lastName: String,
+)
+
+fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<RawEmployee> = createQuery(
+    """
+SELECT DISTINCT dacl.employee_id as id, e.first_name, e.last_name
+FROM daycare_acl dacl
+JOIN employee e on e.id = dacl.employee_id
+WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER')
+    """.trimIndent()
+)
+    .bind("unitId", unitId)
+    .mapTo<RawEmployee>()
+    .list()
+
+fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, range: FiniteDateRange): List<ExternalAttendance> = createQuery(
+    """
+    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed
+    FROM staff_attendance_external sae
+    JOIN daycare_group dg on sae.group_id = dg.id
+    WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:start, :end)
+    """.trimIndent()
+)
+    .bind("unitId", unitId)
+    .bind("start", range.start)
+    .bind("end", range.end)
+    .mapTo<ExternalAttendance>()
+    .list()
