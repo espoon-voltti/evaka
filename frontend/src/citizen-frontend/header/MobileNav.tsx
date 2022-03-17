@@ -18,7 +18,6 @@ import { desktopMin } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import {
   faBars,
@@ -264,11 +263,9 @@ const Navigation = React.memo(function Navigation({
           )}
         </StyledNavLink>
       )}
-      {featureFlags.experimental?.placementTermination && (
-        <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
-          {t.header.nav.children} {maybeLockElem}
-        </StyledNavLink>
-      )}
+      <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
+        {t.header.nav.children} {maybeLockElem}
+      </StyledNavLink>
       <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
         {t.header.nav.applying} {maybeLockElem}
       </StyledNavLink>

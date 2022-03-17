@@ -11,7 +11,6 @@ import styled from 'styled-components'
 import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
-import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import CitizenReloadNotification from './CitizenReloadNotification'
@@ -151,28 +150,24 @@ export default function App() {
                               </RequireAuth>
                             )}
                           />
-                          {featureFlags.experimental?.placementTermination && (
-                            <Route
-                              exact
-                              path="/children/:childId"
-                              render={() => (
-                                <RequireAuth>
-                                  <ChildPage />
-                                </RequireAuth>
-                              )}
-                            />
-                          )}
-                          {featureFlags.experimental?.placementTermination && (
-                            <Route
-                              exact
-                              path="/children"
-                              render={() => (
-                                <RequireAuth>
-                                  <ChildrenPage />
-                                </RequireAuth>
-                              )}
-                            />
-                          )}
+                          <Route
+                            exact
+                            path="/children/:childId"
+                            render={() => (
+                              <RequireAuth>
+                                <ChildPage />
+                              </RequireAuth>
+                            )}
+                          />
+                          <Route
+                            exact
+                            path="/children"
+                            render={() => (
+                              <RequireAuth>
+                                <ChildrenPage />
+                              </RequireAuth>
+                            )}
+                          />
                           <Route
                             exact
                             path="/decisions/by-application/:applicationId"
