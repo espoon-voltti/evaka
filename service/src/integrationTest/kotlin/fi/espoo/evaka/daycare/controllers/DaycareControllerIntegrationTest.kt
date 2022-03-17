@@ -204,7 +204,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         // language=SQL
         val sql = """
             SELECT EXISTS(
-                SELECT * FROM message_account WHERE daycare_group_id = :daycareGroupId AND active = true
+                SELECT * FROM message_account WHERE daycare_group_id = :daycareGroupId
             )
         """.trimIndent()
         return db.read {

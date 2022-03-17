@@ -443,9 +443,9 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
             join pg_class source on source.oid = const.conrelid
             join pg_class target on target.oid = const.confrelid
             join pg_attribute attr on attr.attrelid = source.oid and attr.attnum = ANY(const.conkey)
-        where const.contype = 'f' 
-            and target.relname in ('person', 'child') 
-            and source.relname not in ('person', 'child', 'guardian', 'guardian_blocklist', 'message_account')
+        where const.contype = 'f'
+            and target.relname in ('person', 'child')
+            and source.relname not in ('evaka_user', 'person', 'child', 'guardian', 'guardian_blocklist', 'message_account')
             and source.relname not like 'old_%'
         order by source.relname, attr.attname
     """.trimIndent()

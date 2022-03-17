@@ -15,7 +15,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     val sql = """
 SELECT acc.id FROM message_account acc
-WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
+WHERE acc.daycare_group_id = :daycareGroupId
 """
     return this.createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
@@ -25,8 +25,7 @@ WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
 
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     val sql = """
-SELECT acc.id FROM message_account acc
-WHERE acc.person_id = :personId AND acc.active = true
+SELECT acc.id FROM message_account acc WHERE acc.person_id = :personId 
 """
     return this.createQuery(sql)
         .bind("personId", personId)
@@ -108,7 +107,7 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupI
 fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
     // language=SQL
     val sql = """
-        INSERT INTO message_account (person_id) VALUES (:personId)
+        INSERT INTO message_account (person_id, evaka_user_id) VALUES (:personId, :personId)
         RETURNING id
     """.trimIndent()
     return createQuery(sql)
@@ -120,8 +119,8 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
 fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     // language=SQL
     val sql = """
-        INSERT INTO message_account (employee_id) VALUES (:employeeId)
-        ON CONFLICT (employee_id) DO UPDATE SET active = true
+        INSERT INTO message_account (employee_id, evaka_user_id) VALUES (:employeeId, :employeeId)
+        ON CONFLICT (evaka_user_id) DO UPDATE SET employee_id = :employeeId
         RETURNING id
     """.trimIndent()
     return createQuery(sql)
@@ -133,7 +132,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): M
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
     // language=SQL
     val sql = """
-        UPDATE message_account SET active = false
+        UPDATE message_account SET employee_id = NULL
         WHERE employee_id = :employeeId
     """.trimIndent()
     createUpdate(sql)

@@ -280,7 +280,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         // language=SQL
         val sql = """
 SELECT acc.id FROM message_account acc
-WHERE acc.employee_id = :userId AND acc.active = true
+WHERE acc.employee_id = :userId
         """.trimIndent()
         return db.read {
             it.createQuery(sql)
