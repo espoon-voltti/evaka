@@ -157,7 +157,7 @@ const Container = styled.div`
   @media (max-width: ${desktopMin}) {
     width: 100vw;
     height: 100%;
-    max-width: 100vh;
+    max-width: 100vw;
     max-height: 100%;
     position: fixed;
     top: 0;
