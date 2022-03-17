@@ -29,7 +29,7 @@
     "@fortawesome/react-fontawesome": "0.1.17",
     "@sentry/browser": "^6.17.5",
     "@sentry/react": "^6.17.5",
-    "axios": "^0.25.0",
+    "axios": "^0.26.1",
     "babel-plugin-styled-components": "^2.0.2",
     "chart.js": "^3.7.0",
     "chartjs-adapter-date-fns": "^2.0.0",
