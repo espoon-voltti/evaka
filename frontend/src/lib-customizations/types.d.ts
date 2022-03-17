@@ -119,7 +119,6 @@ interface BaseFeatureFlags {
     personalDetailsPage?: boolean
     mobileMessages?: boolean
     leops?: boolean
-    placementTermination?: boolean
   }
 }
 

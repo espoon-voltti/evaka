@@ -13,7 +13,6 @@ import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import {
   faChevronDown,
@@ -87,11 +86,9 @@ export default React.memo(function DesktopNav({
                       )}
                     </StyledNavLink>
                   )}
-                  {featureFlags.experimental?.placementTermination && (
-                    <StyledNavLink to="/children" data-qa="nav-children">
-                      {t.header.nav.children} {maybeLockElem}
-                    </StyledNavLink>
-                  )}
+                  <StyledNavLink to="/children" data-qa="nav-children">
+                    {t.header.nav.children} {maybeLockElem}
+                  </StyledNavLink>
                   <StyledNavLink to="/applying" data-qa="nav-applying">
                     {t.header.nav.applying} {maybeLockElem}
                   </StyledNavLink>
