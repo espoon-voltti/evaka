@@ -76,7 +76,9 @@ export default React.memo(function TabAttendances() {
         data-qa="unit-attendances"
         data-isloading={isLoading(unitData)}
       >
-        <H2>{i18n.unit.attendances.title}</H2>
+        <H2 data-qa="attendances-unit-name">
+          {unitInformation.isSuccess ? unitInformation.value.daycare.name : ' '}
+        </H2>
         <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
         <FixedSpaceRow alignItems="center">
@@ -115,11 +117,7 @@ export default React.memo(function TabAttendances() {
       <Gap size="s" />
       <ContentArea opaque>
         <TopRow>
-          <H3 noMargin data-qa="attendances-unit-name">
-            {unitInformation.isSuccess
-              ? unitInformation.value.daycare.name
-              : ' '}
-          </H3>
+          <H3 noMargin>{i18n.unit.attendances.title}</H3>
           {reservationEnabled && (
             <FixedSpaceRow spacing="xs">
               {(['week', 'month'] as const).map((m) => (
