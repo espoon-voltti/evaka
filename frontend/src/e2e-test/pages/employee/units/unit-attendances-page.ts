@@ -5,7 +5,9 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { waitUntilEqual } from '../../../utils'
 import {
+  Element,
   Modal,
   Page,
   Select,
@@ -13,7 +15,7 @@ import {
   TextInput
 } from '../../../utils/page'
 
-export class UnitCalendarPage {
+export class UnitAttendancesPage {
   constructor(private readonly page: Page) {}
 
   #reservationCell = (date: LocalDate, row: number) =>
@@ -25,11 +27,9 @@ export class UnitCalendarPage {
     this.page.find(`[data-qa="ellipsis-menu-${childId}"]`)
   #editInline = this.page.find('[data-qa="menu-item-edit-row"]')
 
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-groups-page"][data-loading="false"]')
-      .waitUntilVisible()
-  }
+  occupancies = new UnitOccupanciesSection(
+    this.page.find('[data-qa="occupancies"]')
+  )
 
   async selectMode(mode: 'week' | 'month') {
     const foo = new SelectionChip(
@@ -168,5 +168,39 @@ export class ReservationModal extends Modal {
     await this.setStartTime('00:00', 1)
     await this.setEndTime('08:00', 1)
     await this.save()
+  }
+}
+
+export class UnitOccupanciesSection extends Element {
+  #elem = (
+    which: 'minimum' | 'maximum' | 'no-valid-values',
+    type: 'confirmed' | 'planned'
+  ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
+
+  async assertNoValidValues() {
+    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
+    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+  }
+
+  async assertConfirmed(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'confirmed').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'confirmed').innerText,
+      maximum
+    )
+  }
+
+  async assertPlanned(minimum: string, maximum: string) {
+    await waitUntilEqual(
+      () => this.#elem('minimum', 'planned').innerText,
+      minimum
+    )
+    await waitUntilEqual(
+      () => this.#elem('maximum', 'planned').innerText,
+      maximum
+    )
   }
 }

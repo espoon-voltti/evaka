@@ -310,7 +310,7 @@ export default React.memo(function PlacementRow({
               {currentGroupPlacement?.groupId &&
               currentGroupPlacement?.groupName ? (
                 <Link
-                  to={`/units/${placement.daycare.id}/calendar?group=${currentGroupPlacement.groupId}`}
+                  to={`/units/${placement.daycare.id}/attendances?group=${currentGroupPlacement.groupId}`}
                 >
                   {currentGroupPlacement.groupName}
                 </Link>

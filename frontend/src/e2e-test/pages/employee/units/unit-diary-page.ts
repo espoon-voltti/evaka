@@ -19,9 +19,9 @@ import {
 export class UnitDiaryPage {
   constructor(private page: Page) {}
 
-  #unitName = this.page.find('[data-qa="calendar-unit-name"]')
+  #unitName = this.page.find('[data-qa="attendances-unit-name"]')
   #groupSelector = new Select(
-    this.page.find('[data-qa="calendar-group-select"]')
+    this.page.find('[data-qa="attendances-group-select"]')
   )
   #childRows = this.page.findAll('[data-qa="absence-child-row"]')
 

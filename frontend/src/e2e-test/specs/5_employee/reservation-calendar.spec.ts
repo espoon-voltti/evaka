@@ -17,15 +17,15 @@ import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   ReservationModal,
-  UnitCalendarPage
-} from '../../pages/employee/units/unit-calendar-page'
+  UnitAttendancesPage
+} from '../../pages/employee/units/unit-attendances-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-let calendarPage: UnitCalendarPage
+let calendarPage: UnitAttendancesPage
 let reservationModal: ReservationModal
 let child1Fixture: Child
 let child1DaycarePlacementId: UUID
@@ -84,10 +84,10 @@ beforeEach(async () => {
   await employeeLogin(page, unitSupervisor)
 })
 
-const loadUnitCalendarPage = async (): Promise<UnitCalendarPage> => {
+const loadUnitCalendarPage = async (): Promise<UnitAttendancesPage> => {
   unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
-  return await unitPage.openCalendarPage()
+  return await unitPage.openAttendancesPage()
 }
 
 describe('Unit group calendar', () => {

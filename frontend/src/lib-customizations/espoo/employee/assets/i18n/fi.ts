@@ -1352,7 +1352,7 @@ export const fi = {
     tabs: {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',
-      calendar: 'Kalenteri',
+      attendances: 'Läsnäolot',
       applicationProcess: 'Hakuprosessi'
     },
     create: 'Luo uusi yksikkö',
@@ -1502,7 +1502,7 @@ export const fi = {
       endDate: 'Päättymispäivämäärä',
       groupName: 'Ryhmä'
     },
-    calendar: {
+    attendances: {
       title: 'Varaukset ja läsnäolot',
       noGroup: 'Ei ryhmää',
       modes: {

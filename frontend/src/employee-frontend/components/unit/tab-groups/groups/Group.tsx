@@ -425,7 +425,7 @@ export default React.memo(function Group({
             </>
           )}
           {permittedActions.has('READ_ABSENCES') && (
-            <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
+            <Link to={`/units/${unit.id}/attendances?group=${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
                 text={i18n.unit.groups.diaryButton}

@@ -8,7 +8,11 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import { Daycare } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { UnitEditor, UnitPage } from '../../pages/employee/units/unit'
+import {
+  UnitEditor,
+  UnitInfoPage,
+  UnitPage
+} from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -46,9 +50,9 @@ describe('Employee - unit details', () => {
     )
 
     await unitEditorPage.submit()
-    const unitPage = new UnitPage(page)
-    await unitPage.waitUntilLoaded()
-    await unitPage.assertUnitName('Uusi Kerho')
+    const unitInfoPage = new UnitInfoPage(page)
+    await unitInfoPage.waitUntilLoaded()
+    await unitInfoPage.assertUnitName('Uusi Kerho')
   })
 
   test('Admin can edit unit details', async () => {
@@ -75,7 +79,7 @@ describe('Employee - unit details', () => {
 
 describe('Employee - unit editor validations and warnings', () => {
   let page: Page
-  let unitPage: UnitPage
+  let unitInfoPage: UnitInfoPage
   let unitEditorPage: UnitEditor
 
   beforeEach(async () => {
@@ -86,8 +90,9 @@ describe('Employee - unit editor validations and warnings', () => {
 
     page = await Page.open()
     await employeeLogin(page, admin.data)
-    unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
-    const unitDetailsPage = await unitPage.openUnitDetails()
+    const unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
+    unitInfoPage = await unitPage.openUnitInformation()
+    const unitDetailsPage = await unitInfoPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()
   })
 

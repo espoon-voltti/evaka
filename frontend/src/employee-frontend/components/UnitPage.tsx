@@ -34,7 +34,7 @@ import { TitleContext, TitleState } from '../state/title'
 import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
-import TabCalendar from './unit/TabCalendar'
+import TabAttendances from './unit/TabAttendances'
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -107,9 +107,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       {
-        id: 'unit-info',
-        link: `/units/${id}/unit-info`,
-        label: i18n.unit.tabs.unitInfo
+        id: 'attendances',
+        link: `/units/${id}/attendances`,
+        label: i18n.unit.tabs.attendances
       },
       {
         id: 'groups',
@@ -118,11 +118,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         counter: unitData
           .map((data) => data.missingGroupPlacements.length)
           .getOrElse(undefined)
-      },
-      {
-        id: 'calendar',
-        link: `/units/${id}/calendar`,
-        label: i18n.unit.tabs.calendar
       },
       ...(unitInformation.isSuccess &&
       unitInformation.value.permittedActions.has('READ_DETAILED')
@@ -140,13 +135,18 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
                 .getOrElse(0)
             }
           ]
-        : [])
+        : []),
+      {
+        id: 'unit-info',
+        link: `/units/${id}/unit-info`,
+        label: i18n.unit.tabs.unitInfo
+      }
     ],
     [id, i18n, unitData, unitInformation]
   )
 
-  const RedirectToUnitInfo = useCallback(
-    () => <Redirect to={`/units/${id}/unit-info`} />,
+  const RedirectToAttendances = useCallback(
+    () => <Redirect to={`/units/${id}/attendances`} />,
     [id]
   )
 
@@ -174,8 +174,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           />
           <Route
             exact
-            path="/units/:id/calendar"
-            render={() => <TabCalendar />}
+            path="/units/:id/attendances"
+            render={() => <TabAttendances />}
           />
           <Route
             exact
@@ -187,7 +187,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             )}
           />
-          <Route path="/" render={() => <RedirectToUnitInfo />} />
+          <Route path="/" render={() => <RedirectToAttendances />} />
         </Switch>
       </Container>
     </>

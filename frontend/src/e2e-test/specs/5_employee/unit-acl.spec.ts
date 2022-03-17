@@ -62,56 +62,60 @@ describe('Employee - unit ACL', () => {
   test('Unit supervisors can be added/deleted', async () => {
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
-    await unitPage.supervisorAcl.assertRows([expectedAclRows.esko])
+    const unitInfoPage = await unitPage.openUnitInformation()
+    await unitInfoPage.supervisorAcl.assertRows([expectedAclRows.esko])
 
-    await unitPage.supervisorAcl.addAcl(yrjo.email)
-    await unitPage.supervisorAcl.assertRows([
+    await unitInfoPage.supervisorAcl.addAcl(yrjo.email)
+    await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo
     ])
 
-    await unitPage.supervisorAcl.addAcl(pete.email)
-    await unitPage.supervisorAcl.assertRows([
+    await unitInfoPage.supervisorAcl.addAcl(pete.email)
+    await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.yrjo,
       expectedAclRows.pete
     ])
 
-    await unitPage.supervisorAcl.deleteAcl(yrjo.id)
-    await unitPage.supervisorAcl.assertRows([
+    await unitInfoPage.supervisorAcl.deleteAcl(yrjo.id)
+    await unitInfoPage.supervisorAcl.assertRows([
       expectedAclRows.esko,
       expectedAclRows.pete
     ])
 
-    await unitPage.supervisorAcl.deleteAcl(esko.id)
-    await unitPage.supervisorAcl.assertRows([expectedAclRows.pete])
+    await unitInfoPage.supervisorAcl.deleteAcl(esko.id)
+    await unitInfoPage.supervisorAcl.assertRows([expectedAclRows.pete])
   })
 
   test('User can add and delete special education teachers', async () => {
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
-    await unitPage.supervisorAcl.assertRows([expectedAclRows.esko])
+    const unitInfoPage = await unitPage.openUnitInformation()
+    await unitInfoPage.supervisorAcl.assertRows([expectedAclRows.esko])
 
-    await unitPage.specialEducationTeacherAcl.assertRows([])
+    await unitInfoPage.specialEducationTeacherAcl.assertRows([])
 
-    await unitPage.specialEducationTeacherAcl.addAcl(pete.email)
-    await unitPage.specialEducationTeacherAcl.assertRows([expectedAclRows.pete])
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(pete.email)
+    await unitInfoPage.specialEducationTeacherAcl.assertRows([
+      expectedAclRows.pete
+    ])
 
-    await unitPage.specialEducationTeacherAcl.addAcl(yrjo.email)
-    await unitPage.specialEducationTeacherAcl.assertRows([
+    await unitInfoPage.specialEducationTeacherAcl.addAcl(yrjo.email)
+    await unitInfoPage.specialEducationTeacherAcl.assertRows([
       expectedAclRows.pete,
       expectedAclRows.yrjo
     ])
 
-    await unitPage.specialEducationTeacherAcl.deleteAcl(pete.id)
-    await unitPage.specialEducationTeacherAcl.deleteAcl(yrjo.id)
+    await unitInfoPage.specialEducationTeacherAcl.deleteAcl(pete.id)
+    await unitInfoPage.specialEducationTeacherAcl.deleteAcl(yrjo.id)
 
-    await unitPage.specialEducationTeacherAcl.assertRows([])
+    await unitInfoPage.specialEducationTeacherAcl.assertRows([])
   })
 
   test('Staff can be added and assigned/removed to/from groups', async () => {
     async function toggleGroups() {
-      const row = unitPage.staffAcl.getRow(pete.id)
+      const row = unitInfoPage.staffAcl.getRow(pete.id)
       const rowEditor = await row.edit()
       await rowEditor.toggleStaffGroups([groupId])
       await rowEditor.save()
@@ -123,17 +127,18 @@ describe('Employee - unit ACL', () => {
 
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
-    await unitPage.staffAcl.addAcl(expectedAclRows.pete.email)
+    const unitInfoPage = await unitPage.openUnitInformation()
+    await unitInfoPage.staffAcl.addAcl(expectedAclRows.pete.email)
 
-    await unitPage.staffAcl.assertRows([
+    await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: [] }
     ])
     await toggleGroups()
-    await unitPage.staffAcl.assertRows([
+    await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: ['Testailijat'] }
     ])
     await toggleGroups()
-    await unitPage.staffAcl.assertRows([
+    await unitInfoPage.staffAcl.assertRows([
       { ...expectedAclRows.pete, groups: [] }
     ])
   })
@@ -141,8 +146,9 @@ describe('Employee - unit ACL', () => {
   test('User can add a mobile device unit side', async () => {
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
+    const unitInfoPage = await unitPage.openUnitInformation()
 
-    await unitPage.mobileAcl.addMobileDevice('Testilaite')
-    await unitPage.mobileAcl.assertDeviceExists('Testilaite')
+    await unitInfoPage.mobileAcl.addMobileDevice('Testilaite')
+    await unitInfoPage.mobileAcl.assertDeviceExists('Testilaite')
   })
 })
