@@ -62,7 +62,8 @@ export const absenceColors = {
   FORCE_MAJEURE: status.danger,
   FREE_ABSENCE: accents.a7mint,
   TEMPORARY_RELOCATION: status.warning,
-  NO_ABSENCE: accents.a8lightBlue
+  NO_ABSENCE: accents.a8lightBlue,
+  ...colors.absences
 }
 
 export const absenceIcons = {
