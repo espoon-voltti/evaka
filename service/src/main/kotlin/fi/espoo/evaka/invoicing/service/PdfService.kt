@@ -170,7 +170,10 @@ class PDFService(
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
-
+            "showValidTo" to (
+                    (isReliefDecision && decision.validTo != null) ||
+                            (decision.validTo?.isBefore(LocalDate.now()) ?: false)
+                    ),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),
