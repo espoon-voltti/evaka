@@ -49,24 +49,13 @@ class SystemControllerTest : FullApplicationTest() {
         assertEquals(MobileDeviceIdentity(id = deviceId, longTermToken = token), result.get())
     }
 
-    @Test
-    fun `mobile identity endpoint doesn't return deleted mobile devices`() {
-        val token = UUID.randomUUID()
-        db.transaction { it.insertTestDevice(longTermToken = token, deleted = true) }
-
-        val (_, res, _) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.SystemInternalUser)
-            .response()
-        assertEquals(404, res.statusCode)
-    }
-
-    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): MobileDeviceId {
+    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null): MobileDeviceId {
         val id = MobileDeviceId(UUID.randomUUID())
         insertTestMobileDevice(
             DevMobileDevice(
                 id = id,
                 unitId = unitId,
                 longTermToken = longTermToken,
-                deleted = deleted
             )
         )
         return id

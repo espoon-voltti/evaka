@@ -199,8 +199,8 @@ RETURNING id
 fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = insertTestDataRow(
     device,
     """
-INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
-VALUES (:id, :unitId, :name, :deleted, :longTermToken)
+INSERT INTO mobile_device (id, unit_id, name, long_term_token)
+VALUES (:id, :unitId, :name, :longTermToken)
 RETURNING id
     """
 ).let(::MobileDeviceId)

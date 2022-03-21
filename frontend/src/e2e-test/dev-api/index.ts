@@ -746,7 +746,6 @@ interface MobileDevice {
   id: UUID
   unitId: UUID
   name: string
-  deleted: boolean
   longTermToken: UUID
 }
 

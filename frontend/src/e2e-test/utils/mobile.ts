@@ -18,7 +18,6 @@ export async function pairMobileDevice(unitId: UUID): Promise<string> {
     id: uuidv4(),
     unitId,
     name: 'testMobileDevice',
-    deleted: false,
     longTermToken
   })
   return `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${longTermToken}`
