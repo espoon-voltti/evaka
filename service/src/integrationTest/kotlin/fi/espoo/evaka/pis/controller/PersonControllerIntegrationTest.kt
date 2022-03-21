@@ -16,7 +16,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Test
@@ -26,6 +28,8 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class PersonControllerIntegrationTest : AbstractIntegrationTest() {
+    private val admin = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+
     @Autowired
     lateinit var controller: PersonController
 
@@ -135,6 +139,56 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
         )
 
         assertEquals(person.id, response.first().id)
+    }
+
+    @Test
+    fun `Guardian blocklist prevents dependants from being added from VTJ data`() {
+        val guardianId = db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    lastName = "Karhula",
+                    firstName = "Johannes Olavi Antero Tapio",
+                    ssn = "070644-937X"
+                )
+            )
+        }
+
+        val dependants = controller.getPersonDependants(Database(jdbi), admin, guardianId)
+        assertEquals(3, dependants.size)
+
+        val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
+        db.transaction { tx ->
+            tx.createUpdate("DELETE FROM guardian WHERE child_id = :id").bind("id", blockedDependant.id).execute()
+            tx.insertTestGuardianBlocklistEntry(DevGuardianBlocklistEntry(guardianId, blockedDependant.id))
+            tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
+        }
+
+        assertEquals(2, controller.getPersonDependants(Database(jdbi), admin, guardianId).size)
+    }
+
+    @Test
+    fun `Guardian blocklist prevents guardians from being added from VTJ data`() {
+        val childId = db.transaction { tx ->
+            tx.insertTestPerson(
+                DevPerson(
+                    lastName = "Karhula",
+                    firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
+                    ssn = "070714A9126"
+                )
+            )
+        }
+
+        val guardians = controller.getPersonGuardians(Database(jdbi), admin, childId)
+        assertEquals(2, guardians.size)
+
+        val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
+        db.transaction { tx ->
+            tx.createUpdate("DELETE FROM guardian WHERE guardian_id = :id").bind("id", blockedGuardian.id).execute()
+            tx.insertTestGuardianBlocklistEntry(DevGuardianBlocklistEntry(blockedGuardian.id, childId))
+            tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
+        }
+
+        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, childId).size)
     }
 
     private fun updateContactInfo(user: AuthenticatedUser) {

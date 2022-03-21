@@ -20,6 +20,22 @@ fun Database.Transaction.insertGuardianChildren(guardianId: PersonId, childIds: 
 fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: List<PersonId>) =
     insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
 
+fun Database.Read.isGuardianBlocked(guardianId: PersonId, childId: ChildId): Boolean =
+    createQuery(
+        """
+SELECT EXISTS (
+    SELECT 1
+    FROM guardian_blocklist
+    WHERE guardian_id = :guardianId
+    AND child_id = :childId
+)
+        """.trimIndent()
+    )
+        .bind("guardianId", guardianId)
+        .bind("childId", childId)
+        .mapTo<Boolean>()
+        .one()
+
 private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
     val batch = prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
     guardianIdChildIdPairs.forEach {

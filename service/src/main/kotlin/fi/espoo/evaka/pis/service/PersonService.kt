@@ -522,25 +522,30 @@ data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = nul
 
 private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
     val child = upsertVtjPerson(tx, vtjPersonDTO)
-    val guardians = vtjPersonDTO.guardians.map { upsertVtjPerson(tx, it) }
+    initChildIfNotExists(tx, child.id)
+    val guardians = vtjPersonDTO.guardians.map {
+        upsertVtjPerson(tx, it)
+    }.filterNot { tx.isGuardianBlocked(it.id, child.id) }
     createOrReplaceChildRelationships(
         tx,
         childId = child.id,
         guardianIds = guardians.map { it.id }
     )
-    initChildIfNotExists(tx, listOf(child.id))
     return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
 private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
     val guardian = upsertVtjPerson(tx, vtjPersonDTO)
-    val children = vtjPersonDTO.children.map { upsertVtjPerson(tx, it) }
+    val children = vtjPersonDTO.children.map {
+        upsertVtjPerson(tx, it).also { child ->
+            initChildIfNotExists(tx, child.id)
+        }
+    }.filterNot { tx.isGuardianBlocked(guardian.id, it.id) }
     createOrReplaceGuardianRelationships(
         tx,
         guardianId = guardian.id,
         childIds = children.map { it.id }
     )
-    initChildIfNotExists(tx, children.map { it.id })
     return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
 }
 
@@ -556,11 +561,9 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
     }
 }
 
-private fun initChildIfNotExists(tx: Database.Transaction, childIds: List<ChildId>) {
-    childIds.forEach { childId ->
-        if (tx.getChild(childId) == null)
-            tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
-    }
+private fun initChildIfNotExists(tx: Database.Transaction, childId: ChildId) {
+    if (tx.getChild(childId) == null)
+        tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
 }
 
 private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: PersonId, childIds: List<ChildId>) {
