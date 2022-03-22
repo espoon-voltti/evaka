@@ -523,6 +523,7 @@ sealed interface Action {
         READ_INCOME_STATEMENTS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INVOICE_CORRECTIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_OPH_OID(HasGlobalRole(DIRECTOR), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),

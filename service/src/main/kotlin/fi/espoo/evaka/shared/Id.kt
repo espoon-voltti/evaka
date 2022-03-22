@@ -44,6 +44,7 @@ sealed interface DatabaseTable {
     sealed class Income : DatabaseTable
     sealed class IncomeStatement : DatabaseTable
     sealed class Invoice : DatabaseTable
+    sealed class InvoiceCorrection : DatabaseTable
     sealed class InvoiceRow : DatabaseTable
     sealed class KoskiStudyRight : DatabaseTable
     sealed class Message : DatabaseTable
@@ -104,6 +105,7 @@ typealias HolidayQuestionnaireId = Id<DatabaseTable.HolidayQuestionnaire>
 typealias IncomeId = Id<DatabaseTable.Income>
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
 typealias InvoiceId = Id<DatabaseTable.Invoice>
+typealias InvoiceCorrectionId = Id<DatabaseTable.InvoiceCorrection>
 typealias InvoiceRowId = Id<DatabaseTable.InvoiceRow>
 typealias KoskiStudyRightId = Id<DatabaseTable.KoskiStudyRight>
 typealias MessageId = Id<DatabaseTable.Message>
