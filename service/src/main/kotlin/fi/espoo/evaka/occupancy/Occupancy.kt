@@ -384,10 +384,21 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
 
     val serviceNeeds = this.createQuery(
         """
-SELECT sn.placement_id, sno.occupancy_coefficient, daterange(sn.start_date, sn.end_date, '[]') AS period
+SELECT
+    sn.placement_id,
+    CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
+        WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+        ELSE sno.occupancy_coefficient
+    END AS occupancy_coefficient,
+    daterange(sn.start_date, sn.end_date, '[]') AS period
 FROM service_need sn
+JOIN placement pl ON sn.placement_id = pl.id
 JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE sn.placement_id = ANY(:placementIds)
+JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+JOIN person ch ON ch.id = pl.child_id
+JOIN daycare u ON pl.unit_id = u.id
+WHERE sn.placement_id = ANY(:placementIds) AND ch.date_of_birth IS NOT NULL
 """
     )
         .bind("placementIds", placements.map { it.placementId }.toList().toTypedArray())
@@ -395,8 +406,8 @@ WHERE sn.placement_id = ANY(:placementIds)
         .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
-        this.createQuery("SELECT occupancy_coefficient, valid_placement_type FROM service_need_option WHERE default_option")
-            .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to row.mapColumn<BigDecimal>("occupancy_coefficient") }
+        this.createQuery("SELECT occupancy_coefficient, occupancy_coefficient_under_3y, valid_placement_type FROM service_need_option WHERE default_option")
+            .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to Pair(row.mapColumn<BigDecimal>("occupancy_coefficient"), row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")) }
             .toMap()
 
     val assistanceNeeds =
@@ -424,16 +435,16 @@ WHERE sn.placement_id = ANY(:placementIds)
         val dateOfBirth = childBirthdays[placement.childId]
             ?: error("No date of birth found for child ${placement.childId}")
 
-        val serviceNeedCoefficient = when {
-            placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
-            date < dateOfBirth.plusYears(3) -> BigDecimal(youngChildOccupancyCoefficient)
-            else -> serviceNeeds[placement.placementId]
-                ?.let { placementServiceNeeds ->
-                    placementServiceNeeds.find { it.period.includes(date) }?.occupancyCoefficient
-                }
-                ?: defaultServiceNeedCoefficients[placement.type]
-                ?: error("No default service need found for placement type ${placement.type}")
-        }
+        val serviceNeedCoefficient = serviceNeeds[placement.placementId]
+            ?.let { placementServiceNeeds ->
+                placementServiceNeeds.find { it.period.includes(date) }?.occupancyCoefficient
+            }
+            ?: when {
+                placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
+                date < dateOfBirth.plusYears(3) -> defaultServiceNeedCoefficients[placement.type]?.second
+                else -> defaultServiceNeedCoefficients[placement.type]?.first
+            }
+            ?: error("No coefficient found for placement type ${placement.type}")
 
         return assistanceCoefficient * serviceNeedCoefficient
     }
