@@ -209,6 +209,7 @@ class PDFService(
             val finalFeeFormatted: String,
             val feeFormatted: String,
             val siblingDiscount: Int,
+            val incomeTotal: String?, // head of family + partner + child income
             val childIncomeTotal: String?,
             val hasChildIncome: Boolean
         )
@@ -254,6 +255,7 @@ class PDFService(
                     formatCents(it.finalFee)!!,
                     formatCents(it.fee)!!,
                     it.siblingDiscount,
+                    formatCents(totalIncome + (it.childIncome?.total ?: 0)),
                     formatCents(it.childIncome?.total),
                     it.childIncome != null && it.childIncome.total > 0
                 )
