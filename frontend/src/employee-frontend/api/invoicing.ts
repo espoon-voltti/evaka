@@ -17,6 +17,7 @@ import {
   InvoiceCorrection,
   InvoiceDetailed,
   InvoiceSummary,
+  NewInvoiceCorrection,
   PersonBasic,
   PersonDetailed,
   VoucherValueDecisionDetailed,
@@ -593,6 +594,15 @@ export async function getPersonInvoiceCorrections(
       }))
     )
     .then((res) => Success.of(res))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createInvoiceCorrection(
+  row: NewInvoiceCorrection
+): Promise<Result<void>> {
+  return client
+    .post('/invoice-corrections', row)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

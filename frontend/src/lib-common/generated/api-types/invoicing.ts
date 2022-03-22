@@ -490,6 +490,21 @@ export interface InvoiceSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.NewInvoiceCorrection
+*/
+export interface NewInvoiceCorrection {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
+  note: string
+  period: FiniteDateRange
+  product: string
+  unitId: UUID
+  unitPrice: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.PersonBasic
 */
 export interface PersonBasic {

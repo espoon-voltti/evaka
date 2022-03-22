@@ -200,6 +200,7 @@ export type Pairing = 'POST_RESPONSE'
 export type Person =
   | 'ADD_SSN'
   | 'CREATE_INCOME'
+  | 'CREATE_INVOICE_CORRECTION'
   | 'CREATE_PARENTSHIP'
   | 'CREATE_PARTNERSHIP'
   | 'DISABLE_SSN_ADDING'

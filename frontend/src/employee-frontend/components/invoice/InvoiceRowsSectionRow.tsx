@@ -27,7 +27,7 @@ import { useTranslation } from '../../state/i18n'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
 
-interface InvoiceRowStub {
+export interface InvoiceRowStub {
   product: string
   description: string
   unitId: UUID | null
@@ -42,7 +42,7 @@ interface InvoiceRowStub {
 interface Props {
   row: InvoiceRowStub
   update: UpdateStateFn<InvoiceRowStub>
-  remove: () => void
+  remove: (() => void) | undefined
   products: ProductWithName[]
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
@@ -158,16 +158,18 @@ function InvoiceRowSectionRow({
             onChange={(unitPrice) => void update({ unitPrice })}
           />
         ) : (
-          formatCents(unitPrice)
+          `${formatCents(unitPrice)} €`
         )}
       </Td>
       <Td align="right">
-        <TotalPrice>
-          {formatCents(editable ? amount * unitPrice : price)}
-        </TotalPrice>
+        {editable ? (
+          <TotalPrice>{`${formatCents(amount * unitPrice)} €`}</TotalPrice>
+        ) : (
+          `${formatCents(price)} €`
+        )}
       </Td>
       <Td>
-        {editable ? (
+        {remove ? (
           <DeleteButton
             icon={faTrash}
             onClick={remove}
@@ -184,7 +186,7 @@ const DeleteButton = styled(IconButton)`
 `
 
 const TotalPrice = styled.div`
-  padding: 6px 12px 6px 12px;
+  padding: 6px 0;
 `
 
 const NarrowEuroInput = styled(EuroInput)`

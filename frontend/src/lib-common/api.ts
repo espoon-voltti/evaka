@@ -189,7 +189,15 @@ export function map<A, B, C, D, E>(
   dr: Result<D>,
   fn: (a: A, b: B, c: C, d: D) => E
 ): Result<D>
-export function map<A, B, C, D, E>(...args: unknown[]): Result<unknown> {
+export function map<A, B, C, D, E, F>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>,
+  dr: Result<D>,
+  er: Result<E>,
+  fn: (a: A, b: B, c: C, d: D, e: E) => F
+): Result<D>
+export function map<A, B, C, D, E, F>(...args: unknown[]): Result<unknown> {
   switch (args.length) {
     case 3: {
       const [ar, br, fn] = args as [Result<A>, Result<B>, (a: A, b: B) => C]
@@ -217,6 +225,19 @@ export function map<A, B, C, D, E>(...args: unknown[]): Result<unknown> {
       const f = (a: A) => (b: B) => (c: C) => (d: D) => fn(a, b, c, d)
       return dr.apply(cr.apply(br.apply(ar.map(f))))
     }
+    case 6: {
+      const [ar, br, cr, dr, er, fn] = args as [
+        Result<A>,
+        Result<B>,
+        Result<C>,
+        Result<D>,
+        Result<E>,
+        (a: A, b: B, c: C, d: D, e: E) => F
+      ]
+      const f = (a: A) => (b: B) => (c: C) => (d: D) => (e: E) =>
+        fn(a, b, c, d, e)
+      return er.apply(dr.apply(cr.apply(br.apply(ar.map(f)))))
+    }
   }
   throw new Error('not reached')
 }
@@ -233,7 +254,14 @@ export function combine<A, B, C, D>(
   cr: Result<C>,
   dr: Result<D>
 ): Result<[A, B, C, D]>
-export function combine<A, B, C, D>(...args: unknown[]): Result<unknown> {
+export function combine<A, B, C, D, E>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>,
+  dr: Result<D>,
+  er: Result<E>
+): Result<[A, B, C, D, E]>
+export function combine<A, B, C, D, E>(...args: unknown[]): Result<unknown> {
   switch (args.length) {
     case 2: {
       const [ar, br] = args as [Result<A>, Result<B>]
@@ -251,6 +279,22 @@ export function combine<A, B, C, D>(...args: unknown[]): Result<unknown> {
         Result<D>
       ]
       return map(ar, br, cr, dr, (a, b, c, d): [A, B, C, D] => [a, b, c, d])
+    }
+    case 5: {
+      const [ar, br, cr, dr, er] = args as [
+        Result<A>,
+        Result<B>,
+        Result<C>,
+        Result<D>,
+        Result<E>
+      ]
+      return map(ar, br, cr, dr, er, (a, b, c, d, e): [A, B, C, D, E] => [
+        a,
+        b,
+        c,
+        d,
+        e
+      ])
     }
   }
   throw new Error('not reached')
