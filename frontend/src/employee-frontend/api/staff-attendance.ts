@@ -4,11 +4,37 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import {
+  EmployeeAttendance,
+  ExternalAttendance,
+  StaffAttendanceResponse
+} from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
 import { client } from './client'
+
+const mapExternalAttendance = ({
+  arrived,
+  departed,
+  ...rest
+}: JsonOf<ExternalAttendance>): ExternalAttendance => ({
+  ...rest,
+  arrived: new Date(arrived),
+  departed: departed ? new Date(departed) : null
+})
+
+const mapEmployeeAttendance = ({
+  attendances,
+  ...rest
+}: JsonOf<EmployeeAttendance>): EmployeeAttendance => ({
+  ...rest,
+  attendances: attendances.map(({ arrived, departed, ...rest }) => ({
+    ...rest,
+    arrived: new Date(arrived),
+    departed: departed ? new Date(departed) : null
+  }))
+})
 
 export function getStaffAttendances(
   unitId: UUID,
@@ -22,22 +48,9 @@ export function getStaffAttendances(
         end: range.end.formatIso()
       }
     })
-    .then((res) => ({
-      extraAttendances: res.data.extraAttendances.map(
-        ({ arrived, departed, ...rest }) => ({
-          ...rest,
-          arrived: new Date(arrived),
-          departed: departed ? new Date(departed) : null
-        })
-      ),
-      staff: res.data.staff.map(({ attendances, ...rest }) => ({
-        ...rest,
-        attendances: attendances.map(({ arrived, departed, ...rest }) => ({
-          ...rest,
-          arrived: new Date(arrived),
-          departed: departed ? new Date(departed) : null
-        }))
-      }))
+    .then(({ data: { extraAttendances, staff } }) => ({
+      extraAttendances: extraAttendances.map(mapExternalAttendance),
+      staff: staff.map(mapEmployeeAttendance)
     }))
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
