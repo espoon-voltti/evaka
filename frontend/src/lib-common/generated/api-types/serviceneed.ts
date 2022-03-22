@@ -59,6 +59,7 @@ export interface ServiceNeedOption {
   nameFi: string
   nameSv: string
   occupancyCoefficient: number
+  occupancyCoefficientUnder3y: number
   partDay: boolean
   partWeek: boolean
   updated: Date
