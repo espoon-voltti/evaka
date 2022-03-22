@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
+import { combine, Success } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -23,12 +24,14 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
+import { getStaffAttendances } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 
+import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
-import ReservationsTable from './ReservationsTable'
+import StaffAttendanceTable from './StaffAttendanceTable'
 
 const Time = styled.span`
   font-weight: ${fontWeights.normal};
@@ -48,7 +51,7 @@ const formatWeekTitle = (dateRange: FiniteDateRange) =>
 
 interface Props {
   unitId: UUID
-  groupId: UUID | 'no-group'
+  groupId: UUID | 'no-group' | 'staff'
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   isShiftCareUnit: boolean
@@ -69,13 +72,21 @@ export default React.memo(function UnitAttendanceReservationsView({
     [selectedDate]
   )
 
-  const [reservations, reload] = useApiState(
+  const [childReservations, reloadChildReservations] = useApiState(
     () => getUnitAttendanceReservations(unitId, dateRange),
     [unitId, dateRange]
   )
 
+  const [staffAttendances] = useApiState(
+    () =>
+      groupId === 'staff'
+        ? getStaffAttendances(unitId, dateRange)
+        : Promise.resolve(Success.of({ staff: [], extraAttendances: [] })),
+    [groupId, unitId, dateRange]
+  )
+
   const [creatingReservationChild, setCreatingReservationChild] =
-    useState<Child | null>(null)
+    useState<Child>()
 
   const legendTimeLabels = useMemo(() => {
     const t = i18n.unit.attendanceReservations.legend
@@ -91,86 +102,82 @@ export default React.memo(function UnitAttendanceReservationsView({
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
 
-  return (
-    <>
-      {renderResult(reservations, (data) => {
-        const selectedGroup = data.groups.find((g) => g.group.id === groupId)
+  return renderResult(
+    combine(childReservations, staffAttendances),
+    ([childData, staffData]) => (
+      <>
+        {creatingReservationChild && (
+          <ReservationModalSingleChild
+            child={creatingReservationChild}
+            onReload={reloadChildReservations}
+            onClose={() => setCreatingReservationChild(undefined)}
+            isShiftCareUnit={isShiftCareUnit}
+            operationalDays={operationalDays}
+          />
+        )}
 
-        return (
-          <>
-            {creatingReservationChild && (
-              <ReservationModalSingleChild
-                child={creatingReservationChild}
-                onReload={reload}
-                onClose={() => setCreatingReservationChild(null)}
-                isShiftCareUnit={isShiftCareUnit}
-                operationalDays={operationalDays}
-              />
-            )}
+        <WeekPicker>
+          <WeekPickerButton
+            icon={faChevronLeft}
+            onClick={() => setSelectedDate(selectedDate.subDays(7))}
+            size="s"
+          />
+          <WeekTitle primary centered>
+            {formatWeekTitle(dateRange)}
+          </WeekTitle>
+          <WeekPickerButton
+            icon={faChevronRight}
+            onClick={() => setSelectedDate(selectedDate.addDays(7))}
+            size="s"
+          />
+        </WeekPicker>
+        <Gap size="s" />
+        <FixedSpaceColumn spacing="L">
+          {groupId === 'staff' ? (
+            <StaffAttendanceTable
+              operationalDays={childData.operationalDays}
+              staffAttendances={staffData.staff}
+              extraAttendances={staffData.extraAttendances}
+            />
+          ) : (
+            <ChildReservationsTable
+              unitId={unitId}
+              operationalDays={childData.operationalDays}
+              allDayRows={
+                childData.groups.find((g) => g.group.id === groupId)
+                  ?.children ?? childData.ungrouped
+              }
+              onMakeReservationForChild={setCreatingReservationChild}
+              selectedDate={selectedDate}
+              reloadReservations={reloadChildReservations}
+            />
+          )}
+        </FixedSpaceColumn>
 
-            <WeekPicker>
-              <WeekPickerButton
-                icon={faChevronLeft}
-                onClick={() => setSelectedDate(selectedDate.addDays(-7))}
-                size="s"
-              />
-              <WeekTitle primary centered>
-                {formatWeekTitle(dateRange)}
-              </WeekTitle>
-              <WeekPickerButton
-                icon={faChevronRight}
-                onClick={() => setSelectedDate(selectedDate.addDays(7))}
-                size="s"
-              />
-            </WeekPicker>
-            <Gap size="s" />
-            <FixedSpaceColumn spacing="L">
-              {selectedGroup ? (
-                <ReservationsTable
-                  unitId={unitId}
-                  operationalDays={data.operationalDays}
-                  allDayRows={selectedGroup.children}
-                  onMakeReservationForChild={setCreatingReservationChild}
-                  selectedDate={selectedDate}
-                  reloadReservations={reload}
-                />
-              ) : (
-                <ReservationsTable
-                  unitId={unitId}
-                  operationalDays={data.operationalDays}
-                  allDayRows={data.ungrouped}
-                  onMakeReservationForChild={setCreatingReservationChild}
-                  selectedDate={selectedDate}
-                  reloadReservations={reload}
-                />
-              )}
+        <div>
+          <HorizontalLine dashed slim />
+          <H3>{i18n.absences.legendTitle}</H3>
+          <FixedSpaceRow alignItems="flex-start" spacing="XL">
+            <LabelValueList
+              spacing="small"
+              horizontalSpacing="small"
+              labelWidth="fit-content(40%)"
+              contents={legendTimeLabels}
+            />
+            <FixedSpaceColumn spacing="xs">
+              <AbsenceLegend icons />
             </FixedSpaceColumn>
-
-            <div>
-              <HorizontalLine dashed slim />
-              <H3>{i18n.absences.legendTitle}</H3>
-              <FixedSpaceRow alignItems="flex-start" spacing="XL">
-                <LabelValueList
-                  spacing="small"
-                  horizontalSpacing="small"
-                  labelWidth="fit-content(40%)"
-                  contents={legendTimeLabels}
-                />
-                <FixedSpaceColumn spacing="xs">
-                  <AbsenceLegend icons />
-                </FixedSpaceColumn>
-              </FixedSpaceRow>
-            </div>
-          </>
-        )
-      })}
-      <Gap size="L" />
-    </>
+          </FixedSpaceRow>
+        </div>
+      </>
+    )
   )
 })
 
-const getWeekDateRange = (date: LocalDate) =>
-  new FiniteDateRange(date.startOfWeek(), date.startOfWeek().addDays(6))
+const getWeekDateRange = (date: LocalDate) => {
+  const start = date.startOfWeek()
+  return new FiniteDateRange(start, start.addDays(6))
+}
 
 const WeekPicker = styled.div`
   display: flex;

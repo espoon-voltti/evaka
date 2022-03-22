@@ -6,7 +6,7 @@ import React, { createContext, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -15,7 +15,7 @@ import { client } from '../api/client'
 import { getUnitStaffAttendances } from '../api/realtimeStaffAttendances'
 
 interface StaffAttendanceState {
-  staffAttendanceResponse: Result<StaffAttendanceResponse>
+  staffAttendanceResponse: Result<CurrentDayStaffAttendanceResponse>
   reloadStaffAttendance: () => void
 }
 

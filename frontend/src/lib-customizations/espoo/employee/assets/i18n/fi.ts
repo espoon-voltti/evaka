@@ -1505,6 +1505,7 @@ export const fi = {
     attendances: {
       title: 'Varaukset ja läsnäolot',
       noGroup: 'Ei ryhmää',
+      staff: 'Henkilökunta',
       modes: {
         week: 'Viikko',
         month: 'Kuukausi'

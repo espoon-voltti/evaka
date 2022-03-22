@@ -7,13 +7,10 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
   AttendanceResponse,
-  Child
+  Child,
+  DepartureRequest
 } from 'lib-common/generated/api-types/attendance'
-import {
-  Absence,
-  AbsenceCategory,
-  AbsenceType
-} from 'lib-common/generated/api-types/daycare'
+import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -102,13 +99,6 @@ export async function postFullDayAbsence(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface AbsencePayload {
-  absenceType: AbsenceType
-  childId: UUID
-  date: LocalDate
-  category: AbsenceCategory
-}
-
 export async function postAbsenceRange(
   unitId: string,
   childId: string,
@@ -160,16 +150,12 @@ export async function getChildDeparture(
 export async function postDeparture(
   unitId: string,
   childId: string,
-  absenceType: AbsenceType,
-  departed: string
+  body: DepartureRequest
 ): Promise<Result<void>> {
   return client
     .post<JsonOf<AttendanceResponse>>(
       `/attendances/units/${unitId}/children/${childId}/departure`,
-      {
-        departed,
-        absenceType
-      }
+      body
     )
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))

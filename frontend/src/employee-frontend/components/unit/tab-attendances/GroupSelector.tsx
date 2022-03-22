@@ -10,14 +10,15 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { getDaycareGroups } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   unitId: UUID
-  selected: UUID | 'no-group' | null
-  onSelect: (val: UUID | 'no-group') => void
+  selected: UUID | 'no-group' | 'staff' | null
+  onSelect: (val: UUID | 'no-group' | 'staff') => void
   'data-qa'?: string
 }
 
@@ -45,7 +46,8 @@ export default React.memo(function GroupSelector({
             .map(({ id }) => id)
         )
         .getOrElse([]),
-      'no-group'
+      'no-group',
+      ...(featureFlags.experimental?.realtimeStaffAttendance ? ['staff'] : [])
     ],
     [groups, selected]
   )
@@ -53,11 +55,16 @@ export default React.memo(function GroupSelector({
   const getItemLabel = useCallback(
     (item: string | null) =>
       groups
-        .map((gs) =>
-          item === 'no-group'
-            ? i18n.unit.attendances.noGroup
-            : gs.find(({ id }) => id === item)?.name ?? ''
-        )
+        .map((gs) => {
+          switch (item) {
+            case 'no-group':
+              return i18n.unit.attendances.noGroup
+            case 'staff':
+              return i18n.unit.attendances.staff
+            default:
+              return gs.find(({ id }) => id === item)?.name ?? ''
+          }
+        })
         .getOrElse(''),
     [i18n, groups]
   )

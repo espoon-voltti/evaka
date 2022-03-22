@@ -32,7 +32,9 @@ import GroupSelector from './tab-attendances/GroupSelector'
 import Occupancy from './tab-unit-information/Occupancy'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 
-type Mode = 'week' | 'month'
+type CalendarMode = 'week' | 'month'
+type GroupId = UUID
+type AttendanceFilter = GroupId | 'no-group' | 'staff' | null
 
 const TopRow = styled.div`
   display: flex;
@@ -46,21 +48,24 @@ const GroupSelectorWrapper = styled.div`
   margin-bottom: ${defaultMargins.m};
 `
 
+const getDefaultGroup = (groupParam: string): AttendanceFilter | null =>
+  ['no-group', 'staff'].includes(groupParam) || UUID_REGEX.test(groupParam)
+    ? groupParam
+    : null
+
 export default React.memo(function TabAttendances() {
   const { i18n } = useTranslation()
   const { id: unitId } = useParams<{ id: UUID }>()
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
-  const [mode, setMode] = useState<Mode>('month')
+  const [mode, setMode] = useState<CalendarMode>('month')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
   const { roles } = useContext(UserContext)
 
   const groupParam = useQuery().get('group')
-  const defaultGroup =
-    groupParam && (groupParam === 'no-group' || UUID_REGEX.test(groupParam))
-      ? groupParam
-      : null
-  const [groupId, setGroupId] = useState<UUID | 'no-group' | null>(defaultGroup)
+  const [groupId, setGroupId] = useState<AttendanceFilter>(() =>
+    groupParam ? getDefaultGroup(groupParam) : null
+  )
   useSyncQueryParams(
     groupId ? { group: groupId } : ({} as Record<string, string>)
   )
@@ -142,14 +147,17 @@ export default React.memo(function TabAttendances() {
           />
         </GroupSelectorWrapper>
 
-        {mode === 'month' && groupId !== null && groupId !== 'no-group' && (
-          <Absences
-            groupId={groupId}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            reservationEnabled={reservationEnabled}
-          />
-        )}
+        {mode === 'month' &&
+          groupId !== null &&
+          groupId !== 'no-group' &&
+          groupId !== 'staff' && (
+            <Absences
+              groupId={groupId}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              reservationEnabled={reservationEnabled}
+            />
+          )}
 
         {mode === 'week' && groupId !== null && (
           <UnitAttendanceReservationsView
@@ -167,6 +175,7 @@ export default React.memo(function TabAttendances() {
             }
           />
         )}
+        <Gap size="L" />
       </ContentArea>
     </>
   )
