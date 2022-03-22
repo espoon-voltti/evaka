@@ -33,7 +33,7 @@
   "verifyEmail" : false,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
-  "resetPasswordAllowed" : false,
+  "resetPasswordAllowed": true,
   "editUsernameAllowed" : false,
   "bruteForceProtected" : false,
   "permanentLockout" : false,
@@ -1077,7 +1077,17 @@
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
-  "smtpServer" : { },
+  "smtpServer": {
+    "starttls": "",
+    "auth": "",
+    "port": "1025",
+    "host": "smtp",
+    "from": "keycloak@localhost",
+    "ssl": ""
+  },
+  "loginTheme": "evaka",
+  "accountTheme": "evaka",
+  "emailTheme": "evaka",
   "eventsEnabled" : false,
   "eventsListeners" : [ "jboss-logging" ],
   "enabledEventTypes" : [ ],
@@ -1192,8 +1202,12 @@
       }
     } ]
   },
-  "internationalizationEnabled" : false,
-  "supportedLocales" : [ ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "fi",
+    "sv",
+    "en"
+  ],
   "authenticationFlows" : [ {
     "id" : "824ffa0f-b295-41da-bd25-dfd4239338ff",
     "alias" : "Account verification options",
@@ -1819,7 +1833,7 @@
   "verifyEmail" : false,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
-  "resetPasswordAllowed" : false,
+  "resetPasswordAllowed": true,
   "editUsernameAllowed" : false,
   "bruteForceProtected" : false,
   "permanentLockout" : false,
@@ -2934,7 +2948,17 @@
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
-  "smtpServer" : { },
+  "smtpServer": {
+    "starttls": "",
+    "auth": "",
+    "port": "1025",
+    "host": "smtp",
+    "from": "keycloak@localhost",
+    "ssl": ""
+  },
+  "loginTheme": "evaka",
+  "accountTheme": "evaka",
+  "emailTheme": "evaka",
   "eventsEnabled" : false,
   "eventsListeners" : [ "jboss-logging" ],
   "enabledEventTypes" : [ ],
@@ -3049,8 +3073,12 @@
       }
     } ]
   },
-  "internationalizationEnabled" : false,
-  "supportedLocales" : [ ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "fi",
+    "sv",
+    "en"
+  ],
   "authenticationFlows" : [ {
     "id" : "0d9e9783-8d1b-481d-8299-d333fa8741a7",
     "alias" : "Account verification options",

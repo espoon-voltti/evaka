@@ -3,6 +3,7 @@
     <#if section = "header">
         <h2 class="${properties.customH2Class}">${msg("updatePasswordTitle")}</h2>
     <#elseif section = "form">
+        <p class="evaka-help-text">${msg("updatePasswordHelp")}</p>
         <form id="kc-passwd-update-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <input type="text" id="username" name="username" value="${username}" autocomplete="username" readonly="readonly" style="display:none;"/>
             <input type="password" id="password" name="password" autocomplete="current-password" style="display:none;"/>
