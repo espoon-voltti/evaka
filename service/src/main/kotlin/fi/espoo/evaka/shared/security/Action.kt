@@ -556,7 +556,7 @@ sealed interface Action {
         READ_CHILD_CAPACITY_FACTORS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit()),
         UPDATE,
 
-        READ_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit()),
+        READ_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit(), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
 
         READ_OCCUPANCIES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
 

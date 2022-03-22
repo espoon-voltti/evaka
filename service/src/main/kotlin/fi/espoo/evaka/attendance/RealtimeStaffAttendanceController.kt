@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,16 +33,12 @@ class RealtimeStaffAttendanceController(
     ): StaffAttendanceResponse {
         Audit.StaffAttendanceRead.log(targetId = unitId)
 
-        // TODO AccessControl
+        ac.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {
                 val range = FiniteDateRange(start, end)
-                val rawAttendances = it.getStaffAttendancesForDateRange(unitId, range)
-                val attendancesByEmployee = rawAttendances.groupBy { raw -> raw.employeeId }
-                val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)
-                    .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
-                    .map { emp -> EmployeeAttendance(emp.id, emp.firstName, emp.lastName, listOf()) }
+                val attendancesByEmployee = it.getStaffAttendancesForDateRange(unitId, range).groupBy { raw -> raw.employeeId }
                 val staffWithAttendance = attendancesByEmployee.entries.map { (employeeId, data) ->
                     EmployeeAttendance(
                         employeeId = employeeId,
@@ -50,6 +47,9 @@ class RealtimeStaffAttendanceController(
                         attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed) }
                     )
                 }
+                val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)
+                    .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
+                    .map { emp -> EmployeeAttendance(emp.id, emp.firstName, emp.lastName, listOf()) }
                 StaffAttendanceResponse(
                     staff = staffWithAttendance + staffWithoutAttendance,
                     extraAttendances = it.getExternalStaffAttendancesByDateRange(unitId, range)
