@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { combine } from 'lib-common/api'
+import { combine, Success } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -78,8 +78,11 @@ export default React.memo(function UnitAttendanceReservationsView({
   )
 
   const [staffAttendances] = useApiState(
-    () => getStaffAttendances(unitId, dateRange),
-    [unitId, dateRange]
+    () =>
+      groupId === 'staff'
+        ? getStaffAttendances(unitId, dateRange)
+        : Promise.resolve(Success.of({ staff: [], extraAttendances: [] })),
+    [groupId, unitId, dateRange]
   )
 
   const [creatingReservationChild, setCreatingReservationChild] =

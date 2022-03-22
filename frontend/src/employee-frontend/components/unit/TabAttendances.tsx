@@ -147,14 +147,17 @@ export default React.memo(function TabAttendances() {
           />
         </GroupSelectorWrapper>
 
-        {mode === 'month' && groupId !== null && groupId !== 'no-group' && (
-          <Absences
-            groupId={groupId}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            reservationEnabled={reservationEnabled}
-          />
-        )}
+        {mode === 'month' &&
+          groupId !== null &&
+          groupId !== 'no-group' &&
+          groupId !== 'staff' && (
+            <Absences
+              groupId={groupId}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              reservationEnabled={reservationEnabled}
+            />
+          )}
 
         {mode === 'week' && groupId !== null && (
           <UnitAttendanceReservationsView
