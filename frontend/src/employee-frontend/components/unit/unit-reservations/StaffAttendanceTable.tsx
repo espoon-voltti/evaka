@@ -4,7 +4,7 @@
 
 import classNames from 'classnames'
 import { isSameDay } from 'date-fns'
-import { sortBy } from 'lodash'
+import { groupBy, sortBy } from 'lodash'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -17,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
+import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
@@ -27,9 +28,9 @@ import {
   DayTd,
   DayTr,
   NameTd,
-  NameWrapper
+  NameWrapper,
+  StyledTd
 } from './attendance-elements'
-import { StyledTd } from './attendance-elements'
 
 interface Props {
   operationalDays: OperationalDay[]
@@ -47,15 +48,30 @@ export default React.memo(function StaffAttendanceTable({
   const staffRows = useMemo(
     () =>
       sortBy(
-        staffAttendances,
-        (attendance) => attendance.lastName,
-        (attendance) => attendance.firstName
+        staffAttendances.map(({ firstName, lastName, ...rest }) => ({
+          ...rest,
+          name: formatName(firstName.split(/\s/)[0], lastName, i18n, true)
+        })),
+        (attendance) => attendance.name
       ),
-    [staffAttendances]
+    [i18n, staffAttendances]
   )
 
-  const extraRows = useMemo(
-    () => sortBy(extraAttendances, (attendance) => attendance.name),
+  const extraRowsGroupedByName = useMemo(
+    () =>
+      sortBy(
+        Object.entries(groupBy(extraAttendances, (a) => a.name)).map(
+          ([name, rows]) => ({
+            name,
+            attendances: rows.map(({ id, arrived, departed }) => ({
+              id,
+              arrived,
+              departed
+            }))
+          })
+        ),
+        (attendance) => attendance.name
+      ),
     [extraAttendances]
   )
 
@@ -63,58 +79,44 @@ export default React.memo(function StaffAttendanceTable({
     <Table>
       <AttendanceTableHeader operationalDays={operationalDays} />
       <Tbody>
-        {staffRows.flatMap((employeeAttendance, index) => {
-          const { firstName, lastName, employeeId, attendances } =
-            employeeAttendance
-          return (
-            <AttendanceRow
-              key={employeeId}
-              id={`${employeeId}-${index}`}
-              dataQa={`staff-attendance-row-${employeeId}`}
-              rowIndex={index}
-              name={formatName(firstName.split(/\s/)[0], lastName, i18n, true)}
-              operationalDays={operationalDays}
-              attendances={attendances}
-            />
-          )
-        })}
-        {extraRows.flatMap((externalAttendance, index) => {
-          const { name, id, arrived } = externalAttendance
-          return (
-            <AttendanceRow
-              key={id}
-              id={`${id}-${index}`}
-              dataQa={`staff-attendance-row-${id}`}
-              rowIndex={index}
-              name={name}
-              operationalDays={operationalDays}
-              attendances={[{ id: `${name}-${index}`, arrived }]}
-            />
-          )
-        })}
+        {staffRows.map(({ attendances, employeeId, name }, index) => (
+          <AttendanceRow
+            key={`${employeeId}-${index}`}
+            rowIndex={index}
+            name={name}
+            operationalDays={operationalDays}
+            attendances={attendances}
+          />
+        ))}
+        {extraRowsGroupedByName.map((row, index) => (
+          <AttendanceRow
+            key={`${row.name}-${index}`}
+            rowIndex={index}
+            name={row.name}
+            operationalDays={operationalDays}
+            attendances={row.attendances}
+          />
+        ))}
       </Tbody>
     </Table>
   )
 })
 
-type AttendanceRowProps = {
-  id: string
-  dataQa: string
+interface AttendanceRowProps extends BaseProps {
   rowIndex: number
   name: string
   operationalDays: OperationalDay[]
-  attendances: Array<{ id: string; arrived: Date; departed?: Date | null }>
+  attendances: { id: string; arrived: Date; departed?: Date | null }[]
 }
+
 const AttendanceRow = React.memo(function AttendanceRow({
-  id,
-  dataQa,
   rowIndex,
   name,
   operationalDays,
   attendances
 }: AttendanceRowProps) {
   return (
-    <DayTr key={id} data-qa={dataQa}>
+    <DayTr>
       <NameTd partialRow={false} rowIndex={rowIndex}>
         <NameWrapper>{name}</NameWrapper>
       </NameTd>
