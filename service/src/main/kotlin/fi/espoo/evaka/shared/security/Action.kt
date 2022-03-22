@@ -507,11 +507,12 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
-        ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN).andPersonHasSsnAddingEnabled()),
+        ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
-        DISABLE_SSN,
+        DISABLE_SSN_ADDING(HasGlobalRole(SERVICE_WORKER)),
+        ENABLE_SSN_ADDING,
         GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(FINANCE_ADMIN)),

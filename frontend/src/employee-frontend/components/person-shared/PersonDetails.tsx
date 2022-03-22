@@ -254,7 +254,10 @@ export default React.memo(function PersonDetails({
             dataQa: 'person-ssn',
             value: person.socialSecurityNumber ?? (
               <FixedSpaceColumn spacing="xs">
-                {editing || !permittedActions.has('ADD_SSN') ? (
+                {editing ||
+                !permittedActions.has('ADD_SSN') ||
+                (person.ssnAddingDisabled &&
+                  !permittedActions.has('ENABLE_SSN_ADDING')) ? (
                   <span data-qa="no-ssn">{i18n.personProfile.noSsn}</span>
                 ) : (
                   <InlineButton
@@ -264,7 +267,10 @@ export default React.memo(function PersonDetails({
                     data-qa="add-ssn-button"
                   />
                 )}
-                {permittedActions.has('DISABLE_SSN') ? (
+                {(person.ssnAddingDisabled &&
+                  permittedActions.has('ENABLE_SSN_ADDING')) ||
+                (!person.ssnAddingDisabled &&
+                  permittedActions.has('DISABLE_SSN_ADDING')) ? (
                   <FixedSpaceRow spacing="s" alignItems="center">
                     <Checkbox
                       checked={person.ssnAddingDisabled}
