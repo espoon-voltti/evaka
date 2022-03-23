@@ -5764,6 +5764,7 @@ __metadata:
     fork-ts-checker-webpack-plugin: ^7.2.1
     history: ^4.10.1
     html-webpack-plugin: ^5.5.0
+    intersection-observer: ^0.12.0
     jest: ^27.5.1
     jest-circus: ^27.5.1
     jest-environment-node: ^27.5.1
@@ -6825,6 +6826,13 @@ __metadata:
   version: 2.2.0
   resolution: "interpret@npm:2.2.0"
   checksum: f51efef7cb8d02da16408ffa3504cd6053014c5aeb7bb8c223727e053e4235bf565e45d67028b0c8740d917c603807aa3c27d7bd2f21bf20b6417e2bb3e5fd6e
+  languageName: node
+  linkType: hard
+
+"intersection-observer@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "intersection-observer@npm:0.12.0"
+  checksum: 96d2f3ea4995b7b429b79646467c975230cfbe3ede7fb08d0c022cfe6ee0c89dfa98aa4377e8b5f7bee880322eb118e6c0275607a53043f9c50921da8363c1e8
   languageName: node
   linkType: hard
 

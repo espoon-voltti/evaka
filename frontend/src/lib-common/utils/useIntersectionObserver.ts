@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import 'intersection-observer'
 import { useEffect, useRef, useState } from 'react'
 
 export default function useIntersectionObserver<E extends Element>(
