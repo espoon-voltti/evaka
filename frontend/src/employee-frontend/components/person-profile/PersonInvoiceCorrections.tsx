@@ -30,6 +30,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H4 } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faChild } from 'lib-icons'
 
 import {
@@ -118,6 +119,10 @@ export default React.memo(function PersonInvoiceCorrections({
     cancelEditing()
     reloadCorrections()
   }, [cancelEditing, reloadCorrections])
+
+  if (!featureFlags.experimental?.invoiceCorrections) {
+    return null
+  }
 
   return (
     <CollapsibleSection
