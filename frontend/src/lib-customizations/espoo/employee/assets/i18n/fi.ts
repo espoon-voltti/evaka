@@ -1415,7 +1415,18 @@ export const fi = {
       maximum: 'Maksimi',
       minimum: 'Minimi',
       noValidValues: 'Aikavälille ei voitu laskea täyttöastetta',
-      noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta'
+      noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta',
+      realtime: {
+        children: 'Lasten määrä kertoimella',
+        childrenMax: 'Lasten maksimimäärä',
+        tooltipFooter(
+          utilization: number,
+          staffPresent: number,
+          staffRequired: number
+        ) {
+          return `Käyttöaste: ${utilization} %, henkilökunta ${staffPresent}, tarve ${staffRequired}`
+        }
+      }
     },
     applicationProcess: {
       title: 'Hakuprosessi'

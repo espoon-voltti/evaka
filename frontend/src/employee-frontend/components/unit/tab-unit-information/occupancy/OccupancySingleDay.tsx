@@ -40,6 +40,17 @@ function OccupancySingleDay({
 }: Props) {
   const { i18n } = useTranslation()
 
+  if (
+    featureFlags.experimental?.realtimeStaffAttendance &&
+    realtimeOccupancies
+  ) {
+    return (
+      <Container>
+        <OccupancyDayGraph occupancy={realtimeOccupancies} />
+      </Container>
+    )
+  }
+
   return (
     <Container>
       <Title size={4}>{i18n.unit.occupancy.subtitles.confirmed}</Title>
@@ -61,11 +72,8 @@ function OccupancySingleDay({
         </div>
       )}
       <Title size={4}>{i18n.unit.occupancy.subtitles.realized}</Title>
-      {featureFlags.experimental?.realtimeStaffAttendance &&
-      realtimeOccupancies ? (
-        <OccupancyDayGraph occupancy={realtimeOccupancies} />
-      ) : realizedOccupancies.occupancies.length > 0 &&
-        realizedOccupancies.occupancies[0].percentage != null ? (
+      {realizedOccupancies.occupancies.length > 0 &&
+      realizedOccupancies.occupancies[0].percentage != null ? (
         <Value>{`${realizedOccupancies.occupancies[0].percentage} %`}</Value>
       ) : (
         <div data-qa="occupancies-no-valid-values-realized">

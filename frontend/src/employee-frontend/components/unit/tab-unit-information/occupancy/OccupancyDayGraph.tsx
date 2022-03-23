@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChartData, ChartOptions } from 'chart.js'
+import { setHours, setMinutes } from 'date-fns'
 import { fi } from 'date-fns/locale'
 import { ceil } from 'lodash'
 import React from 'react'
@@ -23,15 +24,52 @@ interface Props {
 export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
   const { i18n } = useTranslation()
 
-  const graphData: DatePoint[] = occupancy.occupancySeries.map((p) => ({
+  if (occupancy.occupancySeries.length === 0) return null
+
+  const childData: DatePoint[] = occupancy.occupancySeries.map((p) => ({
     x: p.time,
-    y: p.occupancyRatio !== null ? p.occupancyRatio * 100 : null
+    y: p.childCapacity
   }))
+  const staffData: DatePoint[] = occupancy.occupancySeries.map((p) => ({
+    x: p.time,
+    y: p.staffCount * 7
+  }))
+
+  const data: ChartData<'line', DatePoint[]> = {
+    datasets: [
+      {
+        label: i18n.unit.occupancy.realtime.children,
+        data: childData,
+        spanGaps: true,
+        stepped: 'before',
+        fill: false,
+        pointBackgroundColor: colors.grayscale.g100,
+        borderColor: colors.grayscale.g100
+      },
+      {
+        label: i18n.unit.occupancy.realtime.childrenMax,
+        data: staffData,
+        spanGaps: true,
+        stepped: 'before',
+        fill: false,
+        pointBackgroundColor: colors.status.danger,
+        borderColor: colors.status.danger
+      }
+    ]
+  }
+
+  const firstAttendance = staffData[0].x.getTime()
+  const at06 = setMinutes(setHours(firstAttendance, 6), 0).getTime()
+
+  const lastAttendance = staffData[staffData.length - 1].x.getTime()
+  const at18 = setMinutes(setHours(lastAttendance, 18), 0).getTime()
 
   const graphOptions: ChartOptions<'line'> = {
     scales: {
       x: {
         type: 'time',
+        min: Math.min(at06, firstAttendance),
+        max: Math.max(at18, lastAttendance),
         time: {
           displayFormats: {
             hour: 'HH:00'
@@ -47,10 +85,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
       y: {
         min: 0,
         ticks: {
-          maxTicksLimit: 5,
-          callback: function (value) {
-            return `${String(value)} %`
-          }
+          maxTicksLimit: 5
         }
       }
     },
@@ -59,32 +94,28 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
         display: false
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
         callbacks: {
-          title: function (tooltipItems) {
-            const tooltipItem = tooltipItems[0]
-            const date = new Date(tooltipItem.parsed.x)
-            return formatTime(date)
-          },
-          label: function (tooltipItem) {
-            return `${String(ceil(tooltipItem.parsed.y * 100) / 100)} %`
+          title: (items) => formatTime(new Date(items[0].parsed.x)),
+          footer: (items) => {
+            const child = items.find((i) => i.datasetIndex === 0)?.parsed.y ?? 0
+            const staff = items.find((i) => i.datasetIndex === 1)?.parsed.y
+            const utilization =
+              child === 0 ? 0 : ceil((child / (staff ?? 1)) * 100)
+
+            const staffRequired = ceil(child / 7)
+
+            const staffPresent = (staff ?? 0) / 7
+            return i18n.unit.occupancy.realtime.tooltipFooter(
+              utilization,
+              staffPresent,
+              staffRequired
+            )
           }
         }
       }
     }
-  }
-
-  const data: ChartData<'line', DatePoint[]> = {
-    datasets: [
-      {
-        label: i18n.unit.occupancy.subtitles.realized,
-        data: graphData,
-        spanGaps: true,
-        stepped: 'before',
-        fill: false,
-        pointBackgroundColor: colors.status.success,
-        borderColor: colors.status.success
-      }
-    ]
   }
 
   return (
