@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -134,7 +134,15 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
             {
               loader: 'babel-loader',
               options: {
-                presets: ['@babel/preset-env'],
+                presets: [
+                  [
+                    '@babel/preset-env',
+                    {
+                      corejs: '3.21',
+                      useBuiltIns: 'entry'
+                    }
+                  ]
+                ],
                 plugins: [
                   [
                     'babel-plugin-styled-components',
