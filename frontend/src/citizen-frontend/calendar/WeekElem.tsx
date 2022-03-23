@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useRef } from 'react'
+import React, { Fragment, useCallback, useEffect, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
@@ -99,6 +99,20 @@ const DayElem = React.memo(function DayElem({
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
 
+  const isToday = dailyReservations.date.isToday()
+  const setRef = useCallback(
+    (e: HTMLDivElement) => {
+      if (isToday) {
+        ref.current = e ?? undefined
+      }
+    },
+    [isToday]
+  )
+
+  const handleClick = useCallback(() => {
+    selectDate(dailyReservations.date)
+  }, [selectDate, dailyReservations.date])
+
   useEffect(() => {
     if (ref.current) {
       const pos = ref.current?.getBoundingClientRect().top
@@ -115,14 +129,10 @@ const DayElem = React.memo(function DayElem({
 
   return (
     <Day
-      ref={(e) => {
-        if (dailyReservations.date.isToday()) {
-          ref.current = e ?? undefined
-        }
-      }}
+      ref={setRef}
       today={dailyReservations.date.isToday()}
       holidayPeriod={isHolidayPeriod}
-      onClick={() => selectDate(dailyReservations.date)}
+      onClick={handleClick}
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
       <DayColumn spacing="xxs" inactive={!isReservable}>
