@@ -139,6 +139,7 @@ export default React.memo(function DayView({
 
   const {
     editable,
+    absenceEditable,
     editing,
     startEditing,
     editorState,
@@ -291,12 +292,14 @@ export default React.memo(function DayView({
             />
           ) : null}
         </Content>
-        <AbsenceButton
-          text={i18n.calendar.newAbsence}
-          icon={faUserMinus}
-          onClick={onCreateAbsence}
-          data-qa="create-absence"
-        />
+        {absenceEditable && (
+          <AbsenceButton
+            text={i18n.calendar.newAbsence}
+            icon={faUserMinus}
+            onClick={onCreateAbsence}
+            data-qa="create-absence"
+          />
+        )}
         <ModalCloseButton
           close={navigate(close)}
           closeLabel={i18n.common.closeModal}
@@ -324,13 +327,24 @@ function useEditState(
   reservableDays: FiniteDateRange[],
   reloadData: () => void
 ) {
-  const editable = useMemo(
+  const today = LocalDate.today()
+
+  const anyChildReservable = useMemo(
     () =>
-      reservableDays.some((r) => r.includes(date)) &&
       childrenWithReservations.some(
         ({ reservationEditable }) => reservationEditable
       ),
-    [date, reservableDays, childrenWithReservations]
+    [childrenWithReservations]
+  )
+
+  const editable = useMemo(
+    () => anyChildReservable && reservableDays.some((r) => r.includes(date)),
+    [anyChildReservable, reservableDays, date]
+  )
+
+  const absenceEditable = useMemo(
+    () => anyChildReservable && date.isEqualOrAfter(today),
+    [anyChildReservable, date, today]
   )
 
   const [editing, setEditing] = useState(false)
@@ -476,6 +490,7 @@ function useEditState(
 
   return {
     editable,
+    absenceEditable,
     editing,
     startEditing,
     editorState,
