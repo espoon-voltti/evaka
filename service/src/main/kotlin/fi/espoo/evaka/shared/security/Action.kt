@@ -203,7 +203,7 @@ sealed interface Action {
 
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
         READ(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
-        READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication()),
+        READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()),
         UPDATE(HasGlobalRole(SERVICE_WORKER)),
 
         SEND(HasGlobalRole(SERVICE_WORKER)),
@@ -229,7 +229,8 @@ sealed interface Action {
         REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
 
         READ_NOTES(HasGlobalRole(SERVICE_WORKER)),
-        CREATE_NOTE(HasGlobalRole(SERVICE_WORKER)),
+        CREATE_NOTE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()),
+        READ_SPECIAL_EDUCATION_TEACHER_NOTES(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()),
 
         READ_ATTACHMENTS(HasGlobalRole(SERVICE_WORKER)),
         UPLOAD_ATTACHMENT(HasGlobalRole(SERVICE_WORKER));
@@ -237,8 +238,8 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class ApplicationNote(override vararg val defaultRules: ScopedActionRule<in ApplicationNoteId>) : ScopedAction<ApplicationNoteId> {
-        UPDATE(HasGlobalRole(SERVICE_WORKER)),
-        DELETE(HasGlobalRole(SERVICE_WORKER));
+        UPDATE(HasGlobalRole(SERVICE_WORKER), IsEmployee.authorOfApplicationNote()),
+        DELETE(HasGlobalRole(SERVICE_WORKER), IsEmployee.authorOfApplicationNote());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

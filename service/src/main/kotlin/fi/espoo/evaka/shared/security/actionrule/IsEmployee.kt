@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.security.actionrule
 import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageDrafts
 import fi.espoo.evaka.messaging.filterPermittedMessageDrafts
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -32,6 +33,8 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
             is AuthenticatedUser.Employee -> filter(tx, user, targets).associateWith { Deferred }
             else -> emptyMap()
         }
+
+        override fun classifier(): Any = filter.javaClass
     }
     private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
@@ -76,6 +79,16 @@ AND id = ANY(:ids)
         Query<VasuDocumentFollowupEntryId> { tx, user, ids ->
             // TODO: replace naive loop with a batch operation
             ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id }
+        }
+    )
+
+    fun authorOfApplicationNote() = DatabaseActionRule(
+        this,
+        Query<ApplicationNoteId> { tx, user, ids ->
+            tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
         }
     )
 
