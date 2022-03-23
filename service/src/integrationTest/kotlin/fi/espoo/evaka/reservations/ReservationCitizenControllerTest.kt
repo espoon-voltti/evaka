@@ -7,14 +7,20 @@ package fi.espoo.evaka.reservations
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -30,6 +36,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import kotlin.test.assertEquals
 
 class ReservationCitizenControllerTest : FullApplicationTest() {
@@ -40,6 +47,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     private val testDate = LocalDate.of(2021, 11, 15)
     private val startTime = LocalTime.of(9, 0)
     private val endTime = LocalTime.of(17, 0)
+
+    private val testStaffId = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     fun before() {
@@ -62,6 +71,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
+
+            it.insertTestEmployee(DevEmployee(testStaffId))
         }
     }
 
@@ -206,6 +217,63 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             listOf(
                 LocalDate.of(2021, 11, 15) to 1,
                 LocalDate.of(2021, 11, 16) to 1,
+            )
+        )
+    }
+
+    @Test
+    fun `citizen cannot override an absence that was added by staff`() {
+        db.transaction { tx ->
+            tx.insertTestAbsence(
+                childId = testChild_2.id,
+                date = testDate,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testStaffId.raw)
+            )
+        }
+
+        val request = AbsenceRequest(
+            childIds = setOf(testChild_2.id),
+            dateRange = FiniteDateRange(testDate, testDate.plusDays(1)),
+            absenceType = AbsenceType.OTHER_ABSENCE,
+        )
+        postAbsences(request)
+
+        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(1)))
+        assertEquals(2, res.dailyData.size)
+
+        assertEquals(testDate, res.dailyData[0].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(
+                    childId = testChild_2.id,
+                    absence = AbsenceType.PLANNED_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                ),
+            ),
+            res.dailyData[0].children.toSet()
+        )
+
+        assertEquals(testDate.plusDays(1), res.dailyData[1].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(
+                    childId = testChild_2.id,
+                    absence = AbsenceType.OTHER_ABSENCE,
+                    reservations = listOf(),
+                    attendances = listOf()
+                ),
+            ),
+            res.dailyData[1].children.toSet()
+        )
+
+        assertAbsenceCounts(
+            testChild_2.id,
+            listOf(
+                testDate to 1,
+                testDate.plusDays(1) to 1,
             )
         )
     }

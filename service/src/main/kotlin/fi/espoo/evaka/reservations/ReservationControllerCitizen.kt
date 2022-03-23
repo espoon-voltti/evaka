@@ -112,7 +112,7 @@ class ReservationControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.clearOldAbsencesExcludingFreeAbsences(
+                tx.clearOldCitizenEditableAbsences(
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { childId to it }
                     }

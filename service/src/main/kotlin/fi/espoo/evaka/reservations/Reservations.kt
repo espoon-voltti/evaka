@@ -76,7 +76,7 @@ class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
 }
 
 fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
-    tx.clearOldAbsencesExcludingFreeAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
+    tx.clearOldCitizenEditableAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations)
 }

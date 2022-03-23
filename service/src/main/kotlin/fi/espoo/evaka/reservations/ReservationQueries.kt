@@ -67,9 +67,20 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId:
         .execute()
 }
 
-fun Database.Transaction.clearOldAbsencesExcludingFreeAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
+/**
+ * A citizen is allowed to edit:
+ * - absences added by a citizen
+ * - other than FREE_ABSENCE
+ */
+fun Database.Transaction.clearOldCitizenEditableAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
     val batch = prepareBatch(
-        "DELETE FROM absence WHERE child_id = :childId AND date = :date AND absence_type <> 'FREE_ABSENCE'::absence_type"
+        """
+DELETE FROM absence 
+WHERE child_id = :childId
+AND date = :date
+AND absence_type <> 'FREE_ABSENCE'::absence_type
+AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = absence.modified_by)
+"""
     )
 
     childDatePairs.forEach { (childId, date) ->
