@@ -97,6 +97,18 @@ fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: Group
     .mapTo<StaffAttendanceId>()
     .one()
 
+fun Database.Transaction.updateStaffAttendance(attendanceId: StaffAttendanceId, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?) = createUpdate(
+    """
+    UPDATE staff_attendance_realtime
+    SET arrived = :arrived, departed = :departed
+    WHERE id = :id
+    """.trimIndent()
+)
+    .bind("id", attendanceId)
+    .bind("arrived", arrivalTime)
+    .bind("departed", departureTime)
+    .updateExactlyOne()
+
 fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
     UPDATE staff_attendance_realtime 
@@ -139,6 +151,18 @@ fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDepartu
     """.trimIndent()
 )
     .bindKotlin(params)
+    .updateExactlyOne()
+
+fun Database.Transaction.updateExternalStaffAttendance(attendanceId: StaffAttendanceExternalId, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?) = createUpdate(
+    """
+    UPDATE staff_attendance_external 
+    SET arrived = :arrived, departed = :departed
+    WHERE id = :id
+    """.trimIndent()
+)
+    .bind("id", attendanceId)
+    .bind("arrived", arrivalTime)
+    .bind("departed", departureTime)
     .updateExactlyOne()
 
 @ExcludeCodeGen

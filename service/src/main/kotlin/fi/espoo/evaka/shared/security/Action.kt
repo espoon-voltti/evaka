@@ -559,6 +559,7 @@ sealed interface Action {
         UPDATE,
 
         READ_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit(), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
+        UPDATE_STAFF_ATTENDANCES(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
 
         READ_OCCUPANCIES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
 

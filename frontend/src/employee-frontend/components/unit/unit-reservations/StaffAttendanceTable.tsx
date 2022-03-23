@@ -5,16 +5,24 @@
 import classNames from 'classnames'
 import { isSameDay } from 'date-fns'
 import { groupBy, sortBy } from 'lodash'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import styled from 'styled-components'
 
 import EllipsisMenu from 'employee-frontend/components/common/EllipsisMenu'
+import { Result, Success } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
 import { formatTime } from 'lib-common/date'
 import {
+  Attendance,
   EmployeeAttendance,
-  ExternalAttendance
+  ExternalAttendance,
+  UpdateStaffAttendanceRequest,
+  UpdateExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
+import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
+import { validateTimeRange } from 'lib-common/reservations'
+import { UUID } from 'lib-common/types'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
@@ -27,21 +35,30 @@ import {
   AttendanceTableHeader,
   DayTd,
   DayTr,
+  EditStateIndicator,
   NameTd,
   NameWrapper,
-  StyledTd
+  StyledTd,
+  TimeRangeEditor
 } from './attendance-elements'
+import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
 interface Props {
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   extraAttendances: ExternalAttendance[]
+  saveAttendance: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+  saveExternalAttendance: (
+    body: UpdateExternalAttendanceRequest
+  ) => Promise<Result<void>>
 }
 
 export default React.memo(function StaffAttendanceTable({
   staffAttendances,
   extraAttendances,
-  operationalDays
+  operationalDays,
+  saveAttendance,
+  saveExternalAttendance
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -61,13 +78,9 @@ export default React.memo(function StaffAttendanceTable({
     () =>
       sortBy(
         Object.entries(groupBy(extraAttendances, (a) => a.name)).map(
-          ([name, rows]) => ({
+          ([name, attendances]) => ({
             name,
-            attendances: rows.map(({ id, arrived, departed }) => ({
-              id,
-              arrived,
-              departed
-            }))
+            attendances
           })
         ),
         (attendance) => attendance.name
@@ -86,6 +99,7 @@ export default React.memo(function StaffAttendanceTable({
             name={name}
             operationalDays={operationalDays}
             attendances={attendances}
+            saveAttendance={saveAttendance}
           />
         ))}
         {extraRowsGroupedByName.map((row, index) => (
@@ -95,6 +109,7 @@ export default React.memo(function StaffAttendanceTable({
             name={row.name}
             operationalDays={operationalDays}
             attendances={row.attendances}
+            saveAttendance={saveExternalAttendance}
           />
         ))}
       </Tbody>
@@ -106,53 +121,164 @@ interface AttendanceRowProps extends BaseProps {
   rowIndex: number
   name: string
   operationalDays: OperationalDay[]
-  attendances: { id: string; arrived: Date; departed?: Date | null }[]
+  attendances: Attendance[]
+  saveAttendance?: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+}
+
+type TimeRangeWithErrorsAndIds = TimeRangeWithErrors & {
+  id?: UUID
+  groupId?: UUID
+}
+const emptyTimeRange: TimeRangeWithErrorsAndIds = {
+  startTime: '',
+  endTime: '',
+  errors: {
+    startTime: undefined,
+    endTime: undefined
+  },
+  lastSavedState: {
+    startTime: '',
+    endTime: ''
+  },
+  id: undefined,
+  groupId: undefined
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
   rowIndex,
   name,
   operationalDays,
-  attendances
+  attendances,
+  saveAttendance
 }: AttendanceRowProps) {
+  const [editing, setEditing] = useState<boolean>(false)
+  const [values, setValues] = useState<
+    Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndIds[] }>
+  >([])
+  const [saveRequestStatus, setSaveRequestStatus] = useState<Result<void>>(
+    Success.of()
+  )
+
+  useEffect(
+    () =>
+      setValues(
+        operationalDays.map((day) => ({
+          date: day.date,
+          timeRanges:
+            attendances?.length > 0
+              ? attendances.map((attendance) => {
+                  if (
+                    !isSameDay(attendance.arrived, day.date.toSystemTzDate())
+                  ) {
+                    return emptyTimeRange
+                  }
+                  const startTime = formatTime(attendance.arrived)
+                  const endTime = attendance.departed
+                    ? formatTime(attendance.departed)
+                    : ''
+                  return {
+                    id: attendance.id,
+                    groupId: attendance.groupId,
+                    startTime,
+                    endTime,
+                    errors: {
+                      startTime: undefined,
+                      endTime: undefined
+                    },
+                    lastSavedState: {
+                      startTime,
+                      endTime
+                    }
+                  }
+                })
+              : [emptyTimeRange]
+        }))
+      ),
+    [operationalDays, attendances]
+  )
+
+  const updateValue = (
+    date: LocalDate,
+    rangeIx: number,
+    updatedRange: TimeRange
+  ) => {
+    setValues(
+      values.map((val) => {
+        return val.date === date
+          ? {
+              ...val,
+              timeRanges: val.timeRanges.map((range, ix) => {
+                return ix === rangeIx
+                  ? {
+                      ...range,
+                      ...updatedRange,
+                      errors: validateTimeRange(updatedRange)
+                    }
+                  : range
+              })
+            }
+          : val
+      })
+    )
+  }
+
   return (
     <DayTr>
       <NameTd partialRow={false} rowIndex={rowIndex}>
         <NameWrapper>{name}</NameWrapper>
       </NameTd>
-      {operationalDays.map((day) => (
+      {values.map(({ date, timeRanges }) => (
         <DayTd
-          key={day.date.formatIso()}
-          className={classNames({ 'is-today': day.date.isToday() })}
+          key={date.formatIso()}
+          className={classNames({ 'is-today': date.isToday() })}
           partialRow={false}
           rowIndex={rowIndex}
         >
-          {attendances?.length > 0 ? (
-            attendances.map((attendance) => (
-              <AttendanceCell key={attendance.id}>
-                <AttendanceTime>
-                  {isSameDay(attendance.arrived, day.date.toSystemTzDate())
-                    ? formatTime(attendance.arrived)
-                    : '–'}
-                </AttendanceTime>
-                <AttendanceTime>
-                  {attendance.departed &&
-                  isSameDay(attendance.departed, day.date.toSystemTzDate())
-                    ? formatTime(attendance.departed)
-                    : '–'}
-                </AttendanceTime>
-              </AttendanceCell>
-            ))
-          ) : (
-            <AttendanceCell>
-              <AttendanceTime>–</AttendanceTime>
-              <AttendanceTime>–</AttendanceTime>
+          {timeRanges.map((range, rangeIx) => (
+            <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
+              {editing && range.id ? (
+                <TimeRangeEditor
+                  timeRange={range}
+                  update={(updatedValue) =>
+                    updateValue(date, rangeIx, updatedValue)
+                  }
+                  save={() => {
+                    if (saveAttendance && range.id && range.groupId) {
+                      return saveAttendance({
+                        attendanceId: range.id,
+                        arrived: date.toSystemTzDateAtTime(range.startTime),
+                        departed:
+                          range.endTime !== ''
+                            ? date.toSystemTzDateAtTime(range.endTime)
+                            : null
+                      }).then(setSaveRequestStatus)
+                    }
+                    return Promise.resolve()
+                  }}
+                />
+              ) : (
+                <>
+                  <AttendanceTime>
+                    {range.startTime === '' ? '–' : range.startTime}
+                  </AttendanceTime>
+                  <AttendanceTime>
+                    {range.endTime === '' ? '–' : range.endTime}
+                  </AttendanceTime>
+                </>
+              )}
             </AttendanceCell>
-          )}
+          ))}
         </DayTd>
       ))}
       <StyledTd partialRow={false} rowIndex={rowIndex} rowSpan={1}>
-        <RowMenu />
+        {editing ? (
+          <EditStateIndicator
+            status={saveRequestStatus}
+            stopEditing={() => setEditing(false)}
+          />
+        ) : (
+          <RowMenu onEdit={() => setEditing(true)} />
+        )}
       </StyledTd>
     </DayTr>
   )
@@ -171,16 +297,18 @@ const AttendanceTime = styled.span`
   font-weight: ${fontWeights.semibold};
 `
 
-const RowMenu = React.memo(function RowMenu() {
+type RowMenuProps = {
+  onEdit: () => void
+}
+const RowMenu = React.memo(function RowMenu({ onEdit }: RowMenuProps) {
+  const { i18n } = useTranslation()
   return (
     <EllipsisMenu
       items={[
         {
           id: 'edit-row',
-          label: 'TODO: edit',
-          onClick: () => {
-            // TODO
-          }
+          label: i18n.unit.attendanceReservations.editRow,
+          onClick: onEdit
         }
       ]}
     />

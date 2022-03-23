@@ -7,7 +7,9 @@ import styled, { css } from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
 import { fontWeights, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -15,6 +17,8 @@ import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
+
+import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
 export const EditStateIndicator = React.memo(function EditStateIndicator({
   status,
@@ -137,3 +141,45 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
     </Thead>
   )
 })
+
+export const TimeRangeEditor = React.memo(function TimeRangeEditor({
+  timeRange,
+  update,
+  save
+}: {
+  timeRange: TimeRangeWithErrors
+  update: (v: TimeRange) => void
+  save: () => void
+}) {
+  const { startTime, endTime, errors } = timeRange
+
+  return (
+    <>
+      <TimeInputWithoutPadding
+        value={startTime}
+        onChange={(value) => update({ startTime: value, endTime })}
+        onBlur={save}
+        info={errors.startTime ? { status: 'warning', text: '' } : undefined}
+        data-qa="input-start-time"
+      />
+      <TimeInputWithoutPadding
+        value={endTime}
+        onChange={(value) => update({ startTime, endTime: value })}
+        onBlur={save}
+        info={errors.endTime ? { status: 'warning', text: '' } : undefined}
+        data-qa="input-end-time"
+      />
+    </>
+  )
+})
+
+const TimeInputWithoutPadding = styled(TimeInput)`
+  padding: 0;
+  width: calc(2.8em);
+  max-width: calc(2.8em);
+  background: transparent;
+
+  &:focus {
+    padding: 0;
+  }
+`

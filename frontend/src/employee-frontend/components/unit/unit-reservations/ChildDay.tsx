@@ -21,7 +21,6 @@ import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { attendanceTimeDiffers } from 'lib-common/reservations'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -29,7 +28,8 @@ import { colors } from 'lib-customizations/common'
 import { useTranslation } from '../../../state/i18n'
 
 import AbsenceDay from './AbsenceDay'
-import { EditState, TimeRangeWithErrors } from './reservation-table-edit-state'
+import { TimeRangeEditor } from './attendance-elements'
+import { EditState } from './reservation-table-edit-state'
 
 type ReservationOrServiceTime =
   | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })
@@ -182,48 +182,6 @@ export default React.memo(function ChildDay({
     </DateCell>
   )
 })
-
-const TimeRangeEditor = React.memo(function TimeRangeEditor({
-  timeRange,
-  update,
-  save
-}: {
-  timeRange: TimeRangeWithErrors
-  update: (v: TimeRange) => void
-  save: () => void
-}) {
-  const { startTime, endTime, errors } = timeRange
-
-  return (
-    <>
-      <TimeInputWithoutPadding
-        value={startTime}
-        onChange={(value) => update({ startTime: value, endTime })}
-        onBlur={save}
-        info={errors.startTime ? { status: 'warning', text: '' } : undefined}
-        data-qa="input-start-time"
-      />
-      <TimeInputWithoutPadding
-        value={endTime}
-        onChange={(value) => update({ startTime, endTime: value })}
-        onBlur={save}
-        info={errors.endTime ? { status: 'warning', text: '' } : undefined}
-        data-qa="input-end-time"
-      />
-    </>
-  )
-})
-
-const TimeInputWithoutPadding = styled(TimeInput)`
-  padding: 0;
-  width: calc(2.8em);
-  max-width: calc(2.8em);
-  background: transparent;
-
-  &:focus {
-    padding: 0;
-  }
-`
 
 const DateCell = styled.div`
   display: flex;
