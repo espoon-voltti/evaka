@@ -29,8 +29,10 @@ let assistanceNeeds: AssistanceNeedSection
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
+// let child3Fixture: Child
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
+// let child3DaycarePlacementId: UUID
 
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
@@ -68,7 +70,7 @@ beforeEach(async () => {
     })
     .save()
 
-  child2Fixture = fixtures.enduserChildFixtureJari
+  child2Fixture = fixtures.personFixtureChildZeroYearOld
   child2DaycarePlacementId = uuidv4()
   await Fixture.placement()
     .with({
@@ -79,6 +81,18 @@ beforeEach(async () => {
       endDate: placementEndDate.formatIso()
     })
     .save()
+
+  // child3Fixture = fixtures.personFixtureChildZeroYearOld
+  // child3DaycarePlacementId = uuidv4()
+  // await Fixture.placement()
+  //   .with({
+  //     id: child3DaycarePlacementId,
+  //     childId: child3Fixture.id,
+  //     unitId: daycare.id,
+  //     startDate: placementStartDate.formatIso(),
+  //     endDate: placementEndDate.formatIso()
+  //   })
+  //   .save()
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
@@ -213,6 +227,37 @@ describe('Unit groups - unit supervisor', () => {
     await groupsPage.openGroupCollapsible(groupId)
     await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
     await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.50')
+  })
+
+  test('Supervisor sees uncommon age factor when set', async () => {
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.missingPlacementsSection.assertRowCount(2)
+
+    await Fixture.groupPlacement()
+      .with({
+        daycareGroupId: groupId,
+        daycarePlacementId: child2DaycarePlacementId,
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
+      })
+      .save()
+
+    const specialServiceNeed = await Fixture.serviceNeedOption()
+      .with({ occupancyCoefficientUnder3y: 1.89 })
+      .save()
+
+    await Fixture.serviceNeed()
+      .with({
+        placementId: child2DaycarePlacementId,
+        optionId: specialServiceNeed.data.id,
+        confirmedBy: unitSupervisor.id
+      })
+      .save()
+
+    await page.reload()
+    await groupsPage.openGroupCollapsible(groupId)
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await groupsPage.assertChildCapacityFactor(child2Fixture.id, '1.89')
   })
 })
 
