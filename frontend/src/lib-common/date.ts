@@ -5,7 +5,11 @@
 import { format, isToday, Locale } from 'date-fns'
 import { fi, sv, enGB } from 'date-fns/locale'
 
-const locales: { fi: Locale; sv: Locale; en: Locale } = { fi, sv, en: enGB }
+export const locales: { fi: Locale; sv: Locale; en: Locale } = {
+  fi,
+  sv,
+  en: enGB
+}
 
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
 const DATE_FORMAT_TIME_ONLY = 'HH:mm'

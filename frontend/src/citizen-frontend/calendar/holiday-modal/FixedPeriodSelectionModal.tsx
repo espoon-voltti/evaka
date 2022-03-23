@@ -21,6 +21,8 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
+import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
+
 import { PeriodSelector } from './PeriodSelector'
 
 type FormState = FixedPeriodsBody['fixedPeriods']
@@ -79,48 +81,50 @@ export default React.memo(function FixedPeriodSelectionModal({
   }, [close, reload])
 
   return (
-    <AsyncFormModal
-      mobileFullScreen
-      title={questionnaire.title[lang]}
-      resolveAction={onSubmit}
-      onSuccess={closeAndReload}
-      resolveLabel={i18n.common.confirm}
-      rejectAction={close}
-      rejectLabel={i18n.common.cancel}
-      data-qa="fixed-period-selection-modal"
-    >
-      <FixedSpaceColumn>
-        <HolidaySection>
-          <div>{questionnaire.description[lang]}</div>
-          <ExternalLink
-            text={i18n.calendar.holidayModal.additionalInformation}
-            href={questionnaire.descriptionLink[lang]}
-            newTab
-          />
-        </HolidaySection>
-        {availableChildren.map((child) => (
-          <HolidaySection
-            key={child.id}
-            data-qa={`holiday-section-${child.id}`}
-          >
-            <H2>{formatPreferredName(child)}</H2>
-            {eligibleChildren.includes(child.id) ? (
-              <PeriodSelector
-                label={questionnaire.periodOptionLabel[lang]}
-                options={questionnaire.periodOptions}
-                value={fixedPeriods[child.id]}
-                onSelectPeriod={selectPeriod(child.id)}
-              />
-            ) : questionnaire.conditions.continuousPlacement ? (
-              <div data-qa="not-eligible">
-                i18n.calendar.holidayModal.notEligible(
-                questionnaire.conditions.continuousPlacement )
-              </div>
-            ) : null}
+    <ModalAccessibilityWrapper>
+      <AsyncFormModal
+        mobileFullScreen
+        title={questionnaire.title[lang]}
+        resolveAction={onSubmit}
+        onSuccess={closeAndReload}
+        resolveLabel={i18n.common.confirm}
+        rejectAction={close}
+        rejectLabel={i18n.common.cancel}
+        data-qa="fixed-period-selection-modal"
+      >
+        <FixedSpaceColumn>
+          <HolidaySection>
+            <div>{questionnaire.description[lang]}</div>
+            <ExternalLink
+              text={i18n.calendar.holidayModal.additionalInformation}
+              href={questionnaire.descriptionLink[lang]}
+              newTab
+            />
           </HolidaySection>
-        ))}
-      </FixedSpaceColumn>
-    </AsyncFormModal>
+          {availableChildren.map((child) => (
+            <HolidaySection
+              key={child.id}
+              data-qa={`holiday-section-${child.id}`}
+            >
+              <H2>{formatPreferredName(child)}</H2>
+              {eligibleChildren.includes(child.id) ? (
+                <PeriodSelector
+                  label={questionnaire.periodOptionLabel[lang]}
+                  options={questionnaire.periodOptions}
+                  value={fixedPeriods[child.id]}
+                  onSelectPeriod={selectPeriod(child.id)}
+                />
+              ) : questionnaire.conditions.continuousPlacement ? (
+                <div data-qa="not-eligible">
+                  i18n.calendar.holidayModal.notEligible(
+                  questionnaire.conditions.continuousPlacement )
+                </div>
+              ) : null}
+            </HolidaySection>
+          ))}
+        </FixedSpaceColumn>
+      </AsyncFormModal>
+    </ModalAccessibilityWrapper>
   )
 })
 

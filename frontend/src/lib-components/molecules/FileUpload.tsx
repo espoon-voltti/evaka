@@ -67,6 +67,7 @@ export interface FileUploadI18n {
   download: {
     modalHeader: string
     modalMessage: string
+    modalClose: string
   }
   upload: {
     deleteFile: string
@@ -446,6 +447,7 @@ export default React.memo(function FileUpload({
           title={i18n.download.modalHeader}
           text={i18n.download.modalMessage}
           close={() => setUnavailableModalVisible(false)}
+          closeLabel={i18n.download.modalClose}
           icon={faInfo}
         />
       )}

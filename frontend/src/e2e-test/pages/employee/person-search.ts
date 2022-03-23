@@ -14,6 +14,7 @@ export default class PersonSearchPage {
   #personLink = this.page.find('[data-qa="person-row"] a')
   #createPersonButton = this.page.find('[data-qa="create-person-button"]')
   #createPersonModal = {
+    modal: this.page.findByDataQa('modal'),
     firstNameInput: new TextInput(
       this.page.find('[data-qa="first-name-input"]')
     ),
@@ -65,7 +66,9 @@ export default class PersonSearchPage {
     )
     await this.#createPersonModal.postalCodeInput.type(personData.postalCode)
     await this.#createPersonModal.postOfficeInput.type(personData.postOffice)
+    await this.#createPersonModal.modal.waitUntilVisible()
     await this.#modalConfirm.click()
+    await this.#createPersonModal.modal.waitUntilHidden()
   }
 
   async findPerson(searchString: string) {

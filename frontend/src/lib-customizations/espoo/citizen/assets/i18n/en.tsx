@@ -90,7 +90,8 @@ const en: Translations = {
         'November',
         'December'
       ]
-    }
+    },
+    closeModal: 'Close popup'
   },
   header: {
     nav: {
@@ -283,7 +284,9 @@ const en: Translations = {
       emptySelection: 'No free absences',
       notEligible: (period: FiniteDateRange) =>
         `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`
-    }
+    },
+    previousDay: 'Previous day',
+    nextDay: 'Next day'
   },
   messages: {
     inboxTitle: 'Inbox',
@@ -1349,6 +1352,7 @@ const en: Translations = {
   fileDownload: {
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later',
+    modalClose: 'Close',
     download: 'Download'
   },
   personalDetails: {

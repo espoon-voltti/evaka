@@ -26,6 +26,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
@@ -85,111 +86,116 @@ export default React.memo(function AbsenceModal({
   )
 
   return (
-    <AsyncFormModal
-      mobileFullScreen
-      title={i18n.calendar.absenceModal.title}
-      resolveAction={(cancel) => {
-        if (!request) {
-          setShowAllErrors(true)
-          return cancel()
-        }
-        return postAbsences(request)
-      }}
-      onSuccess={() => {
-        close()
-        reload()
-      }}
-      resolveLabel={i18n.common.confirm}
-      rejectAction={close}
-      rejectLabel={i18n.common.cancel}
-    >
-      <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
-      <P>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
-      <Gap size="xs" />
-      <FixedSpaceFlexWrap>
-        {availableChildren.map((child) => (
-          <SelectionChip
-            key={child.id}
-            text={formatPreferredName(child)}
-            selected={form.selectedChildren.includes(child.id)}
-            onChange={(checked) =>
-              updateForm({
-                selectedChildren: checked
-                  ? [...form.selectedChildren, child.id]
-                  : form.selectedChildren.filter((id) => id !== child.id)
-              })
+    <ModalAccessibilityWrapper>
+      <AsyncFormModal
+        mobileFullScreen
+        title={i18n.calendar.absenceModal.title}
+        resolveAction={(cancel) => {
+          if (!request) {
+            setShowAllErrors(true)
+            return cancel()
+          }
+          return postAbsences(request)
+        }}
+        onSuccess={() => {
+          close()
+          reload()
+        }}
+        resolveLabel={i18n.common.confirm}
+        rejectAction={close}
+        rejectLabel={i18n.common.cancel}
+      >
+        <Label>{i18n.calendar.absenceModal.selectedChildren}</Label>
+        <P>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
+        <Gap size="xs" />
+        <FixedSpaceFlexWrap>
+          {availableChildren.map((child) => (
+            <SelectionChip
+              key={child.id}
+              text={formatPreferredName(child)}
+              selected={form.selectedChildren.includes(child.id)}
+              onChange={(checked) =>
+                updateForm({
+                  selectedChildren: checked
+                    ? [...form.selectedChildren, child.id]
+                    : form.selectedChildren.filter((id) => id !== child.id)
+                })
+              }
+              data-qa={`child-${child.id}`}
+            />
+          ))}
+        </FixedSpaceFlexWrap>
+        <Gap size="m" />
+        <Label>{i18n.calendar.absenceModal.dateRange}</Label>
+        <FixedSpaceRow alignItems="flex-start" spacing="xs">
+          <DatePicker
+            date={form.startDate}
+            onChange={(date) => updateForm({ startDate: date })}
+            locale={lang}
+            isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
+            info={
+              errors &&
+              errorToInputInfo(errors.startDate, i18n.validationErrors)
             }
-            data-qa={`child-${child.id}`}
+            hideErrorsBeforeTouched={!showAllErrors}
+            data-qa="start-date"
           />
-        ))}
-      </FixedSpaceFlexWrap>
-      <Gap size="m" />
-      <Label>{i18n.calendar.absenceModal.dateRange}</Label>
-      <FixedSpaceRow alignItems="flex-start" spacing="xs">
-        <DatePicker
-          date={form.startDate}
-          onChange={(date) => updateForm({ startDate: date })}
-          locale={lang}
-          isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
-          info={
-            errors && errorToInputInfo(errors.startDate, i18n.validationErrors)
-          }
-          hideErrorsBeforeTouched={!showAllErrors}
-          data-qa="start-date"
-        />
-        <DatePickerSpacer />
-        <DatePicker
-          date={form.endDate}
-          onChange={(date) => updateForm({ endDate: date })}
-          locale={lang}
-          isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
-          info={
-            errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
-          }
-          hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={
-            LocalDate.parseFiOrNull(form.startDate) ?? LocalDate.today()
-          }
-          data-qa="end-date"
-        />
-      </FixedSpaceRow>
-      <Gap size="m" />
-      <Label>{i18n.calendar.absenceModal.absenceType}</Label>
-      <Gap size="s" />
-      <FixedSpaceFlexWrap verticalSpacing="xs">
-        <ChoiceChip
-          text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
-          selected={form.absenceType === 'SICKLEAVE'}
-          onChange={(selected) =>
-            updateForm({ absenceType: selected ? 'SICKLEAVE' : undefined })
-          }
-          data-qa="absence-SICKLEAVE"
-        />
-        <ChoiceChip
-          text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
-          selected={form.absenceType === 'OTHER_ABSENCE'}
-          onChange={(selected) =>
-            updateForm({ absenceType: selected ? 'OTHER_ABSENCE' : undefined })
-          }
-          data-qa="absence-OTHER_ABSENCE"
-        />
-        {childrenInShiftCare && (
+          <DatePickerSpacer />
+          <DatePicker
+            date={form.endDate}
+            onChange={(date) => updateForm({ endDate: date })}
+            locale={lang}
+            isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
+            info={
+              errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
+            }
+            hideErrorsBeforeTouched={!showAllErrors}
+            initialMonth={
+              LocalDate.parseFiOrNull(form.startDate) ?? LocalDate.today()
+            }
+            data-qa="end-date"
+          />
+        </FixedSpaceRow>
+        <Gap size="m" />
+        <Label>{i18n.calendar.absenceModal.absenceType}</Label>
+        <Gap size="s" />
+        <FixedSpaceFlexWrap verticalSpacing="xs">
           <ChoiceChip
-            text={i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE}
-            selected={form.absenceType === 'PLANNED_ABSENCE'}
+            text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
+            selected={form.absenceType === 'SICKLEAVE'}
+            onChange={(selected) =>
+              updateForm({ absenceType: selected ? 'SICKLEAVE' : undefined })
+            }
+            data-qa="absence-SICKLEAVE"
+          />
+          <ChoiceChip
+            text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
+            selected={form.absenceType === 'OTHER_ABSENCE'}
             onChange={(selected) =>
               updateForm({
-                absenceType: selected ? 'PLANNED_ABSENCE' : undefined
+                absenceType: selected ? 'OTHER_ABSENCE' : undefined
               })
             }
-            data-qa="absence-PLANNED_ABSENCE"
+            data-qa="absence-OTHER_ABSENCE"
           />
-        )}
-      </FixedSpaceFlexWrap>
-      {showAllErrors && !form.absenceType ? (
-        <Warning>{i18n.validationErrors.requiredSelection}</Warning>
-      ) : null}
-    </AsyncFormModal>
+          {childrenInShiftCare && (
+            <ChoiceChip
+              text={i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE}
+              selected={form.absenceType === 'PLANNED_ABSENCE'}
+              onChange={(selected) =>
+                updateForm({
+                  absenceType: selected ? 'PLANNED_ABSENCE' : undefined
+                })
+              }
+              data-qa="absence-PLANNED_ABSENCE"
+            />
+          )}
+        </FixedSpaceFlexWrap>
+        {showAllErrors && !form.absenceType ? (
+          <Warning>{i18n.validationErrors.requiredSelection}</Warning>
+        ) : null}
+      </AsyncFormModal>
+    </ModalAccessibilityWrapper>
   )
 })
 

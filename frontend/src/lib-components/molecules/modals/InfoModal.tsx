@@ -22,7 +22,7 @@ type Props = Omit<ModalBaseProps, 'mobileFullScreen'> &
           label: string
         }
       }
-    | { close: () => void }
+    | { close: () => void; closeLabel: string }
   )
 
 export default React.memo(function InfoModal({ children, ...props }: Props) {
@@ -36,11 +36,24 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
           ? props.reject.action
           : props.resolve.action
       }
+      closeLabel={
+        'close' in props
+          ? props.closeLabel
+          : props.reject
+          ? props.reject.label
+          : props.resolve.label
+      }
       mobileFullScreen={false}
     >
       {children}
       {'resolve' in props ? (
         <ModalButtons $singleButton={!props.reject}>
+          <InlineButton
+            data-qa="modal-okBtn"
+            onClick={props.resolve.action}
+            disabled={props.resolve.disabled}
+            text={props.resolve.label}
+          />
           {props.reject && (
             <>
               <InlineButton
@@ -51,12 +64,6 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
               <Gap horizontal size="xs" />
             </>
           )}
-          <InlineButton
-            data-qa="modal-okBtn"
-            onClick={props.resolve.action}
-            disabled={props.resolve.disabled}
-            text={props.resolve.label}
-          />
         </ModalButtons>
       ) : (
         <Gap size="X3L" />

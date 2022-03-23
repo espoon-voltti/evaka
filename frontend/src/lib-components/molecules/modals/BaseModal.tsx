@@ -32,6 +32,7 @@ export type ModalType = 'info' | 'success' | 'warning' | 'danger'
 
 interface Props extends ModalBaseProps {
   close: () => void
+  closeLabel: string
 }
 
 export default React.memo(function BaseModal(props: Props) {
@@ -44,9 +45,9 @@ export default React.memo(function BaseModal(props: Props) {
       >
         <ModalContainer
           mobileFullScreen={props.mobileFullScreen}
+          margin="auto"
           data-qa="modal"
         >
-          <CloseButton icon={faTimes} onClick={props.close} />
           <ModalTitle>
             {props.icon && (
               <>
@@ -68,6 +69,7 @@ export default React.memo(function BaseModal(props: Props) {
             )}
           </ModalTitle>
           {props.children}
+          <ModalCloseButton close={props.close} closeLabel={props.closeLabel} />
         </ModalContainer>
       </ModalWrapper>
     </ModalBackground>
@@ -76,7 +78,7 @@ export default React.memo(function BaseModal(props: Props) {
 
 export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   margin-top: ${defaultMargins.XXL};
   margin-bottom: ${defaultMargins.X3L};
   justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};
@@ -93,9 +95,29 @@ const CloseButton = styled(IconButton)`
   color: ${(p) => p.theme.colors.grayscale.g70};
 `
 
+export const ModalCloseButton = React.memo(function ModalCloseButton({
+  close,
+  closeLabel,
+  'data-qa': dataQa
+}: {
+  close: () => void
+  closeLabel: string
+  'data-qa'?: string
+}) {
+  return (
+    <CloseButton
+      icon={faTimes}
+      onClick={close}
+      altText={closeLabel}
+      data-qa={dataQa}
+    />
+  )
+})
+
 const ModalContainer = styled.div<{
   mobileFullScreen?: boolean
   noPadding?: boolean
+  margin: string
 }>`
   position: relative;
   width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
@@ -106,8 +128,7 @@ const ModalContainer = styled.div<{
   border-radius: 2px;
   ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.XXL}`)};
   ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.XXL}`)};
-  margin-left: ${defaultMargins.xxs};
-  margin-right: ${defaultMargins.xxs};
+  margin: ${(p) => p.margin};
   overflow-y: auto;
 
   @media (max-width: ${tabletMin}) {
@@ -168,13 +189,14 @@ const ModalTitle = styled.div`
 
 const StaticallyPositionedModal = styled(ModalWrapper)`
   justify-content: flex-start;
-  padding-top: ${defaultMargins.XL};
 `
 
 type PlainModalProps = Pick<
   ModalBaseProps,
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children'
->
+> & {
+  margin: string
+}
 
 export const PlainModal = React.memo(function PlainModal(
   props: PlainModalProps
@@ -189,6 +211,7 @@ export const PlainModal = React.memo(function PlainModal(
         <ModalContainer
           noPadding
           mobileFullScreen={props.mobileFullScreen}
+          margin={props.margin}
           data-qa="modal"
         >
           {props.children}

@@ -38,9 +38,8 @@ import { Localization, useTranslation } from './localization'
 import MapView from './map/MapView'
 import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
-import GlobalErrorDialog from './overlay/Error'
-import GlobalInfoDialog from './overlay/Info'
-import { OverlayContextProvider } from './overlay/state'
+import GlobalDialog from './overlay/GlobalDialog'
+import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
 import PersonalDetails from './personal-details/PersonalDetails'
@@ -60,160 +59,11 @@ export default function App() {
                 <MessageContextProvider>
                   <PedagogicalDocumentsContextProvider>
                     <HolidayPeriodsContextProvider>
-                      <Header />
-                      <Main>
-                        <Switch>
-                          <Route path="/login" render={() => <LoginPage />} />
-                          <Route path="/map" render={() => <MapView />} />
-                          <Route
-                            path="/applying"
-                            render={() => <ApplyingRouter />}
-                          />
-                          <Route
-                            exact
-                            path="/applications/new/:childId"
-                            render={() => (
-                              <RequireAuth>
-                                <ApplicationCreation />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/applications/:applicationId"
-                            render={() => (
-                              <RequireAuth>
-                                <ApplicationReadView />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/personal-details"
-                            render={() => (
-                              <RequireAuth strength="WEAK">
-                                <PersonalDetails />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/income"
-                            render={() => (
-                              <RequireAuth>
-                                <IncomeStatements />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/income/:incomeStatementId/edit"
-                            render={() => (
-                              <RequireAuth>
-                                <IncomeStatementEditor />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/income/:incomeStatementId"
-                            render={() => (
-                              <RequireAuth>
-                                <IncomeStatementView />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/child-income/:childId/:incomeStatementId/edit"
-                            render={() => (
-                              <RequireAuth>
-                                <ChildIncomeStatementEditor />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/child-income/:childId/:incomeStatementId"
-                            render={() => (
-                              <RequireAuth>
-                                <ChildIncomeStatementView />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/applications/:applicationId/edit"
-                            render={() => (
-                              <RequireAuth>
-                                <ApplicationEditor />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/children/:childId"
-                            render={() => (
-                              <RequireAuth>
-                                <ChildPage />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/children"
-                            render={() => (
-                              <RequireAuth>
-                                <ChildrenPage />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/decisions/by-application/:applicationId"
-                            render={() => (
-                              <RequireAuth>
-                                <DecisionResponseList />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/messages"
-                            render={() => (
-                              <RequireAuth strength="WEAK">
-                                <MessagesPage />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/calendar"
-                            render={() => (
-                              <RequireAuth strength="WEAK">
-                                <CalendarPage />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            exact
-                            path="/pedagogical-documents"
-                            render={() => (
-                              <RequireAuth>
-                                <PedagogicalDocuments />
-                              </RequireAuth>
-                            )}
-                          />
-                          <Route
-                            path="/"
-                            render={() => <HandleRedirection />}
-                          />
-                        </Switch>
-                      </Main>
-                      <GlobalInfoDialog />
-                      <GlobalErrorDialog />
-                      <CitizenReloadNotification />
+                      <Content />
+                      <GlobalDialog />
                       <LoginErrorModal translations={i18n.login.failedModal} />
+                      <CitizenReloadNotification />
+                      <div id="modal-container" />
                     </HolidayPeriodsContextProvider>
                   </PedagogicalDocumentsContextProvider>
                 </MessageContextProvider>
@@ -223,6 +73,175 @@ export default function App() {
         </Localization>
       </ThemeProvider>
     </BrowserRouter>
+  )
+}
+
+const Content = React.memo(function Content() {
+  const { modalOpen } = useContext(OverlayContext)
+
+  return (
+    <>
+      <Header ariaHidden={modalOpen} />
+      <Main ariaHidden={modalOpen}>
+        <Switch>
+          <Route path="/login" render={() => <LoginPage />} />
+          <Route path="/map" render={() => <MapView />} />
+          <Route path="/applying" render={() => <ApplyingRouter />} />
+          <Route
+            exact
+            path="/applications/new/:childId"
+            render={() => (
+              <RequireAuth>
+                <ApplicationCreation />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/applications/:applicationId"
+            render={() => (
+              <RequireAuth>
+                <ApplicationReadView />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/personal-details"
+            render={() => (
+              <RequireAuth strength="WEAK">
+                <PersonalDetails />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/income"
+            render={() => (
+              <RequireAuth>
+                <IncomeStatements />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/income/:incomeStatementId/edit"
+            render={() => (
+              <RequireAuth>
+                <IncomeStatementEditor />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/income/:incomeStatementId"
+            render={() => (
+              <RequireAuth>
+                <IncomeStatementView />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/child-income/:childId/:incomeStatementId/edit"
+            render={() => (
+              <RequireAuth>
+                <ChildIncomeStatementEditor />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/child-income/:childId/:incomeStatementId"
+            render={() => (
+              <RequireAuth>
+                <ChildIncomeStatementView />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/applications/:applicationId/edit"
+            render={() => (
+              <RequireAuth>
+                <ApplicationEditor />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/children/:childId"
+            render={() => (
+              <RequireAuth>
+                <ChildPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/children"
+            render={() => (
+              <RequireAuth>
+                <ChildrenPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/decisions/by-application/:applicationId"
+            render={() => (
+              <RequireAuth>
+                <DecisionResponseList />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/messages"
+            render={() => (
+              <RequireAuth strength="WEAK">
+                <MessagesPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/calendar"
+            render={() => (
+              <RequireAuth strength="WEAK">
+                <CalendarPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
+            path="/pedagogical-documents"
+            render={() => (
+              <RequireAuth>
+                <PedagogicalDocuments />
+              </RequireAuth>
+            )}
+          />
+          <Route path="/" render={() => <HandleRedirection />} />
+        </Switch>
+      </Main>
+    </>
+  )
+})
+
+function Main({
+  ariaHidden,
+  children
+}: {
+  ariaHidden: boolean
+  children: ReactNode
+}) {
+  const { user } = useContext(AuthContext)
+  const render = useCallback(() => <>{children}</>, [children])
+  return (
+    <ScrollableMain id="main" aria-hidden={ariaHidden}>
+      <UnwrapResult result={user}>{render}</UnwrapResult>
+    </ScrollableMain>
   )
 }
 
@@ -249,13 +268,3 @@ const ScrollableMain = styled.main`
     height: calc(100% - ${headerHeightDesktop}px);
   }
 `
-
-function Main({ children }: { children: ReactNode }) {
-  const { user } = useContext(AuthContext)
-  const render = useCallback(() => <>{children}</>, [children])
-  return (
-    <ScrollableMain id="main">
-      <UnwrapResult result={user}>{render}</UnwrapResult>
-    </ScrollableMain>
-  )
-}

@@ -29,6 +29,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  ModalCloseButton,
+  PlainModal
+} from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -42,9 +46,9 @@ import {
   faUserMinus
 } from 'lib-icons'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
 
-import CalendarModal from './CalendarModal'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
 
@@ -166,132 +170,140 @@ export default React.memo(function DayView({
   )
 
   return (
-    <CalendarModal close={navigate(close)} data-qa="calendar-dayview">
-      <Content highlight={date.isEqual(LocalDate.today())}>
-        <DayPicker>
-          <IconButton
-            icon={faChevronLeft}
-            onClick={navigateToPrevDate}
-            disabled={!previousDate}
-          />
-          <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
-          <IconButton
-            icon={faChevronRight}
-            onClick={navigateToNextDate}
-            disabled={!nextDate}
-          />
-        </DayPicker>
-        <Gap size="m" />
-        <ReservationTitle>
-          <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
-          {editable &&
-            (editing ? (
-              <InlineButton
-                icon={faCheck}
-                disabled={saving}
-                onClick={save}
-                text={i18n.common.save}
-                iconRight
-                data-qa="save"
-              />
-            ) : (
-              <InlineButton
-                icon={faPen}
-                onClick={startEditing}
-                text={i18n.common.edit}
-                iconRight
-                data-qa="edit"
-              />
-            ))}
-        </ReservationTitle>
-        <Gap size="s" />
-        {zip(childrenWithReservations, editorState).map(
-          ([childWithReservation, childState], childIndex) => {
-            if (!childWithReservation || !childState) return null
+    <ModalAccessibilityWrapper>
+      <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
+        <Gap size="XL" />
+        <Content highlight={date.isEqual(LocalDate.today())}>
+          <DayPicker>
+            <IconButton
+              icon={faChevronLeft}
+              onClick={navigateToPrevDate}
+              disabled={!previousDate}
+              altText={i18n.calendar.previousDay}
+            />
+            <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
+            <IconButton
+              icon={faChevronRight}
+              onClick={navigateToNextDate}
+              disabled={!nextDate}
+              altText={i18n.calendar.nextDay}
+            />
+          </DayPicker>
+          <Gap size="m" />
+          <ReservationTitle>
+            <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
+            {editable &&
+              (editing ? (
+                <InlineButton
+                  icon={faCheck}
+                  disabled={saving}
+                  onClick={save}
+                  text={i18n.common.save}
+                  iconRight
+                  data-qa="save"
+                />
+              ) : (
+                <InlineButton
+                  icon={faPen}
+                  onClick={startEditing}
+                  text={i18n.common.edit}
+                  iconRight
+                  data-qa="edit"
+                />
+              ))}
+          </ReservationTitle>
+          <Gap size="s" />
+          {zip(childrenWithReservations, editorState).map(
+            ([childWithReservation, childState], childIndex) => {
+              if (!childWithReservation || !childState) return null
 
-            const {
-              child,
-              absence,
-              reservations,
-              attendances,
-              reservationEditable
-            } = childWithReservation
+              const {
+                child,
+                absence,
+                reservations,
+                attendances,
+                reservationEditable
+              } = childWithReservation
 
-            const showAttendanceWarning =
-              !editing &&
-              reservationsAndAttendancesDiffer(reservations, attendances)
+              const showAttendanceWarning =
+                !editing &&
+                reservationsAndAttendancesDiffer(reservations, attendances)
 
-            return (
-              <div key={child.id} data-qa={`reservations-of-${child.id}`}>
-                {childIndex !== 0 ? <Separator /> : null}
-                <H3 noMargin data-qa="child-name">
-                  {formatPreferredName(child)}
-                </H3>
-                <Gap size="s" />
-                <Grid>
-                  <Label>{i18n.calendar.reservation}</Label>
-                  {editing && (reservationEditable || reservations.length) ? (
-                    <EditReservation
-                      childId={child.id}
-                      canAddSecondReservation={
-                        !reservations[1] && child.inShiftCareUnit
-                      }
-                      childState={childState}
-                      editorStateSetter={editorStateSetter}
-                      addSecondReservation={addSecondReservation}
-                      removeSecondReservation={removeSecondReservation}
-                    />
-                  ) : absence ? (
-                    <Absence absence={absence} />
-                  ) : (
-                    <Reservations reservations={reservations} />
-                  )}
-                  <Label>{i18n.calendar.realized}</Label>
-                  <span>
-                    {attendances.length > 0
-                      ? attendances
-                          .map(
-                            ({ startTime, endTime }) =>
-                              `${startTime} – ${endTime ?? ''}`
-                          )
-                          .join(', ')
-                      : '–'}
-                  </span>
-                  {showAttendanceWarning && (
-                    <Warning>
-                      {i18n.calendar.attendanceWarning}
-                      <StatusIcon status="warning" />
-                    </Warning>
-                  )}
-                </Grid>
-              </div>
-            )
-          }
-        )}
-        {confirmationModal ? (
-          <InfoModal
-            title={i18n.common.saveConfirmation}
-            close={confirmationModal.close}
-            resolve={{
-              action: confirmationModal.resolve,
-              label: i18n.common.save
-            }}
-            reject={{
-              action: confirmationModal.reject,
-              label: i18n.common.discard
-            }}
-          />
-        ) : null}
-      </Content>
-      <BottomBar>
+              return (
+                <div key={child.id} data-qa={`reservations-of-${child.id}`}>
+                  {childIndex !== 0 ? <Separator /> : null}
+                  <H3 noMargin data-qa="child-name">
+                    {formatPreferredName(child)}
+                  </H3>
+                  <Gap size="s" />
+                  <Grid>
+                    <Label>{i18n.calendar.reservation}</Label>
+                    {editing && (reservationEditable || reservations.length) ? (
+                      <EditReservation
+                        childId={child.id}
+                        canAddSecondReservation={
+                          !reservations[1] && child.inShiftCareUnit
+                        }
+                        childState={childState}
+                        editorStateSetter={editorStateSetter}
+                        addSecondReservation={addSecondReservation}
+                        removeSecondReservation={removeSecondReservation}
+                      />
+                    ) : absence ? (
+                      <Absence absence={absence} />
+                    ) : (
+                      <Reservations reservations={reservations} />
+                    )}
+                    <Label>{i18n.calendar.realized}</Label>
+                    <span>
+                      {attendances.length > 0
+                        ? attendances
+                            .map(
+                              ({ startTime, endTime }) =>
+                                `${startTime} – ${endTime ?? ''}`
+                            )
+                            .join(', ')
+                        : '–'}
+                    </span>
+                    {showAttendanceWarning && (
+                      <Warning>
+                        {i18n.calendar.attendanceWarning}
+                        <StatusIcon status="warning" />
+                      </Warning>
+                    )}
+                  </Grid>
+                </div>
+              )
+            }
+          )}
+          {confirmationModal ? (
+            <InfoModal
+              title={i18n.common.saveConfirmation}
+              close={confirmationModal.close}
+              resolve={{
+                action: confirmationModal.resolve,
+                label: i18n.common.save
+              }}
+              reject={{
+                action: confirmationModal.reject,
+                label: i18n.common.discard
+              }}
+            />
+          ) : null}
+        </Content>
         <AbsenceButton
           text={i18n.calendar.newAbsence}
           icon={faUserMinus}
           onClick={onCreateAbsence}
           data-qa="create-absence"
         />
-      </BottomBar>
-    </CalendarModal>
+        <ModalCloseButton
+          close={navigate(close)}
+          closeLabel={i18n.common.closeModal}
+          data-qa="day-view-close-button"
+        />
+      </PlainModal>
+    </ModalAccessibilityWrapper>
   )
 })
 
@@ -635,11 +647,6 @@ const NoReservation = styled.span`
 const Separator = styled.div`
   border-top: 2px dotted ${(p) => p.theme.colors.grayscale.g15};
   margin: ${defaultMargins.s} 0;
-`
-
-const BottomBar = styled.div`
-  background: ${(p) => p.theme.colors.grayscale.g0};
-  border-top: 2px solid ${(p) => p.theme.colors.grayscale.g15};
 `
 
 const AbsenceButton = styled(InlineButton)`

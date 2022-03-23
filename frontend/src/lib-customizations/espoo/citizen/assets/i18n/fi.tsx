@@ -89,7 +89,8 @@ export default {
         'Marraskuu',
         'Joulukuu'
       ]
-    }
+    },
+    closeModal: 'Sulje ponnahdusikkuna'
   },
   header: {
     nav: {
@@ -282,7 +283,9 @@ export default {
       emptySelection: 'Ei maksutonta poissaoloa',
       notEligible: (period: FiniteDateRange) =>
         `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`
-    }
+    },
+    previousDay: 'Edellinen päivä',
+    nextDay: 'Seuraava päivä'
   },
   messages: {
     inboxTitle: 'Viestit',
@@ -1290,6 +1293,7 @@ export default {
     modalHeader: 'Tiedoston käsittely on kesken',
     modalMessage:
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
+    modalClose: 'Sulje',
     download: 'Lataa'
   },
   personalDetails: {

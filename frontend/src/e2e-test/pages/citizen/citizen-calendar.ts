@@ -257,6 +257,10 @@ class DayView extends Element {
     await this.#createAbsenceButton.click()
     return new AbsencesModal(this.page)
   }
+
+  async close() {
+    await this.findByDataQa('day-view-close-button').click()
+  }
 }
 
 class DayViewEditor extends Element {

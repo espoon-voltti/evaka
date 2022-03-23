@@ -29,7 +29,7 @@ import {
   getISOWeek
 } from 'date-fns'
 
-import { DateFormat, DateFormatWithWeekday, formatDate } from './date'
+import { DateFormat, DateFormatWithWeekday, formatDate, locales } from './date'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
@@ -154,8 +154,10 @@ export default class LocalDate {
   /**
    * <a href="https://date-fns.org/docs/format">date-fns format()</a>
    */
-  formatExotic(pattern: string): string {
-    return format(this.toSystemTzDate(), pattern)
+  formatExotic(pattern: string, lang?: Lang): string {
+    return format(this.toSystemTzDate(), pattern, {
+      locale: locales[lang ?? 'fi']
+    })
   }
   toString(): string {
     return this.formatIso()
