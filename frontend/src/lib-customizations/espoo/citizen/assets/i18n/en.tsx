@@ -237,6 +237,9 @@ const en: Translations = {
     absences: {
       SICKLEAVE: 'Sickness absence'
     },
+    absenceMarkedByEmployee: 'Absence marked by staff',
+    contactStaffToEditAbsence:
+      'Contact staff if you want to change the absence',
     newReservationOrAbsence: 'Reservation / Absence',
     newHoliday: 'Report holiday',
     newAbsence: 'Report absence',

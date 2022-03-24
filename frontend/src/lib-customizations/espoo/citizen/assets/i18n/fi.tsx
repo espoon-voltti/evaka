@@ -236,6 +236,9 @@ export default {
     absences: {
       SICKLEAVE: 'Sairauspoissaolo'
     },
+    absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
+    contactStaffToEditAbsence:
+      'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newHoliday: 'Ilmoita loma',
     newAbsence: 'Ilmoita poissaolo',

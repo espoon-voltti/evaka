@@ -30,6 +30,10 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
+import {
   ModalCloseButton,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
@@ -67,6 +71,7 @@ interface ChildWithReservations {
   reservations: TimeRange[]
   attendances: OpenTimeRange[]
   reservationEditable: boolean
+  markedByEmployee: boolean
 }
 
 function getChildrenWithReservations(
@@ -89,16 +94,20 @@ function getChildrenWithReservations(
         ({ childId }) => childId === child.id
       )
 
+      const markedByEmployee = childReservations?.markedByEmployee ?? false
+
       const reservationEditable =
-        child.maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
-        (!dailyData.isHoliday || child.inShiftCareUnit)
+        !markedByEmployee &&
+        (!dailyData.isHoliday || child.inShiftCareUnit) &&
+        child.maxOperationalDays.includes(date.getIsoDayOfWeek())
 
       return {
         child,
-        reservationEditable,
         absence: childReservations?.absence ?? undefined,
         reservations: childReservations?.reservations ?? [],
-        attendances: childReservations?.attendances ?? []
+        attendances: childReservations?.attendances ?? [],
+        reservationEditable,
+        markedByEmployee
       }
     })
 }
@@ -223,7 +232,8 @@ export default React.memo(function DayView({
                 absence,
                 reservations,
                 attendances,
-                reservationEditable
+                reservationEditable,
+                markedByEmployee
               } = childWithReservation
 
               const showAttendanceWarning =
@@ -251,7 +261,10 @@ export default React.memo(function DayView({
                         removeSecondReservation={removeSecondReservation}
                       />
                     ) : absence ? (
-                      <Absence absence={absence} />
+                      <Absence
+                        absence={absence}
+                        markedByEmployee={markedByEmployee}
+                      />
                     ) : (
                       <Reservations reservations={reservations} />
                     )}
@@ -292,14 +305,13 @@ export default React.memo(function DayView({
             />
           ) : null}
         </Content>
-        {absenceEditable && (
-          <AbsenceButton
-            text={i18n.calendar.newAbsence}
-            icon={faUserMinus}
-            onClick={onCreateAbsence}
-            data-qa="create-absence"
-          />
-        )}
+        <AbsenceButton
+          text={i18n.calendar.newAbsence}
+          icon={faUserMinus}
+          onClick={onCreateAbsence}
+          disabled={!absenceEditable}
+          data-qa="create-absence"
+        />
         <ModalCloseButton
           close={navigate(close)}
           closeLabel={i18n.common.closeModal}
@@ -565,15 +577,46 @@ const EditReservation = React.memo(function EditReservation({
 })
 
 const Absence = React.memo(function Absence({
-  absence
+  absence,
+  markedByEmployee
 }: {
   absence: AbsenceType
+  markedByEmployee: boolean
 }) {
   const i18n = useTranslation()
+  const [open, setOpen] = useState(false)
+  const onClick = useCallback(() => setOpen((prev) => !prev), [])
+
+  if (!markedByEmployee) {
+    return (
+      <span data-qa="absence">
+        {i18n.calendar.absences[absence] ?? i18n.calendar.absent}
+      </span>
+    )
+  }
   return (
-    <span data-qa="absence">
-      {i18n.calendar.absences[absence] ?? i18n.calendar.absent}
-    </span>
+    <>
+      <FixedSpaceRow data-qa="absence">
+        <FixedSpaceColumn>
+          {i18n.calendar.absenceMarkedByEmployee}
+        </FixedSpaceColumn>
+        <FixedSpaceColumn>
+          <InfoButton
+            onClick={onClick}
+            aria-label={i18n.common.openExpandingInfo}
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
+      {open && (
+        <Colspan2>
+          <ExpandingInfoBox
+            width="auto"
+            info={i18n.calendar.contactStaffToEditAbsence}
+            close={onClick}
+          />
+        </Colspan2>
+      )}
+    </>
   )
 })
 
@@ -653,6 +696,11 @@ const Grid = styled.div`
   grid-template-columns: min-content auto;
   row-gap: ${defaultMargins.xs};
   column-gap: ${defaultMargins.s};
+  max-width: 100%;
+`
+
+const Colspan2 = styled.div`
+  grid-column: 1 / span 2;
 `
 
 const NoReservation = styled.span`

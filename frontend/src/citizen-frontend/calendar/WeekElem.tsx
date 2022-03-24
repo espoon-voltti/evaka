@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useEffect, useRef } from 'react'
+import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
@@ -99,9 +99,16 @@ const DayElem = React.memo(function DayElem({
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
 
+  const markedByEmployee = useMemo(
+    () =>
+      dailyReservations.children.length > 0 &&
+      dailyReservations.children.every((c) => c.markedByEmployee),
+    [dailyReservations]
+  )
+
   const isToday = dailyReservations.date.isToday()
   const setRef = useCallback(
-    (e: HTMLDivElement) => {
+    (e: HTMLButtonElement) => {
       if (isToday) {
         ref.current = e ?? undefined
       }
@@ -131,6 +138,7 @@ const DayElem = React.memo(function DayElem({
     <Day
       ref={setRef}
       today={dailyReservations.date.isToday()}
+      markedByEmployee={markedByEmployee}
       holidayPeriod={isHolidayPeriod}
       onClick={handleClick}
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
@@ -155,6 +163,7 @@ const DayElem = React.memo(function DayElem({
 
 const Day = styled.button<{
   today: boolean
+  markedByEmployee: boolean
   holidayPeriod: boolean
 }>`
   display: flex;
@@ -170,11 +179,13 @@ const Day = styled.button<{
   border-left: 6px solid
     ${(p) => (p.today ? colors.status.success : 'transparent')};
   cursor: pointer;
+
   ${(p) =>
-    p.holidayPeriod &&
-    css`
-      background-color: ${colors.accents.a10powder};
-    `}
+    p.markedByEmployee
+      ? `background-color: ${colors.grayscale.g15}`
+      : p.holidayPeriod
+      ? `background-color: ${colors.accents.a10powder}`
+      : undefined};
 
   :focus {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};

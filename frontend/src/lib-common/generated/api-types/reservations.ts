@@ -26,6 +26,7 @@ export interface ChildDailyData {
   absence: AbsenceType | null
   attendances: OpenTimeRange[]
   childId: UUID
+  markedByEmployee: boolean
   reservations: TimeRange[]
 }
 

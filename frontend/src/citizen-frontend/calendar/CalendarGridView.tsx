@@ -141,6 +141,9 @@ export default React.memo(function CalendarGridView({
                   {w.dailyReservations.map((d) => {
                     const dateIsOnMonth = d.date.month === month
                     const isToday = d.date.isToday() && dateIsOnMonth
+                    const markedByEmployee =
+                      d.children.length > 0 &&
+                      d.children.every((c) => c.markedByEmployee)
 
                     return dateIsOnMonth ? (
                       <DayCell
@@ -151,6 +154,7 @@ export default React.memo(function CalendarGridView({
                           }
                         }}
                         today={isToday}
+                        markedByEmployee={markedByEmployee}
                         holidayPeriod={holidayPeriods.some((p) =>
                           p.includes(d.date)
                         )}
@@ -316,6 +320,7 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
 
 const DayCell = styled.button<{
   today: boolean
+  markedByEmployee: boolean
   selected: boolean
   holidayPeriod: boolean
 }>`
@@ -327,7 +332,9 @@ const DayCell = styled.button<{
   min-height: 150px;
   padding: ${defaultMargins.s};
   background-color: ${(p) =>
-    p.holidayPeriod
+    p.markedByEmployee
+      ? p.theme.colors.grayscale.g15
+      : p.holidayPeriod
       ? p.theme.colors.accents.a10powder
       : p.theme.colors.grayscale.g0};
   border: none;
@@ -341,7 +348,7 @@ const DayCell = styled.button<{
           border-left: 4px solid ${colors.status.success};
           padding-left: calc(${defaultMargins.s} - 3px);
         `
-      : ''}
+      : ''};
 
   ${(p) =>
     p.selected
@@ -349,7 +356,7 @@ const DayCell = styled.button<{
           box-shadow: 0 2px 3px 2px #00000030;
           z-index: 1;
         `
-      : ''}
+      : ''};
 
   :focus {
     box-shadow: 0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};

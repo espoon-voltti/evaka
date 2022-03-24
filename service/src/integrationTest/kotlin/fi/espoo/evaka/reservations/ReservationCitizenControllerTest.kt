@@ -119,8 +119,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, listOf(TimeRange(startTime, endTime)), listOf()),
-                ChildDailyData(testChild_2.id, null, listOf(TimeRange(startTime, endTime)), listOf())
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
+                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf())
             ),
             dailyData[0].children.toSet()
         )
@@ -128,8 +128,8 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, null, listOf(TimeRange(startTime, endTime)), listOf()),
-                ChildDailyData(testChild_2.id, null, listOf(TimeRange(startTime, endTime)), listOf()),
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
+                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
             ),
             dailyData[1].children.toSet()
         )
@@ -166,12 +166,14 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             setOf(
                 ChildDailyData(
                     childId = testChild_1.id,
+                    markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()
                 ),
                 ChildDailyData(
                     childId = testChild_2.id,
+                    markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()
@@ -185,12 +187,14 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             setOf(
                 ChildDailyData(
                     childId = testChild_1.id,
+                    markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()
                 ),
                 ChildDailyData(
                     childId = testChild_2.id,
+                    markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()
@@ -248,6 +252,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             setOf(
                 ChildDailyData(
                     childId = testChild_2.id,
+                    markedByEmployee = true,
                     absence = AbsenceType.PLANNED_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()
@@ -261,6 +266,7 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
             setOf(
                 ChildDailyData(
                     childId = testChild_2.id,
+                    markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
                     attendances = listOf()

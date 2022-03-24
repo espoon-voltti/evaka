@@ -237,6 +237,8 @@ const sv: Translations = {
     absences: {
       SICKLEAVE: 'Sjukskriven'
     },
+    absenceMarkedByEmployee: 'Frånvaro markerad av personal',
+    contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
     newReservationOrAbsence: 'Reservation / Frånvaro',
     newHoliday: 'Meddela semester',
     newAbsence: 'Anmäl frånvaro',

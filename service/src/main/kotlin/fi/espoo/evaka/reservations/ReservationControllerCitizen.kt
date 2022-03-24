@@ -143,6 +143,7 @@ data class DailyReservationData(
 @Json
 data class ChildDailyData(
     val childId: ChildId,
+    val markedByEmployee: Boolean,
     val absence: AbsenceType?,
     val reservations: List<TimeRange>,
     val attendances: List<OpenTimeRange>
@@ -180,6 +181,7 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', g.child_id,
+                'markedByEmployee', a.modified_by_type <> 'CITIZEN',
                 'absence', a.absence_type,
                 'reservations', coalesce(ar.reservations, '[]'),
                 'attendances', coalesce(ca.attendances, '[]')
@@ -212,7 +214,10 @@ LEFT JOIN LATERAL (
     FROM child_attendance ca WHERE ca.child_id = g.child_id AND ca.date = t::date
 ) ca ON true
 LEFT JOIN LATERAL (
-    SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
+    SELECT a.absence_type, eu.type AS modified_by_type
+    FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
+    WHERE a.child_id = g.child_id AND a.date = t::date
+    LIMIT 1
 ) a ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
