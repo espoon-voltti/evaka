@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AbsenceType } from './generated/api-types/daycare'
+
 export interface Theme {
   colors: {
     main: {
@@ -52,6 +54,7 @@ export interface Theme {
       a9pink: string
       a10powder: string
     }
+    absences?: Partial<Record<AbsenceType, string>>
   }
   typography: {
     h1: FontSettings & HasBoldOption
