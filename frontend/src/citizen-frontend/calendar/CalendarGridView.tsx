@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef
+} from 'react'
 import styled, { css } from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -46,7 +52,6 @@ export default React.memo(function CalendarGridView({
   dayIsReservable
 }: Props) {
   const i18n = useTranslation()
-  const [lang] = useLang()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
   const headerRef = useRef<HTMLDivElement>(null)
   const todayRef = useRef<HTMLButtonElement>()
@@ -120,73 +125,18 @@ export default React.memo(function CalendarGridView({
       </StickyHeader>
       <Container>
         {monthlyData.map(({ month, year, weeks }) => (
-          <ContentArea opaque={false} key={`${month}${year}`}>
-            <MonthTitle>{`${
-              i18n.common.datetime.months[month - 1]
-            } ${year}`}</MonthTitle>
-            <CalendarHeader includeWeekends={includeWeekends}>
-              <HeadingCell />
-              {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map(
-                (d) => (
-                  <HeadingCell key={d}>
-                    {i18n.common.datetime.weekdaysShort[d]}
-                  </HeadingCell>
-                )
-              )}
-            </CalendarHeader>
-            <Grid includeWeekends={includeWeekends}>
-              {weeks.map((w) => (
-                <Fragment key={`${w.weekNumber}${month}${year}`}>
-                  <WeekNumber>{w.weekNumber}</WeekNumber>
-                  {w.dailyReservations.map((d) => {
-                    const dateIsOnMonth = d.date.month === month
-                    const isToday = d.date.isToday() && dateIsOnMonth
-                    const markedByEmployee =
-                      d.children.length > 0 &&
-                      d.children.every((c) => c.markedByEmployee)
-
-                    return dateIsOnMonth ? (
-                      <DayCell
-                        key={`${d.date.formatIso()}${month}${year}`}
-                        ref={(e) => {
-                          if (isToday) {
-                            todayRef.current = e ?? undefined
-                          }
-                        }}
-                        today={isToday}
-                        markedByEmployee={markedByEmployee}
-                        holidayPeriod={holidayPeriods.some((p) =>
-                          p.includes(d.date)
-                        )}
-                        selected={
-                          d.date.formatIso() === selectedDate?.formatIso()
-                        }
-                        onClick={() => selectDate(d.date)}
-                        data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
-                      >
-                        <DayCellHeader>
-                          <DayCellDate
-                            inactive={!dayIsReservable(d)}
-                            aria-label={d.date.formatExotic(
-                              'EEEE do MMMM',
-                              lang
-                            )}
-                          >
-                            {d.date.format('d.M.')}
-                          </DayCellDate>
-                        </DayCellHeader>
-                        <DayCellReservations data-qa="reservations">
-                          <Reservations data={d} />
-                        </DayCellReservations>
-                      </DayCell>
-                    ) : (
-                      <InactiveCell />
-                    )
-                  })}
-                </Fragment>
-              ))}
-            </Grid>
-          </ContentArea>
+          <Month
+            key={`${month}${year}`}
+            year={year}
+            month={month}
+            weeks={weeks}
+            holidayPeriods={holidayPeriods}
+            todayRef={todayRef}
+            selectedDate={selectedDate}
+            selectDate={selectDate}
+            includeWeekends={includeWeekends}
+            dayIsReservable={dayIsReservable}
+          />
         ))}
       </Container>
     </>
@@ -262,6 +212,173 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
 
 const daysWithoutWeekends = [0, 1, 2, 3, 4]
 const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
+
+const Month = React.memo(function Month({
+  year,
+  month,
+  weeks,
+  holidayPeriods,
+  todayRef,
+  selectDate,
+  selectedDate,
+  includeWeekends,
+  dayIsReservable
+}: {
+  year: number
+  month: number
+  weeks: WeeklyData[]
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  selectedDate: LocalDate | undefined
+  selectDate: (date: LocalDate) => void
+  includeWeekends: boolean
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  const i18n = useTranslation()
+  return (
+    <ContentArea opaque={false} key={`${month}${year}`}>
+      <MonthTitle>{`${
+        i18n.common.datetime.months[month - 1]
+      } ${year}`}</MonthTitle>
+      <CalendarHeader includeWeekends={includeWeekends}>
+        <HeadingCell />
+        {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map((d) => (
+          <HeadingCell key={d}>
+            {i18n.common.datetime.weekdaysShort[d]}
+          </HeadingCell>
+        ))}
+      </CalendarHeader>
+      <Grid includeWeekends={includeWeekends}>
+        {weeks.map((w) => (
+          <Week
+            key={`${w.weekNumber}${month}${year}`}
+            year={year}
+            month={month}
+            week={w}
+            holidayPeriods={holidayPeriods}
+            todayRef={todayRef}
+            selectedDate={selectedDate}
+            selectDate={selectDate}
+            dayIsReservable={dayIsReservable}
+          />
+        ))}
+      </Grid>
+    </ContentArea>
+  )
+})
+
+const Week = React.memo(function Week({
+  year,
+  month,
+  week,
+  holidayPeriods,
+  todayRef,
+  selectedDate,
+  selectDate,
+  dayIsReservable
+}: {
+  year: number
+  month: number
+  week: WeeklyData
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  selectedDate: LocalDate | undefined
+  selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  return (
+    <>
+      <WeekNumber>{week.weekNumber}</WeekNumber>
+      {week.dailyReservations.map((d) => {
+        const dateIsOnMonth = d.date.month === month
+        const isToday = d.date.isToday() && dateIsOnMonth
+        const selected = d.date.formatIso() === selectedDate?.formatIso()
+        return (
+          <Day
+            key={`${d.date.formatIso()}${month}${year}`}
+            day={d}
+            holidayPeriods={holidayPeriods}
+            todayRef={todayRef}
+            dateIsOnMonth={dateIsOnMonth}
+            isToday={isToday}
+            selected={selected}
+            selectDate={selectDate}
+            dayIsReservable={dayIsReservable}
+          />
+        )
+      })}
+    </>
+  )
+})
+
+const Day = React.memo(function Day({
+  day,
+  holidayPeriods,
+  todayRef,
+  isToday,
+  dateIsOnMonth,
+  selected,
+  selectDate,
+  dayIsReservable
+}: {
+  day: DailyReservationData
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  isToday: boolean
+  dateIsOnMonth: boolean
+  selected: boolean
+  selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  const [lang] = useLang()
+  const ref = useCallback(
+    (e: HTMLButtonElement) => {
+      if (isToday) {
+        todayRef.current = e ?? undefined
+      }
+    },
+    [isToday, todayRef]
+  )
+  const markedByEmployee = useMemo(
+    () =>
+      day.children.length > 0 && day.children.every((c) => c.markedByEmployee),
+    [day.children]
+  )
+  const holidayPeriod = useMemo(
+    () => holidayPeriods.some((p) => p.includes(day.date)),
+    [day.date, holidayPeriods]
+  )
+  const onClick = useCallback(
+    () => selectDate(day.date),
+    [day.date, selectDate]
+  )
+
+  return dateIsOnMonth ? (
+    <DayCell
+      ref={ref}
+      today={isToday}
+      markedByEmployee={markedByEmployee}
+      holidayPeriod={holidayPeriod}
+      selected={selected}
+      onClick={onClick}
+      data-qa={`desktop-calendar-day-${day.date.formatIso()}`}
+    >
+      <DayCellHeader>
+        <DayCellDate
+          inactive={!dayIsReservable(day)}
+          aria-label={day.date.formatExotic('EEEE do MMMM', lang)}
+        >
+          {day.date.format('d.M.')}
+        </DayCellDate>
+      </DayCellHeader>
+      <DayCellReservations data-qa="reservations">
+        <Reservations data={day} />
+      </DayCellReservations>
+    </DayCell>
+  ) : (
+    <InactiveCell />
+  )
+})
 
 const StickyHeader = styled.div<{ bannerIsVisible: boolean }>`
   position: sticky;
