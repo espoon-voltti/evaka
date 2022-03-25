@@ -11,6 +11,7 @@ import com.google.common.hash.Hashing
 import fi.espoo.evaka.pis.EmployeeUser
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
@@ -28,6 +29,7 @@ sealed class AuthenticatedUser : RoleContainer {
         get() = Hashing.sha256().hashString(id.toString(), Charsets.UTF_8)
 
     data class Citizen(override val id: UUID, val authLevel: CitizenAuthLevel) : AuthenticatedUser() {
+        constructor(id: PersonId, authLevel: CitizenAuthLevel) : this(id.raw, authLevel)
         override val evakaUserId: EvakaUserId
             get() = EvakaUserId(id)
         override val roles: Set<UserRole> = when (authLevel) {

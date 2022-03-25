@@ -24,6 +24,11 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     override fun merge(other: IsMobile): IsMobile =
         IsMobile(this.requirePinLogin && other.requirePinLogin)
 
+    fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
+        MobileAuthLevel.PIN_LOGIN -> true
+        MobileAuthLevel.DEFAULT -> !requirePinLogin
+    }
+
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
             is AuthenticatedUser.MobileDevice -> filter(tx, MobileDeviceId(user.id), targets).associateWith { Deferred(user.authLevel) }
@@ -34,18 +39,16 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     }
     private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =
-            if (params.requirePinLogin && authLevel != MobileAuthLevel.PIN_LOGIN) {
-                AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
-            } else {
+            if (params.isPermittedAuthLevel(authLevel)) {
                 AccessControlDecision.Permitted(params)
+            } else {
+                AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
             }
     }
 
     fun any() = object : StaticActionRule {
         override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
-            is AuthenticatedUser.MobileDevice -> if (requirePinLogin) {
-                user.authLevel == MobileAuthLevel.PIN_LOGIN
-            } else true
+            is AuthenticatedUser.MobileDevice -> isPermittedAuthLevel(user.authLevel)
             else -> false
         }
     }
