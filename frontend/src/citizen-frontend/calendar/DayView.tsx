@@ -53,6 +53,7 @@ import {
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
 
+import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
 
@@ -243,9 +244,23 @@ export default React.memo(function DayView({
               return (
                 <div key={child.id} data-qa={`reservations-of-${child.id}`}>
                   {childIndex !== 0 ? <Separator /> : null}
-                  <H3 noMargin data-qa="child-name">
-                    {formatPreferredName(child)}
-                  </H3>
+                  <FixedSpaceRow>
+                    <FixedSpaceColumn>
+                      <RoundChildImage
+                        imageId={child.imageId}
+                        initialLetter={
+                          (child.preferredName || child.firstName || '?')[0]
+                        }
+                        colorIndex={childIndex}
+                        size={48}
+                      />
+                    </FixedSpaceColumn>
+                    <FixedSpaceColumn spacing="zero" justifyContent="center">
+                      <H3 noMargin data-qa="child-name">
+                        {formatPreferredName(child)}
+                      </H3>
+                    </FixedSpaceColumn>
+                  </FixedSpaceRow>
                   <Gap size="s" />
                   <Grid>
                     <Label>{i18n.calendar.reservation}</Label>

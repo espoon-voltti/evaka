@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -25,7 +26,6 @@ import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakers
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
-import { capitalizeFirstLetter } from '../utils'
 import { getStatusLabelByDateRange } from '../utils/date'
 
 const NarrowContainer = styled.div`

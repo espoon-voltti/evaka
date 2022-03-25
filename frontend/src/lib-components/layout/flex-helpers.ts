@@ -49,6 +49,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
 
 interface FixedSpaceColumnProps {
   spacing?: SpacingSize | string
+  justifyContent?: Property.JustifyContent
   alignItems?: Property.AlignItems
   marginRight?: SpacingSize | string
   fullWidth?: boolean
@@ -57,6 +58,7 @@ interface FixedSpaceColumnProps {
 export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
   display: flex;
   flex-direction: column;
+  ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.fullWidth ? `width: 100%;` : '')}
 

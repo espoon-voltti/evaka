@@ -12,7 +12,10 @@ import React, {
 import styled, { css } from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -29,9 +32,11 @@ import { scrollMainToPos } from '../utils'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
+import RoundChildImages, { getPresentChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 export interface Props {
+  childData: ReservationChild[]
   dailyData: DailyReservationData[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
@@ -43,6 +48,7 @@ export interface Props {
 }
 
 export default React.memo(function CalendarGridView({
+  childData,
   dailyData,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
@@ -130,6 +136,7 @@ export default React.memo(function CalendarGridView({
             key={`${month}${year}`}
             year={year}
             month={month}
+            childData={childData}
             weeks={weeks}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
@@ -217,6 +224,7 @@ const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
 const Month = React.memo(function Month({
   year,
   month,
+  childData,
   weeks,
   holidayPeriods,
   todayRef,
@@ -227,6 +235,7 @@ const Month = React.memo(function Month({
 }: {
   year: number
   month: number
+  childData: ReservationChild[]
   weeks: WeeklyData[]
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | undefined>
@@ -255,6 +264,7 @@ const Month = React.memo(function Month({
             key={`${w.weekNumber}${month}${year}`}
             year={year}
             month={month}
+            childData={childData}
             week={w}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
@@ -271,6 +281,7 @@ const Month = React.memo(function Month({
 const Week = React.memo(function Week({
   year,
   month,
+  childData,
   week,
   holidayPeriods,
   todayRef,
@@ -280,6 +291,7 @@ const Week = React.memo(function Week({
 }: {
   year: number
   month: number
+  childData: ReservationChild[]
   week: WeeklyData
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | undefined>
@@ -297,6 +309,7 @@ const Week = React.memo(function Week({
           <Day
             key={`${d.date.formatIso()}${month}${year}`}
             day={d}
+            childData={childData}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
             dateType={dateType(year, month, d.date)}
@@ -320,6 +333,7 @@ function dateType(year: number, month: number, date: LocalDate): DateType {
 
 const Day = React.memo(function Day({
   day,
+  childData,
   holidayPeriods,
   todayRef,
   dateType,
@@ -328,6 +342,7 @@ const Day = React.memo(function Day({
   dayIsReservable
 }: {
   day: DailyReservationData
+  childData: ReservationChild[]
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | undefined>
   dateType: DateType
@@ -358,6 +373,11 @@ const Day = React.memo(function Day({
     [day.date, selectDate]
   )
 
+  const presentChildImages = useMemo(
+    () => getPresentChildImages(childData, day),
+    [childData, day]
+  )
+
   if (dateType === 'otherMonth') {
     return <InactiveCell />
   }
@@ -380,6 +400,14 @@ const Day = React.memo(function Day({
           {day.date.format('d.M.')}
         </DayCellDate>
       </DayCellHeader>
+      <ChildImagesContainer>
+        <RoundChildImages
+          images={presentChildImages}
+          imageSize={37}
+          imageBorder={3}
+          imageOverlap={9}
+        />
+      </ChildImagesContainer>
       <DayCellReservations data-qa="reservations">
         <Reservations data={day} />
       </DayCellReservations>
@@ -387,6 +415,12 @@ const Day = React.memo(function Day({
     </DayCell>
   )
 })
+
+const ChildImagesContainer = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 8px;
+`
 
 const StickyHeader = styled.div<{ bannerIsVisible: boolean }>`
   position: sticky;
@@ -466,6 +500,7 @@ const DayCell = styled.button<{
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
   user-select: none;
+  text-align: left;
 
   ${(p) =>
     p.today

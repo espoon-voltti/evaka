@@ -52,11 +52,13 @@ const sv: Translations = {
       },
       languages: {
         fi: 'finskspråkig',
-        sv: 'svenskaspråkig'
+        sv: 'svenskspråkig',
+        en: 'engelskspråkig'
       },
       languagesShort: {
         fi: 'suomi',
-        sv: 'svenska'
+        sv: 'svenska',
+        en: 'engelska'
       }
     },
     openExpandingInfo: 'Öppna detaljer',

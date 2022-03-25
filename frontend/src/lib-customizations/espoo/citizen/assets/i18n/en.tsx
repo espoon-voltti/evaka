@@ -51,12 +51,14 @@ const en: Translations = {
         PREPARATORY_EDUCATION: 'Preparatory education'
       },
       languages: {
-        fi: 'finnish',
-        sv: 'swedish'
+        fi: 'Finnish',
+        sv: 'Swedish',
+        en: 'English'
       },
       languagesShort: {
-        fi: 'finnish',
-        sv: 'swedish'
+        fi: 'Finnish',
+        sv: 'Swedish',
+        en: 'English'
       }
     },
     openExpandingInfo: 'Open the details',

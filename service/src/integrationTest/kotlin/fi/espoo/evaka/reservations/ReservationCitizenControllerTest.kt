@@ -91,25 +91,28 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
+                // Sorted by date of birth, oldest child first
                 ReservationChild(
-                    testChild_1.id,
-                    testChild_1.firstName,
+                    testChild_2.id,
+                    testChild_2.firstName,
                     "",
+                    null,
                     testDate,
                     testDate.plusDays(1),
                     setOf(1, 2, 3, 4, 5),
                     false
                 ),
                 ReservationChild(
-                    testChild_2.id,
-                    testChild_2.firstName,
+                    testChild_1.id,
+                    testChild_1.firstName,
                     "",
+                    null,
                     testDate,
                     testDate.plusDays(1),
                     setOf(1, 2, 3, 4, 5),
                     false
-                )
-            ).sortedBy { it.firstName },
+                ),
+            ),
             res.children
         )
 

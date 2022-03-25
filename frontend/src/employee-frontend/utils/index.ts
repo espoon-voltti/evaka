@@ -27,12 +27,6 @@ export const formatPersonName = (
   lastNameFirst = false
 ): string => formatName(person.firstName, person.lastName, i18n, lastNameFirst)
 
-export const capitalizeFirstLetter = (str: string | null): string => {
-  if (!str || str.length === 0) return ''
-  if (str.length === 1) return str.toUpperCase()
-  return str[0].toUpperCase() + str.slice(1)
-}
-
 export function distinct<E>(array: E[]): E[] {
   return [...new Set(array)]
 }

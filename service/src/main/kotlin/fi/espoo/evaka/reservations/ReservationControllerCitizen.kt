@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodDeadlines
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -153,6 +154,7 @@ data class ReservationChild(
     val id: ChildId,
     val firstName: String,
     val preferredName: String?,
+    val imageId: ChildImageId?,
     val placementMinStart: LocalDate,
     val placementMaxEnd: LocalDate,
     val maxOperationalDays: Set<Int>,
@@ -234,9 +236,18 @@ GROUP BY date, is_holiday
 private fun Database.Read.getReservationChildren(guardianId: PersonId, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name, ch.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
+SELECT
+    ch.id,
+    ch.first_name,
+    ch.preferred_name,
+    ci.id AS image_id,
+    p.placement_min_start,
+    p.placement_max_end,
+    p.max_operational_days,
+    p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
+LEFT JOIN child_images ci ON ci.child_id = ch.id
 LEFT JOIN LATERAL (
     SELECT
         min(p.start_date) AS placement_min_start,
@@ -258,7 +269,7 @@ LEFT JOIN LATERAL (
     ) p
 ) p ON true
 WHERE p.placement_min_start IS NOT NULL
-ORDER BY first_name
+ORDER BY ch.date_of_birth
         """.trimIndent()
     )
         .bind("guardianId", guardianId)

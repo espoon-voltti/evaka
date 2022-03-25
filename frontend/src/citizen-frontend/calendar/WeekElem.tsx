@@ -5,8 +5,12 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { capitalizeFirstLetter } from 'lib-common/string'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -18,9 +22,11 @@ import { scrollMainToPos } from '../utils'
 
 import { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
+import RoundChildImages, { getPresentChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 interface Props extends WeeklyData {
+  childData: ReservationChild[]
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
@@ -28,6 +34,7 @@ interface Props extends WeeklyData {
 
 export default React.memo(function WeekElem({
   weekNumber,
+  childData,
   dailyReservations,
   dayIsHolidayPeriod,
   selectDate,
@@ -48,6 +55,7 @@ export default React.memo(function WeekElem({
               </MonthTitle>
             )}
             <DayElem
+              childData={childData}
               dailyReservations={d}
               key={d.date.formatIso()}
               selectDate={selectDate}
@@ -85,6 +93,7 @@ const MonthTitle = styled(H2)`
 `
 
 interface DayProps {
+  childData: ReservationChild[]
   dailyReservations: DailyReservationData
   selectDate: (date: LocalDate) => void
   isReservable: boolean
@@ -92,6 +101,7 @@ interface DayProps {
 }
 
 const DayElem = React.memo(function DayElem({
+  childData,
   dailyReservations,
   selectDate,
   isReservable,
@@ -121,6 +131,11 @@ const DayElem = React.memo(function DayElem({
     selectDate(dailyReservations.date)
   }, [selectDate, dailyReservations.date])
 
+  const presentChildImages = useMemo(
+    () => getPresentChildImages(childData, dailyReservations),
+    [childData, dailyReservations]
+  )
+
   useEffect(() => {
     if (ref.current) {
       const pos = ref.current?.getBoundingClientRect().top
@@ -146,21 +161,37 @@ const DayElem = React.memo(function DayElem({
     >
       <DayColumn spacing="xxs" inactive={!isReservable}>
         <div aria-label={dailyReservations.date.formatExotic('EEEE', lang)}>
-          {dailyReservations.date.format('EEEEEE', lang)}
+          {capitalizeFirstLetter(dailyReservations.date.format('EEEEEE', lang))}
         </div>
         <div aria-label={dailyReservations.date.formatExotic('do MMMM', lang)}>
           {dailyReservations.date.format('d.M.')}
         </div>
       </DayColumn>
       <Gap size="s" horizontal />
-      <div data-qa="reservations">
+      <ReservationsContainer data-qa="reservations">
         <Reservations data={dailyReservations} />
-      </div>
+      </ReservationsContainer>
       <Gap size="s" horizontal />
+      <ChildImagesContainer>
+        <RoundChildImages
+          images={presentChildImages}
+          imageSize={34}
+          imageBorder={2}
+          imageOverlap={9}
+        />
+      </ChildImagesContainer>
       {dailyReservations.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
     </Day>
   )
 })
+
+const ReservationsContainer = styled.div`
+  flex: 1 0 0;
+`
+
+const ChildImagesContainer = styled.div`
+  flex: 0 0 auto;
+`
 
 const Day = styled.button<{
   today: boolean
@@ -169,7 +200,6 @@ const Day = styled.button<{
 }>`
   display: flex;
   flex-direction: row;
-  align-items: center;
   width: 100%;
   position: relative;
   padding: ${defaultMargins.s} ${defaultMargins.s};
@@ -180,6 +210,7 @@ const Day = styled.button<{
   border-left: 6px solid
     ${(p) => (p.today ? colors.status.success : 'transparent')};
   cursor: pointer;
+  text-align: left;
 
   ${(p) =>
     p.markedByEmployee

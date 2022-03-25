@@ -7,6 +7,8 @@ import React from 'react'
 import DayPicker, { DayModifiers } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
+import { capitalizeFirstLetter } from 'lib-common/string'
+
 import 'react-day-picker/lib/style.css'
 
 const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -38,17 +40,15 @@ export default React.memo(function DatePickerDay({
     }
   }
 
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
   const months = monthNumbers
     .map((m) => dateI18n.localize?.month(m) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalize)
+    .map(capitalizeFirstLetter)
   const weekdaysLong = weekdayNumbers
     .map((d) => dateI18n.localize?.day(d) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalize)
+    .map(capitalizeFirstLetter)
   const weekdaysShort = weekdayNumbers
     .map((d) => dateI18n.localize?.day(d, { width: 'short' }) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalize)
+    .map(capitalizeFirstLetter)
 
   return (
     <DayPicker

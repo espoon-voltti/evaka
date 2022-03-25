@@ -62,6 +62,7 @@ export interface OpenTimeRange {
 export interface ReservationChild {
   firstName: string
   id: UUID
+  imageId: UUID | null
   inShiftCareUnit: boolean
   maxOperationalDays: number[]
   placementMaxEnd: LocalDate

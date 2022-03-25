@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { Result, Success } from 'lib-common/api'
 import { CareType, PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
+import { capitalizeFirstLetter } from 'lib-common/string'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -75,8 +76,6 @@ export default React.memo(function UnitDetailsPanel({
     .map(formatCareType)
     .join(', ')
 
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.substr(1)
-
   const getRouteLink = useCallback(() => {
     if (!unit.location || !selectedAddress) return null
 
@@ -142,7 +141,9 @@ export default React.memo(function UnitDetailsPanel({
             <Label>{t.map.language}</Label>
             <Gap size="xs" />
             {/* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */}
-            <div>{capitalize(t.common.unit.languages[unit.language])}</div>
+            <div>
+              {capitalizeFirstLetter(t.common.unit.languages[unit.language])}
+            </div>
             <Gap size="s" />
             <Label>{t.map.providerType}</Label>
             <Gap size="xs" />

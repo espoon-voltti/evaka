@@ -7,7 +7,10 @@ import _ from 'lodash'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -19,6 +22,7 @@ import { useTranslation } from '../localization'
 import WeekElem from './WeekElem'
 
 export interface Props {
+  childData: ReservationChild[]
   dailyData: DailyReservationData[]
   onHoverButtonClick: () => void
   selectDate: (date: LocalDate) => void
@@ -27,6 +31,7 @@ export interface Props {
 }
 
 export default React.memo(function CalendarListView({
+  childData,
   dailyData,
   dayIsHolidayPeriod,
   onHoverButtonClick,
@@ -43,6 +48,7 @@ export default React.memo(function CalendarListView({
           <WeekElem
             {...w}
             key={w.dailyReservations[0].date.formatIso()}
+            childData={childData}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}

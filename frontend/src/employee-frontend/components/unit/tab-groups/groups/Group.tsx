@@ -18,6 +18,7 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
+import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -63,7 +64,7 @@ import {
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
-import { capitalizeFirstLetter, formatPersonName } from '../../../../utils'
+import { formatPersonName } from '../../../../utils'
 import { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
