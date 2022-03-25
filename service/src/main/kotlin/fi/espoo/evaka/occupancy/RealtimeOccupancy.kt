@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -21,7 +21,7 @@ data class RealtimeOccupancy(
             child.departed?.let { ChildCapacityPoint(it, -child.capacity) }
         }
         val deltas = (arrivals + departures).sortedBy { it.time }
-        deltas.fold(emptyList<ChildCapacityPoint>()) { list, event ->
+        deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {
                 listOf(event)
             } else if (list.last().time == event.time) {
@@ -38,7 +38,7 @@ data class RealtimeOccupancy(
             staff.departed?.let { StaffCountPoint(it, -1) }
         }
         val deltas = (arrivals + departures).sortedBy { it.time }
-        deltas.fold(emptyList<StaffCountPoint>()) { list, event ->
+        deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {
                 listOf(event)
             } else if (list.last().time == event.time) {
@@ -50,7 +50,7 @@ data class RealtimeOccupancy(
     }
 
     val occupancySeries: List<OccupancyPoint> by lazy {
-        val times = (childCapacitySumSeries.map { it.time } + staffCountSeries.map { it.time }).sorted()
+        val times = (childCapacitySumSeries.map { it.time } + staffCountSeries.map { it.time }).sorted().distinct()
         times.map { time ->
             OccupancyPoint(
                 time = time,
@@ -95,7 +95,7 @@ data class OccupancyPoint(
         }
 }
 
-fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDate) = createQuery(
+fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDate): List<ChildOccupancyAttendance> = createQuery(
     """
     SELECT 
         (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
@@ -117,7 +117,7 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
     .mapTo<ChildOccupancyAttendance>()
     .list()
 
-fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDate) = createQuery(
+fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDate): List<StaffOccupancyAttendance> = createQuery(
     """
     SELECT sa.arrived, sa.departed
     FROM staff_attendance_realtime sa
