@@ -27,6 +27,7 @@ import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
+import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { Reservations } from './calendar-elements'
 
@@ -290,17 +291,15 @@ const Week = React.memo(function Week({
     <>
       <WeekNumber>{week.weekNumber}</WeekNumber>
       {week.dailyReservations.map((d) => {
-        const dateIsOnMonth = d.date.month === month
-        const isToday = d.date.isToday() && dateIsOnMonth
-        const selected = d.date.formatIso() === selectedDate?.formatIso()
+        const selected =
+          selectedDate !== undefined && d.date.isEqual(selectedDate)
         return (
           <Day
             key={`${d.date.formatIso()}${month}${year}`}
             day={d}
             holidayPeriods={holidayPeriods}
             todayRef={todayRef}
-            dateIsOnMonth={dateIsOnMonth}
-            isToday={isToday}
+            dateType={dateType(year, month, d.date)}
             selected={selected}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
@@ -311,12 +310,19 @@ const Week = React.memo(function Week({
   )
 })
 
+type DateType = 'past' | 'today' | 'future' | 'otherMonth'
+
+function dateType(year: number, month: number, date: LocalDate): DateType {
+  if (date.year !== year || date.month !== month) return 'otherMonth'
+  const today = LocalDate.today()
+  return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
+}
+
 const Day = React.memo(function Day({
   day,
   holidayPeriods,
   todayRef,
-  isToday,
-  dateIsOnMonth,
+  dateType,
   selected,
   selectDate,
   dayIsReservable
@@ -324,8 +330,7 @@ const Day = React.memo(function Day({
   day: DailyReservationData
   holidayPeriods: FiniteDateRange[]
   todayRef: MutableRefObject<HTMLButtonElement | undefined>
-  isToday: boolean
-  dateIsOnMonth: boolean
+  dateType: DateType
   selected: boolean
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
@@ -333,11 +338,11 @@ const Day = React.memo(function Day({
   const [lang] = useLang()
   const ref = useCallback(
     (e: HTMLButtonElement) => {
-      if (isToday) {
+      if (dateType === 'today') {
         todayRef.current = e ?? undefined
       }
     },
-    [isToday, todayRef]
+    [dateType, todayRef]
   )
   const markedByEmployee = useMemo(
     () =>
@@ -353,10 +358,14 @@ const Day = React.memo(function Day({
     [day.date, selectDate]
   )
 
-  return dateIsOnMonth ? (
+  if (dateType === 'otherMonth') {
+    return <InactiveCell />
+  }
+
+  return (
     <DayCell
       ref={ref}
-      today={isToday}
+      today={dateType === 'today'}
       markedByEmployee={markedByEmployee}
       holidayPeriod={holidayPeriod}
       selected={selected}
@@ -374,9 +383,8 @@ const Day = React.memo(function Day({
       <DayCellReservations data-qa="reservations">
         <Reservations data={day} />
       </DayCellReservations>
+      {dateType === 'past' && <HistoryOverlay />}
     </DayCell>
-  ) : (
-    <InactiveCell />
   )
 })
 

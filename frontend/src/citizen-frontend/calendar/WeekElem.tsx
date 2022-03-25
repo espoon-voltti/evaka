@@ -17,6 +17,7 @@ import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
 import { WeeklyData } from './CalendarListView'
+import { HistoryOverlay } from './HistoryOverlay'
 import { Reservations } from './calendar-elements'
 
 interface Props extends WeeklyData {
@@ -196,14 +197,4 @@ const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`
   width: 3rem;
   color: ${(p) => (p.inactive ? colors.grayscale.g70 : colors.main.m1)};
   font-weight: ${fontWeights.semibold};
-`
-
-const HistoryOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.6;
-  background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
