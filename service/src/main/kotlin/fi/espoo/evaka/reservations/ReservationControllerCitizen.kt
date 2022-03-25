@@ -186,7 +186,7 @@ SELECT
                 'reservations', coalesce(ar.reservations, '[]'),
                 'attendances', coalesce(ca.attendances, '[]')
             )
-        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL),
+        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL),
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t
