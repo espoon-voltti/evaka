@@ -182,8 +182,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
                         <Td data-qa="person-age">{age}</Td>
                         {family.totalIncome ? (
                           <Td data-qa="person-income-total">
-                            {role !== 'CHILD' &&
-                              getIncomeString(income?.total, income?.effect)}
+                            {getIncomeString(income?.total, income?.effect)}
                           </Td>
                         ) : null}
                         <Td>
