@@ -5,7 +5,7 @@
 import classNames from 'classnames'
 import { isSameDay } from 'date-fns'
 import { groupBy, sortBy } from 'lodash'
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import styled from 'styled-components'
 
 import EllipsisMenu from 'employee-frontend/components/common/EllipsisMenu'
@@ -115,6 +115,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
   operationalDays,
   attendances
 }: AttendanceRowProps) {
+  const attendancesForDay = useCallback(
+    (date: Date) =>
+      sortBy(
+        attendances.filter((attendance) => isSameDay(attendance.arrived, date)),
+        (attendance) => attendance.arrived
+      ),
+    [attendances]
+  )
   return (
     <DayTr>
       <NameTd partialRow={false} rowIndex={rowIndex}>
@@ -127,19 +135,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
           partialRow={false}
           rowIndex={rowIndex}
         >
-          {attendances?.length > 0 ? (
-            attendances.map((attendance) => (
+          {attendancesForDay(day.date.toSystemTzDate())?.length > 0 ? (
+            attendancesForDay(day.date.toSystemTzDate()).map((attendance) => (
               <AttendanceCell key={attendance.id}>
                 <AttendanceTime>
-                  {isSameDay(attendance.arrived, day.date.toSystemTzDate())
-                    ? formatTime(attendance.arrived)
-                    : '–'}
+                  {formatTime(attendance.arrived)}
                 </AttendanceTime>
                 <AttendanceTime>
-                  {attendance.departed &&
-                  isSameDay(attendance.departed, day.date.toSystemTzDate())
-                    ? formatTime(attendance.departed)
-                    : '–'}
+                  {attendance.departed ? formatTime(attendance.departed) : '–'}
                 </AttendanceTime>
               </AttendanceCell>
             ))
