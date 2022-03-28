@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -82,14 +83,14 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             headOfFamilyId = testAdult_1.id,
             areaId = testArea.id,
             number = 5000000001L,
-            period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
+            period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
             areaId = testArea.id,
-            period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
+            period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
         )
     )

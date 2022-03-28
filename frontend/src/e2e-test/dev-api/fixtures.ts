@@ -889,7 +889,8 @@ export const invoiceFixture = (
       product: 'DAYCARE',
       unitId,
       description: '',
-      price: 10000
+      price: 10000,
+      correctionId: null
     }
   ],
   totalPrice: 10000

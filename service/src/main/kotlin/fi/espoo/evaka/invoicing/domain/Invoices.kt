@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -61,7 +62,8 @@ data class InvoiceRow(
     val periodEnd: LocalDate,
     val product: ProductKey,
     val unitId: DaycareId,
-    val description: String = ""
+    val description: String = "",
+    val correctionId: InvoiceCorrectionId?
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice
@@ -102,7 +104,8 @@ data class InvoiceRowDetailed(
     val costCenter: String,
     val subCostCenter: String?,
     val savedCostCenter: String?,
-    val description: String = ""
+    val description: String,
+    val correctionId: InvoiceCorrectionId?
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice

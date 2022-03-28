@@ -437,7 +437,8 @@ class DraftInvoiceGenerator(
                 amount = amount,
                 unitPrice = price,
                 unitId = codes.unitId,
-                product = productProvider.mapToProduct(placement.type)
+                product = productProvider.mapToProduct(placement.type),
+                correctionId = null
             )
         )
     }
@@ -482,7 +483,8 @@ class DraftInvoiceGenerator(
                 amount = amount,
                 unitPrice = unitPrice(price),
                 unitId = codes.unitId,
-                product = product
+                product = product,
+                correctionId = null
             )
         ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
             InvoiceRow(
@@ -493,7 +495,8 @@ class DraftInvoiceGenerator(
                 product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
                 unitId = codes.unitId,
                 amount = amount,
-                unitPrice = unitPrice(feeAlterationEffect)
+                unitPrice = unitPrice(feeAlterationEffect),
+                correctionId = null
             )
         } + surplusContractDays(
             period,
@@ -523,7 +526,8 @@ class DraftInvoiceGenerator(
                 amount = refundAmount,
                 unitPrice = refundUnitPrice,
                 unitId = codes.unitId,
-                product = refundProduct
+                product = refundProduct,
+                correctionId = null
             )
         }
         return withDailyModifiers + monthlyAbsenceDiscount(
@@ -538,7 +542,8 @@ class DraftInvoiceGenerator(
                 product = absenceProduct,
                 unitId = codes.unitId,
                 amount = amount,
-                unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt()
+                unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt(),
+                correctionId = null
             )
         }
     }
@@ -573,6 +578,7 @@ class DraftInvoiceGenerator(
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
+                    correctionId = null
                 )
             ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
                 InvoiceRow(
@@ -586,7 +592,8 @@ class DraftInvoiceGenerator(
                     ),
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
-                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor)
+                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor),
+                    correctionId = null
                 )
             }
         } else listOf()

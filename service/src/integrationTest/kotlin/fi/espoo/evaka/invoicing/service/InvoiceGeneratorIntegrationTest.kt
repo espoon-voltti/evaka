@@ -35,13 +35,16 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
@@ -3543,6 +3546,75 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 assertEquals(28900, invoiceRow.price)
             }
         }
+    }
+
+    @Test
+    fun `invoice corrections are applied to invoices when generation is done multiple times`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(decisions)
+        db.transaction {
+            it.insertTestInvoiceCorrection(
+                DevInvoiceCorrection(
+                    headOfFamilyId = testAdult_1.id,
+                    childId = testChild_1.id,
+                    amount = 1,
+                    unitPrice = -28900,
+                    period = FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2018, 12, 31)),
+                    unitId = testDaycare.id,
+                    product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                    description = "",
+                    note = ""
+                )
+            )
+        }
+
+        fun assertResult(result: List<Invoice>) {
+            assertEquals(1, result.size)
+            result.first().let { invoice ->
+                assertEquals(testAdult_1.id, invoice.headOfFamily)
+                assertEquals(0, invoice.totalPrice)
+                assertEquals(2, invoice.rows.size)
+                invoice.rows[0].let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(28900, invoiceRow.unitPrice)
+                    assertEquals(28900, invoiceRow.price)
+                }
+                invoice.rows[1].let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(-28900, invoiceRow.unitPrice)
+                    assertEquals(-28900, invoiceRow.price)
+                }
+            }
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        assertResult(db.read(getAllInvoices))
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        assertResult(db.read(getAllInvoices))
     }
 
     private fun initByPeriodAndPlacementType(

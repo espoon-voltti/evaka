@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.invoicing.controller.InvoiceCorrection
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
@@ -15,14 +16,19 @@ import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.Invoice
+import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
@@ -35,6 +41,8 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.TemporalAdjusters
+import java.util.UUID
+import kotlin.math.abs
 
 @Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
@@ -55,8 +63,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             invoiceCalculationData.freeChildren,
             invoiceCalculationData.codebtors
         )
+        val invoicesWithCorrections = applyCorrections(tx, invoices)
         tx.deleteDraftInvoicesByDateRange(range)
-        tx.upsertInvoices(invoices)
+        tx.upsertInvoices(invoicesWithCorrections)
     }
 
     fun calculateInvoiceData(tx: Database.Transaction, range: DateRange): InvoiceCalculationData {
@@ -133,8 +142,99 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         return DateRange(from, to)
     }
 
-    fun generateDraftInvoiceDiffBetweenOldAndNewInvoiceGenerator() {
+    fun applyCorrections(tx: Database.Read, invoices: List<Invoice>): List<Invoice> {
+        val corrections = getUninvoicedCorrections(tx)
+
+        return invoices.map { invoice ->
+            val headOfFamilyCorrections = corrections[invoice.headOfFamily] ?: return@map invoice
+
+            val (additions, subtractions) = headOfFamilyCorrections.partition { it.unitPrice > 0 }
+            val withAdditions = invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
+
+            subtractions
+                .sortedBy { it.period.start }
+                .fold(withAdditions) { invoiceWithSubtractions, subtraction ->
+                    if (invoiceWithSubtractions.totalPrice == 0) return@fold invoiceWithSubtractions
+
+                    if ((invoiceWithSubtractions.totalPrice + subtraction.unitPrice) >= 0) {
+                        // apply partial amount (also handles cases where the whole subtraction can be applied)
+                        // integer division gives us the max amount of full refundable units
+                        val maxApplicableAmount = invoiceWithSubtractions.totalPrice / abs(subtraction.unitPrice)
+                        val subtractionWithMaxApplicableAmount =
+                            subtraction.copy(amount = minOf(subtraction.amount, maxApplicableAmount))
+                        invoiceWithSubtractions.copy(rows = invoiceWithSubtractions.rows + subtractionWithMaxApplicableAmount.toInvoiceRow())
+                    } else {
+                        // apply partial unit price
+                        val maxUnitPrice = invoiceWithSubtractions.totalPrice / subtraction.amount
+                        if (maxUnitPrice == 0) return@fold invoiceWithSubtractions
+
+                        val subtractionWithMaxUnitPrice = subtraction.copy(unitPrice = -1 * maxUnitPrice)
+                        invoiceWithSubtractions.copy(rows = invoiceWithSubtractions.rows + subtractionWithMaxUnitPrice.toInvoiceRow())
+                    }
+                }
+        }
     }
+
+    private fun getUninvoicedCorrections(tx: Database.Read): Map<PersonId, List<InvoiceCorrection>> {
+        val uninvoicedCorrectionsWithInvoicedTotals = tx.createQuery(
+            """
+SELECT
+    c.id,
+    coalesce(
+        jsonb_agg(jsonb_build_object('amount', r.amount, 'unitPrice', r.unit_price, 'periodStart', i.period_start)) FILTER (WHERE i.id IS NOT NULL),
+        '[]'::jsonb
+    ) AS invoiced_corrections
+FROM invoice_correction c
+LEFT JOIN invoice_row r ON c.id = r.correction_id
+LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
+GROUP BY c.id
+HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
+"""
+        )
+            .map { rv ->
+                Pair<InvoiceCorrectionId, List<InvoicedTotal>>(
+                    rv.mapColumn("id"),
+                    rv.mapJsonColumn("invoiced_corrections")
+                )
+            }
+            .toMap()
+
+        return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
+            .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys.toTypedArray())
+            .mapTo<InvoiceCorrection>()
+            .groupBy { it.headOfFamilyId }
+            .mapValues { (_, corrections) ->
+                // Remove the already invoiced parts from corrections
+                corrections.map { correction ->
+                    val invoicedTotals = uninvoicedCorrectionsWithInvoicedTotals[correction.id]!!
+                    invoicedTotals
+                        .sortedBy { it.periodStart }
+                        .fold(correction) { c, total ->
+                            if (c.amount != total.amount) c.copy(amount = c.amount - total.amount)
+                            else c.copy(unitPrice = c.unitPrice - total.unitPrice)
+                        }
+                }
+            }
+    }
+
+    data class InvoicedTotal(
+        val amount: Int,
+        val unitPrice: Int,
+        val periodStart: LocalDate
+    )
+
+    private fun InvoiceCorrection.toInvoiceRow() = InvoiceRow(
+        id = InvoiceRowId(UUID.randomUUID()),
+        child = childId,
+        amount = amount,
+        unitPrice = unitPrice,
+        periodStart = period.start,
+        periodEnd = period.end,
+        product = product,
+        unitId = unitId,
+        description = description,
+        correctionId = id
+    )
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {

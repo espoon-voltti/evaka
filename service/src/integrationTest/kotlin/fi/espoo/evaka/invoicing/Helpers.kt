@@ -100,7 +100,8 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
             costCenter = costCenter,
             subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
             savedCostCenter = if (invoice.status == InvoiceStatus.SENT || invoice.status == InvoiceStatus.WAITING_FOR_SENDING) costCenter else null,
-            description = row.description
+            description = row.description,
+            correctionId = row.correctionId
         )
     },
     number = invoice.number,

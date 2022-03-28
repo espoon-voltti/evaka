@@ -63,7 +63,8 @@ const emptyInvoiceRow = (
   savedCostCenter: null,
   amount: 0,
   unitPrice: 0,
-  price: 0
+  price: 0,
+  correctionId: null
 })
 
 interface Props {

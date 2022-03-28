@@ -46,7 +46,8 @@ val invoiceQueryBase =
         row.period_end as invoice_row_period_end,
         row.product,
         row.unit_id,
-        row.description
+        row.description,
+        row.correction_id
     FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
     """.trimIndent()
 
@@ -94,6 +95,7 @@ val invoiceDetailedQueryBase =
         row_care_area.sub_cost_center,
         row.saved_cost_center,
         row.description,
+        row.correction_id,
         child.date_of_birth as child_date_of_birth,
         child.first_name as child_first_name,
         child.last_name as child_last_name,
@@ -503,7 +505,8 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 period_end,
                 product,
                 unit_id,
-                description
+                description,
+                correction_id
             ) VALUES (
                 :invoice_id,
                 :id,
@@ -514,7 +517,8 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 :periodEnd,
                 :product,
                 :unitId,
-                :description
+                :description,
+                :correctionId
             )
         """
 
@@ -553,7 +557,8 @@ val toInvoice = { rv: RowView ->
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
                     unitId = rv.mapColumn("unit_id"),
-                    description = rv.mapColumn("description")
+                    description = rv.mapColumn("description"),
+                    correctionId = rv.mapColumn("correction_id")
                 )
             )
         } ?: listOf(),
@@ -599,7 +604,8 @@ val toDetailedInvoice = { rv: RowView ->
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
                     savedCostCenter = rv.mapColumn("saved_cost_center"),
-                    description = rv.mapColumn("description")
+                    description = rv.mapColumn("description"),
+                    correctionId = rv.mapColumn("correction_id")
                 )
             )
         } ?: listOf(),
