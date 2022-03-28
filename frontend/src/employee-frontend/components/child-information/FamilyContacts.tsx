@@ -117,6 +117,7 @@ export default React.memo(function FamilyContacts({
             <Tbody>
               {result.map((row) => (
                 <Tr
+                  data-qa={`table-family-contact-row-${row.id}`}
                   key={`${row.role}:${row.lastName || ''}:${
                     row.firstName || ''
                   }`}
@@ -128,80 +129,85 @@ export default React.memo(function FamilyContacts({
                   <Td>
                     {permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
                       <FixedSpaceColumn spacing="xs">
-                        {row.email && (
-                          <span>
-                            <InputField
-                              value={row.email}
-                              onChange={(value) => {
+                        <span>
+                          <InputField
+                            data-qa="family-contact-email-input"
+                            value={row.email ?? ''}
+                            onChange={(value) => {
+                              setDirty(true)
+                              setResult((prev) => {
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.email = value
+                                    }
+                                    return cloneRow
+                                  })
+                                  return clone
+                                })
+                              })
+                            }}
+                          />
+                        </span>
+                        <span>
+                          <InputField
+                            data-qa="family-contact-phone-input"
+                            value={row.phone ?? ''}
+                            onChange={(value) => {
+                              setDirty(true)
+                              setResult((prev) => {
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.phone = value
+                                    }
+                                    return cloneRow
+                                  })
+                                  return clone
+                                })
+                              })
+                            }}
+                          />
+                        </span>
+                        <span>
+                          <InputField
+                            data-qa="family-contact-backup-phone-input"
+                            value={row.backupPhone ?? ''}
+                            onChange={(value) => {
+                              setResult((prev) => {
                                 setDirty(true)
-                                setResult((prev) => {
-                                  return prev.map((prevData) => {
-                                    const clone = cloneDeep(prevData)
-                                    clone.map((cloneRow) => {
-                                      if (cloneRow.id === row.id) {
-                                        cloneRow.email = value
-                                      }
-                                      return cloneRow
-                                    })
-                                    return clone
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.backupPhone = value
+                                    }
+                                    return cloneRow
                                   })
+                                  return clone
                                 })
-                              }}
-                            />
-                          </span>
-                        )}
-                        {row.phone && (
-                          <span>
-                            <InputField
-                              value={row.phone}
-                              onChange={(value) => {
-                                setDirty(true)
-                                setResult((prev) => {
-                                  return prev.map((prevData) => {
-                                    const clone = cloneDeep(prevData)
-                                    clone.map((cloneRow) => {
-                                      if (cloneRow.id === row.id) {
-                                        cloneRow.phone = value
-                                      }
-                                      return cloneRow
-                                    })
-                                    return clone
-                                  })
-                                })
-                              }}
-                            />
-                          </span>
-                        )}
-                        {row.backupPhone && (
-                          <span>
-                            <InputField
-                              value={row.backupPhone}
-                              onChange={(value) => {
-                                setResult((prev) => {
-                                  setDirty(true)
-                                  return prev.map((prevData) => {
-                                    const clone = cloneDeep(prevData)
-                                    clone.map((cloneRow) => {
-                                      if (cloneRow.id === row.id) {
-                                        cloneRow.backupPhone = value
-                                      }
-                                      return cloneRow
-                                    })
-                                    return clone
-                                  })
-                                })
-                              }}
-                            />{' '}
-                            {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                          </span>
-                        )}
+                              })
+                            }}
+                          />{' '}
+                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
+                        </span>
                       </FixedSpaceColumn>
                     ) : (
                       <FixedSpaceColumn spacing="xs">
-                        {row.email && <span>{row.email}</span>}
-                        {row.phone && <span>{row.phone}</span>}
+                        {row.email && (
+                          <span data-qa="family-contact-email">
+                            {row.email}
+                          </span>
+                        )}
+                        {row.phone && (
+                          <span data-qa="family-contact-phone">
+                            {row.phone}
+                          </span>
+                        )}
                         {row.backupPhone && (
-                          <span>
+                          <span data-qa="family-contact-backup-phone">
                             {row.backupPhone}{' '}
                             {`(${i18n.childInformation.familyContacts.backupPhone})`}
                           </span>
@@ -245,6 +251,7 @@ export default React.memo(function FamilyContacts({
                         onClick={() => onSubmit(row.id)}
                         text={i18n.common.save}
                         disabled={submitting || !dirty}
+                        data-qa="family-contact-save"
                       />
                     </FixedSpaceRow>
                   </Td>
