@@ -174,7 +174,7 @@ private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: F
     SELECT t::date AS date, holiday.date IS NOT NULL AS is_holiday
     FROM generate_series(:start, :end, '1 day') t
     JOIN daycare ON daycare.id = :unitId AND date_part('isodow', t) = ANY(daycare.operation_days)
-    LEFT JOIN holiday ON t = holiday.date
+    LEFT JOIN holiday ON t = holiday.date AND NOT round_the_clock
     """.trimIndent()
 )
     .bind("unitId", unitId)
