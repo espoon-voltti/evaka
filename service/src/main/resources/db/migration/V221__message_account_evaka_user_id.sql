@@ -9,7 +9,8 @@ ALTER TABLE message_account
     DROP CONSTRAINT message_account_created_for_fk,
     ADD CONSTRAINT message_account_owner_fk CHECK (
         num_nonnulls(daycare_group_id, employee_id, person_id) IN (0, 1) AND
-        (daycare_group_id IS NULL OR evaka_user_id IS NULL) AND
-        (employee_id IS NULL OR evaka_user_id IS NOT NULL) AND
-        (person_id IS NULL OR evaka_user_id IS NOT NULL)
+        CASE
+            WHEN daycare_group_id IS NOT NULL THEN evaka_user_id IS NULL
+            ELSE evaka_user_id IS NOT NULL
+        END
     );
