@@ -1419,6 +1419,7 @@ export const fi = {
       realtime: {
         children: 'Lasten määrä kertoimella',
         childrenMax: 'Lasten maksimimäärä',
+        chartYAxisTitle: 'Lapsia kertoimilla',
         tooltipFooter(
           utilization: number,
           staffPresent: number,
