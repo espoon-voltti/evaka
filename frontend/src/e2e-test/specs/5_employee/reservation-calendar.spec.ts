@@ -32,7 +32,7 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 
-const mockedToday = LocalDate.of(2022, 1, 31)
+const mockedToday = LocalDate.of(2022, 3, 28)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
