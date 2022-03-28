@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
@@ -10,6 +10,10 @@ import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { combine, Success } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  UpdateStaffAttendanceRequest,
+  UpdateExternalAttendanceRequest
+} from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -24,7 +28,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
-import { getStaffAttendances } from '../../../api/staff-attendance'
+import {
+  getStaffAttendances,
+  postUpdateStaffAttendance,
+  postUpdateExternalAttendance
+} from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
@@ -102,6 +110,17 @@ export default React.memo(function UnitAttendanceReservationsView({
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
 
+  const saveAttendance = useCallback(
+    (body: UpdateStaffAttendanceRequest) =>
+      postUpdateStaffAttendance(unitId, body),
+    [unitId]
+  )
+  const saveExternalAttendance = useCallback(
+    (body: UpdateExternalAttendanceRequest) =>
+      postUpdateExternalAttendance(unitId, body),
+    [unitId]
+  )
+
   return renderResult(
     combine(childReservations, staffAttendances),
     ([childData, staffData]) => (
@@ -138,6 +157,8 @@ export default React.memo(function UnitAttendanceReservationsView({
               operationalDays={childData.operationalDays}
               staffAttendances={staffData.staff}
               extraAttendances={staffData.extraAttendances}
+              saveAttendance={saveAttendance}
+              saveExternalAttendance={saveExternalAttendance}
             />
           ) : (
             <ChildReservationsTable

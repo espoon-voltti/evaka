@@ -302,3 +302,21 @@ export interface UnitStats {
   totalChildren: number
   totalStaff: number
 }
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpdateExternalAttendanceRequest
+*/
+export interface UpdateExternalAttendanceRequest {
+  arrived: Date
+  attendanceId: UUID
+  departed: Date | null
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpdateStaffAttendanceRequest
+*/
+export interface UpdateStaffAttendanceRequest {
+  arrived: Date
+  attendanceId: UUID
+  departed: Date | null
+}

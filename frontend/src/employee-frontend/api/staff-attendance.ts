@@ -7,7 +7,9 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   EmployeeAttendance,
   ExternalAttendance,
-  StaffAttendanceResponse
+  StaffAttendanceResponse,
+  UpdateExternalAttendanceRequest,
+  UpdateStaffAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -53,5 +55,25 @@ export function getStaffAttendances(
       staff: staff.map(mapEmployeeAttendance)
     }))
     .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function postUpdateStaffAttendance(
+  unitId: UUID,
+  body: UpdateStaffAttendanceRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/staff-attendances/realtime/${unitId}/update`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function postUpdateExternalAttendance(
+  unitId: UUID,
+  body: UpdateExternalAttendanceRequest
+): Promise<Result<void>> {
+  return client
+    .post(`/staff-attendances/realtime/${unitId}/update-external`, body)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

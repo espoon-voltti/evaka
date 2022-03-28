@@ -264,6 +264,7 @@ export type Unit =
   | 'READ_TERMINATED_PLACEMENTS'
   | 'UPDATE'
   | 'UPDATE_FEATURES'
+  | 'UPDATE_STAFF_ATTENDANCES'
   | 'UPDATE_STAFF_GROUP_ACL'
 
 export type VasuDocument =

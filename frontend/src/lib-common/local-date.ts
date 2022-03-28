@@ -173,6 +173,9 @@ export default class LocalDate {
   toSystemTzDate(): Date {
     return new Date(`${this.formatIso()}T00:00`)
   }
+  toSystemTzDateAtTime(time: string): Date {
+    return new Date(`${this.formatIso()}T${time}`)
+  }
   static today(): LocalDate {
     if (isAutomatedTest) {
       const now = mockNow()
