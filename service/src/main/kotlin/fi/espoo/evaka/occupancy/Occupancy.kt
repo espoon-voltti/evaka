@@ -406,7 +406,12 @@ WHERE sn.placement_id = ANY(:placementIds) AND ch.date_of_birth IS NOT NULL
 
     val defaultServiceNeedCoefficients =
         this.createQuery("SELECT occupancy_coefficient, occupancy_coefficient_under_3y, valid_placement_type FROM service_need_option WHERE default_option")
-            .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to Pair(row.mapColumn<BigDecimal>("occupancy_coefficient"), row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")) }
+            .map { row ->
+                row.mapColumn<PlacementType>("valid_placement_type") to object {
+                    val occupancyCoefficient = row.mapColumn<BigDecimal>("occupancy_coefficient")
+                    val occupancyCoefficientUnder3y = row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")
+                }
+            }
             .toMap()
 
     val assistanceNeeds =
@@ -440,8 +445,8 @@ WHERE sn.placement_id = ANY(:placementIds) AND ch.date_of_birth IS NOT NULL
             }
             ?: when {
                 placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
-                date < dateOfBirth.plusYears(3) -> defaultServiceNeedCoefficients[placement.type]?.second
-                else -> defaultServiceNeedCoefficients[placement.type]?.first
+                date < dateOfBirth.plusYears(3) -> defaultServiceNeedCoefficients[placement.type]?.occupancyCoefficientUnder3y
+                else -> defaultServiceNeedCoefficients[placement.type]?.occupancyCoefficient
             }
             ?: error("No coefficient found for placement type ${placement.type}")
 
