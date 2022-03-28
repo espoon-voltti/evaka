@@ -388,14 +388,13 @@ SELECT
     sn.placement_id,
     CASE
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
-        WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+        WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN sno.occupancy_coefficient_under_3y
         ELSE sno.occupancy_coefficient
     END AS occupancy_coefficient,
     daterange(sn.start_date, sn.end_date, '[]') AS period
 FROM service_need sn
 JOIN placement pl ON sn.placement_id = pl.id
 JOIN service_need_option sno ON sn.option_id = sno.id
-JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
 JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
 WHERE sn.placement_id = ANY(:placementIds) AND ch.date_of_birth IS NOT NULL
