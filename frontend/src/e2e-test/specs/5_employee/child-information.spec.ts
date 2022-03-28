@@ -229,6 +229,47 @@ describe('Child information - backup pickups', () => {
   })
 })
 
+describe('Child information - family contacts', () => {
+  let section: FamilyContactsSection
+  beforeEach(async () => {
+    section = await childInformationPage.openCollapsible('familyContacts')
+  })
+
+  test('phone can be edited', async () => {
+    const id = fixtures.familyWithTwoGuardians.guardian.id
+    await section.assertFamilyContactExists(id)
+    await section.assertFamilyContactPhone(id, '123456789')
+    await section.setFamilyContactPhone(id, '31459265')
+    await section.assertFamilyContactPhone(id, '31459265')
+  })
+
+  test('phone is editable after unset', async () => {
+    const id = fixtures.familyWithTwoGuardians.guardian.id
+    await section.assertFamilyContactExists(id)
+    await section.setFamilyContactPhone(id, '')
+    await section.assertFamilyContactPhone(id, '')
+    await section.setFamilyContactPhone(id, '31459265')
+    await section.assertFamilyContactPhone(id, '31459265')
+  })
+
+  test('email can be edited', async () => {
+    const id = fixtures.familyWithTwoGuardians.guardian.id
+    await section.assertFamilyContactExists(id)
+    await section.assertFamilyContactEmail(id, 'mikael.hogfors@evaka.test')
+    await section.setFamilyContactEmail(id, 'foo@example.com')
+    await section.assertFamilyContactEmail(id, 'foo@example.com')
+  })
+
+  test('email is editable after unset', async () => {
+    const id = fixtures.familyWithTwoGuardians.guardian.id
+    await section.assertFamilyContactExists(id)
+    await section.setFamilyContactEmail(id, '')
+    await section.assertFamilyContactEmail(id, '')
+    await section.setFamilyContactEmail(id, 'foo@example.com')
+    await section.assertFamilyContactEmail(id, 'foo@example.com')
+  })
+})
+
 describe('Child information - guardian information', () => {
   let section: GuardiansSection
   beforeEach(async () => {
