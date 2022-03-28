@@ -34,7 +34,7 @@ import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceRe
 
 type CalendarMode = 'week' | 'month'
 type GroupId = UUID
-type AttendanceFilter = GroupId | 'no-group' | 'staff' | null
+type AttendanceGroupFilter = GroupId | 'no-group' | 'staff' | null
 
 const TopRow = styled.div`
   display: flex;
@@ -48,7 +48,7 @@ const GroupSelectorWrapper = styled.div`
   margin-bottom: ${defaultMargins.m};
 `
 
-const getDefaultGroup = (groupParam: string): AttendanceFilter | null =>
+const getDefaultGroup = (groupParam: string): AttendanceGroupFilter | null =>
   ['no-group', 'staff'].includes(groupParam) || UUID_REGEX.test(groupParam)
     ? groupParam
     : null
@@ -63,7 +63,7 @@ export default React.memo(function TabAttendances() {
   const { roles } = useContext(UserContext)
 
   const groupParam = useQuery().get('group')
-  const [groupId, setGroupId] = useState<AttendanceFilter>(() =>
+  const [groupId, setGroupId] = useState<AttendanceGroupFilter>(() =>
     groupParam ? getDefaultGroup(groupParam) : null
   )
   useSyncQueryParams(
@@ -74,6 +74,7 @@ export default React.memo(function TabAttendances() {
     .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))
     .getOrElse(false)
 
+  const staffOrNoGroupSelected = groupId === 'staff' || groupId === 'no-group'
   return (
     <>
       <ContentArea
@@ -123,7 +124,7 @@ export default React.memo(function TabAttendances() {
       <ContentArea opaque>
         <TopRow>
           <H3 noMargin>{i18n.unit.attendances.title}</H3>
-          {reservationEnabled && (
+          {reservationEnabled && !staffOrNoGroupSelected && (
             <FixedSpaceRow spacing="xs">
               {(['week', 'month'] as const).map((m) => (
                 <ChoiceChip
@@ -147,19 +148,16 @@ export default React.memo(function TabAttendances() {
           />
         </GroupSelectorWrapper>
 
-        {mode === 'month' &&
-          groupId !== null &&
-          groupId !== 'no-group' &&
-          groupId !== 'staff' && (
-            <Absences
-              groupId={groupId}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              reservationEnabled={reservationEnabled}
-            />
-          )}
+        {mode === 'month' && groupId !== null && !staffOrNoGroupSelected && (
+          <Absences
+            groupId={groupId}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            reservationEnabled={reservationEnabled}
+          />
+        )}
 
-        {mode === 'week' && groupId !== null && (
+        {((mode === 'week' && groupId !== null) || staffOrNoGroupSelected) && (
           <UnitAttendanceReservationsView
             unitId={unitId}
             groupId={groupId}
