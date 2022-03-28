@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import DateRange from '../../date-range'
+import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { DecisionIncome } from '../../api-types/income'
 import { PlacementType } from './placement'
@@ -340,6 +341,22 @@ export interface InvoiceCodes {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrection
+*/
+export interface InvoiceCorrection {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
+  id: UUID
+  note: string
+  period: FiniteDateRange
+  product: string
+  unitId: UUID
+  unitPrice: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceDaycare
 */
 export interface InvoiceDaycare {
@@ -470,6 +487,21 @@ export interface InvoiceSummary {
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.NewInvoiceCorrection
+*/
+export interface NewInvoiceCorrection {
+  amount: number
+  childId: UUID
+  description: string
+  headOfFamilyId: UUID
+  note: string
+  period: FiniteDateRange
+  product: string
+  unitId: UUID
+  unitPrice: number
 }
 
 /**

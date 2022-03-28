@@ -215,7 +215,11 @@ export default React.memo(function InvoiceRowsSection({
                       row={firstRow}
                       update={updateInvoiceRow(updateRows, rows, firstRow)}
                       remove={() =>
-                        updateRows(rows.filter(({ id }) => id !== firstRow.id))
+                        editable
+                          ? updateRows(
+                              rows.filter(({ id }) => id !== firstRow.id)
+                            )
+                          : undefined
                       }
                       products={products}
                       unitIds={unitIds}
@@ -228,7 +232,9 @@ export default React.memo(function InvoiceRowsSection({
                         row={row}
                         update={updateInvoiceRow(updateRows, rows, row)}
                         remove={() =>
-                          updateRows(rows.filter(({ id }) => id !== row.id))
+                          editable
+                            ? updateRows(rows.filter(({ id }) => id !== row.id))
+                            : undefined
                         }
                         products={products}
                         unitIds={unitIds}

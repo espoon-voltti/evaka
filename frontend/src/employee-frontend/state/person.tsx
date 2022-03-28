@@ -12,11 +12,16 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import { PersonJSON, PersonResponse } from 'lib-common/generated/api-types/pis'
+import {
+  Parentship,
+  PersonJSON,
+  PersonResponse
+} from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import { getFamilyOverview } from '../api/family-overview'
+import { getParentshipsByHeadOfChild } from '../api/parentships'
 import { getPersonDetails } from '../api/person'
 import { FamilyOverview } from '../types/family-overview'
 
@@ -24,16 +29,20 @@ export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
   family: Result<FamilyOverview>
+  fridgeChildren: Result<Parentship[]>
   setPerson: (person: PersonJSON) => void
   reloadFamily: () => void
+  reloadFridgeChildren: () => void
 }
 
 const defaultState: PersonState = {
   person: Loading.of(),
   permittedActions: new Set(),
   family: Loading.of(),
+  fridgeChildren: Loading.of(),
   setPerson: () => undefined,
-  reloadFamily: () => undefined
+  reloadFamily: () => undefined,
+  reloadFridgeChildren: () => undefined
 }
 
 const emptyPermittedActions: Set<Action.Person> = new Set()
@@ -69,6 +78,16 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
 
   const [family, reloadFamily] = useApiState(() => getFamilyOverview(id), [id])
 
+  const [fridgeChildren, loadFridgeChildren] = useApiState(
+    () => getParentshipsByHeadOfChild(id),
+    [id]
+  )
+
+  const reloadFridgeChildren = useCallback(() => {
+    reloadFamily()
+    loadFridgeChildren()
+  }, [reloadFamily, loadFridgeChildren])
+
   const person = useMemo(
     () => personResponse.map((response) => response.person),
     [personResponse]
@@ -89,9 +108,19 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setPerson,
       permittedActions,
       family,
-      reloadFamily
+      fridgeChildren,
+      reloadFamily,
+      reloadFridgeChildren
     }),
-    [person, setPerson, permittedActions, family, reloadFamily]
+    [
+      person,
+      setPerson,
+      permittedActions,
+      family,
+      fridgeChildren,
+      reloadFamily,
+      reloadFridgeChildren
+    ]
   )
 
   return (

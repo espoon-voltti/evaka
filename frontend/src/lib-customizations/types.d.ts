@@ -119,6 +119,7 @@ interface BaseFeatureFlags {
     personalDetailsPage?: boolean
     mobileMessages?: boolean
     leops?: boolean
+    invoiceCorrections?: boolean
   }
 }
 

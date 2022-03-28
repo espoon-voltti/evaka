@@ -6,6 +6,7 @@ import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { Absence } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecision,
@@ -13,8 +14,10 @@ import {
   FeeDecisionSummary,
   Invoice,
   InvoiceCodes,
+  InvoiceCorrection,
   InvoiceDetailed,
   InvoiceSummary,
+  NewInvoiceCorrection,
   PersonBasic,
   PersonDetailed,
   VoucherValueDecisionDetailed,
@@ -576,6 +579,30 @@ export async function createRetroactiveValueDecisions(
       }
     )
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPersonInvoiceCorrections(
+  personId: UUID
+): Promise<Result<InvoiceCorrection[]>> {
+  return client
+    .get<JsonOf<InvoiceCorrection[]>>(`/invoice-corrections/${personId}`)
+    .then(({ data }) =>
+      data.map((json) => ({
+        ...json,
+        period: FiniteDateRange.parseJson(json.period)
+      }))
+    )
+    .then((res) => Success.of(res))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createInvoiceCorrection(
+  row: NewInvoiceCorrection
+): Promise<Result<void>> {
+  return client
+    .post('/invoice-corrections', row)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

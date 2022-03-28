@@ -1014,6 +1014,7 @@ export const fi = {
       createRetroactive: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
+    invoiceCorrections: 'Hyvitykset ja korotukset',
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',
       createRetroactive: 'Luo takautuvia arvopäätösluonnoksia'
@@ -1790,6 +1791,10 @@ export const fi = {
     },
     openAbsenceSummary: 'Avaa poissaolokooste'
   },
+  invoiceCorrections: {
+    noChildren: 'Henkilö ei ole yhdenkään lapsen päämies',
+    addRow: 'Lisää korjausrivi'
+  },
   feeDecisions: {
     table: {
       title: 'Maksupäätökset',
@@ -2377,6 +2382,9 @@ export const fi = {
         'income_statement.person_id': 'Tulo -ilmoituksia',
         'invoice.codebtor': 'Laskuja (kanssa -velallinen)',
         'invoice.head_of_family': 'Laskuja',
+        'invoice_correction_row.child_id': 'Laskun korjausrivejä (lapsi)',
+        'invoice_correction_row.head_of_family':
+          'Laskun korjausrivejä (päämies)',
         'invoice_row.child': 'Lasku- rivejä',
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
         'messaging_blocklist.blocked_recipient': 'Estettynä viestin saajana',

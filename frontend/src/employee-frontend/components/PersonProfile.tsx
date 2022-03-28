@@ -29,6 +29,7 @@ import { UserContext } from '../state/user'
 
 import { getLayout, Layouts } from './layouts'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
+import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
 
 export const NameTd = styled(Td)`
@@ -66,6 +67,7 @@ const components = {
   income: PersonIncome,
   'fee-decisions': PersonFeeDecisions,
   invoices: PersonInvoices,
+  invoiceCorrections: PersonInvoiceCorrections,
   voucherValueDecisions: PersonVoucherValueDecisions,
   partners: PersonFridgePartner,
   'fridge-children': PersonFridgeChild,
@@ -85,6 +87,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'income', open: false },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },
+    { component: 'invoiceCorrections', open: false },
     { component: 'voucherValueDecisions', open: false }
   ],
   ['FINANCE_ADMIN']: [
@@ -92,6 +95,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'income', open: true },
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false },
+    { component: 'invoiceCorrections', open: false },
     { component: 'voucherValueDecisions', open: false },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },

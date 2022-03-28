@@ -9,18 +9,13 @@ import { Link } from 'react-router-dom'
 import { Parentship } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faChild, faQuestion } from 'lib-icons'
 
-import {
-  getParentshipsByHeadOfChild,
-  removeParentship,
-  retryParentship
-} from '../../api/parentships'
+import { removeParentship, retryParentship } from '../../api/parentships'
 import Toolbar from '../../components/common/Toolbar'
 import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
 import { useTranslation } from '../../state/i18n'
@@ -37,23 +32,13 @@ interface Props {
 
 export default React.memo(function PersonFridgeChild({ id, open }: Props) {
   const { i18n } = useTranslation()
-  const { reloadFamily } = useContext(PersonContext)
+  const { fridgeChildren, reloadFridgeChildren } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
-  const [parentships, loadData] = useApiState(
-    () => getParentshipsByHeadOfChild(id),
-    [id]
-  )
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
-  // FIXME: This component shouldn't know about family's dependency on its data
-  const reload = () => {
-    loadData()
-    reloadFamily()
-  }
-
   const getFridgeChildById = (id: UUID) => {
-    return parentships
+    return fridgeChildren
       .map((ps) => ps.find((child) => child.id === id))
       .getOrElse(undefined)
   }
@@ -61,12 +46,12 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
   return (
     <div>
       {uiMode === 'add-fridge-child' ? (
-        <FridgeChildModal headPersonId={id} onSuccess={reload} />
+        <FridgeChildModal headPersonId={id} onSuccess={reloadFridgeChildren} />
       ) : uiMode === `edit-fridge-child-${selectedParentshipId}` ? (
         <FridgeChildModal
           parentship={getFridgeChildById(selectedParentshipId)}
           headPersonId={id}
-          onSuccess={reload}
+          onSuccess={reloadFridgeChildren}
         />
       ) : uiMode === `remove-fridge-child-${selectedParentshipId}` ? (
         <InfoModal
@@ -87,7 +72,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
                     resolveLabel: i18n.common.ok
                   })
                 } else {
-                  reload()
+                  reloadFridgeChildren()
                 }
               }),
             label: i18n.common.remove
@@ -107,7 +92,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
           }}
           data-qa="add-child-button"
         />
-        {renderResult(parentships, (parentships) => (
+        {renderResult(fridgeChildren, (parentships) => (
           <Table data-qa="table-of-children">
             <Thead>
               <Tr>
@@ -154,8 +139,8 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
                       onRetry={
                         fridgeChild.conflict
                           ? () => {
-                              void retryParentship(fridgeChild.id).then(() =>
-                                reload()
+                              void retryParentship(fridgeChild.id).then(
+                                reloadFridgeChildren
                               )
                             }
                           : undefined

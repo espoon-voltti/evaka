@@ -510,6 +510,7 @@ sealed interface Action {
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
         ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
+        CREATE_INVOICE_CORRECTION(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         DISABLE_SSN_ADDING(HasGlobalRole(SERVICE_WORKER)),
@@ -523,6 +524,7 @@ sealed interface Action {
         READ_INCOME_STATEMENTS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICES(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_INVOICE_CORRECTIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_OPH_OID(HasGlobalRole(DIRECTOR), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
