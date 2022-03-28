@@ -86,6 +86,10 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
         min: 0,
         ticks: {
           maxTicksLimit: 5
+        },
+        title: {
+          display: true,
+          text: i18n.unit.occupancy.realtime.chartYAxisTitle
         }
       }
     },
