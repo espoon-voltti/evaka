@@ -29,10 +29,8 @@ let assistanceNeeds: AssistanceNeedSection
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
-// let child3Fixture: Child
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
-// let child3DaycarePlacementId: UUID
 
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
@@ -81,18 +79,6 @@ beforeEach(async () => {
       endDate: placementEndDate.formatIso()
     })
     .save()
-
-  // child3Fixture = fixtures.personFixtureChildZeroYearOld
-  // child3DaycarePlacementId = uuidv4()
-  // await Fixture.placement()
-  //   .with({
-  //     id: child3DaycarePlacementId,
-  //     childId: child3Fixture.id,
-  //     unitId: daycare.id,
-  //     startDate: placementStartDate.formatIso(),
-  //     endDate: placementEndDate.formatIso()
-  //   })
-  //   .save()
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
