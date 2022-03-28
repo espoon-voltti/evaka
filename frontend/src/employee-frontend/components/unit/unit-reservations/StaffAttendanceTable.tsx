@@ -162,37 +162,37 @@ const AttendanceRow = React.memo(function AttendanceRow({
   useEffect(
     () =>
       setValues(
-        operationalDays.map((day) => ({
-          date: day.date,
-          timeRanges:
-            attendances?.length > 0
-              ? attendances.map((attendance) => {
-                  if (
-                    !isSameDay(attendance.arrived, day.date.toSystemTzDate())
-                  ) {
-                    return emptyTimeRange
-                  }
-                  const startTime = formatTime(attendance.arrived)
-                  const endTime = attendance.departed
-                    ? formatTime(attendance.departed)
-                    : ''
-                  return {
-                    id: attendance.id,
-                    groupId: attendance.groupId,
-                    startTime,
-                    endTime,
-                    errors: {
-                      startTime: undefined,
-                      endTime: undefined
-                    },
-                    lastSavedState: {
+        operationalDays.map((day) => {
+          const attendancesOnDay = attendances.filter((a) =>
+            isSameDay(a.arrived, day.date.toSystemTzDate())
+          )
+          return {
+            date: day.date,
+            timeRanges:
+              attendancesOnDay.length > 0
+                ? attendancesOnDay.map((attendance) => {
+                    const startTime = formatTime(attendance.arrived)
+                    const endTime = attendance.departed
+                      ? formatTime(attendance.departed)
+                      : ''
+                    return {
+                      id: attendance.id,
+                      groupId: attendance.groupId,
                       startTime,
-                      endTime
+                      endTime,
+                      errors: {
+                        startTime: undefined,
+                        endTime: undefined
+                      },
+                      lastSavedState: {
+                        startTime,
+                        endTime
+                      }
                     }
-                  }
-                })
-              : [emptyTimeRange]
-        }))
+                  })
+                : [emptyTimeRange]
+          }
+        })
       ),
     [operationalDays, attendances]
   )
