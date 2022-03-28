@@ -96,6 +96,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
       tooltip: {
         mode: 'index',
         intersect: false,
+        position: 'nearest',
         callbacks: {
           title: (items) => formatTime(new Date(items[0].parsed.x)),
           footer: (items) => {
