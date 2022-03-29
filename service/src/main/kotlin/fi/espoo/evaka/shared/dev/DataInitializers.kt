@@ -502,8 +502,8 @@ fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
         // language=sql
         """
 ALTER TABLE service_need_option DISABLE TRIGGER set_timestamp;
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
+VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
 ON CONFLICT (id) DO UPDATE SET updated = :updated, daycare_hours_per_week = :daycareHoursPerWeek;
 ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
 """
