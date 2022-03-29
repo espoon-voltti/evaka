@@ -130,8 +130,7 @@ describe('Unit group calendar for shift care unit', () => {
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
   })
 
-  // Breaks on daylight saving time
-  test.skip('Employee sees attendances along reservations', async () => {
+  test('Employee sees attendances along reservations', async () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
 
@@ -139,8 +138,9 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.selectRepetitionType('IRREGULAR')
 
     const startDate = mockedToday.startOfWeek()
-    const arrived = new Date(`${startDate.formatIso()}T08:30Z`)
-    const departed = new Date(`${startDate.formatIso()}T13:30Z`)
+
+    const arrived = new Date(`${startDate.formatIso()}T08:30`)
+    const departed = new Date(`${startDate.formatIso()}T13:30`)
 
     await Fixture.childAttendances()
       .with({
@@ -151,8 +151,8 @@ describe('Unit group calendar for shift care unit', () => {
       })
       .save()
 
-    const arrived2 = new Date(`${startDate.formatIso()}T18:15Z`)
-    const departed2 = new Date(`${startDate.addDays(1).formatIso()}T05:30Z`)
+    const arrived2 = new Date(`${startDate.formatIso()}T18:15`)
+    const departed2 = new Date(`${startDate.addDays(1).formatIso()}T05:30`)
 
     await Fixture.childAttendances()
       .with({
@@ -194,9 +194,11 @@ describe('Unit group calendar for shift care unit', () => {
       '23:59'
     )
 
+    const padTo2 = (str: number) => ('0' + str.toString()).slice(-2)
+
     await waitUntilEqual(
       () => calendarPage.getAttendanceStart(startDate, 0),
-      `${arrived.getHours()}:${arrived.getMinutes()}`
+      `${padTo2(arrived.getHours())}:${arrived.getMinutes()}`
     )
     await waitUntilEqual(
       () => calendarPage.getAttendanceEnd(startDate, 0),
