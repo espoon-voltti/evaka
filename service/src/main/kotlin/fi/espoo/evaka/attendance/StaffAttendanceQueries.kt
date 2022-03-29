@@ -181,8 +181,9 @@ fun Database.Read.getStaffAttendancesForDateRange(unitId: DaycareId, range: Fini
         """ 
 SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, emp.first_name, emp.last_name 
 FROM staff_attendance_realtime sa
+JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
-WHERE tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
+WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
         """.trimIndent()
     )
         .bind("unitId", unitId)
