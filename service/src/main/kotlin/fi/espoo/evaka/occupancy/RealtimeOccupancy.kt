@@ -102,12 +102,16 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
         (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed,
         COALESCE(an.capacity_factor, 1) * CASE 
             WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
-            WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN 1.75
+            WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
             ELSE 1.0
         END AS capacity
     FROM child_attendance ca
     JOIN daycare u ON u.id = ca.unit_id
     JOIN person ch ON ch.id = ca.child_id
+    LEFT JOIN placement pl on pl.child_id = ca.child_id
+    LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ca.date
+    LEFT JOIN service_need_option sno on sn.option_id = sno.id
+    LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
     LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
     WHERE ca.unit_id = :unitId AND ca.date = :date
     """.trimIndent()
