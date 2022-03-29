@@ -32,7 +32,7 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
   }))
   const staffData: DatePoint[] = occupancy.occupancySeries.map((p) => ({
     x: p.time,
-    y: p.staffCount * 7
+    y: p.staffCapacity
   }))
 
   const data: ChartData<'line', DatePoint[]> = {

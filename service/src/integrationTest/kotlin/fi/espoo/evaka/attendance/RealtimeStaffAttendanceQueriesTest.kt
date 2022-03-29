@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import kotlin.test.assertEquals
 
 class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
@@ -63,16 +65,16 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
     fun realtimeAttendanceQueries() {
         val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
         db.transaction { tx ->
-            tx.markStaffArrival(employee1Id, group1.id, now.minusDays(1)).let {
+            tx.markStaffArrival(employee1Id, group1.id, now.minusDays(1), BigDecimal(7.0)).let {
                 tx.markStaffDeparture(it, now.minusDays(1).plusHours(8))
             }
-            tx.markStaffArrival(employee1Id, group1.id, now).let {
+            tx.markStaffArrival(employee1Id, group1.id, now, BigDecimal(0)).let {
                 tx.markStaffDeparture(it, now.plusHours(2))
             }
-            tx.markStaffArrival(employee3Id, group1.id, now.plusHours(1)).let {
+            tx.markStaffArrival(employee3Id, group1.id, now.plusHours(1), BigDecimal("0.0")).let {
                 tx.markStaffDeparture(it, now.plusHours(7))
             }
-            tx.markStaffArrival(employee2Id, group2.id, now.plusHours(2)).let {
+            tx.markStaffArrival(employee2Id, group2.id, now.plusHours(2), BigDecimal(3.5)).let {
                 tx.markStaffDeparture(it, now.plusHours(8))
             }
         }
@@ -82,6 +84,9 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
             assertEquals(3, attendances.size)
             assertEquals(listOf("One", "Three", "Two"), attendances.map { a -> a.firstName })
             assertEquals(listOf(group1.id, group1.id, group2.id), attendances.flatMap { a -> a.groupIds })
+
+            val occupancyAttendances = it.getStaffOccupancyAttendances(testDaycare.id, now.toLocalDate())
+            assertEquals(listOf(0.0, 0.0, 3.5), occupancyAttendances.map { a -> a.capacity })
         }
     }
 
@@ -89,10 +94,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
     fun externalAttendanceQueries() {
         val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
         db.transaction { tx ->
-            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Absent", group1.id, now.minusDays(1))).let {
+            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Absent", group1.id, now.minusDays(1), defaultOccupancyCoefficient)).let {
                 tx.markExternalStaffDeparture(ExternalStaffDeparture(it, now.minusDays(1).plusHours(8)))
             }
-            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Present", group1.id, now.minusDays(1)))
+            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Present", group1.id, now.minusDays(1), defaultOccupancyCoefficient))
         }
         val externalAttendances = db.read { it.getExternalStaffAttendances(testDaycare.id) }
 

@@ -50,7 +50,7 @@ class RealtimeStaffAttendanceController(
                         employeeId = employeeId,
                         firstName = data[0].firstName,
                         lastName = data[0].lastName,
-                        attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed) }
+                        attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed, att.occupancyCoefficient) }
                     )
                 }
                 val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)

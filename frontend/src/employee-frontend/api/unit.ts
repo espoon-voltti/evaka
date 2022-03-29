@@ -395,10 +395,12 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
               time: new Date(dataPoint.time)
             })
           ),
-          staffCountSeries: data.realtime.staffCountSeries.map((dataPoint) => ({
-            ...dataPoint,
-            time: new Date(dataPoint.time)
-          })),
+          staffCapacitySumSeries: data.realtime.staffCapacitySumSeries.map(
+            (dataPoint) => ({
+              ...dataPoint,
+              time: new Date(dataPoint.time)
+            })
+          ),
           occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
             ...dataPoint,
             time: new Date(dataPoint.time)

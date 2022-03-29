@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import java.math.BigDecimal
 import java.util.UUID
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> = createQuery(
@@ -82,10 +83,10 @@ fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalS
     .mapTo<ExternalStaffMember>()
     .list()
 
-fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime): StaffAttendanceId = createUpdate(
+fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: GroupId, arrivalTime: HelsinkiDateTime, occupancyCoefficient: BigDecimal): StaffAttendanceId = createUpdate(
     """
-    INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived) VALUES (
-        :employeeId, :groupId, :arrived
+    INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient) VALUES (
+        :employeeId, :groupId, :arrived, :occupancyCoefficient
     )
     RETURNING id
     """.trimIndent()
@@ -93,6 +94,7 @@ fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: Group
     .bind("employeeId", employeeId)
     .bind("groupId", groupId)
     .bind("arrived", arrivalTime)
+    .bind("occupancyCoefficient", occupancyCoefficient)
     .executeAndReturnGeneratedKeys()
     .mapTo<StaffAttendanceId>()
     .one()
@@ -124,12 +126,13 @@ fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, dep
 data class ExternalStaffArrival(
     val name: String,
     val groupId: GroupId,
-    val arrived: HelsinkiDateTime
+    val arrived: HelsinkiDateTime,
+    val occupancyCoefficient: BigDecimal,
 )
 fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival): StaffAttendanceExternalId = createUpdate(
     """
-    INSERT INTO staff_attendance_external (name, group_id, arrived) VALUES (
-        :name, :groupId, :arrived
+    INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coefficient) VALUES (
+        :name, :groupId, :arrived, :occupancyCoefficient
     ) RETURNING id
     """.trimIndent()
 )
@@ -171,6 +174,7 @@ data class RawAttendance(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
+    val occupancyCoefficient: BigDecimal,
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
@@ -179,7 +183,7 @@ data class RawAttendance(
 fun Database.Read.getStaffAttendancesForDateRange(unitId: DaycareId, range: FiniteDateRange): List<RawAttendance> =
     createQuery(
         """ 
-SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, emp.first_name, emp.last_name 
+SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.occupancy_coefficient, emp.first_name, emp.last_name 
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
@@ -213,7 +217,7 @@ WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TE
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, range: FiniteDateRange): List<ExternalAttendance> = createQuery(
     """
-    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed
+    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient
     FROM staff_attendance_external sae
     JOIN daycare_group dg on sae.group_id = dg.id
     WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:start, :end)
