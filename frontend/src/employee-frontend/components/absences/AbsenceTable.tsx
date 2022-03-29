@@ -15,6 +15,7 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
@@ -285,12 +286,14 @@ export default React.memo(function AbsenceTable({
           />
         ))}
         {renderEmptyRow()}
-        <StaffAttendance
-          groupId={groupId}
-          selectedDate={selectedDate}
-          emptyCols={emptyCols}
-          operationDays={operationDays}
-        />
+        {!featureFlags.experimental?.realtimeStaffAttendance && (
+          <StaffAttendance
+            groupId={groupId}
+            selectedDate={selectedDate}
+            emptyCols={emptyCols}
+            operationDays={operationDays}
+          />
+        )}
       </tbody>
     </table>
   )
