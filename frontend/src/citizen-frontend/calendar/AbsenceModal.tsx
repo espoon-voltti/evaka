@@ -25,6 +25,7 @@ import DatePicker, {
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { errorToInputInfo } from '../input-info-helper'
@@ -80,8 +81,11 @@ export default React.memo(function AbsenceModal({
   const [showAllErrors, setShowAllErrors] = useState(false)
   const [request, errors] = validateForm(form)
 
-  const childrenInShiftCare = useMemo(
-    () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
+  const showShiftCareAbsenceType = useMemo(
+    () =>
+      featureFlags.citizenShiftCareAbsenceEnabled
+        ? availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit)
+        : false,
     [availableChildren]
   )
 
@@ -178,7 +182,7 @@ export default React.memo(function AbsenceModal({
             }
             data-qa="absence-OTHER_ABSENCE"
           />
-          {childrenInShiftCare && (
+          {showShiftCareAbsenceType && (
             <ChoiceChip
               text={i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE}
               selected={form.absenceType === 'PLANNED_ABSENCE'}

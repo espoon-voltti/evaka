@@ -37,6 +37,7 @@ declare global {
   interface Window {
     evaka?: EvakaWindowConfig
   }
+
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface EvakaWindowConfig {}
 }
@@ -95,6 +96,12 @@ interface MapConfig {
  * feature flags separately per environment with shared defaults.
  */
 interface BaseFeatureFlags {
+  /**
+   * Whether to show PLANNED_ABSENCE as a third absence option for shift care children in
+   * citizen's absence modal
+   */
+  citizenShiftCareAbsenceEnabled: boolean
+
   assistanceActionOtherEnabled: boolean
   daycareApplication: {
     dailyTimesEnabled: boolean
