@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -40,7 +39,6 @@ val invoiceQueryBase =
         invoice.*,
         row.id as invoice_row_id,
         row.child,
-        row.date_of_birth,
         row.amount,
         row.unit_price,
         row.price,
@@ -85,7 +83,6 @@ val invoiceDetailedQueryBase =
         codebtor.restricted_details_enabled as codebtor_restricted_details_enabled,
         row.id as invoice_row_id,
         row.child,
-        row.date_of_birth,
         row.amount,
         row.unit_price,
         row.price,
@@ -500,7 +497,6 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 invoice_id,
                 id,
                 child,
-                date_of_birth,
                 amount,
                 unit_price,
                 period_start,
@@ -511,8 +507,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
             ) VALUES (
                 :invoice_id,
                 :id,
-                :child.id,
-                :child.dateOfBirth,
+                :child,
                 :amount,
                 :unitPrice,
                 :periodStart,
@@ -551,10 +546,7 @@ val toInvoice = { rv: RowView ->
             listOf(
                 InvoiceRow(
                     id = rowId,
-                    child = ChildWithDateOfBirth(
-                        id = rv.mapColumn("child"),
-                        dateOfBirth = rv.mapColumn("date_of_birth")
-                    ),
+                    child = rv.mapColumn("child"),
                     amount = rv.mapColumn("amount"),
                     unitPrice = rv.mapColumn("unit_price"),
                     periodStart = rv.mapColumn("invoice_row_period_start"),

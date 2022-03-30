@@ -409,7 +409,7 @@ export interface InvoicePayload {
 */
 export interface InvoiceRow {
   amount: number
-  child: ChildWithDateOfBirth
+  child: UUID
   description: string
   id: UUID | null
   periodEnd: LocalDate

@@ -277,7 +277,7 @@ fun createVoucherValueDecisionFixture(
 
 fun createInvoiceRowFixture(childId: ChildId, unitId: DaycareId) = InvoiceRow(
     id = InvoiceRowId(UUID.randomUUID()),
-    child = ChildWithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
+    child = childId,
     amount = 1,
     unitPrice = 28900,
     product = ProductKey("DAYCARE"),

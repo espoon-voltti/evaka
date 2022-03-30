@@ -881,7 +881,7 @@ export const invoiceFixture = (
   rows: [
     {
       id: uuidv4(),
-      child: { id: childId, dateOfBirth: LocalDate.of(2017, 6, 30) },
+      child: childId,
       amount: 1,
       unitPrice: 10000,
       periodStart: periodStart,

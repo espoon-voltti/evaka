@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -53,7 +54,7 @@ enum class InvoiceStatus {
 data class InvoiceRow(
     val id: InvoiceRowId?,
     @Nested
-    val child: ChildWithDateOfBirth,
+    val child: ChildId,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
