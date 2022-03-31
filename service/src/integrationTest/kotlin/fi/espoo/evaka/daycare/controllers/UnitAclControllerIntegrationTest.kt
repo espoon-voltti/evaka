@@ -149,12 +149,12 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         db.read {
             it.createQuery(
                 """
-                    SELECT active FROM message_account
-                    WHERE employee_id = :employeeId
+                    SELECT employee_id IS NOT NULL FROM message_account
+                    WHERE evaka_user_id = :employeeId
                 """.trimIndent()
             )
                 .bind("employeeId", employee.id)
-                .mapTo<Boolean>().toList()
+                .mapTo<Boolean>().list()
         }.let { accounts ->
             if (accounts.size == 1) {
                 if (accounts[0]) {

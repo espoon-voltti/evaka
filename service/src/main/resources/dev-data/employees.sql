@@ -27,8 +27,8 @@ INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0005-000000000001', 'STAFF'),
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0006-000000000000', 'SPECIAL_EDUCATION_TEACHER');
 
-INSERT INTO message_account (employee_id)
-SELECT id
+INSERT INTO message_account (employee_id, evaka_user_id)
+SELECT id, id
 FROM employee e
 WHERE EXISTS(
     SELECT 1
