@@ -80,7 +80,7 @@ class MessageControllerCitizen(
         Audit.MessagingReceivedMessagesRead.log()
         return db.connect { dbc ->
             val accountId = requireMessageAccountAccess(dbc, user)
-            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
+            dbc.read { it.getMessagesReceivedByAccount(accountId, true, pageSize, page) }
         }
     }
 
@@ -141,7 +141,8 @@ class MessageControllerCitizen(
         return db.connect { dbc ->
             val accountId = requireMessageAccountAccess(dbc, user)
             val validReceivers = dbc.read { it.getCitizenReceivers(accountId) }
-            val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
+            val allReceiversValid =
+                body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
                 dbc.transaction { tx ->
                     val contentId = tx.insertMessageContent(body.content, accountId)

@@ -80,7 +80,7 @@ class MessageController(
         Audit.MessagingReceivedMessagesRead.log(accountId)
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, accountId)
-            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+            dbc.read { it.getMessagesReceivedByAccount(accountId, false, pageSize, page) }
         }
     }
 

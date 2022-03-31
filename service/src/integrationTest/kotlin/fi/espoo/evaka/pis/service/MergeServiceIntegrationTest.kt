@@ -275,7 +275,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(0, 1),
-            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -285,13 +285,14 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(1, 0),
-            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 
-    private fun receivedMessageCounts(accountIds: List<MessageAccountId>, isEmployee: Boolean): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
-    }
+    private fun receivedMessageCounts(accountIds: List<MessageAccountId>): List<Int> =
+        db.read { tx ->
+            accountIds.map { tx.getMessagesReceivedByAccount(it, false, 10, 1).total }
+        }
 
     @Test
     fun `merging child sends update event to head of child`() {

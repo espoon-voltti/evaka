@@ -21,7 +21,7 @@ import java.time.LocalDate
 data class Message(
     val id: MessageId,
     val sender: MessageAccount,
-    val recipients: Set<MessageAccount>,
+    val recipients: List<MessageAccount>,
     val sentAt: HelsinkiDateTime,
     val content: String,
     val readAt: HelsinkiDateTime? = null,

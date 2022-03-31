@@ -143,7 +143,10 @@ fun Database.Transaction.insertThread(
         .one()
 }
 
-fun Database.Transaction.reAssociateMessageAttachments(attachmentIds: Set<AttachmentId>, messageContentId: MessageContentId): Int {
+fun Database.Transaction.reAssociateMessageAttachments(
+    attachmentIds: Set<AttachmentId>,
+    messageContentId: MessageContentId
+): Int {
     return createUpdate(
         """
 UPDATE attachment
@@ -161,24 +164,28 @@ WHERE
 
 data class ReceivedMessageResultItem(
     val count: Int,
-    val id: MessageThreadId,
+    val threadId: MessageThreadId,
+    val messageType: MessageType,
     val title: String,
-    val type: MessageType,
     val messageId: MessageId,
     val sentAt: HelsinkiDateTime,
     val content: String,
     val senderId: MessageAccountId,
-    val senderName: String,
     val senderAccountType: AccountType,
-    val readAt: HelsinkiDateTime? = null,
-    val recipientId: MessageAccountId,
-    val recipientName: String,
-    val recipientAccountType: AccountType,
+    val senderName: String,
+    val readAt: HelsinkiDateTime?,
+    @Json
+    val recipients: List<MessageAccount>,
     @Json
     val attachments: List<MessageAttachment>
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
+fun Database.Read.getMessagesReceivedByAccount(
+    accountId: MessageAccountId,
+    includeThreadsWithOnlySentMessages: Boolean,
+    pageSize: Int,
+    page: Int,
+): Paged<MessageThread> {
     val params = mapOf(
         "accountId" to accountId,
         "offset" to (page - 1) * pageSize,
@@ -187,109 +194,98 @@ fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, page
 
     // language=SQL
     val sql = """
-WITH
-participated_messages AS (
-    SELECT 
-        rec.message_id,
-        m.thread_id,
-        m.sent_at, 
-        m.sender_name,
-        m.sender_id,
-        sender_acc.type AS sender_account_type,
-        m.content_id,
-        c.content,
-        rec.read_at,
-        rec.recipient_id,
-        acc.account_name recipient_name,
-        recipient_acc.type AS recipient_account_type
-    FROM message_recipients rec
-    JOIN message m ON rec.message_id = m.id
-    JOIN message_content c ON m.content_id = c.id
-    JOIN message_account_name_view acc ON rec.recipient_id = acc.id
-    JOIN message_account sender_acc ON sender_acc.id = m.sender_id
-    JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
-    WHERE m.sender_id = :accountId OR EXISTS (
-        SELECT 1
-            FROM message_recipients rec2
-            WHERE rec2.message_id = m.id AND rec2.recipient_id = :accountId
-    )
-),
-threads AS (
-    SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
-    FROM message_thread t
-    JOIN LATERAL (
-        SELECT MAX(sent_at) last_message FROM message WHERE thread_id = t.id
-    ) last_msg ON true
-    WHERE EXISTS(
-            SELECT 1
-            FROM participated_messages rec
-            WHERE rec.thread_id = t.id
-            AND (rec.recipient_id = :accountId OR ${if (isCitizen) "rec.sender_id = :accountId" else "false"}))
-    GROUP BY id, message_type, title, last_message
-    ORDER BY last_message DESC
+WITH account_threads AS (
+    SELECT id, message_type, title, last_message_sent_at, COUNT(*) OVER () AS count
+    FROM (
+        SELECT DISTINCT
+            t.id,
+            t.message_type,
+            t.title,
+            MAX(m.sent_at) OVER (PARTITION BY t.id) AS last_message_sent_at
+        FROM message_thread t
+        JOIN message m ON m.thread_id = t.id
+        JOIN message_recipients rec ON rec.message_id = m.id
+        WHERE rec.recipient_id = :accountId
+        ${if (includeThreadsWithOnlySentMessages) "OR EXISTS (SELECT 1 FROM message m_sent WHERE m_sent.thread_id = t.id AND m_sent.sender_id = :accountId)" else ""}
+        ORDER BY last_message_sent_at DESC
+    ) t
     LIMIT :pageSize OFFSET :offset
 )
-
 SELECT
     t.count,
-    t.id,
+    t.id AS thread_id,
+    t.message_type,
     t.title,
-    t.type,
-    msg.message_id,
-    msg.sent_at,
-    msg.content,
-    msg.sender_name,
-    msg.sender_id,
-    msg.sender_account_type,
-    msg.read_at,
-    msg.recipient_id,
-    msg.recipient_name,
-    msg.recipient_account_type,
+    m.id AS message_id,
+    m.sent_at,
+    c.content,
+    m.sender_id,
+    sender_acc.type AS sender_account_type,
+    sender_name.account_name AS sender_name,
+    (
+        SELECT read_at
+        FROM message_recipients rec
+        WHERE rec.message_id = m.id AND rec.recipient_id = :accountId
+    ) AS read_at,
+    (
+        SELECT jsonb_agg(json_build_object(
+            'id', rec.recipient_id,
+            'name', rec_name.account_name,
+            'type', rec_acc.type
+        ))
+        FROM message_recipients rec
+        JOIN message_account_name_view rec_name ON rec_name.id = rec.recipient_id
+        JOIN message_account rec_acc ON rec_acc.id = rec.recipient_id
+        WHERE rec.message_id = m.id
+    ) AS recipients,
     (
         SELECT coalesce(jsonb_agg(json_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
-        )), '[]'::jsonb) 
-        FROM attachment att WHERE att.message_content_id = msg.content_id
+        )), '[]'::jsonb)
+        FROM attachment att
+        WHERE att.message_content_id = m.content_id
     ) AS attachments
-    FROM threads t
-    JOIN participated_messages msg ON msg.thread_id = t.id
-    ORDER BY t.last_message DESC, msg.sent_at ASC
-    """.trimIndent()
+FROM account_threads t
+JOIN message m ON m.thread_id = t.id
+JOIN message_content c ON c.id = m.content_id
+JOIN message_account sender_acc ON sender_acc.id = m.sender_id
+JOIN message_account_name_view sender_name ON sender_name.id = m.sender_id
+WHERE m.sender_id = :accountId OR EXISTS (
+    SELECT 1 FROM message_recipients rec
+    WHERE rec.message_id = m.id AND rec.recipient_id = :accountId
+)
+ORDER BY t.last_message_sent_at DESC, m.sent_at 
+"""
 
     return createQuery(sql)
         .bindMap(params)
         .mapTo<ReceivedMessageResultItem>()
-        .groupBy { it.id }
-        .map { (threadId, threads) ->
+        .groupBy { it.threadId }
+        .map { (threadId, messagesByThread) ->
+            val thread = messagesByThread.first()
             WithCount(
-                threads[0].count,
+                thread.count,
                 MessageThread(
                     id = threadId,
-                    type = threads[0].type,
-                    title = threads[0].title,
-                    messages = threads
-                        .groupBy { it.messageId }
-                        .map { (messageId, messages) ->
-                            Message(
-                                id = messageId,
-                                content = messages[0].content,
-                                sender = MessageAccount(
-                                    id = messages[0].senderId,
-                                    name = messages[0].senderName,
-                                    type = messages[0].senderAccountType
-                                ),
-                                sentAt = messages[0].sentAt,
-                                readAt = messages.find { it.recipientId == accountId }?.readAt,
-                                recipients = messages
-                                    .groupBy { it.recipientId }
-                                    .map { (recipientId, recipients) ->
-                                        MessageAccount(recipientId, recipients[0].recipientName, recipients[0].recipientAccountType)
-                                    }.toSet(),
-                                attachments = messages[0].attachments
-                            )
-                        }
+                    type = thread.messageType,
+                    title = thread.title,
+                    messages = messagesByThread.map { message ->
+                        Message(
+                            id = message.messageId,
+                            sentAt = message.sentAt,
+                            content = message.content,
+                            sender = MessageAccount(
+                                id = message.senderId,
+                                name = message.senderName,
+                                type = message.senderAccountType
+                            ),
+                            readAt = message.readAt,
+                            recipients = message.recipients,
+                            attachments = message.attachments
+                        )
+                    }
                 )
             )
         }
@@ -353,7 +349,7 @@ fun Database.Read.getMessage(id: MessageId): Message {
                     name = messages[0].senderName,
                     type = messages[0].senderAccountType
                 ),
-                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet(),
+                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) },
                 attachments = messages[0].attachments
             )
         }

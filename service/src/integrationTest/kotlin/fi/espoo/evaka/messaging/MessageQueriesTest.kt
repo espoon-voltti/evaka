@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -56,7 +57,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val employee2Id = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    private fun beforeEach() {
         db.transaction { tx ->
             tx.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
             tx.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))
@@ -120,8 +121,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("Lone Thread", "Alone", employee2Account, listOf(employee2Account))
 
         // employee is not a recipient in any threads
-        assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account, 10, 1) }.data.size)
-        val personResult = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
+        assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account, false, 10, 1) }.data.size)
+
+        val personResult = db.read { it.getMessagesReceivedByAccount(person1Account, true, 10, 1) }
         assertEquals(2, personResult.data.size)
 
         val thread = personResult.data.first()
@@ -133,7 +135,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // then the message has correct readAt
         val person1Threads = db.read {
-            it.getMessagesReceivedByAccount(person1Account, 10, 1, true)
+            it.getMessagesReceivedByAccount(person1Account, true, 10, 1)
         }
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
@@ -144,36 +146,27 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             0,
             db.read {
-                it.getMessagesReceivedByAccount(
-                    person2Account,
-                    10,
-                    1, true
-                )
+                it.getMessagesReceivedByAccount(person2Account, true, 10, 1)
             }.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }.size
         )
 
         // when employee gets a reply
-        db.transaction {
-            val recipients = listOf(employee1Account)
-            val contentId = it.insertMessageContent(content = "Just replying here", sender = person1Account)
-            val messageId = it.insertMessage(
-                contentId = contentId,
-                threadId = thread2Id,
-                sender = person1Account,
-                repliesToMessageId = thread.messages.last().id,
-                recipientNames = listOf()
-            )
-            it.insertRecipients(recipientAccountIds = recipients.toSet(), messageId = messageId)
-        }
+        replyToThread(
+            thread2Id,
+            "Just replying here",
+            person1Account,
+            listOf(employee1Account),
+            thread.messages.last().id,
+        )
 
         // then employee sees the thread
-        val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account, 10, 1) }
+        val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account, false, 10, 1) }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
 
         // person 1 is recipient in both threads
-        val person1Result = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
+        val person1Result = db.read { it.getMessagesReceivedByAccount(person1Account, true, 10, 1) }
         assertEquals(2, person1Result.data.size)
 
         val newestThread = person1Result.data[0]
@@ -191,13 +184,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
-        val person2Result = db.read { it.getMessagesReceivedByAccount(person2Account, 10, 1, true) }
+        val person2Result = db.read { it.getMessagesReceivedByAccount(person2Account, true, 10, 1) }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread.id, person2Result.data[0].id)
         assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
 
         // employee 2 is participating with himself
-        val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account, 10, 1) }
+        val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account, false, 10, 1) }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(employee2Account, employee2Result.data[0].messages[0].sender.id)
@@ -213,30 +206,56 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        createThread("t1", "c1", employee1Account, listOf(person1Account))
+        val threadId = createThread("t1", "c1", employee1Account, listOf(person1Account))
+        replyToThread(threadId, "r1", employee1Account, listOf(person1Account))
+        replyToThread(threadId, "r2", employee1Account, listOf(person1Account))
         createThread("t2", "c2", employee1Account, listOf(person1Account))
 
-        val messages = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
-        assertEquals(2, messages.total)
-        assertEquals(2, messages.data.size)
-        assertEquals("t2", messages.data[0].title)
-        assertEquals("t1", messages.data[1].title)
+        val threads = db.read { it.getMessagesReceivedByAccount(person1Account, true, 10, 1) }
+        assertEquals(2, threads.total)
+        assertEquals(2, threads.data.size)
+        assertEquals("t2", threads.data[0].title)
+        assertEquals("t1", threads.data[1].title)
 
         val (page1, page2) = db.read {
             listOf(
-                it.getMessagesReceivedByAccount(person1Account, 1, 1, true),
-                it.getMessagesReceivedByAccount(person1Account, 1, 2, true)
+                it.getMessagesReceivedByAccount(person1Account, true, 1, 1),
+                it.getMessagesReceivedByAccount(person1Account, true, 1, 2)
             )
         }
         assertEquals(2, page1.total)
         assertEquals(2, page1.pages)
         assertEquals(1, page1.data.size)
-        assertEquals(messages.data[0], page1.data[0])
+        assertEquals(threads.data[0], page1.data[0])
 
         assertEquals(2, page2.total)
         assertEquals(2, page2.pages)
         assertEquals(1, page2.data.size)
-        assertEquals(messages.data[1], page2.data[0])
+        assertEquals(threads.data[1], page2.data[0])
+    }
+
+    @Test
+    fun `include threads with only sent messages works`() {
+        val (employee1Account, person1Account) = db.read {
+            listOf(
+                it.getEmployeeMessageAccountIds(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
+            )
+        }
+
+        createThread("thread", "content", employee1Account, listOf(person1Account))
+
+        val employeeThreadsWithoutSent = db.read { it.getMessagesReceivedByAccount(employee1Account, false, 20, 1) }
+        assertEquals(0, employeeThreadsWithoutSent.total)
+
+        val employeeThreadsWithSent = db.read { it.getMessagesReceivedByAccount(employee1Account, true, 20, 1) }
+        assertEquals(1, employeeThreadsWithSent.total)
+
+        val citizenThreadsWithoutSent = db.read { it.getMessagesReceivedByAccount(person1Account, false, 20, 1) }
+        assertEquals(1, citizenThreadsWithoutSent.total)
+
+        val citizenThreadsWithSent = db.read { it.getMessagesReceivedByAccount(person1Account, true, 20, 1) }
+        assertEquals(1, citizenThreadsWithSent.total)
     }
 
     @Test
@@ -306,15 +325,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             participants
         )
 
+        val messageId = replyToThread(threadId, "foo", person2Account, listOf(employee1Account))
         val participants2 = db.transaction { tx ->
-            val contentId = tx.insertMessageContent("foo", person2Account)
-            val messageId = tx.insertMessage(
-                contentId = contentId,
-                threadId = threadId,
-                sender = person2Account,
-                recipientNames = tx.getAccountNames(setOf(employee1Account))
-            )
-            tx.insertRecipients(setOf(employee1Account), messageId)
             tx.getThreadByMessageId(messageId)
         }
         assertEquals(
@@ -348,15 +360,37 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
-            tx.insertDaycareAclRow(daycareId = testDaycare.id, employeeId = employee1Id, role = UserRole.UNIT_SUPERVISOR)
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group1Id), daycareId = testDaycare.id, name = "Testiläiset"))
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group2Id), daycareId = testDaycare.id, name = "Testiläiset 2"))
+            tx.insertDaycareAclRow(
+                daycareId = testDaycare.id,
+                employeeId = employee1Id,
+                role = UserRole.UNIT_SUPERVISOR
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(group1Id),
+                    daycareId = testDaycare.id,
+                    name = "Testiläiset"
+                )
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(group2Id),
+                    daycareId = testDaycare.id,
+                    name = "Testiläiset 2"
+                )
+            )
             listOf(group1Id, group2Id).map { tx.createDaycareGroupMessageAccount(GroupId(it)) }
 
             // and person1 has a child who is placed into a group
             tx.insertTestPerson(DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"))
             tx.insertTestChild(DevChild(id = testChild_1.id))
-            tx.insertTestParentship(id = ParentshipId(UUID.randomUUID()), childId = testChild_1.id, headOfChild = person1Id, startDate = startDate, endDate = endDate)
+            tx.insertTestParentship(
+                id = ParentshipId(UUID.randomUUID()),
+                childId = testChild_1.id,
+                headOfChild = person1Id,
+                startDate = startDate,
+                endDate = endDate
+            )
             tx.insertGuardian(guardianId = person1Id, childId = testChild_1.id)
             tx.insertTestPlacement(
                 id = PlacementId(placementId),
@@ -366,7 +400,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = startDate,
                 endDate = endDate
             )
-            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
+            tx.insertTestDaycareGroupPlacement(
+                id = GroupPlacementId(UUID.randomUUID()),
+                daycarePlacementId = PlacementId(placementId),
+                groupId = GroupId(group1Id),
+                startDate = startDate,
+                endDate = endDate
+            )
         }
 
         val (person1Account, group1Account, group2Account) = db.read {
@@ -408,14 +448,30 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     language = Language.fi
                 )
             )
-            tx.insertDaycareAclRow(daycareId = testDaycare.id, employeeId = employee1Id, role = UserRole.UNIT_SUPERVISOR)
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group1Id), daycareId = testDaycare.id, name = "Testiläiset"))
+            tx.insertDaycareAclRow(
+                daycareId = testDaycare.id,
+                employeeId = employee1Id,
+                role = UserRole.UNIT_SUPERVISOR
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(group1Id),
+                    daycareId = testDaycare.id,
+                    name = "Testiläiset"
+                )
+            )
             tx.createDaycareGroupMessageAccount(GroupId(group1Id))
 
             // and person1 has a child who is placed into the group
             tx.insertTestPerson(DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"))
             tx.insertTestChild(DevChild(id = testChild_1.id))
-            tx.insertTestParentship(id = ParentshipId(UUID.randomUUID()), childId = testChild_1.id, headOfChild = person1Id, startDate = startDate, endDate = endDate)
+            tx.insertTestParentship(
+                id = ParentshipId(UUID.randomUUID()),
+                childId = testChild_1.id,
+                headOfChild = person1Id,
+                startDate = startDate,
+                endDate = endDate
+            )
             tx.insertGuardian(guardianId = person1Id, childId = testChild_1.id)
             tx.insertTestPlacement(
                 id = PlacementId(placementId),
@@ -425,7 +481,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = startDate,
                 endDate = endDate
             )
-            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
+            tx.insertTestDaycareGroupPlacement(
+                id = GroupPlacementId(UUID.randomUUID()),
+                daycarePlacementId = PlacementId(placementId),
+                groupId = GroupId(group1Id),
+                startDate = startDate,
+                endDate = endDate
+            )
 
             // and person1 is a blocked receiver
             tx.addToBlocklist(testChild_1.id, person1Id)
@@ -504,4 +566,23 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertRecipients(recipientAccounts.toSet(), messageId)
             threadId
         }
+
+    private fun replyToThread(
+        threadId: MessageThreadId,
+        content: String,
+        sender: MessageAccountId,
+        recipientAccounts: List<MessageAccountId>,
+        repliesToMessageId: MessageId? = null,
+    ) = db.transaction { tx ->
+        val contentId = tx.insertMessageContent(content, sender)
+        val messageId = tx.insertMessage(
+            contentId = contentId,
+            threadId = threadId,
+            sender = sender,
+            repliesToMessageId = repliesToMessageId,
+            recipientNames = listOf()
+        )
+        tx.insertRecipients(recipientAccounts.toSet(), messageId)
+        messageId
+    }
 }
