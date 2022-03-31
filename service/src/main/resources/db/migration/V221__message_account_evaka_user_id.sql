@@ -1,3 +1,9 @@
+INSERT INTO evaka_user (id, type, citizen_id, name)
+SELECT id, 'CITIZEN', id, first_name || ' ' || last_name
+FROM person p
+WHERE EXISTS (SELECT 1 FROM message_account ma WHERE ma.person_id = p.id)
+ON CONFLICT DO NOTHING;
+
 ALTER TABLE message_account ADD COLUMN evaka_user_id uuid UNIQUE REFERENCES evaka_user (id);
 UPDATE message_account SET evaka_user_id = coalesce(person_id, employee_id);
 UPDATE message_account SET employee_id = NULL WHERE employee_id IS NOT NULL AND NOT active;
