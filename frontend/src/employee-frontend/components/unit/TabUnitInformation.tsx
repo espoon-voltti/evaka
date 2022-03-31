@@ -9,14 +9,17 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
 import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
+import { StaffOccupancyCoefficients } from './tab-unit-information/StaffOccupancyCoefficients'
+
 export default React.memo(function TabUnitInformation() {
-  const { unitInformation, unitData } = useContext(UnitContext)
+  const { unitInformation } = useContext(UnitContext)
 
   const groups = useMemo(
     () =>
@@ -30,31 +33,34 @@ export default React.memo(function TabUnitInformation() {
     [unitInformation]
   )
 
-  return renderResult(unitInformation, (unitInformation) => (
+  return renderResult(unitInformation, ({ daycare, permittedActions }) => (
     <FixedSpaceColumn>
       <ContentArea
         opaque
         data-qa="unit-information"
-        data-isloading={isLoading(unitData)}
+        data-isloading={isLoading(unitInformation)}
       >
-        <H2 data-qa="unit-name">{unitInformation.daycare.name}</H2>
+        <H2 data-qa="unit-name">{daycare.name}</H2>
         <Gap size="xxs" />
-        <UnitInformation
-          unit={unitInformation.daycare}
-          permittedActions={unitInformation.permittedActions}
-        />
+        <UnitInformation unit={daycare} permittedActions={permittedActions} />
       </ContentArea>
 
-      {unitInformation.permittedActions.has('READ_ACL') && (
+      {permittedActions.has('READ_ACL') && (
         <UnitAccessControl
-          unitId={unitInformation.daycare.id}
-          permittedActions={unitInformation.permittedActions}
+          permittedActions={permittedActions}
           groups={groups}
-          mobileEnabled={unitInformation.daycare.enabledPilotFeatures.includes(
-            'MOBILE'
-          )}
+          mobileEnabled={daycare.enabledPilotFeatures.includes('MOBILE')}
         />
       )}
+
+      {featureFlags.experimental?.realtimeStaffAttendance &&
+        permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
+          <StaffOccupancyCoefficients
+            allowEditing={permittedActions.has(
+              'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+            )}
+          />
+        )}
     </FixedSpaceColumn>
   ))
 })
