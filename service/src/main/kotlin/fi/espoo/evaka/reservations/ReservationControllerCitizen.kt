@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodDeadlines
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -112,7 +113,7 @@ class ReservationControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.clearOldAbsencesExcludingFreeAbsences(
+                tx.clearOldCitizenEditableAbsences(
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { childId to it }
                     }
@@ -143,6 +144,7 @@ data class DailyReservationData(
 @Json
 data class ChildDailyData(
     val childId: ChildId,
+    val markedByEmployee: Boolean,
     val absence: AbsenceType?,
     val reservations: List<TimeRange>,
     val attendances: List<OpenTimeRange>
@@ -152,6 +154,7 @@ data class ReservationChild(
     val id: ChildId,
     val firstName: String,
     val preferredName: String?,
+    val imageId: ChildImageId?,
     val placementMinStart: LocalDate,
     val placementMaxEnd: LocalDate,
     val maxOperationalDays: Set<Int>,
@@ -180,11 +183,12 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', g.child_id,
+                'markedByEmployee', a.modified_by_type <> 'CITIZEN',
                 'absence', a.absence_type,
                 'reservations', coalesce(ar.reservations, '[]'),
                 'attendances', coalesce(ca.attendances, '[]')
             )
-        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL),
+        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL),
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t
@@ -212,7 +216,10 @@ LEFT JOIN LATERAL (
     FROM child_attendance ca WHERE ca.child_id = g.child_id AND ca.date = t::date
 ) ca ON true
 LEFT JOIN LATERAL (
-    SELECT a.absence_type FROM absence a WHERE a.child_id = g.child_id AND a.date = t::date LIMIT 1
+    SELECT a.absence_type, eu.type AS modified_by_type
+    FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
+    WHERE a.child_id = g.child_id AND a.date = t::date
+    LIMIT 1
 ) a ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
@@ -229,9 +236,18 @@ GROUP BY date, is_holiday
 private fun Database.Read.getReservationChildren(guardianId: PersonId, range: FiniteDateRange): List<ReservationChild> {
     return createQuery(
         """
-SELECT ch.id, ch.first_name, ch.preferred_name, p.placement_min_start, p.placement_max_end, p.max_operational_days, p.in_shift_care_unit
+SELECT
+    ch.id,
+    ch.first_name,
+    ch.preferred_name,
+    ci.id AS image_id,
+    p.placement_min_start,
+    p.placement_max_end,
+    p.max_operational_days,
+    p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
+LEFT JOIN child_images ci ON ci.child_id = ch.id
 LEFT JOIN LATERAL (
     SELECT
         min(p.start_date) AS placement_min_start,
@@ -253,7 +269,7 @@ LEFT JOIN LATERAL (
     ) p
 ) p ON true
 WHERE p.placement_min_start IS NOT NULL
-ORDER BY first_name
+ORDER BY ch.date_of_birth
         """.trimIndent()
     )
         .bind("guardianId", guardianId)

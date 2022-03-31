@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -15,8 +15,15 @@ import IconButton from '../atoms/buttons/IconButton'
 import { desktopMin } from '../breakpoints'
 import { defaultMargins, SpacingSize } from '../white-space'
 
-const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
-  ${({ fullWidth }) => fullWidth && `width: 100%;`}
+const InfoBoxContainer = styled(Container)<{
+  width?: 'fixed' | 'full' | 'auto'
+}>`
+  ${({ width }) =>
+    width === 'auto'
+      ? 'width: auto'
+      : width === 'full'
+      ? 'width: 100%'
+      : undefined};
 
   @keyframes open {
     from {
@@ -29,17 +36,17 @@ const InfoBoxContainer = styled(Container)<{ fullWidth?: boolean }>`
 
   background-color: ${(p) => p.theme.colors.main.m4};
   overflow: hidden;
-  ${({ fullWidth }) =>
-    fullWidth
+  ${({ width }) =>
+    width === 'full'
       ? `margin: ${defaultMargins.s} 0px;`
-      : `margin: ${defaultMargins.s} -${defaultMargins.s} ${defaultMargins.xs};`}
+      : `margin: ${defaultMargins.s} -${defaultMargins.s} ${defaultMargins.xs};`};
 
   @media (min-width: ${desktopMin}) {
     animation-name: open;
     animation-duration: 0.2s;
     animation-timing-function: ease-out;
-    ${({ fullWidth }) =>
-      fullWidth
+    ${({ width }) =>
+      width === 'full'
         ? `margin: ${defaultMargins.s} 0px;`
         : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
   }
@@ -92,8 +99,8 @@ type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
   ariaLabel: string
+  width?: 'fixed' | 'full' | 'auto'
   margin?: SpacingSize
-  fullWidth?: boolean
   'data-qa'?: string
 }
 
@@ -101,18 +108,20 @@ export default React.memo(function ExpandingInfo({
   children,
   info,
   ariaLabel,
+  width = 'fixed',
   margin,
-  fullWidth,
   'data-qa': dataQa
 }: ExpandingInfoProps) {
   const [expanded, setExpanded] = useState<boolean>(false)
+  const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), [])
+  const close = useCallback(() => setExpanded(false), [])
 
   return (
     <span aria-live="polite">
       <FixedSpaceRow spacing="xs" alignItems="center">
         <div>{children}</div>
         <InfoButton
-          onClick={() => setExpanded(!expanded)}
+          onClick={toggleExpanded}
           aria-label={ariaLabel}
           margin={margin ?? 'zero'}
           data-qa={dataQa}
@@ -121,8 +130,8 @@ export default React.memo(function ExpandingInfo({
       {expanded && (
         <ExpandingInfoBox
           info={info}
-          close={() => setExpanded(false)}
-          fullWidth={fullWidth}
+          width={width}
+          close={close}
           data-qa={dataQa}
         />
       )}
@@ -152,6 +161,7 @@ export const InfoButton = React.memo(function InfoButton({
       margin={margin ?? 'zero'}
       color={colors.status.info}
       onClick={onClick}
+      type="button"
       role="button"
       aria-label={ariaLabel}
     >
@@ -163,20 +173,20 @@ export const InfoButton = React.memo(function InfoButton({
 export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   info,
   close,
-  fullWidth,
+  width = 'fixed',
   className,
   'data-qa': dataQa
 }: {
   info: ReactNode
   close: () => void
-  fullWidth?: boolean
+  width?: 'fixed' | 'full' | 'auto'
   className?: string
   'data-qa'?: string
 }) {
   const { colors } = useTheme()
 
   return (
-    <InfoBoxContainer className={className} fullWidth={fullWidth}>
+    <InfoBoxContainer className={className} width={width}>
       <InfoBoxContentArea opaque={false}>
         <RoundIcon content={fasInfo} color={colors.status.info} size="s" />
 

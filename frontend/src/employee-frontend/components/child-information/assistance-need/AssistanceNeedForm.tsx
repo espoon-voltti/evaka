@@ -268,7 +268,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                   ariaLabel={
                     i18n.childInformation.assistanceNeed.fields.capacityFactor
                   }
-                  fullWidth={true}
+                  width="full"
                 >
                   <CoefficientInputContainer>
                     <InputField
@@ -308,7 +308,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                       key={basis.value}
                       info={basis.descriptionFi}
                       ariaLabel=""
-                      fullWidth={true}
+                      width="full"
                     >
                       <CheckboxRow key={basis.value}>
                         <Checkbox

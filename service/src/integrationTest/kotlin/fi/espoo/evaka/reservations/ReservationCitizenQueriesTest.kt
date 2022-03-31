@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesByChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -215,8 +216,8 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE)
-            it.insertTestAbsence(childId = testChild_1.id, date = monday.plusDays(1), category = AbsenceCategory.BILLABLE)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE, modifiedBy = EvakaUserId(testAdult_1.id.raw))
+            it.insertTestAbsence(childId = testChild_1.id, date = monday.plusDays(1), category = AbsenceCategory.BILLABLE, modifiedBy = EvakaUserId(testAdult_1.id.raw))
         }
 
         // when
@@ -258,9 +259,9 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
         db.transaction {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = tuesday)
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE)
-            it.insertTestAbsence(childId = testChild_1.id, date = tuesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE)
-            it.insertTestAbsence(childId = testChild_1.id, date = wednesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE)
+            it.insertTestAbsence(childId = testChild_1.id, date = monday, category = AbsenceCategory.BILLABLE, modifiedBy = EvakaUserId(testAdult_1.id.raw))
+            it.insertTestAbsence(childId = testChild_1.id, date = tuesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE, modifiedBy = EvakaUserId(testAdult_1.id.raw))
+            it.insertTestAbsence(childId = testChild_1.id, date = wednesday, category = AbsenceCategory.BILLABLE, absenceType = AbsenceType.FREE_ABSENCE, modifiedBy = EvakaUserId(testAdult_1.id.raw))
         }
 
         // when

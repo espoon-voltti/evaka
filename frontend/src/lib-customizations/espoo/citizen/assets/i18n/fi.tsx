@@ -51,11 +51,13 @@ export default {
       },
       languages: {
         fi: 'suomenkielinen',
-        sv: 'ruotsinkielinen'
+        sv: 'ruotsinkielinen',
+        en: 'englanninkielinen'
       },
       languagesShort: {
         fi: 'suomi',
-        sv: 'ruotsi'
+        sv: 'ruotsi',
+        en: 'englanti'
       }
     },
     openExpandingInfo: 'Avaa lisätietokenttä',
@@ -236,6 +238,9 @@ export default {
     absences: {
       SICKLEAVE: 'Sairauspoissaolo'
     },
+    absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
+    contactStaffToEditAbsence:
+      'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
     newReservationOrAbsence: 'Varaus / Poissaolo',
     newHoliday: 'Ilmoita loma',
     newAbsence: 'Ilmoita poissaolo',

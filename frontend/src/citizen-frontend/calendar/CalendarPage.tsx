@@ -132,6 +132,7 @@ const Page = React.memo(function CalendarPage() {
       <MobileAndTablet>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
           <CalendarListView
+            childData={response.children}
             dailyData={response.dailyData}
             onHoverButtonClick={openPickActionModal}
             selectDate={selectDate}
@@ -143,6 +144,7 @@ const Page = React.memo(function CalendarPage() {
       <DesktopOnly>
         <Gap size="s" />
         <CalendarGridView
+          childData={response.children}
           dailyData={response.dailyData}
           onCreateReservationClicked={openReservationModal}
           onCreateAbsencesClicked={openAbsenceModal}

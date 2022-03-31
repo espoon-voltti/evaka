@@ -2,11 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef
+} from 'react'
 import styled, { css } from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -21,10 +30,13 @@ import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
+import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
+import RoundChildImages, { getPresentChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 export interface Props {
+  childData: ReservationChild[]
   dailyData: DailyReservationData[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
@@ -36,6 +48,7 @@ export interface Props {
 }
 
 export default React.memo(function CalendarGridView({
+  childData,
   dailyData,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
@@ -46,7 +59,6 @@ export default React.memo(function CalendarGridView({
   dayIsReservable
 }: Props) {
   const i18n = useTranslation()
-  const [lang] = useLang()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
   const headerRef = useRef<HTMLDivElement>(null)
   const todayRef = useRef<HTMLButtonElement>()
@@ -120,69 +132,19 @@ export default React.memo(function CalendarGridView({
       </StickyHeader>
       <Container>
         {monthlyData.map(({ month, year, weeks }) => (
-          <ContentArea opaque={false} key={`${month}${year}`}>
-            <MonthTitle>{`${
-              i18n.common.datetime.months[month - 1]
-            } ${year}`}</MonthTitle>
-            <CalendarHeader includeWeekends={includeWeekends}>
-              <HeadingCell />
-              {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map(
-                (d) => (
-                  <HeadingCell key={d}>
-                    {i18n.common.datetime.weekdaysShort[d]}
-                  </HeadingCell>
-                )
-              )}
-            </CalendarHeader>
-            <Grid includeWeekends={includeWeekends}>
-              {weeks.map((w) => (
-                <Fragment key={`${w.weekNumber}${month}${year}`}>
-                  <WeekNumber>{w.weekNumber}</WeekNumber>
-                  {w.dailyReservations.map((d) => {
-                    const dateIsOnMonth = d.date.month === month
-                    const isToday = d.date.isToday() && dateIsOnMonth
-
-                    return dateIsOnMonth ? (
-                      <DayCell
-                        key={`${d.date.formatIso()}${month}${year}`}
-                        ref={(e) => {
-                          if (isToday) {
-                            todayRef.current = e ?? undefined
-                          }
-                        }}
-                        today={isToday}
-                        holidayPeriod={holidayPeriods.some((p) =>
-                          p.includes(d.date)
-                        )}
-                        selected={
-                          d.date.formatIso() === selectedDate?.formatIso()
-                        }
-                        onClick={() => selectDate(d.date)}
-                        data-qa={`desktop-calendar-day-${d.date.formatIso()}`}
-                      >
-                        <DayCellHeader>
-                          <DayCellDate
-                            inactive={!dayIsReservable(d)}
-                            aria-label={d.date.formatExotic(
-                              'EEEE do MMMM',
-                              lang
-                            )}
-                          >
-                            {d.date.format('d.M.')}
-                          </DayCellDate>
-                        </DayCellHeader>
-                        <DayCellReservations data-qa="reservations">
-                          <Reservations data={d} />
-                        </DayCellReservations>
-                      </DayCell>
-                    ) : (
-                      <InactiveCell />
-                    )
-                  })}
-                </Fragment>
-              ))}
-            </Grid>
-          </ContentArea>
+          <Month
+            key={`${month}${year}`}
+            year={year}
+            month={month}
+            childData={childData}
+            weeks={weeks}
+            holidayPeriods={holidayPeriods}
+            todayRef={todayRef}
+            selectedDate={selectedDate}
+            selectDate={selectDate}
+            includeWeekends={includeWeekends}
+            dayIsReservable={dayIsReservable}
+          />
         ))}
       </Container>
     </>
@@ -259,6 +221,203 @@ const asMonthlyData = (dailyData: DailyReservationData[]): MonthlyData[] => {
 const daysWithoutWeekends = [0, 1, 2, 3, 4]
 const daysWithWeekends = [0, 1, 2, 3, 4, 5, 6]
 
+const Month = React.memo(function Month({
+  year,
+  month,
+  childData,
+  weeks,
+  holidayPeriods,
+  todayRef,
+  selectDate,
+  selectedDate,
+  includeWeekends,
+  dayIsReservable
+}: {
+  year: number
+  month: number
+  childData: ReservationChild[]
+  weeks: WeeklyData[]
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  selectedDate: LocalDate | undefined
+  selectDate: (date: LocalDate) => void
+  includeWeekends: boolean
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  const i18n = useTranslation()
+  return (
+    <ContentArea opaque={false} key={`${month}${year}`}>
+      <MonthTitle>{`${
+        i18n.common.datetime.months[month - 1]
+      } ${year}`}</MonthTitle>
+      <CalendarHeader includeWeekends={includeWeekends}>
+        <HeadingCell />
+        {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map((d) => (
+          <HeadingCell key={d}>
+            {i18n.common.datetime.weekdaysShort[d]}
+          </HeadingCell>
+        ))}
+      </CalendarHeader>
+      <Grid includeWeekends={includeWeekends}>
+        {weeks.map((w) => (
+          <Week
+            key={`${w.weekNumber}${month}${year}`}
+            year={year}
+            month={month}
+            childData={childData}
+            week={w}
+            holidayPeriods={holidayPeriods}
+            todayRef={todayRef}
+            selectedDate={selectedDate}
+            selectDate={selectDate}
+            dayIsReservable={dayIsReservable}
+          />
+        ))}
+      </Grid>
+    </ContentArea>
+  )
+})
+
+const Week = React.memo(function Week({
+  year,
+  month,
+  childData,
+  week,
+  holidayPeriods,
+  todayRef,
+  selectedDate,
+  selectDate,
+  dayIsReservable
+}: {
+  year: number
+  month: number
+  childData: ReservationChild[]
+  week: WeeklyData
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  selectedDate: LocalDate | undefined
+  selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  return (
+    <>
+      <WeekNumber>{week.weekNumber}</WeekNumber>
+      {week.dailyReservations.map((d) => (
+        <Day
+          key={`${d.date.formatIso()}${month}${year}`}
+          day={d}
+          childData={childData}
+          holidayPeriods={holidayPeriods}
+          todayRef={todayRef}
+          dateType={dateType(year, month, d.date)}
+          selected={selectedDate !== undefined && d.date.isEqual(selectedDate)}
+          selectDate={selectDate}
+          dayIsReservable={dayIsReservable}
+        />
+      ))}
+    </>
+  )
+})
+
+type DateType = 'past' | 'today' | 'future' | 'otherMonth'
+
+function dateType(year: number, month: number, date: LocalDate): DateType {
+  if (date.year !== year || date.month !== month) return 'otherMonth'
+  const today = LocalDate.today()
+  return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
+}
+
+const Day = React.memo(function Day({
+  day,
+  childData,
+  holidayPeriods,
+  todayRef,
+  dateType,
+  selected,
+  selectDate,
+  dayIsReservable
+}: {
+  day: DailyReservationData
+  childData: ReservationChild[]
+  holidayPeriods: FiniteDateRange[]
+  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  dateType: DateType
+  selected: boolean
+  selectDate: (date: LocalDate) => void
+  dayIsReservable: (dailyData: DailyReservationData) => boolean
+}) {
+  const [lang] = useLang()
+  const ref = useCallback(
+    (e: HTMLButtonElement) => {
+      if (dateType === 'today') {
+        todayRef.current = e ?? undefined
+      }
+    },
+    [dateType, todayRef]
+  )
+  const markedByEmployee = useMemo(
+    () =>
+      day.children.length > 0 && day.children.every((c) => c.markedByEmployee),
+    [day.children]
+  )
+  const holidayPeriod = useMemo(
+    () => holidayPeriods.some((p) => p.includes(day.date)),
+    [day.date, holidayPeriods]
+  )
+  const onClick = useCallback(
+    () => selectDate(day.date),
+    [day.date, selectDate]
+  )
+
+  const presentChildImages = useMemo(
+    () => getPresentChildImages(childData, day),
+    [childData, day]
+  )
+
+  if (dateType === 'otherMonth') {
+    return <InactiveCell />
+  }
+
+  return (
+    <DayCell
+      ref={ref}
+      today={dateType === 'today'}
+      markedByEmployee={markedByEmployee}
+      holidayPeriod={holidayPeriod}
+      selected={selected}
+      onClick={onClick}
+      data-qa={`desktop-calendar-day-${day.date.formatIso()}`}
+    >
+      <DayCellHeader>
+        <DayCellDate
+          inactive={!dayIsReservable(day)}
+          aria-label={day.date.formatExotic('EEEE do MMMM', lang)}
+        >
+          {day.date.format('d.M.')}
+        </DayCellDate>
+      </DayCellHeader>
+      <ChildImagesContainer>
+        <RoundChildImages
+          images={presentChildImages}
+          imageSize={37}
+          imageBorder={3}
+          imageOverlap={9}
+        />
+      </ChildImagesContainer>
+      <DayCellReservations data-qa="reservations">
+        <Reservations data={day} />
+      </DayCellReservations>
+      {dateType === 'past' && <HistoryOverlay />}
+    </DayCell>
+  )
+})
+
+const ChildImagesContainer = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 8px;
+`
+
 const StickyHeader = styled.div<{ bannerIsVisible: boolean }>`
   position: sticky;
   top: ${(p) => (p.bannerIsVisible ? bannerHeightDesktop : 0)}px;
@@ -316,6 +475,7 @@ const MonthTitle = styled(H2).attrs({ noMargin: true })`
 
 const DayCell = styled.button<{
   today: boolean
+  markedByEmployee: boolean
   selected: boolean
   holidayPeriod: boolean
 }>`
@@ -327,13 +487,16 @@ const DayCell = styled.button<{
   min-height: 150px;
   padding: ${defaultMargins.s};
   background-color: ${(p) =>
-    p.holidayPeriod
+    p.markedByEmployee
+      ? p.theme.colors.grayscale.g15
+      : p.holidayPeriod
       ? p.theme.colors.accents.a10powder
       : p.theme.colors.grayscale.g0};
   border: none;
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
   user-select: none;
+  text-align: left;
 
   ${(p) =>
     p.today
@@ -341,7 +504,7 @@ const DayCell = styled.button<{
           border-left: 4px solid ${colors.status.success};
           padding-left: calc(${defaultMargins.s} - 3px);
         `
-      : ''}
+      : ''};
 
   ${(p) =>
     p.selected
@@ -349,7 +512,7 @@ const DayCell = styled.button<{
           box-shadow: 0 2px 3px 2px #00000030;
           z-index: 1;
         `
-      : ''}
+      : ''};
 
   :focus {
     box-shadow: 0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};

@@ -128,7 +128,7 @@ export default React.memo(function AssistanceNeedRow({
                         .capacityFactorInfo
                     }
                     ariaLabel=""
-                    fullWidth={true}
+                    width="full"
                   >
                     <span data-qa="assistance-need-multiplier">
                       {formatDecimal(assistanceNeed.capacityFactor)}
