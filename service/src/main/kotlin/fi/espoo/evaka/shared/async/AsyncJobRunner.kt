@@ -15,8 +15,10 @@ import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -42,7 +44,15 @@ data class AsyncJobRunnerConfig(
 class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
     private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
 
-    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(config.threadPoolSize)
+    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(
+        config.threadPoolSize,
+        object : ThreadFactory {
+            private val default = Executors.defaultThreadFactory()
+            override fun newThread(r: Runnable): Thread = default.newThread(r).also {
+                it.priority = Thread.MIN_PRIORITY
+            }
+        }
+    )
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
