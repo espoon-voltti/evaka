@@ -48,6 +48,7 @@ export interface Attendance {
   departed: Date | null
   groupId: UUID
   id: UUID
+  occupancyCoefficient: number
 }
 
 /**
@@ -175,6 +176,7 @@ export interface ExternalAttendance {
   groupId: UUID
   id: UUID
   name: string
+  occupancyCoefficient: number
 }
 
 /**

@@ -217,3 +217,4 @@ V216__mobile_device_hard_delete.sql
 V217__guardian_blocklist.sql
 V218__invoice_correction.sql
 V219__add_occupancy_coefficient_under_3y.sql
+V220__staff_occupancy_coefficient.sql

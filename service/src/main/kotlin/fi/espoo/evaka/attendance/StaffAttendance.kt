@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import java.math.BigDecimal
 import java.util.UUID
 
 data class CurrentDayStaffAttendanceResponse(
@@ -52,6 +53,7 @@ data class ExternalAttendance(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
+    val occupancyCoefficient: BigDecimal
 )
 
 data class Attendance(
@@ -59,6 +61,7 @@ data class Attendance(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
+    val occupancyCoefficient: BigDecimal
 )
 
 data class EmployeeAttendance(

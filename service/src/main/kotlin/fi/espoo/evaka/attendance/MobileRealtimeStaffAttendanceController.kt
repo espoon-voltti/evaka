@@ -82,10 +82,12 @@ class MobileRealtimeStaffAttendanceController(
         try {
             db.connect { dbc ->
                 dbc.transaction {
+                    val occupancyCoefficient = it.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: defaultOccupancyCoefficient
                     it.markStaffArrival(
                         employeeId = body.employeeId,
                         groupId = body.groupId,
-                        arrivalTime = arrivedTimeOrDefault
+                        arrivalTime = arrivedTimeOrDefault,
+                        occupancyCoefficient = occupancyCoefficient,
                     )
                 }
             }
@@ -149,7 +151,9 @@ class MobileRealtimeStaffAttendanceController(
                 it.markExternalStaffArrival(
                     ExternalStaffArrival(
                         name = body.name,
-                        groupId = body.groupId, arrived = arrivedTimeOrDefault
+                        groupId = body.groupId,
+                        arrived = arrivedTimeOrDefault,
+                        occupancyCoefficient = defaultOccupancyCoefficient
                     )
                 )
             }

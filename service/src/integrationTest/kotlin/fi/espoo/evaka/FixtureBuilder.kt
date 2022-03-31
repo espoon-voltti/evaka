@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -42,7 +42,7 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.lang.IllegalStateException
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -462,6 +462,7 @@ class FixtureBuilder(
         private var from: HelsinkiDateTime? = null
         private var to: HelsinkiDateTime? = null
         private var groupId: GroupId? = null
+        private var coefficient: BigDecimal? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
         fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
@@ -471,19 +472,22 @@ class FixtureBuilder(
         fun departing(date: LocalDate, time: LocalTime) = this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
         fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
 
+        fun withCoefficient(coefficient: BigDecimal) = this.apply { this.coefficient = coefficient }
+
         fun inGroup(groupId: GroupId) = this.apply { this.groupId = groupId }
 
         fun save(): EmployeeFixture {
             tx.createUpdate(
                 """
-                INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed)
-                VALUES (:employeeId, :groupId, :arrived, :departed)
+                INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient)
+                VALUES (:employeeId, :groupId, :arrived, :departed, :coefficient)
                 """.trimIndent()
             )
                 .bind("employeeId", employeeFixture.employeeId)
                 .bind("groupId", groupId ?: error("group must be set"))
                 .bind("arrived", from ?: error("arrival time must be set"))
                 .bindNullable("departed", to)
+                .bind("coefficient", coefficient ?: error("occupancyCoefficient time must be set"))
                 .updateExactlyOne()
 
             return employeeFixture

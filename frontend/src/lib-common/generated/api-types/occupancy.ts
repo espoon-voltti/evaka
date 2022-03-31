@@ -42,7 +42,7 @@ export interface OccupancyPeriod {
 export interface OccupancyPoint {
   childCapacity: number
   occupancyRatio: number | null
-  staffCount: number
+  staffCapacity: number
   time: Date
 }
 
@@ -91,14 +91,14 @@ export interface RealtimeOccupancy {
   childCapacitySumSeries: ChildCapacityPoint[]
   occupancySeries: OccupancyPoint[]
   staffAttendances: StaffOccupancyAttendance[]
-  staffCountSeries: StaffCountPoint[]
+  staffCapacitySumSeries: StaffCapacityPoint[]
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.StaffCountPoint
+* Generated from fi.espoo.evaka.occupancy.StaffCapacityPoint
 */
-export interface StaffCountPoint {
-  count: number
+export interface StaffCapacityPoint {
+  capacity: number
   time: Date
 }
 
@@ -107,5 +107,6 @@ export interface StaffCountPoint {
 */
 export interface StaffOccupancyAttendance {
   arrived: Date
+  capacity: number
   departed: Date | null
 }
