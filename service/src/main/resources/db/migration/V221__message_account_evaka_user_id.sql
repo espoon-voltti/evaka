@@ -1,3 +1,6 @@
+-- Will be recreated by R__message_account_access_view.sql
+DROP VIEW IF EXISTS message_account_access_view;
+
 INSERT INTO evaka_user (id, type, citizen_id, name)
 SELECT id, 'CITIZEN', id, first_name || ' ' || last_name
 FROM person p
