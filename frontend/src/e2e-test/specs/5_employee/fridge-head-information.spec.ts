@@ -17,7 +17,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -157,6 +157,16 @@ describe('Employee - Head of family details', () => {
   })
 
   test('Manually added income is shown in family overview', async () => {
+    await Fixture.fridgeChild()
+      .with({
+        id: uuidv4(),
+        childId: child.id,
+        headOfChild: regularPerson.id,
+        startDate: LocalDate.today(),
+        endDate: LocalDate.today()
+      })
+      .save()
+
     const totalIncome = 100000
     const employee = await Fixture.employee().save()
     await Fixture.income()
@@ -174,6 +184,23 @@ describe('Employee - Head of family details', () => {
       })
       .save()
 
+    const totalChildIncome = 1234
+
+    await Fixture.income()
+      .with({
+        personId: child.id,
+        effect: 'INCOME',
+        data: {
+          MAIN_INCOME: {
+            amount: totalChildIncome,
+            monthlyAmount: totalChildIncome,
+            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+          }
+        },
+        updatedBy: employee.data.id
+      })
+      .save()
+
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const familyOverview = await guardianInformation.openCollapsible(
       'familyOverview'
@@ -181,6 +208,11 @@ describe('Employee - Head of family details', () => {
     await familyOverview.assertPerson({
       personId: regularPerson.id,
       incomeCents: totalIncome
+    })
+
+    await familyOverview.assertPerson({
+      personId: child.id,
+      incomeCents: totalChildIncome
     })
   })
 })

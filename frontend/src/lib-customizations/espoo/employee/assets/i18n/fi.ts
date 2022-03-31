@@ -1044,7 +1044,7 @@ export const fi = {
         const childrenText = children === 1 ? 'lapsi' : 'lasta'
         return `${adults} ${adultText}, ${children} ${childrenText}`
       },
-      incomeTotalLabel: 'Perheen tulot yhteensä',
+      incomeTotalLabel: 'Aikuisten tulot yhteensä',
       incomeValue: (val: string) => `${val} €`,
       incomeMissingCompletely: 'Tulotiedot puuttuvat'
     },
