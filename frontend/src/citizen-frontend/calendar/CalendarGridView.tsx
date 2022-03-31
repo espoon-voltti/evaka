@@ -302,23 +302,19 @@ const Week = React.memo(function Week({
   return (
     <>
       <WeekNumber>{week.weekNumber}</WeekNumber>
-      {week.dailyReservations.map((d) => {
-        const selected =
-          selectedDate !== undefined && d.date.isEqual(selectedDate)
-        return (
-          <Day
-            key={`${d.date.formatIso()}${month}${year}`}
-            day={d}
-            childData={childData}
-            holidayPeriods={holidayPeriods}
-            todayRef={todayRef}
-            dateType={dateType(year, month, d.date)}
-            selected={selected}
-            selectDate={selectDate}
-            dayIsReservable={dayIsReservable}
-          />
-        )
-      })}
+      {week.dailyReservations.map((d) => (
+        <Day
+          key={`${d.date.formatIso()}${month}${year}`}
+          day={d}
+          childData={childData}
+          holidayPeriods={holidayPeriods}
+          todayRef={todayRef}
+          dateType={dateType(year, month, d.date)}
+          selected={selectedDate !== undefined && d.date.isEqual(selectedDate)}
+          selectDate={selectDate}
+          dayIsReservable={dayIsReservable}
+        />
+      ))}
     </>
   )
 })

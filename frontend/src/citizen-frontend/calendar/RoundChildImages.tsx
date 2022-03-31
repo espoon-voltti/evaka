@@ -122,20 +122,23 @@ export function getPresentChildImages(
   childData: ReservationChild[],
   day: DailyReservationData
 ): ChildImageData[] {
-  return childData
-    .map((child, index) => [child, index] as const)
-    .filter(([child, _]) =>
-      day.children.some(
-        (dc) =>
-          dc.childId === child.id &&
-          dc.absence === null &&
-          (dc.reservations.length > 0 || dc.attendances.length > 0)
+  return (
+    childData
+      // Save the index first, so that each child has the same index every time, regardless of the below filtering
+      .map((child, index) => [child, index] as const)
+      .filter(([child, _]) =>
+        day.children.some(
+          (dc) =>
+            dc.childId === child.id &&
+            dc.absence === null &&
+            (dc.reservations.length > 0 || dc.attendances.length > 0)
+        )
       )
-    )
-    .map(([child, index]) => ({
-      childId: child.id,
-      imageId: child.imageId,
-      initialLetter: (child.preferredName || child.firstName || '?')[0],
-      colorIndex: index
-    }))
+      .map(([child, index]) => ({
+        childId: child.id,
+        imageId: child.imageId,
+        initialLetter: (child.preferredName || child.firstName || '?')[0],
+        colorIndex: index
+      }))
+  )
 }
