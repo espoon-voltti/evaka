@@ -9,9 +9,9 @@ import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.ExternalStaffArrival
 import fi.espoo.evaka.attendance.ExternalStaffDeparture
-import fi.espoo.evaka.attendance.defaultOccupancyCoefficient
 import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
+import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -76,7 +76,7 @@ class RealtimeOccupancyTest : FullApplicationTest() {
                 .withGroupAccess(testDaycare.id, groupId)
                 .saveAnd {
                     addRealtimeAttendance().inGroup(groupId).arriving(LocalTime.of(7, 0))
-                        .departing(LocalTime.of(16, 45)).withCoefficient(defaultOccupancyCoefficient).save()
+                        .departing(LocalTime.of(16, 45)).withCoefficient(occupancyCoefficientSeven).save()
                 }
 
             tx.markExternalStaffArrival(

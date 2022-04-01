@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.LocalTime
 
 @RestController
@@ -82,7 +83,7 @@ class MobileRealtimeStaffAttendanceController(
         try {
             db.connect { dbc ->
                 dbc.transaction {
-                    val occupancyCoefficient = it.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: defaultOccupancyCoefficient
+                    val occupancyCoefficient = it.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
                     it.markStaffArrival(
                         employeeId = body.employeeId,
                         groupId = body.groupId,
@@ -153,7 +154,7 @@ class MobileRealtimeStaffAttendanceController(
                         name = body.name,
                         groupId = body.groupId,
                         arrived = arrivedTimeOrDefault,
-                        occupancyCoefficient = defaultOccupancyCoefficient
+                        occupancyCoefficient = occupancyCoefficientSeven
                     )
                 )
             }

@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import java.math.BigDecimal
 
-val defaultOccupancyCoefficient = BigDecimal("7.0")
+val occupancyCoefficientSeven = BigDecimal("7.0")
 
 data class StaffOccupancyCoefficient(
     val id: StaffOccupancyCoefficientId,
