@@ -200,6 +200,7 @@ const StyledTextArea = styled.textarea`
   width: 100%;
   resize: none;
   flex-grow: 1;
+  min-height: 100px;
 `
 
 const BottomRow = styled.div`
