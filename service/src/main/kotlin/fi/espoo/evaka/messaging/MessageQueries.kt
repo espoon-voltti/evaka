@@ -52,6 +52,7 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<Un
         FROM message_account acc
         LEFT JOIN message_recipients m ON m.recipient_id = acc.id
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
+        WHERE acc.active = true
         GROUP BY acc.id, acc.daycare_group_id
     """.trimIndent()
 

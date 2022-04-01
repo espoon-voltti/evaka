@@ -109,6 +109,7 @@ class PersonIntegrationTest : PureJdbiTest() {
             PersonReference("child_sticky_note", "child_id"),
             PersonReference("curriculum_document", "child_id"),
             PersonReference("daily_service_time", "child_id"),
+            PersonReference("evaka_user", "citizen_id"),
             PersonReference("family_contact", "child_id"),
             PersonReference("family_contact", "contact_person_id"),
             PersonReference("fee_alteration", "person_id"),
@@ -145,7 +146,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         // language=SQL
         val sql = """
             SELECT EXISTS(
-                SELECT * FROM message_account WHERE person_id = :personId
+                SELECT * FROM message_account WHERE person_id = :personId AND active = true
             )
         """.trimIndent()
         return db.read {

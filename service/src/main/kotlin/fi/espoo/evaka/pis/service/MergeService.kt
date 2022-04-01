@@ -115,7 +115,11 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 """
                     (SELECT count(*) FROM $table WHERE $column = :id)
                 """.trimIndent()
-            }}
+            }} +
+                (SELECT count(*) FROM message WHERE sender_id = (SELECT id FROM message_account WHERE person_id = :id)) +
+                (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id)) +
+                (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id)) +
+                (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id)) AS count;
             """.trimIndent()
 
         val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().one()
