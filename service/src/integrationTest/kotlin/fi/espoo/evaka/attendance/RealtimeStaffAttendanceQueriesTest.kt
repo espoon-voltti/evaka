@@ -94,10 +94,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest() {
     fun externalAttendanceQueries() {
         val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
         db.transaction { tx ->
-            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Absent", group1.id, now.minusDays(1), defaultOccupancyCoefficient)).let {
+            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Absent", group1.id, now.minusDays(1), occupancyCoefficientSeven)).let {
                 tx.markExternalStaffDeparture(ExternalStaffDeparture(it, now.minusDays(1).plusHours(8)))
             }
-            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Present", group1.id, now.minusDays(1), defaultOccupancyCoefficient))
+            tx.markExternalStaffArrival(ExternalStaffArrival("Foo Present", group1.id, now.minusDays(1), occupancyCoefficientSeven))
         }
         val externalAttendances = db.read { it.getExternalStaffAttendances(testDaycare.id) }
 
