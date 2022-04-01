@@ -42,7 +42,6 @@ import {
   DaycareAclRow,
   DaycareGroupSummary,
   deleteMobileDevice,
-  getDaycareAclRows,
   getMobileDevices,
   putMobileDeviceName,
   removeDaycareAclSpecialEducationTeacher,
@@ -52,13 +51,13 @@ import {
 } from '../../../api/unit'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
+import { UnitContext } from '../../../state/unit'
 import { UserContext } from '../../../state/user'
 import { Employee } from '../../../types/employee'
 import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 
 type Props = {
-  unitId: string
   groups: Record<UUID, DaycareGroupSummary>
   mobileEnabled: boolean
   permittedActions: Set<Action.Unit>
@@ -545,19 +544,16 @@ const EditMobileDeviceModal = React.memo(function EditMobileDeviceModal({
 })
 
 export default React.memo(function UnitAccessControl({
-  unitId,
   groups,
   mobileEnabled,
   permittedActions
 }: Props) {
   const { i18n } = useTranslation()
 
+  const { unitId, daycareAclRows, reloadDaycareAclRows } =
+    useContext(UnitContext)
   const { user } = useContext(UserContext)
   const [employees] = useApiState(getEmployees, [])
-  const [daycareAclRows, reloadDaycareAclRows] = useApiState(
-    () => getDaycareAclRows(unitId),
-    [unitId]
-  )
   const [mobileDevices, reloadMobileDevices] = useApiState(
     () => getMobileDevices(unitId),
     [unitId]

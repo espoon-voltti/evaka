@@ -222,6 +222,15 @@ export interface GroupInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
+*/
+export interface OccupancyCoefficientUpsert {
+  coefficient: number
+  employeeId: UUID
+  unitId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Staff
 */
 export interface Staff {
@@ -280,6 +289,17 @@ export interface StaffMemberAttendance {
   employeeId: UUID
   groupId: UUID
   id: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.StaffOccupancyCoefficient
+*/
+export interface StaffOccupancyCoefficient {
+  coefficient: number
+  employeeId: UUID
+  firstName: string
+  id: UUID
+  lastName: string
 }
 
 /**

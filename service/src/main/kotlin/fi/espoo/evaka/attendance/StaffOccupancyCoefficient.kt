@@ -4,6 +4,23 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import java.math.BigDecimal
 
 val defaultOccupancyCoefficient = BigDecimal("7.0")
+
+data class StaffOccupancyCoefficient(
+    val id: StaffOccupancyCoefficientId,
+    val employeeId: EmployeeId,
+    val firstName: String,
+    val lastName: String,
+    val coefficient: BigDecimal
+)
+
+data class OccupancyCoefficientUpsert(
+    val unitId: DaycareId,
+    val employeeId: EmployeeId,
+    val coefficient: BigDecimal
+)

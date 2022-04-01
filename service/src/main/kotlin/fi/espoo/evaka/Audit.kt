@@ -271,6 +271,8 @@ enum class Audit(
     StaffAttendanceDepartureExternalCreate("evaka.staff-attendance.departure-external.create"),
     StaffAttendanceRead("evaka.staff-attendance.read"),
     StaffAttendanceUpdate("evaka.staff-attendance.update"),
+    StaffOccupancyCoefficientRead("evaka.staff-occupancy-coefficient.read"),
+    StaffOccupancyCoefficientUpsert("evaka.staff-occupancy-coefficient.upsert"),
     StartingPlacementsReportRead("evaka.starting-placements-report.read"),
     UnitAclCreate("evaka.unit-acl.create"),
     UnitAclDelete("evaka.unit-acl.delete"),

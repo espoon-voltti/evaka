@@ -15,23 +15,36 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getDaycare, getUnitData, UnitData, UnitResponse } from '../api/unit'
+import {
+  DaycareAclRow,
+  getDaycare,
+  getDaycareAclRows,
+  getUnitData,
+  UnitData,
+  UnitResponse
+} from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
 
 export interface UnitState {
+  unitId: UUID
   unitInformation: Result<UnitResponse>
   unitData: Result<UnitData>
   reloadUnitData: () => void
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
+  daycareAclRows: Result<DaycareAclRow[]>
+  reloadDaycareAclRows: () => void
 }
 
 const defaultState: UnitState = {
+  unitId: '',
   unitInformation: Loading.of(),
   unitData: Loading.of(),
   reloadUnitData: () => undefined,
   filters: new UnitFilters(LocalDate.today(), '3 months'),
-  setFilters: () => undefined
+  setFilters: () => undefined,
+  daycareAclRows: Loading.of(),
+  reloadDaycareAclRows: () => undefined
 }
 
 export const UnitContext = createContext<UnitState>(defaultState)
@@ -51,15 +64,31 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [id, filters.startDate, filters.endDate]
   )
 
+  const [daycareAclRows, reloadDaycareAclRows] = useApiState(
+    () => getDaycareAclRows(id),
+    [id]
+  )
+
   const value = useMemo(
     () => ({
+      unitId: id,
       unitInformation,
       unitData,
       reloadUnitData,
       filters,
-      setFilters
+      setFilters,
+      daycareAclRows,
+      reloadDaycareAclRows
     }),
-    [unitInformation, unitData, reloadUnitData, filters]
+    [
+      id,
+      unitInformation,
+      unitData,
+      reloadUnitData,
+      filters,
+      daycareAclRows,
+      reloadDaycareAclRows
+    ]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

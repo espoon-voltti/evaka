@@ -1430,6 +1430,10 @@ export const fi = {
         }
       }
     },
+    staffOccupancies: {
+      title: 'Kasvatusvastuullisuus',
+      occupancyCoefficientEnabled: 'Lasketaan käyttöasteesen'
+    },
     applicationProcess: {
       title: 'Hakuprosessi'
     },
