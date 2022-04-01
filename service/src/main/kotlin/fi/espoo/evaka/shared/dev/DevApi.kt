@@ -126,6 +126,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.user.EvakaUser
+import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
@@ -482,6 +484,7 @@ class DevApi(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val personId = tx.insertTestPerson(body)
+                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId.raw), type = EvakaUserType.CITIZEN, name = body.firstName.plus(' ').plus(body.lastName)))
                 tx.createPersonMessageAccount(personId)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {
@@ -581,8 +584,8 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
-                tx.execute("INSERT INTO message_account (person_id, evaka_user_id) SELECT id, id FROM person ON CONFLICT DO NOTHING")
-                tx.execute("INSERT INTO message_account (employee_id, evaka_user_id) SELECT id, id FROM employee ON CONFLICT DO NOTHING")
+                tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
+                tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
             }
         }
     }

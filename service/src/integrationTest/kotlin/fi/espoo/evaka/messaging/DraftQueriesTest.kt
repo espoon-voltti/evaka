@@ -18,13 +18,16 @@ import kotlin.test.assertEquals
 
 class DraftQueriesTest : PureJdbiTest() {
 
-    private lateinit var accountId: MessageAccountId
+    private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
             val employeeId = tx.insertTestEmployee(DevEmployee(firstName = "Firstname", lastName = "Employee"))
-            accountId = tx.upsertEmployeeMessageAccount(employeeId)
+            tx.createUpdate("INSERT INTO message_account (id, employee_id) VALUES (:id, :employeeId)")
+                .bind("id", accountId)
+                .bind("employeeId", employeeId)
+                .execute()
         }
     }
 
