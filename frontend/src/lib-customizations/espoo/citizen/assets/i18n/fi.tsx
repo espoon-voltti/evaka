@@ -153,7 +153,7 @@ export default {
         'hakea lapsellesi varhaiskasvatus-, esiopetus- tai kerhopaikkaa tai tarkastella aiemmin tekemääsi hakemusta',
         'tarkastella lapsesi varhaiskasvatukseen tai esiopetukseen liittyviä kuvia ja muita dokumentteja',
         'ilmoittaa omat tai lapsesi tulotiedot',
-        'hyväksyä tai hylätä varhaiskasvatuspäätöksen, jos olet hakemuksen tekijä'
+        'hyväksyä tai hylätä päätöksen, jos olet hakemuksen tekijä'
       ],
       link: 'Tunnistaudu',
       mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
