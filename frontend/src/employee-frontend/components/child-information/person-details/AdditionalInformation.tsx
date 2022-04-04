@@ -82,6 +82,8 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
     })
   }
 
+  const valueWidth = '600px'
+
   return (
     <div data-qa="additional-information-section">
       <FlexRow justifyContent="space-between">
@@ -123,7 +125,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                 ) : (
                   formatParagraphs(data.preferredName)
                 ),
-                valueWidth: '400px'
+                valueWidth
               },
               {
                 label:
@@ -139,7 +141,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                 ) : (
                   formatParagraphs(data.additionalInfo)
                 ),
-                valueWidth: '400px'
+                valueWidth
               },
               {
                 label: i18n.childInformation.additionalInformation.allergies,
@@ -148,12 +150,11 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                     value={form.allergies}
                     onChange={(value) => setForm({ ...form, allergies: value })}
                     rows={textAreaRows(form.allergies)}
-                    maxLength={40}
                   />
                 ) : (
                   formatParagraphs(data.allergies)
                 ),
-                valueWidth: '400px'
+                valueWidth
               },
               {
                 label: i18n.childInformation.additionalInformation.diet,
@@ -166,7 +167,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                 ) : (
                   formatParagraphs(data.diet)
                 ),
-                valueWidth: '400px'
+                valueWidth
               },
               {
                 label: i18n.childInformation.additionalInformation.medication,
@@ -184,7 +185,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                     {formatParagraphs(data.medication)}
                   </span>
                 ),
-                valueWidth: '400px'
+                valueWidth
               }
             ]}
           />
