@@ -6,6 +6,7 @@ import _ from 'lodash'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { isLoading } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { getAge } from 'lib-common/utils/local-date'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -47,6 +48,7 @@ export default React.memo(function Guardians({ startOpen }: Props) {
         opaque
         paddingVertical="L"
         data-qa="person-guardians-collapsible"
+        data-isloading={isLoading(guardians)}
       >
         <Gap size="m" />
         <H3 noMargin>{i18n.personProfile.guardians}</H3>
