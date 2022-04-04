@@ -115,7 +115,7 @@ const defaultState: UiState = {
   feeDecisions: {
     searchFilters: {
       distinctiveDetails: [],
-      status: 'DRAFT' as const,
+      status: 'DRAFT',
       area: [],
       startDate: LocalDate.today().withDate(1),
       endDate: LocalDate.today(),
@@ -130,7 +130,7 @@ const defaultState: UiState = {
   },
   valueDecisions: {
     searchFilters: {
-      status: 'DRAFT' as const,
+      status: 'DRAFT',
       area: [],
       startDate: LocalDate.today().withDate(1),
       endDate: LocalDate.today(),
@@ -146,7 +146,7 @@ const defaultState: UiState = {
     searchFilters: {
       distinctiveDetails: [],
       area: [],
-      status: 'DRAFT' as const,
+      status: 'DRAFT',
       startDate: undefined,
       endDate: undefined,
       useCustomDatesForInvoiceSending: false
