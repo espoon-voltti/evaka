@@ -90,7 +90,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
         val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
         InvoiceRowDetailed(
             id = row.id!!,
-            child = allChildren.find { it.id == row.child.id }!!.toPersonDetailed(),
+            child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
             amount = row.amount,
             unitPrice = row.unitPrice,
             periodStart = row.periodStart,
@@ -100,7 +100,8 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
             costCenter = costCenter,
             subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
             savedCostCenter = if (invoice.status == InvoiceStatus.SENT || invoice.status == InvoiceStatus.WAITING_FOR_SENDING) costCenter else null,
-            description = row.description
+            description = row.description,
+            correctionId = row.correctionId
         )
     },
     number = invoice.number,
@@ -118,7 +119,7 @@ fun toSummary(invoice: Invoice): InvoiceSummary = InvoiceSummary(
     rows = invoice.rows.map { row ->
         InvoiceRowSummary(
             id = row.id!!,
-            child = allChildren.find { it.id == row.child.id }!!.toPersonBasic(),
+            child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
             amount = row.amount,
             unitPrice = row.unitPrice
         )

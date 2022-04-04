@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.AbsenceId
@@ -43,6 +44,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
@@ -1101,3 +1103,25 @@ VALUES (:guardianId, :childId)
         .bindKotlin(entry)
         .execute()
 }
+
+data class DevInvoiceCorrection(
+    val id: InvoiceCorrectionId = InvoiceCorrectionId(UUID.randomUUID()),
+    val headOfFamilyId: PersonId,
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val product: ProductKey,
+    val period: FiniteDateRange,
+    val amount: Int,
+    val unitPrice: Int,
+    val description: String,
+    val note: String
+)
+
+fun Database.Transaction.insertTestInvoiceCorrection(invoiceCorrection: DevInvoiceCorrection) = insertTestDataRow(
+    invoiceCorrection,
+    """
+INSERT INTO invoice_correction (id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
+VALUES (:id, :headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
+RETURNING id
+"""
+).let(::InvoiceCorrectionId)

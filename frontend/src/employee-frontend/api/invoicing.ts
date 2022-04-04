@@ -383,11 +383,7 @@ export async function getPersonInvoices(
           rows: json.rows.map((rowJson) => ({
             ...rowJson,
             periodStart: LocalDate.parseIso(rowJson.periodStart),
-            periodEnd: LocalDate.parseIso(rowJson.periodEnd),
-            child: {
-              ...rowJson.child,
-              dateOfBirth: LocalDate.parseIso(rowJson.child.dateOfBirth)
-            }
+            periodEnd: LocalDate.parseIso(rowJson.periodEnd)
           }))
         }))
       )
@@ -461,7 +457,11 @@ export async function updateInvoice(
   const body: Invoice = {
     ...invoice,
     headOfFamily: invoice.headOfFamily.id,
-    codebtor: invoice.codebtor?.id ?? null
+    codebtor: invoice.codebtor?.id ?? null,
+    rows: invoice.rows.map((row) => ({
+      ...row,
+      child: row.child.id
+    }))
   }
   return client
     .put<void>(`/invoices/${invoice.id}`, body)

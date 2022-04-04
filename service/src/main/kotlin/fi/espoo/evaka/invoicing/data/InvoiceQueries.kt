@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -40,7 +39,6 @@ val invoiceQueryBase =
         invoice.*,
         row.id as invoice_row_id,
         row.child,
-        row.date_of_birth,
         row.amount,
         row.unit_price,
         row.price,
@@ -48,7 +46,8 @@ val invoiceQueryBase =
         row.period_end as invoice_row_period_end,
         row.product,
         row.unit_id,
-        row.description
+        row.description,
+        row.correction_id
     FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
     """.trimIndent()
 
@@ -85,7 +84,6 @@ val invoiceDetailedQueryBase =
         codebtor.restricted_details_enabled as codebtor_restricted_details_enabled,
         row.id as invoice_row_id,
         row.child,
-        row.date_of_birth,
         row.amount,
         row.unit_price,
         row.price,
@@ -97,6 +95,7 @@ val invoiceDetailedQueryBase =
         row_care_area.sub_cost_center,
         row.saved_cost_center,
         row.description,
+        row.correction_id,
         child.date_of_birth as child_date_of_birth,
         child.first_name as child_first_name,
         child.last_name as child_last_name,
@@ -500,26 +499,26 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 invoice_id,
                 id,
                 child,
-                date_of_birth,
                 amount,
                 unit_price,
                 period_start,
                 period_end,
                 product,
                 unit_id,
-                description
+                description,
+                correction_id
             ) VALUES (
                 :invoice_id,
                 :id,
-                :child.id,
-                :child.dateOfBirth,
+                :child,
                 :amount,
                 :unitPrice,
                 :periodStart,
                 :periodEnd,
                 :product,
                 :unitId,
-                :description
+                :description,
+                :correctionId
             )
         """
 
@@ -551,17 +550,15 @@ val toInvoice = { rv: RowView ->
             listOf(
                 InvoiceRow(
                     id = rowId,
-                    child = ChildWithDateOfBirth(
-                        id = rv.mapColumn("child"),
-                        dateOfBirth = rv.mapColumn("date_of_birth")
-                    ),
+                    child = rv.mapColumn("child"),
                     amount = rv.mapColumn("amount"),
                     unitPrice = rv.mapColumn("unit_price"),
                     periodStart = rv.mapColumn("invoice_row_period_start"),
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
                     unitId = rv.mapColumn("unit_id"),
-                    description = rv.mapColumn("description")
+                    description = rv.mapColumn("description"),
+                    correctionId = rv.mapColumn("correction_id")
                 )
             )
         } ?: listOf(),
@@ -607,7 +604,8 @@ val toDetailedInvoice = { rv: RowView ->
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
                     savedCostCenter = rv.mapColumn("saved_cost_center"),
-                    description = rv.mapColumn("description")
+                    description = rv.mapColumn("description"),
+                    correctionId = rv.mapColumn("correction_id")
                 )
             )
         } ?: listOf(),

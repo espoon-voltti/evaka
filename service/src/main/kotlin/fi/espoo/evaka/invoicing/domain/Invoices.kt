@@ -7,8 +7,10 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -53,14 +55,15 @@ enum class InvoiceStatus {
 data class InvoiceRow(
     val id: InvoiceRowId?,
     @Nested
-    val child: ChildWithDateOfBirth,
+    val child: ChildId,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val product: ProductKey,
     val unitId: DaycareId,
-    val description: String = ""
+    val description: String = "",
+    val correctionId: InvoiceCorrectionId?
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice
@@ -101,7 +104,8 @@ data class InvoiceRowDetailed(
     val costCenter: String,
     val subCostCenter: String?,
     val savedCostCenter: String?,
-    val description: String = ""
+    val description: String,
+    val correctionId: InvoiceCorrectionId?
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice

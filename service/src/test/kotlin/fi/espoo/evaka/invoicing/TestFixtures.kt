@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -275,15 +276,16 @@ fun createVoucherValueDecisionFixture(
     finalCoPayment = coPayment + feeAlterations.sumOf { it.effect }
 )
 
-fun createInvoiceRowFixture(childId: ChildId, unitId: DaycareId) = InvoiceRow(
+fun createInvoiceRowFixture(childId: ChildId, unitId: DaycareId, amount: Int = 1, unitPrice: Int = 28900) = InvoiceRow(
     id = InvoiceRowId(UUID.randomUUID()),
-    child = ChildWithDateOfBirth(childId, LocalDate.of(2017, 1, 1)),
-    amount = 1,
-    unitPrice = 28900,
+    child = childId,
+    amount = amount,
+    unitPrice = unitPrice,
     product = ProductKey("DAYCARE"),
     unitId = unitId,
     periodStart = LocalDate.of(2019, 1, 1),
-    periodEnd = LocalDate.of(2019, 1, 31)
+    periodEnd = LocalDate.of(2019, 1, 31),
+    correctionId = null
 )
 
 fun createInvoiceFixture(
@@ -291,7 +293,7 @@ fun createInvoiceFixture(
     headOfFamilyId: PersonId,
     areaId: AreaId,
     number: Long? = null,
-    period: DateRange = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
+    period: FiniteDateRange = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
     rows: List<InvoiceRow>
 ) = Invoice(
     id = InvoiceId(UUID.randomUUID()),
@@ -301,6 +303,6 @@ fun createInvoiceFixture(
     headOfFamily = headOfFamilyId,
     codebtor = null,
     periodStart = period.start,
-    periodEnd = period.end!!,
+    periodEnd = period.end,
     rows = rows
 )

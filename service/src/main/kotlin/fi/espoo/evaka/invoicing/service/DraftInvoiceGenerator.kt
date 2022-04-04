@@ -433,11 +433,12 @@ class DraftInvoiceGenerator(
                 id = InvoiceRowId(UUID.randomUUID()),
                 periodStart = period.start,
                 periodEnd = period.end!!,
-                child = child,
+                child = child.id,
                 amount = amount,
                 unitPrice = price,
                 unitId = codes.unitId,
-                product = productProvider.mapToProduct(placement.type)
+                product = productProvider.mapToProduct(placement.type),
+                correctionId = null
             )
         )
     }
@@ -476,24 +477,26 @@ class DraftInvoiceGenerator(
         val initialRows = listOf(
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
-                child = child,
+                child = child.id,
                 periodStart = period.start,
                 periodEnd = period.end!!,
                 amount = amount,
                 unitPrice = unitPrice(price),
                 unitId = codes.unitId,
-                product = product
+                product = product,
+                correctionId = null
             )
         ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
                 periodStart = period.start,
                 periodEnd = period.end,
-                child = child,
+                child = child.id,
                 product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
                 unitId = codes.unitId,
                 amount = amount,
-                unitPrice = unitPrice(feeAlterationEffect)
+                unitPrice = unitPrice(feeAlterationEffect),
+                correctionId = null
             )
         } + surplusContractDays(
             period,
@@ -517,13 +520,14 @@ class DraftInvoiceGenerator(
         ) { refundProduct, refundAmount, refundUnitPrice ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
-                child = child,
+                child = child.id,
                 periodStart = period.start,
                 periodEnd = period.end,
                 amount = refundAmount,
                 unitPrice = refundUnitPrice,
                 unitId = codes.unitId,
-                product = refundProduct
+                product = refundProduct,
+                correctionId = null
             )
         }
         return withDailyModifiers + monthlyAbsenceDiscount(
@@ -532,13 +536,14 @@ class DraftInvoiceGenerator(
         ) { absenceProduct, absenceDiscount ->
             InvoiceRow(
                 id = InvoiceRowId(UUID.randomUUID()),
-                child = child,
+                child = child.id,
                 periodStart = period.start,
                 periodEnd = period.end,
                 product = absenceProduct,
                 unitId = codes.unitId,
                 amount = amount,
-                unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt()
+                unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt(),
+                correctionId = null
             )
         }
     }
@@ -568,25 +573,27 @@ class DraftInvoiceGenerator(
                     id = InvoiceRowId(UUID.randomUUID()),
                     periodStart = period.start,
                     periodEnd = period.end!!,
-                    child = child,
+                    child = child.id,
                     product = productProvider.contractSurplusDay,
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
+                    correctionId = null
                 )
             ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
                     periodStart = period.start,
                     periodEnd = period.end,
-                    child = child,
+                    child = child.id,
                     product = productProvider.mapToFeeAlterationProduct(
                         productProvider.contractSurplusDay,
                         feeAlterationType
                     ),
                     unitId = codes.unitId,
                     amount = surplusAttendanceDays,
-                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor)
+                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor),
+                    correctionId = null
                 )
             }
         } else listOf()
@@ -677,7 +684,7 @@ class DraftInvoiceGenerator(
             .flatMap { (child, rows) ->
                 val uniqueChildFees = feeDecisions
                     .flatMap { it.children }
-                    .filter { it.child.id == child.id }
+                    .filter { it.child.id == child }
                     .map { it.finalFee }
                     .distinct()
 

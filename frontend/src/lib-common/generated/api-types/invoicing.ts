@@ -409,7 +409,8 @@ export interface InvoicePayload {
 */
 export interface InvoiceRow {
   amount: number
-  child: ChildWithDateOfBirth
+  child: UUID
+  correctionId: UUID | null
   description: string
   id: UUID | null
   periodEnd: LocalDate
@@ -426,6 +427,7 @@ export interface InvoiceRow {
 export interface InvoiceRowDetailed {
   amount: number
   child: PersonDetailed
+  correctionId: UUID | null
   costCenter: string
   description: string
   id: UUID

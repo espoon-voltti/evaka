@@ -35,13 +35,16 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
@@ -113,7 +116,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(testDaycare.id, invoiceRow.unitId)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
@@ -140,7 +143,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(1500, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -166,7 +169,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(8700, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -205,14 +208,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(7300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(5800, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -241,14 +244,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(4400, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child.id)
+                assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -277,14 +280,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(2300, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child.id)
+                assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(800, invoiceRow.unitPrice)
@@ -324,7 +327,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -336,7 +339,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(2900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -377,7 +380,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(5800, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -429,7 +432,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -487,14 +490,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -562,14 +565,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(40103, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child.id)
+                assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
@@ -631,21 +634,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(5256, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(18, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(23652, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8, invoiceRow.unitPrice)
@@ -707,21 +710,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(28900, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(6880, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(16, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(22016, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(4, invoiceRow.unitPrice)
@@ -783,14 +786,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(28900, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
                 assertEquals(7225, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(15, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
@@ -852,21 +855,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(39930, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child.id)
+                assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
                 assertEquals(3295, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
-                assertEquals(testChild_2.id, invoiceRow.child.id)
+                assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(455, invoiceRow.unitPrice)
@@ -916,14 +919,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(23120, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -985,14 +988,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(32420, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1006,7 +1009,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             }
 
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1062,14 +1065,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(1445, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
@@ -1128,7 +1131,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -1182,7 +1185,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             assertEquals(6570, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(placementPeriod.start, invoiceRow.periodStart)
                 assertEquals(placementPeriod.end, invoiceRow.periodEnd)
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
@@ -3545,6 +3548,75 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
         }
     }
 
+    @Test
+    fun `invoice corrections are applied to invoices when generation is done multiple times`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(decisions)
+        db.transaction {
+            it.insertTestInvoiceCorrection(
+                DevInvoiceCorrection(
+                    headOfFamilyId = testAdult_1.id,
+                    childId = testChild_1.id,
+                    amount = 1,
+                    unitPrice = -28900,
+                    period = FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2018, 12, 31)),
+                    unitId = testDaycare.id,
+                    product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                    description = "",
+                    note = ""
+                )
+            )
+        }
+
+        fun assertResult(result: List<Invoice>) {
+            assertEquals(1, result.size)
+            result.first().let { invoice ->
+                assertEquals(testAdult_1.id, invoice.headOfFamily)
+                assertEquals(0, invoice.totalPrice)
+                assertEquals(2, invoice.rows.size)
+                invoice.rows[0].let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(28900, invoiceRow.unitPrice)
+                    assertEquals(28900, invoiceRow.price)
+                }
+                invoice.rows[1].let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(-28900, invoiceRow.unitPrice)
+                    assertEquals(-28900, invoiceRow.price)
+                }
+            }
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        assertResult(db.read(getAllInvoices))
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+        assertResult(db.read(getAllInvoices))
+    }
+
     private fun initByPeriodAndPlacementType(
         period: DateRange,
         placementType: PlacementType,
@@ -3729,7 +3801,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
             .map(toInvoice)
             .list()
             .let(::flatten)
-            .map { it.copy(rows = it.rows.sortedByDescending { row -> row.child.dateOfBirth }) }
     }
 
     private fun datesBetween(start: LocalDate, endInclusive: LocalDate?): List<LocalDate> {
