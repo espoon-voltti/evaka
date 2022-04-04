@@ -9,11 +9,13 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.Duration
 import java.time.LocalDate
 
 val logger = KotlinLogging.logger {}
 
 fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
+    tx.setStatementTimeout(Duration.ofMinutes(10))
     val deletedPeople = tx.createUpdate(
         """
 WITH people_with_no_archive_data AS (
