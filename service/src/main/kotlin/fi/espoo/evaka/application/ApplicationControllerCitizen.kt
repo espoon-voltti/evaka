@@ -170,6 +170,7 @@ class ApplicationControllerCitizen(
     fun getChildPlacementStatusByApplicationType(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
@@ -180,7 +181,7 @@ class ApplicationControllerCitizen(
             dbc.read { tx ->
                 ApplicationType.values()
                     .map { type ->
-                        type to tx.activePlacementExists(childId = childId, type = type)
+                        type to tx.activePlacementExists(childId = childId, type = type, today = evakaClock.today())
                     }
                     .toMap()
             }
