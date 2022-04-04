@@ -24,6 +24,8 @@ private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, t
 data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> {
     override fun merge(other: IsCitizen): IsCitizen = IsCitizen(this.allowWeakLogin || other.allowWeakLogin)
 
+    fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
+
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
             is AuthenticatedUser.Citizen -> user.authLevel
@@ -34,7 +36,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
     }
     private class Deferred(private val authLevel: CitizenAuthLevel) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =
-            if (authLevel == CitizenAuthLevel.STRONG || params.allowWeakLogin) {
+            if (params.isPermittedAuthLevel(authLevel)) {
                 AccessControlDecision.Permitted(params)
             } else {
                 AccessControlDecision.None
@@ -43,14 +45,14 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     fun any() = object : StaticActionRule {
         override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
-            is AuthenticatedUser.Citizen -> user.authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
+            is AuthenticatedUser.Citizen -> isPermittedAuthLevel(user.authLevel)
             else -> false
         }
     }
 
     fun self() = object : TargetActionRule<PersonId> {
         override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
-            is AuthenticatedUser.Citizen -> if (user.id == target.raw && (user.authLevel == CitizenAuthLevel.STRONG || allowWeakLogin)) {
+            is AuthenticatedUser.Citizen -> if (user.id == target.raw && isPermittedAuthLevel(user.authLevel)) {
                 AccessControlDecision.Permitted(this@IsCitizen)
             } else AccessControlDecision.None
             else -> AccessControlDecision.None

@@ -69,7 +69,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
                     """
 SELECT role
 FROM daycare d
-JOIN daycare_acl_view acl
+JOIN daycare_acl acl
 ON d.id = acl.daycare_id
 WHERE :pilotFeature = ANY(d.enabled_pilot_features)
 AND employee_id = :userId

@@ -89,7 +89,7 @@ class AccessControl(
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.StaticAction) = checkPermissionFor(user, action).assert()
     fun hasPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): Boolean = checkPermissionFor(user, action).isPermitted()
-    private fun checkPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): AccessControlDecision {
+    fun checkPermissionFor(user: AuthenticatedUser, action: Action.StaticAction): AccessControlDecision {
         if (user.isAdmin) {
             return AccessControlDecision.PermittedToAdmin
         }

@@ -24,6 +24,11 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     override fun merge(other: IsMobile): IsMobile =
         IsMobile(this.requirePinLogin && other.requirePinLogin)
 
+    fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
+        MobileAuthLevel.PIN_LOGIN -> true
+        MobileAuthLevel.DEFAULT -> !requirePinLogin
+    }
+
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
             is AuthenticatedUser.MobileDevice -> filter(tx, MobileDeviceId(user.id), targets).associateWith { Deferred(user.authLevel) }
@@ -34,18 +39,16 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     }
     private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =
-            if (params.requirePinLogin && authLevel != MobileAuthLevel.PIN_LOGIN) {
-                AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
-            } else {
+            if (params.isPermittedAuthLevel(authLevel)) {
                 AccessControlDecision.Permitted(params)
+            } else {
+                AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
             }
     }
 
     fun any() = object : StaticActionRule {
         override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
-            is AuthenticatedUser.MobileDevice -> if (requirePinLogin) {
-                user.authLevel == MobileAuthLevel.PIN_LOGIN
-            } else true
+            is AuthenticatedUser.MobileDevice -> isPermittedAuthLevel(user.authLevel)
             else -> false
         }
     }
@@ -130,11 +133,11 @@ AND img.id = ANY(:ids)
         Query<GroupId> { tx, mobileId, ids ->
             tx.createQuery(
                 """
-SELECT daycare_group_id AS id
-FROM daycare_group_acl_view
-WHERE employee_id = :userId
-AND role = 'MOBILE'
-AND daycare_group_id = ANY(:ids)
+SELECT g.id
+FROM daycare_group g
+JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
+WHERE acl.mobile_device_id = :userId
+AND g.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())
@@ -149,10 +152,10 @@ AND daycare_group_id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT gn.id
-FROM daycare_group_acl_view
-JOIN group_note gn ON gn.group_id = daycare_group_acl_view.daycare_group_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM group_note gn
+JOIN daycare_group g ON gn.group_id = g.id
+JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
+WHERE acl.mobile_device_id = :userId
 AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
@@ -168,9 +171,8 @@ AND gn.id = ANY(:ids)
             tx.createQuery(
                 """
 SELECT daycare_id AS id
-FROM daycare_acl_view
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM mobile_device_daycare_acl_view
+WHERE mobile_device_id = :userId
 AND daycare_id = ANY(:ids)
                 """.trimIndent()
             )

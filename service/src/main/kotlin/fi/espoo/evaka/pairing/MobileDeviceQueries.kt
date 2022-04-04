@@ -20,11 +20,11 @@ SELECT
     md.id, md.name, md.employee_id,
     CASE
         WHEN md.unit_id IS NOT NULL THEN ARRAY[md.unit_id]
-        ELSE coalesce(array_agg(acv.daycare_id) FILTER (WHERE acv.daycare_id IS NOT NULL), '{}')
+        ELSE coalesce(array_agg(acl.daycare_id) FILTER (WHERE acl.daycare_id IS NOT NULL), '{}')
     END AS unit_ids,
     md.employee_id IS NOT NULL AS personal_device
 FROM mobile_device md
-LEFT JOIN daycare_acl_view acv ON md.employee_id = acv.employee_id
+LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
 WHERE id = :id
 GROUP BY md.id, md.name, md.employee_id
 """

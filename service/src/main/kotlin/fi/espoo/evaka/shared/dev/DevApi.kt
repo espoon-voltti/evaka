@@ -1231,7 +1231,7 @@ data class DevBackupCare(
     val id: BackupCareId? = null,
     val childId: ChildId,
     val unitId: DaycareId,
-    val groupId: GroupId?,
+    val groupId: GroupId? = null,
     val period: FiniteDateRange
 )
 

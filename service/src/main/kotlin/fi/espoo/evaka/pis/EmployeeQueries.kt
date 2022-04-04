@@ -135,10 +135,10 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
-        FROM daycare_acl_view dav
-        JOIN daycare d ON dav.daycare_id = d.id
-        WHERE dav.employee_id = employee.id
+        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        FROM daycare_acl acl
+        JOIN daycare d ON acl.daycare_id = d.id
+        WHERE acl.employee_id = employee.id
     ) AS daycare_roles
 FROM employee
 WHERE id = :id
@@ -200,10 +200,10 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
-        FROM daycare_acl_view dav
-        JOIN daycare d ON dav.daycare_id = d.id
-        WHERE dav.employee_id = employee.id
+        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        FROM daycare_acl acl
+        JOIN daycare d ON acl.daycare_id = d.id
+        WHERE acl.employee_id = employee.id
     ) AS daycare_roles,
     count(*) OVER () AS count
 FROM employee
