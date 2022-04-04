@@ -162,6 +162,7 @@ export interface DepartureRequest {
 */
 export interface EmployeeAttendance {
   attendances: Attendance[]
+  currentOccupancyCoefficient: number
   employeeId: UUID
   firstName: string
   lastName: string

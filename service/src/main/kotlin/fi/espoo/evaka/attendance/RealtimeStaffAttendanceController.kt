@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @RestController
@@ -50,12 +51,13 @@ class RealtimeStaffAttendanceController(
                         employeeId = employeeId,
                         firstName = data[0].firstName,
                         lastName = data[0].lastName,
+                        currentOccupancyCoefficient = data[0].currentOccupancyCoefficient ?: BigDecimal.ZERO,
                         attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed, att.occupancyCoefficient) }
                     )
                 }
                 val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)
                     .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
-                    .map { emp -> EmployeeAttendance(emp.id, emp.firstName, emp.lastName, listOf()) }
+                    .map { emp -> EmployeeAttendance(emp.id, emp.firstName, emp.lastName, emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf()) }
                 StaffAttendanceResponse(
                     staff = staffWithAttendance + staffWithoutAttendance,
                     extraAttendances = it.getExternalStaffAttendancesByDateRange(unitId, range)

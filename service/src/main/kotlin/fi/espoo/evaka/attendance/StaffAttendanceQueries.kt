@@ -175,6 +175,7 @@ data class RawAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
+    val currentOccupancyCoefficient: BigDecimal?,
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
@@ -183,10 +184,20 @@ data class RawAttendance(
 fun Database.Read.getStaffAttendancesForDateRange(unitId: DaycareId, range: FiniteDateRange): List<RawAttendance> =
     createQuery(
         """ 
-SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.occupancy_coefficient, emp.first_name, emp.last_name 
+SELECT
+    sa.id,
+    sa.employee_id,
+    sa.arrived,
+    sa.departed,
+    sa.group_id,
+    sa.occupancy_coefficient,
+    emp.first_name,
+    emp.last_name,
+    soc.coefficient AS currentOccupancyCoefficient
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
+LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
 WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
         """.trimIndent()
     )
@@ -197,22 +208,24 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .list()
 
 @ExcludeCodeGen
-data class RawEmployee(
+data class RawAttendanceEmployee(
     val id: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val currentOccupancyCoefficient: BigDecimal?,
 )
 
-fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<RawEmployee> = createQuery(
+fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<RawAttendanceEmployee> = createQuery(
     """
-SELECT DISTINCT dacl.employee_id as id, e.first_name, e.last_name
+SELECT DISTINCT dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient
 FROM daycare_acl dacl
-JOIN employee e on e.id = dacl.employee_id
+JOIN employee emp on emp.id = dacl.employee_id
+LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dacl.daycare_id AND soc.employee_id = emp.id
 WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER')
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .mapTo<RawEmployee>()
+    .mapTo<RawAttendanceEmployee>()
     .list()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, range: FiniteDateRange): List<ExternalAttendance> = createQuery(
