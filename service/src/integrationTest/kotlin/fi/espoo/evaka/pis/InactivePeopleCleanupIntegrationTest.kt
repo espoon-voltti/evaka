@@ -6,18 +6,28 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.incomestatement.IncomeStatementType
+import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.messaging.createPersonMessageAccount
+import fi.espoo.evaka.messaging.insertMessage
+import fi.espoo.evaka.messaging.insertMessageContent
+import fi.espoo.evaka.messaging.insertRecipients
+import fi.espoo.evaka.messaging.insertThread
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertIncomeStatement
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -234,6 +244,44 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
                     42
                 )
             )
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult with received messages is cleaned up`() {
+        db.transaction { tx ->
+            val supervisorId = EmployeeId(UUID.randomUUID())
+            tx.insertTestEmployee(DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"))
+            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
+
+            tx.insertPerson(testAdult_1)
+            val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
+
+            val contentId = tx.insertMessageContent("content", employeeAccount)
+            val threadId = tx.insertThread(MessageType.MESSAGE, "title")
+            val messageId = tx.insertMessage(contentId, threadId, employeeAccount, listOf("recipient name"))
+            tx.insertRecipients(setOf(personAccount), messageId)
+        }
+
+        assertCleanedUpPeople(testDate, setOf(testAdult_1.id))
+    }
+
+    @Test
+    fun `adult with sent messages is not cleaned up`() {
+        db.transaction { tx ->
+            val supervisorId = EmployeeId(UUID.randomUUID())
+            tx.insertTestEmployee(DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"))
+            val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
+
+            tx.insertPerson(testAdult_1)
+            val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
+
+            val contentId = tx.insertMessageContent("content", personAccount)
+            val threadId = tx.insertThread(MessageType.MESSAGE, "title")
+            val messageId = tx.insertMessage(contentId, threadId, personAccount, listOf("employee name"))
+            tx.insertRecipients(setOf(employeeAccount), messageId)
         }
 
         assertCleanedUpPeople(testDate, setOf())

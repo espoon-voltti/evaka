@@ -218,3 +218,4 @@ V217__guardian_blocklist.sql
 V218__invoice_correction.sql
 V219__add_occupancy_coefficient_under_3y.sql
 V220__staff_occupancy_coefficient.sql
+V221__message_recipient_foreign_key_on_delete_cascade.sql
