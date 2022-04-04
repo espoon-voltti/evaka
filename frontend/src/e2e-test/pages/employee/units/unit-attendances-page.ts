@@ -111,6 +111,12 @@ export class UnitAttendancesPage {
 
     return new ReservationModal(this.page.find('[data-qa="modal"]'))
   }
+
+  async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
+    await this.page
+      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
+      .click()
+  }
 }
 
 export class ReservationModal extends Modal {

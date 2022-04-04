@@ -175,6 +175,7 @@ describe('Employee - Units', () => {
 
     const unitPage = await UnitPage.openUnit(page, unitFixture.id)
     const unitAttendancePage = await unitPage.openAttendancesPage()
+    await unitAttendancePage.selectPeriod('3 months')
     await unitAttendancePage.occupancies.assertConfirmed(
       'Min. 14,3 %',
       'Max. 14,3 %'
