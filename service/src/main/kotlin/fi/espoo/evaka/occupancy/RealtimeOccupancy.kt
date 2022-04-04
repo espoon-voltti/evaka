@@ -109,11 +109,11 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
     FROM child_attendance ca
     JOIN daycare u ON u.id = ca.unit_id
     JOIN person ch ON ch.id = ca.child_id
-    LEFT JOIN placement pl on pl.child_id = ca.child_id
+    LEFT JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ca.date
     LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ca.date
     LEFT JOIN service_need_option sno on sn.option_id = sno.id
     LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
-    LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
+    LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date
     WHERE ca.unit_id = :unitId AND ca.date = :date
     """.trimIndent()
 )
