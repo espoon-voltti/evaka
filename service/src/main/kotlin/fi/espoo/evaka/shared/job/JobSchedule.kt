@@ -45,6 +45,10 @@ data class ScheduledJobSettings(
                 enabled = true,
                 schedule = JobSchedule.daily(LocalTime.of(0, 0))
             )
+            ScheduledJob.EndOfDayReservationUpkeep -> ScheduledJobSettings(
+                enabled = true,
+                schedule = JobSchedule.daily(LocalTime.of(0, 0))
+            )
             ScheduledJob.KoskiUpdate -> ScheduledJobSettings(
                 enabled = false,
                 schedule = JobSchedule.daily(LocalTime.of(0, 0)),
