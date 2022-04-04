@@ -48,9 +48,7 @@ export default class ChildInformationPage {
       .find('[data-qa="person-details-section"][data-isloading="false"]')
       .waitUntilVisible()
     await this.page
-      .find(
-        '[data-qa="additional-information-section"][data-isloading="false"]'
-      )
+      .find('[data-qa="person-guardians-collapsible"][data-isloading="false"]')
       .waitUntilVisible()
   }
 

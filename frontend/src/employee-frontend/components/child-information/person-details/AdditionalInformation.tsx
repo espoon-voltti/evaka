@@ -5,7 +5,6 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { isLoading } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -84,10 +83,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   }
 
   return (
-    <div
-      data-qa="additional-information-section"
-      data-isloading={isLoading(additionalInformation)}
-    >
+    <div data-qa="additional-information-section">
       <FlexRow justifyContent="space-between">
         <H4>{i18n.childInformation.additionalInformation.title}</H4>
         <RequireRole
