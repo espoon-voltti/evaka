@@ -30,13 +30,6 @@ export interface Checked {
   [id: string]: boolean
 }
 
-export interface PageState {
-  checked: Checked
-  toggleChecked: (id: string) => void
-  checkIds: (ids: string[]) => void
-  clearChecked: () => void
-}
-
 interface FeeDecisionSearchFilters {
   area: string[]
   unit?: string
