@@ -61,6 +61,7 @@ class OccupancyController(
     fun getOccupancyPeriods(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
@@ -71,7 +72,7 @@ class OccupancyController(
 
         val occupancies = db.connect { dbc ->
             dbc.read {
-                it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
+                it.calculateOccupancyPeriods(evakaClock.today(), unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
             }
         }
 
@@ -131,7 +132,7 @@ class OccupancyController(
 
                 val (threeMonths, sixMonths) = calculateSpeculatedMaxOccupancies(
                     tx,
-                    LocalDate.now(),
+                    evakaClock.today(),
                     acl.getAuthorizedUnits(user),
                     unitId,
                     speculatedPlacements,
@@ -152,6 +153,7 @@ class OccupancyController(
     fun getOccupancyPeriodsOnGroups(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
@@ -163,6 +165,7 @@ class OccupancyController(
         val occupancies = db.connect { dbc ->
             dbc.read {
                 it.calculateOccupancyPeriodsGroupLevel(
+                    evakaClock.today(),
                     unitId,
                     FiniteDateRange(from, to),
                     type,
@@ -213,6 +216,7 @@ data class OccupancyResponseSpeculated(
  * - assistance need coefficient = X, or default = 1.0
  */
 fun Database.Read.calculateOccupancyPeriods(
+    today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
@@ -223,11 +227,12 @@ fun Database.Read.calculateOccupancyPeriods(
     }
 
     return reduceDailyOccupancyValues(
-        calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, aclAuth, unitId = unitId)
+        calculateDailyUnitOccupancyValues(today, period, type, aclAuth, unitId = unitId)
     ).flatMap { (_, values) -> values }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
+    today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
@@ -238,7 +243,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     }
 
     return reduceDailyOccupancyValues(
-        calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, aclAuth, unitId = unitId)
+        calculateDailyGroupOccupancyValues(today, period, type, aclAuth, unitId = unitId)
     ).flatMap { (groupKey, values) ->
         values.map { value ->
             OccupancyPeriodGroupLevel(

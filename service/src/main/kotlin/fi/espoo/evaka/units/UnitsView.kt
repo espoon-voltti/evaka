@@ -141,8 +141,8 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
-                    val unitOccupancies = getUnitOccupancies(tx, unitId, period, acl.getAuthorizedUnits(user))
-                    val groupOccupancies = getGroupOccupancies(tx, unitId, period, acl.getAuthorizedUnits(user))
+                    val unitOccupancies = getUnitOccupancies(tx, evakaClock.today(), unitId, period, acl.getAuthorizedUnits(user))
+                    val groupOccupancies = getGroupOccupancies(tx, evakaClock.today(), unitId, period, acl.getAuthorizedUnits(user))
                     val placementProposals = tx.getPlacementPlans(
                         evakaClock.today(),
                         unitId,
@@ -211,21 +211,23 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
+    today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
     aclAuth: AclAuthorization
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED, aclAuth)),
+        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(today, unitId, period, OccupancyType.PLANNED, aclAuth)),
         confirmed = getOccupancyResponse(
             tx.calculateOccupancyPeriods(
+                today,
                 unitId,
                 period,
                 OccupancyType.CONFIRMED,
                 aclAuth
             )
         ),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED, aclAuth)),
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(today, unitId, period, OccupancyType.REALIZED, aclAuth)),
         realtime = period.start.takeIf { it == period.end }?.let { date ->
             RealtimeOccupancy(
                 childAttendances = tx.getChildOccupancyAttendances(unitId, date),
@@ -250,6 +252,7 @@ data class GroupOccupancies(
 
 private fun getGroupOccupancies(
     tx: Database.Read,
+    today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
     aclAuth: AclAuthorization
@@ -257,6 +260,7 @@ private fun getGroupOccupancies(
     return GroupOccupancies(
         confirmed = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
+                today,
                 unitId,
                 period,
                 OccupancyType.CONFIRMED,
@@ -265,6 +269,7 @@ private fun getGroupOccupancies(
         ),
         realized = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
+                today,
                 unitId,
                 period,
                 OccupancyType.REALIZED,
