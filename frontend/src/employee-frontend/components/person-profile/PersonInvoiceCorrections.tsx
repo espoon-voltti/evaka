@@ -212,8 +212,8 @@ const ChildSection = React.memo(function ChildSection({
             <Th>{i18n.invoice.form.rows.unitId}</Th>
             <Th>{i18n.invoice.form.rows.daterange}</Th>
             <Th>{i18n.invoice.form.rows.amount}</Th>
-            <Th>{i18n.invoice.form.rows.unitPrice}</Th>
-            <Th>{i18n.invoice.form.rows.price}</Th>
+            <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
+            <Th align="right">{i18n.invoice.form.rows.price}</Th>
             <Th />
           </Tr>
         </Thead>

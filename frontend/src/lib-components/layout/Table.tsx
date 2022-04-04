@@ -27,6 +27,7 @@ interface ThProps {
   sticky?: boolean
   top?: string
   hidden?: boolean
+  align?: 'left' | 'right'
 }
 
 export const Th = styled.th<ThProps>`
@@ -40,7 +41,7 @@ export const Th = styled.th<ThProps>`
   border-color: ${(p) => p.theme.colors.grayscale.g15};
   border-width: 0 0 1px;
   padding: ${defaultMargins.s};
-  text-align: left;
+  text-align: ${({ align }) => align ?? 'left'};
   position: ${(p) => (p.sticky ? 'sticky' : 'static')};
   top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
   background: ${(p) => (p.sticky ? p.theme.colors.grayscale.g0 : 'none')};
