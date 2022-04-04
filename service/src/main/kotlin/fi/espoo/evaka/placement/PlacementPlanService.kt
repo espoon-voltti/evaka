@@ -47,7 +47,7 @@ class PlacementPlanService(
             throw Conflict("Cannot get placement plan drafts for application with status ${application.status}")
         }
 
-        val type = derivePlacementType(application)
+        val type = application.derivePlacementType()
         val form = application.form
         val child = tx.getPlacementDraftChild(application.childId)
             ?: throw NotFound("Cannot find child with id ${application.childId} to application ${application.id}")
@@ -131,7 +131,7 @@ class PlacementPlanService(
         application: ApplicationDetails,
         placementPlan: DaycarePlacementPlan
     ) =
-        tx.createPlacementPlan(application.id, derivePlacementType(application), placementPlan)
+        tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
 
     fun getPlacementTypePeriods(
         tx: Database.Read,
@@ -227,7 +227,7 @@ class PlacementPlanService(
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange?
     ): List<Placement> {
-        val placementType = derivePlacementType(application)
+        val placementType = application.derivePlacementType()
 
         val allowPreschool = placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
         val allowPreschoolDaycare = placementType in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
@@ -285,17 +285,4 @@ class PlacementPlanService(
             .map { rs, _ -> rs.getBoolean("is_svebi") }
             .first()
     }
-
-    private fun derivePlacementType(application: ApplicationDetails): PlacementType =
-        when (application.type) {
-            ApplicationType.PRESCHOOL -> {
-                if (application.form.preferences.preparatory) {
-                    if (application.form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE else PlacementType.PREPARATORY
-                } else {
-                    if (application.form.preferences.serviceNeed != null) PlacementType.PRESCHOOL_DAYCARE else PlacementType.PRESCHOOL
-                }
-            }
-            ApplicationType.DAYCARE -> if (application.form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME else PlacementType.DAYCARE
-            ApplicationType.CLUB -> PlacementType.CLUB
-        }
 }

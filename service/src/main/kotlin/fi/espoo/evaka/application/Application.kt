@@ -108,7 +108,19 @@ data class ApplicationDetails(
     val additionalDaycareApplication: Boolean,
     val hideFromGuardian: Boolean,
     val attachments: List<ApplicationAttachment>
-)
+) {
+    fun derivePlacementType(): PlacementType = when (type) {
+        ApplicationType.PRESCHOOL -> {
+            if (form.preferences.preparatory) {
+                if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE else PlacementType.PREPARATORY
+            } else {
+                if (form.preferences.serviceNeed != null) PlacementType.PRESCHOOL_DAYCARE else PlacementType.PRESCHOOL
+            }
+        }
+        ApplicationType.DAYCARE -> if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME else PlacementType.DAYCARE
+        ApplicationType.CLUB -> PlacementType.CLUB
+    }
+}
 
 data class ApplicationAttachment(
     val id: AttachmentId,
