@@ -68,6 +68,7 @@ data class EmployeeAttendance(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>
 )
 

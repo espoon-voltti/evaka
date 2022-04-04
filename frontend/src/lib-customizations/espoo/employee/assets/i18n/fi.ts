@@ -1651,7 +1651,9 @@ export const fi = {
         serviceTime: 'Sopimusaika',
         attendanceTime: 'Saapumis-/lähtöaika',
         hhmm: 'tt:mm'
-      }
+      },
+      affectsOccupancy: 'Lasketaan käyttöasteeseen',
+      doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen'
     },
     error: {
       placement: {

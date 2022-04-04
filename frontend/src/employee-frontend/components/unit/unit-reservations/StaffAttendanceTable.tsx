@@ -23,10 +23,14 @@ import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { validateTimeRange } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { Table, Tbody } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
@@ -92,13 +96,14 @@ export default React.memo(function StaffAttendanceTable({
     <Table>
       <AttendanceTableHeader operationalDays={operationalDays} />
       <Tbody>
-        {staffRows.map(({ attendances, employeeId, name }, index) => (
+        {staffRows.map((row, index) => (
           <AttendanceRow
-            key={`${employeeId}-${index}`}
+            key={`${row.employeeId}-${index}`}
             rowIndex={index}
-            name={name}
+            isPositiveOccupancyCoefficient={row.currentOccupancyCoefficient > 0}
+            name={row.name}
             operationalDays={operationalDays}
-            attendances={attendances}
+            attendances={row.attendances}
             saveAttendance={saveAttendance}
           />
         ))}
@@ -106,6 +111,9 @@ export default React.memo(function StaffAttendanceTable({
           <AttendanceRow
             key={`${row.name}-${index}`}
             rowIndex={index}
+            isPositiveOccupancyCoefficient={
+              row.attendances[0].occupancyCoefficient > 0
+            }
             name={row.name}
             operationalDays={operationalDays}
             attendances={row.attendances}
@@ -116,14 +124,6 @@ export default React.memo(function StaffAttendanceTable({
     </Table>
   )
 })
-
-interface AttendanceRowProps extends BaseProps {
-  rowIndex: number
-  name: string
-  operationalDays: OperationalDay[]
-  attendances: Attendance[]
-  saveAttendance?: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
-}
 
 type TimeRangeWithErrorsAndIds = TimeRangeWithErrors & {
   id?: UUID
@@ -144,13 +144,24 @@ const emptyTimeRange: TimeRangeWithErrorsAndIds = {
   groupId: undefined
 }
 
+interface AttendanceRowProps extends BaseProps {
+  rowIndex: number
+  isPositiveOccupancyCoefficient: boolean
+  name: string
+  operationalDays: OperationalDay[]
+  attendances: Attendance[]
+  saveAttendance?: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+}
+
 const AttendanceRow = React.memo(function AttendanceRow({
   rowIndex,
+  isPositiveOccupancyCoefficient,
   name,
   operationalDays,
   attendances,
   saveAttendance
 }: AttendanceRowProps) {
+  const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
   const [values, setValues] = useState<
     Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndIds[] }>
@@ -225,7 +236,25 @@ const AttendanceRow = React.memo(function AttendanceRow({
   return (
     <DayTr>
       <NameTd partialRow={false} rowIndex={rowIndex}>
-        <NameWrapper>{name}</NameWrapper>
+        <FixedSpaceRow spacing="xs">
+          <Tooltip
+            tooltip={
+              isPositiveOccupancyCoefficient
+                ? i18n.unit.attendanceReservations.affectsOccupancy
+                : i18n.unit.attendanceReservations.doesNotAffectOccupancy
+            }
+            position="bottom"
+            width="large"
+          >
+            <RoundIcon
+              content="K"
+              active={isPositiveOccupancyCoefficient}
+              color={colors.accents.a3emerald}
+              size="s"
+            />
+          </Tooltip>
+          <NameWrapper>{name}</NameWrapper>
+        </FixedSpaceRow>
       </NameTd>
       {values.map(({ date, timeRanges }) => (
         <DayTd
