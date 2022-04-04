@@ -397,7 +397,7 @@ JOIN placement pl ON sn.placement_id = pl.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
-WHERE sn.placement_id = ANY(:placementIds) AND ch.date_of_birth IS NOT NULL
+WHERE sn.placement_id = ANY(:placementIds)
 """
     )
         .bind("placementIds", placements.map { it.placementId }.toList().toTypedArray())
