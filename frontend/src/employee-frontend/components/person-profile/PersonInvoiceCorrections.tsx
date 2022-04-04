@@ -35,6 +35,7 @@ import { faChild } from 'lib-icons'
 
 import {
   createInvoiceCorrection,
+  deleteInvoiceCorrection,
   getInvoiceCodes,
   getPersonInvoiceCorrections
 } from '../../api/invoicing'
@@ -120,6 +121,11 @@ export default React.memo(function PersonInvoiceCorrections({
     reloadCorrections()
   }, [cancelEditing, reloadCorrections])
 
+  const deleteCorrection = useCallback(
+    (id: UUID) => void deleteInvoiceCorrection(id).then(reloadCorrections),
+    [reloadCorrections]
+  )
+
   if (!featureFlags.experimental?.invoiceCorrections) {
     return null
   }
@@ -153,6 +159,7 @@ export default React.memo(function PersonInvoiceCorrections({
                   save={save}
                   onSaveSuccess={onSaveSuccess}
                   addNewRow={addNewRow}
+                  deleteCorrection={deleteCorrection}
                 />
               ))
             )}
@@ -175,7 +182,8 @@ const ChildSection = React.memo(function ChildSection({
   cancelEditing,
   save,
   onSaveSuccess,
-  addNewRow
+  addNewRow,
+  deleteCorrection
 }: {
   i18n: Translations
   child: PersonJSON
@@ -189,6 +197,7 @@ const ChildSection = React.memo(function ChildSection({
   save: (() => Promise<Result<void>>) | undefined
   onSaveSuccess: () => void
   addNewRow: (childId: UUID) => void
+  deleteCorrection: (id: UUID) => void
 }) {
   return (
     <FixedSpaceColumn spacing="s">
@@ -224,7 +233,11 @@ const ChildSection = React.memo(function ChildSection({
               unitDetails={unitDetails}
               editable={false}
               update={() => undefined}
-              remove={undefined}
+              remove={
+                !correction.partiallyInvoiced
+                  ? () => deleteCorrection(correction.id)
+                  : undefined
+              }
             />
           ))}
           {editState?.childId === child.id && (

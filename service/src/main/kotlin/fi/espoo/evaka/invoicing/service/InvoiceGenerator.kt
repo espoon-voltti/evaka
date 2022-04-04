@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.invoicing.controller.InvoiceCorrection
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
@@ -31,6 +30,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -217,24 +217,36 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
             }
     }
 
-    data class InvoicedTotal(
+    private data class InvoicedTotal(
         val amount: Int,
         val unitPrice: Int,
         val periodStart: LocalDate
     )
 
-    private fun InvoiceCorrection.toInvoiceRow() = InvoiceRow(
-        id = InvoiceRowId(UUID.randomUUID()),
-        child = childId,
-        amount = amount,
-        unitPrice = unitPrice,
-        periodStart = period.start,
-        periodEnd = period.end,
-        product = product,
-        unitId = unitId,
-        description = description,
-        correctionId = id
-    )
+    private data class InvoiceCorrection(
+        val id: InvoiceCorrectionId,
+        val headOfFamilyId: PersonId,
+        val childId: ChildId,
+        val unitId: DaycareId,
+        val product: ProductKey,
+        val period: FiniteDateRange,
+        val amount: Int,
+        val unitPrice: Int,
+        val description: String
+    ) {
+        fun toInvoiceRow() = InvoiceRow(
+            id = InvoiceRowId(UUID.randomUUID()),
+            child = childId,
+            amount = amount,
+            unitPrice = unitPrice,
+            periodStart = period.start,
+            periodEnd = period.end,
+            product = product,
+            unitId = unitId,
+            description = description,
+            correctionId = id
+        )
+    }
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {

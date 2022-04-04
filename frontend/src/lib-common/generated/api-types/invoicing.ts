@@ -350,6 +350,7 @@ export interface InvoiceCorrection {
   headOfFamilyId: UUID
   id: UUID
   note: string
+  partiallyInvoiced: boolean
   period: FiniteDateRange
   product: string
   unitId: UUID

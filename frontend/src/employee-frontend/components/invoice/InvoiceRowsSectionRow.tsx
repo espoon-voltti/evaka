@@ -170,19 +170,21 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {remove ? (
-          <DeleteButton
-            icon={faTrash}
-            onClick={remove}
-            data-qa="delete-invoice-row-button"
-          />
+          <DeleteButtonWrapper margin={editable}>
+            <IconButton
+              icon={faTrash}
+              onClick={remove}
+              data-qa="delete-invoice-row-button"
+            />
+          </DeleteButtonWrapper>
         ) : null}
       </Td>
     </Tr>
   )
 }
 
-const DeleteButton = styled(IconButton)`
-  margin: 6px 0;
+const DeleteButtonWrapper = styled.div<{ margin: boolean }>`
+  ${({ margin }) => (margin ? 'margin: 6px 0;' : '')}
 `
 
 const TotalPrice = styled.div`

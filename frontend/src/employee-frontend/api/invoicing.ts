@@ -606,6 +606,13 @@ export async function createInvoiceCorrection(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function deleteInvoiceCorrection(id: UUID): Promise<Result<void>> {
+  return client
+    .delete(`/invoice-corrections/${id}`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 const deserializePersonBasic = (json: JsonOf<PersonBasic>): PersonBasic => ({
   ...json,
   dateOfBirth: LocalDate.parseIso(json.dateOfBirth)

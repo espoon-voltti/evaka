@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -455,6 +456,11 @@ sealed interface Action {
         SEND(HasGlobalRole(FINANCE_ADMIN)),
         DELETE(HasGlobalRole(FINANCE_ADMIN)),
         ;
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class InvoiceCorrection(override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>) : ScopedAction<InvoiceCorrectionId> {
+        DELETE(HasGlobalRole(FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

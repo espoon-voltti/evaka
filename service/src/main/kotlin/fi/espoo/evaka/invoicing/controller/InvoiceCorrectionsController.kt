@@ -12,11 +12,16 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.postgresql.util.PSQLState
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -39,7 +44,8 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 tx.createQuery(
                     """
-SELECT id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note
+SELECT id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note,
+    EXISTS (SELECT 1 FROM invoice i JOIN invoice_row r ON i.status != 'DRAFT'::invoice_status AND r.correction_id = invoice_correction.id) AS partially_invoiced
 FROM invoice_correction WHERE head_of_family_id = :personId
 """
                 )
@@ -71,6 +77,37 @@ VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPri
             }
         }
     }
+
+    @DeleteMapping("/{id}")
+    fun deleteInvoiceCorrection(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        @PathVariable id: InvoiceCorrectionId
+    ) {
+        Audit.InvoiceCorrectionsDelete.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.InvoiceCorrection.DELETE, id)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                try {
+                    tx.createUpdate(
+                        """
+WITH deleted_invoice_row AS (
+    DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = :id AND r.invoice_id = i.id AND i.status = 'DRAFT'
+)
+DELETE FROM invoice_correction WHERE id = :id RETURNING id
+"""
+                    )
+                        .bind("id", id)
+                        .execute()
+                } catch (e: JdbiException) {
+                    when (e.psqlCause()?.sqlState) {
+                        PSQLState.FOREIGN_KEY_VIOLATION.state -> throw BadRequest("Cannot delete an already invoiced correction")
+                        else -> throw e
+                    }
+                }
+            }
+        }
+    }
 }
 
 data class InvoiceCorrection(
@@ -83,7 +120,8 @@ data class InvoiceCorrection(
     val amount: Int,
     val unitPrice: Int,
     val description: String,
-    val note: String
+    val note: String,
+    val partiallyInvoiced: Boolean
 )
 
 data class NewInvoiceCorrection(
