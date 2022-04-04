@@ -123,7 +123,8 @@ fun Database.Read.duplicateApplicationExists(
 
 fun Database.Read.activePlacementExists(
     childId: ChildId,
-    type: ApplicationType
+    type: ApplicationType,
+    today: LocalDate,
 ): Boolean {
     val placementTypes = when (type) {
         ApplicationType.DAYCARE -> listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME)
@@ -139,11 +140,12 @@ fun Database.Read.activePlacementExists(
             WHERE 
                 child_id = :childId AND
                 type = ANY(:types::placement_type[]) AND 
-                current_date <= end_date
+                :today <= end_date
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
         .bind("types", placementTypes.toTypedArray())
+        .bind("today", today)
         .mapTo<Int>()
         .list()
         .isNotEmpty()
