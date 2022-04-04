@@ -115,12 +115,16 @@ export const NameWrapper = styled.div`
 
 interface AttendanceTableHeaderProps {
   operationalDays: OperationalDay[]
+  startTimeHeader: string
+  endTimeHeader: string
 }
 
 export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
-  operationalDays
+  operationalDays,
+  startTimeHeader,
+  endTimeHeader
 }: AttendanceTableHeaderProps) {
-  const { i18n, lang } = useTranslation()
+  const { lang } = useTranslation()
   return (
     <Thead>
       <Tr>
@@ -131,8 +135,8 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
               {date.format('EEEEEE dd.MM.', lang)}
             </Date>
             <DayHeader>
-              <span>{i18n.unit.attendanceReservations.startTime}</span>
-              <span>{i18n.unit.attendanceReservations.endTime}</span>
+              <span>{startTimeHeader}</span>
+              <span>{endTimeHeader}</span>
             </DayHeader>
           </DateTh>
         ))}

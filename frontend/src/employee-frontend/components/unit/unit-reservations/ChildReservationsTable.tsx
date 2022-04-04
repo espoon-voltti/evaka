@@ -66,7 +66,11 @@ export default React.memo(function ChildReservationsTable(props: Props) {
 
   return (
     <Table>
-      <AttendanceTableHeader operationalDays={operationalDays} />
+      <AttendanceTableHeader
+        operationalDays={operationalDays}
+        startTimeHeader={i18n.unit.attendanceReservations.startTime}
+        endTimeHeader={i18n.unit.attendanceReservations.endTime}
+      />
       <Tbody>
         {allDayRows.flatMap(({ child, dailyData }) => {
           const multipleRows = dailyData.length > 1
