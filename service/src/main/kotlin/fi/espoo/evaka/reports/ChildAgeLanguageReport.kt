@@ -47,7 +47,6 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUni
         WITH children AS (
             SELECT id, extract(year from age(date_of_birth)) age, language
             FROM person
-            WHERE date_of_birth IS NOT NULL
         )
         SELECT
             ca.name AS care_area_name,

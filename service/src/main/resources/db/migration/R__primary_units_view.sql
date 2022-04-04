@@ -16,6 +16,6 @@ FROM (
     JOIN placement pl ON pl.child_id = fc.child_id
       AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
     JOIN person ch ON ch.id = fc.child_id
-    WHERE daterange(fc.start_date, fc.end_date, '[]') @> current_date AND ch.date_of_birth IS NOT NULL
+    WHERE daterange(fc.start_date, fc.end_date, '[]') @> current_date
 ) data
 WHERE rownum = 1;
