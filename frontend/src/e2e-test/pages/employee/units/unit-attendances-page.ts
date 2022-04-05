@@ -86,7 +86,7 @@ export class UnitAttendancesPage {
       endTime
     )
     // Click table header to trigger last input's onblur
-    await this.page.find('thead').click()
+    await this.page.findAll('thead').first().click()
   }
 
   async setAttendanceTimes(
@@ -102,7 +102,7 @@ export class UnitAttendancesPage {
       endTime
     )
     // Click table header to trigger last input's onblur
-    await this.page.find('thead').click()
+    await this.page.findAll('thead').first().click()
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {

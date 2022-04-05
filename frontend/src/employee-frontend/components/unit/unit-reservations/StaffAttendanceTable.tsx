@@ -328,6 +328,9 @@ const AttendanceCell = styled.div`
 
 const AttendanceTime = styled.span`
   font-weight: ${fontWeights.semibold};
+  flex: 1 0 54px;
+  text-align: center;
+  white-space: nowrap;
 `
 
 type RowMenuProps = {
