@@ -50,6 +50,7 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+import fi.espoo.evaka.placement.PlacementPlanExtent
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
@@ -482,13 +483,19 @@ class ApplicationStateService(
         val plan = tx.getPlacementPlan(applicationId)
             ?: throw IllegalStateException("Application $applicationId has no placement plan")
 
-        val allowPreschool = decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
-        val allowPreschoolDaycare = decision.type in listOf(DecisionType.PRESCHOOL_DAYCARE)
-
-        if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE) &&
-            !(allowPreschool || allowPreschoolDaycare)
-        ) {
-            throw IllegalStateException("Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}")
+        val extent = when (plan.type) {
+            PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE -> {
+                when (decision.type) {
+                    DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION -> PlacementPlanExtent.OnlyPreschool(
+                        plan.period.copy(start = requestedStartDate)
+                    )
+                    DecisionType.PRESCHOOL_DAYCARE -> PlacementPlanExtent.OnlyPreschoolDaycare(
+                        plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
+                    )
+                    else -> throw IllegalStateException("Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}")
+                }
+            }
+            else -> PlacementPlanExtent.FullSingle(plan.period.copy(start = requestedStartDate))
         }
 
         // everything validated now!
@@ -498,10 +505,9 @@ class ApplicationStateService(
         placementPlanService.applyPlacementPlan(
             tx,
             application,
-            plan,
-            allowPreschool,
-            allowPreschoolDaycare,
-            requestedStartDate
+            plan.unitId,
+            plan.type,
+            extent,
         )
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
