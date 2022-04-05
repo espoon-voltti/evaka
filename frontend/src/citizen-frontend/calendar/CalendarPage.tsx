@@ -45,9 +45,7 @@ async function getReservationsDefaultRange(): Promise<
   )
 }
 
-const Page = React.memo(function CalendarPage() {
-  const history = useHistory()
-  const location = useLocation()
+const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
 
   const {
@@ -57,45 +55,21 @@ const Page = React.memo(function CalendarPage() {
   } = useHolidayPeriods()
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
-  const [openModal, setOpenModal] = useState<
-    | { type: 'pickAction' | 'reservations' | 'holidays' }
-    | { type: 'absences'; initialDate: LocalDate | undefined }
-  >()
 
-  const openPickActionModal = useCallback(
-    () => setOpenModal({ type: 'pickAction' }),
-    []
-  )
-  const openReservationModal = useCallback(
-    () => setOpenModal({ type: 'reservations' }),
-    []
-  )
-  const openHolidayModal = useCallback(
-    () => setOpenModal({ type: 'holidays' }),
-    []
-  )
-  const openAbsenceModal = useCallback(
-    (initialDate: LocalDate | undefined) =>
-      setOpenModal({ type: 'absences', initialDate }),
-    []
-  )
-  const closeModal = useCallback(() => setOpenModal(undefined), [])
+  const {
+    modalState,
+    openPickActionModal,
+    openReservationModal,
+    openHolidayModal,
+    openAbsenceModal,
+    openDayModal,
+    closeModal
+  } = useModalState()
 
   const refreshOnQuestionnaireAnswer = useCallback(() => {
     refreshQuestionnaires()
     loadDefaultRange()
   }, [loadDefaultRange, refreshQuestionnaires])
-
-  const dateParam = new URLSearchParams(location.search).get('day')
-  const selectedDate = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
-  const selectDate = useCallback(
-    (date: LocalDate) => history.replace(`calendar?day=${date.formatIso()}`),
-    [history]
-  )
-  const closeDayView = useCallback(
-    () => history.replace('/calendar'),
-    [history]
-  )
 
   const dayIsReservable = useCallback(
     ({ date, isHoliday }: DailyReservationData) =>
@@ -135,7 +109,7 @@ const Page = React.memo(function CalendarPage() {
             childData={response.children}
             dailyData={response.dailyData}
             onHoverButtonClick={openPickActionModal}
-            selectDate={selectDate}
+            selectDate={openDayModal}
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}
           />
@@ -149,23 +123,25 @@ const Page = React.memo(function CalendarPage() {
           onCreateReservationClicked={openReservationModal}
           onCreateAbsencesClicked={openAbsenceModal}
           onReportHolidaysClicked={openHolidayModal}
-          selectedDate={selectedDate}
-          selectDate={selectDate}
+          selectedDate={
+            modalState?.type === 'day' ? modalState.date : undefined
+          }
+          selectDate={openDayModal}
           includeWeekends={response.includesWeekends}
           dayIsReservable={dayIsReservable}
         />
       </DesktopOnly>
-      {selectedDate && (
+      {modalState?.type === 'day' && (
         <DayView
-          date={selectedDate}
+          date={modalState.date}
           reservationsResponse={response}
-          selectDate={selectDate}
+          selectDate={openDayModal}
           reloadData={loadDefaultRange}
-          close={closeDayView}
+          close={closeModal}
           openAbsenceModal={openAbsenceModal}
         />
       )}
-      {openModal?.type === 'pickAction' && (
+      {modalState?.type === 'pickAction' && (
         <ActionPickerModal
           close={closeModal}
           openReservations={openReservationModal}
@@ -173,7 +149,7 @@ const Page = React.memo(function CalendarPage() {
           openHolidays={openHolidayModal}
         />
       )}
-      {openModal?.type === 'reservations' && (
+      {modalState?.type === 'reservations' && (
         <ReservationModal
           onClose={closeModal}
           availableChildren={response.children}
@@ -181,15 +157,15 @@ const Page = React.memo(function CalendarPage() {
           reservableDays={response.reservableDays}
         />
       )}
-      {openModal?.type === 'absences' && (
+      {modalState?.type === 'absences' && (
         <AbsenceModal
           close={closeModal}
-          initialDate={openModal.initialDate}
+          initialDate={modalState.initialDate}
           reload={loadDefaultRange}
           availableChildren={response.children}
         />
       )}
-      {openModal?.type === 'holidays' && questionnaire && (
+      {modalState?.type === 'holidays' && questionnaire && (
         <RequireAuth
           strength={
             questionnaire.questionnaire.requiresStrongAuth ? 'STRONG' : 'WEAK'
@@ -209,6 +185,110 @@ const Page = React.memo(function CalendarPage() {
   ))
 })
 
+// Modal states stored to the URL
+type URLModalState =
+  | { type: 'day'; date: LocalDate }
+  | { type: 'absences'; initialDate: LocalDate | undefined }
+  | { type: 'reservations' }
+  | { type: 'holidays' }
+
+// All possible modal states
+type ModalState = { type: 'pickAction' } | URLModalState
+
+interface UseModalStateResult {
+  modalState: ModalState | undefined
+  openDayModal: (date: LocalDate) => void
+  openPickActionModal: () => void
+  openReservationModal: () => void
+  openAbsenceModal: (initialDate: LocalDate | undefined) => void
+  openHolidayModal: () => void
+  closeModal: () => void
+}
+
+function useModalState(): UseModalStateResult {
+  const location = useLocation()
+  const history = useHistory()
+
+  const urlModalState = useMemo(
+    () => parseQueryString(location.search),
+    [location.search]
+  )
+  const [pickActionOpen, setPickActionOpen] = useState(false)
+
+  const openModal = useCallback(
+    (modal: URLModalState) => {
+      setPickActionOpen(false)
+      history.push(`/calendar?${buildQueryString(modal)}`)
+    },
+    [history]
+  )
+  const closeModal = useCallback(() => {
+    setPickActionOpen(false)
+    history.push('/calendar')
+  }, [history])
+
+  const openDayModal = useCallback(
+    (date: LocalDate) => openModal({ type: 'day', date }),
+    [openModal]
+  )
+  const openPickActionModal = useCallback(() => setPickActionOpen(true), [])
+  const openReservationModal = useCallback(
+    () => openModal({ type: 'reservations' }),
+    [openModal]
+  )
+  const openAbsenceModal = useCallback(
+    (initialDate: LocalDate | undefined) =>
+      openModal({ type: 'absences', initialDate }),
+    [openModal]
+  )
+  const openHolidayModal = useCallback(
+    () => openModal({ type: 'holidays' }),
+    [openModal]
+  )
+
+  return {
+    modalState: pickActionOpen ? { type: 'pickAction' } : urlModalState,
+    openDayModal,
+    openPickActionModal,
+    openReservationModal,
+    openAbsenceModal,
+    openHolidayModal,
+    closeModal
+  }
+}
+
+function parseQueryString(qs: string): URLModalState | undefined {
+  const searchParams = new URLSearchParams(qs)
+  const dateParam = searchParams.get('day')
+  const modalParam = searchParams.get('modal')
+
+  const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
+  return modalParam === 'reservations'
+    ? { type: 'reservations' }
+    : modalParam === 'holidays'
+    ? { type: 'holidays' }
+    : modalParam === 'absences'
+    ? { type: 'absences', initialDate: date }
+    : date
+    ? { type: 'day', date }
+    : undefined
+}
+
+function buildQueryString(modal: URLModalState): string {
+  switch (modal.type) {
+    case 'holidays':
+      return 'modal=holidays'
+    case 'reservations':
+      return 'modal=reservations'
+    case 'absences':
+      return `modal=absences${
+        modal.initialDate ? '&day=' + modal.initialDate.toString() : ''
+      }`
+    case 'day':
+      return `day=${modal.date.toString()}`
+  }
+}
+
 const DesktopOnly = styled(Desktop)`
   position: relative;
 `
@@ -216,7 +296,7 @@ const DesktopOnly = styled(Desktop)`
 export default React.memo(function CalendarPageWrapper() {
   return (
     <>
-      <Page />
+      <CalendarPage />
       <Footer />
     </>
   )
