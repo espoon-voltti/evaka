@@ -36,6 +36,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
     DvvUpdate(ScheduledJobs::dvvUpdate),
     EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
     EndOfDayStaffAttendanceUpkeep(ScheduledJobs::endOfDayStaffAttendanceUpkeep),
+    EndOfDayReservationUpkeep(ScheduledJobs::endOfDayReservationUpkeep),
     EndOutdatedVoucherValueDecisions(ScheduledJobs::endOutdatedVoucherValueDecisions),
     FreezeVoucherValueReports(ScheduledJobs::freezeVoucherValueReports),
     KoskiUpdate(ScheduledJobs::koskiUpdate),
@@ -101,6 +102,22 @@ WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.end_time IS NULL
                     UPDATE staff_attendance_external
                     SET departed = now()
                     WHERE departed IS NULL AND arrived + interval '1 day' < now()
+                """.trimIndent()
+            ).execute()
+        }
+    }
+
+    fun endOfDayReservationUpkeep(db: Database.Connection) {
+        db.transaction {
+            it.createUpdate(
+                // language=SQL
+                """
+                    DELETE FROM attendance_reservation ar
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM placement p
+                        WHERE p.child_id = ar.child_id
+                        AND ar.date BETWEEN p.start_date AND p.end_date
+                    )
                 """.trimIndent()
             ).execute()
         }

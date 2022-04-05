@@ -86,6 +86,7 @@ export type ScheduledJob =
   | 'DvvUpdate'
   | 'EndOfDayAttendanceUpkeep'
   | 'EndOfDayStaffAttendanceUpkeep'
+  | 'EndOfDayReservationUpkeep'
   | 'EndOutdatedVoucherValueDecisions'
   | 'FreezeVoucherValueReports'
   | 'KoskiUpdate'
