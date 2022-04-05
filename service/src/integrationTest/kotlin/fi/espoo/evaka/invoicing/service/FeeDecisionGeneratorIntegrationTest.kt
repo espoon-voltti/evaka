@@ -2039,6 +2039,32 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `fee decision is generated for fridge family with two head of families with different children for placed child`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, period.start) }
+        assertEquals(1, getAllFeeDecisions().size)
+    }
+
+    @Test
+    fun `fee decision is generated for fridge family with two head of families with different children for non placed child`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_2.id, period.start) }
+        assertEquals(1, getAllFeeDecisions().size)
+    }
+
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->

@@ -403,6 +403,32 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `voucher value decision is generated for fridge family with two head of families with different children for placed child`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, period.start) }
+        assertEquals(1, getAllVoucherValueDecisions().size)
+    }
+
+    @Test
+    fun `voucher value decision is generated for fridge family with two head of families with different children for non-placed child`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, testChild_2.id, period.start) }
+        assertEquals(1, getAllVoucherValueDecisions().size)
+    }
+
     private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
