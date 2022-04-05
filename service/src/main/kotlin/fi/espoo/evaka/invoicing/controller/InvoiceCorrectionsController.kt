@@ -46,7 +46,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                     """
 SELECT id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note,
     EXISTS (SELECT 1 FROM invoice i JOIN invoice_row r ON i.status != 'DRAFT'::invoice_status AND r.correction_id = invoice_correction.id) AS partially_invoiced
-FROM invoice_correction WHERE head_of_family_id = :personId
+FROM invoice_correction WHERE head_of_family_id = :personId AND NOT applied_completely
 """
                 )
                     .bind("personId", personId)

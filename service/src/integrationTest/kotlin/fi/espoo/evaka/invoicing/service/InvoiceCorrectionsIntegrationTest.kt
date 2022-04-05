@@ -12,10 +12,15 @@ import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.config.testFeatureConfig
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.dev.resetDatabase
@@ -24,6 +29,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -35,6 +41,8 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
     private val draftInvoiceGenerator: DraftInvoiceGenerator =
         DraftInvoiceGenerator(productProvider, featureConfig)
     private val generator: InvoiceGenerator = InvoiceGenerator(draftInvoiceGenerator)
+    private val invoiceService =
+        InvoiceService(InvoiceIntegrationClient.MockClient(defaultJsonMapper()), TestInvoiceProductProvider())
 
     @BeforeEach
     fun beforeEach() {
@@ -271,6 +279,60 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         assertEquals(-40_00, fourthInvoice.rows.last().unitPrice)
         assertEquals(correctionId, fourthInvoice.rows.last().correctionId)
         db.transaction { it.upsertInvoices(listOf(fourthInvoice.copy(status = InvoiceStatus.SENT))) }
+    }
+
+    @Test
+    fun `correction is marked as applied when its invoice is sent`() {
+        val correctionId = insertTestCorrection(1, -50_00)
+        db.transaction {
+            val invoices = generator.applyCorrections(it, listOf(createTestInvoice(100_00)))
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+        }
+
+        val result = db.read {
+            it.createQuery("SELECT id, applied_completely FROM invoice_correction")
+                .map { rv ->
+                    rv.mapColumn<InvoiceCorrectionId>("id") to rv.mapColumn<Boolean>("applied_completely")
+                }
+                .toList()
+        }
+        assertEquals(1, result.size)
+        assertEquals(correctionId, result.first().first)
+        assertEquals(true, result.first().second)
+    }
+
+    @Test
+    fun `correction is not marked as applied when its invoice is sent if the correction hasn't been applied completely`() {
+        val correctionId = insertTestCorrection(1, -200_00)
+        db.transaction {
+            val invoices = generator.applyCorrections(it, listOf(createTestInvoice(100_00)))
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+        }
+
+        val result = db.read {
+            it.createQuery("SELECT id, applied_completely FROM invoice_correction")
+                .map { rv ->
+                    rv.mapColumn<InvoiceCorrectionId>("id") to rv.mapColumn<Boolean>("applied_completely")
+                }
+                .toList()
+        }
+        assertEquals(1, result.size)
+        assertEquals(correctionId, result.first().first)
+        assertEquals(false, result.first().second)
     }
 
     private fun createTestInvoice(

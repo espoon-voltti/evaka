@@ -185,7 +185,7 @@ SELECT
         '[]'::jsonb
     ) AS invoiced_corrections
 FROM invoice_correction c
-LEFT JOIN invoice_row r ON c.id = r.correction_id
+LEFT JOIN invoice_row r ON c.id = r.correction_id AND NOT c.applied_completely
 LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
 GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
