@@ -231,14 +231,16 @@ class OccupancyControllerIntegrationTest : FullApplicationTest() {
             testDaycare.id,
             applicationId,
             period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
-            preschoolDaycarePeriod = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 7, 31))
+            preschoolDaycarePeriod = FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 7, 31))
         )
 
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months = OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
                 max6Months = OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
-                max3MonthsSpeculated = OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                // preschool only
+                max3MonthsSpeculated = OccupancyValues(sum = 2.25, headcount = 2, caretakers = 1.0, percentage = 32.1),
+                // preschool+daycare
                 max6MonthsSpeculated = OccupancyValues(sum = 3.75, headcount = 3, caretakers = 1.0, percentage = 53.6)
             ),
             occupancies
