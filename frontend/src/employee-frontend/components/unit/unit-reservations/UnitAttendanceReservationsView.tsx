@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { combine, Success } from 'lib-common/api'
+import { UnitContext } from 'employee-frontend/state/unit'
+import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -25,6 +26,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
@@ -86,11 +88,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   )
 
   const [staffAttendances] = useApiState(
-    () =>
-      groupId === 'staff'
-        ? getStaffAttendances(unitId, dateRange)
-        : Promise.resolve(Success.of({ staff: [], extraAttendances: [] })),
-    [groupId, unitId, dateRange]
+    () => getStaffAttendances(unitId, dateRange),
+    [unitId, dateRange]
   )
 
   const [creatingReservationChild, setCreatingReservationChild] =
@@ -121,9 +120,11 @@ export default React.memo(function UnitAttendanceReservationsView({
     [unitId]
   )
 
+  const { daycareAclRows } = useContext(UnitContext)
+
   return renderResult(
-    combine(childReservations, staffAttendances),
-    ([childData, staffData]) => (
+    combine(childReservations, staffAttendances, daycareAclRows),
+    ([childData, staffData, daycareAclRows]) => (
       <>
         {creatingReservationChild && (
           <ReservationModalSingleChild
@@ -161,17 +162,34 @@ export default React.memo(function UnitAttendanceReservationsView({
               saveExternalAttendance={saveExternalAttendance}
             />
           ) : (
-            <ChildReservationsTable
-              unitId={unitId}
-              operationalDays={childData.operationalDays}
-              allDayRows={
-                childData.groups.find((g) => g.group.id === groupId)
-                  ?.children ?? childData.ungrouped
-              }
-              onMakeReservationForChild={setCreatingReservationChild}
-              selectedDate={selectedDate}
-              reloadReservations={reloadChildReservations}
-            />
+            <>
+              {featureFlags.experimental?.realtimeStaffAttendance && (
+                <StaffAttendanceTable
+                  operationalDays={childData.operationalDays}
+                  staffAttendances={staffData.staff.filter((s) =>
+                    daycareAclRows
+                      .find((r) => r.employee.id === s.employeeId)
+                      ?.groupIds.includes(groupId)
+                  )}
+                  extraAttendances={staffData.extraAttendances.filter(
+                    (ea) => ea.groupId === groupId
+                  )}
+                  saveAttendance={saveAttendance}
+                  saveExternalAttendance={saveExternalAttendance}
+                />
+              )}
+              <ChildReservationsTable
+                unitId={unitId}
+                operationalDays={childData.operationalDays}
+                allDayRows={
+                  childData.groups.find((g) => g.group.id === groupId)
+                    ?.children ?? childData.ungrouped
+                }
+                onMakeReservationForChild={setCreatingReservationChild}
+                selectedDate={selectedDate}
+                reloadReservations={reloadChildReservations}
+              />
+            </>
           )}
         </FixedSpaceColumn>
 

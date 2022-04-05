@@ -46,7 +46,10 @@ const CustomTh = styled(Th)<{ shrink?: boolean }>`
     `}
 `
 
+// Use min- and max-width to ensure that columns in two tables in the same layout are aligned
 const DateTh = styled(CustomTh)<{ faded: boolean }>`
+  min-width: 150px;
+  max-width: 150px;
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
 `
 
