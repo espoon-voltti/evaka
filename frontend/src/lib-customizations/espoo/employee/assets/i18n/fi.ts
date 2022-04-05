@@ -1655,6 +1655,10 @@ export const fi = {
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen'
     },
+    staffAttendance: {
+      startTime: 'tulo',
+      endTime: 'lähtö'
+    },
     error: {
       placement: {
         create: 'Sijoitus ryhmään epäonnistui',

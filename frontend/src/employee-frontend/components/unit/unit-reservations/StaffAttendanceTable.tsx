@@ -94,7 +94,11 @@ export default React.memo(function StaffAttendanceTable({
 
   return (
     <Table>
-      <AttendanceTableHeader operationalDays={operationalDays} />
+      <AttendanceTableHeader
+        operationalDays={operationalDays}
+        startTimeHeader={i18n.unit.staffAttendance.startTime}
+        endTimeHeader={i18n.unit.staffAttendance.endTime}
+      />
       <Tbody>
         {staffRows.map((row, index) => (
           <AttendanceRow
