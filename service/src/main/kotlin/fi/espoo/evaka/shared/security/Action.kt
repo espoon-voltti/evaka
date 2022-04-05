@@ -460,7 +460,8 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class InvoiceCorrection(override vararg val defaultRules: ScopedActionRule<in InvoiceCorrectionId>) : ScopedAction<InvoiceCorrectionId> {
-        DELETE(HasGlobalRole(FINANCE_ADMIN));
+        DELETE(HasGlobalRole(FINANCE_ADMIN)),
+        UPDATE_NOTE(HasGlobalRole(FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

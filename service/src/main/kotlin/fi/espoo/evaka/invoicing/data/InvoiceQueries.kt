@@ -96,6 +96,7 @@ val invoiceDetailedQueryBase =
         row.saved_cost_center,
         row.description,
         row.correction_id,
+        correction.note AS correction_note,
         child.date_of_birth as child_date_of_birth,
         child.first_name as child_first_name,
         child.last_name as child_last_name,
@@ -109,6 +110,7 @@ val invoiceDetailedQueryBase =
         LEFT JOIN person as head ON invoice.head_of_family = head.id
         LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
         LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
+        LEFT JOIN invoice_correction as correction ON row.correction_id = correction.id
         LEFT JOIN daycare ON row.unit_id = daycare.id
         LEFT JOIN care_area AS row_care_area ON daycare.care_area_id = row_care_area.id
         LEFT JOIN person as child ON row.child = child.id
@@ -605,7 +607,8 @@ val toDetailedInvoice = { rv: RowView ->
                     subCostCenter = rv.mapColumn("sub_cost_center"),
                     savedCostCenter = rv.mapColumn("saved_cost_center"),
                     description = rv.mapColumn("description"),
-                    correctionId = rv.mapColumn("correction_id")
+                    correctionId = rv.mapColumn("correction_id"),
+                    note = rv.mapColumn("correction_note")
                 )
             )
         } ?: listOf(),

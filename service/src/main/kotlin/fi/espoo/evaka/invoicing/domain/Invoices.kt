@@ -105,7 +105,8 @@ data class InvoiceRowDetailed(
     val subCostCenter: String?,
     val savedCostCenter: String?,
     val description: String,
-    val correctionId: InvoiceCorrectionId?
+    val correctionId: InvoiceCorrectionId?,
+    val note: String?
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice

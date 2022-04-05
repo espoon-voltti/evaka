@@ -432,6 +432,7 @@ export interface InvoiceRowDetailed {
   costCenter: string
   description: string
   id: UUID
+  note: string | null
   periodEnd: LocalDate
   periodStart: LocalDate
   price: number
@@ -505,6 +506,13 @@ export interface NewInvoiceCorrection {
   product: string
   unitId: UUID
   unitPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.NoteUpdateBody
+*/
+export interface NoteUpdateBody {
+  note: string
 }
 
 /**

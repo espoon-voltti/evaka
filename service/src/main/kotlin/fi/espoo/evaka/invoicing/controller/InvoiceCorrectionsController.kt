@@ -108,6 +108,26 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
             }
         }
     }
+
+    data class NoteUpdateBody(val note: String)
+    @PostMapping("/{id}/note")
+    fun updateNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        @PathVariable id: InvoiceCorrectionId,
+        @RequestBody body: NoteUpdateBody
+    ) {
+        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.InvoiceCorrection.UPDATE_NOTE, id)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
+                    .bind("id", id,)
+                    .bind("note", body.note)
+                    .execute()
+            }
+        }
+    }
 }
 
 data class InvoiceCorrection(

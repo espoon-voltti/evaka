@@ -161,6 +161,7 @@ enum class Audit(
     IncomeStatementStartDatesOfChild("evaka.income-statement.start-dates.child.read"),
     InvoiceCorrectionsCreate("evaka.invoice-corrections.create"),
     InvoiceCorrectionsDelete("evaka.invoice-corrections.delete"),
+    InvoiceCorrectionsNoteUpdate("evaka.invoice-corrections.note.update"),
     InvoiceCorrectionsRead("evaka.invoice-corrections.read"),
     InvoicesCreate("evaka.invoices.create"),
     InvoicesDeleteDrafts("evaka.invoices.delete-drafts"),

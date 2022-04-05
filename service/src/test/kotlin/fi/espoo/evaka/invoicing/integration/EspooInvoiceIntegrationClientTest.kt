@@ -154,7 +154,8 @@ class EspooInvoiceIntegrationClientTest {
         subCostCenter = "01",
         savedCostCenter = "12345",
         description = "",
-        correctionId = null
+        correctionId = null,
+        note = null
     )
 
     private fun testPerson(

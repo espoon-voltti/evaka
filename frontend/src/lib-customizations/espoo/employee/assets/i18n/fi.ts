@@ -1019,7 +1019,11 @@ export const fi = {
       createRetroactive: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
-    invoiceCorrections: 'Hyvitykset ja korotukset',
+    invoiceCorrections: {
+      title: 'Hyvitykset ja korotukset',
+      noteModalTitle: 'Talouden oma muistiinpano',
+      noteModalInfo: 'Muistiinpano ei tule näkyviin laskulle.'
+    },
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',
       createRetroactive: 'Luo takautuvia arvopäätösluonnoksia'

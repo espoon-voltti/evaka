@@ -22,6 +22,7 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -29,7 +30,9 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { H4 } from 'lib-components/typography'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { H4, P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faChild } from 'lib-icons'
 
@@ -37,7 +40,8 @@ import {
   createInvoiceCorrection,
   deleteInvoiceCorrection,
   getInvoiceCodes,
-  getPersonInvoiceCorrections
+  getPersonInvoiceCorrections,
+  updateInvoiceCorrectionNote
 } from '../../api/invoicing'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
@@ -63,6 +67,8 @@ export default React.memo(function PersonInvoiceCorrections({
   )
   const { editState, updateState, cancelEditing, addNewRow } =
     useCorrectionEditState(id)
+  const [noteModalState, setNoteModalState] =
+    useState<{ id: UUID; note: string }>()
 
   const children = useMemo(
     () =>
@@ -126,6 +132,26 @@ export default React.memo(function PersonInvoiceCorrections({
     [reloadCorrections]
   )
 
+  const editNote = useCallback(
+    (id: UUID, note: string) => setNoteModalState({ id, note }),
+    []
+  )
+
+  const saveNote = useCallback(() => {
+    if (!noteModalState) return Promise.resolve()
+    if (noteModalState.id === 'new') {
+      updateState({ note: noteModalState.note })
+      return Promise.resolve()
+    } else {
+      return updateInvoiceCorrectionNote(noteModalState.id, noteModalState.note)
+    }
+  }, [noteModalState, updateState])
+
+  const onNoteUpdateSuccess = useCallback(() => {
+    setNoteModalState(undefined)
+    if (noteModalState && noteModalState.id !== 'new') reloadCorrections()
+  }, [noteModalState, reloadCorrections])
+
   if (!featureFlags.experimental?.invoiceCorrections) {
     return null
   }
@@ -133,7 +159,7 @@ export default React.memo(function PersonInvoiceCorrections({
   return (
     <CollapsibleSection
       icon={faChild}
-      title={i18n.personProfile.invoiceCorrections}
+      title={i18n.personProfile.invoiceCorrections.title}
       data-qa="person-invoice-corrections-collapsible"
       startCollapsed={!open}
     >
@@ -160,12 +186,34 @@ export default React.memo(function PersonInvoiceCorrections({
                   onSaveSuccess={onSaveSuccess}
                   addNewRow={addNewRow}
                   deleteCorrection={deleteCorrection}
+                  editNote={editNote}
                 />
               ))
             )}
           </FixedSpaceColumn>
         )
       )}
+      {noteModalState ? (
+        <AsyncFormModal
+          title={i18n.personProfile.invoiceCorrections.noteModalTitle}
+          resolveAction={saveNote}
+          resolveLabel={i18n.common.save}
+          onSuccess={onNoteUpdateSuccess}
+          rejectAction={() => setNoteModalState(undefined)}
+          rejectLabel={i18n.common.cancel}
+        >
+          <P noMargin centered>
+            {i18n.personProfile.invoiceCorrections.noteModalInfo}
+          </P>
+          <Gap size="s" />
+          <TextArea
+            value={noteModalState.note}
+            onChange={(note) =>
+              setNoteModalState((previous) => previous && { ...previous, note })
+            }
+          />
+        </AsyncFormModal>
+      ) : null}
     </CollapsibleSection>
   )
 })
@@ -183,7 +231,8 @@ const ChildSection = React.memo(function ChildSection({
   save,
   onSaveSuccess,
   addNewRow,
-  deleteCorrection
+  deleteCorrection,
+  editNote
 }: {
   i18n: Translations
   child: PersonJSON
@@ -198,6 +247,7 @@ const ChildSection = React.memo(function ChildSection({
   onSaveSuccess: () => void
   addNewRow: (childId: UUID) => void
   deleteCorrection: (id: UUID) => void
+  editNote: (id: UUID, note: string) => void
 }) {
   return (
     <FixedSpaceColumn spacing="s">
@@ -238,6 +288,7 @@ const ChildSection = React.memo(function ChildSection({
                   ? () => deleteCorrection(correction.id)
                   : undefined
               }
+              addNote={() => editNote(correction.id, correction.note)}
             />
           ))}
           {editState?.childId === child.id && (
@@ -249,6 +300,7 @@ const ChildSection = React.memo(function ChildSection({
               editable={true}
               update={updateState}
               remove={undefined}
+              addNote={() => editNote(editState.id, editState.note)}
             />
           )}
         </Tbody>

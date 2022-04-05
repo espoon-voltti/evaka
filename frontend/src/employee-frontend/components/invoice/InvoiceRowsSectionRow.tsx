@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -14,6 +15,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { formatCents, parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Combobox, {
   MenuItemProps
@@ -21,7 +23,8 @@ import Combobox, {
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
-import { faTrash } from 'lib-icons'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import DateRangeInput from '../common/DateRangeInput'
@@ -37,6 +40,7 @@ export interface InvoiceRowStub {
   amount: number
   unitPrice: number
   price: number
+  note: string | null
 }
 
 interface Props {
@@ -47,6 +51,7 @@ interface Props {
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
   editable: boolean
+  addNote?: () => void
 }
 
 function InvoiceRowSectionRow({
@@ -59,15 +64,18 @@ function InvoiceRowSectionRow({
     periodEnd,
     amount,
     unitPrice,
-    price
+    price,
+    note
   },
   update,
   remove,
   editable,
   products,
   unitIds,
-  unitDetails
+  unitDetails,
+  addNote
 }: Props) {
+  const theme = useTheme()
   const { i18n } = useTranslation()
 
   const productOpts = useMemo(() => products.map(({ key }) => key), [products])
@@ -169,21 +177,40 @@ function InvoiceRowSectionRow({
         )}
       </Td>
       <Td>
-        {remove ? (
-          <DeleteButtonWrapper margin={editable}>
-            <IconButton
-              icon={faTrash}
-              onClick={remove}
-              data-qa="delete-invoice-row-button"
-            />
-          </DeleteButtonWrapper>
-        ) : null}
+        <FixedSpaceRow spacing="s">
+          {note !== null || addNote ? (
+            <Tooltip tooltip={note}>
+              <IconButtonWrapper margin={editable}>
+                {addNote ? (
+                  <IconButton
+                    icon={note ? fasCommentAltLines : faCommentAlt}
+                    onClick={addNote}
+                  />
+                ) : (
+                  <FontAwesomeIcon
+                    icon={note ? fasCommentAltLines : faCommentAlt}
+                    color={theme.colors.main.m2}
+                  />
+                )}
+              </IconButtonWrapper>
+            </Tooltip>
+          ) : null}
+          {remove ? (
+            <IconButtonWrapper margin={editable}>
+              <IconButton
+                icon={faTrash}
+                onClick={remove}
+                data-qa="delete-invoice-row-button"
+              />
+            </IconButtonWrapper>
+          ) : null}
+        </FixedSpaceRow>
       </Td>
     </Tr>
   )
 }
 
-const DeleteButtonWrapper = styled.div<{ margin: boolean }>`
+const IconButtonWrapper = styled.div<{ margin: boolean }>`
   ${({ margin }) => (margin ? 'margin: 6px 0;' : '')}
 `
 
