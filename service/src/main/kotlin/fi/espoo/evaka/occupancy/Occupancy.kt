@@ -25,7 +25,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 
-const val youngChildOccupancyCoefficient = "1.75"
+const val familyUnitPlacementCoefficient = "1.75"
 
 enum class OccupancyType {
     PLANNED,
@@ -387,11 +387,11 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
 SELECT
     sn.placement_id,
     CASE
-        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         ELSE sno.occupancy_coefficient
     END AS occupancy_coefficient,
     CASE
-        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         ELSE sno.occupancy_coefficient_under_3y
     END AS occupancy_coefficient_under_3y,
     daterange(sn.start_date, sn.end_date, '[]') AS period
