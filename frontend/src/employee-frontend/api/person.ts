@@ -298,3 +298,12 @@ export function updateSsnAddingDisabled(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
+
+export async function updatePersonAndFamilyFromVtj(
+  personId: UUID
+): Promise<Result<PersonJSON>> {
+  return client
+    .post(`/person/${personId}/vtj-update`)
+    .then(() => getPerson(personId))
+    .catch((e) => Failure.fromError(e))
+}

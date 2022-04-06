@@ -24,9 +24,13 @@ import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
-import { faPen } from 'lib-icons'
+import { faPen, faSync } from 'lib-icons'
 
-import { patchPersonDetails, updateSsnAddingDisabled } from '../../api/person'
+import {
+  patchPersonDetails,
+  updatePersonAndFamilyFromVtj,
+  updateSsnAddingDisabled
+} from '../../api/person'
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { useTranslation } from '../../state/i18n'
@@ -75,6 +79,10 @@ const RightAlignedRow = styled.div`
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
+`
+
+const ButtonSpacer = styled.div`
+  margin-right: 25px;
 `
 
 export default React.memo(function PersonDetails({
@@ -174,6 +182,15 @@ export default React.memo(function PersonDetails({
     })
   }
 
+  const onVtjUpdate = () => {
+    void updatePersonAndFamilyFromVtj(person.id).then((res) => {
+      if (res.isSuccess) {
+        if (onUpdateComplete) onUpdateComplete(res.value)
+        clearUiMode()
+      }
+    })
+  }
+
   return (
     <>
       {uiMode === 'add-ssn-modal' && (
@@ -181,6 +198,17 @@ export default React.memo(function PersonDetails({
       )}
       {(!isChild || person.socialSecurityNumber === null) && (
         <RightAlignedRow>
+          {permittedActions.has('UPDATE_FROM_VTJ') &&
+          uiMode != 'person-details-editing' ? (
+            <ButtonSpacer>
+              <InlineButton
+                icon={faSync}
+                onClick={onVtjUpdate}
+                data-qa="update-from-vtj-button"
+                text={i18n.personProfile.updateFromVtj}
+              />
+            </ButtonSpacer>
+          ) : null}
           {permittedActions.has('UPDATE') ? (
             <InlineButton
               icon={faPen}
