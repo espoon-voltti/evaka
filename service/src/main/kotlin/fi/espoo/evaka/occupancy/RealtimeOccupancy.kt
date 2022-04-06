@@ -104,7 +104,7 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
         COALESCE(an.capacity_factor, 1) * CASE 
             WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
             WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
-            ELSE 1.0
+            ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
         END AS capacity
     FROM child_attendance ca
     JOIN daycare u ON u.id = ca.unit_id
