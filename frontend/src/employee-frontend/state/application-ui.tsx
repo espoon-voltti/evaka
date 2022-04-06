@@ -38,8 +38,6 @@ import {
 interface UIState {
   applicationsResult: Result<Paged<ApplicationSummary>>
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
-  area: string[]
-  setArea: (areas: string[]) => void
   availableAreas: Result<DaycareCareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
   units: string[]
@@ -59,6 +57,11 @@ interface UIState {
   searchTerms: string
   setSearchTerms: (searchTerms: string) => void
   debouncedSearchTerms: string
+  applicationSearchFilters: ApplicationSearchFilters
+  setApplicationSearchFilters: (
+    applicationFilters: ApplicationSearchFilters
+  ) => void
+  debouncedApplicationSearchFilters: ApplicationSearchFilters
   clearSearchFilters: () => void
   basis: ApplicationBasis[]
   setBasis: (basis: ApplicationBasis[]) => void
@@ -77,17 +80,30 @@ interface UIState {
   setVoucherApplications: Dispatch<SetStateAction<VoucherApplicationFilter>>
 }
 
+interface ApplicationSearchFilters {
+  area: string[]
+  //units: string[]
+  //basis: ApplicationBasis[]
+  //type: ApplicationTypeToggle
+  //status: ApplicationSummaryStatusOptions
+  //startDate: LocalDate | undefined
+  //endDate: LocalDate | undefined
+  //dateType: ApplicationDateType[]
+}
+
 export type VoucherApplicationFilter =
   | 'VOUCHER_FIRST_CHOICE'
   | 'VOUCHER_ONLY'
   | 'NO_VOUCHER'
   | undefined
 
+const clearApplicationSearchFilters: ApplicationSearchFilters = {
+  area: [] //, basis: [], status: 'SENT', startDate: undefined, endDate: undefined, units: [], type: 'ALL', dateType: []
+}
+
 const defaultState: UIState = {
   applicationsResult: Loading.of(),
   setApplicationsResult: () => undefined,
-  area: [],
-  setArea: () => undefined,
   availableAreas: Loading.of(),
   setAvailableAreas: () => undefined,
   units: [],
@@ -107,6 +123,9 @@ const defaultState: UIState = {
   searchTerms: '',
   setSearchTerms: () => undefined,
   debouncedSearchTerms: '',
+  applicationSearchFilters: clearApplicationSearchFilters,
+  setApplicationSearchFilters: () => undefined,
+  debouncedApplicationSearchFilters: clearApplicationSearchFilters,
   clearSearchFilters: () => undefined,
   basis: [],
   setBasis: () => undefined,
@@ -136,7 +155,6 @@ export const ApplicationUIContextProvider = React.memo(
     const [applicationsResult, setApplicationsResult] = useState<
       Result<Paged<ApplicationSummary>>
     >(Loading.of())
-    const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<
       Result<DaycareCareArea[]>
     >(defaultState.availableAreas)
@@ -156,6 +174,8 @@ export const ApplicationUIContextProvider = React.memo(
     const [searchTerms, setSearchTerms] = useState<string>(
       defaultState.searchTerms
     )
+    const [applicationSearchFilters, setApplicationSearchFilters] =
+      useState<ApplicationSearchFilters>(defaultState.applicationSearchFilters)
     const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
       defaultState.distinctions
     )
@@ -166,7 +186,7 @@ export const ApplicationUIContextProvider = React.memo(
     const debouncedSearchTerms = useDebounce(searchTerms, 500)
 
     const clearSearchFilters = useCallback(() => {
-      setArea(defaultState.area)
+      setApplicationSearchFilters(defaultState.applicationSearchFilters)
       setUnits(defaultState.units)
       setBasis(defaultState.basis)
       setType(defaultState.type)
@@ -176,6 +196,12 @@ export const ApplicationUIContextProvider = React.memo(
       setDateType(defaultState.dateType)
     }, [])
     const [basis, setBasis] = useState<ApplicationBasis[]>(defaultState.basis)
+
+    const debouncedApplicationSearchFilters = useDebounce(
+      applicationSearchFilters,
+      5000
+    )
+
     const [checkedIds, setCheckedIds] = useState<string[]>(
       defaultState.checkedIds
     )
@@ -196,8 +222,6 @@ export const ApplicationUIContextProvider = React.memo(
       () => ({
         applicationsResult,
         setApplicationsResult,
-        area,
-        setArea,
         availableAreas,
         setAvailableAreas,
         status,
@@ -217,6 +241,9 @@ export const ApplicationUIContextProvider = React.memo(
         searchTerms,
         setSearchTerms,
         debouncedSearchTerms,
+        applicationSearchFilters,
+        setApplicationSearchFilters,
+        debouncedApplicationSearchFilters,
         clearSearchFilters,
         basis,
         setBasis,
@@ -237,8 +264,6 @@ export const ApplicationUIContextProvider = React.memo(
       [
         applicationsResult,
         setApplicationsResult,
-        area,
-        setArea,
         availableAreas,
         setAvailableAreas,
         status,
@@ -258,6 +283,9 @@ export const ApplicationUIContextProvider = React.memo(
         searchTerms,
         setSearchTerms,
         debouncedSearchTerms,
+        applicationSearchFilters,
+        setApplicationSearchFilters,
+        debouncedApplicationSearchFilters,
         clearSearchFilters,
         basis,
         setBasis,

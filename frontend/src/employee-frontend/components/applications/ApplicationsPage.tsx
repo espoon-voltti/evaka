@@ -41,7 +41,7 @@ export default React.memo(function ApplicationsPage() {
   const {
     applicationsResult,
     setApplicationsResult,
-    area,
+    //area,
     units,
     basis,
     type,
@@ -55,6 +55,7 @@ export default React.memo(function ApplicationsPage() {
     startDate,
     endDate,
     debouncedSearchTerms,
+    debouncedApplicationSearchFilters,
     setCheckedIds
   } = useContext(ApplicationUIContext)
 
@@ -74,10 +75,10 @@ export default React.memo(function ApplicationsPage() {
 
   const loadApplications = useCallback(() => {
     const params: ApplicationSearchParams = {
-      area: area.includes('All')
+      area: debouncedApplicationSearchFilters.area.includes('All')
         ? undefined
-        : area.length > 0
-        ? area.join(',')
+        : debouncedApplicationSearchFilters.area.length > 0
+        ? debouncedApplicationSearchFilters.area.join(',')
         : undefined,
       units: units.length > 0 ? units.join(',') : undefined,
       basis: basis.length > 0 ? basis.join(',') : undefined,
@@ -109,7 +110,6 @@ export default React.memo(function ApplicationsPage() {
     page,
     sortBy,
     sortDirection,
-    area,
     units,
     basis,
     type,
@@ -123,6 +123,7 @@ export default React.memo(function ApplicationsPage() {
     startDate,
     endDate,
     debouncedSearchTerms,
+    debouncedApplicationSearchFilters,
     reloadApplications
   ])
 
@@ -134,7 +135,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, area, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, setCheckedIds])
+  }, [setPage, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">

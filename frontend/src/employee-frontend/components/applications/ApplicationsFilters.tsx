@@ -43,8 +43,6 @@ export default React.memo(function ApplicationFilters() {
     setAllUnits,
     availableAreas,
     setAvailableAreas,
-    area,
-    setArea,
     status,
     setStatus,
     type,
@@ -70,7 +68,9 @@ export default React.memo(function ApplicationFilters() {
     setTransferApplications,
     voucherApplications,
     setVoucherApplications,
-    setApplicationsResult
+    setApplicationsResult,
+    applicationSearchFilters,
+    setApplicationSearchFilters
   } = useContext(ApplicationUIContext)
 
   const { i18n } = useTranslation()
@@ -81,13 +81,13 @@ export default React.memo(function ApplicationFilters() {
 
   useEffect(() => {
     const areas =
-      area.length > 0
-        ? area
+      applicationSearchFilters.area.length > 0
+        ? applicationSearchFilters.area
         : availableAreas
             .map((areas) => areas.map(({ shortName }) => shortName))
             .getOrElse([])
     void getUnits(areas, type).then(setAllUnits)
-  }, [type, availableAreas, area]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [type, availableAreas, applicationSearchFilters.area]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (units.length === 0 && distinctions.includes('SECONDARY')) {
@@ -175,8 +175,13 @@ export default React.memo(function ApplicationFilters() {
         <>
           <AreaMultiSelect
             areas={availableAreas.getOrElse([])}
-            selected={area}
-            onSelect={setArea}
+            selected={applicationSearchFilters.area}
+            onSelect={(area) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                area: area
+              })
+            }
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
