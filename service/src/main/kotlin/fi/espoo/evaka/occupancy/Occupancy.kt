@@ -514,7 +514,14 @@ SELECT
 FROM placement_plan p
 JOIN application a ON p.application_id = a.id
 JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
-WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
+WHERE NOT p.deleted AND (
+    daterange(p.start_date, p.end_date, '[]') && :period
+    OR (
+        preschool_daycare_start_date IS NOT NULL
+        AND preschool_daycare_end_date IS NOT NULL
+        AND daterange(preschool_daycare_start_date, preschool_daycare_end_date, '[]') && :period
+    )
+)
 """
     )
         .bind("unitIds", unitIds)
