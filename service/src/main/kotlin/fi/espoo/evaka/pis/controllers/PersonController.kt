@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.getDeceasedPeople
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
+import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonJSON
@@ -49,7 +50,8 @@ import java.time.LocalDate
 class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val fridgeFamilyService: FridgeFamilyService
 ) {
     @PostMapping
     fun createEmpty(db: Database, user: AuthenticatedUser): PersonIdentityResponseJSON {
@@ -314,6 +316,17 @@ class PersonController(
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
+    }
+
+    @PostMapping("/{personId}/vtj-update")
+    fun updatePersonAndFamilyFromVtj(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable personId: PersonId
+    ) {
+        Audit.PersonVtjFamilyUpdate.log(targetId = personId)
+        accessControl.requirePermissionFor(user, Action.Person.UPDATE_FROM_VTJ, personId)
+        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user.id, personId) }
     }
 
     data class PersonResponse(

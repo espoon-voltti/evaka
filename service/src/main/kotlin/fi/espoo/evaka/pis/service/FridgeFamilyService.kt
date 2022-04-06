@@ -13,6 +13,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,25 +24,29 @@ class FridgeFamilyService(
 ) {
 
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
-        logger.info("Refreshing ${msg.personId} from VTJ")
+        updatePersonAndFamilyFromVtj(db, msg.requestingUserId.raw, msg.personId)
+    }
+
+    fun updatePersonAndFamilyFromVtj(db: Database.Connection, requestingUserId: UUID, personId: PersonId) {
+        logger.info("Refreshing $personId from VTJ")
         val head = db.transaction {
             personService.getPersonWithChildren(
                 it,
-                user = AuthenticatedUser.Employee(msg.requestingUserId.raw, setOf()),
-                id = msg.personId,
+                user = AuthenticatedUser.Employee(requestingUserId, setOf()),
+                id = personId,
                 forceRefresh = true
             )
         }
         if (head != null) {
             logger.info("Person to refresh has ${head.children.size} children")
 
-            val partner = db.read { getPartnerId(it, msg.personId) }
+            val partner = db.read { getPartnerId(it, personId) }
                 ?.also { logger.info("Person has fridge partner $it") }
                 ?.let { partnerId ->
                     db.transaction {
                         personService.getPersonWithChildren(
                             it,
-                            user = AuthenticatedUser.Employee(msg.requestingUserId.raw, setOf()),
+                            user = AuthenticatedUser.Employee(requestingUserId, setOf()),
                             id = partnerId,
                             forceRefresh = true
                         )
@@ -52,7 +57,7 @@ class FridgeFamilyService(
 
             val children = head.children + (partner?.children ?: emptyList())
 
-            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, msg.personId) }
+            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, personId) }
             logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
 
             val newChildrenInSameAddress = children
@@ -71,7 +76,7 @@ class FridgeFamilyService(
                         parentshipService.createParentship(
                             tx,
                             childId = child.id,
-                            headOfChildId = msg.personId,
+                            headOfChildId = personId,
                             startDate = LocalDate.now(),
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
@@ -81,7 +86,7 @@ class FridgeFamilyService(
                     logger.debug("Ignored the following:", e)
                 }
             }
-            logger.info("Completed refreshing person ${msg.personId}")
+            logger.info("Completed refreshing person $personId")
         }
     }
 
