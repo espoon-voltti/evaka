@@ -11,5 +11,5 @@ repositories {
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.6.10"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.6.20"))
 }
