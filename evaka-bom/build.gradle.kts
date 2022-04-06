@@ -63,7 +63,7 @@ dependencies {
         api("org.apache.logging.log4j:log4j-to-slf4j:2.17.1")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220324"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220328"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.28.0"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.20"))
