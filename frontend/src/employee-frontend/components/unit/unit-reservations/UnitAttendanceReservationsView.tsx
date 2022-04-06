@@ -123,8 +123,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   const { daycareAclRows } = useContext(UnitContext)
 
   return renderResult(
-    combine(childReservations, staffAttendances, daycareAclRows),
-    ([childData, staffData, daycareAclRows]) => (
+    combine(childReservations, staffAttendances),
+    ([childData, staffData]) => (
       <>
         {creatingReservationChild && (
           <ReservationModalSingleChild
@@ -163,21 +163,22 @@ export default React.memo(function UnitAttendanceReservationsView({
             />
           ) : (
             <>
-              {featureFlags.experimental?.realtimeStaffAttendance && (
-                <StaffAttendanceTable
-                  operationalDays={childData.operationalDays}
-                  staffAttendances={staffData.staff.filter((s) =>
-                    daycareAclRows
-                      .find((r) => r.employee.id === s.employeeId)
-                      ?.groupIds.includes(groupId)
-                  )}
-                  extraAttendances={staffData.extraAttendances.filter(
-                    (ea) => ea.groupId === groupId
-                  )}
-                  saveAttendance={saveAttendance}
-                  saveExternalAttendance={saveExternalAttendance}
-                />
-              )}
+              {featureFlags.experimental?.realtimeStaffAttendance &&
+                renderResult(daycareAclRows, (daycareAclRows) => (
+                  <StaffAttendanceTable
+                    operationalDays={childData.operationalDays}
+                    staffAttendances={staffData.staff.filter((s) =>
+                      daycareAclRows
+                        .find((r) => r.employee.id === s.employeeId)
+                        ?.groupIds.includes(groupId)
+                    )}
+                    extraAttendances={staffData.extraAttendances.filter(
+                      (ea) => ea.groupId === groupId
+                    )}
+                    saveAttendance={saveAttendance}
+                    saveExternalAttendance={saveExternalAttendance}
+                  />
+                ))}
               <ChildReservationsTable
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
