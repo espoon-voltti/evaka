@@ -94,7 +94,18 @@ class FinanceDecisionGenerator(
         from: LocalDate,
         families: List<FridgeFamily>
     ) {
-        families
+        val reverseFamilies = families.mapNotNull { family ->
+            if (family.partner == null) null else
+                FridgeFamily(
+                    headOfFamily = family.partner,
+                    partner = family.headOfFamily,
+                    children = family.fridgeSiblings,
+                    fridgeSiblings = family.children,
+                    period = family.period
+                )
+        }
+
+        (families + reverseFamilies)
             .groupBy { it.headOfFamily }
             .forEach { (headOfFamily, families) ->
                 tx.handleFeeDecisionChanges(
@@ -106,7 +117,7 @@ class FinanceDecisionGenerator(
                 )
             }
 
-        families
+        (families + reverseFamilies)
             .flatMap { family -> family.children.map { it to family } }
             .groupingBy { (child, _) -> child }
             .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
