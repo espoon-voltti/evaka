@@ -388,9 +388,12 @@ SELECT
     sn.placement_id,
     CASE
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
-        WHEN extract(YEARS FROM age(ch.date_of_birth)) < 3 THEN sno.occupancy_coefficient_under_3y
         ELSE sno.occupancy_coefficient
     END AS occupancy_coefficient,
+    CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
+        ELSE sno.occupancy_coefficient_under_3y
+    END AS occupancy_coefficient_under_3y,
     daterange(sn.start_date, sn.end_date, '[]') AS period
 FROM service_need sn
 JOIN placement pl ON sn.placement_id = pl.id
@@ -439,16 +442,21 @@ WHERE sn.placement_id = ANY(:placementIds)
         val dateOfBirth = childBirthdays[placement.childId]
             ?: error("No date of birth found for child ${placement.childId}")
 
-        val serviceNeedCoefficient = serviceNeeds[placement.placementId]
-            ?.let { placementServiceNeeds ->
-                placementServiceNeeds.find { it.period.includes(date) }?.occupancyCoefficient
+        val serviceNeedCoefficient = run {
+            val (coefficient, coefficientUnder3y) = serviceNeeds[placement.placementId]
+                ?.let { it.find { sn -> sn.period.includes(date) } }
+                ?.let { it.occupancyCoefficient to it.occupancyCoefficientUnder3y }
+                ?: defaultServiceNeedCoefficients[placement.type]?.let {
+                    it.occupancyCoefficient to it.occupancyCoefficientUnder3y
+                }
+                ?: error("No occupancy coefficients found for placement type ${placement.type}")
+
+            when {
+                placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
+                date < dateOfBirth.plusYears(3) -> coefficientUnder3y
+                else -> coefficient
             }
-            ?: when {
-                placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
-                date < dateOfBirth.plusYears(3) -> defaultServiceNeedCoefficients[placement.type]?.occupancyCoefficientUnder3y
-                else -> defaultServiceNeedCoefficients[placement.type]?.occupancyCoefficient
-            }
-            ?: error("No coefficient found for placement type ${placement.type}")
+        }
 
         return assistanceCoefficient * serviceNeedCoefficient
     }
@@ -600,6 +608,7 @@ private data class Child(
 data class ServiceNeed(
     val placementId: PlacementId,
     val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficientUnder3y: BigDecimal,
     val period: FiniteDateRange
 )
 
