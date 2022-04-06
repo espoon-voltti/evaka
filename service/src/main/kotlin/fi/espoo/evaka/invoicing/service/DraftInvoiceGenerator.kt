@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -41,7 +42,7 @@ class DraftInvoiceGenerator(
         decisions: Map<PersonId, List<FeeDecision>>,
         placements: Map<PersonId, List<Placements>>,
         period: DateRange,
-        daycareCodes: Map<DaycareId, DaycareCodes>,
+        daycareCodes: Map<DaycareId, AreaId>,
         operationalDays: OperationalDays,
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub>,
@@ -90,7 +91,7 @@ class DraftInvoiceGenerator(
         decisions: List<FeeDecision>,
         placements: List<Placements>,
         invoicePeriod: DateRange,
-        daycareCodes: Map<DaycareId, DaycareCodes>,
+        areaIds: Map<DaycareId, AreaId>,
         operationalDays: OperationalDays,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
@@ -188,13 +189,10 @@ class DraftInvoiceGenerator(
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
                     .flatMap { (period, rowStub) ->
                         val childId = rowStub.child.id
-                        val placementUnit = rowStub.placement.unit
-                        val codes = daycareCodes[placementUnit]
-                            ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
                         toInvoiceRows(
                             period,
                             rowStub,
-                            codes,
+                            rowStub.placement.unit,
                             dailyFeeDivisor,
                             attendanceDates,
                             relevantAbsences,
@@ -210,7 +208,7 @@ class DraftInvoiceGenerator(
         val areaId = rowStubs
             .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
             .let { (_, stub) ->
-                daycareCodes[stub.placement.unit]?.areaId
+                areaIds[stub.placement.unit]
                     ?: error("Couldn't find areaId for daycare (${stub.placement.unit})")
             }
 
@@ -374,7 +372,7 @@ class DraftInvoiceGenerator(
     private fun toInvoiceRows(
         period: DateRange,
         invoiceRowStub: InvoiceRowStub,
-        codes: DaycareCodes,
+        unitId: DaycareId,
         dailyFeeDivisor: Int,
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
@@ -387,7 +385,7 @@ class DraftInvoiceGenerator(
                 invoiceRowStub.child,
                 invoiceRowStub.placement,
                 invoiceRowStub.priceBeforeFeeAlterations,
-                codes,
+                unitId,
                 dailyFeeDivisor,
                 attendanceDates,
                 absences
@@ -397,7 +395,7 @@ class DraftInvoiceGenerator(
                 invoiceRowStub.child,
                 invoiceRowStub.placement,
                 invoiceRowStub.priceBeforeFeeAlterations,
-                codes,
+                unitId,
                 dailyFeeDivisor,
                 invoiceRowStub.contractDaysPerMonth,
                 attendanceDates,
@@ -416,7 +414,7 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
-        codes: DaycareCodes,
+        unitId: DaycareId,
         dailyFeeDivisor: Int,
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>
@@ -436,7 +434,7 @@ class DraftInvoiceGenerator(
                 child = child.id,
                 amount = amount,
                 unitPrice = price,
-                unitId = codes.unitId,
+                unitId = unitId,
                 product = productProvider.mapToProduct(placement.type),
                 correctionId = null
             )
@@ -448,7 +446,7 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
-        codes: DaycareCodes,
+        unitId: DaycareId,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
@@ -482,7 +480,7 @@ class DraftInvoiceGenerator(
                 periodEnd = period.end!!,
                 amount = amount,
                 unitPrice = unitPrice(price),
-                unitId = codes.unitId,
+                unitId = unitId,
                 product = product,
                 correctionId = null
             )
@@ -493,7 +491,7 @@ class DraftInvoiceGenerator(
                 periodEnd = period.end,
                 child = child.id,
                 product = productProvider.mapToFeeAlterationProduct(product, feeAlterationType),
-                unitId = codes.unitId,
+                unitId = unitId,
                 amount = amount,
                 unitPrice = unitPrice(feeAlterationEffect),
                 correctionId = null
@@ -502,7 +500,7 @@ class DraftInvoiceGenerator(
             period,
             child,
             price,
-            codes,
+            unitId,
             feeAlterations,
             dailyFeeDivisor,
             contractDaysPerMonth,
@@ -525,7 +523,7 @@ class DraftInvoiceGenerator(
                 periodEnd = period.end,
                 amount = refundAmount,
                 unitPrice = refundUnitPrice,
-                unitId = codes.unitId,
+                unitId = unitId,
                 product = refundProduct,
                 correctionId = null
             )
@@ -540,7 +538,7 @@ class DraftInvoiceGenerator(
                 periodStart = period.start,
                 periodEnd = period.end,
                 product = absenceProduct,
-                unitId = codes.unitId,
+                unitId = unitId,
                 amount = amount,
                 unitPrice = BigDecimal(absenceDiscount).divide(BigDecimal(amount), 0, RoundingMode.HALF_UP).toInt(),
                 correctionId = null
@@ -552,7 +550,7 @@ class DraftInvoiceGenerator(
         period: DateRange,
         child: ChildWithDateOfBirth,
         price: Int,
-        codes: DaycareCodes,
+        unitId: DaycareId,
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
@@ -575,7 +573,7 @@ class DraftInvoiceGenerator(
                     periodEnd = period.end!!,
                     child = child.id,
                     product = productProvider.contractSurplusDay,
-                    unitId = codes.unitId,
+                    unitId = unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
                     correctionId = null
@@ -590,7 +588,7 @@ class DraftInvoiceGenerator(
                         productProvider.contractSurplusDay,
                         feeAlterationType
                     ),
-                    unitId = codes.unitId,
+                    unitId = unitId,
                     amount = surplusAttendanceDays,
                     unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor),
                     correctionId = null

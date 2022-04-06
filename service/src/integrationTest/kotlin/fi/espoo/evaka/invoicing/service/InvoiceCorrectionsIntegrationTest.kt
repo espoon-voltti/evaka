@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.config.testFeatureConfig
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
@@ -57,7 +58,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         val invoice = createTestInvoice(100_00)
         val correctionId = insertTestCorrection(1, -100_00)
 
-        val invoiceWithCorrections = db.read { generator.applyCorrections(it, listOf(invoice)) }.first()
+        val invoiceWithCorrections = db.read { it.applyCorrections(listOf(invoice)) }.first()
         assertEquals(2, invoiceWithCorrections.rows.size)
         assertEquals(0, invoiceWithCorrections.totalPrice)
         assertEquals(1, invoiceWithCorrections.rows.first().amount)
@@ -72,7 +73,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         val invoice = createTestInvoice(100_00)
         val correctionId = insertTestCorrection(5, -20_00)
 
-        val invoiceWithCorrections = db.read { generator.applyCorrections(it, listOf(invoice)) }.first()
+        val invoiceWithCorrections = db.read { it.applyCorrections(listOf(invoice)) }.first()
         assertEquals(2, invoiceWithCorrections.rows.size)
         assertEquals(0, invoiceWithCorrections.totalPrice)
         assertEquals(1, invoiceWithCorrections.rows.first().amount)
@@ -88,7 +89,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
         val firstInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, firstPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, firstPeriod)), firstPeriod) }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(20_00, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -100,7 +101,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val secondPeriod = firstPeriod.getNextMonth()
         val secondInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, secondPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, secondPeriod)), secondPeriod) }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(20_00, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -112,7 +113,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val thirdPeriod = secondPeriod.getNextMonth()
         val thirdInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, thirdPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, thirdPeriod)), thirdPeriod) }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(60_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -129,7 +130,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
         val firstInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, firstPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, firstPeriod)), firstPeriod) }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -141,7 +142,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val secondPeriod = firstPeriod.getNextMonth()
         val secondInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, secondPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, secondPeriod)), secondPeriod) }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(0, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -153,7 +154,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val thirdPeriod = secondPeriod.getNextMonth()
         val thirdInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, thirdPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, thirdPeriod)), thirdPeriod) }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(50_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -169,7 +170,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         val invoice = createTestInvoice(100_00)
         val correctionId = insertTestCorrection(1, 500_00)
 
-        val invoiceWithCorrections = db.read { generator.applyCorrections(it, listOf(invoice)) }.first()
+        val invoiceWithCorrections = db.read { it.applyCorrections(listOf(invoice)) }.first()
         assertEquals(2, invoiceWithCorrections.rows.size)
         assertEquals(600_00, invoiceWithCorrections.totalPrice)
         assertEquals(1, invoiceWithCorrections.rows.first().amount)
@@ -188,7 +189,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val firstPeriod = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
         val firstInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, firstPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, firstPeriod)), firstPeriod) }.first()
         assertEquals(3, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows[0].amount)
@@ -203,7 +204,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
 
         val secondPeriod = firstPeriod.getNextMonth()
         val secondInvoice =
-            db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00, secondPeriod))) }.first()
+            db.read { it.applyCorrections(listOf(createTestInvoice(100_00, secondPeriod)), secondPeriod) }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(50_00, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -220,7 +221,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         val firstRefundCorrectionId = insertTestCorrection(1, -70_00)
         val secondRefundCorrectionId = insertTestCorrection(1, -80_00)
 
-        val firstInvoice = db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00))) }.first()
+        val firstInvoice = db.read { it.applyCorrections(listOf(createTestInvoice(100_00))) }.first()
         assertEquals(4, firstInvoice.rows.size)
         assertEquals(150_00, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows[0].amount)
@@ -240,7 +241,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
     fun `refund partition with variable invoice totals works as expected`() {
         val correctionId = insertTestCorrection(5, -50_00)
 
-        val firstInvoice = db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00))) }.first()
+        val firstInvoice = db.read { it.applyCorrections(listOf(createTestInvoice(100_00))) }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -250,7 +251,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         assertEquals(correctionId, firstInvoice.rows.last().correctionId)
         db.transaction { it.upsertInvoices(listOf(firstInvoice.copy(status = InvoiceStatus.SENT))) }
 
-        val secondInvoice = db.read { generator.applyCorrections(it, listOf(createTestInvoice(30_00))) }.first()
+        val secondInvoice = db.read { it.applyCorrections(listOf(createTestInvoice(30_00))) }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(0, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -260,7 +261,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         assertEquals(correctionId, secondInvoice.rows.last().correctionId)
         db.transaction { it.upsertInvoices(listOf(secondInvoice.copy(status = InvoiceStatus.SENT))) }
 
-        val thirdInvoice = db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00))) }.first()
+        val thirdInvoice = db.read { it.applyCorrections(listOf(createTestInvoice(100_00))) }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(20_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -270,7 +271,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         assertEquals(correctionId, thirdInvoice.rows.last().correctionId)
         db.transaction { it.upsertInvoices(listOf(thirdInvoice.copy(status = InvoiceStatus.SENT))) }
 
-        val fourthInvoice = db.read { generator.applyCorrections(it, listOf(createTestInvoice(100_00))) }.first()
+        val fourthInvoice = db.read { it.applyCorrections(listOf(createTestInvoice(100_00))) }.first()
         assertEquals(2, fourthInvoice.rows.size)
         assertEquals(60_00, fourthInvoice.totalPrice)
         assertEquals(1, fourthInvoice.rows.first().amount)
@@ -285,7 +286,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
     fun `correction is marked as applied when its invoice is sent`() {
         val correctionId = insertTestCorrection(1, -50_00)
         db.transaction {
-            val invoices = generator.applyCorrections(it, listOf(createTestInvoice(100_00)))
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00)))
             it.upsertInvoices(invoices)
             invoiceService.sendInvoices(
                 it,
@@ -312,7 +313,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
     fun `correction is not marked as applied when its invoice is sent if the correction hasn't been applied completely`() {
         val correctionId = insertTestCorrection(1, -200_00)
         db.transaction {
-            val invoices = generator.applyCorrections(it, listOf(createTestInvoice(100_00)))
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00)))
             it.upsertInvoices(invoices)
             invoiceService.sendInvoices(
                 it,
@@ -333,6 +334,29 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest() {
         assertEquals(1, result.size)
         assertEquals(correctionId, result.first().first)
         assertEquals(false, result.first().second)
+    }
+
+    @Test
+    fun `corrections without a matching invoice are included as new invoices`() {
+        val refundId = insertTestCorrection(1, -50_00)
+        val increaseId = insertTestCorrection(1, 100_00)
+
+        val invoiceWithCorrections = db.read { it.applyCorrections(listOf()) }.first()
+        assertEquals(2, invoiceWithCorrections.rows.size)
+        assertEquals(50_00, invoiceWithCorrections.totalPrice)
+        assertEquals(1, invoiceWithCorrections.rows.first().amount)
+        assertEquals(100_00, invoiceWithCorrections.rows.first().unitPrice)
+        assertEquals(increaseId, invoiceWithCorrections.rows.first().correctionId)
+        assertEquals(1, invoiceWithCorrections.rows.last().amount)
+        assertEquals(-50_00, invoiceWithCorrections.rows.last().unitPrice)
+        assertEquals(refundId, invoiceWithCorrections.rows.last().correctionId)
+    }
+
+    private fun Database.Read.applyCorrections(
+        invoices: List<Invoice>,
+        period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
+    ): List<Invoice> {
+        return generator.applyCorrections(this, invoices, period.asDateRange(), mapOf(testDaycare.id to testArea.id))
     }
 
     private fun createTestInvoice(
