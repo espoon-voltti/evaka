@@ -5,5 +5,6 @@
 FROM postgres:14-alpine
 
 ENV POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres
+COPY postgresql.conf /var/lib/postgresql/
 COPY *.sql /docker-entrypoint-initdb.d/
-CMD ["postgres", "-c", "fsync=off"]
+CMD ["-c", "config_file=/var/lib/postgresql/postgresql.conf"]
