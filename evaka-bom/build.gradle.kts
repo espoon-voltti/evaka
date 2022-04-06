@@ -55,12 +55,10 @@ dependencies {
         api("org.postgresql:postgresql:42.3.3")
         api("org.skyscreamer:jsonassert:1.5.0")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
-        api("org.thymeleaf:thymeleaf:3.0.14.RELEASE")
+        api("org.thymeleaf:thymeleaf:3.0.15.RELEASE")
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
         api("redis.clients:jedis:4.2.1")
-        api("org.apache.logging.log4j:log4j-api:2.17.1")
-        api("org.apache.logging.log4j:log4j-to-slf4j:2.17.1")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220328"))
