@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -39,25 +40,6 @@ data class ApplicationServiceNeed(
     val shiftCare: Boolean
 )
 
-fun getPlacementTypePeriodBounds(placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>): FiniteDateRange? {
-    if (placementTypePeriods.isEmpty()) {
-        return null
-    }
-
-    placementTypePeriods.zip(placementTypePeriods.drop(1)).forEach {
-        (current, next) ->
-        val (currentPeriod, _) = current
-        val (nextPeriod, _) = next
-        if (currentPeriod.end.plusDays(1) != nextPeriod.start) {
-            throw Exception("Expected ordered and contiguous periods")
-        }
-    }
-
-    val (firstPeriod, _) = placementTypePeriods.first()
-    val (lastPeriod, _) = placementTypePeriods.last()
-    return FiniteDateRange(firstPeriod.start, lastPeriod.end)
-}
-
 fun createPlacements(
     tx: Database.Transaction,
     childId: ChildId,
@@ -65,8 +47,10 @@ fun createPlacements(
     placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>,
     serviceNeed: ApplicationServiceNeed? = null
 ): List<Placement> {
-    val fullPeriod = getPlacementTypePeriodBounds(placementTypePeriods) ?: return listOf()
-    tx.clearOldPlacements(childId, fullPeriod.start, fullPeriod.end)
+    val timeline = Timeline.of(placementTypePeriods.map { it.first })
+    timeline.ranges().forEach {
+        tx.clearOldPlacements(childId, it.start, it.end)
+    }
 
     return placementTypePeriods.map { (period, type) ->
         val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)

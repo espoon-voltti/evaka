@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -208,12 +209,13 @@ class PlacementPlanService(
             placementTypePeriods = placementTypePeriods,
             serviceNeed = serviceNeed
         )
-        getPlacementTypePeriodBounds(placementTypePeriods)?.let { effectivePeriod ->
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, effectivePeriod.asDateRange()))
-            )
-        }
+        val timeline = Timeline.of(placementTypePeriods.map { it.first })
+        asyncJobRunner.plan(
+            tx,
+            timeline.ranges().map {
+                AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange())
+            }.asIterable()
+        )
     }
 
     fun calculateSpeculatedPlacements(
