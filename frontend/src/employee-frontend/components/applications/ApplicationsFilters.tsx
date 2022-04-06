@@ -37,16 +37,10 @@ import {
 
 export default React.memo(function ApplicationFilters() {
   const {
-    units,
-    setUnits,
     allUnits,
     setAllUnits,
     availableAreas,
     setAvailableAreas,
-    status,
-    setStatus,
-    type,
-    setType,
     dateType,
     setDateType,
     startDate,
@@ -56,8 +50,6 @@ export default React.memo(function ApplicationFilters() {
     searchTerms,
     setSearchTerms,
     clearSearchFilters,
-    basis,
-    setBasis,
     preschoolType,
     setPreschoolType,
     allStatuses,
@@ -86,25 +78,34 @@ export default React.memo(function ApplicationFilters() {
         : availableAreas
             .map((areas) => areas.map(({ shortName }) => shortName))
             .getOrElse([])
-    void getUnits(areas, type).then(setAllUnits)
-  }, [type, availableAreas, applicationSearchFilters.area]) // eslint-disable-line react-hooks/exhaustive-deps
+    void getUnits(areas, applicationSearchFilters.type).then(setAllUnits)
+  }, [applicationSearchFilters.type, availableAreas, applicationSearchFilters.area]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (units.length === 0 && distinctions.includes('SECONDARY')) {
+    if (
+      applicationSearchFilters.units.length === 0 &&
+      distinctions.includes('SECONDARY')
+    ) {
       setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
     }
-  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [applicationSearchFilters.units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())
-    basis.includes(toggledBasis)
-      ? setBasis(basis.filter((v) => v != toggledBasis))
-      : setBasis([...basis, toggledBasis])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      basis: applicationSearchFilters.basis.includes(toggledBasis)
+        ? applicationSearchFilters.basis.filter((v) => v != toggledBasis)
+        : [...applicationSearchFilters.basis, toggledBasis]
+    })
   }
 
   const toggleStatus = (newStatus: ApplicationSummaryStatusOptions) => () => {
     setApplicationsResult(Loading.of())
-    if ((newStatus === 'ALL' && status !== 'ALL') || allStatuses.length === 0) {
+    if (
+      (newStatus === 'ALL' && applicationSearchFilters.status !== 'ALL') ||
+      allStatuses.length === 0
+    ) {
       setAllStatuses([
         'SENT',
         'WAITING_PLACEMENT',
@@ -116,15 +117,25 @@ export default React.memo(function ApplicationFilters() {
         'ACTIVE',
         'CANCELLED'
       ])
-    } else if (newStatus === 'ALL' && status === 'ALL') {
+    } else if (
+      newStatus === 'ALL' &&
+      applicationSearchFilters.status === 'ALL'
+    ) {
       setAllStatuses([])
     }
-    setStatus(newStatus)
+    console.log('Setting status to ', newStatus)
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      status: newStatus
+    })
   }
 
   const toggleApplicationType = (type: ApplicationTypeToggle) => () => {
     setApplicationsResult(Loading.of())
-    setType(type)
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      type
+    })
     if (type === 'PRESCHOOL') {
       setPreschoolType([...preschoolTypes])
     }
@@ -153,7 +164,10 @@ export default React.memo(function ApplicationFilters() {
 
   const changeUnits = (selectedUnits: string[]) => {
     setApplicationsResult(Loading.of())
-    setUnits(selectedUnits.map((selectedUnit) => selectedUnit))
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      units: selectedUnits.map((selectedUnit) => selectedUnit)
+    })
   }
 
   const toggleApplicationDistinctions =
@@ -170,7 +184,7 @@ export default React.memo(function ApplicationFilters() {
       freeText={searchTerms}
       setFreeText={setSearchTerms}
       clearFilters={clearSearchFilters}
-      clearMargin={status === 'ALL' ? 0 : -40}
+      clearMargin={applicationSearchFilters.status === 'ALL' ? 0 : -40}
       column1={
         <>
           <AreaMultiSelect
@@ -186,7 +200,7 @@ export default React.memo(function ApplicationFilters() {
           <Gap size="L" />
           <MultiSelectUnitFilter
             units={allUnits.getOrElse([])}
-            selectedUnits={units}
+            selectedUnits={applicationSearchFilters.units}
             onChange={changeUnits}
             data-qa="unit-selector"
           />
@@ -194,17 +208,20 @@ export default React.memo(function ApplicationFilters() {
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
             toggled={distinctions}
-            disableSecondary={units.length === 0}
+            disableSecondary={applicationSearchFilters.units.length === 0}
           />
           <Gap size="L" />
           <ApplicationTypeFilter
-            toggled={type}
+            toggled={applicationSearchFilters.type}
             toggledPreschool={preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
           <Gap size="L" />
-          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
+          <ApplicationBasisFilter
+            toggled={applicationSearchFilters.basis}
+            toggle={toggleBasis}
+          />
         </>
       }
       column2={
@@ -223,7 +240,7 @@ export default React.memo(function ApplicationFilters() {
       column3={
         <Fragment>
           <ApplicationStatusFilter
-            toggled={status}
+            toggled={applicationSearchFilters.status}
             toggledAllStatuses={allStatuses}
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}

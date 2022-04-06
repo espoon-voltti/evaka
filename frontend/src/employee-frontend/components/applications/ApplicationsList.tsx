@@ -116,8 +116,12 @@ const ApplicationsList = React.memo(function Applications({
   const { data: applications, pages, total } = applicationsResult
 
   const { i18n } = useTranslation()
-  const { showCheckboxes, checkedIds, setCheckedIds, status } =
-    useContext(ApplicationUIContext)
+  const {
+    showCheckboxes,
+    checkedIds,
+    setCheckedIds,
+    applicationSearchFilters
+  } = useContext(ApplicationUIContext)
 
   const { roles } = useContext(UserContext)
   const enableApplicationActions =
@@ -433,9 +437,9 @@ const ApplicationsList = React.memo(function Applications({
     <div data-qa="applications-list">
       <TitleRowContainer>
         <H1 fitted noMargin>
-          {status === 'ALL'
+          {applicationSearchFilters.status === 'ALL'
             ? i18n.applications.list.title
-            : i18n.application.statuses[status]}
+            : i18n.application.statuses[applicationSearchFilters.status]}
         </H1>
         <PaginationWrapper>
           <div>

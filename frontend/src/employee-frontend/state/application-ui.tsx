@@ -40,12 +40,6 @@ interface UIState {
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
   availableAreas: Result<DaycareCareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
-  units: string[]
-  setUnits: (units: string[]) => void
-  type: ApplicationTypeToggle
-  setType: (type: ApplicationTypeToggle) => void
-  status: ApplicationSummaryStatusOptions
-  setStatus: (status: ApplicationSummaryStatusOptions) => void
   dateType: ApplicationDateType[]
   setDateType: (dateTypes: ApplicationDateType[]) => void
   startDate: LocalDate | undefined
@@ -63,8 +57,6 @@ interface UIState {
   ) => void
   debouncedApplicationSearchFilters: ApplicationSearchFilters
   clearSearchFilters: () => void
-  basis: ApplicationBasis[]
-  setBasis: (basis: ApplicationBasis[]) => void
   checkedIds: string[]
   setCheckedIds: (applicationIds: UUID[]) => void
   showCheckboxes: boolean
@@ -82,10 +74,10 @@ interface UIState {
 
 interface ApplicationSearchFilters {
   area: string[]
-  //units: string[]
-  //basis: ApplicationBasis[]
-  //type: ApplicationTypeToggle
-  //status: ApplicationSummaryStatusOptions
+  units: string[]
+  basis: ApplicationBasis[]
+  status: ApplicationSummaryStatusOptions
+  type: ApplicationTypeToggle
   //startDate: LocalDate | undefined
   //endDate: LocalDate | undefined
   //dateType: ApplicationDateType[]
@@ -98,7 +90,12 @@ export type VoucherApplicationFilter =
   | undefined
 
 const clearApplicationSearchFilters: ApplicationSearchFilters = {
-  area: [] //, basis: [], status: 'SENT', startDate: undefined, endDate: undefined, units: [], type: 'ALL', dateType: []
+  area: [],
+  units: [],
+  basis: [],
+  status: 'SENT',
+  type: 'ALL'
+  //startDate: undefined, endDate: undefined, dateType: []
 }
 
 const defaultState: UIState = {
@@ -106,12 +103,6 @@ const defaultState: UIState = {
   setApplicationsResult: () => undefined,
   availableAreas: Loading.of(),
   setAvailableAreas: () => undefined,
-  units: [],
-  setUnits: () => undefined,
-  type: 'ALL',
-  setType: () => undefined,
-  status: 'SENT' as const,
-  setStatus: () => undefined,
   dateType: [],
   setDateType: () => undefined,
   startDate: undefined,
@@ -127,8 +118,6 @@ const defaultState: UIState = {
   setApplicationSearchFilters: () => undefined,
   debouncedApplicationSearchFilters: clearApplicationSearchFilters,
   clearSearchFilters: () => undefined,
-  basis: [],
-  setBasis: () => undefined,
   checkedIds: [],
   setCheckedIds: () => undefined,
   showCheckboxes: false,
@@ -158,14 +147,9 @@ export const ApplicationUIContextProvider = React.memo(
     const [availableAreas, setAvailableAreas] = useState<
       Result<DaycareCareArea[]>
     >(defaultState.availableAreas)
-    const [status, setStatus] = useState<ApplicationSummaryStatusOptions>(
-      defaultState.status
-    )
     const [dateType, setDateType] = useState<ApplicationDateType[]>(
       defaultState.dateType
     )
-    const [units, setUnits] = useState<string[]>(defaultState.units)
-    const [type, setType] = useState<ApplicationTypeToggle>(defaultState.type)
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
       defaultState.allUnits
     )
@@ -187,19 +171,14 @@ export const ApplicationUIContextProvider = React.memo(
 
     const clearSearchFilters = useCallback(() => {
       setApplicationSearchFilters(defaultState.applicationSearchFilters)
-      setUnits(defaultState.units)
-      setBasis(defaultState.basis)
-      setType(defaultState.type)
-      setStatus(defaultState.status)
       setStartDate(defaultState.startDate)
       setEndDate(defaultState.endDate)
       setDateType(defaultState.dateType)
     }, [])
-    const [basis, setBasis] = useState<ApplicationBasis[]>(defaultState.basis)
 
     const debouncedApplicationSearchFilters = useDebounce(
       applicationSearchFilters,
-      5000
+      500
     )
 
     const [checkedIds, setCheckedIds] = useState<string[]>(
@@ -224,18 +203,12 @@ export const ApplicationUIContextProvider = React.memo(
         setApplicationsResult,
         availableAreas,
         setAvailableAreas,
-        status,
-        setStatus,
         dateType,
         setDateType,
         startDate,
         setStartDate,
         endDate,
         setEndDate,
-        units,
-        setUnits,
-        type,
-        setType,
         allUnits,
         setAllUnits,
         searchTerms,
@@ -245,8 +218,6 @@ export const ApplicationUIContextProvider = React.memo(
         setApplicationSearchFilters,
         debouncedApplicationSearchFilters,
         clearSearchFilters,
-        basis,
-        setBasis,
         checkedIds,
         setCheckedIds,
         showCheckboxes,
@@ -266,18 +237,12 @@ export const ApplicationUIContextProvider = React.memo(
         setApplicationsResult,
         availableAreas,
         setAvailableAreas,
-        status,
-        setStatus,
         dateType,
         setDateType,
         startDate,
         setStartDate,
         endDate,
         setEndDate,
-        units,
-        setUnits,
-        type,
-        setType,
         allUnits,
         setAllUnits,
         searchTerms,
@@ -287,8 +252,6 @@ export const ApplicationUIContextProvider = React.memo(
         setApplicationSearchFilters,
         debouncedApplicationSearchFilters,
         clearSearchFilters,
-        basis,
-        setBasis,
         checkedIds,
         setCheckedIds,
         showCheckboxes,

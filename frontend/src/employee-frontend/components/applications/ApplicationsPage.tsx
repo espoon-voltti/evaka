@@ -41,12 +41,7 @@ export default React.memo(function ApplicationsPage() {
   const {
     applicationsResult,
     setApplicationsResult,
-    //area,
-    units,
-    basis,
-    type,
     preschoolType,
-    status,
     allStatuses,
     dateType,
     distinctions,
@@ -80,19 +75,26 @@ export default React.memo(function ApplicationsPage() {
         : debouncedApplicationSearchFilters.area.length > 0
         ? debouncedApplicationSearchFilters.area.join(',')
         : undefined,
-      units: units.length > 0 ? units.join(',') : undefined,
-      basis: basis.length > 0 ? basis.join(',') : undefined,
-      type: type,
+      units:
+        debouncedApplicationSearchFilters.units.length > 0
+          ? debouncedApplicationSearchFilters.units.join(',')
+          : undefined,
+      basis:
+        debouncedApplicationSearchFilters.basis.length > 0
+          ? debouncedApplicationSearchFilters.basis.join(',')
+          : undefined,
+      type: debouncedApplicationSearchFilters.type,
       preschoolType:
-        type === 'PRESCHOOL' && preschoolType.length > 0
+        debouncedApplicationSearchFilters.type === 'PRESCHOOL' &&
+        preschoolType.length > 0
           ? preschoolType.join(',')
           : undefined,
       status:
-        status === 'ALL'
+        debouncedApplicationSearchFilters.status === 'ALL'
           ? allStatuses.length > 0
             ? allStatuses.join(',')
             : undefined
-          : status,
+          : debouncedApplicationSearchFilters.status,
       dateType: dateType.length > 0 ? dateType.join(',') : undefined,
       distinctions:
         distinctions.length > 0 ? distinctions.join(',') : undefined,
@@ -110,11 +112,7 @@ export default React.memo(function ApplicationsPage() {
     page,
     sortBy,
     sortDirection,
-    units,
-    basis,
-    type,
     preschoolType,
-    status,
     allStatuses,
     dateType,
     distinctions,
@@ -135,7 +133,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
+  }, [setPage, preschoolType, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">
@@ -148,9 +146,11 @@ export default React.memo(function ApplicationsPage() {
         {applicationsResult.isFailure && (
           <PaddedDiv>
             <H1>
-              {status === 'ALL'
+              {debouncedApplicationSearchFilters.status === 'ALL'
                 ? i18n.applications.list.title
-                : i18n.application.statuses[status]}
+                : i18n.application.statuses[
+                    debouncedApplicationSearchFilters.status
+                  ]}
             </H1>
             <ErrorSegment />
           </PaddedDiv>
@@ -159,9 +159,11 @@ export default React.memo(function ApplicationsPage() {
         {applicationsResult.isLoading && (
           <PaddedDiv>
             <H1>
-              {status === 'ALL'
+              {debouncedApplicationSearchFilters.status === 'ALL'
                 ? i18n.applications.list.title
-                : i18n.application.statuses[status]}
+                : i18n.application.statuses[
+                    debouncedApplicationSearchFilters.status
+                  ]}
             </H1>
             <SpinnerSegment data-qa="applications-spinner" />
           </PaddedDiv>
