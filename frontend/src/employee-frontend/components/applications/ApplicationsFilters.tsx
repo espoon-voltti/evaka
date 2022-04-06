@@ -41,12 +41,6 @@ export default React.memo(function ApplicationFilters() {
     setAllUnits,
     availableAreas,
     setAvailableAreas,
-    dateType,
-    setDateType,
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
     searchTerms,
     setSearchTerms,
     clearSearchFilters,
@@ -123,7 +117,6 @@ export default React.memo(function ApplicationFilters() {
     ) {
       setAllStatuses([])
     }
-    console.log('Setting status to ', newStatus)
     setApplicationSearchFilters({
       ...applicationSearchFilters,
       status: newStatus
@@ -142,9 +135,12 @@ export default React.memo(function ApplicationFilters() {
   }
   const toggleDate = (toggledDateType: ApplicationDateType) => () => {
     setApplicationsResult(Loading.of())
-    dateType.includes(toggledDateType)
-      ? setDateType(dateType.filter((v) => v !== toggledDateType))
-      : setDateType([...dateType, toggledDateType])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      dateType: applicationSearchFilters.dateType.includes(toggledDateType)
+        ? applicationSearchFilters.dateType.filter((v) => v !== toggledDateType)
+        : [...applicationSearchFilters.dateType, toggledDateType]
+    })
   }
 
   const toggleApplicationPreschoolType = (type: PreschoolType) => () => {
@@ -247,11 +243,21 @@ export default React.memo(function ApplicationFilters() {
           />
           <Gap size="XL" />
           <ApplicationDateFilter
-            startDate={startDate}
-            setStartDate={setStartDate}
-            endDate={endDate}
-            setEndDate={setEndDate}
-            toggled={dateType}
+            startDate={applicationSearchFilters.startDate}
+            setStartDate={(startDate) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                startDate
+              })
+            }
+            endDate={applicationSearchFilters.endDate}
+            setEndDate={(endDate) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                endDate
+              })
+            }
+            toggled={applicationSearchFilters.dateType}
             toggle={toggleDate}
           />
         </Fragment>

@@ -46,7 +46,8 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
     []
   )
 
-  const { checkedIds, setCheckedIds, status } = useContext(ApplicationUIContext)
+  const { checkedIds, setCheckedIds, applicationSearchFilters } =
+    useContext(ApplicationUIContext)
   const [actionInFlight, setActionInFlight] = useState(false)
   const { setErrorMessage } = useContext(UIContext)
   const clearApplicationList = () => {
@@ -80,7 +81,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'moveToWaitingPlacement',
       label: i18n.applications.actions.moveToWaitingPlacement,
       primary: true,
-      enabled: status === 'SENT',
+      enabled: applicationSearchFilters.status === 'SENT',
       disabled,
       onClick: () => handlePromise(batchMoveToWaitingPlacement(checkedIds))
     },
@@ -88,7 +89,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'returnToSent',
       label: i18n.applications.actions.returnToSent,
       primary: false,
-      enabled: status === 'WAITING_PLACEMENT',
+      enabled: applicationSearchFilters.status === 'WAITING_PLACEMENT',
       disabled,
       onClick: () => handlePromise(batchReturnToSent(checkedIds))
     },
@@ -96,7 +97,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'cancelPlacementPlan',
       label: i18n.applications.actions.cancelPlacementPlan,
       primary: false,
-      enabled: status === 'WAITING_DECISION',
+      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
       onClick: () => handlePromise(batchCancelPlacementPlan(checkedIds))
     },
@@ -104,7 +105,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'sendDecisionsWithoutProposal',
       label: i18n.applications.actions.sendDecisionsWithoutProposal,
       primary: false,
-      enabled: status === 'WAITING_DECISION',
+      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
       onClick: () =>
         handlePromise(batchSendDecisionsWithoutProposal(checkedIds))
@@ -113,7 +114,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'sendPlacementProposal',
       label: i18n.applications.actions.sendPlacementProposal,
       primary: true,
-      enabled: status === 'WAITING_DECISION',
+      enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
       onClick: () => handlePromise(batchSendPlacementProposal(checkedIds))
     },
@@ -121,7 +122,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       id: 'withdrawPlacementProposal',
       label: i18n.applications.actions.withdrawPlacementProposal,
       primary: false,
-      enabled: status === 'WAITING_UNIT_CONFIRMATION',
+      enabled: applicationSearchFilters.status === 'WAITING_UNIT_CONFIRMATION',
       disabled,
       onClick: () => handlePromise(batchWithdrawPlacementProposal(checkedIds))
     }

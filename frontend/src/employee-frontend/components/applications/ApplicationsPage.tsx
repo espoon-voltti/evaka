@@ -43,12 +43,9 @@ export default React.memo(function ApplicationsPage() {
     setApplicationsResult,
     preschoolType,
     allStatuses,
-    dateType,
     distinctions,
     transferApplications,
     voucherApplications,
-    startDate,
-    endDate,
     debouncedSearchTerms,
     debouncedApplicationSearchFilters,
     setCheckedIds
@@ -95,13 +92,22 @@ export default React.memo(function ApplicationsPage() {
             ? allStatuses.join(',')
             : undefined
           : debouncedApplicationSearchFilters.status,
-      dateType: dateType.length > 0 ? dateType.join(',') : undefined,
+      dateType:
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.dateType.join(',')
+          : undefined,
       distinctions:
         distinctions.length > 0 ? distinctions.join(',') : undefined,
       periodStart:
-        startDate && dateType.length > 0 ? startDate.formatIso() : undefined,
+        debouncedApplicationSearchFilters.startDate &&
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.startDate.formatIso()
+          : undefined,
       periodEnd:
-        endDate && dateType.length > 0 ? endDate.formatIso() : undefined,
+        debouncedApplicationSearchFilters.endDate &&
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.endDate.formatIso()
+          : undefined,
       searchTerms: debouncedSearchTerms,
       transferApplications,
       voucherApplications
@@ -114,12 +120,9 @@ export default React.memo(function ApplicationsPage() {
     sortDirection,
     preschoolType,
     allStatuses,
-    dateType,
     distinctions,
     transferApplications,
     voucherApplications,
-    startDate,
-    endDate,
     debouncedSearchTerms,
     debouncedApplicationSearchFilters,
     reloadApplications
@@ -133,7 +136,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, preschoolType, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
+  }, [setPage, preschoolType, allStatuses, distinctions, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">
