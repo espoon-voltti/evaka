@@ -26,8 +26,7 @@ enum class UnitType {
     CLUB;
 
     companion object {
-        val JDBI_COLUMN_MAPPER: ColumnMapper<UnitType> = ColumnMapper<UnitType> {
-            rs: ResultSet, columnNumber: Int, _: StatementContext ->
+        val JDBI_COLUMN_MAPPER: ColumnMapper<UnitType> = ColumnMapper<UnitType> { rs: ResultSet, columnNumber: Int, _: StatementContext ->
             @Suppress("UNCHECKED_CAST")
             (rs.getArray(columnNumber).array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType)
         }

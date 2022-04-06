@@ -4,7 +4,7 @@
 
 object Version {
     const val java = "17"
-    const val ktlint = "0.43.2"
+    const val ktlint = "0.45.1"
 
     object GradlePlugin {
         const val flyway = "8.3.0"

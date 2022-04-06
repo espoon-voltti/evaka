@@ -9,7 +9,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.50'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.20'
 }
 
 repositories {
@@ -18,11 +18,11 @@ repositories {
 
 dependencies {
     api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-    implementation 'com.pinterest.ktlint:ktlint-core:0.35.0'
+    implementation 'com.pinterest.ktlint:ktlint-core:0.45.1'
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
-    testImplementation 'com.pinterest.ktlint:ktlint-test:0.35.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testImplementation 'com.pinterest.ktlint:ktlint-test:0.45.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 }
 
 test {
