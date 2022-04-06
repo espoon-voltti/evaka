@@ -303,6 +303,109 @@ class OccupancyTest : PureJdbiTest() {
         }
     }
 
+    private fun placementPlanTest(preschool: IntRange, preschoolDaycare: IntRange, expectedSums: Map<Int, Double>) {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(6).saveAnd {
+                    addPlacementPlan().ofType(PlacementType.PRESCHOOL_DAYCARE)
+                        .fromDay(preschool.first)
+                        .toDay(preschool.last)
+                        .withPreschoolDaycareDates(FiniteDateRange(today.plusDays(preschoolDaycare.first.toLong()), today.plusDays(preschoolDaycare.last.toLong())))
+                        .toUnit(daycareInArea1).save()
+                }
+        }
+        db.read { tx ->
+            expectedSums.forEach { (day, expectedSum) ->
+                getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.PLANNED, today.plusDays(day.toLong()), expectedSum)
+                getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.plusDays(day.toLong()), 0.0)
+            }
+        }
+    }
+
+    @Test
+    fun `placement plan - pure preschool before preschool+daycare`() = placementPlanTest(
+        // 45678
+        // PP    <- pure preschool
+        //    DD <- preschool+daycare
+        preschool = 4..5,
+        preschoolDaycare = 7..8,
+        expectedSums = mapOf(
+            5 to 0.5,
+            6 to 0.0,
+            7 to 1.0
+        )
+    )
+
+    @Test
+    fun `placement plan - pure preschool, overlap, preschool+daycare`() = placementPlanTest(
+        // 45678
+        // PPP   <- pure preschool
+        //   DDD <- preschool+daycare
+        preschool = 4..6,
+        preschoolDaycare = 6..8,
+        expectedSums = mapOf(
+            5 to 0.5,
+            6 to 1.0,
+            7 to 1.0,
+        )
+    )
+
+    @Test
+    fun `placement plan - pure preschool, overlap, pure preschool`() = placementPlanTest(
+        // 45678
+        // PPPPP <- pure preschool
+        //  DDD  <- preschool+daycare
+        preschool = 4..8,
+        preschoolDaycare = 5..7,
+        expectedSums = mapOf(
+            4 to 0.5,
+            6 to 1.0,
+            8 to 0.5
+        )
+    )
+
+    @Test
+    fun `placement plan - preschool+daycare before pure preschool`() = placementPlanTest(
+        // 45678
+        //    PP <- pure preschool
+        // DD    <- preschool+daycare
+        preschool = 7..8,
+        preschoolDaycare = 4..5,
+        expectedSums = mapOf(
+            5 to 1.0,
+            6 to 0.0,
+            7 to 0.5
+        )
+    )
+
+    @Test
+    fun `placement plan - preschool+daycare, overlap, pure preschool`() = placementPlanTest(
+        // 45678
+        //   PPP <- pure preschool
+        // DDD   <- preschool+daycare
+        preschool = 6..8,
+        preschoolDaycare = 4..6,
+        expectedSums = mapOf(
+            5 to 1.0,
+            6 to 1.0,
+            7 to 0.5
+        )
+    )
+
+    @Test
+    fun `placement plan - preschool+daycare, overlap, preschool+daycare`() = placementPlanTest(
+        // 45678
+        //   P   <- pure preschool
+        // DDDDD <- preschool+daycare
+        preschool = 5..6,
+        preschoolDaycare = 4..8,
+        expectedSums = mapOf(
+            5 to 1.0,
+            6 to 1.0,
+            7 to 1.0,
+        )
+    )
+
     @Test
     fun `deleted placement plan has no effect`() {
         db.transaction { tx ->
