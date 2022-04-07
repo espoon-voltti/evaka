@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -55,7 +55,8 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
     //language=SQL
     val sql =
         """
-        SELECT p.child_id, p.start_date AS placementStart, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn, ca.name as care_area_name
+        SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn, ca.name as care_area_name,
+               u.provider_type = 'PRIVATE_SERVICE_VOUCHER' AS is_private_service_voucher_daycare        
         FROM placement p
         JOIN person c ON p.child_id = c.id
         JOIN daycare u ON p.unit_id = u.id
@@ -66,6 +67,16 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
-        .mapTo<StartingPlacementsRow>()
+        .map { mapper ->
+            StartingPlacementsRow(
+                careAreaName = if (mapper.mapColumn("is_private_service_voucher_daycare")) "palvelusetelialue" else mapper.mapColumn("care_area_name"),
+                childId = ChildId(mapper.mapColumn("child_id")),
+                firstName = mapper.mapColumn("first_name"),
+                lastName = mapper.mapColumn("last_name"),
+                dateOfBirth = mapper.mapColumn("date_of_birth"),
+                ssn = mapper.mapColumn("ssn"),
+                placementStart = mapper.mapColumn("placement_start"),
+            )
+        }
         .toList()
 }
