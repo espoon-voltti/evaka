@@ -99,17 +99,34 @@ fun Database.Transaction.markStaffArrival(employeeId: EmployeeId, groupId: Group
     .mapTo<StaffAttendanceId>()
     .one()
 
-fun Database.Transaction.updateStaffAttendance(attendanceId: StaffAttendanceId, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?) = createUpdate(
-    """
-    UPDATE staff_attendance_realtime
-    SET arrived = :arrived, departed = :departed
-    WHERE id = :id
-    """.trimIndent()
-)
-    .bind("id", attendanceId)
-    .bind("arrived", arrivalTime)
-    .bind("departed", departureTime)
-    .updateExactlyOne()
+fun Database.Transaction.upsertStaffAttendance(attendanceId: StaffAttendanceId?, employeeId: EmployeeId?, groupId: GroupId?, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?, occupancyCoefficient: BigDecimal?) {
+    if (attendanceId === null) {
+        createUpdate(
+            """
+            INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient)
+            VALUES (:employeeId, :groupId, :arrived, :departed, :occupancyCoefficient)
+            """.trimIndent()
+        )
+            .bind("employeeId", employeeId)
+            .bind("groupId", groupId)
+            .bind("arrived", arrivalTime)
+            .bind("departed", departureTime)
+            .bind("occupancyCoefficient", occupancyCoefficient)
+            .execute()
+    } else {
+        createUpdate(
+            """
+            UPDATE staff_attendance_realtime
+            SET arrived = :arrived, departed = :departed
+            WHERE id = :id
+            """.trimIndent()
+        )
+            .bind("id", attendanceId)
+            .bind("arrived", arrivalTime)
+            .bind("departed", departureTime)
+            .updateExactlyOne()
+    }
+}
 
 fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
@@ -156,17 +173,35 @@ fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDepartu
     .bindKotlin(params)
     .updateExactlyOne()
 
-fun Database.Transaction.updateExternalStaffAttendance(attendanceId: StaffAttendanceExternalId, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?) = createUpdate(
-    """
-    UPDATE staff_attendance_external 
-    SET arrived = :arrived, departed = :departed
-    WHERE id = :id
-    """.trimIndent()
-)
-    .bind("id", attendanceId)
-    .bind("arrived", arrivalTime)
-    .bind("departed", departureTime)
-    .updateExactlyOne()
+fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttendanceExternalId?, name: String?, groupId: GroupId?, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?, occupancyCoefficient: BigDecimal?) {
+    if (attendanceId === null) {
+        return createUpdate(
+            """
+            INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient)
+            VALUES (:name, :groupId, :arrived, :departed, :occupancyCoefficient)
+            """.trimIndent()
+        )
+            .bind("name", name)
+            .bind("groupId", groupId)
+            .bind("arrived", arrivalTime)
+            .bind("departed", departureTime)
+            .bind("occupancyCoefficient", occupancyCoefficient)
+            .one()
+    } else {
+        createUpdate(
+            """
+            UPDATE staff_attendance_external
+            SET name = :name, arrived = :arrived, departed = :departed
+            WHERE id = :id
+            """.trimIndent()
+        )
+            .bind("id", attendanceId)
+            .bind("name", name)
+            .bind("arrived", arrivalTime)
+            .bind("departed", departureTime)
+            .updateExactlyOne()
+    }
+}
 
 @ExcludeCodeGen
 data class RawAttendance(

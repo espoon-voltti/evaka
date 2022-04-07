@@ -11,8 +11,8 @@ import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  UpdateStaffAttendanceRequest,
-  UpdateExternalAttendanceRequest
+  UpsertStaffAttendanceRequest,
+  UpsertExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -31,8 +31,8 @@ import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import {
   getStaffAttendances,
-  postUpdateStaffAttendance,
-  postUpdateExternalAttendance
+  postStaffAttendance,
+  postExternalAttendance
 } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
@@ -109,14 +109,18 @@ export default React.memo(function UnitAttendanceReservationsView({
   }, [i18n])
 
   const saveAttendance = useCallback(
-    (body: UpdateStaffAttendanceRequest) =>
-      postUpdateStaffAttendance(unitId, body),
-    [unitId]
+    (body: UpsertStaffAttendanceRequest) =>
+      groupId === 'staff'
+        ? postStaffAttendance(unitId, body)
+        : postStaffAttendance(unitId, { ...body, groupId }),
+    [groupId, unitId]
   )
   const saveExternalAttendance = useCallback(
-    (body: UpdateExternalAttendanceRequest) =>
-      postUpdateExternalAttendance(unitId, body),
-    [unitId]
+    (body: UpsertExternalAttendanceRequest) =>
+      groupId === 'staff'
+        ? postExternalAttendance(unitId, body)
+        : postExternalAttendance(unitId, { ...body, groupId }),
+    [groupId, unitId]
   )
 
   return renderResult(

@@ -6,6 +6,8 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -75,18 +77,20 @@ class RealtimeStaffAttendanceController(
         }
     }
 
-    data class UpdateStaffAttendanceRequest(
-        val attendanceId: StaffAttendanceId,
+    data class UpsertStaffAttendanceRequest(
+        val attendanceId: StaffAttendanceId?,
+        val employeeId: EmployeeId,
+        val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
 
-    @PostMapping("/{unitId}/update")
-    fun updateStaffAttendance(
+    @PostMapping("/{unitId}/upsert")
+    fun upsertStaffAttendance(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @RequestBody body: UpdateStaffAttendanceRequest
+        @RequestBody body: UpsertStaffAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
 
@@ -94,23 +98,26 @@ class RealtimeStaffAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction {
-                it.updateStaffAttendance(body.attendanceId, body.arrived, body.departed)
+                val occupancyCoefficient = it.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
+                it.upsertStaffAttendance(body.attendanceId, body.employeeId, body.groupId, body.arrived, body.departed, occupancyCoefficient)
             }
         }
     }
 
-    data class UpdateExternalAttendanceRequest(
-        val attendanceId: StaffAttendanceExternalId,
+    data class UpsertExternalAttendanceRequest(
+        val attendanceId: StaffAttendanceExternalId?,
+        val name: String?,
+        val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
 
-    @PostMapping("/{unitId}/update-external")
+    @PostMapping("/{unitId}/upsert-external")
     fun updateExternalAttendance(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @RequestBody body: UpdateExternalAttendanceRequest
+        @RequestBody body: UpsertExternalAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
 
@@ -118,7 +125,7 @@ class RealtimeStaffAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction {
-                it.updateExternalStaffAttendance(body.attendanceId, body.arrived, body.departed)
+                it.upsertExternalStaffAttendance(body.attendanceId, body.name, body.groupId, body.arrived, body.departed, occupancyCoefficientSeven)
             }
         }
     }

@@ -16,8 +16,8 @@ import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
-  UpdateStaffAttendanceRequest,
-  UpdateExternalAttendanceRequest
+  UpsertStaffAttendanceRequest,
+  UpsertExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -51,9 +51,9 @@ interface Props {
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   extraAttendances: ExternalAttendance[]
-  saveAttendance: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+  saveAttendance: (body: UpsertStaffAttendanceRequest) => Promise<Result<void>>
   saveExternalAttendance: (
-    body: UpdateExternalAttendanceRequest
+    body: UpsertExternalAttendanceRequest
   ) => Promise<Result<void>>
 }
 
@@ -106,6 +106,7 @@ export default React.memo(function StaffAttendanceTable({
             rowIndex={index}
             isPositiveOccupancyCoefficient={row.currentOccupancyCoefficient > 0}
             name={row.name}
+            employeeId={row.employeeId}
             operationalDays={operationalDays}
             attendances={row.attendances}
             saveAttendance={saveAttendance}
@@ -121,7 +122,7 @@ export default React.memo(function StaffAttendanceTable({
             name={row.name}
             operationalDays={operationalDays}
             attendances={row.attendances}
-            saveAttendance={saveExternalAttendance}
+            saveExternalAttendance={saveExternalAttendance}
           />
         ))}
       </Tbody>
@@ -152,18 +153,24 @@ interface AttendanceRowProps extends BaseProps {
   rowIndex: number
   isPositiveOccupancyCoefficient: boolean
   name: string
+  employeeId?: string
   operationalDays: OperationalDay[]
   attendances: Attendance[]
-  saveAttendance?: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+  saveAttendance?: (body: UpsertStaffAttendanceRequest) => Promise<Result<void>>
+  saveExternalAttendance?: (
+    body: UpsertExternalAttendanceRequest
+  ) => Promise<Result<void>>
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
   rowIndex,
   isPositiveOccupancyCoefficient,
   name,
+  employeeId,
   operationalDays,
   attendances,
-  saveAttendance
+  saveAttendance,
+  saveExternalAttendance
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
@@ -276,15 +283,30 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     updateValue(date, rangeIx, updatedValue)
                   }
                   save={() => {
-                    if (saveAttendance && range.id && range.groupId) {
-                      return saveAttendance({
-                        attendanceId: range.id,
-                        arrived: date.toSystemTzDateAtTime(range.startTime),
-                        departed:
-                          range.endTime !== ''
-                            ? date.toSystemTzDateAtTime(range.endTime)
-                            : null
-                      }).then(setSaveRequestStatus)
+                    if (range.id && range.groupId) {
+                      if (saveAttendance && employeeId) {
+                        return saveAttendance({
+                          attendanceId: range.id,
+                          arrived: date.toSystemTzDateAtTime(range.startTime),
+                          departed:
+                            range.endTime !== ''
+                              ? date.toSystemTzDateAtTime(range.endTime)
+                              : null,
+                          employeeId: employeeId,
+                          groupId: range.groupId
+                        }).then(setSaveRequestStatus)
+                      } else if (saveExternalAttendance) {
+                        return saveExternalAttendance({
+                          attendanceId: range.id,
+                          arrived: date.toSystemTzDateAtTime(range.startTime),
+                          departed:
+                            range.endTime !== ''
+                              ? date.toSystemTzDateAtTime(range.endTime)
+                              : null,
+                          name: name,
+                          groupId: range.groupId
+                        }).then(setSaveRequestStatus)
+                      }
                     }
                     return Promise.resolve()
                   }}
