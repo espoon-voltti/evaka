@@ -70,6 +70,7 @@ enum class ApplicationSortDirection {
 }
 
 fun Database.Transaction.insertApplication(
+    type: ApplicationType,
     guardianId: PersonId,
     childId: ChildId,
     origin: ApplicationOrigin,
@@ -79,12 +80,13 @@ fun Database.Transaction.insertApplication(
     // language=sql
     val sql =
         """
-        INSERT INTO application (status, guardian_id, child_id, origin, hidefromguardian, sentdate)
-        VALUES ('CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate)
+        INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate)
+        VALUES (:type, 'CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate)
         RETURNING id
         """.trimIndent()
 
     return createUpdate(sql)
+        .bind("type", type)
         .bind("guardianId", guardianId)
         .bind("childId", childId)
         .bind("origin", origin)
@@ -778,6 +780,15 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
         else -> throw Error("unknown form type")
     }
 
+fun Database.Read.getApplicationType(id: ApplicationId): ApplicationType = createQuery(
+    """
+SELECT type FROM application WHERE id = :id
+    """.trimIndent()
+)
+    .bind("id", id)
+    .mapTo<ApplicationType>()
+    .one()
+
 fun Database.Transaction.updateForm(
     id: ApplicationId,
     form: ApplicationForm,
@@ -785,6 +796,7 @@ fun Database.Transaction.updateForm(
     childRestricted: Boolean,
     guardianRestricted: Boolean
 ) {
+    check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
         if (formType == ApplicationType.CLUB) ClubFormV0.fromForm2(form, childRestricted, guardianRestricted)
         else DaycareFormV0.fromForm2(form, formType, childRestricted, guardianRestricted)

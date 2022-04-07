@@ -44,7 +44,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             childId = tx.insertTestPerson(DevPerson())
-            applicationId = tx.insertTestApplication(guardianId = PersonId(creatorCitizen.id), childId = childId)
+            applicationId = tx.insertTestApplication(guardianId = PersonId(creatorCitizen.id), childId = childId, type = ApplicationType.DAYCARE)
             val areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             tx.insertTestApplicationForm(

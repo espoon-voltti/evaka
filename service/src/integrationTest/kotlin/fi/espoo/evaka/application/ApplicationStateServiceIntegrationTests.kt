@@ -183,7 +183,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `preschool application initialization uses correct term's start as default preferred start date`() {
         db.transaction { tx ->
             tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
+                appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )

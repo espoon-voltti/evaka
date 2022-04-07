@@ -5,6 +5,8 @@
 package fi.espoo.evaka.shared.dev
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.getApplicationType
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.jsonMapper
@@ -305,6 +307,7 @@ fun Database.Transaction.insertTestPartnership(
 
 fun Database.Transaction.insertTestApplication(
     id: ApplicationId = ApplicationId(UUID.randomUUID()),
+    type: ApplicationType,
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
     status: ApplicationStatus = ApplicationStatus.SENT,
@@ -316,13 +319,14 @@ fun Database.Transaction.insertTestApplication(
 ): ApplicationId {
     createUpdate(
         """
-            INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
-            VALUES (:id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
+            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
+            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
             """
     )
         .bindMap(
             mapOf(
                 "id" to id,
+                "type" to type,
                 "sentDate" to sentDate,
                 "dueDate" to dueDate,
                 "status" to status,
@@ -338,6 +342,8 @@ fun Database.Transaction.insertTestApplication(
 }
 
 fun Database.Transaction.insertTestApplicationForm(applicationId: ApplicationId, document: DaycareFormV0, revision: Int = 1) {
+    check(getApplicationType(applicationId) == document.type) { "Invalid form type for the application" }
+
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -366,6 +372,8 @@ VALUES (:applicationId, :revision, :document, TRUE)
 }
 
 fun Database.Transaction.insertTestClubApplicationForm(applicationId: ApplicationId, document: ClubFormV0, revision: Int = 1) {
+    check(getApplicationType(applicationId) == document.type) { "Invalid form type for the application" }
+
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -896,12 +904,13 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
     //language=sql
     val sql =
         """
-        INSERT INTO application(id, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id)
-        VALUES(:id, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId)
+        INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id)
+        VALUES(:id, :type, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId)
         """.trimIndent()
 
     createUpdate(sql)
         .bind("id", application.id)
+        .bind("type", application.type)
         .bind("sentDate", application.sentDate)
         .bind("dueDate", application.dueDate)
         .bind("applicationStatus", application.status)
@@ -918,6 +927,8 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
 }
 
 fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationForm): UUID {
+    check(getApplicationType(applicationForm.applicationId) == applicationForm.document.type) { "Invalid form type for the application" }
+
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE

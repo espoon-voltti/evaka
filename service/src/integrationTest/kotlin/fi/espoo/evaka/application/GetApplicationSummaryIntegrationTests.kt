@@ -73,7 +73,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
 
     private fun createApplication(child: DevPerson, guardian: DevPerson, attachment: Boolean = false, urgent: Boolean = false, extendedCare: Boolean = false) {
         val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(childId = child.id, guardianId = guardian.id).also { id ->
+            tx.insertTestApplication(childId = child.id, guardianId = guardian.id, type = ApplicationType.DAYCARE).also { id ->
                 val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent).copy(extendedCare = extendedCare)
                 tx.insertTestApplicationForm(id, form)
             }

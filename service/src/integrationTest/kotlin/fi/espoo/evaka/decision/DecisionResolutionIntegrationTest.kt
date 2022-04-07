@@ -376,7 +376,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
             id = applicationId,
             status = status,
             guardianId = adult.id,
-            childId = child.id
+            childId = child.id,
+            type = type.toApplicationType(),
         )
         val preschoolDaycare = type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
         tx.insertTestApplicationForm(

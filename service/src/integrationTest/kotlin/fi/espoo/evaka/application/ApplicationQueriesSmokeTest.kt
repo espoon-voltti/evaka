@@ -40,7 +40,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest() {
             val childId = tx.insertTestPerson(DevPerson())
             val guardianId = tx.insertTestPerson(DevPerson())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            applicationId = tx.insertTestApplication(childId = childId, guardianId = guardianId)
+            applicationId = tx.insertTestApplication(childId = childId, guardianId = guardianId, type = ApplicationType.DAYCARE)
         }
         form = DaycareFormV0(
             type = ApplicationType.DAYCARE,

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
@@ -78,7 +79,7 @@ class AclIntegrationTest : PureJdbiTest() {
             fridgeParentId = it.insertTestPerson(DevPerson())
             it.insertFridgeChild(DevFridgeChild(childId = childId, headOfChild = fridgeParentId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2030, 1, 1)))
             it.insertGuardian(guardianId, childId)
-            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId)
+            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId, type = ApplicationType.DAYCARE)
             decisionId = it.insertTestDecision(
                 TestDecision(
                     createdBy = EvakaUserId(employeeId.raw),

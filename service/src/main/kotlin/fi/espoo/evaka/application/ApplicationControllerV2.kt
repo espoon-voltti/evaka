@@ -155,6 +155,7 @@ class ApplicationControllerV2(
                 tx.upsertCitizenUser(guardianId)
 
                 val id = tx.insertApplication(
+                    type = body.type,
                     guardianId = guardianId,
                     childId = body.childId,
                     origin = ApplicationOrigin.PAPER,

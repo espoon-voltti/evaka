@@ -70,7 +70,8 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
             val appId = tx.insertTestApplication(
                 status = status,
                 childId = childId,
-                guardianId = guardianId
+                guardianId = guardianId,
+                type = ApplicationType.DAYCARE
             )
             tx.insertTestApplicationForm(
                 applicationId = appId,

@@ -60,7 +60,8 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
                 id = applicationId,
                 status = ApplicationStatus.WAITING_CONFIRMATION,
                 childId = childId,
-                guardianId = guardianId
+                guardianId = guardianId,
+                type = ApplicationType.DAYCARE
             )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,

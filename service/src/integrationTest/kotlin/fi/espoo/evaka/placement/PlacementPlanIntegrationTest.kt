@@ -346,7 +346,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = tx.insertTestApplication(
             status = status,
             guardianId = adult.id,
-            childId = child.id
+            childId = child.id,
+            type = type
         )
         val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
         tx.insertTestApplicationForm(

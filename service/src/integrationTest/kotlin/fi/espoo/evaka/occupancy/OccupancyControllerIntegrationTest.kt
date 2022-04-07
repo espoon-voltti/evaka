@@ -320,6 +320,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest() {
                 status = ApplicationStatus.WAITING_PLACEMENT,
                 childId = childId,
                 guardianId = testAdult_1.id,
+                type = type
             )
             val form = DaycareFormV0.fromApplication2(validDaycareApplication)
                 .copy(type = type, connectedDaycare = connectedDaycare)
