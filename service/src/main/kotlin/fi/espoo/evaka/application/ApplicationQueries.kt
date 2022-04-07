@@ -153,6 +153,7 @@ fun Database.Read.activePlacementExists(
 
 fun Database.Read.fetchApplicationSummaries(
     user: AuthenticatedUser,
+    today: LocalDate,
     page: Int,
     pageSize: Int,
     sortBy: ApplicationSortColumn,
@@ -338,7 +339,7 @@ fun Database.Read.fetchApplicationSummaries(
             SELECT daycare.id, daycare.name
             FROM daycare
             JOIN placement ON daycare.id = placement.unit_id
-            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(current_date, null, '[]')
+            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(:today, null, '[]')
             ORDER BY start_date
             LIMIT 1
         ) cpu ON true
@@ -356,6 +357,7 @@ fun Database.Read.fetchApplicationSummaries(
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
 
     val applicationSummaries = createQuery(paginatedSql)
+        .bind("today", today)
         .bindMap(params + freeTextParams)
         .mapToPaged(pageSize, "total") { row ->
             val status = row.mapColumn<ApplicationStatus>("application_status")

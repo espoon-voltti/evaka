@@ -70,6 +70,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest() {
         val applications = db.read {
             it.fetchApplicationSummaries(
                 user = AuthenticatedUser.SystemInternalUser,
+                today = LocalDate.of(2022, 1, 1),
                 page = 1,
                 pageSize = 10,
                 sortBy = ApplicationSortColumn.STATUS,
