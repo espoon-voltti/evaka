@@ -264,6 +264,7 @@ const ChildSection = React.memo(function ChildSection({
             <Th>{i18n.invoice.form.rows.amount}</Th>
             <Th align="right">{i18n.invoice.form.rows.unitPrice}</Th>
             <Th align="right">{i18n.invoice.form.rows.price}</Th>
+            <Th>{i18n.personProfile.invoiceCorrections.invoiceStatusHeader}</Th>
             <Th />
           </Tr>
         </Thead>
@@ -284,11 +285,26 @@ const ChildSection = React.memo(function ChildSection({
               editable={false}
               update={() => undefined}
               remove={
-                !correction.partiallyInvoiced
-                  ? () => deleteCorrection(correction.id)
-                  : undefined
+                correction.invoiceStatus && correction.invoiceStatus !== 'DRAFT'
+                  ? undefined
+                  : () => deleteCorrection(correction.id)
               }
               addNote={() => editNote(correction.id, correction.note)}
+              status={
+                correction.invoiceId ? (
+                  <Link to={`/finance/invoices/${correction.invoiceId}`}>
+                    {i18n.personProfile.invoiceCorrections.invoiceStatus(
+                      correction.invoiceStatus
+                    )}
+                  </Link>
+                ) : (
+                  <span>
+                    {i18n.personProfile.invoiceCorrections.invoiceStatus(
+                      correction.invoiceStatus
+                    )}
+                  </span>
+                )
+              }
             />
           ))}
           {editState?.childId === child.id && (
@@ -301,6 +317,7 @@ const ChildSection = React.memo(function ChildSection({
               update={updateState}
               remove={undefined}
               addNote={() => editNote(editState.id, editState.note)}
+              status={<span />}
             />
           )}
         </Tbody>

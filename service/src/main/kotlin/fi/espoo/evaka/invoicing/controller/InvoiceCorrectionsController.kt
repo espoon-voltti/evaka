@@ -5,10 +5,12 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -44,9 +46,19 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 tx.createQuery(
                     """
-SELECT id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note,
-    EXISTS (SELECT 1 FROM invoice i JOIN invoice_row r ON i.status != 'DRAFT'::invoice_status AND r.correction_id = invoice_correction.id) AS partially_invoiced
-FROM invoice_correction WHERE head_of_family_id = :personId AND NOT applied_completely
+SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
+    i.id AS invoice_id,
+    i.status AS invoice_status
+FROM invoice_correction c
+LEFT JOIN LATERAL (
+    SELECT i.id, i.status
+    FROM invoice_row r
+    JOIN invoice i ON r.invoice_id = i.id
+    WHERE c.id = r.correction_id
+    ORDER BY CASE WHEN i.status = 'DRAFT'::invoice_status THEN 2 ELSE 1 END ASC, i.period_start DESC
+    LIMIT 1
+) i ON true
+WHERE c.head_of_family_id = :personId AND NOT applied_completely
 """
                 )
                     .bind("personId", personId)
@@ -141,7 +153,8 @@ data class InvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
-    val partiallyInvoiced: Boolean
+    val invoiceId: InvoiceId,
+    val invoiceStatus: InvoiceStatus
 )
 
 data class NewInvoiceCorrection(

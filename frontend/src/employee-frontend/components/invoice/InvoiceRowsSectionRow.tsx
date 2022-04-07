@@ -4,7 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
@@ -52,6 +58,7 @@ interface Props {
   unitDetails: Record<UUID, InvoiceDaycare>
   editable: boolean
   addNote?: () => void
+  status?: ReactNode
 }
 
 function InvoiceRowSectionRow({
@@ -73,7 +80,8 @@ function InvoiceRowSectionRow({
   products,
   unitIds,
   unitDetails,
-  addNote
+  addNote,
+  status
 }: Props) {
   const theme = useTheme()
   const { i18n } = useTranslation()
@@ -176,8 +184,9 @@ function InvoiceRowSectionRow({
           `${formatCents(price)} €`
         )}
       </Td>
+      {status !== undefined && <Td>{status}</Td>}
       <Td>
-        <FixedSpaceRow spacing="s">
+        <FixedSpaceRow spacing="s" justifyContent="flex-end">
           {note !== null || addNote ? (
             <Tooltip tooltip={note}>
               <IconButtonWrapper margin={editable}>
