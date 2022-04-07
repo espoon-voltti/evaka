@@ -277,13 +277,18 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, rang
     .mapTo<ExternalAttendance>()
     .list()
 
-fun Database.Read.getGroupsForEmployee(employeeId: EmployeeId): List<GroupId> = createQuery(
+private data class EmployeeGroups(
+    val employeeId: EmployeeId,
+    val groupIds: List<GroupId>
+)
+fun Database.Read.getGroupsForEmployees(employeeIds: Set<EmployeeId>): Map<EmployeeId, List<GroupId>> = createQuery(
     """
-    SELECT daycare_group_id
+    SELECT employee_id, array_agg(daycare_group_id) AS group_ids
     FROM daycare_group_acl
-    WHERE employee_id = :employeeId
+    WHERE employee_id = ANY(:employeeIds)
+    GROUP BY employee_id
     """.trimIndent()
 )
-    .bind("employeeId", employeeId)
-    .mapTo<GroupId>()
-    .list()
+    .bind("employeeIds", employeeIds.toTypedArray())
+    .mapTo<EmployeeGroups>()
+    .associateBy({ it.employeeId }, { it.groupIds })

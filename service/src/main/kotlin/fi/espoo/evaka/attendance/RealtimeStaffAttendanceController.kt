@@ -48,22 +48,25 @@ class RealtimeStaffAttendanceController(
             dbc.read {
                 val range = FiniteDateRange(start, end)
                 val attendancesByEmployee = it.getStaffAttendancesForDateRange(unitId, range).groupBy { raw -> raw.employeeId }
+                val attendanceEmployeeToGroups = it.getGroupsForEmployees(attendancesByEmployee.keys)
                 val staffWithAttendance = attendancesByEmployee.entries.map { (employeeId, data) ->
                     EmployeeAttendance(
                         employeeId = employeeId,
-                        groups = it.getGroupsForEmployee(employeeId),
+                        groups = attendanceEmployeeToGroups[employeeId] ?: listOf(),
                         firstName = data[0].firstName,
                         lastName = data[0].lastName,
                         currentOccupancyCoefficient = data[0].currentOccupancyCoefficient ?: BigDecimal.ZERO,
                         attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed, att.occupancyCoefficient) }
                     )
                 }
-                val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)
+                val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId)
+                val noAttendanceEmployeeToGroups = it.getGroupsForEmployees(staffForAttendanceCalendar.map { emp -> emp.id }.toSet())
+                val staffWithoutAttendance = staffForAttendanceCalendar
                     .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
                     .map { emp ->
                         EmployeeAttendance(
                             employeeId = emp.id,
-                            groups = it.getGroupsForEmployee(emp.id),
+                            groups = noAttendanceEmployeeToGroups[emp.id] ?: listOf(),
                             firstName = emp.firstName,
                             lastName = emp.lastName,
                             currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf()
