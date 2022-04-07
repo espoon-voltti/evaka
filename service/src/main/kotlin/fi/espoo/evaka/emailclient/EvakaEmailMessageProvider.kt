@@ -32,7 +32,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
             </p>
             <p>
-            Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 27600
+            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
             </p>
 
             <hr>
@@ -63,7 +63,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://esbosmabarnspedagogik.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
 
-            Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 27600
+            Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600
 
             -----
 
@@ -178,10 +178,10 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">www.esbo.fi/tjanster/privat-smabarnspedagogik</a>
             </p>
             <p>
-            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a> (observera att förbindelsen inte är krypterad).
+            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehandledning, PB 3125, 02070 Esbo stad eller som e-postbilaga till <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a> (observera att förbindelsen inte är krypterad).
             </p>
             <p>
-            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>
+            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>
             </p>
 
             <hr>
@@ -273,9 +273,9 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
             Ansökan till privata enheter för småbarnspedagogik: https://www.esbo.fi/tjanster/privat-smabarnspedagogik
 
-            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till dagis@esbo.fi (observera att förbindelsen inte är krypterad).
+            Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Sevicehandledning inom småbarnspedagogik, PB 32, 02070 Esbo stad eller som e-postbilaga till dagis@esbo.fi (observera att förbindelsen inte är krypterad).
 
-            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning dagis@esbo.fi
+            Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning dagis@esbo.fi
 
             -----
 
@@ -324,7 +324,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>Du kan se och godkänna/förkasta beslutet på adressen <a href="https://www.esbosmabarnspedagogik.fi">www.esbosmabarnspedagogik.fi</a>.</p>
                 <p>När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.</p>
                 <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
-                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehänvisningen inom småbarnspedagogiken, PB 3125, 02070 Esbo stad.</p>
+                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
                 <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
                 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
                 <hr>
@@ -359,7 +359,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.</p>
                 <p>Om du valde att ansökan är brådskande, ska du till ansökan bifoga ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst två veckor och börjar den dag då intyget inkommer.</p>
                 <p>När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.</p>
-                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehänvisningen inom småbarnspedagogiken, PB 3125, 02070 Esbo stad.</p>
+                <p>Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.</p>
                 <p>När du ansöker om överföring till en annan enhet för förskoleundervisning med en ny ansökan, fattas ett nytt beslut om förskoleundervisning om sökande- och platsläget tillåter det. Om barnets nuvarande förskoleplats sägs upp, slopas också ansökan om överföring.</p>
                 <p>Ansökan om servicesedel: <a href="https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik">Servicesedel</a></p>
                 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://www.esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
@@ -413,7 +413,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
                 När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.
 
-                Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehänvisningen inom småbarnspedagogiken, PB 3125, 02070 Esbo stad.
+                Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.
 
                 Ansökan om servicesedel: https://www.esbo.fi/fostran-och-utbildning/smabarnspedagogik/servicesedel-smabarnspedagogik
 
@@ -479,7 +479,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
                 När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som en ansökan om skiftomsorg först när de ovannämnda intygen har lämnats in.
 
-                Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehänvisningen inom småbarnspedagogiken, PB 3125, 02070 Esbo stad.
+                Bilagor till ansökan kan bifogas direkt till ansökan på webben eller skickas per post till adressen Esbo stad, Servicehandledningen inom småbarnspedagogiken, PB 32, 02070 Esbo stad.
 
                 När du ansöker om överföring till en annan enhet för förskoleundervisning med en ny ansökan, fattas ett nytt beslut om förskoleundervisning om sökande- och platsläget tillåter det. Om barnets nuvarande förskoleplats sägs upp, slopas också ansökan om överföring.
 
