@@ -45,7 +45,7 @@ class MissingServiceNeedReportTest : FullApplicationTest() {
     @Test
     fun `child without service need is reported`() {
         insertPlacement(testChild_1.id, today, today, testDaycare)
-        val rows = getAndAssert(
+        getAndAssert(
             today, today,
             listOf(
                 MissingServiceNeedReportRow(
@@ -64,7 +64,7 @@ class MissingServiceNeedReportTest : FullApplicationTest() {
     @Test
     fun `child without service need in service voucher unit shown on service voucher care area`() {
         insertPlacement(testChild_1.id, today, today, testVoucherDaycare)
-        val rows = getAndAssert(
+        getAndAssert(
             today, today,
             listOf(
                 MissingServiceNeedReportRow(
