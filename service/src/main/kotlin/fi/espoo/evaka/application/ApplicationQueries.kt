@@ -354,7 +354,7 @@ fun Database.Read.fetchApplicationSummaries(
 
     val orderedSql = when (sortBy) {
         ApplicationSortColumn.APPLICATION_TYPE -> "$sql ORDER BY type $sortDir, last_name, first_name"
-        ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name, first_name $sortDir"
+        ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name $sortDir, first_name"
         ApplicationSortColumn.DUE_DATE -> "$sql ORDER BY duedate $sortDir, last_name, first_name"
         ApplicationSortColumn.START_DATE -> "$sql ORDER BY preferredStartDate $sortDir, last_name, first_name"
         ApplicationSortColumn.STATUS -> "$sql ORDER BY application_status $sortDir, last_name, first_name"
