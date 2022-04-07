@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -28,12 +27,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class PersonQueriesIntegrationTest : PureJdbiTest() {
+class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
         db.transaction {
-            it.resetDatabase()
             it.execute(legacyDataSql)
         }
     }

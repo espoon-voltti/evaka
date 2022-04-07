@@ -8,14 +8,13 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class ClubTermQueriesIntegrationTest : PureJdbiTest() {
+class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     internal fun setUp() {
@@ -27,11 +26,6 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
                 """.trimIndent()
             )
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.execute("TRUNCATE TABLE club_term") }
     }
 
     @Test

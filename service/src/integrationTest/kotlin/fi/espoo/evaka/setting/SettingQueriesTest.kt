@@ -5,18 +5,10 @@
 package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
-class SettingQueriesTest : PureJdbiTest() {
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx -> tx.resetDatabase() }
-    }
-
+class SettingQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getAndSet() {
         db.transaction { tx ->

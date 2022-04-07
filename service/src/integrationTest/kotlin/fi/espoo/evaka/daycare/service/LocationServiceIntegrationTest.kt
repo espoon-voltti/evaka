@@ -28,27 +28,18 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class LocationServiceIntegrationTest : PureJdbiTest() {
+class LocationServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val areaId = AreaId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
         db.transaction {
             it.execute("INSERT INTO care_area (id, name, short_name) VALUES ('$areaId', 'test', 'test')")
-        }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction {
-            it.execute("DELETE FROM daycare WHERE care_area_id = '$areaId'")
-            it.execute("DELETE FROM care_area WHERE id = '$areaId'")
         }
     }
 

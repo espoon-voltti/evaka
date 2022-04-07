@@ -42,7 +42,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays15
@@ -56,7 +55,6 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
@@ -66,7 +64,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
-class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
+class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
     private val featureConfig: FeatureConfig = testFeatureConfig
     private val draftInvoiceGenerator: DraftInvoiceGenerator =
@@ -88,13 +86,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest() {
                 LocalDate.of(2021, 12, 6),
                 LocalDate.of(2021, 12, 24),
             )
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

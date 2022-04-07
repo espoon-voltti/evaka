@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-class DbTest : PureJdbiTest() {
+class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
     private data class Foo(val value: String)
 
     private fun Database.Read.fooJsonQuery() =

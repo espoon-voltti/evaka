@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.upsertCitizenUser
@@ -51,7 +50,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class MergeServiceIntegrationTest : PureJdbiTest() {
+class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     lateinit var mergeService: MergeService
 
     private lateinit var asyncJobRunnerMock: AsyncJobRunner<AsyncJob>
@@ -63,7 +62,6 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         asyncJobRunnerMock = mock { }
         mergeService = MergeService(asyncJobRunnerMock)
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

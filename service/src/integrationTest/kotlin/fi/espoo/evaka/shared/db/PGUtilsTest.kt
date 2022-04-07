@@ -10,7 +10,7 @@ import org.junit.jupiter.api.assertThrows
 import org.postgresql.util.PSQLState
 import kotlin.test.assertEquals
 
-class PGUtilsTest : PureJdbiTest() {
+class PGUtilsTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     fun `psqlCause finds the underlying PSQLException from a long chain of wrappers`() {
         val e = assertThrows<Exception> {

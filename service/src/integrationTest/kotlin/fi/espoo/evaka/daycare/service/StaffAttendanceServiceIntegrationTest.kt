@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
@@ -25,7 +24,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class StaffAttendanceServiceIntegrationTest : PureJdbiTest() {
+class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val staffAttendanceService = StaffAttendanceService()
 
     val areaId: AreaId = AreaId(UUID.randomUUID())
@@ -40,7 +39,6 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest() {
     @BeforeEach
     protected fun insertDaycareGroup() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertTestCareArea(DevCareArea(id = areaId))
             tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
             tx.insertTestDaycareGroup(

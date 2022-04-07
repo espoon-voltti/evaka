@@ -32,14 +32,12 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -50,7 +48,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class MessageQueriesTest : PureJdbiTest() {
+class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val person1Id = PersonId(UUID.randomUUID())
     private val person2Id = PersonId(UUID.randomUUID())
@@ -68,11 +66,6 @@ class MessageQueriesTest : PureJdbiTest() {
             tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
             listOf(employee1Id, employee2Id).forEach { tx.upsertEmployeeMessageAccount(it) }
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.resetDatabase() }
     }
 
     @Test

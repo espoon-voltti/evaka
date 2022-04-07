@@ -24,7 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AsyncJobRunnerTest : PureJdbiTest() {
+class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private data class TestJob(
         val data: UUID = UUID.randomUUID(),
         override val user: AuthenticatedUser? = null
@@ -48,7 +48,6 @@ class AsyncJobRunnerTest : PureJdbiTest() {
         asyncJobRunner.registerHandler { _, msg: TestJob ->
             currentCallback.get()(msg)
         }
-        db.transaction { it.execute("TRUNCATE async_job") }
     }
 
     @Test

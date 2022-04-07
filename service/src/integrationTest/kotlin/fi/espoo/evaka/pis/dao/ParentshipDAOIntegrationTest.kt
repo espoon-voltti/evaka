@@ -14,19 +14,12 @@ import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ParentshipDAOIntegrationTest : PureJdbiTest() {
-    @BeforeEach
-    private fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
-
+class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `test creating parentship`() {
         val child = testPerson1()

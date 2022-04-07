@@ -11,22 +11,19 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.dev.resetDatabase
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 import kotlin.test.assertEquals
 
-class ChildDAOIntegrationTest : PureJdbiTest() {
+class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val childId = ChildId(randomUUID())
     private lateinit var child: Child
 
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
             child = tx.createChild(
                 Child(
@@ -39,11 +36,6 @@ class ChildDAOIntegrationTest : PureJdbiTest() {
                 )
             )
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.execute("DELETE FROM person WHERE id = '$childId'") }
     }
 
     @Test

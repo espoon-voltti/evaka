@@ -14,19 +14,12 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class FamilySchemaConstraintsIntegrationTest : PureJdbiTest() {
-    @BeforeEach
-    private fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
-
+class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `basic partnership is ok`() {
         val person1 = testPerson1()

@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import org.junit.jupiter.api.BeforeEach
@@ -41,7 +40,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class OccupancyTest : PureJdbiTest() {
+class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     val today = LocalDate.of(2020, 1, 16) // Thursday
 
     val careArea1: AreaId = AreaId(UUID.randomUUID())
@@ -60,8 +59,6 @@ class OccupancyTest : PureJdbiTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction {
-            it.resetDatabase()
-
             it.insertServiceNeedOptions()
             it.insertTestEmployee(
                 DevEmployee(

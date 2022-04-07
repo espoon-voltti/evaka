@@ -50,7 +50,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AclIntegrationTest : PureJdbiTest() {
+class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var employeeId: EmployeeId
     private lateinit var daycareId: DaycareId
     private lateinit var groupId: GroupId

@@ -8,14 +8,13 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class PlacementQueriesIntegrationTest : PureJdbiTest() {
+class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     // data from migration scripts
     val childId = UUID.fromString("2b929594-13ab-4042-9b13-74e84921e6f0")
     val daycareId = DaycareId(UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c"))
@@ -28,7 +27,6 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     fun setUp() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.execute(legacyDataSql)
             tx.execute(
                 // language=sql

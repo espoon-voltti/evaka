@@ -9,14 +9,12 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.resetDatabase
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class DraftQueriesTest : PureJdbiTest() {
+class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
 
@@ -29,11 +27,6 @@ class DraftQueriesTest : PureJdbiTest() {
                 .bind("employeeId", employeeId)
                 .execute()
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.resetDatabase() }
     }
 
     @Test

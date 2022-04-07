@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -19,7 +18,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class CaretakerQueriesIntegrationTest : PureJdbiTest() {
+class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     val careAreaId = UUID.randomUUID()
     val daycareId = DaycareId(UUID.randomUUID())
     val daycareId2 = DaycareId(UUID.randomUUID())
@@ -57,14 +56,6 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
 
             tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 4, '2000-01-01', '2000-05-05')")
             tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 6, '2000-05-06', '2000-09-03')")
-        }
-    }
-
-    @AfterEach
-    fun tearDown() {
-        db.transaction { tx ->
-            tx.execute("DELETE FROM daycare WHERE id IN ('$daycareId', '$daycareId2')")
-            tx.execute("DELETE FROM care_area WHERE id = '$careAreaId'")
         }
     }
 

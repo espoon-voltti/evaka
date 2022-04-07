@@ -5,22 +5,12 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class VasuTemplateQueriesTest : PureJdbiTest() {
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
-        }
-    }
-
+class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `vasu template can be created and updated`() {
         db.transaction { tx ->

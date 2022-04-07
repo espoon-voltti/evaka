@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -26,7 +25,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
-class ReservationCitizenQueriesTest : PureJdbiTest() {
+class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     val monday = LocalDate.of(2021, 8, 23)
     val startTime = LocalTime.of(9, 0)
@@ -36,7 +35,6 @@ class ReservationCitizenQueriesTest : PureJdbiTest() {
     @BeforeEach
     fun before() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
         }
     }

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class ApplicationQueriesSmokeTest : PureJdbiTest() {
+class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var daycareId: DaycareId
     private lateinit var applicationId: ApplicationId
     private lateinit var form: DaycareFormV0

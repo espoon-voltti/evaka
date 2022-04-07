@@ -20,17 +20,15 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class MessageAccountQueriesTest : PureJdbiTest() {
+class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val personId = PersonId(UUID.randomUUID())
     private val supervisorId = EmployeeId(UUID.randomUUID())
@@ -74,11 +72,6 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             val group3Id = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.resetDatabase() }
     }
 
     @Test
