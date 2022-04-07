@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,13 +20,12 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class VasuTemplateIntegrationTest : FullApplicationTest() {
+class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val adminUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
@@ -48,7 +47,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class MessageReceiversIntegrationTest : FullApplicationTest() {
+class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val childId = testChild_1.id
     private val unitId = testDaycare.id
@@ -102,7 +101,6 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
             tx.insertTestDaycareGroup(

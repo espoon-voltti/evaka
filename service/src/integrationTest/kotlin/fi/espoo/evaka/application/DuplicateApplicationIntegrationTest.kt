@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -20,7 +19,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class DuplicateApplicationIntegrationTest : FullApplicationTest() {
+class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     val childId = testChild_1.id
     val childId2 = testChild_2.id
     val guardianId = testAdult_1.id
@@ -29,7 +28,6 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

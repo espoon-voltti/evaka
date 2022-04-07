@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
@@ -39,13 +38,12 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class BackupCareIntegrationTest : FullApplicationTest() {
+class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

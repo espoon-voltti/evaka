@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -28,13 +27,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
+class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
         createApplication(child = testChild_1, guardian = testAdult_1)

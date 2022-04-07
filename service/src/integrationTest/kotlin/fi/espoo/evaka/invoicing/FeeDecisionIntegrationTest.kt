@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareFullDay35
@@ -48,7 +47,6 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -58,7 +56,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
-class FeeDecisionIntegrationTest : FullApplicationTest() {
+class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -237,13 +235,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

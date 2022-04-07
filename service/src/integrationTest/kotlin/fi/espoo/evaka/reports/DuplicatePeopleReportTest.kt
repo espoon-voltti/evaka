@@ -12,20 +12,13 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class DuplicatePeopleReportTest : FullApplicationTest() {
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
-
+class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val adminUser = AuthenticatedUser.Employee(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
 
     @Test

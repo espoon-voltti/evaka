@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
@@ -42,7 +41,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
+class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val child = testChild_1
     private final val child2 = testChild_2
     private final val parent = testAdult_1
@@ -59,7 +58,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestPlacement(
                 childId = child.id,

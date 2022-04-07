@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -24,14 +23,13 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class VardaUnitIntegrationTest : VardaIntegrationTest() {
+class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name))
             tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name))

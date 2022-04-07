@@ -46,7 +46,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -78,7 +77,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
+class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
 
     @MockBean
     private lateinit var featureConfig: FeatureConfig
@@ -114,7 +113,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -42,7 +41,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
+class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.ADMIN))
 
@@ -68,7 +67,6 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.ADMIN)))
             tx.insertTestEmployee(DevEmployee(id = supervisorId, roles = setOf()))

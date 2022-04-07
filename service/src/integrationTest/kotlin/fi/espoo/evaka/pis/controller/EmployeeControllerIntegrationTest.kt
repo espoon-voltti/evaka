@@ -13,23 +13,16 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class EmployeeControllerIntegrationTest : FullApplicationTest() {
+class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired
     lateinit var employeeController: EmployeeController
-
-    @BeforeEach
-    private fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
 
     @Test
     fun `no employees return empty list`() {

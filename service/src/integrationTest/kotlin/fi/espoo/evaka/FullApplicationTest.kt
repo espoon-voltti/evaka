@@ -24,6 +24,7 @@ import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -37,7 +38,7 @@ import java.net.URL
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class]
 )
-abstract class FullApplicationTest {
+abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @LocalServerPort
     protected var httpPort: Int = 0
 
@@ -68,7 +69,16 @@ abstract class FullApplicationTest {
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connectWithManualLifecycle()
-        db.transaction { it.resetDatabase() }
+        if (!resetDbBeforeEach) {
+            db.transaction { it.resetDatabase() }
+        }
+    }
+
+    @BeforeEach
+    protected fun resetBeforeTest() {
+        if (resetDbBeforeEach) {
+            db.transaction { it.resetDatabase() }
+        }
     }
 
     @AfterAll

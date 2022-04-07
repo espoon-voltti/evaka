@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
@@ -37,14 +36,13 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class OccupancyControllerIntegrationTest : FullApplicationTest() {
+class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val startDate = LocalDate.of(2019, 1, 1)
     private val endDate = LocalDate.of(2021, 12, 31)
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

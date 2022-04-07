@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultClub
@@ -50,7 +49,6 @@ import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -61,7 +59,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class VardaUpdateServiceIntegrationTest : VardaIntegrationTest() {
+class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
@@ -81,12 +79,6 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest() {
                 .bind("evakaChildId", testChild_1.id)
                 .execute()
         }
-        mockEndpoint.cleanUp()
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { it.resetDatabase() }
         mockEndpoint.cleanUp()
     }
 

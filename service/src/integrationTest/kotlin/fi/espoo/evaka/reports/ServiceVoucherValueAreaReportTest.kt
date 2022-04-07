@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
@@ -37,7 +36,6 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,18 +45,13 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
+class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.insertGeneralTestFixtures() }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { it.resetDatabase() }
     }
 
     private val janFirst = LocalDate.of(2020, 1, 1)

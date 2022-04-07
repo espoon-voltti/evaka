@@ -12,7 +12,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -25,7 +24,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import java.time.LocalDate
 
-class KoskiPayloadIntegrationTest : FullApplicationTest() {
+class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var koskiServer: MockKoskiServer
     private lateinit var koskiTester: KoskiTester
 
@@ -50,7 +49,6 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.setUnitOids()
         }

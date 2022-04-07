@@ -12,7 +12,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ServerSmokeTest : FullApplicationTest() {
+class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     @Test
     fun `test server startup`() {
         val (_, _, res) = http.get("/health").responseString()

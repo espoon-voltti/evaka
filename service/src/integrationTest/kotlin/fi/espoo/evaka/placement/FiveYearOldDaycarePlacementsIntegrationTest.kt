@@ -6,7 +6,6 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
+class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val childId = testChild_1.id
     private val yearChildTurnsFive = testChild_1.dateOfBirth.plusYears(5).year
@@ -23,7 +22,6 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
         }
     }

@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
@@ -42,13 +41,12 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PlacementPlanIntegrationTest : FullApplicationTest() {
+class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

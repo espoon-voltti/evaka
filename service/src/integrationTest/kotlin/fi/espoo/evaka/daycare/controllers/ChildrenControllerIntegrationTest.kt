@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +20,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ChildrenControllerIntegrationTest : FullApplicationTest() {
+class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var childController: ChildController
 
@@ -32,7 +31,6 @@ class ChildrenControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
             child = tx.createChild(
                 Child(

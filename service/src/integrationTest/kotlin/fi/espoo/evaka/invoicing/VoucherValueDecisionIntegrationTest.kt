@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -57,7 +56,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
+class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -67,7 +66,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.insertTestParentship(
                 headOfChild = testAdult_1.id,

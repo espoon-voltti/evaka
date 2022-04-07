@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -47,7 +46,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTest() {
+class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -69,7 +68,6 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
         val placementEnd = LocalDate.now().plusDays(30)
 
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
             val groupId = GroupId(UUID.randomUUID())

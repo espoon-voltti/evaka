@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -30,7 +29,6 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +36,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
+class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var generator: FinanceDecisionGenerator
 
@@ -46,13 +44,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

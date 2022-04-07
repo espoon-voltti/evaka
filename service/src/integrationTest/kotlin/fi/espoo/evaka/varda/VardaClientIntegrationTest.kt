@@ -12,7 +12,7 @@ import org.springframework.test.context.TestPropertySource
 import kotlin.test.assertTrue
 
 @TestPropertySource(properties = ["fi.espoo.voltti.vtj.xroad.trustStore.location=classpath:test-certificate/localhost.truststore"])
-class VardaClientIntegrationTest : VardaIntegrationTest() {
+class VardaClientIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = false) {
     private lateinit var httpsServer: VardaClientIntegrationMockHttpsServer
 
     @BeforeAll

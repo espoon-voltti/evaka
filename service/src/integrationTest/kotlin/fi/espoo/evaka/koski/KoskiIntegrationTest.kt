@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
@@ -48,7 +47,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class KoskiIntegrationTest : FullApplicationTest() {
+class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var koskiServer: MockKoskiServer
     private lateinit var koskiTester: KoskiTester
 
@@ -71,7 +70,6 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.setUnitOids()
         }

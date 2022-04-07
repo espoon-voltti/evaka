@@ -16,10 +16,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -27,7 +25,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-class FeeAlterationIntegrationTest : FullApplicationTest() {
+class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
@@ -42,13 +40,6 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

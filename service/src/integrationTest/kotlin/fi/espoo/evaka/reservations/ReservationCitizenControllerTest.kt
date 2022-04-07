@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
@@ -39,7 +38,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ReservationCitizenControllerTest : FullApplicationTest() {
+class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
 
@@ -53,7 +52,6 @@ class ReservationCitizenControllerTest : FullApplicationTest() {
     @BeforeEach
     fun before() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.insertTestPlacement(
                 childId = testChild_1.id,

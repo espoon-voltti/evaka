@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
@@ -45,7 +44,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GetApplicationIntegrationTests : FullApplicationTest() {
+class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var stateService: ApplicationStateService
 
@@ -62,7 +61,6 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

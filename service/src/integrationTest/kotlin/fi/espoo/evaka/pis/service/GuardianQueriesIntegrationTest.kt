@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -17,11 +16,10 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GuardianQueriesIntegrationTest : FullApplicationTest() {
+class GuardianQueriesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

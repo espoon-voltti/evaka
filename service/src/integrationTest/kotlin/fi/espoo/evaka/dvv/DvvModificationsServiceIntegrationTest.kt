@@ -11,12 +11,10 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -24,21 +22,13 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase() {
+class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
 
     @BeforeEach
     private fun beforeEach() {
+        DvvIntegrationTestPersonService.resetSsnUpdateCounts()
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.storeDvvModificationToken("100", "101", 0, 0)
-        }
-    }
-
-    @AfterEach
-    private fun afterEach() {
-        db.transaction { tx ->
-            tx.deleteDvvModificationToken("100")
-            DvvIntegrationTestPersonService.resetSsnUpdateCounts()
         }
     }
 
@@ -224,7 +214,6 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         // until token is 0 and then it will return ajanTasalla=true
         // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
         db.transaction {
-            it.resetDatabase()
             it.storeDvvModificationToken("10000", "-2", 0, 0)
         }
         try {

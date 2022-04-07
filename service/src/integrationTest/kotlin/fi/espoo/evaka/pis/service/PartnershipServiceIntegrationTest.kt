@@ -9,22 +9,15 @@ import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 
-class PartnershipServiceIntegrationTest : FullApplicationTest() {
+class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var partnershipService: PartnershipService
-
-    @BeforeEach
-    private fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
 
     @Test
     fun `creating an overlapping partnership throws conflict`() {

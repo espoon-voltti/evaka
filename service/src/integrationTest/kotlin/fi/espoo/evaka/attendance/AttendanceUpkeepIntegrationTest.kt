@@ -9,7 +9,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testChild_1
@@ -22,14 +21,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
-class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
+class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var scheduledJobs: ScheduledJobs
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

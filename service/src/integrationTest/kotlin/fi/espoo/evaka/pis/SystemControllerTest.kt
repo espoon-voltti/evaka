@@ -20,20 +20,18 @@ import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SystemControllerTest : FullApplicationTest() {
+class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var areaId: AreaId
     private lateinit var unitId: DaycareId
 
     @BeforeEach
     protected fun beforeEach() {
-        db.transaction { it.resetDatabase() }
         areaId = db.transaction { it.insertTestCareArea(DevCareArea()) }
         unitId = db.transaction { it.insertTestDaycare(DevDaycare(areaId = areaId)) }
     }

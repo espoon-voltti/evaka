@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.testAdult_1
@@ -38,7 +37,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PartnershipsControllerIntegrationTest : FullApplicationTest() {
+class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var controller: PartnershipsController
 
@@ -50,7 +49,6 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun init() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.insertTestEmployee(DevEmployee(unitSupervisorId))
             it.insertTestParentship(

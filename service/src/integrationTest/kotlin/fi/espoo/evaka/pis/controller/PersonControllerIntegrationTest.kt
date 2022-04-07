@@ -20,16 +20,14 @@ import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class PersonControllerIntegrationTest : FullApplicationTest() {
+class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @Autowired
@@ -45,11 +43,6 @@ class PersonControllerIntegrationTest : FullApplicationTest() {
         invoicingPostOffice = "Espoo",
         forceManualFeeDecisions = true
     )
-
-    @BeforeEach
-    private fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
 
     @Test
     fun `Finance admin can update end user's contact info`() {

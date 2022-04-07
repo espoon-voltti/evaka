@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -36,7 +35,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PlacementServiceIntegrationTest : FullApplicationTest() {
+class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     val childId = testChild_1.id
     val unitId = testDaycare.id
@@ -54,7 +53,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
         }
         db.transaction {

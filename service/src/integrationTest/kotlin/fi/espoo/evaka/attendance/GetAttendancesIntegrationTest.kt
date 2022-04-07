@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -43,7 +42,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class GetAttendancesIntegrationTest : FullApplicationTest() {
+class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mobileUser = AuthenticatedUser.MobileDevice(UUID.randomUUID())
     private val mobileUser2 = AuthenticatedUser.MobileDevice(UUID.randomUUID())
     private val groupId = GroupId(UUID.randomUUID())
@@ -56,7 +55,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))

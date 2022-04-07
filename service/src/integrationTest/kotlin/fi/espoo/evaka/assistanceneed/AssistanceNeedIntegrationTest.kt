@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -31,7 +30,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class AssistanceNeedIntegrationTest : FullApplicationTest() {
+class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
     private val testDaycareId = testDaycare.id
@@ -39,7 +38,6 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

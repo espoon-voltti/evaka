@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
@@ -23,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class EmployeeControllerSearchIntegrationTest : FullApplicationTest() {
+class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired
     lateinit var controller: EmployeeController
@@ -31,7 +30,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

@@ -41,7 +41,7 @@ import java.util.UUID
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-class VtjClientServiceTest : FullApplicationTest() {
+class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Autowired
     lateinit var vtjClientService: IVtjClientService

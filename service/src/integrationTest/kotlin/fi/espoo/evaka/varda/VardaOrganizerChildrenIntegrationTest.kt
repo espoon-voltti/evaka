@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
@@ -19,14 +18,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest() {
+class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
         mockEndpoint.cleanUp()

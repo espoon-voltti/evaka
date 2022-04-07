@@ -41,7 +41,6 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -65,7 +64,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class MessageIntegrationTest : FullApplicationTest() {
+class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val person1Id = testAdult_1.id
     private val person2Id = testAdult_2.id
@@ -107,8 +106,6 @@ class MessageIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
-
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(
                 DevDaycare(

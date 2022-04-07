@@ -11,7 +11,6 @@ import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
@@ -31,7 +30,7 @@ import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class ChildImageTest : FullApplicationTest() {
+class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired
     private lateinit var controller: ChildImageController
@@ -42,7 +41,6 @@ class ChildImageTest : FullApplicationTest() {
     @BeforeEach
     protected fun beforeEach() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
         }
     }

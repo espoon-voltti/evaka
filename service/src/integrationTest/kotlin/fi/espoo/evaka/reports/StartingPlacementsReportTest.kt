@@ -14,30 +14,21 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class StartingPlacementsReportTest : FullApplicationTest() {
+class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

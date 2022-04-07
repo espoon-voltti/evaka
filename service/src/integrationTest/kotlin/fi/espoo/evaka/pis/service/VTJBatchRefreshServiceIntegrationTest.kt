@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -26,7 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import java.time.LocalDate
 import java.util.UUID
 
-class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
+class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @MockBean(name = "personService")
     lateinit var personService: PersonService
@@ -48,7 +47,6 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
         service = VTJBatchRefreshService(

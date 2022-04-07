@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -33,24 +32,16 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class FamilyOverviewTest : FullApplicationTest() {
+class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

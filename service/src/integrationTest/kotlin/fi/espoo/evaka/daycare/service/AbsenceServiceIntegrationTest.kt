@@ -33,13 +33,11 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,7 +49,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AbsenceServiceIntegrationTest : FullApplicationTest() {
+class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var absenceService: AbsenceService
 
@@ -74,11 +72,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
                 DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = placementStart)
             )
         }
-    }
-
-    @AfterEach
-    private fun afterEach() {
-        db.transaction { tx -> tx.resetDatabase() }
     }
 
     @Test

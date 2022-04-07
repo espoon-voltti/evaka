@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
@@ -55,7 +54,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class ScheduledJobsTest : FullApplicationTest() {
+class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var scheduledJobs: ScheduledJobs
 
@@ -67,7 +66,6 @@ class ScheduledJobsTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestClubApplicationForm
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.test.validClubApplication
 import fi.espoo.evaka.test.validDaycareApplication
@@ -43,7 +42,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
+class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -75,7 +74,6 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
         MockEmailClient.emails.clear()
