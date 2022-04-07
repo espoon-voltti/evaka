@@ -292,7 +292,7 @@ fun Database.Read.fetchApplicationSummaries(
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
-            ppd.unit_name,
+            (CASE WHEN pp.unit_id IS NOT NULL THEN d.name END) AS placement_plan_unit_name,
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total
@@ -313,11 +313,8 @@ fun Database.Read.fetchApplicationSummaries(
             FROM application_form af
         ) f ON f.application_id = a.id AND f.latest IS TRUE
         JOIN person child ON child.id = a.child_id
-        LEFT JOIN placement_plan pp ON pp.application_id = a.id AND a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type
-        LEFT JOIN  (
-            SELECT placement_plan.application_id, placement_plan.unit_id, daycare.name unit_name FROM daycare JOIN placement_plan ON daycare.id = placement_plan.unit_id
-        ) ppd ON ppd.application_id = a.id
-        JOIN daycare d ON COALESCE(ppd.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
+        LEFT JOIN placement_plan pp ON pp.application_id = a.id
+        JOIN daycare d ON COALESCE(pp.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
             SELECT l.id, EXISTS(
@@ -361,6 +358,7 @@ fun Database.Read.fetchApplicationSummaries(
     val applicationSummaries = createQuery(paginatedSql)
         .bindMap(params + freeTextParams)
         .mapToPaged(pageSize, "total") { row ->
+            val status = row.mapColumn<ApplicationStatus>("application_status")
             ApplicationSummary(
                 id = row.mapColumn("id"),
                 firstName = row.mapColumn("first_name"),
@@ -387,7 +385,7 @@ fun Database.Read.fetchApplicationSummaries(
                 },
                 origin = row.mapColumn("origin"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                status = row.mapColumn("application_status"),
+                status = status,
                 additionalInfo = row.mapColumn("additionalInfo"),
                 serviceWorkerNote = if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
                 siblingBasis = row.mapColumn("siblingBasis"),
@@ -401,6 +399,7 @@ fun Database.Read.fetchApplicationSummaries(
                 attachmentCount = row.mapColumn("attachmentCount"),
                 additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
                 placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                    ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
                     ?.let {
                         PlacementProposalStatus(
                             unitConfirmationStatus = it,
@@ -408,7 +407,7 @@ fun Database.Read.fetchApplicationSummaries(
                             unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
                         )
                     },
-                placementProposalUnitName = row.mapColumn("unit_name"),
+                placementProposalUnitName = row.mapColumn("placement_plan_unit_name"),
                 currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                     PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
                 }
