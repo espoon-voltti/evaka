@@ -522,7 +522,14 @@ SELECT
 FROM placement_plan p
 JOIN application a ON p.application_id = a.id
 JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
-WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
+WHERE NOT p.deleted AND (
+    daterange(p.start_date, p.end_date, '[]') && :period
+    OR (
+        preschool_daycare_start_date IS NOT NULL
+        AND preschool_daycare_end_date IS NOT NULL
+        AND daterange(preschool_daycare_start_date, preschool_daycare_end_date, '[]') && :period
+    )
+)
 """
     )
         .bind("unitIds", unitIds)
@@ -534,35 +541,20 @@ WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
             if (placementPlan.preschoolDaycareStartDate == null || placementPlan.preschoolDaycareEndDate == null)
                 listOf(placementPlan.placement)
             else {
-                val placementTypeOutsideDaycare = when (placementPlan.placement.type) {
-                    PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
-                    PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
-                    else -> placementPlan.placement.type
-                }
+                val preschoolDaycarePeriod = FiniteDateRange(placementPlan.preschoolDaycareStartDate, placementPlan.preschoolDaycareEndDate)
+                val onlyPreschoolPeriods = placementPlan.placement.period.complement(preschoolDaycarePeriod)
 
-                listOfNotNull(
-                    if (placementPlan.preschoolDaycareStartDate > placementPlan.placement.period.start)
-                        placementPlan.placement.copy(
-                            type = placementTypeOutsideDaycare,
-                            period = placementPlan.placement.period.copy(
-                                end = placementPlan.preschoolDaycareStartDate.minusDays(1)
-                            )
-                        )
-                    else null,
+                onlyPreschoolPeriods.map {
                     placementPlan.placement.copy(
-                        period = FiniteDateRange(
-                            maxOf(placementPlan.preschoolDaycareStartDate, placementPlan.placement.period.start),
-                            minOf(placementPlan.preschoolDaycareEndDate, placementPlan.placement.period.end)
-                        )
-                    ),
-                    if (placementPlan.preschoolDaycareEndDate < placementPlan.placement.period.end)
-                        placementPlan.placement.copy(
-                            type = placementTypeOutsideDaycare,
-                            period = placementPlan.placement.period.copy(
-                                start = placementPlan.preschoolDaycareEndDate.plusDays(1)
-                            )
-                        )
-                    else null,
+                        type = when (placementPlan.placement.type) {
+                            PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
+                            PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
+                            else -> placementPlan.placement.type
+                        },
+                        period = it
+                    )
+                } + placementPlan.placement.copy(
+                    period = preschoolDaycarePeriod
                 )
             }
         }

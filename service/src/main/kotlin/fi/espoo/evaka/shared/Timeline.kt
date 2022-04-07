@@ -42,14 +42,7 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
         .let { (conflicts, unchanged) ->
             val result = unchanged.toMutableList()
             for (conflict in conflicts) {
-                conflict.intersection(range)?.let { intersection ->
-                    if (conflict.start != intersection.start) {
-                        result.add(FiniteDateRange(start = conflict.start, end = intersection.start.minusDays(1)))
-                    }
-                    if (conflict.end != intersection.end) {
-                        result.add(FiniteDateRange(start = intersection.end.plusDays(1), end = conflict.end))
-                    }
-                }
+                result.addAll(conflict.complement(range))
             }
             result.sortBy { it.start }
             Timeline(result)
