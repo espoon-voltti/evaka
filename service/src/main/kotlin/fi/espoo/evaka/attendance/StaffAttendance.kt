@@ -66,6 +66,7 @@ data class Attendance(
 
 data class EmployeeAttendance(
     val employeeId: EmployeeId,
+    val groups: List<GroupId>,
     val firstName: String,
     val lastName: String,
     val currentOccupancyCoefficient: BigDecimal,

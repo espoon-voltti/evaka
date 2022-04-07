@@ -49,6 +49,7 @@ class RealtimeStaffAttendanceController(
                 val staffWithAttendance = attendancesByEmployee.entries.map { (employeeId, data) ->
                     EmployeeAttendance(
                         employeeId = employeeId,
+                        groups = it.getGroupsForEmployee(employeeId),
                         firstName = data[0].firstName,
                         lastName = data[0].lastName,
                         currentOccupancyCoefficient = data[0].currentOccupancyCoefficient ?: BigDecimal.ZERO,
@@ -57,7 +58,15 @@ class RealtimeStaffAttendanceController(
                 }
                 val staffWithoutAttendance = it.getCurrentStaffForAttendanceCalendar(unitId)
                     .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
-                    .map { emp -> EmployeeAttendance(emp.id, emp.firstName, emp.lastName, emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf()) }
+                    .map { emp ->
+                        EmployeeAttendance(
+                            employeeId = emp.id,
+                            groups = it.getGroupsForEmployee(emp.id),
+                            firstName = emp.firstName,
+                            lastName = emp.lastName,
+                            currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf()
+                        )
+                    }
                 StaffAttendanceResponse(
                     staff = staffWithAttendance + staffWithoutAttendance,
                     extraAttendances = it.getExternalStaffAttendancesByDateRange(unitId, range)

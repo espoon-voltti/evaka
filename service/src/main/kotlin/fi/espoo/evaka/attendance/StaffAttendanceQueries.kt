@@ -241,3 +241,14 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, rang
     .bind("end", range.end)
     .mapTo<ExternalAttendance>()
     .list()
+
+fun Database.Read.getGroupsForEmployee(employeeId: EmployeeId): List<GroupId> = createQuery(
+    """
+    SELECT daycare_group_id
+    FROM daycare_group_acl
+    WHERE employee_id = :employeeId
+    """.trimIndent()
+)
+    .bind("employeeId", employeeId)
+    .mapTo<GroupId>()
+    .list()
