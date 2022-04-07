@@ -332,15 +332,11 @@ fun Database.Read.fetchApplicationSummaries(
             FROM application l
         ) duplicates ON duplicates.id = a.id
         LEFT JOIN (
-            SELECT
-                appl.id, array_agg(att.id) AS attachment_ids
-            FROM
-                application appl, attachment att
-            WHERE
-                appl.id = att.application_id
-            GROUP by
-                appl.id
-        ) attachments ON a.id = attachments.id
+            SELECT application_id, array_agg(id) AS attachment_ids
+            FROM attachment
+            WHERE application_id IS NOT NULL
+            GROUP by application_id
+        ) attachments ON a.id = attachments.application_id
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
