@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -21,8 +21,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
-
+class ChildrenControllerIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var childController: ChildController
 

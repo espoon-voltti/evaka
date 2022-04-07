@@ -4,20 +4,27 @@
 
 package fi.espoo.evaka.pis.dao
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
+class PartnershipDAOIntegrationTest : PureJdbiTest() {
+    @BeforeEach
+    private fun beforeEach() {
+        db.transaction { it.resetDatabase() }
+    }
+
     @Test
     fun `test creating partnership`() {
         val person1 = testPerson1()

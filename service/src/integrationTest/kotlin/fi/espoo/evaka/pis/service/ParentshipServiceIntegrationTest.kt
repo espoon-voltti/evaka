@@ -4,20 +4,27 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
+class ParentshipServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var parentshipService: ParentshipService
+
+    @BeforeEach
+    private fun beforeEach() {
+        db.transaction { it.resetDatabase() }
+    }
 
     @Test
     fun `fetch child with two heads`() {

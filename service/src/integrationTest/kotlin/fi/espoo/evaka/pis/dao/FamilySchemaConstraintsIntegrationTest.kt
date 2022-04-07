@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.dao
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -14,12 +14,19 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.resetDatabase
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
+class FamilySchemaConstraintsIntegrationTest : PureJdbiTest() {
+    @BeforeEach
+    private fun beforeEach() {
+        db.transaction { it.resetDatabase() }
+    }
+
     @Test
     fun `basic partnership is ok`() {
         val person1 = testPerson1()

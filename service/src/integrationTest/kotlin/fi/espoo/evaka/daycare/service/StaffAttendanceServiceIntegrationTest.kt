@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -21,14 +21,12 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var staffAttendanceService: StaffAttendanceService
+class StaffAttendanceServiceIntegrationTest : PureJdbiTest() {
+    private val staffAttendanceService = StaffAttendanceService()
 
     val areaId: AreaId = AreaId(UUID.randomUUID())
     val daycareId: DaycareId = DaycareId(UUID.randomUUID())
