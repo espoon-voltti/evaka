@@ -8,7 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -67,15 +67,16 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
-        .map { rs, _ ->
+        .map { mapper ->
             StartingPlacementsRow(
-                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palvelusetelialue" else rs.getString("care_area_name"),
-                childId = ChildId(rs.getUUID("child_id")),
-                firstName = rs.getString("first_name"),
-                lastName = rs.getString("last_name"),
-                dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                ssn = rs.getString("ssn"),
-                placementStart = rs.getDate("placement_start").toLocalDate()
+                careAreaName = if (mapper.mapColumn("is_private_service_voucher_daycare")) "palvelusetelialue" else mapper.mapColumn("care_area_name"),
+                childId = ChildId(mapper.mapColumn("child_id")),
+                firstName = mapper.mapColumn("first_name"),
+                lastName = mapper.mapColumn("last_name"),
+                dateOfBirth = mapper.mapColumn("date_of_birth"),
+                ssn = mapper.mapColumn("ssn"),
+                placementStart = mapper.mapColumn("placement_start"),
             )
-        }.toList()
+        }
+        .toList()
 }
