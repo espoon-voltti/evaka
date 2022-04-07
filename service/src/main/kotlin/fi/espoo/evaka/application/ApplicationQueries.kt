@@ -214,15 +214,23 @@ fun Database.Read.fetchApplicationSummaries(
             }
         } else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
-        if (type == ApplicationTypeToggle.PRESCHOOL)
-            """
-            ('$PRESCHOOL_ONLY' = ANY(:preschoolType) OR ((f.document->'careDetails'->>'preparatory')::boolean OR (f.document->>'connectedDaycare')::boolean))
-            AND ('$PRESCHOOL_DAYCARE' = ANY(:preschoolType) OR ((f.document->'careDetails'->>'preparatory')::boolean OR NOT (f.document->>'connectedDaycare')::boolean OR a.additionalDaycareApplication))
-            AND ('$PREPARATORY_ONLY' = ANY(:preschoolType) OR (NOT (f.document->'careDetails'->>'preparatory')::boolean OR (f.document->>'connectedDaycare')::boolean))
-            AND ('$PREPARATORY_DAYCARE' = ANY(:preschoolType) OR (NOT (f.document->'careDetails'->>'preparatory')::boolean OR NOT (f.document->>'connectedDaycare')::boolean OR a.additionalDaycareApplication))
-            AND ('$DAYCARE_ONLY' = ANY(:preschoolType) OR NOT a.additionalDaycareApplication)
-            """.trimIndent()
-        else null,
+        if (type == ApplicationTypeToggle.PRESCHOOL) {
+            data class PreschoolFlags(val preparatory: Boolean, val connectedDaycare: Boolean, val additionalDaycareApplication: Boolean)
+            when {
+                preschoolType.isEmpty() -> "FALSE"
+                else -> preschoolType.joinToString(separator = " OR ", prefix = "(", postfix = ")") {
+                    when (it) {
+                        PRESCHOOL_ONLY -> PreschoolFlags(preparatory = false, connectedDaycare = false, additionalDaycareApplication = false)
+                        PRESCHOOL_DAYCARE -> PreschoolFlags(preparatory = false, connectedDaycare = true, additionalDaycareApplication = false)
+                        PREPARATORY_ONLY -> PreschoolFlags(preparatory = true, connectedDaycare = false, additionalDaycareApplication = false)
+                        PREPARATORY_DAYCARE -> PreschoolFlags(preparatory = true, connectedDaycare = true, additionalDaycareApplication = false)
+                        DAYCARE_ONLY -> PreschoolFlags(preparatory = false, connectedDaycare = true, additionalDaycareApplication = true)
+                    }.run {
+                        "((f.document->'careDetails'->>'preparatory')::boolean, (f.document->'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)"
+                    }
+                }
+            }
+        } else null,
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
         if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)" else null,
         if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)" else null,
