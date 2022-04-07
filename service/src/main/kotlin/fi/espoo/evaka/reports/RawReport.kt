@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -88,7 +88,7 @@ SELECT
     an IS NOT NULL as has_assistance_need,
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
     coalesce(capacity_factor, 1.0) * (CASE
-        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $youngChildOccupancyCoefficient
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         WHEN date_part('year', age(t::date, p.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
         ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
     END) AS capacity,

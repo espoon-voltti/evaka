@@ -45,7 +45,7 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUni
     val sql =
         """
         WITH children AS (
-            SELECT id, extract(year from age(date_of_birth)) age, language
+            SELECT id, extract(year from age(:target_date, date_of_birth)) age, language
             FROM person
         )
         SELECT
