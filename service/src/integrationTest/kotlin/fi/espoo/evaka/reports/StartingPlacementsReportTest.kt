@@ -11,12 +11,14 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -112,6 +114,14 @@ class StartingPlacementsReportTest : FullApplicationTest() {
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
     }
 
+    @Test
+    fun `child in a service voucher daycare is picked up`() {
+        val date = LocalDate.of(2019, 1, 1)
+        val placementStart = date
+        insertPlacement(testChild_1.id, placementStart, placementStart, testVoucherDaycare)
+        getAndAssert(date, listOf(toReportRow(testChild_1, placementStart, "palvelusetelialue")))
+    }
+
     private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
@@ -126,23 +136,23 @@ class StartingPlacementsReportTest : FullApplicationTest() {
         assertEquals(expected, result.get())
     }
 
-    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
+    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1), daycare: DevDaycare = testDaycare) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
-                unitId = testDaycare.id,
+                unitId = daycare.id,
                 startDate = startDate,
                 endDate = endDate
             )
         }
 
-    private fun toReportRow(child: DevPerson, startDate: LocalDate) = StartingPlacementsRow(
+    private fun toReportRow(child: DevPerson, startDate: LocalDate, careAreaName: String = testArea.name) = StartingPlacementsRow(
         childId = child.id,
         firstName = child.firstName,
         lastName = child.lastName,
         dateOfBirth = child.dateOfBirth,
         ssn = child.ssn,
         placementStart = startDate,
-        careAreaName = testArea.name
+        careAreaName = careAreaName
     )
 }

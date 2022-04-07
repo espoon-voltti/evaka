@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -55,7 +55,8 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
     //language=SQL
     val sql =
         """
-        SELECT p.child_id, p.start_date AS placementStart, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn, ca.name as care_area_name
+        SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn, ca.name as care_area_name,
+               u.provider_type = 'PRIVATE_SERVICE_VOUCHER' AS is_private_service_voucher_daycare        
         FROM placement p
         JOIN person c ON p.child_id = c.id
         JOIN daycare u ON p.unit_id = u.id
@@ -66,6 +67,15 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
-        .mapTo<StartingPlacementsRow>()
-        .toList()
+        .map { rs, _ ->
+            StartingPlacementsRow(
+                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palvelusetelialue" else rs.getString("care_area_name"),
+                childId = ChildId(rs.getUUID("child_id")),
+                firstName = rs.getString("first_name"),
+                lastName = rs.getString("last_name"),
+                dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
+                ssn = rs.getString("ssn"),
+                placementStart = rs.getDate("placement_start").toLocalDate()
+            )
+        }.toList()
 }
