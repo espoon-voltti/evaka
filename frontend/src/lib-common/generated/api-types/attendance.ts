@@ -165,6 +165,7 @@ export interface EmployeeAttendance {
   currentOccupancyCoefficient: number
   employeeId: UUID
   firstName: string
+  groups: UUID[]
   lastName: string
 }
 
