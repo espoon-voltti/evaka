@@ -41,9 +41,6 @@ export default React.memo(function ApplicationsPage() {
   const {
     applicationsResult,
     setApplicationsResult,
-    preschoolType,
-    allStatuses,
-    distinctions,
     debouncedApplicationSearchFilters,
     setCheckedIds
   } = useContext(ApplicationUIContext)
@@ -80,13 +77,13 @@ export default React.memo(function ApplicationsPage() {
       type: debouncedApplicationSearchFilters.type,
       preschoolType:
         debouncedApplicationSearchFilters.type === 'PRESCHOOL' &&
-        preschoolType.length > 0
-          ? preschoolType.join(',')
+        debouncedApplicationSearchFilters.preschoolType.length > 0
+          ? debouncedApplicationSearchFilters.preschoolType.join(',')
           : undefined,
       status:
         debouncedApplicationSearchFilters.status === 'ALL'
-          ? allStatuses.length > 0
-            ? allStatuses.join(',')
+          ? debouncedApplicationSearchFilters.allStatuses.length > 0
+            ? debouncedApplicationSearchFilters.allStatuses.join(',')
             : undefined
           : debouncedApplicationSearchFilters.status,
       dateType:
@@ -94,7 +91,9 @@ export default React.memo(function ApplicationsPage() {
           ? debouncedApplicationSearchFilters.dateType.join(',')
           : undefined,
       distinctions:
-        distinctions.length > 0 ? distinctions.join(',') : undefined,
+        debouncedApplicationSearchFilters.distinctions.length > 0
+          ? debouncedApplicationSearchFilters.distinctions.join(',')
+          : undefined,
       periodStart:
         debouncedApplicationSearchFilters.startDate &&
         debouncedApplicationSearchFilters.dateType.length > 0
@@ -116,9 +115,6 @@ export default React.memo(function ApplicationsPage() {
     page,
     sortBy,
     sortDirection,
-    preschoolType,
-    allStatuses,
-    distinctions,
     debouncedApplicationSearchFilters,
     reloadApplications
   ])
@@ -131,7 +127,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, preschoolType, allStatuses, distinctions, debouncedApplicationSearchFilters, setCheckedIds])
+  }, [setPage, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">

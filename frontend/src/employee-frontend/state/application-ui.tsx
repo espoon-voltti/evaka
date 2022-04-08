@@ -46,12 +46,6 @@ interface UIState {
   checkedIds: string[]
   setCheckedIds: (applicationIds: UUID[]) => void
   showCheckboxes: boolean
-  preschoolType: PreschoolType[]
-  setPreschoolType: (type: PreschoolType[]) => void
-  allStatuses: ApplicationSummaryStatusAllOptions[]
-  setAllStatuses: (statuses: ApplicationSummaryStatusAllOptions[]) => void
-  distinctions: ApplicationDistinctions[]
-  setDistinctions: (distinctions: ApplicationDistinctions[]) => void
 }
 
 interface ApplicationSearchFilters {
@@ -66,6 +60,9 @@ interface ApplicationSearchFilters {
   searchTerms: string
   transferApplications: TransferApplicationFilter
   voucherApplications: VoucherApplicationFilter
+  preschoolType: PreschoolType[]
+  allStatuses: ApplicationSummaryStatusAllOptions[]
+  distinctions: ApplicationDistinctions[]
 }
 
 export type VoucherApplicationFilter =
@@ -85,7 +82,10 @@ const clearApplicationSearchFilters: ApplicationSearchFilters = {
   dateType: [],
   searchTerms: '',
   transferApplications: 'ALL',
-  voucherApplications: undefined
+  voucherApplications: undefined,
+  preschoolType: [],
+  allStatuses: [],
+  distinctions: []
 }
 
 const defaultState: UIState = {
@@ -101,13 +101,7 @@ const defaultState: UIState = {
   clearSearchFilters: () => undefined,
   checkedIds: [],
   setCheckedIds: () => undefined,
-  showCheckboxes: false,
-  preschoolType: [],
-  setPreschoolType: () => undefined,
-  allStatuses: [],
-  setAllStatuses: () => undefined,
-  distinctions: [],
-  setDistinctions: () => undefined
+  showCheckboxes: false
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -129,10 +123,6 @@ export const ApplicationUIContextProvider = React.memo(
     )
     const [applicationSearchFilters, setApplicationSearchFilters] =
       useState<ApplicationSearchFilters>(defaultState.applicationSearchFilters)
-    const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
-      defaultState.distinctions
-    )
-
     const clearSearchFilters = useCallback(() => {
       setApplicationSearchFilters(defaultState.applicationSearchFilters)
     }, [])
@@ -145,12 +135,6 @@ export const ApplicationUIContextProvider = React.memo(
     const [checkedIds, setCheckedIds] = useState<string[]>(
       defaultState.checkedIds
     )
-    const [preschoolType, setPreschoolType] = useState<PreschoolType[]>(
-      defaultState.preschoolType
-    )
-    const [allStatuses, setAllStatuses] = useState<
-      ApplicationSummaryStatusAllOptions[]
-    >(defaultState.allStatuses)
     const showCheckboxes = [
       'SENT',
       'WAITING_PLACEMENT',
@@ -172,13 +156,7 @@ export const ApplicationUIContextProvider = React.memo(
         clearSearchFilters,
         checkedIds,
         setCheckedIds,
-        showCheckboxes,
-        preschoolType,
-        setPreschoolType,
-        allStatuses,
-        setAllStatuses,
-        distinctions,
-        setDistinctions
+        showCheckboxes
       }),
       [
         applicationsResult,
@@ -193,13 +171,7 @@ export const ApplicationUIContextProvider = React.memo(
         clearSearchFilters,
         checkedIds,
         setCheckedIds,
-        showCheckboxes,
-        preschoolType,
-        setPreschoolType,
-        allStatuses,
-        setAllStatuses,
-        distinctions,
-        setDistinctions
+        showCheckboxes
       ]
     )
 

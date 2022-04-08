@@ -42,12 +42,6 @@ export default React.memo(function ApplicationFilters() {
     availableAreas,
     setAvailableAreas,
     clearSearchFilters,
-    preschoolType,
-    setPreschoolType,
-    allStatuses,
-    setAllStatuses,
-    distinctions,
-    setDistinctions,
     setApplicationsResult,
     applicationSearchFilters,
     setApplicationSearchFilters
@@ -72,9 +66,14 @@ export default React.memo(function ApplicationFilters() {
   useEffect(() => {
     if (
       applicationSearchFilters.units.length === 0 &&
-      distinctions.includes('SECONDARY')
+      applicationSearchFilters.distinctions.includes('SECONDARY')
     ) {
-      setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        distinctions: applicationSearchFilters.distinctions.filter(
+          (v) => v !== 'SECONDARY'
+        )
+      })
     }
   }, [applicationSearchFilters.units]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -92,24 +91,30 @@ export default React.memo(function ApplicationFilters() {
     setApplicationsResult(Loading.of())
     if (
       (newStatus === 'ALL' && applicationSearchFilters.status !== 'ALL') ||
-      allStatuses.length === 0
+      applicationSearchFilters.allStatuses.length === 0
     ) {
-      setAllStatuses([
-        'SENT',
-        'WAITING_PLACEMENT',
-        'WAITING_DECISION',
-        'WAITING_UNIT_CONFIRMATION',
-        'WAITING_MAILING',
-        'WAITING_CONFIRMATION',
-        'REJECTED',
-        'ACTIVE',
-        'CANCELLED'
-      ])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        allStatuses: [
+          'SENT',
+          'WAITING_PLACEMENT',
+          'WAITING_DECISION',
+          'WAITING_UNIT_CONFIRMATION',
+          'WAITING_MAILING',
+          'WAITING_CONFIRMATION',
+          'REJECTED',
+          'ACTIVE',
+          'CANCELLED'
+        ]
+      })
     } else if (
       newStatus === 'ALL' &&
       applicationSearchFilters.status === 'ALL'
     ) {
-      setAllStatuses([])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        allStatuses: []
+      })
     }
     setApplicationSearchFilters({
       ...applicationSearchFilters,
@@ -121,12 +126,14 @@ export default React.memo(function ApplicationFilters() {
     setApplicationsResult(Loading.of())
     setApplicationSearchFilters({
       ...applicationSearchFilters,
-      type
+      type,
+      preschoolType:
+        type === 'PRESCHOOL'
+          ? [...preschoolTypes]
+          : applicationSearchFilters.preschoolType
     })
-    if (type === 'PRESCHOOL') {
-      setPreschoolType([...preschoolTypes])
-    }
   }
+
   const toggleDate = (toggledDateType: ApplicationDateType) => () => {
     setApplicationsResult(Loading.of())
     setApplicationSearchFilters({
@@ -139,17 +146,23 @@ export default React.memo(function ApplicationFilters() {
 
   const toggleApplicationPreschoolType = (type: PreschoolType) => () => {
     setApplicationsResult(Loading.of())
-    preschoolType.includes(type)
-      ? setPreschoolType(preschoolType.filter((v) => v !== type))
-      : setPreschoolType([...preschoolType, type])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      preschoolType: applicationSearchFilters.preschoolType.includes(type)
+        ? applicationSearchFilters.preschoolType.filter((v) => v !== type)
+        : [...applicationSearchFilters.preschoolType, type]
+    })
   }
 
   const toggleAllStatuses =
     (status: ApplicationSummaryStatusAllOptions) => () => {
       setApplicationsResult(Loading.of())
-      allStatuses.includes(status)
-        ? setAllStatuses(allStatuses.filter((v) => v !== status))
-        : setAllStatuses([...allStatuses, status])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        allStatuses: applicationSearchFilters.allStatuses.includes(status)
+          ? applicationSearchFilters.allStatuses.filter((v) => v !== status)
+          : [...applicationSearchFilters.allStatuses, status]
+      })
     }
 
   const changeUnits = (selectedUnits: string[]) => {
@@ -163,9 +176,16 @@ export default React.memo(function ApplicationFilters() {
   const toggleApplicationDistinctions =
     (distinction: ApplicationDistinctions) => () => {
       setApplicationsResult(Loading.of())
-      distinctions.includes(distinction)
-        ? setDistinctions(distinctions.filter((v) => v !== distinction))
-        : setDistinctions([...distinctions, distinction])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        distinctions: applicationSearchFilters.distinctions.includes(
+          distinction
+        )
+          ? applicationSearchFilters.distinctions.filter(
+              (v) => v !== distinction
+            )
+          : [...applicationSearchFilters.distinctions, distinction]
+      })
     }
 
   return (
@@ -202,13 +222,13 @@ export default React.memo(function ApplicationFilters() {
           <Gap size="m" />
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
-            toggled={distinctions}
+            toggled={applicationSearchFilters.distinctions}
             disableSecondary={applicationSearchFilters.units.length === 0}
           />
           <Gap size="L" />
           <ApplicationTypeFilter
             toggled={applicationSearchFilters.type}
-            toggledPreschool={preschoolType}
+            toggledPreschool={applicationSearchFilters.preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
@@ -246,7 +266,7 @@ export default React.memo(function ApplicationFilters() {
         <Fragment>
           <ApplicationStatusFilter
             toggled={applicationSearchFilters.status}
-            toggledAllStatuses={allStatuses}
+            toggledAllStatuses={applicationSearchFilters.allStatuses}
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}
           />
