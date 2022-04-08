@@ -21,11 +21,13 @@ import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
+import fi.espoo.evaka.serviceneed.ServiceNeedController
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -37,6 +39,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -359,6 +362,35 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `value decision cleanup does nothing when child has a service need for only part of placement`() {
+        val placementId = createPlacement(startDate, endDate)
+        addServiceNeed(placementId, startDate.plusDays(10), endDate, snDaycareFullDay25to35.id)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().sortedBy { it.validFrom }.let { decisions ->
+            assertEquals(2, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(startDate, decisions.first().validFrom)
+            assertEquals(startDate.plusDays(9), decisions.first().validTo)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.last().status)
+            assertEquals(startDate.plusDays(10), decisions.last().validFrom)
+            assertEquals(endDate, decisions.last().validTo)
+        }
+
+        endDecisions(now = endDate)
+
+        getAllValueDecisions().sortedBy { it.validFrom }.let { decisions ->
+            assertEquals(2, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(startDate, decisions.first().validFrom)
+            assertEquals(startDate.plusDays(9), decisions.first().validTo)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.last().status)
+            assertEquals(startDate.plusDays(10), decisions.last().validFrom)
+            assertEquals(endDate, decisions.last().validTo)
+        }
+    }
+
+    @Test
     fun `value decision search`() {
         createPlacement(startDate, endDate)
 
@@ -517,6 +549,31 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         asyncJobRunner.runPendingJobsSync()
 
         return data.get().first().id
+    }
+
+    private fun addServiceNeed(
+        placementId: PlacementId,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        optionId: ServiceNeedOptionId
+    ) {
+        val body = ServiceNeedController.ServiceNeedCreateRequest(
+            placementId,
+            startDate,
+            endDate,
+            optionId,
+            false
+        )
+
+        http.post("/service-needs")
+            .asUser(adminUser)
+            .objectBody(body, mapper = jsonMapper)
+            .response()
+            .also { (_, res, _) ->
+                assertEquals(200, res.statusCode)
+            }
+
+        asyncJobRunner.runPendingJobsSync()
     }
 
     private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
