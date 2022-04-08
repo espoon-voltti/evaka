@@ -53,6 +53,20 @@ export async function saveIncomeStatementAttachment(
   )
 }
 
+export async function saveIncomeAttachment(
+  incomeId: UUID | null,
+  file: File,
+  onUploadProgress: (progressEvent: ProgressEvent) => void
+): Promise<Result<UUID>> {
+  return await doSaveAttachment(
+    {
+      path: incomeId ? `/attachments/income/${incomeId}` : `/attachments/income`
+    },
+    file,
+    onUploadProgress
+  )
+}
+
 export const saveMessageAttachment = (
   draftId: UUID,
   file: File,

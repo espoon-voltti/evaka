@@ -1176,6 +1176,7 @@ export const fi = {
       itemHeader: 'Tulotiedot ajalle',
       itemHeaderNew: 'Uusi tulotieto',
       details: {
+        attachments: 'Liitteet',
         name: 'Nimi',
         updated: 'Tulotiedot päivitetty',
         handler: 'Käsittelijä',

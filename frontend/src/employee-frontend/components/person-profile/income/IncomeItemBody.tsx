@@ -2,14 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 
+import { Attachment } from 'lib-common/api-types/attachment'
 import { formatDate } from 'lib-common/date'
 import Title from 'lib-components/atoms/Title'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 
+import { getAttachmentBlob } from '../../../api/attachments'
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
@@ -101,8 +109,41 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
           />
         </>
       ) : null}
+      <IncomeAttachments attachments={income.attachments} />
     </>
   )
 })
+
+function IncomeAttachments({ attachments }: { attachments: Attachment[] }) {
+  const { i18n } = useTranslation()
+  return (
+    <>
+      <Title size={4}>{i18n.personProfile.income.details.attachments}</Title>
+      {attachments.length === 0 ? (
+        <p data-qa="no-attachments">
+          {i18n.incomeStatement.citizenAttachments.noAttachments}
+        </p>
+      ) : (
+        <FixedSpaceColumn>
+          {attachments.map((file) => (
+            <div key={file.id} data-qa="attachment">
+              <FileIcon icon={fileIcon(file)} />
+              <FileDownloadButton
+                file={file}
+                fileFetchFn={getAttachmentBlob}
+                onFileUnavailable={() => undefined}
+              />
+            </div>
+          ))}
+        </FixedSpaceColumn>
+      )}
+    </>
+  )
+}
+
+const FileIcon = styled(FontAwesomeIcon)`
+  color: ${(p) => p.theme.colors.main.m2};
+  margin-right: ${defaultMargins.s};
+`
 
 export default IncomeItemBody
