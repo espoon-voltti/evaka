@@ -42,9 +42,6 @@ interface UIState {
   setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
   allUnits: Result<Unit[]>
   setAllUnits: Dispatch<SetStateAction<Result<Unit[]>>>
-  searchTerms: string
-  setSearchTerms: (searchTerms: string) => void
-  debouncedSearchTerms: string
   applicationSearchFilters: ApplicationSearchFilters
   setApplicationSearchFilters: (
     applicationFilters: ApplicationSearchFilters
@@ -75,6 +72,7 @@ interface ApplicationSearchFilters {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   dateType: ApplicationDateType[]
+  searchTerms: string
 }
 
 export type VoucherApplicationFilter =
@@ -91,7 +89,8 @@ const clearApplicationSearchFilters: ApplicationSearchFilters = {
   type: 'ALL',
   startDate: undefined,
   endDate: undefined,
-  dateType: []
+  dateType: [],
+  searchTerms: ''
 }
 
 const defaultState: UIState = {
@@ -101,9 +100,6 @@ const defaultState: UIState = {
   setAvailableAreas: () => undefined,
   allUnits: Loading.of(),
   setAllUnits: () => undefined,
-  searchTerms: '',
-  setSearchTerms: () => undefined,
-  debouncedSearchTerms: '',
   applicationSearchFilters: clearApplicationSearchFilters,
   setApplicationSearchFilters: () => undefined,
   debouncedApplicationSearchFilters: clearApplicationSearchFilters,
@@ -140,9 +136,6 @@ export const ApplicationUIContextProvider = React.memo(
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
       defaultState.allUnits
     )
-    const [searchTerms, setSearchTerms] = useState<string>(
-      defaultState.searchTerms
-    )
     const [applicationSearchFilters, setApplicationSearchFilters] =
       useState<ApplicationSearchFilters>(defaultState.applicationSearchFilters)
     const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
@@ -152,7 +145,6 @@ export const ApplicationUIContextProvider = React.memo(
       useState<TransferApplicationFilter>(defaultState.transferApplications)
     const [voucherApplications, setVoucherApplications] =
       useState<VoucherApplicationFilter>(defaultState.voucherApplications)
-    const debouncedSearchTerms = useDebounce(searchTerms, 500)
 
     const clearSearchFilters = useCallback(() => {
       setApplicationSearchFilters(defaultState.applicationSearchFilters)
@@ -187,9 +179,6 @@ export const ApplicationUIContextProvider = React.memo(
         setAvailableAreas,
         allUnits,
         setAllUnits,
-        searchTerms,
-        setSearchTerms,
-        debouncedSearchTerms,
         applicationSearchFilters,
         setApplicationSearchFilters,
         debouncedApplicationSearchFilters,
@@ -215,9 +204,6 @@ export const ApplicationUIContextProvider = React.memo(
         setAvailableAreas,
         allUnits,
         setAllUnits,
-        searchTerms,
-        setSearchTerms,
-        debouncedSearchTerms,
         applicationSearchFilters,
         setApplicationSearchFilters,
         debouncedApplicationSearchFilters,

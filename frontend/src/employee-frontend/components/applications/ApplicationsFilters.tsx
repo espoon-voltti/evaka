@@ -41,8 +41,6 @@ export default React.memo(function ApplicationFilters() {
     setAllUnits,
     availableAreas,
     setAvailableAreas,
-    searchTerms,
-    setSearchTerms,
     clearSearchFilters,
     preschoolType,
     setPreschoolType,
@@ -177,8 +175,13 @@ export default React.memo(function ApplicationFilters() {
   return (
     <Filters
       searchPlaceholder={i18n.applications.searchPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={applicationSearchFilters.searchTerms}
+      setFreeText={(searchTerms) =>
+        setApplicationSearchFilters({
+          ...applicationSearchFilters,
+          searchTerms
+        })
+      }
       clearFilters={clearSearchFilters}
       clearMargin={applicationSearchFilters.status === 'ALL' ? 0 : -40}
       column1={

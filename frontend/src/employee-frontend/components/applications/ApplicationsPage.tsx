@@ -46,7 +46,6 @@ export default React.memo(function ApplicationsPage() {
     distinctions,
     transferApplications,
     voucherApplications,
-    debouncedSearchTerms,
     debouncedApplicationSearchFilters,
     setCheckedIds
   } = useContext(ApplicationUIContext)
@@ -108,7 +107,7 @@ export default React.memo(function ApplicationsPage() {
         debouncedApplicationSearchFilters.dateType.length > 0
           ? debouncedApplicationSearchFilters.endDate.formatIso()
           : undefined,
-      searchTerms: debouncedSearchTerms,
+      searchTerms: debouncedApplicationSearchFilters.searchTerms,
       transferApplications,
       voucherApplications
     }
@@ -123,7 +122,6 @@ export default React.memo(function ApplicationsPage() {
     distinctions,
     transferApplications,
     voucherApplications,
-    debouncedSearchTerms,
     debouncedApplicationSearchFilters,
     reloadApplications
   ])
@@ -136,7 +134,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, preschoolType, allStatuses, distinctions, debouncedSearchTerms, debouncedApplicationSearchFilters, setCheckedIds])
+  }, [setPage, preschoolType, allStatuses, distinctions, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">
