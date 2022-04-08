@@ -1434,9 +1434,9 @@ const sv: Translations = {
         </P>
 
         <P>
-          Välj &apos;Barnet har inga inkomster, eller så har jag gått med på
-          högsta avgiften&apos; om barnet inte har några inkomster, eller er
-          familj har godkännt en högre avgift för småbarnspedagogiken.
+          Om barnet inte har några inkomster, eller er familj har godkännt den
+          högsta avgiften för småbarnspedagogiken, ska du inte fylla i detta
+          formulär.
         </P>
 
         <P>* Uppgifter markerade med en stjärna är obligatoriska.</P>
@@ -1478,11 +1478,6 @@ const sv: Translations = {
       entrepreneurIncome: 'Uppgifter om företagarens inkomster'
     },
     childIncome: {
-      subtitle:
-        'Har barnet inkomster som inverkar på avgiften för småbarnspedagogiken? *',
-      noIncome:
-        'Barnet har inga inkomster, eller så har jag gått med på högsta avgiften',
-      hasIncome: 'Barnet har inkomster och jag bifogar dem nedan',
       childAttachments: 'Information om barnets inkomster bifogas *',
       additionalInfo: 'Övrig information angående barnets inkomster',
       write: 'Fyll i'
@@ -1775,9 +1770,7 @@ const sv: Translations = {
         <>
           En utredning av barnens inkomster bör göras för småbarnspedagogiken.
           De vanligaste inkomsterna barn har är underhållsbidrag eller -stöd,
-          ränte- och aktieinkomster samt pension. Även om barnet inte har några
-          inkomster, eller om familjen har godkännt den högsta avgiften, bör du
-          göra utredningen.
+          ränte- och aktieinkomster samt pension.
         </>
       ),
       noChildIncomeStatementsNeeded: (

@@ -50,11 +50,7 @@ async function initializeEditorState(
       startDates,
       formData:
         incomeStatement === undefined
-          ? {
-              ...initialFormData(startDates),
-              childIncome: true,
-              highestFee: true
-            }
+          ? { ...initialFormData(startDates), childIncome: true }
           : Form.fromIncomeStatement(incomeStatement)
     })
   )
@@ -94,7 +90,7 @@ export default React.memo(function ChildIncomeStatementEditor() {
     const { id, formData, startDates } = state
 
     const save = (cancel: () => Promise<void>) => {
-      const validatedData = formData ? fromBody(formData) : undefined
+      const validatedData = formData ? fromBody('child', formData) : undefined
       if (validatedData) {
         if (id) {
           return updateChildIncomeStatement(childId, id, validatedData)

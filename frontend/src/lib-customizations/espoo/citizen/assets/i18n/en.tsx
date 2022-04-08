@@ -1481,8 +1481,7 @@ const en: Translations = {
 
         <P>
           If your child has no income, or your family has agreed to the highest
-          early childhood fee, select &apos;Child has no income, or I have
-          agreed to the highest early childhood education fee&apos;.
+          early childhood fee, you should not fill this form.
         </P>
 
         <P>* Information marked with an asterisk is required.</P>
@@ -1520,12 +1519,6 @@ const en: Translations = {
       entrepreneurIncome: "Entrepreneur's income information"
     },
     childIncome: {
-      subtitle:
-        'Does the child have income that affects the early childhood education fee? *',
-      noIncome:
-        'The child has no income, or I have agreed to the highest early childhood education fee\n',
-      hasIncome:
-        'The child has income and I will provide information about it as attachments below',
       childAttachments: 'Child income information attached *',
       additionalInfo: "Learn more about your child's income information",
       write: 'Write'
@@ -1820,9 +1813,7 @@ const en: Translations = {
         <>
           The income of children in early childhood education should be
           clarified. The most common income of a child is maintenance or
-          support, interest and dividend income and pension. You should also
-          report if the child has no income or your family has agreed to the
-          highest early childhood education fee.
+          support, interest and dividend income and pension.
         </>
       ),
       noChildIncomeStatementsNeeded: (

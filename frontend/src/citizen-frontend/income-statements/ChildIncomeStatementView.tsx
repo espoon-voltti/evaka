@@ -67,7 +67,7 @@ export default React.memo(function ChildIncomeStatementView() {
         <Row
           label={t.income.view.startDate}
           value={incomeStatement.startDate.format()}
-          dataQa="start-date"
+          data-qa="start-date"
         />
         <Row
           label={t.income.view.feeBasis}
@@ -93,6 +93,7 @@ const ChildIncomeInfo = React.memo(function IncomeInfo({
       <Row
         label={t.income.view.otherInfo}
         value={incomeStatement.otherInfo || '-'}
+        data-qa="other-info"
       />
       <HorizontalLine />
       <CitizenAttachments attachments={incomeStatement.attachments} />
@@ -167,12 +168,12 @@ const Row = React.memo(function Row({
   label,
   light,
   value,
-  dataQa
+  'data-qa': dataQa
 }: {
   label: string
   light?: boolean
   value: React.ReactNode
-  dataQa?: string
+  'data-qa'?: string
 }) {
   return (
     <>

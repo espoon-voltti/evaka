@@ -19,8 +19,10 @@ let page: Page
 let header: CitizenHeader
 let child1ISList: CitizenChildIncomeStatementListPage
 
-const testFileName = 'test_file.png'
-const testFilePath = `src/e2e-test/assets/${testFileName}`
+const testFileName1 = 'test_file.png'
+const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
+const testFileName2 = 'test_file.jpg'
+const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
@@ -66,15 +68,15 @@ describe('Child Income statements', () => {
     await child1ISList.assertChildCount(1)
 
     const editPage = await child1ISList.createIncomeStatement()
-    await editPage.selectNoIncome()
+    await editPage.uploadAttachment(testFilePath1)
     await editPage.selectAssure()
     await editPage.save()
     await child1ISList.assertChildIncomeStatementRowCount(1)
 
     // Edit
     await child1ISList.clickEditChildIncomeStatement(0)
-    await editPage.selectHasIncome()
-    await editPage.uploadAttachment(testFilePath)
+    await editPage.uploadAttachment(testFilePath2)
+    await editPage.typeOtherInfo('foo bar baz')
     await editPage.selectAssure()
     await editPage.save()
     await child1ISList.assertChildIncomeStatementRowCount(1)
@@ -82,7 +84,9 @@ describe('Child Income statements', () => {
     // View
     const viewPage = await child1ISList.clickViewChildIncomeStatement(0)
     await viewPage.waitUntilReady()
-    await viewPage.assertAttachmentExists(testFileName)
+    await viewPage.assertOtherInfo('foo bar baz')
+    await viewPage.assertAttachmentExists(testFileName1)
+    await viewPage.assertAttachmentExists(testFileName2)
     await viewPage.clickGoBack()
 
     // Delete

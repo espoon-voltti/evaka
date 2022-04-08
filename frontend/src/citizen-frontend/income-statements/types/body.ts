@@ -30,6 +30,7 @@ export interface IncomeBody
 export type IncomeStatementBody = HighestFeeBody | IncomeBody | ChildIncomeBody
 
 export function fromBody(
+  personType: 'adult' | 'child',
   formData: Form.IncomeStatementForm
 ): IncomeStatementBody | null {
   if (!formData.assure) return null
@@ -43,6 +44,9 @@ export function fromBody(
   if (endDate && startDate > endDate) return null
 
   if (formData.highestFee) {
+    if (personType === 'child') {
+      return null
+    }
     return { type: 'HIGHEST_FEE', startDate, endDate }
   }
 

@@ -15,7 +15,6 @@ import AsyncButton, {
 } from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -108,10 +107,10 @@ const ChildIncome = React.memo(function ChildIncome({
 
       <OtherInfoContainer>
         <TextArea
-          id="more-info"
           placeholder={t.income.childIncome.write}
           value={formData.otherInfo}
           onChange={useFieldDispatch(onChange, 'otherInfo')}
+          data-qa="other-info"
         />
       </OtherInfoContainer>
     </>
@@ -127,23 +126,18 @@ interface ChildIncomeTypeSelectionData {
 }
 
 // eslint-disable-next-line react/display-name
-const ChildIncomeTypeSelection = React.memo(
+const ChildIncomeTimeRangeSelection = React.memo(
   React.forwardRef(function ChildIncomeTypeSelection(
     {
       formData,
       isValidStartDate,
       showFormErrors,
-      onChange,
-      onSelect
+      onChange
     }: {
       formData: ChildIncomeTypeSelectionData
       isValidStartDate: (date: LocalDate) => boolean
       showFormErrors: boolean
       onChange: SetStateCallback<Form.IncomeStatementForm>
-      onSelect: (
-        incomeType: 'highestFee' | 'childIncome',
-        value: boolean
-      ) => void
     },
     ref: React.ForwardedRef<HTMLDivElement>
   ) {
@@ -214,25 +208,6 @@ const ChildIncomeTypeSelection = React.memo(
             />
           </div>
         </FixedSpaceRow>
-        <Gap size="L" />
-        <Label>{t.income.childIncome.subtitle}</Label>
-        <Gap size="s" />
-
-        <Radio
-          label={t.income.childIncome.noIncome}
-          data-qa="child-income-no-income"
-          checked={formData.highestFeeSelected}
-          onChange={() => onSelect('highestFee', true)}
-        />
-
-        <Gap size="s" />
-
-        <Radio
-          label={t.income.childIncome.hasIncome}
-          data-qa="child-income-has-income"
-          checked={!formData.highestFeeSelected}
-          onChange={() => onSelect('childIncome', true)}
-        />
       </FixedSpaceColumn>
     )
   })
@@ -271,16 +246,6 @@ export default React.memo(
       [otherStartDates]
     )
 
-    const onSelectIncomeType = useCallback(
-      (incomeType: 'highestFee' | 'childIncome') =>
-        onChange((prev) => ({
-          ...prev,
-          highestFee: incomeType === 'highestFee',
-          childIncome: incomeType === 'childIncome'
-        })),
-      [onChange]
-    )
-
     const incomeTypeSelectionFormData = useMemo(
       () => ({
         startDate: formData.startDate,
@@ -304,9 +269,7 @@ export default React.memo(
       }
     }))
 
-    const saveButtonEnabled =
-      (formData.highestFee || formData.attachments.length > 0) &&
-      formData.assure
+    const saveButtonEnabled = formData.attachments.length > 0 && formData.assure
 
     return (
       <>
@@ -325,25 +288,19 @@ export default React.memo(
           <Gap size="s" />
 
           <ContentArea opaque>
-            <ChildIncomeTypeSelection
+            <ChildIncomeTimeRangeSelection
               formData={incomeTypeSelectionFormData}
               isValidStartDate={isValidStartDate}
               showFormErrors={showFormErrors}
-              onSelect={onSelectIncomeType}
               onChange={onChange}
               ref={scrollTarget}
             />
-            {!formData.highestFee && (
-              <>
-                <Gap size="L" />
-
-                <ChildIncome
-                  incomeStatementId={incomeStatementId}
-                  formData={formData}
-                  onChange={onChange}
-                />
-              </>
-            )}
+            <Gap size="L" />
+            <ChildIncome
+              incomeStatementId={incomeStatementId}
+              formData={formData}
+              onChange={onChange}
+            />
           </ContentArea>
           <ActionContainer>
             <AssureCheckbox>

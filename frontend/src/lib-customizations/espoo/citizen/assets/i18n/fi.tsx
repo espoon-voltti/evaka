@@ -1421,8 +1421,7 @@ export default {
 
         <P>
           Jos lapsella ei ole tuloja, tai perheenne on suostunut korkeimpaan
-          varhaiskasvatusmaksuun, valitse alta &apos;Lapsella ei ole tuloja, tai
-          olen suostunut korkeimpaan varhaiskasvatusmaksuun&apos;.
+          varhaiskasvatusmaksuun, ei tätä lomaketta tule täyttää.
         </P>
 
         <P>* Tähdellä merkityt tiedot ovat pakollisia.</P>
@@ -1460,10 +1459,6 @@ export default {
       entrepreneurIncome: 'Yrittäjän tulotiedot'
     },
     childIncome: {
-      subtitle: 'Onko lapsella varhaiskasvatusmaksuun vaikuttavia tuloja? *',
-      noIncome:
-        'Lapsella ei ole tuloja, tai olen suostunut korkeimpaan varhaiskasvatusmaksuun',
-      hasIncome: 'Lapsella on tuloja ja toimitan tiedot niistä liitteinä alla',
       childAttachments: 'Lapsen tulotiedot liitteinä *',
       additionalInfo: 'Lisätietoja lapsen tulotietoihin liittyen',
       write: 'Kirjoita'
@@ -1749,9 +1744,7 @@ export default {
         <>
           Varhaiskasvatuksessa olevien lasten tuloista tulee tehdä selvistys.
           Yleisimpiä lapsen tuloja ovat elatusapu tai -tuki, korko- ja
-          osinkotulot sekä eläke. Sinun tulee ilmoittaa myös, mikäli lapsella ei
-          ole tuloja, tai perheenne on suostunut korkeimpaan
-          varhaiskasvatusmaksuun.
+          osinkotulot sekä eläke.
         </>
       ),
       noChildIncomeStatementsNeeded: (
