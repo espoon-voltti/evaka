@@ -18,8 +18,8 @@ import kotlin.test.assertEquals
 class ReservableDaysCalculationUnitTest {
     private val thresholdMondayAt1800 = 150L
 
-    private val end2021 = LocalDate.of(2021, 7, 31)
-    private val end2022 = LocalDate.of(2022, 7, 31)
+    private val end2021 = LocalDate.of(2021, 8, 31)
+    private val end2022 = LocalDate.of(2022, 8, 31)
 
     private fun assertSingleReservableDaysRange(expected: FiniteDateRange, date: LocalDateTime) {
         assertEquals(
