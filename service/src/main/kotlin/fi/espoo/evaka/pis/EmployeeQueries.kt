@@ -257,7 +257,7 @@ SELECT EXISTS (
     AND pin = :pin
     AND locked = false
 )
-    """.trimIndent()
+""".trimIndent()
 ).bind("employeeId", employeeId)
     .bind("pin", pin)
     .mapTo<Boolean>()
@@ -285,7 +285,7 @@ SET
 WHERE 
     user_id = :employeeId
 RETURNING locked
-    """.trimIndent()
+""".trimIndent()
 ).bind("employeeId", employeeId)
     .mapTo<Boolean>()
     .firstOrNull() ?: false

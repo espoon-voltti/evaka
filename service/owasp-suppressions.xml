@@ -37,6 +37,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
+            Workaround for misidentification: ktlint-reporter-checkstyle is not the actual Checkstyle
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-reporter\-checkstyle@.*$</packageUrl>
+        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
         Not relevant for us, since it's only exploitable by local users and only when sessions are persisted with Tomcat FileStore.
        ]]></notes>
         <cve>CVE-2022-23181</cve>
