@@ -216,7 +216,7 @@ fun Database.Read.fetchApplicationSummaries(
                 ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
             }
         } else null,
-        if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
+        if (type != ApplicationTypeToggle.ALL) "a.type = :documentType" else null,
         if (type == ApplicationTypeToggle.PRESCHOOL) {
             data class PreschoolFlags(val preparatory: Boolean, val connectedDaycare: Boolean, val additionalDaycareApplication: Boolean)
             when {
@@ -265,7 +265,6 @@ fun Database.Read.fetchApplicationSummaries(
             child.date_of_birth,
             child.social_security_number,
             f.document,
-            f.document ->> 'type' as type,
             (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
             f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
@@ -273,6 +272,7 @@ fun Database.Read.fetchApplicationSummaries(
             a.duedate,
             f.document ->> 'preferredStartDate' as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
+            a.type,
             a.status AS application_status,
             a.origin,
             a.transferapplication,
@@ -450,7 +450,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): Li
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
+            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
@@ -476,7 +476,7 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: ChildId): List<Pers
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
+            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
@@ -503,7 +503,7 @@ fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: PersonId): List
         """
         SELECT
             a.id AS application_id, 
-            a.document->>'type' AS type,
+            a.type,
             a.childId, a.childName, 
             d.name AS preferred_unit_name,
             COALESCE((SELECT array_agg(name) as other_preferred_units
@@ -569,7 +569,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
         """
         SELECT 
             a.id,
-            f.document ->> 'type' AS type,
+            a.type,
             f.document,
             a.status,
             a.origin,
@@ -687,7 +687,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         """
         SELECT
             a.id,
-            f.document ->> 'type' AS type,
+            a.type,
             (f.document -> 'serviceNeedOption' ->> 'id')::uuid as serviceNeedId,
             f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
@@ -964,9 +964,9 @@ AND NOT EXISTS (
         AND f.application_id = application.id
         AND f.latest
         AND (CASE
-            WHEN f.document->>'type' = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
-            WHEN f.document->>'type' = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
-            WHEN f.document->>'type' = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
+            WHEN application.type = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
+            WHEN application.type = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
+            WHEN application.type = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
         END)
         AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
         AND p.end_date >= :yesterday
