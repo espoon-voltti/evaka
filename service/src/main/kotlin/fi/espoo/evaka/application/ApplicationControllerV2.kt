@@ -179,6 +179,7 @@ class ApplicationControllerV2(
     fun getApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
     ): Paged<ApplicationSummary> {
         Audit.ApplicationSearch.log()
@@ -208,6 +209,7 @@ class ApplicationControllerV2(
             dbc.read { tx ->
                 tx.fetchApplicationSummaries(
                     user = user,
+                    today = evakaClock.today(),
                     page = body.page ?: 1,
                     pageSize = body.pageSize ?: 100,
                     sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,

@@ -153,6 +153,7 @@ fun Database.Read.activePlacementExists(
 
 fun Database.Read.fetchApplicationSummaries(
     user: AuthenticatedUser,
+    today: LocalDate,
     page: Int,
     pageSize: Int,
     sortBy: ApplicationSortColumn,
@@ -214,15 +215,23 @@ fun Database.Read.fetchApplicationSummaries(
             }
         } else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
-        if (type == ApplicationTypeToggle.PRESCHOOL)
-            """
-            ('$PRESCHOOL_ONLY' = ANY(:preschoolType) OR ((f.document->'careDetails'->>'preparatory')::boolean OR (f.document->>'connectedDaycare')::boolean))
-            AND ('$PRESCHOOL_DAYCARE' = ANY(:preschoolType) OR ((f.document->'careDetails'->>'preparatory')::boolean OR NOT (f.document->>'connectedDaycare')::boolean OR a.additionalDaycareApplication))
-            AND ('$PREPARATORY_ONLY' = ANY(:preschoolType) OR (NOT (f.document->'careDetails'->>'preparatory')::boolean OR (f.document->>'connectedDaycare')::boolean))
-            AND ('$PREPARATORY_DAYCARE' = ANY(:preschoolType) OR (NOT (f.document->'careDetails'->>'preparatory')::boolean OR NOT (f.document->>'connectedDaycare')::boolean OR a.additionalDaycareApplication))
-            AND ('$DAYCARE_ONLY' = ANY(:preschoolType) OR NOT a.additionalDaycareApplication)
-            """.trimIndent()
-        else null,
+        if (type == ApplicationTypeToggle.PRESCHOOL) {
+            data class PreschoolFlags(val preparatory: Boolean, val connectedDaycare: Boolean, val additionalDaycareApplication: Boolean)
+            when {
+                preschoolType.isEmpty() -> "FALSE"
+                else -> preschoolType.joinToString(separator = " OR ", prefix = "(", postfix = ")") {
+                    when (it) {
+                        PRESCHOOL_ONLY -> PreschoolFlags(preparatory = false, connectedDaycare = false, additionalDaycareApplication = false)
+                        PRESCHOOL_DAYCARE -> PreschoolFlags(preparatory = false, connectedDaycare = true, additionalDaycareApplication = false)
+                        PREPARATORY_ONLY -> PreschoolFlags(preparatory = true, connectedDaycare = false, additionalDaycareApplication = false)
+                        PREPARATORY_DAYCARE -> PreschoolFlags(preparatory = true, connectedDaycare = true, additionalDaycareApplication = false)
+                        DAYCARE_ONLY -> PreschoolFlags(preparatory = false, connectedDaycare = true, additionalDaycareApplication = true)
+                    }.run {
+                        "((f.document->'careDetails'->>'preparatory')::boolean, (f.document->'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)"
+                    }
+                }
+            }
+        } else null,
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
         if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)" else null,
         if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)" else null,
@@ -284,7 +293,7 @@ fun Database.Read.fetchApplicationSummaries(
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
-            ppd.unit_name,
+            (CASE WHEN pp.unit_id IS NOT NULL THEN d.name END) AS placement_plan_unit_name,
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total
@@ -305,11 +314,8 @@ fun Database.Read.fetchApplicationSummaries(
             FROM application_form af
         ) f ON f.application_id = a.id AND f.latest IS TRUE
         JOIN person child ON child.id = a.child_id
-        LEFT JOIN placement_plan pp ON pp.application_id = a.id AND a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type
-        LEFT JOIN  (
-            SELECT placement_plan.application_id, placement_plan.unit_id, daycare.name unit_name FROM daycare JOIN placement_plan ON daycare.id = placement_plan.unit_id
-        ) ppd ON ppd.application_id = a.id
-        JOIN daycare d ON COALESCE(ppd.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
+        LEFT JOIN placement_plan pp ON pp.application_id = a.id
+        JOIN daycare d ON COALESCE(pp.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
         JOIN (
             SELECT l.id, EXISTS(
@@ -324,20 +330,16 @@ fun Database.Read.fetchApplicationSummaries(
             FROM application l
         ) duplicates ON duplicates.id = a.id
         LEFT JOIN (
-            SELECT
-                appl.id, array_agg(att.id) AS attachment_ids
-            FROM
-                application appl, attachment att
-            WHERE
-                appl.id = att.application_id
-            GROUP by
-                appl.id
-        ) attachments ON a.id = attachments.id
+            SELECT application_id, array_agg(id) AS attachment_ids
+            FROM attachment
+            WHERE application_id IS NOT NULL
+            GROUP by application_id
+        ) attachments ON a.id = attachments.application_id
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
             JOIN placement ON daycare.id = placement.unit_id
-            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(current_date, null, '[]')
+            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(:today, null, '[]')
             ORDER BY start_date
             LIMIT 1
         ) cpu ON true
@@ -346,7 +348,7 @@ fun Database.Read.fetchApplicationSummaries(
 
     val orderedSql = when (sortBy) {
         ApplicationSortColumn.APPLICATION_TYPE -> "$sql ORDER BY type $sortDir, last_name, first_name"
-        ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name, first_name $sortDir"
+        ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name $sortDir, first_name"
         ApplicationSortColumn.DUE_DATE -> "$sql ORDER BY duedate $sortDir, last_name, first_name"
         ApplicationSortColumn.START_DATE -> "$sql ORDER BY preferredStartDate $sortDir, last_name, first_name"
         ApplicationSortColumn.STATUS -> "$sql ORDER BY application_status $sortDir, last_name, first_name"
@@ -355,8 +357,10 @@ fun Database.Read.fetchApplicationSummaries(
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
 
     val applicationSummaries = createQuery(paginatedSql)
+        .bind("today", today)
         .bindMap(params + freeTextParams)
         .mapToPaged(pageSize, "total") { row ->
+            val status = row.mapColumn<ApplicationStatus>("application_status")
             ApplicationSummary(
                 id = row.mapColumn("id"),
                 firstName = row.mapColumn("first_name"),
@@ -383,7 +387,7 @@ fun Database.Read.fetchApplicationSummaries(
                 },
                 origin = row.mapColumn("origin"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                status = row.mapColumn("application_status"),
+                status = status,
                 additionalInfo = row.mapColumn("additionalInfo"),
                 serviceWorkerNote = if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
                 siblingBasis = row.mapColumn("siblingBasis"),
@@ -397,6 +401,7 @@ fun Database.Read.fetchApplicationSummaries(
                 attachmentCount = row.mapColumn("attachmentCount"),
                 additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
                 placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                    ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
                     ?.let {
                         PlacementProposalStatus(
                             unitConfirmationStatus = it,
@@ -404,7 +409,7 @@ fun Database.Read.fetchApplicationSummaries(
                             unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
                         )
                     },
-                placementProposalUnitName = row.mapColumn("unit_name"),
+                placementProposalUnitName = row.mapColumn("placement_plan_unit_name"),
                 currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                     PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
                 }
