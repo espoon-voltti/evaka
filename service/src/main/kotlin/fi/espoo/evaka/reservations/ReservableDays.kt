@@ -24,9 +24,9 @@ fun getReservableDays(now: HelsinkiDateTime, thresholdHours: Long, holidays: Lis
 
     val firstOfJuly = nextReservableMonday.withMonth(7).withDayOfMonth(1)
     val lastReservableDay = if (nextReservableMonday.isBefore(firstOfJuly)) {
-        firstOfJuly.withDayOfMonth(31)
+        firstOfJuly.plusMonths(1).withDayOfMonth(31)
     } else {
-        firstOfJuly.withDayOfMonth(31).plusYears(1)
+        firstOfJuly.plusYears(1).plusMonths(1).withDayOfMonth(31)
     }
 
     val nonReservableHolidays = holidays.filter { it.reservationDeadline < today }.map { it.period }
