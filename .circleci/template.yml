@@ -324,9 +324,6 @@ commands:
           name: Store Gradle cache
           key: gradle-home-service-v5-{{ checksum ".circleci/template.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
           paths:
-            - service/buildSrc/.gradle
-            - service/.gradle
-            - service/custom-ktlint-rules/.gradle
             - .gradle-user-home/wrapper
             - .gradle-user-home/caches
             - .gradle-user-home/notifications
@@ -350,6 +347,9 @@ commands:
             - service/sficlient/build
             - service/vtjclient/build
             - service-lib/build
+            - service/.gradle
+            - service/buildSrc/.gradle
+            - service/custom-ktlint-rules/.gradle
   restore_service_build_cache:
     steps:
       - restore_cache:
