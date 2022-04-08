@@ -86,7 +86,7 @@ export default React.memo(function UnitAttendanceReservationsView({
     [unitId, dateRange]
   )
 
-  const [staffAttendances] = useApiState(
+  const [staffAttendances, reloadStaffAttendances] = useApiState(
     () => getStaffAttendances(unitId, dateRange),
     [unitId, dateRange]
   )
@@ -161,6 +161,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               extraAttendances={staffData.extraAttendances}
               saveAttendance={saveAttendance}
               saveExternalAttendance={saveExternalAttendance}
+              reloadStaffAttendances={reloadStaffAttendances}
             />
           ) : (
             <>
@@ -175,6 +176,8 @@ export default React.memo(function UnitAttendanceReservationsView({
                   )}
                   saveAttendance={saveAttendance}
                   saveExternalAttendance={saveExternalAttendance}
+                  reloadStaffAttendances={reloadStaffAttendances}
+                  enableNewEntries
                 />
               )}
               <ChildReservationsTable

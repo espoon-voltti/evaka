@@ -55,6 +55,8 @@ interface Props {
   saveExternalAttendance: (
     body: UpsertExternalAttendanceRequest
   ) => Promise<Result<void>>
+  enableNewEntries?: boolean
+  reloadStaffAttendances: () => void
 }
 
 export default React.memo(function StaffAttendanceTable({
@@ -62,7 +64,9 @@ export default React.memo(function StaffAttendanceTable({
   extraAttendances,
   operationalDays,
   saveAttendance,
-  saveExternalAttendance
+  saveExternalAttendance,
+  enableNewEntries,
+  reloadStaffAttendances
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -110,6 +114,8 @@ export default React.memo(function StaffAttendanceTable({
             operationalDays={operationalDays}
             attendances={row.attendances}
             saveAttendance={saveAttendance}
+            enableNewEntries={enableNewEntries}
+            reloadStaffAttendances={reloadStaffAttendances}
           />
         ))}
         {extraRowsGroupedByName.map((row, index) => (
@@ -123,6 +129,8 @@ export default React.memo(function StaffAttendanceTable({
             operationalDays={operationalDays}
             attendances={row.attendances}
             saveExternalAttendance={saveExternalAttendance}
+            enableNewEntries={enableNewEntries}
+            reloadStaffAttendances={reloadStaffAttendances}
           />
         ))}
       </Tbody>
@@ -160,6 +168,8 @@ interface AttendanceRowProps extends BaseProps {
   saveExternalAttendance?: (
     body: UpsertExternalAttendanceRequest
   ) => Promise<Result<void>>
+  enableNewEntries?: boolean
+  reloadStaffAttendances: () => void
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
@@ -170,15 +180,17 @@ const AttendanceRow = React.memo(function AttendanceRow({
   operationalDays,
   attendances,
   saveAttendance,
-  saveExternalAttendance
+  saveExternalAttendance,
+  enableNewEntries,
+  reloadStaffAttendances
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
   const [values, setValues] = useState<
     Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndIds[] }>
   >([])
-  const [saveRequestStatus, setSaveRequestStatus] = useState<Result<void>>(
-    Success.of()
+  const [dirtyDates, setDirtyDates] = useState<Set<LocalDate>>(
+    new Set<LocalDate>()
   )
 
   useEffect(
@@ -276,39 +288,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
         >
           {timeRanges.map((range, rangeIx) => (
             <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
-              {editing && range.id ? (
+              {editing && (range.id || enableNewEntries) ? (
                 <TimeRangeEditor
                   timeRange={range}
                   update={(updatedValue) =>
                     updateValue(date, rangeIx, updatedValue)
                   }
                   save={() => {
-                    if (range.id && range.groupId) {
-                      if (saveAttendance && employeeId) {
-                        return saveAttendance({
-                          attendanceId: range.id,
-                          arrived: date.toSystemTzDateAtTime(range.startTime),
-                          departed:
-                            range.endTime !== ''
-                              ? date.toSystemTzDateAtTime(range.endTime)
-                              : null,
-                          employeeId: employeeId,
-                          groupId: range.groupId
-                        }).then(setSaveRequestStatus)
-                      } else if (saveExternalAttendance) {
-                        return saveExternalAttendance({
-                          attendanceId: range.id,
-                          arrived: date.toSystemTzDateAtTime(range.startTime),
-                          departed:
-                            range.endTime !== ''
-                              ? date.toSystemTzDateAtTime(range.endTime)
-                              : null,
-                          name: name,
-                          groupId: range.groupId
-                        }).then(setSaveRequestStatus)
-                      }
-                    }
-                    return Promise.resolve()
+                    setDirtyDates(dirtyDates.add(date))
                   }}
                 />
               ) : (
@@ -328,8 +315,41 @@ const AttendanceRow = React.memo(function AttendanceRow({
       <StyledTd partialRow={false} rowIndex={rowIndex} rowSpan={1}>
         {editing ? (
           <EditStateIndicator
-            status={saveRequestStatus}
-            stopEditing={() => setEditing(false)}
+            status={Success.of()}
+            stopEditing={() => {
+              setEditing(false)
+              const savePromises = values.flatMap(({ date, timeRanges }) =>
+                timeRanges.map((range) => {
+                  if (dirtyDates.has(date) && range !== emptyTimeRange) {
+                    const commonParams = {
+                      attendanceId: range.id || null,
+                      arrived: date.toSystemTzDateAtTime(range.startTime),
+                      departed:
+                        range.endTime !== ''
+                          ? date.toSystemTzDateAtTime(range.endTime)
+                          : null,
+                      groupId: range.groupId || ''
+                    }
+                    if (saveAttendance && employeeId) {
+                      return saveAttendance({
+                        ...commonParams,
+                        employeeId: employeeId
+                      })
+                    } else if (saveExternalAttendance) {
+                      return saveExternalAttendance({
+                        ...commonParams,
+                        name: name
+                      })
+                    }
+                  }
+                  return Promise.resolve()
+                })
+              )
+              setDirtyDates(new Set<LocalDate>())
+              return Promise.all(savePromises).then(() =>
+                reloadStaffAttendances()
+              )
+            }}
           />
         ) : (
           <RowMenu onEdit={() => setEditing(true)} />
