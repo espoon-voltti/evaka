@@ -1051,7 +1051,7 @@ jobs:
       - restore_service_gradle
       - run:
           working_directory: *workspace_service
-          command: ./gradlew assemble compileIntegrationTestKotlin
+          command: ./gradlew assemble testClasses integrationTestClasses
       - store_service_artifacts
       - run:
           working_directory: *workspace_service
