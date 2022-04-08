@@ -116,8 +116,9 @@ export default React.memo(function FixedPeriodSelectionModal({
                 />
               ) : questionnaire.conditions.continuousPlacement ? (
                 <div data-qa="not-eligible">
-                  i18n.calendar.holidayModal.notEligible(
-                  questionnaire.conditions.continuousPlacement )
+                  {i18n.calendar.holidayModal.notEligible(
+                    questionnaire.conditions.continuousPlacement
+                  )}
                 </div>
               ) : null}
             </HolidaySection>
