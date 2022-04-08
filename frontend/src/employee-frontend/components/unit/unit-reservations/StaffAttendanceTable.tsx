@@ -16,8 +16,8 @@ import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
-  UpdateStaffAttendanceRequest,
-  UpdateExternalAttendanceRequest
+  UpsertStaffAttendanceRequest,
+  UpsertExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -51,10 +51,12 @@ interface Props {
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   extraAttendances: ExternalAttendance[]
-  saveAttendance: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+  saveAttendance: (body: UpsertStaffAttendanceRequest) => Promise<Result<void>>
   saveExternalAttendance: (
-    body: UpdateExternalAttendanceRequest
+    body: UpsertExternalAttendanceRequest
   ) => Promise<Result<void>>
+  enableNewEntries?: boolean
+  reloadStaffAttendances: () => void
 }
 
 export default React.memo(function StaffAttendanceTable({
@@ -62,7 +64,9 @@ export default React.memo(function StaffAttendanceTable({
   extraAttendances,
   operationalDays,
   saveAttendance,
-  saveExternalAttendance
+  saveExternalAttendance,
+  enableNewEntries,
+  reloadStaffAttendances
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -106,9 +110,12 @@ export default React.memo(function StaffAttendanceTable({
             rowIndex={index}
             isPositiveOccupancyCoefficient={row.currentOccupancyCoefficient > 0}
             name={row.name}
+            employeeId={row.employeeId}
             operationalDays={operationalDays}
             attendances={row.attendances}
             saveAttendance={saveAttendance}
+            enableNewEntries={enableNewEntries}
+            reloadStaffAttendances={reloadStaffAttendances}
           />
         ))}
         {extraRowsGroupedByName.map((row, index) => (
@@ -121,7 +128,9 @@ export default React.memo(function StaffAttendanceTable({
             name={row.name}
             operationalDays={operationalDays}
             attendances={row.attendances}
-            saveAttendance={saveExternalAttendance}
+            saveExternalAttendance={saveExternalAttendance}
+            enableNewEntries={enableNewEntries}
+            reloadStaffAttendances={reloadStaffAttendances}
           />
         ))}
       </Tbody>
@@ -152,26 +161,36 @@ interface AttendanceRowProps extends BaseProps {
   rowIndex: number
   isPositiveOccupancyCoefficient: boolean
   name: string
+  employeeId?: string
   operationalDays: OperationalDay[]
   attendances: Attendance[]
-  saveAttendance?: (body: UpdateStaffAttendanceRequest) => Promise<Result<void>>
+  saveAttendance?: (body: UpsertStaffAttendanceRequest) => Promise<Result<void>>
+  saveExternalAttendance?: (
+    body: UpsertExternalAttendanceRequest
+  ) => Promise<Result<void>>
+  enableNewEntries?: boolean
+  reloadStaffAttendances: () => void
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
   rowIndex,
   isPositiveOccupancyCoefficient,
   name,
+  employeeId,
   operationalDays,
   attendances,
-  saveAttendance
+  saveAttendance,
+  saveExternalAttendance,
+  enableNewEntries,
+  reloadStaffAttendances
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
   const [values, setValues] = useState<
     Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndIds[] }>
   >([])
-  const [saveRequestStatus, setSaveRequestStatus] = useState<Result<void>>(
-    Success.of()
+  const [dirtyDates, setDirtyDates] = useState<Set<LocalDate>>(
+    new Set<LocalDate>()
   )
 
   useEffect(
@@ -269,24 +288,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
         >
           {timeRanges.map((range, rangeIx) => (
             <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
-              {editing && range.id ? (
+              {editing && (range.id || enableNewEntries) ? (
                 <TimeRangeEditor
                   timeRange={range}
                   update={(updatedValue) =>
                     updateValue(date, rangeIx, updatedValue)
                   }
                   save={() => {
-                    if (saveAttendance && range.id && range.groupId) {
-                      return saveAttendance({
-                        attendanceId: range.id,
-                        arrived: date.toSystemTzDateAtTime(range.startTime),
-                        departed:
-                          range.endTime !== ''
-                            ? date.toSystemTzDateAtTime(range.endTime)
-                            : null
-                      }).then(setSaveRequestStatus)
-                    }
-                    return Promise.resolve()
+                    setDirtyDates(dirtyDates.add(date))
                   }}
                 />
               ) : (
@@ -306,8 +315,41 @@ const AttendanceRow = React.memo(function AttendanceRow({
       <StyledTd partialRow={false} rowIndex={rowIndex} rowSpan={1}>
         {editing ? (
           <EditStateIndicator
-            status={saveRequestStatus}
-            stopEditing={() => setEditing(false)}
+            status={Success.of()}
+            stopEditing={() => {
+              setEditing(false)
+              const savePromises = values.flatMap(({ date, timeRanges }) =>
+                timeRanges.map((range) => {
+                  if (dirtyDates.has(date) && range !== emptyTimeRange) {
+                    const commonParams = {
+                      attendanceId: range.id || null,
+                      arrived: date.toSystemTzDateAtTime(range.startTime),
+                      departed:
+                        range.endTime !== ''
+                          ? date.toSystemTzDateAtTime(range.endTime)
+                          : null,
+                      groupId: range.groupId || ''
+                    }
+                    if (saveAttendance && employeeId) {
+                      return saveAttendance({
+                        ...commonParams,
+                        employeeId: employeeId
+                      })
+                    } else if (saveExternalAttendance) {
+                      return saveExternalAttendance({
+                        ...commonParams,
+                        name: name
+                      })
+                    }
+                  }
+                  return Promise.resolve()
+                })
+              )
+              setDirtyDates(new Set<LocalDate>())
+              return Promise.all(savePromises).then(() =>
+                reloadStaffAttendances()
+              )
+            }}
           />
         ) : (
           <RowMenu onEdit={() => setEditing(true)} />
