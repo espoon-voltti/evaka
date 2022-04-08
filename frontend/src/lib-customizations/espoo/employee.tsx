@@ -13,7 +13,20 @@ import featureFlags from './featureFlags'
 const customizations: EmployeeCustomizations = {
   appConfig: employeeConfig,
   translations: {
-    fi: {}
+    fi: {
+      childInformation: {
+        pedagogicalDocument: {
+          explanation:
+            'Pedagogisen dokumentoinnin ominaisuutta käytetään keväällä 2022 toiminnasta kertovien kuvien ja digitaalisten dokumenttien jakamiseen.',
+          explanationInfo:
+            'Pedagogisen dokumentoinnin prosessi tapahtuu pääsääntöisesti ennen dokumentin jakamista huoltajille. Tarkastele dokumentteja yhdessä lasten ja kasvattajatiimin kanssa. Nosta yhteisistä havainnoista kehittämiskohteita käytännön pedagogiselle työlle, sen tavoitteille ja sisällöille, jotta pedagoginen toiminta vastaa mahdollisimman hyvin yksittäisen lapsen ja lapsiryhmän tarpeita, vahvuuksia ja mielenkiinnon kohteita. Erityistä huomiota kiinnitetään aikuisen toimintaan. Pedagoginen dokumentointi luo pohjan lapsilähtöisen pedagogiikan toteuttamiselle.',
+          documentInfo:
+            'Liitetiedoston tallennusmuoto voi olla JPG, PDF, MP3/4',
+          descriptionInfo:
+            'Kuvaillaan huoltajalle, mikä tilanteessa oli lapselle merkityksellistä oppimisen ja kehityksen näkökulmasta. Voit myös linkittää toiminnan vasun sisältöihin'
+        }
+      }
+    }
   },
   vasuTranslations: {
     FI: {},
