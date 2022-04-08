@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as _ from 'lodash'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import styled from 'styled-components'
 
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { UUID } from 'lib-common/types'
@@ -11,8 +12,13 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  InfoButton,
+  ExpandingInfoBox
+} from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2 } from 'lib-components/typography'
+import { H2, P } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
 import {
@@ -53,6 +59,14 @@ export default React.memo(function PedagogicalDocuments({
   useEffect(() => {
     if (open) loadData()
   }, [open, loadData])
+
+  const [expandingInfo, setExpandingInfo] = useState<string>()
+  const toggleExpandingInfo = useCallback(
+    (info: string) =>
+      setExpandingInfo(expandingInfo === info ? undefined : info),
+    [expandingInfo]
+  )
+  const closeExpandingInfo = useCallback(() => setExpandingInfo(undefined), [])
 
   const handleDelete = (document: PedagogicalDocument) => {
     setTobeDeleted(document)
@@ -126,13 +140,55 @@ export default React.memo(function PedagogicalDocuments({
         />
       )}
 
+      {i18n.childInformation.pedagogicalDocument.explanation && (
+        <P noMargin>
+          {i18n.childInformation.pedagogicalDocument.explanation}
+          <InfoButtonWithMargin
+            onClick={() =>
+              toggleExpandingInfo(
+                i18n.childInformation.pedagogicalDocument.explanationInfo
+              )
+            }
+            aria-label={i18n.common.openExpandingInfo}
+          />
+        </P>
+      )}
+      {expandingInfo && (
+        <ExpandingInfoBox info={expandingInfo} close={closeExpandingInfo} />
+      )}
+
       {renderResult(pedagogicalDocuments, (pedagogicalDocuments) => (
         <Table data-qa="table-of-pedagogical-documents">
           <Thead>
             <Tr>
               <Th>{i18n.childInformation.pedagogicalDocument.date}</Th>
-              <Th>{i18n.childInformation.pedagogicalDocument.description}</Th>
-              <Th>{i18n.childInformation.pedagogicalDocument.document}</Th>
+              <Th>
+                {i18n.childInformation.pedagogicalDocument.description}
+                {i18n.childInformation.pedagogicalDocument.descriptionInfo && (
+                  <InfoButtonWithMargin
+                    onClick={() =>
+                      toggleExpandingInfo(
+                        i18n.childInformation.pedagogicalDocument
+                          .descriptionInfo
+                      )
+                    }
+                    aria-label={i18n.common.openExpandingInfo}
+                  />
+                )}
+              </Th>
+              <Th>
+                {i18n.childInformation.pedagogicalDocument.document}
+                {i18n.childInformation.pedagogicalDocument.documentInfo && (
+                  <InfoButtonWithMargin
+                    onClick={() =>
+                      toggleExpandingInfo(
+                        i18n.childInformation.pedagogicalDocument.documentInfo
+                      )
+                    }
+                    aria-label={i18n.common.openExpandingInfo}
+                  />
+                )}
+              </Th>
               <Th />
             </Tr>
           </Thead>
@@ -165,3 +221,7 @@ export default React.memo(function PedagogicalDocuments({
     </CollapsibleContentArea>
   )
 })
+
+const InfoButtonWithMargin = styled(InfoButton)`
+  margin-left: ${defaultMargins.xs};
+`

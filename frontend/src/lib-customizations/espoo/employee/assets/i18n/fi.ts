@@ -865,9 +865,13 @@ export const fi = {
     },
     pedagogicalDocument: {
       title: 'Pedagoginen dokumentointi',
+      explanation: '',
+      explanationInfo: '',
       date: 'Päivämäärä',
       document: 'Dokumentti',
+      documentInfo: '',
       description: 'Pedagoginen kuvaus',
+      descriptionInfo: '',
       create: 'Lisää uusi',
       removeConfirmation: 'Haluatko poistaa dokumentin?',
       removeConfirmationText:
