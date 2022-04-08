@@ -48,10 +48,6 @@ export default React.memo(function ApplicationFilters() {
     setAllStatuses,
     distinctions,
     setDistinctions,
-    transferApplications,
-    setTransferApplications,
-    voucherApplications,
-    setVoucherApplications,
     setApplicationsResult,
     applicationSearchFilters,
     setApplicationSearchFilters
@@ -226,13 +222,23 @@ export default React.memo(function ApplicationFilters() {
       column2={
         <Fragment>
           <TransferApplicationsFilter
-            selected={transferApplications}
-            setSelected={setTransferApplications}
+            selected={applicationSearchFilters.transferApplications}
+            setSelected={(transferApplications) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                transferApplications
+              })
+            }
           />
           <Gap size="XL" />
           <VoucherApplicationsFilter
-            selected={voucherApplications}
-            setSelected={setVoucherApplications}
+            selected={applicationSearchFilters.voucherApplications}
+            setSelected={(voucherApplications) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                voucherApplications
+              })
+            }
           />
         </Fragment>
       }

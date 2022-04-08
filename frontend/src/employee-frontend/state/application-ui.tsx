@@ -30,11 +30,6 @@ import {
   TransferApplicationFilter
 } from '../components/common/Filters'
 
-// Nothing in here yet. Filters will be added here in next PR.
-
-// Some checkbox handling can be copied from git history
-// when needed if it still belongs in context.
-
 interface UIState {
   applicationsResult: Result<Paged<ApplicationSummary>>
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
@@ -57,10 +52,6 @@ interface UIState {
   setAllStatuses: (statuses: ApplicationSummaryStatusAllOptions[]) => void
   distinctions: ApplicationDistinctions[]
   setDistinctions: (distinctions: ApplicationDistinctions[]) => void
-  transferApplications: TransferApplicationFilter
-  setTransferApplications: Dispatch<SetStateAction<TransferApplicationFilter>>
-  voucherApplications: VoucherApplicationFilter
-  setVoucherApplications: Dispatch<SetStateAction<VoucherApplicationFilter>>
 }
 
 interface ApplicationSearchFilters {
@@ -73,6 +64,8 @@ interface ApplicationSearchFilters {
   endDate: LocalDate | undefined
   dateType: ApplicationDateType[]
   searchTerms: string
+  transferApplications: TransferApplicationFilter
+  voucherApplications: VoucherApplicationFilter
 }
 
 export type VoucherApplicationFilter =
@@ -90,7 +83,9 @@ const clearApplicationSearchFilters: ApplicationSearchFilters = {
   startDate: undefined,
   endDate: undefined,
   dateType: [],
-  searchTerms: ''
+  searchTerms: '',
+  transferApplications: 'ALL',
+  voucherApplications: undefined
 }
 
 const defaultState: UIState = {
@@ -112,11 +107,7 @@ const defaultState: UIState = {
   allStatuses: [],
   setAllStatuses: () => undefined,
   distinctions: [],
-  setDistinctions: () => undefined,
-  transferApplications: 'ALL',
-  setTransferApplications: () => undefined,
-  voucherApplications: undefined,
-  setVoucherApplications: () => undefined
+  setDistinctions: () => undefined
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -141,10 +132,6 @@ export const ApplicationUIContextProvider = React.memo(
     const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
       defaultState.distinctions
     )
-    const [transferApplications, setTransferApplications] =
-      useState<TransferApplicationFilter>(defaultState.transferApplications)
-    const [voucherApplications, setVoucherApplications] =
-      useState<VoucherApplicationFilter>(defaultState.voucherApplications)
 
     const clearSearchFilters = useCallback(() => {
       setApplicationSearchFilters(defaultState.applicationSearchFilters)
@@ -191,11 +178,7 @@ export const ApplicationUIContextProvider = React.memo(
         allStatuses,
         setAllStatuses,
         distinctions,
-        setDistinctions,
-        transferApplications,
-        setTransferApplications,
-        voucherApplications,
-        setVoucherApplications
+        setDistinctions
       }),
       [
         applicationsResult,
@@ -216,11 +199,7 @@ export const ApplicationUIContextProvider = React.memo(
         allStatuses,
         setAllStatuses,
         distinctions,
-        setDistinctions,
-        transferApplications,
-        setTransferApplications,
-        voucherApplications,
-        setVoucherApplications
+        setDistinctions
       ]
     )
 

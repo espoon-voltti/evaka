@@ -44,8 +44,6 @@ export default React.memo(function ApplicationsPage() {
     preschoolType,
     allStatuses,
     distinctions,
-    transferApplications,
-    voucherApplications,
     debouncedApplicationSearchFilters,
     setCheckedIds
   } = useContext(ApplicationUIContext)
@@ -108,8 +106,9 @@ export default React.memo(function ApplicationsPage() {
           ? debouncedApplicationSearchFilters.endDate.formatIso()
           : undefined,
       searchTerms: debouncedApplicationSearchFilters.searchTerms,
-      transferApplications,
-      voucherApplications
+      transferApplications:
+        debouncedApplicationSearchFilters.transferApplications,
+      voucherApplications: debouncedApplicationSearchFilters.voucherApplications
     }
 
     reloadApplications(page, pageSize, sortBy, sortDirection, params)
@@ -120,8 +119,6 @@ export default React.memo(function ApplicationsPage() {
     preschoolType,
     allStatuses,
     distinctions,
-    transferApplications,
-    voucherApplications,
     debouncedApplicationSearchFilters,
     reloadApplications
   ])
