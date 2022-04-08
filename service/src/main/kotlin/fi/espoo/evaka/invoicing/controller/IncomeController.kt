@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.attachment.associateIncomeAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
 import fi.espoo.evaka.invoicing.data.getIncome
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
@@ -75,6 +76,7 @@ class IncomeController(
                 val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                 tx.splitEarlierIncome(validIncome.personId, period)
                 tx.upsertIncome(mapper, validIncome, user.evakaUserId)
+                tx.associateIncomeAttachments(user.id, id, income.attachments.map { it.id })
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)))
                 id

@@ -17,6 +17,7 @@ import fi.espoo.evaka.s3.checkFileExtension
 import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -83,6 +84,23 @@ class AttachmentsController(
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         accessControl.requirePermissionFor(user, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
         return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes) }
+    }
+
+    @PostMapping(value = ["/income/{incomeId}", "/income"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadIncomeAttachment(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable(required = false) incomeId: IncomeId?,
+        @RequestPart("file") file: MultipartFile
+    ): AttachmentId {
+        Audit.AttachmentsUploadForIncomeStatement.log(incomeId)
+        if (incomeId != null) {
+            accessControl.requirePermissionFor(user, Action.Income.UPLOAD_ATTACHMENT, incomeId)
+        }
+        val attachTo =
+            if (incomeId != null) AttachmentParent.Income(incomeId) else AttachmentParent.None
+
+        return db.connect { dbc -> handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes) }
     }
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -169,6 +187,10 @@ class AttachmentsController(
                     attachTo.incomeStatementId,
                     user.evakaUserId
                 )
+                is AttachmentParent.Income -> it.userIncomeAttachmentCount(
+                    attachTo.incomeId,
+                    user.evakaUserId
+                )
                 is AttachmentParent.PedagogicalDocument -> it.userPedagogicalDocumentCount(
                     attachTo.pedagogicalDocumentId,
                     user.evakaUserId
@@ -246,6 +268,7 @@ class AttachmentsController(
 
         val action = when (attachment.attachedTo) {
             is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
+            is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
             is AttachmentParent.IncomeStatement,
             is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
             is AttachmentParent.MessageContent -> Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
@@ -281,6 +304,7 @@ class AttachmentsController(
 
             val action = when (attachment.attachedTo) {
                 is AttachmentParent.Application -> Action.Attachment.DELETE_APPLICATION_ATTACHMENT
+                is AttachmentParent.Income -> Action.Attachment.DELETE_INCOME_ATTACHMENT
                 is AttachmentParent.IncomeStatement,
                 is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
                 is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT

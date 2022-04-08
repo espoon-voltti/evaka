@@ -7,6 +7,7 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.lang.IllegalArgumentException
+import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
@@ -31,6 +33,7 @@ fun Database.Transaction.insertAttachment(
     data class AttachmentParentColumn(
         val applicationId: ApplicationId? = null,
         val incomeStatementId: IncomeStatementId? = null,
+        val incomeId: IncomeId? = null,
         val messageDraftId: MessageDraftId? = null,
         val pedagogicalDocumentId: PedagogicalDocumentId? = null
     )
@@ -38,8 +41,8 @@ fun Database.Transaction.insertAttachment(
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, message_draft_id, pedagogical_document_id, uploaded_by, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :messageDraftId, :pedagogicalDocumentId, :userId, :type)
+        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, uploaded_by, type)
+        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :userId, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -50,6 +53,7 @@ fun Database.Transaction.insertAttachment(
             when (attachTo) {
                 is AttachmentParent.Application -> AttachmentParentColumn(applicationId = attachTo.applicationId)
                 is AttachmentParent.IncomeStatement -> AttachmentParentColumn(incomeStatementId = attachTo.incomeStatementId)
+                is AttachmentParent.Income -> AttachmentParentColumn(incomeId = attachTo.incomeId)
                 is AttachmentParent.MessageDraft -> AttachmentParentColumn(messageDraftId = attachTo.draftId)
                 is AttachmentParent.None -> AttachmentParentColumn()
                 is AttachmentParent.MessageContent -> throw IllegalArgumentException("attachments are saved via draft")
@@ -143,6 +147,29 @@ fun Database.Transaction.associateAttachments(
     }
 }
 
+fun Database.Transaction.associateIncomeAttachments(
+    personId: UUID,
+    incomeId: IncomeId,
+    attachmentIds: List<AttachmentId>
+) {
+    val numRows = createUpdate(
+        """
+        UPDATE attachment SET income_id = :incomeId
+        WHERE id = ANY(:attachmentIds)
+          AND income_id IS NULL
+          AND uploaded_by = :personId
+        """.trimIndent()
+    )
+        .bind("incomeId", incomeId)
+        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("personId", personId)
+        .execute()
+
+    if (numRows < attachmentIds.size) {
+        throw BadRequest("Cannot associate all requested attachments")
+    }
+}
+
 fun Database.Transaction.dissociateAllPersonsAttachments(
     personId: PersonId,
     incomeStatementId: IncomeStatementId,
@@ -184,6 +211,14 @@ fun Database.Read.userApplicationAttachmentCount(applicationId: ApplicationId, u
 fun Database.Read.userIncomeStatementAttachmentCount(incomeStatementId: IncomeStatementId, userId: EvakaUserId): Int {
     return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by = :userId")
         .bind("incomeStatementId", incomeStatementId)
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
+}
+
+fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUserId): Int {
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE income_id = :incomeId AND uploaded_by = :userId")
+        .bind("incomeId", incomeId)
         .bind("userId", userId)
         .mapTo<Int>()
         .first()
