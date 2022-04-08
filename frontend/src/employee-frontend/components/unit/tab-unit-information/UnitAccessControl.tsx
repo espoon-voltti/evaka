@@ -726,6 +726,9 @@ export default React.memo(function UnitAccessControl({
                     removeFn: removeDaycareAclSupervisor
                   })
                 }
+                unitGroups={groups}
+                onChangeAclGroups={updateStaffGroupAcls}
+                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
                 deletePermitted={permittedActions.has(
                   'DELETE_ACL_UNIT_SUPERVISOR'
                 )}
@@ -754,6 +757,9 @@ export default React.memo(function UnitAccessControl({
                     removeFn: removeDaycareAclSpecialEducationTeacher
                   })
                 }
+                unitGroups={groups}
+                onChangeAclGroups={updateStaffGroupAcls}
+                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
                 deletePermitted={permittedActions.has(
                   'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
                 )}

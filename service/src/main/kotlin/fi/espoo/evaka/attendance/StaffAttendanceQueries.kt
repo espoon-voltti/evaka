@@ -30,12 +30,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.group_id AS attendance_group_id,
         att.arrived AS attendance_arrived,
         att.departed AS attendance_departed,
-        (
-            SELECT coalesce(array_agg(id), '{}'::UUID[])
-            FROM daycare_group dg
-            JOIN daycare_group_acl dgacl ON dg.id = dgacl.daycare_group_id
-            WHERE dg.daycare_id = :unitId AND dgacl.employee_id = dacl.employee_id
-        ) AS group_ids
+        coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
@@ -45,7 +40,14 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         ORDER BY sa.arrived DESC 
         LIMIT 1
     ) att ON TRUE
-    WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER')
+    LEFT JOIN LATERAL (
+        SELECT employee_id, array_agg(dg.id) AS group_ids
+        FROM daycare_group dg
+        JOIN daycare_group_acl dgacl ON dg.id = dgacl.daycare_group_id
+        WHERE dg.daycare_id = :unitId AND dgacl.employee_id = dacl.employee_id
+        GROUP BY employee_id
+    ) dgacl ON true
+    WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER') OR dgacl.employee_id IS NOT NULL)
     ORDER BY e.last_name, e.first_name
     """.trimIndent()
 )
@@ -220,8 +222,9 @@ fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<
 SELECT DISTINCT dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient
 FROM daycare_acl dacl
 JOIN employee emp on emp.id = dacl.employee_id
+LEFT JOIN daycare_group_acl dgacl ON dgacl.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dacl.daycare_id AND soc.employee_id = emp.id
-WHERE dacl.daycare_id = :unitId AND dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER')
+WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER') OR dgacl.employee_id IS NOT NULL)
     """.trimIndent()
 )
     .bind("unitId", unitId)
