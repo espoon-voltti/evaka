@@ -20,6 +20,13 @@ export const MobileAndTablet = styled.div`
   }
 `
 
+export const TabletAndDesktop = styled.div`
+  display: none;
+  @media (min-width: ${tabletMin}) {
+    display: block;
+  }
+`
+
 export const Desktop = styled.div`
   display: none;
   @media (min-width: ${desktopMin}) {
