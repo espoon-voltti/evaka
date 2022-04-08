@@ -62,13 +62,19 @@ type ContentAreaProps = {
 
 export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
-    `${spacing(p.paddingVertical)} ${spacing(p.paddingHorizontal)}`};
+    `${spacing(p.paddingVertical, defaultMargins.m)} ${spacing(
+      p.paddingHorizontal
+    )}`};
 
   // wider default horizontal paddings on desktop
   @media screen and (min-width: ${desktopMin}) {
-    padding-right: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
-    padding-left: ${(p) => spacing(p.paddingHorizontal, defaultMargins.L)};
+    padding: ${(p) =>
+      `${spacing(p.paddingVertical, defaultMargins.L)} ${spacing(
+        p.paddingHorizontal,
+        defaultMargins.L
+      )}`};
   }
+
   background-color: ${(p) =>
     p.opaque ? 'white' : p.blue ? p.theme.colors.main.m4 : 'transparent'};
   position: relative;

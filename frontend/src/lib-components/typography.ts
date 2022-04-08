@@ -96,6 +96,7 @@ export const H2 = styled.h2<HeadingProps>`
       : ''}
 
   @media (max-width: 600px) {
+    color: ${(p) => p.theme.colors.main.m1};
     font-size: ${fontSizesMobile.h2};
     ${(p) =>
       p.theme.typography.h2.mobile?.weight &&

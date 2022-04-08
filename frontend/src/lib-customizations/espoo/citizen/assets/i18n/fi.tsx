@@ -139,13 +139,13 @@ export default {
   loginPage: {
     title: 'Espoon kaupungin varhaiskasvatus',
     login: {
-      title: 'Kirjaudu eVakaan käyttäjätunnuksella',
+      title: 'Kirjaudu käyttäjätunnuksella',
       paragraph:
         'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään'
     },
     applying: {
-      title: 'Kirjaudu eVakaan Suomi.fi:ssä',
+      title: 'Kirjaudu Suomi.fi:ssä',
       paragraph: 'Tunnistautumalla eVakaan vahvasti Suomi:fissä voit',
       infoBoxText:
         'Tunnistautumisen yhteydessä väestötietojärjestelmästä haetaan kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.  ',

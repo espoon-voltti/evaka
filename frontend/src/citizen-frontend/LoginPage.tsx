@@ -12,6 +12,10 @@ import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
+import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
@@ -36,12 +40,18 @@ export default React.memo(function LoginPage() {
 
   return (
     <>
-      <Container verticalMargin={defaultMargins.L}>
-        <FixedSpaceColumn spacing="L">
-          <ContentArea opaque paddingVertical="L">
+      <TabletAndDesktop>
+        <Gap size="L" />
+      </TabletAndDesktop>
+      <MobileOnly>
+        <Gap size="xs" />
+      </MobileOnly>
+      <Container>
+        <FixedSpaceColumn spacing="s">
+          <ContentArea opaque>
             <H1 noMargin>{i18n.loginPage.title}</H1>
           </ContentArea>
-          <ContentArea opaque paddingVertical="L">
+          <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.login.title}</H2>
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.login.paragraph}</P>
@@ -50,7 +60,7 @@ export default React.memo(function LoginPage() {
               {i18n.loginPage.login.link}
             </LinkButton>
           </ContentArea>
-          <ContentArea opaque paddingVertical="L">
+          <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.applying.title}</H2>
             <Gap size="m" />
             <FlexRow>
