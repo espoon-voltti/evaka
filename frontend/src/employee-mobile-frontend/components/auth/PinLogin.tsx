@@ -10,9 +10,10 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -150,10 +151,10 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 export const PinLogin = React.memo(function PinLogin() {
   const { unitInfoResponse } = useContext(UnitContext)
   const { attendanceResponse } = useContext(ChildAttendanceContext)
-  const { childId } = useParams<{ childId: UUID }>()
+  const { childId } = useNonNullableParams<{ childId: UUID }>()
 
-  const history = useHistory()
-  const onClose = useCallback(() => history.goBack(), [history])
+  const navigate = useNavigate()
+  const onClose = useCallback(() => navigate(-1), [navigate])
 
   const title = childId
     ? attendanceResponse

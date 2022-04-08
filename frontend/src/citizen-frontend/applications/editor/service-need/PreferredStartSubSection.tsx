@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
 
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -39,7 +39,7 @@ export default React.memo(function PreferredStartSubSection({
   verificationRequested,
   terms
 }: ServiceNeedSectionProps) {
-  const { applicationId } = useParams<{ applicationId: string }>()
+  const { applicationId } = useNonNullableParams<{ applicationId: string }>()
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()

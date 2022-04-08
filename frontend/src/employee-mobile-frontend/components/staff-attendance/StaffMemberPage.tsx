@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { formatTime } from 'lib-common/date'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
@@ -21,7 +21,7 @@ import { TimeInfo } from './components/staff-components'
 import { toStaff } from './staff'
 
 export default React.memo(function StaffMemberPage() {
-  const { unitId, groupId, employeeId } = useParams<{
+  const { unitId, groupId, employeeId } = useNonNullableParams<{
     unitId: string
     groupId: string
     employeeId: string

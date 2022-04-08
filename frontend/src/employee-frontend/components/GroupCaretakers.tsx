@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -58,7 +58,10 @@ const FlexRowRightAlign = styled(FlexRow)`
 `
 
 export default React.memo(function GroupCaretakers() {
-  const { unitId, groupId } = useParams<{ unitId: UUID; groupId: UUID }>()
+  const { unitId, groupId } = useNonNullableParams<{
+    unitId: UUID
+    groupId: UUID
+  }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(

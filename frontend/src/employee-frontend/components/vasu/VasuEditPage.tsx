@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router'
-import { useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -47,9 +47,9 @@ const StatusContainer = styled.div`
 `
 
 export default React.memo(function VasuEditPage() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const {
     vasu,
@@ -134,7 +134,7 @@ export default React.memo(function VasuEditPage() {
                 <Button
                   text={i18n.vasu.checkInPreview}
                   disabled={status.state != 'clean'}
-                  onClick={() => history.push(`/vasu/${vasu.id}`)}
+                  onClick={() => navigate(`/vasu/${vasu.id}`)}
                   data-qa="vasu-preview-btn"
                   primary
                 />

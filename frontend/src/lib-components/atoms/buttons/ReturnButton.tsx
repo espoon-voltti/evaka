@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { faAngleLeft } from 'lib-icons'
@@ -42,13 +42,13 @@ export default React.memo(function ReturnButton({
   'data-qa': dataQa
 }: Props) {
   const { colors } = useTheme()
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <ReturnButtonWrapper>
       <InlineButton
         icon={faAngleLeft}
         text={label}
-        onClick={() => history.goBack()}
+        onClick={() => navigate(-1)}
         data-qa={dataQa}
         disabled={history.length <= 1}
         color={colors.main.m1}

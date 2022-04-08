@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
@@ -96,7 +96,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
   type: DecisionType
 }) {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -115,9 +115,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
         <Button
           primary
           text={t.decisions.applicationDecisions.confirmationLink}
-          onClick={() =>
-            history.push(`/decisions/by-application/${applicationId}`)
-          }
+          onClick={() => navigate(`/decisions/by-application/${applicationId}`)}
           data-qa={`button-confirm-decisions-${applicationId}`}
         />
       </ButtonContainer>

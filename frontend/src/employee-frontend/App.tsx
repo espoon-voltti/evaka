@@ -6,10 +6,9 @@ import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
+  Navigate,
   Route,
-  Redirect,
-  Switch,
-  useParams
+  Routes
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
@@ -113,9 +112,8 @@ export default function App() {
             <StateProvider>
               <Router basename="/employee">
                 <Header />
-                <Switch>
+                <Routes>
                   <Route
-                    exact
                     path="/login"
                     element={
                       <EmployeeRoute
@@ -128,7 +126,6 @@ export default function App() {
                   />
                   {featureFlags.experimental?.ai && (
                     <Route
-                      exact
                       path="/ai"
                       element={
                         <EmployeeRoute title={i18n.titles.ai}>
@@ -138,7 +135,6 @@ export default function App() {
                     />
                   )}
                   <Route
-                    exact
                     path="/settings"
                     element={
                       <EmployeeRoute>
@@ -147,7 +143,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/unit-features"
                     element={
                       <EmployeeRoute>
@@ -156,7 +151,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/units"
                     element={
                       <EmployeeRoute title={i18n.titles.units}>
@@ -165,7 +159,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/units/new"
                     element={
                       <EmployeeRoute title={i18n.titles.createUnit}>
@@ -174,7 +167,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/units/:id/details"
                     element={
                       <EmployeeRoute>
@@ -183,7 +175,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/units/:unitId/family-contacts"
                     element={
                       <EmployeeRoute>
@@ -192,7 +183,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/units/:unitId/groups/:groupId/caretakers"
                     element={
                       <EmployeeRoute>
@@ -201,7 +191,7 @@ export default function App() {
                     }
                   />
                   <Route
-                    path="/units/:id"
+                    path="/units/:id/*"
                     element={
                       <EmployeeRoute>
                         <UnitPage />
@@ -209,7 +199,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/search"
                     element={
                       <EmployeeRoute title={i18n.titles.customers}>
@@ -218,7 +207,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/profile/:id"
                     element={
                       <EmployeeRoute>
@@ -227,7 +215,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/profile/:personId/income-statement/:incomeStatementId"
                     element={
                       <EmployeeRoute>
@@ -236,7 +223,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/child-information/:id"
                     element={
                       <EmployeeRoute>
@@ -245,7 +231,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/applications"
                     element={
                       <EmployeeRoute title={i18n.titles.applications}>
@@ -254,7 +239,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/applications/:id"
                     element={
                       <EmployeeRoute title={i18n.titles.applications}>
@@ -263,7 +247,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/applications/:id/placement"
                     element={
                       <EmployeeRoute title={i18n.titles.placementDraft}>
@@ -272,7 +255,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/applications/:id/decisions"
                     element={
                       <EmployeeRoute title={i18n.titles.decision}>
@@ -282,7 +264,6 @@ export default function App() {
                   />
                   {featureFlags.financeBasicsPage ? (
                     <Route
-                      exact
                       path="/finance/basics"
                       element={
                         <EmployeeRoute>
@@ -292,7 +273,6 @@ export default function App() {
                     />
                   ) : null}
                   <Route
-                    exact
                     path="/finance/fee-decisions/:id"
                     element={
                       <EmployeeRoute>
@@ -301,7 +281,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/finance/value-decisions/:id"
                     element={
                       <EmployeeRoute>
@@ -310,7 +289,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/finance/invoices/:id"
                     element={
                       <EmployeeRoute>
@@ -319,7 +297,7 @@ export default function App() {
                     }
                   />
                   <Route
-                    path="/finance"
+                    path="/finance/*"
                     element={
                       <EmployeeRoute>
                         <FinancePage />
@@ -327,7 +305,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -336,7 +313,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/family-conflicts"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -345,7 +321,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/missing-head-of-family"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -354,7 +329,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/missing-service-need"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -363,7 +337,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/applications"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -372,7 +345,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/decisions"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -381,7 +353,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/partners-in-different-address"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -390,7 +361,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/children-in-different-address"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -399,7 +369,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/child-age-language"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -408,7 +377,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/assistance-needs-and-actions"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -417,7 +385,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/occupancies"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -426,7 +393,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/invoices"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -435,7 +401,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/starting-placements"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -444,7 +409,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/ended-placements"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -453,7 +417,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/duplicate-people"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -462,7 +425,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/presences"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -471,7 +433,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/service-needs"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -480,7 +441,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/sextet"
                     element={
                       <EmployeeRoute>
@@ -489,7 +449,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/voucher-service-providers"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -498,7 +457,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/voucher-service-providers/:unitId"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -507,7 +465,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/varda-errors"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -516,7 +473,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/placement-sketching"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -525,7 +481,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/reports/raw"
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
@@ -534,7 +489,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/messages"
                     element={
                       <EmployeeRoute title={i18n.titles.messages}>
@@ -543,7 +497,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/personal-mobile-devices"
                     element={
                       <EmployeeRoute title={i18n.titles.personalMobileDevices}>
@@ -552,7 +505,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/pin-code"
                     element={
                       <EmployeeRoute title={i18n.titles.employeePinCode}>
@@ -561,7 +513,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/employees"
                     element={
                       <EmployeeRoute title={i18n.employees.title}>
@@ -570,7 +521,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/employees/:id"
                     element={
                       <EmployeeRoute title={i18n.employees.title}>
@@ -579,7 +529,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/welcome"
                     element={
                       <EmployeeRoute title={i18n.titles.welcomePage}>
@@ -588,7 +537,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/vasu/:id"
                     element={
                       <EmployeeRoute title={i18n.titles.vasuPage}>
@@ -597,7 +545,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/vasu/:id/edit"
                     element={
                       <EmployeeRoute title={i18n.titles.vasuPage}>
@@ -606,7 +553,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/vasu-templates"
                     element={
                       <EmployeeRoute title={i18n.titles.vasuTemplates}>
@@ -615,7 +561,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/vasu-templates/:id"
                     element={
                       <EmployeeRoute title={i18n.titles.vasuTemplates}>
@@ -624,7 +569,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/holiday-periods"
                     element={
                       <EmployeeRoute title={i18n.titles.holidayPeriods}>
@@ -633,7 +577,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/holiday-periods/:id"
                     element={
                       <EmployeeRoute title={i18n.titles.holidayPeriods}>
@@ -642,7 +585,6 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
                     path="/holiday-periods/questionnaire/:id"
                     element={
                       <EmployeeRoute title={i18n.titles.holidayQuestionnaire}>
@@ -651,47 +593,14 @@ export default function App() {
                     }
                   />
                   <Route
-                    exact
-                    path="/fee-decisions"
-                    element={<Redirect to="/finance/fee-decisions" />}
-                  />
-                  <Route
-                    exact
-                    path="/fee-decisions/:id"
-                    element={
-                      <RedirectByParams
-                        to={(params: { id: string }) =>
-                          `/finance/fee-decisions/${params.id}`
-                        }
-                      />
-                    }
-                  />
-                  <Route
-                    exact
-                    path="/invoices"
-                    element={<Redirect to="/finance/invoices" />}
-                  />
-                  <Route
-                    exact
-                    path="/invoices/:id"
-                    element={
-                      <RedirectByParams
-                        to={(params: { id: string }) =>
-                          `/finance/invoices/${params.id}`
-                        }
-                      />
-                    }
-                  />
-                  <Route
-                    exact
-                    path="/"
+                    index
                     element={
                       <EmployeeRoute requireAuth={false}>
                         <RedirectToMainPage />
                       </EmployeeRoute>
                     }
                   />
-                </Switch>
+                </Routes>
                 <Footer />
                 <ErrorMessage />
                 <ReloadNotification
@@ -713,28 +622,23 @@ function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
 
   if (!loggedIn) {
-    return <Redirect to="/login" />
+    return <Navigate replace to="/login" />
   }
 
   if (
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
   ) {
-    return <Redirect to="/applications" />
+    return <Navigate replace to="/applications" />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Redirect to="/units" />
+    return <Navigate replace to="/units" />
   } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
-    return <Redirect to="/reports" />
+    return <Navigate replace to="/reports" />
   } else if (roles.length === 0) {
-    return <Redirect to="/welcome" />
+    return <Navigate replace to="/welcome" />
   } else {
-    return <Redirect to="/search" />
+    return <Navigate replace to="/search" />
   }
-}
-
-function RedirectByParams<T>({ to }: { to: (params: T) => string }) {
-  const params = useParams<T>()
-  return <Redirect to={to(params)} />
 }
 
 function useAuthStatus(): AuthStatus<User> | undefined {

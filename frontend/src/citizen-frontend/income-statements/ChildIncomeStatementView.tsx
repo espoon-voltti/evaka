@@ -4,12 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import { ChildIncome } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -34,20 +35,20 @@ import { OverlayContext } from '../overlay/state'
 import { getChildIncomeStatement } from './api'
 
 export default React.memo(function ChildIncomeStatementView() {
-  const { childId, incomeStatementId } = useParams<{
+  const { childId, incomeStatementId } = useNonNullableParams<{
     childId: UUID
     incomeStatementId: UUID
   }>()
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [result] = useApiState(
     () => getChildIncomeStatement(childId, incomeStatementId),
     [childId, incomeStatementId]
   )
 
   const handleEdit = useCallback(() => {
-    history.push(`/child-income/${childId}/${incomeStatementId}/edit`)
-  }, [history, childId, incomeStatementId])
+    navigate(`/child-income/${childId}/${incomeStatementId}/edit`)
+  }, [navigate, childId, incomeStatementId])
 
   return renderResult(result, (incomeStatement) => (
     <Container>

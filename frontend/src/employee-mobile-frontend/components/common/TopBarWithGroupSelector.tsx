@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 import { UserContext } from 'employee-mobile-frontend/state/user'
 import { combine } from 'lib-common/api'
@@ -34,7 +34,7 @@ export default React.memo(function TopBarWithGroupSelector({
   includeSelectAll = true,
   allowedGroupIds = undefined
 }: TopBarWithGroupSelectorProps) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { user } = useContext(UserContext)
   const { unitInfoResponse } = useContext(UnitContext)
 
@@ -43,13 +43,11 @@ export default React.memo(function TopBarWithGroupSelector({
       .map(([user, unitInfo]) => {
         const title = unitInfo.name
         const onBack =
-          user && user.unitIds.length > 1
-            ? () => history.push('/units')
-            : undefined
+          user && user.unitIds.length > 1 ? () => navigate('/units') : undefined
         return { title, onBack }
       })
       .getOrElse({ title: '' })
-  }, [history, user, unitInfoResponse])
+  }, [navigate, user, unitInfoResponse])
 
   const groups: GroupInfo[] = useMemo(
     () =>

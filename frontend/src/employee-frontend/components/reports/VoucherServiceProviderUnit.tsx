@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { range, sortBy } from 'lodash'
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
@@ -16,6 +16,7 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -117,7 +118,7 @@ const yearOptions = range(maxYear, minYear - 1, -1)
 export default React.memo(function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
-  const { unitId } = useParams<{ unitId: UUID }>()
+  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
   const [report, setReport] = useState<Result<ServiceVoucherUnitReport>>(
     Loading.of()
   )

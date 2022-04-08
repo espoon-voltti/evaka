@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
@@ -71,11 +71,11 @@ const ChevronContainer = styled.div`
 `
 
 const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const t = useTranslation()
   const navigateToChild = useCallback(
-    () => history.push(`/children/${child.id}`),
-    [history, child.id]
+    () => navigate(`/children/${child.id}`),
+    [navigate, child.id]
   )
 
   const name = `${child.firstName} ${child.lastName}`

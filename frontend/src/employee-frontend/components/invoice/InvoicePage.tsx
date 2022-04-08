@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Redirect, useParams } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import {
@@ -11,6 +11,7 @@ import {
   InvoiceDetailed,
   InvoiceRowDetailed
 } from 'lib-common/generated/api-types/invoicing'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -27,7 +28,7 @@ import InvoiceRowsSection from './InvoiceRowsSection'
 import Sum from './Sum'
 
 export default React.memo(function InvoiceDetailsPage() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
   const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading.of())
   const [invoiceCodes, setInvoiceCodes] = useState<Result<InvoiceCodes>>(
@@ -59,7 +60,7 @@ export default React.memo(function InvoiceDetailsPage() {
   )
 
   if (invoice.isFailure) {
-    return <Redirect to="/finance/invoices" />
+    return <Navigate replace to="/finance/invoices" />
   }
 
   return (

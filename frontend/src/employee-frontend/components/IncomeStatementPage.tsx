@@ -4,8 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useState } from 'react'
-import { useHistory } from 'react-router'
-import { useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
@@ -20,6 +19,7 @@ import {
 } from 'lib-common/api-types/incomeStatement'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -50,12 +50,12 @@ import { Translations, useTranslation } from '../state/i18n'
 import { renderResult } from './async-rendering'
 
 export default React.memo(function IncomeStatementPage() {
-  const { personId, incomeStatementId } = useParams<{
+  const { personId, incomeStatementId } = useNonNullableParams<{
     personId: UUID
     incomeStatementId: UUID
   }>()
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [person] = useApiState(() => getPerson(personId), [personId])
   const [incomeStatement, loadIncomeStatement] = useApiState(
@@ -71,12 +71,12 @@ export default React.memo(function IncomeStatementPage() {
 
   const navigateToPersonProfile = useCallback(
     (type) =>
-      history.push(
+      navigate(
         `/${
           type !== 'CHILD_INCOME' ? 'profile' : 'child-information'
         }/${personId}`
       ),
-    [history, personId]
+    [navigate, personId]
   )
 
   return (

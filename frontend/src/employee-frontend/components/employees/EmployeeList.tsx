@@ -4,8 +4,7 @@
 
 import { sortBy } from 'lodash'
 import React from 'react'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -36,13 +35,13 @@ interface Props {
 
 export function EmployeeList({ employees }: Props) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const rows =
     employees?.isSuccess &&
     employees.value.map(
       ({ daycareRoles, email, firstName, globalRoles, id, lastName }) => (
-        <LinkTr key={id} onClick={() => history.push(`/employees/${id}`)}>
+        <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
           <Td>
             <Name data-qa="employee-name">
               {lastName} {firstName}

@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
@@ -26,15 +27,15 @@ import { MessagePreview } from './MessagePreview'
 import { ThreadView } from './ThreadView'
 
 export default function MessagesPage() {
-  const history = useHistory()
-  const { unitId } = useParams<{
+  const navigate = useNavigate()
+  const { unitId } = useNonNullableParams<{
     unitId: UUID
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
 
   function changeGroup(group: GroupInfo | undefined) {
-    if (group) history.push(`/units/${unitId}/groups/${group.id}/messages`)
+    if (group) navigate(`/units/${unitId}/groups/${group.id}/messages`)
   }
 
   const {

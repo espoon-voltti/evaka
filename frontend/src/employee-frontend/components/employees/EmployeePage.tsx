@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import { GlobalRole, globalRoles } from 'lib-common/api-types/employee-auth'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,7 +28,7 @@ interface FormData {
 
 export default React.memo(function EmployeePage() {
   const { i18n } = useTranslation()
-  const { id } = useParams<{ id: string }>()
+  const { id } = useNonNullableParams<{ id: string }>()
   const [employee, setEmployee] = useState<Result<EmployeeUser>>(Loading.of())
   const [form, setForm] = useState<FormData | null>(null)
 

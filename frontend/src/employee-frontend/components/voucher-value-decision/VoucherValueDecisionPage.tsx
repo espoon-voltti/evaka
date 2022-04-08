@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Redirect, useParams } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
@@ -23,7 +24,7 @@ import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
 
 export default React.memo(function VoucherValueDecisionPage() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<
@@ -64,7 +65,7 @@ export default React.memo(function VoucherValueDecisionPage() {
   )
 
   if (decision.isFailure) {
-    return <Redirect to="/finance/value-decisions" />
+    return <Navigate replace to="/finance/value-decisions" />
   }
 
   return (

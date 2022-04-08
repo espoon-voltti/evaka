@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useCallback, useContext, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -116,7 +116,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
   childId
 }: Props) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { reloadAttendances } = useContext(ChildAttendanceContext)
 
   const [uiMode, setUiMode] = useState<
@@ -167,7 +167,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             void deleteDailyNote().then((res) => {
               if (res.isSuccess) {
                 reloadAttendances()
-                history.goBack()
+                navigate(-1)
               }
             })
           },
@@ -186,7 +186,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         close={() => setUiMode('default')}
         reject={{
           action: () => {
-            history.goBack()
+            navigate(-1)
           },
           label: i18n.attendances.notes.closeWithoutSaving
         }}
@@ -195,7 +195,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             void saveChildDailyNote().then((res) => {
               if (res.isSuccess) {
                 reloadAttendances()
-                history.goBack()
+                navigate(-1)
               }
             })
           },
@@ -212,9 +212,9 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
     if (dirty) {
       setUiMode('confirmExit')
     } else {
-      history.goBack()
+      navigate(-1)
     }
-  }, [dirty, history])
+  }, [dirty, navigate])
 
   return (
     <>
@@ -364,7 +364,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             onClick={saveChildDailyNote}
             onSuccess={() => {
               reloadAttendances()
-              history.goBack()
+              navigate(-1)
             }}
             text={i18n.common.save}
             data-qa="create-daily-note-btn"

@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -35,7 +36,7 @@ import {
 import DailyNote from '../notes/DailyNote'
 
 export default React.memo(function MarkAbsent() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const { attendanceResponse, reloadAttendances } = useContext(
@@ -46,7 +47,7 @@ export default React.memo(function MarkAbsent() {
     AbsenceType | undefined
   >(undefined)
 
-  const { childId, unitId, groupId } = useParams<{
+  const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     groupId: string
     childId: string
@@ -83,7 +84,7 @@ export default React.memo(function MarkAbsent() {
       {renderResult(combine(child, groupNote), ([child, groupNote]) => (
         <>
           <BackButtonInline
-            onClick={() => history.go(-2)}
+            onClick={() => navigate(-2)}
             icon={faArrowLeft}
             text={
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
@@ -110,7 +111,7 @@ export default React.memo(function MarkAbsent() {
               <FixedSpaceRow fullWidth>
                 <Button
                   text={i18n.common.cancel}
-                  onClick={() => history.goBack()}
+                  onClick={() => navigate(-1)}
                 />
                 {selectedAbsenceType ? (
                   <AsyncButton
@@ -119,7 +120,7 @@ export default React.memo(function MarkAbsent() {
                     onClick={() => postAbsence(selectedAbsenceType)}
                     onSuccess={() => {
                       reloadAttendances()
-                      history.goBack()
+                      navigate(-1)
                     }}
                     data-qa="mark-absent-btn"
                   />

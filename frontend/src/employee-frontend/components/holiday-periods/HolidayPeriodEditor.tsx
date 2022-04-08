@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Success } from 'lib-common/api'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
@@ -15,7 +16,7 @@ import HolidayPeriodForm from './HolidayPeriodForm'
 import { getHolidayPeriod } from './api'
 
 export default React.memo(function HolidayPeriodEditor() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useNonNullableParams<{ id: string }>()
   const holidayPeriodId = id === 'new' ? undefined : id
 
   const [holidayPeriod] = useApiState(
@@ -26,11 +27,11 @@ export default React.memo(function HolidayPeriodEditor() {
     [holidayPeriodId]
   )
 
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const navigateToList = useCallback(
-    () => history.push('/holiday-periods'),
-    [history]
+    () => navigate('/holiday-periods'),
+    [navigate]
   )
 
   return (

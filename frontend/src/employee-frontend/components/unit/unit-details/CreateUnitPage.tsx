@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
@@ -17,7 +17,7 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 
 export default React.memo(function CreateUnitPage() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const [areas, setAreas] = useState<Result<DaycareCareArea[]>>(Loading.of())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
@@ -46,7 +46,7 @@ export default React.memo(function CreateUnitPage() {
     void createDaycare(fields).then((result) => {
       setSubmitState(result.map(() => undefined))
       if (result.isSuccess) {
-        history.push(`/units/${result.value}/unit-info`)
+        navigate(`/units/${result.value}/unit-info`)
       }
     })
   }

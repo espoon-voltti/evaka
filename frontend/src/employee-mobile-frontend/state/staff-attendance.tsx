@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useEffect, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
@@ -33,7 +33,7 @@ export const StaffAttendanceContextProvider = React.memo(
   }: {
     children: JSX.Element
   }) {
-    const { unitId } = useParams<{ unitId: UUID }>()
+    const { unitId } = useNonNullableParams<{ unitId: UUID }>()
 
     const [staffAttendanceResponse, reloadStaffAttendance] = useApiState(
       () => getUnitStaffAttendances(unitId),

@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
@@ -35,7 +35,7 @@ export default React.memo(function LoginPage() {
   const [showInfoBoxText, setShowInfoBoxText] = useState(false)
 
   if (user) {
-    return <Redirect to="/" />
+    return <Navigate to="/" replace />
   }
 
   return (

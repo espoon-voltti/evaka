@@ -4,11 +4,12 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -98,8 +99,8 @@ export type BottomNavbarProps = {
 
 export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const { i18n } = useTranslation()
-  const history = useHistory()
-  const { unitId, groupId } = useParams<{
+  const navigate = useNavigate()
+  const { unitId, groupId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
@@ -123,9 +124,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               selected={selected === 'child'}
               onClick={() =>
                 selected !== 'child' &&
-                history.push(
-                  `/units/${unitId}/groups/${groupId}/child-attendance`
-                )
+                navigate(`/units/${unitId}/groups/${groupId}/child-attendance`)
               }
             >
               <CustomIcon
@@ -140,7 +139,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               selected={selected === 'staff'}
               onClick={() =>
                 selected !== 'staff' &&
-                history.push(
+                navigate(
                   featureFlags.experimental?.realtimeStaffAttendance
                     ? `/units/${unitId}/groups/${groupId}/staff-attendance`
                     : `/units/${unitId}/groups/${groupId}/staff`
@@ -160,7 +159,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
                 selected={selected === 'messages'}
                 onClick={() =>
                   selected !== 'messages' &&
-                  history.push(
+                  navigate(
                     user?.pinLoginActive
                       ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
                       : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`

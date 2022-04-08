@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -49,7 +49,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
   const t = useTranslation()
-  const { applicationId } = useParams<{ applicationId: string }>()
+  const { applicationId } = useNonNullableParams<{ applicationId: string }>()
 
   const fullTimeOptions = useMemo(
     () =>

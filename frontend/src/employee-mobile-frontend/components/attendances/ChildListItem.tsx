@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
@@ -12,6 +12,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { GroupNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -108,7 +109,7 @@ export default React.memo(function ChildListItem({
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const { unitId, groupId } = useParams<{
+  const { unitId, groupId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()

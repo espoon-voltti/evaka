@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -46,7 +46,7 @@ export function VasuStateTransitionButtons({
   state: VasuDocumentState
 }) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [updateResult, setUpdateResult] = useState<Result<null>>()
   const updateState = useRestApi(updateDocumentState, setUpdateResult)
@@ -107,7 +107,7 @@ export function VasuStateTransitionButtons({
           icon={faCheck}
           text={i18n.vasu.transitions[selectedEventType].successText}
           resolve={{
-            action: () => history.push(`/child-information/${childId}`),
+            action: () => navigate(`/child-information/${childId}`),
             label: i18n.common.ok
           }}
         />
@@ -135,7 +135,7 @@ export function VasuStateTransitionButtons({
             <Button
               data-qa="edit-button"
               text={i18n.common.edit}
-              onClick={() => history.push(`/vasu/${documentId}/edit`)}
+              onClick={() => navigate(`/vasu/${documentId}/edit`)}
             />
           </>
         )}

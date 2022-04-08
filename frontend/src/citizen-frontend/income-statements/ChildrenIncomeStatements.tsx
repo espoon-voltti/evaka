@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -54,7 +54,7 @@ const ChildIncomeStatementsTable = React.memo(
     setDeletionState: (deletionState: DeletionState) => void
   }) {
     const t = useTranslation()
-    const history = useHistory()
+    const navigate = useNavigate()
 
     const [page, setPage] = useState(1)
     const [incomeStatements] = useApiState(
@@ -63,8 +63,8 @@ const ChildIncomeStatementsTable = React.memo(
     )
 
     const onEdit = useCallback(
-      (id: UUID) => () => history.push(getLink(child.id, id, 'edit')),
-      [history, child.id]
+      (id: UUID) => () => navigate(getLink(child.id, id, 'edit')),
+      [navigate, child.id]
     )
 
     return (
@@ -166,7 +166,7 @@ export default React.memo(function ChildrenIncomeStatements({
   onRemoveIncomeStatement
 }: ChildrenIncomeStatementsProps) {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
@@ -217,9 +217,7 @@ export default React.memo(function ChildrenIncomeStatements({
                   {child.firstName} {child.lastName}
                 </H3>
                 <ResponsiveAddButton
-                  onClick={() =>
-                    history.push(`/child-income/${child.id}/new/edit`)
-                  }
+                  onClick={() => navigate(`/child-income/${child.id}/new/edit`)}
                   text={t.income.addNew}
                   data-qa="new-child-income-statement-btn"
                 />

@@ -6,16 +6,14 @@ import { ErrorBoundary } from '@sentry/react'
 import React, { useEffect } from 'react'
 import {
   BrowserRouter as Router,
-  generatePath,
-  Redirect,
+  Navigate,
   Route,
-  Switch,
-  useHistory,
-  useParams,
-  useRouteMatch
+  Routes,
+  useNavigate
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
 
@@ -62,11 +60,10 @@ export default function App() {
         >
           <UserContextProvider>
             <Router basename="/employee/mobile">
-              <Switch>
-                <Route exact path="/landing" element={<MobileLander />} />
-                <Route exact path="/pairing" element={<PairingWizard />} />
+              <Routes>
+                <Route path="/landing" element={<MobileLander />} />
+                <Route path="/pairing" element={<PairingWizard />} />
                 <Route
-                  exact
                   path="/units"
                   element={
                     <RequireAuth>
@@ -75,15 +72,15 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="/units/:unitId"
+                  path="/units/:unitId/*"
                   element={
                     <RequireAuth>
                       <UnitRouter />
                     </RequireAuth>
                   }
                 />
-                <Route path="/" element={<Redirect to="/landing" />} />
-              </Switch>
+                <Route index element={<Navigate replace to="/landing" />} />
+              </Routes>
             </Router>
             <MobileReloadNotification />
           </UserContextProvider>
@@ -94,213 +91,147 @@ export default function App() {
 }
 
 function UnitRouter() {
-  const { path } = useRouteMatch()
-  const params = useParams<{ unitId: string }>()
+  const params = useNonNullableParams<{ unitId: string }>()
 
   return (
-    <UnitContextProvider unitId={params.unitId}>
-      <Switch>
-        <Route path={`${path}/groups/:groupId`} element={<GroupRouter />} />
-        <Route
-          path="/"
-          element={<Redirect to={`${generatePath(path, params)}/groups/all`} />}
-        />
-      </Switch>
+    <UnitContextProvider unitId={params.unitId ?? 'all'}>
+      <Routes>
+        <Route path="/groups/:groupId/*" element={<GroupRouter />} />
+        <Route index element={<Navigate replace to="groups/all" />} />
+      </Routes>
     </UnitContextProvider>
   )
 }
 
 function GroupRouter() {
-  const { path } = useRouteMatch()
-  const params = useParams()
-
   useGroupIdInLocalStorage()
 
   return (
     <MessageContextProvider>
-      <Switch>
-        <Route
-          path={`${path}/child-attendance`}
-          element={<ChildAttendanceRouter />}
-        />
-        <Route path={`${path}/staff`} element={<StaffRouter />} />
-        <Route
-          path={`${path}/staff-attendance`}
-          element={<StaffAttendanceRouter />}
-        />
-        <Route path={`${path}/messages`} element={<MessagesRouter />} />
-        <Route
-          path="/"
-          element={
-            <Redirect to={`${generatePath(path, params)}/child-attendance`} />
-          }
-        />
-      </Switch>
+      <Routes>
+        <Route path="child-attendance/*" element={<ChildAttendanceRouter />} />
+        <Route path="staff/*" element={<StaffRouter />} />
+        <Route path="staff-attendance/*" element={<StaffAttendanceRouter />} />
+        <Route path="messages/*" element={<MessagesRouter />} />
+        <Route index element={<Navigate replace to="child-attendance" />} />
+      </Routes>
     </MessageContextProvider>
   )
 }
 
 function ChildAttendanceRouter() {
-  const { path } = useRouteMatch()
-  const params = useParams()
-
   return (
     <ChildAttendanceContextProvider>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path={`${path}/list/:attendanceStatus`}
+          path="list/:attendanceStatus"
           element={<AttendancePageWrapper />}
         />
+        <Route path=":childId" element={<AttendanceChildPage />} />
+        <Route path=":childId/mark-present" element={<MarkPresent />} />
+        <Route path=":childId/mark-absent" element={<MarkAbsent />} />
         <Route
-          exact
-          path={`${path}/:childId`}
-          element={<AttendanceChildPage />}
-        />
-        <Route
-          exact
-          path={`${path}/:childId/mark-present`}
-          element={<MarkPresent />}
-        />
-        <Route
-          exact
-          path={`${path}/:childId/mark-absent`}
-          element={<MarkAbsent />}
-        />
-        <Route
-          exact
-          path={`${path}/:childId/mark-absent-beforehand`}
+          path=":childId/mark-absent-beforehand"
           element={<MarkAbsentBeforehand />}
         />
+        <Route path=":childId/mark-departed" element={<MarkDeparted />} />
+        <Route path=":childId/note" element={<ChildNotes />} />
         <Route
-          exact
-          path={`${path}/:childId/mark-departed`}
-          element={<MarkDeparted />}
-        />
-        <Route exact path={`${path}/:childId/note`} element={<ChildNotes />} />
-        <Route
-          exact
-          path={`${path}/:childId/info`}
+          path=":childId/info"
           element={
             <RequireAuth strength="PIN">
               <ChildSensitiveInfoPage />
             </RequireAuth>
           }
         />
-        <Route
-          path="/"
-          element={
-            <Redirect to={`${generatePath(path, params)}/list/coming`} />
-          }
-        />
-      </Switch>
+        <Route index element={<Navigate replace to="list/coming" />} />
+      </Routes>
     </ChildAttendanceContextProvider>
   )
 }
 
 function StaffRouter() {
-  const { path } = useRouteMatch()
-  const params = useParams()
-
   return (
-    <Switch>
-      <Route exact path={path} element={<StaffPage />} />
-      <Route path="/" element={<Redirect to={generatePath(path, params)} />} />
-    </Switch>
+    <Routes>
+      <Route index element={<StaffPage />} />
+    </Routes>
   )
 }
 
 function StaffAttendanceRouter() {
-  const { path } = useRouteMatch()
-  const params = useParams()
-
   return (
     <StaffAttendanceContextProvider>
-      <Switch>
+      <Routes>
+        <Route path=":tab" element={<StaffAttendancesPage />} />
         <Route
-          exact
-          path={`${path}/:tab(absent|present)`}
-          element={<StaffAttendancesPage />}
-        />
-        <Route
-          exact
-          path={`${path}/external`}
+          path="external"
           element={<MarkExternalStaffMemberArrivalPage />}
         />
         <Route
-          exact
-          path={`${path}/external/:attendanceId`}
+          path="external/:attendanceId"
           element={<ExternalStaffMemberPage />}
         />
+        <Route path=":employeeId" element={<StaffMemberPage />} />
         <Route
-          exact
-          path={`${path}/:employeeId`}
-          element={<StaffMemberPage />}
-        />
-        <Route
-          exact
-          path={`${path}/:employeeId/mark-arrived`}
+          path=":employeeId/mark-arrived"
           element={<StaffMarkArrivedPage />}
         />
         <Route
-          exact
-          path={`${path}/:employeeId/mark-departed`}
+          path=":employeeId/mark-departed"
           element={<StaffMarkDepartedPage />}
         />
-        <Route
-          path="/"
-          element={<Redirect to={`${generatePath(path, params)}/absent`} />}
-        />
-      </Switch>
+        <Route index element={<Navigate replace to="absent" />} />
+      </Routes>
     </StaffAttendanceContextProvider>
   )
 }
 
 function MessagesRouter() {
-  const { path } = useRouteMatch()
-
   return (
-    <Switch>
+    <Routes>
       <Route
-        exact
-        path={path}
+        index
         element={
           <RequireAuth strength="PIN">
             <MessagesPage />
           </RequireAuth>
         }
       />
+      <Route path="unread-messages" element={<UnreadMessagesPage />} />
       <Route
-        exact
-        path={`${path}/unread-messages`}
-        element={<UnreadMessagesPage />}
-      />
-      <Route
-        exact
-        path={`${path}/:childId/new-message`}
+        path=":childId/new-message"
         element={
           <RequireAuth strength="PIN">
             <MessageEditorPage />
           </RequireAuth>
         }
       />
-      <Route path="/" element={<Redirect to={path} />} />
-    </Switch>
+    </Routes>
   )
 }
 
 const groupIdKey = 'evakaEmployeeMobileGroupId'
 
 function useGroupIdInLocalStorage() {
-  const history = useHistory()
-  const { unitId, groupId } = useParams<{ unitId: string; groupId: string }>()
+  const navigate = useNavigate()
+  const { unitId, groupId } = useNonNullableParams<{
+    unitId: string
+    groupId: string
+  }>()
 
   useEffect(() => {
     try {
       const storedGroupId = window.localStorage?.getItem(groupIdKey)
 
-      if (groupId === 'all' && storedGroupId && groupId !== storedGroupId) {
-        history.replace(`/units/${unitId}/groups/${storedGroupId}`)
+      if (
+        unitId &&
+        groupId === 'all' &&
+        storedGroupId &&
+        groupId !== storedGroupId
+      ) {
+        navigate(`/units/${unitId}/groups/${storedGroupId}`, {
+          replace: true
+        })
       }
     } catch (e) {
       // do nothing
@@ -309,7 +240,7 @@ function useGroupIdInLocalStorage() {
 
   useEffect(() => {
     try {
-      window.localStorage?.setItem(groupIdKey, groupId)
+      window.localStorage?.setItem(groupIdKey, groupId ?? 'all')
     } catch (e) {
       // do nothing
     }

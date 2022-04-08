@@ -4,7 +4,7 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext, useRef } from 'react'
-import { Route, BrowserRouter, Redirect, Switch } from 'react-router-dom'
+import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
 
@@ -96,16 +96,15 @@ const Content = React.memo(function Content() {
     <>
       <Header ariaHidden={modalOpen} />
       <Main ariaHidden={modalOpen} ref={mainRef}>
-        <Switch>
+        <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/map" element={<MapView />} />
-          <Route path="/applying" element={<ApplyingRouter />} />
+          <Route path="/applying/*" element={<ApplyingRouter />} />
           <Route
             path="/accessibility"
             element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
           />
           <Route
-            exact
             path="/applications/new/:childId"
             element={
               <RequireAuth>
@@ -114,7 +113,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/applications/:applicationId"
             element={
               <RequireAuth>
@@ -123,7 +121,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/personal-details"
             element={
               <RequireAuth strength="WEAK">
@@ -132,7 +129,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/income"
             element={
               <RequireAuth>
@@ -141,7 +137,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/income/:incomeStatementId/edit"
             element={
               <RequireAuth>
@@ -150,7 +145,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/income/:incomeStatementId"
             element={
               <RequireAuth>
@@ -159,7 +153,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/child-income/:childId/:incomeStatementId/edit"
             element={
               <RequireAuth>
@@ -168,7 +161,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/child-income/:childId/:incomeStatementId"
             element={
               <RequireAuth>
@@ -177,7 +169,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/applications/:applicationId/edit"
             element={
               <RequireAuth>
@@ -186,7 +177,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/children/:childId"
             element={
               <RequireAuth>
@@ -195,7 +185,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/children"
             element={
               <RequireAuth>
@@ -204,7 +193,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/decisions/by-application/:applicationId"
             element={
               <RequireAuth>
@@ -213,16 +201,14 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/messages/:threadId"
-            render={() => (
+            element={
               <RequireAuth strength="WEAK">
                 <MessagesPage />
               </RequireAuth>
-            )}
+            }
           />
           <Route
-            exact
             path="/messages"
             element={
               <RequireAuth strength="WEAK">
@@ -231,7 +217,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/calendar"
             element={
               <RequireAuth strength="WEAK">
@@ -240,7 +225,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            exact
             path="/pedagogical-documents"
             element={
               <RequireAuth>
@@ -248,8 +232,8 @@ const Content = React.memo(function Content() {
               </RequireAuth>
             }
           />
-          <Route path="/" element={<HandleRedirection />} />
-        </Switch>
+          <Route index element={<HandleRedirection />} />
+        </Routes>
       </Main>
     </>
   )
@@ -281,14 +265,14 @@ function HandleRedirection() {
   const user = useUser()
 
   if (!user) {
-    return <Redirect to="/login" />
+    return <Navigate replace to="/login" />
   }
 
   const hasAccessToCalendar = !!user?.accessibleFeatures.reservations
   return hasAccessToCalendar ? (
-    <Redirect to="/calendar" />
+    <Navigate replace to="/calendar" />
   ) : (
-    <Redirect to="/applying/map" />
+    <Navigate replace to="/applying/map" />
   )
 }
 

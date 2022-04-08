@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -22,7 +23,7 @@ import { FamilyContactsReportRow } from '../../types/reports'
 import { TableScrollable } from './common'
 
 export default React.memo(function FamilyContacts() {
-  const { unitId } = useParams<{ unitId: UUID }>()
+  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<FamilyContactsReportRow[]>>(
     Loading.of()

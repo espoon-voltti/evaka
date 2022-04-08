@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
@@ -22,7 +22,7 @@ interface Props {
 export default React.memo(function TabPlacementProposals({
   reloadUnitData
 }: Props) {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   const { unitData } = useContext(UnitContext)
   const { i18n } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)

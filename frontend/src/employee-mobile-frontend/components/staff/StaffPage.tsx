@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { combine, Success } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 
@@ -23,8 +24,8 @@ import { PageWithNavigation } from '../common/PageWithNavigation'
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 
 export default React.memo(function StaffPage() {
-  const history = useHistory()
-  const { unitId, groupId: groupIdOrAll } = useParams<{
+  const navigate = useNavigate()
+  const { unitId, groupId: groupIdOrAll } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
@@ -62,9 +63,9 @@ export default React.memo(function StaffPage() {
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       const groupId = group === undefined ? 'all' : group.id
-      history.push(`/units/${unitId}/groups/${groupId}/staff`)
+      navigate(`/units/${unitId}/groups/${groupId}/staff`)
     },
-    [history, unitId]
+    [navigate, unitId]
   )
 
   const updateAttendance = useCallback(

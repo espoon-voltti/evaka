@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
-import { Link, NavLink, useHistory } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { formatPreferredName } from 'lib-common/names'
@@ -226,7 +226,7 @@ const LanguageMenu = React.memo(function LanguageMenu({
 
 const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const theme = useTheme()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
@@ -258,7 +258,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
             data-qa="user-menu-personal-details"
             onClick={() => {
               setOpen(false)
-              history.push('/personal-details')
+              navigate('/personal-details')
             }}
           >
             {t.header.nav.personalDetails}
@@ -277,7 +277,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
             data-qa="user-menu-income"
             onClick={() => {
               setOpen(false)
-              history.push('/income')
+              navigate('/income')
             }}
           >
             {t.header.nav.income} {maybeLockElem}

@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
@@ -18,6 +18,7 @@ import {
   Child,
   GroupInfo
 } from 'lib-common/generated/api-types/attendance'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
 
@@ -34,12 +35,12 @@ import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
 
 export default React.memo(function AttendancePageWrapper() {
-  const { unitId, groupId, attendanceStatus } = useParams<{
+  const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
     unitId: string
     groupId: string
     attendanceStatus: ChildAttendanceUIState
   }>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
 
@@ -59,13 +60,13 @@ export default React.memo(function AttendancePageWrapper() {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      history.push(
+      navigate(
         `/units/${unitId}/groups/${
           group?.id ?? 'all'
         }/child-attendance/list/${attendanceStatus}`
       )
     },
-    [history, unitId, attendanceStatus]
+    [navigate, unitId, attendanceStatus]
   )
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])

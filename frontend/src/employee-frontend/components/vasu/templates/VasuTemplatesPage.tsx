@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
@@ -28,7 +27,7 @@ import { deleteVasuTemplate, getVasuTemplateSummaries } from './api'
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
   const t = i18n.vasuTemplates
-  const h = useHistory()
+  const navigate = useNavigate()
 
   const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>(
     Loading.of()
@@ -106,7 +105,7 @@ export default React.memo(function VasuTemplatesPage() {
           <CreateTemplateModal
             onSuccess={(id) => {
               if (createModalOpen) {
-                h.push(`/vasu-templates/${id}`)
+                navigate(`/vasu-templates/${id}`)
               } else {
                 loadTemplates()
                 setTemplateToEdit(undefined)
@@ -123,7 +122,7 @@ export default React.memo(function VasuTemplatesPage() {
         {templateToCopy && (
           <CopyTemplateModal
             template={templateToCopy}
-            onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
+            onSuccess={(id) => navigate(`/vasu-templates/${id}`)}
             onCancel={() => setTemplateToCopy(undefined)}
           />
         )}

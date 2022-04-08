@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { P } from 'lib-components/typography'
@@ -31,13 +31,14 @@ export default React.memo(function MobileLander() {
     if (u !== null) {
       if (u.unitIds.length === 1) {
         return (
-          <Redirect
+          <Navigate
+            replace
             to={`/units/${u.unitIds[0]}/groups/all/child-attendance/list/coming`}
           />
         )
       }
 
-      return <Redirect to="/units" />
+      return <Navigate replace to="/units" />
     }
 
     return (

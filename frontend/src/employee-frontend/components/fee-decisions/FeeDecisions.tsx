@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -81,7 +81,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
   clearChecked
 }: Props) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const allChecked =
     decisions
@@ -105,7 +105,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
         return (
           <Tr
             key={item.id}
-            onClick={() => history.push(`/finance/fee-decisions/${item.id}`)}
+            onClick={() => navigate(`/finance/fee-decisions/${item.id}`)}
             data-qa="table-fee-decision-row"
           >
             <Td>

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { UserContext } from '../state/user'
 
@@ -21,10 +21,10 @@ export default React.memo(function RequireAuth({
   const { loggedIn, user } = useContext(UserContext)
 
   if (strength === 'PAIRING') {
-    return loggedIn ? <>{children}</> : <Redirect to="/" />
+    return loggedIn ? <>{children}</> : <Navigate replace to="/" />
   } else {
     if (!user.isSuccess || !user.value) {
-      return <Redirect to="/" />
+      return <Navigate replace to="/" />
     }
     if (!user.value.pinLoginActive) {
       return <PinLogin />

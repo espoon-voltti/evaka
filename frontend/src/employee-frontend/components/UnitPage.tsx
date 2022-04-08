@@ -9,18 +9,13 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import {
-  Redirect,
-  Route,
-  Switch,
-  useHistory,
-  useParams
-} from 'react-router-dom'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useQuery } from 'lib-common/utils/useQuery'
 import Container from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -58,7 +53,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const queryParams = useCallback(
     () => new URLSearchParams(location.search),
     []
@@ -100,9 +95,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   useEffect(() => {
     const openList = openGroupsToStringList(openGroups)
     openList.length > 0
-      ? history.replace(`?open_groups=${openList}`)
-      : history.replace('?')
-  }, [openGroups, history])
+      ? navigate(`?open_groups=${openList}`, { replace: true })
+      : navigate('?', { replace: true })
+  }, [openGroups, navigate])
 
   const tabs = useMemo(
     () => [
@@ -145,25 +140,15 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
     [id, i18n, unitData, unitInformation]
   )
 
-  const RedirectToAttendances = useCallback(
-    () => <Redirect to={`/units/${id}/attendances`} />,
-    [id]
-  )
-
   return (
     <>
       {unitInformation.isSuccess && <Tabs tabs={tabs} />}
       <Gap size="s" />
       <Container>
-        <Switch>
+        <Routes>
+          <Route path="unit-info" element={<TabUnitInformation />} />
           <Route
-            exact
-            path="/units/:id/unit-info"
-            element={<TabUnitInformation />}
-          />
-          <Route
-            exact
-            path="/units/:id/groups"
+            path="groups"
             element={
               <TabGroups
                 reloadUnitData={reloadUnitData}
@@ -172,14 +157,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             }
           />
+          <Route path="attendances" element={<TabAttendances />} />
           <Route
-            exact
-            path="/units/:id/attendances"
-            element={<TabAttendances />}
-          />
-          <Route
-            exact
-            path="/units/:id/application-process"
+            path="application-process"
             element={
               <TabApplicationProcess
                 isLoading={isLoading(unitData)}
@@ -187,15 +167,15 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             }
           />
-          <Route path="/" element={<RedirectToAttendances />} />
-        </Switch>
+          <Route index element={<Navigate replace to="attendances" />} />
+        </Routes>
       </Container>
     </>
   )
 })
 
 export default React.memo(function UnitPageWrapper() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   return (
     <UnitContextProvider id={id}>
       <UnitPage id={id} />
