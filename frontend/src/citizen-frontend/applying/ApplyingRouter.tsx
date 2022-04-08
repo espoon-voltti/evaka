@@ -68,29 +68,29 @@ export default React.memo(function ApplyingRouter() {
         <Route
           exact
           path="/applying/applications"
-          render={() => (
+          element={
             <RequireAuth>
               <Applications />
             </RequireAuth>
-          )}
+          }
         />
-        <Route exact path="/applying/map" render={() => <MapView />} />
+        <Route exact path="/applying/map" element={<MapView />} />
         <Route
           exact
           path="/applying/decisions"
-          render={() => (
+          element={
             <RequireAuth>
               <Decisions />
             </RequireAuth>
-          )}
+          }
         />
         <Route
           path="/"
-          render={() => (
+          element={
             <Redirect
               to={isEndUser ? '/applying/applications' : '/applying/map'}
             />
-          )}
+          }
         />
       </Switch>
     </>

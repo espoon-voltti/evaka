@@ -53,43 +53,40 @@ export default React.memo(function FinancePage() {
         <Route
           exact
           path="/finance/fee-decisions"
-          render={() => (
+          element={
             <EmployeeRoute title={i18n.titles.feeDecisions}>
               <FeeDecisionsPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
           exact
           path="/finance/value-decisions"
-          render={() => (
+          element={
             <EmployeeRoute title={i18n.titles.valueDecisions}>
               <VoucherValueDecisionsPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
           exact
           path="/finance/invoices"
-          render={() => (
+          element={
             <EmployeeRoute title={i18n.titles.invoices}>
               <InvoicesPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
           exact
           path="/finance/income-statements"
-          render={() => (
+          element={
             <EmployeeRoute title={i18n.titles.incomeStatements}>
               <IncomeStatementsPage />
             </EmployeeRoute>
-          )}
+          }
         />
-        <Route
-          path="/"
-          render={() => <Redirect to="/finance/fee-decisions" />}
-        />
+        <Route path="/" element={<Redirect to="/finance/fee-decisions" />} />
       </Switch>
     </>
   )

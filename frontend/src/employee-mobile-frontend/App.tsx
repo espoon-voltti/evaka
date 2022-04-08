@@ -63,26 +63,26 @@ export default function App() {
           <UserContextProvider>
             <Router basename="/employee/mobile">
               <Switch>
-                <Route exact path="/landing" render={() => <MobileLander />} />
-                <Route exact path="/pairing" render={() => <PairingWizard />} />
+                <Route exact path="/landing" element={<MobileLander />} />
+                <Route exact path="/pairing" element={<PairingWizard />} />
                 <Route
                   exact
                   path="/units"
-                  render={() => (
+                  element={
                     <RequireAuth>
                       <UnitList />
                     </RequireAuth>
-                  )}
+                  }
                 />
                 <Route
                   path="/units/:unitId"
-                  render={() => (
+                  element={
                     <RequireAuth>
                       <UnitRouter />
                     </RequireAuth>
-                  )}
+                  }
                 />
-                <Route path="/" render={() => <Redirect to="/landing" />} />
+                <Route path="/" element={<Redirect to="/landing" />} />
               </Switch>
             </Router>
             <MobileReloadNotification />
@@ -100,15 +100,10 @@ function UnitRouter() {
   return (
     <UnitContextProvider unitId={params.unitId}>
       <Switch>
-        <Route
-          path={`${path}/groups/:groupId`}
-          render={() => <GroupRouter />}
-        />
+        <Route path={`${path}/groups/:groupId`} element={<GroupRouter />} />
         <Route
           path="/"
-          render={() => (
-            <Redirect to={`${generatePath(path, params)}/groups/all`} />
-          )}
+          element={<Redirect to={`${generatePath(path, params)}/groups/all`} />}
         />
       </Switch>
     </UnitContextProvider>
@@ -126,19 +121,19 @@ function GroupRouter() {
       <Switch>
         <Route
           path={`${path}/child-attendance`}
-          render={() => <ChildAttendanceRouter />}
+          element={<ChildAttendanceRouter />}
         />
-        <Route path={`${path}/staff`} render={() => <StaffRouter />} />
+        <Route path={`${path}/staff`} element={<StaffRouter />} />
         <Route
           path={`${path}/staff-attendance`}
-          render={() => <StaffAttendanceRouter />}
+          element={<StaffAttendanceRouter />}
         />
-        <Route path={`${path}/messages`} render={() => <MessagesRouter />} />
+        <Route path={`${path}/messages`} element={<MessagesRouter />} />
         <Route
           path="/"
-          render={() => (
+          element={
             <Redirect to={`${generatePath(path, params)}/child-attendance`} />
-          )}
+          }
         />
       </Switch>
     </MessageContextProvider>
@@ -155,52 +150,48 @@ function ChildAttendanceRouter() {
         <Route
           exact
           path={`${path}/list/:attendanceStatus`}
-          render={() => <AttendancePageWrapper />}
+          element={<AttendancePageWrapper />}
         />
         <Route
           exact
           path={`${path}/:childId`}
-          render={() => <AttendanceChildPage />}
+          element={<AttendanceChildPage />}
         />
         <Route
           exact
           path={`${path}/:childId/mark-present`}
-          render={() => <MarkPresent />}
+          element={<MarkPresent />}
         />
         <Route
           exact
           path={`${path}/:childId/mark-absent`}
-          render={() => <MarkAbsent />}
+          element={<MarkAbsent />}
         />
         <Route
           exact
           path={`${path}/:childId/mark-absent-beforehand`}
-          render={() => <MarkAbsentBeforehand />}
+          element={<MarkAbsentBeforehand />}
         />
         <Route
           exact
           path={`${path}/:childId/mark-departed`}
-          render={() => <MarkDeparted />}
+          element={<MarkDeparted />}
         />
-        <Route
-          exact
-          path={`${path}/:childId/note`}
-          render={() => <ChildNotes />}
-        />
+        <Route exact path={`${path}/:childId/note`} element={<ChildNotes />} />
         <Route
           exact
           path={`${path}/:childId/info`}
-          render={() => (
+          element={
             <RequireAuth strength="PIN">
               <ChildSensitiveInfoPage />
             </RequireAuth>
-          )}
+          }
         />
         <Route
           path="/"
-          render={() => (
+          element={
             <Redirect to={`${generatePath(path, params)}/list/coming`} />
-          )}
+          }
         />
       </Switch>
     </ChildAttendanceContextProvider>
@@ -213,11 +204,8 @@ function StaffRouter() {
 
   return (
     <Switch>
-      <Route exact path={path} render={() => <StaffPage />} />
-      <Route
-        path="/"
-        render={() => <Redirect to={generatePath(path, params)} />}
-      />
+      <Route exact path={path} element={<StaffPage />} />
+      <Route path="/" element={<Redirect to={generatePath(path, params)} />} />
     </Switch>
   )
 }
@@ -232,38 +220,36 @@ function StaffAttendanceRouter() {
         <Route
           exact
           path={`${path}/:tab(absent|present)`}
-          render={() => <StaffAttendancesPage />}
+          element={<StaffAttendancesPage />}
         />
         <Route
           exact
           path={`${path}/external`}
-          render={() => <MarkExternalStaffMemberArrivalPage />}
+          element={<MarkExternalStaffMemberArrivalPage />}
         />
         <Route
           exact
           path={`${path}/external/:attendanceId`}
-          render={() => <ExternalStaffMemberPage />}
+          element={<ExternalStaffMemberPage />}
         />
         <Route
           exact
           path={`${path}/:employeeId`}
-          render={() => <StaffMemberPage />}
+          element={<StaffMemberPage />}
         />
         <Route
           exact
           path={`${path}/:employeeId/mark-arrived`}
-          render={() => <StaffMarkArrivedPage />}
+          element={<StaffMarkArrivedPage />}
         />
         <Route
           exact
           path={`${path}/:employeeId/mark-departed`}
-          render={() => <StaffMarkDepartedPage />}
+          element={<StaffMarkDepartedPage />}
         />
         <Route
           path="/"
-          render={() => (
-            <Redirect to={`${generatePath(path, params)}/absent`} />
-          )}
+          element={<Redirect to={`${generatePath(path, params)}/absent`} />}
         />
       </Switch>
     </StaffAttendanceContextProvider>
@@ -278,27 +264,27 @@ function MessagesRouter() {
       <Route
         exact
         path={path}
-        render={() => (
+        element={
           <RequireAuth strength="PIN">
             <MessagesPage />
           </RequireAuth>
-        )}
+        }
       />
       <Route
         exact
         path={`${path}/unread-messages`}
-        render={() => <UnreadMessagesPage />}
+        element={<UnreadMessagesPage />}
       />
       <Route
         exact
         path={`${path}/:childId/new-message`}
-        render={() => (
+        element={
           <RequireAuth strength="PIN">
             <MessageEditorPage />
           </RequireAuth>
-        )}
+        }
       />
-      <Route path="/" render={() => <Redirect to={path} />} />
+      <Route path="/" element={<Redirect to={path} />} />
     </Switch>
   )
 }

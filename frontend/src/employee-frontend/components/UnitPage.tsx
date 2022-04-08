@@ -159,35 +159,35 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           <Route
             exact
             path="/units/:id/unit-info"
-            render={() => <TabUnitInformation />}
+            element={<TabUnitInformation />}
           />
           <Route
             exact
             path="/units/:id/groups"
-            render={() => (
+            element={
               <TabGroups
                 reloadUnitData={reloadUnitData}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
               />
-            )}
+            }
           />
           <Route
             exact
             path="/units/:id/attendances"
-            render={() => <TabAttendances />}
+            element={<TabAttendances />}
           />
           <Route
             exact
             path="/units/:id/application-process"
-            render={() => (
+            element={
               <TabApplicationProcess
                 isLoading={isLoading(unitData)}
                 reloadUnitData={reloadUnitData}
               />
-            )}
+            }
           />
-          <Route path="/" render={() => <RedirectToAttendances />} />
+          <Route path="/" element={<RedirectToAttendances />} />
         </Switch>
       </Container>
     </>

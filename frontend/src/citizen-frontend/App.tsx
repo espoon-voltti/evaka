@@ -97,122 +97,120 @@ const Content = React.memo(function Content() {
       <Header ariaHidden={modalOpen} />
       <Main ariaHidden={modalOpen} ref={mainRef}>
         <Switch>
-          <Route path="/login" render={() => <LoginPage />} />
-          <Route path="/map" render={() => <MapView />} />
-          <Route path="/applying" render={() => <ApplyingRouter />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/map" element={<MapView />} />
+          <Route path="/applying" element={<ApplyingRouter />} />
           <Route
             path="/accessibility"
-            render={() => (
-              <AccessibilityStatement scrollToTop={scrollMainToTop} />
-            )}
+            element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
           />
           <Route
             exact
             path="/applications/new/:childId"
-            render={() => (
+            element={
               <RequireAuth>
                 <ApplicationCreation />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/applications/:applicationId"
-            render={() => (
+            element={
               <RequireAuth>
                 <ApplicationReadView />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/personal-details"
-            render={() => (
+            element={
               <RequireAuth strength="WEAK">
                 <PersonalDetails />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/income"
-            render={() => (
+            element={
               <RequireAuth>
                 <IncomeStatements />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/income/:incomeStatementId/edit"
-            render={() => (
+            element={
               <RequireAuth>
                 <IncomeStatementEditor />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/income/:incomeStatementId"
-            render={() => (
+            element={
               <RequireAuth>
                 <IncomeStatementView />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/child-income/:childId/:incomeStatementId/edit"
-            render={() => (
+            element={
               <RequireAuth>
                 <ChildIncomeStatementEditor />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/child-income/:childId/:incomeStatementId"
-            render={() => (
+            element={
               <RequireAuth>
                 <ChildIncomeStatementView />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/applications/:applicationId/edit"
-            render={() => (
+            element={
               <RequireAuth>
                 <ApplicationEditor />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/children/:childId"
-            render={() => (
+            element={
               <RequireAuth>
                 <ChildPage />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/children"
-            render={() => (
+            element={
               <RequireAuth>
                 <ChildrenPage />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/decisions/by-application/:applicationId"
-            render={() => (
+            element={
               <RequireAuth>
                 <DecisionResponseList />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
@@ -226,31 +224,31 @@ const Content = React.memo(function Content() {
           <Route
             exact
             path="/messages"
-            render={() => (
+            element={
               <RequireAuth strength="WEAK">
                 <MessagesPage />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/calendar"
-            render={() => (
+            element={
               <RequireAuth strength="WEAK">
                 <CalendarPage />
               </RequireAuth>
-            )}
+            }
           />
           <Route
             exact
             path="/pedagogical-documents"
-            render={() => (
+            element={
               <RequireAuth>
                 <PedagogicalDocuments />
               </RequireAuth>
-            )}
+            }
           />
-          <Route path="/" render={() => <HandleRedirection />} />
+          <Route path="/" element={<HandleRedirection />} />
         </Switch>
       </Main>
     </>
