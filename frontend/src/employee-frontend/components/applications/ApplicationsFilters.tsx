@@ -37,40 +37,14 @@ import {
 
 export default React.memo(function ApplicationFilters() {
   const {
-    units,
-    setUnits,
     allUnits,
     setAllUnits,
     availableAreas,
     setAvailableAreas,
-    area,
-    setArea,
-    status,
-    setStatus,
-    type,
-    setType,
-    dateType,
-    setDateType,
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
-    searchTerms,
-    setSearchTerms,
     clearSearchFilters,
-    basis,
-    setBasis,
-    preschoolType,
-    setPreschoolType,
-    allStatuses,
-    setAllStatuses,
-    distinctions,
-    setDistinctions,
-    transferApplications,
-    setTransferApplications,
-    voucherApplications,
-    setVoucherApplications,
-    setApplicationsResult
+    setApplicationsResult,
+    applicationSearchFilters,
+    setApplicationSearchFilters
   } = useContext(ApplicationUIContext)
 
   const { i18n } = useTranslation()
@@ -81,155 +55,236 @@ export default React.memo(function ApplicationFilters() {
 
   useEffect(() => {
     const areas =
-      area.length > 0
-        ? area
+      applicationSearchFilters.area.length > 0
+        ? applicationSearchFilters.area
         : availableAreas
             .map((areas) => areas.map(({ shortName }) => shortName))
             .getOrElse([])
-    void getUnits(areas, type).then(setAllUnits)
-  }, [type, availableAreas, area]) // eslint-disable-line react-hooks/exhaustive-deps
+    void getUnits(areas, applicationSearchFilters.type).then(setAllUnits)
+  }, [applicationSearchFilters.type, availableAreas, applicationSearchFilters.area]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (units.length === 0 && distinctions.includes('SECONDARY')) {
-      setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
+    if (
+      applicationSearchFilters.units.length === 0 &&
+      applicationSearchFilters.distinctions.includes('SECONDARY')
+    ) {
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        distinctions: applicationSearchFilters.distinctions.filter(
+          (v) => v !== 'SECONDARY'
+        )
+      })
     }
-  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [applicationSearchFilters.units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())
-    basis.includes(toggledBasis)
-      ? setBasis(basis.filter((v) => v != toggledBasis))
-      : setBasis([...basis, toggledBasis])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      basis: applicationSearchFilters.basis.includes(toggledBasis)
+        ? applicationSearchFilters.basis.filter((v) => v != toggledBasis)
+        : [...applicationSearchFilters.basis, toggledBasis]
+    })
   }
 
   const toggleStatus = (newStatus: ApplicationSummaryStatusOptions) => () => {
     setApplicationsResult(Loading.of())
-    if ((newStatus === 'ALL' && status !== 'ALL') || allStatuses.length === 0) {
-      setAllStatuses([
-        'SENT',
-        'WAITING_PLACEMENT',
-        'WAITING_DECISION',
-        'WAITING_UNIT_CONFIRMATION',
-        'WAITING_MAILING',
-        'WAITING_CONFIRMATION',
-        'REJECTED',
-        'ACTIVE',
-        'CANCELLED'
-      ])
-    } else if (newStatus === 'ALL' && status === 'ALL') {
-      setAllStatuses([])
+    if (
+      (newStatus === 'ALL' && applicationSearchFilters.status !== 'ALL') ||
+      applicationSearchFilters.allStatuses.length === 0
+    ) {
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        status: newStatus,
+        allStatuses: [
+          'SENT',
+          'WAITING_PLACEMENT',
+          'WAITING_DECISION',
+          'WAITING_UNIT_CONFIRMATION',
+          'WAITING_MAILING',
+          'WAITING_CONFIRMATION',
+          'REJECTED',
+          'ACTIVE',
+          'CANCELLED'
+        ]
+      })
+    } else if (
+      newStatus === 'ALL' &&
+      applicationSearchFilters.status === 'ALL'
+    ) {
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        status: newStatus,
+        allStatuses: []
+      })
     }
-    setStatus(newStatus)
   }
 
   const toggleApplicationType = (type: ApplicationTypeToggle) => () => {
     setApplicationsResult(Loading.of())
-    setType(type)
-    if (type === 'PRESCHOOL') {
-      setPreschoolType([...preschoolTypes])
-    }
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      type,
+      preschoolType:
+        type === 'PRESCHOOL'
+          ? [...preschoolTypes]
+          : applicationSearchFilters.preschoolType
+    })
   }
+
   const toggleDate = (toggledDateType: ApplicationDateType) => () => {
     setApplicationsResult(Loading.of())
-    dateType.includes(toggledDateType)
-      ? setDateType(dateType.filter((v) => v !== toggledDateType))
-      : setDateType([...dateType, toggledDateType])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      dateType: applicationSearchFilters.dateType.includes(toggledDateType)
+        ? applicationSearchFilters.dateType.filter((v) => v !== toggledDateType)
+        : [...applicationSearchFilters.dateType, toggledDateType]
+    })
   }
 
   const toggleApplicationPreschoolType = (type: PreschoolType) => () => {
     setApplicationsResult(Loading.of())
-    preschoolType.includes(type)
-      ? setPreschoolType(preschoolType.filter((v) => v !== type))
-      : setPreschoolType([...preschoolType, type])
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      preschoolType: applicationSearchFilters.preschoolType.includes(type)
+        ? applicationSearchFilters.preschoolType.filter((v) => v !== type)
+        : [...applicationSearchFilters.preschoolType, type]
+    })
   }
 
   const toggleAllStatuses =
     (status: ApplicationSummaryStatusAllOptions) => () => {
       setApplicationsResult(Loading.of())
-      allStatuses.includes(status)
-        ? setAllStatuses(allStatuses.filter((v) => v !== status))
-        : setAllStatuses([...allStatuses, status])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        allStatuses: applicationSearchFilters.allStatuses.includes(status)
+          ? applicationSearchFilters.allStatuses.filter((v) => v !== status)
+          : [...applicationSearchFilters.allStatuses, status]
+      })
     }
 
   const changeUnits = (selectedUnits: string[]) => {
     setApplicationsResult(Loading.of())
-    setUnits(selectedUnits.map((selectedUnit) => selectedUnit))
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      units: selectedUnits.map((selectedUnit) => selectedUnit)
+    })
   }
 
   const toggleApplicationDistinctions =
     (distinction: ApplicationDistinctions) => () => {
       setApplicationsResult(Loading.of())
-      distinctions.includes(distinction)
-        ? setDistinctions(distinctions.filter((v) => v !== distinction))
-        : setDistinctions([...distinctions, distinction])
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        distinctions: applicationSearchFilters.distinctions.includes(
+          distinction
+        )
+          ? applicationSearchFilters.distinctions.filter(
+              (v) => v !== distinction
+            )
+          : [...applicationSearchFilters.distinctions, distinction]
+      })
     }
 
   return (
     <Filters
       searchPlaceholder={i18n.applications.searchPlaceholder}
-      freeText={searchTerms}
-      setFreeText={setSearchTerms}
+      freeText={applicationSearchFilters.searchTerms}
+      setFreeText={(searchTerms) =>
+        setApplicationSearchFilters({
+          ...applicationSearchFilters,
+          searchTerms
+        })
+      }
       clearFilters={clearSearchFilters}
-      clearMargin={status === 'ALL' ? 0 : -40}
+      clearMargin={applicationSearchFilters.status === 'ALL' ? 0 : -40}
       column1={
         <>
           <AreaMultiSelect
             areas={availableAreas.getOrElse([])}
-            selected={area}
-            onSelect={setArea}
+            selected={applicationSearchFilters.area}
+            onSelect={(area) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                area: area
+              })
+            }
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
             units={allUnits.getOrElse([])}
-            selectedUnits={units}
+            selectedUnits={applicationSearchFilters.units}
             onChange={changeUnits}
             data-qa="unit-selector"
           />
           <Gap size="m" />
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
-            toggled={distinctions}
-            disableSecondary={units.length === 0}
+            toggled={applicationSearchFilters.distinctions}
+            disableSecondary={applicationSearchFilters.units.length === 0}
           />
           <Gap size="L" />
           <ApplicationTypeFilter
-            toggled={type}
-            toggledPreschool={preschoolType}
+            toggled={applicationSearchFilters.type}
+            toggledPreschool={applicationSearchFilters.preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
           <Gap size="L" />
-          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
+          <ApplicationBasisFilter
+            toggled={applicationSearchFilters.basis}
+            toggle={toggleBasis}
+          />
         </>
       }
       column2={
         <Fragment>
           <TransferApplicationsFilter
-            selected={transferApplications}
-            setSelected={setTransferApplications}
+            selected={applicationSearchFilters.transferApplications}
+            setSelected={(transferApplications) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                transferApplications
+              })
+            }
           />
           <Gap size="XL" />
           <VoucherApplicationsFilter
-            selected={voucherApplications}
-            setSelected={setVoucherApplications}
+            selected={applicationSearchFilters.voucherApplications}
+            setSelected={(voucherApplications) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                voucherApplications
+              })
+            }
           />
         </Fragment>
       }
       column3={
         <Fragment>
           <ApplicationStatusFilter
-            toggled={status}
-            toggledAllStatuses={allStatuses}
+            toggled={applicationSearchFilters.status}
+            toggledAllStatuses={applicationSearchFilters.allStatuses}
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}
           />
           <Gap size="XL" />
           <ApplicationDateFilter
-            startDate={startDate}
-            setStartDate={setStartDate}
-            endDate={endDate}
-            setEndDate={setEndDate}
-            toggled={dateType}
+            startDate={applicationSearchFilters.startDate}
+            setStartDate={(startDate) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                startDate
+              })
+            }
+            endDate={applicationSearchFilters.endDate}
+            setEndDate={(endDate) =>
+              setApplicationSearchFilters({
+                ...applicationSearchFilters,
+                endDate
+              })
+            }
+            toggled={applicationSearchFilters.dateType}
             toggle={toggleDate}
           />
         </Fragment>

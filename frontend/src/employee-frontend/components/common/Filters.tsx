@@ -1186,7 +1186,7 @@ export function TransferApplicationsFilter({
   setSelected
 }: {
   selected: TransferApplicationFilter
-  setSelected: React.Dispatch<React.SetStateAction<TransferApplicationFilter>>
+  setSelected: (v: TransferApplicationFilter) => void
 }) {
   const { i18n } = useTranslation()
   return (

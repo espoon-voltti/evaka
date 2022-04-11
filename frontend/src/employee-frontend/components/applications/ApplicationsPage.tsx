@@ -41,20 +41,7 @@ export default React.memo(function ApplicationsPage() {
   const {
     applicationsResult,
     setApplicationsResult,
-    area,
-    units,
-    basis,
-    type,
-    preschoolType,
-    status,
-    allStatuses,
-    dateType,
-    distinctions,
-    transferApplications,
-    voucherApplications,
-    startDate,
-    endDate,
-    debouncedSearchTerms,
+    debouncedApplicationSearchFilters,
     setCheckedIds
   } = useContext(ApplicationUIContext)
 
@@ -74,34 +61,53 @@ export default React.memo(function ApplicationsPage() {
 
   const loadApplications = useCallback(() => {
     const params: ApplicationSearchParams = {
-      area: area.includes('All')
+      area: debouncedApplicationSearchFilters.area.includes('All')
         ? undefined
-        : area.length > 0
-        ? area.join(',')
+        : debouncedApplicationSearchFilters.area.length > 0
+        ? debouncedApplicationSearchFilters.area.join(',')
         : undefined,
-      units: units.length > 0 ? units.join(',') : undefined,
-      basis: basis.length > 0 ? basis.join(',') : undefined,
-      type: type,
+      units:
+        debouncedApplicationSearchFilters.units.length > 0
+          ? debouncedApplicationSearchFilters.units.join(',')
+          : undefined,
+      basis:
+        debouncedApplicationSearchFilters.basis.length > 0
+          ? debouncedApplicationSearchFilters.basis.join(',')
+          : undefined,
+      type: debouncedApplicationSearchFilters.type,
       preschoolType:
-        type === 'PRESCHOOL' && preschoolType.length > 0
-          ? preschoolType.join(',')
+        debouncedApplicationSearchFilters.type === 'PRESCHOOL' &&
+        debouncedApplicationSearchFilters.preschoolType.length > 0
+          ? debouncedApplicationSearchFilters.preschoolType.join(',')
           : undefined,
       status:
-        status === 'ALL'
-          ? allStatuses.length > 0
-            ? allStatuses.join(',')
+        debouncedApplicationSearchFilters.status === 'ALL'
+          ? debouncedApplicationSearchFilters.allStatuses.length > 0
+            ? debouncedApplicationSearchFilters.allStatuses.join(',')
             : undefined
-          : status,
-      dateType: dateType.length > 0 ? dateType.join(',') : undefined,
+          : debouncedApplicationSearchFilters.status,
+      dateType:
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.dateType.join(',')
+          : undefined,
       distinctions:
-        distinctions.length > 0 ? distinctions.join(',') : undefined,
+        debouncedApplicationSearchFilters.distinctions.length > 0
+          ? debouncedApplicationSearchFilters.distinctions.join(',')
+          : undefined,
       periodStart:
-        startDate && dateType.length > 0 ? startDate.formatIso() : undefined,
+        debouncedApplicationSearchFilters.startDate &&
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.startDate.formatIso()
+          : undefined,
       periodEnd:
-        endDate && dateType.length > 0 ? endDate.formatIso() : undefined,
-      searchTerms: debouncedSearchTerms,
-      transferApplications,
-      voucherApplications
+        debouncedApplicationSearchFilters.endDate &&
+        debouncedApplicationSearchFilters.dateType.length > 0
+          ? debouncedApplicationSearchFilters.endDate.formatIso()
+          : undefined,
+      searchTerms: debouncedApplicationSearchFilters.searchTerms,
+      transferApplications:
+        debouncedApplicationSearchFilters.transferApplications,
+      voucherApplications: debouncedApplicationSearchFilters.voucherApplications
     }
 
     reloadApplications(page, pageSize, sortBy, sortDirection, params)
@@ -109,20 +115,7 @@ export default React.memo(function ApplicationsPage() {
     page,
     sortBy,
     sortDirection,
-    area,
-    units,
-    basis,
-    type,
-    preschoolType,
-    status,
-    allStatuses,
-    dateType,
-    distinctions,
-    transferApplications,
-    voucherApplications,
-    startDate,
-    endDate,
-    debouncedSearchTerms,
+    debouncedApplicationSearchFilters,
     reloadApplications
   ])
 
@@ -134,7 +127,7 @@ export default React.memo(function ApplicationsPage() {
   useEffect(() => {
     setPage(1)
     setCheckedIds([])
-  }, [setPage, area, units, basis, type, preschoolType, status, allStatuses, dateType, distinctions, startDate, endDate, debouncedSearchTerms, setCheckedIds])
+  }, [setPage, debouncedApplicationSearchFilters, setCheckedIds])
 
   return (
     <Container data-qa="applications-page">
@@ -147,9 +140,11 @@ export default React.memo(function ApplicationsPage() {
         {applicationsResult.isFailure && (
           <PaddedDiv>
             <H1>
-              {status === 'ALL'
+              {debouncedApplicationSearchFilters.status === 'ALL'
                 ? i18n.applications.list.title
-                : i18n.application.statuses[status]}
+                : i18n.application.statuses[
+                    debouncedApplicationSearchFilters.status
+                  ]}
             </H1>
             <ErrorSegment />
           </PaddedDiv>
@@ -158,9 +153,11 @@ export default React.memo(function ApplicationsPage() {
         {applicationsResult.isLoading && (
           <PaddedDiv>
             <H1>
-              {status === 'ALL'
+              {debouncedApplicationSearchFilters.status === 'ALL'
                 ? i18n.applications.list.title
-                : i18n.application.statuses[status]}
+                : i18n.application.statuses[
+                    debouncedApplicationSearchFilters.status
+                  ]}
             </H1>
             <SpinnerSegment data-qa="applications-spinner" />
           </PaddedDiv>

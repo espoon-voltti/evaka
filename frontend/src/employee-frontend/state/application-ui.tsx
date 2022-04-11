@@ -30,51 +30,39 @@ import {
   TransferApplicationFilter
 } from '../components/common/Filters'
 
-// Nothing in here yet. Filters will be added here in next PR.
-
-// Some checkbox handling can be copied from git history
-// when needed if it still belongs in context.
-
 interface UIState {
   applicationsResult: Result<Paged<ApplicationSummary>>
   setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
-  area: string[]
-  setArea: (areas: string[]) => void
   availableAreas: Result<DaycareCareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<DaycareCareArea[]>>>
-  units: string[]
-  setUnits: (units: string[]) => void
-  type: ApplicationTypeToggle
-  setType: (type: ApplicationTypeToggle) => void
-  status: ApplicationSummaryStatusOptions
-  setStatus: (status: ApplicationSummaryStatusOptions) => void
-  dateType: ApplicationDateType[]
-  setDateType: (dateTypes: ApplicationDateType[]) => void
-  startDate: LocalDate | undefined
-  setStartDate: (date: LocalDate | undefined) => void
-  endDate: LocalDate | undefined
-  setEndDate: (date: LocalDate | undefined) => void
   allUnits: Result<Unit[]>
   setAllUnits: Dispatch<SetStateAction<Result<Unit[]>>>
-  searchTerms: string
-  setSearchTerms: (searchTerms: string) => void
-  debouncedSearchTerms: string
+  applicationSearchFilters: ApplicationSearchFilters
+  setApplicationSearchFilters: (
+    applicationFilters: ApplicationSearchFilters
+  ) => void
+  debouncedApplicationSearchFilters: ApplicationSearchFilters
   clearSearchFilters: () => void
-  basis: ApplicationBasis[]
-  setBasis: (basis: ApplicationBasis[]) => void
   checkedIds: string[]
   setCheckedIds: (applicationIds: UUID[]) => void
   showCheckboxes: boolean
-  preschoolType: PreschoolType[]
-  setPreschoolType: (type: PreschoolType[]) => void
-  allStatuses: ApplicationSummaryStatusAllOptions[]
-  setAllStatuses: (statuses: ApplicationSummaryStatusAllOptions[]) => void
-  distinctions: ApplicationDistinctions[]
-  setDistinctions: (distinctions: ApplicationDistinctions[]) => void
+}
+
+interface ApplicationSearchFilters {
+  area: string[]
+  units: string[]
+  basis: ApplicationBasis[]
+  status: ApplicationSummaryStatusOptions
+  type: ApplicationTypeToggle
+  startDate: LocalDate | undefined
+  endDate: LocalDate | undefined
+  dateType: ApplicationDateType[]
+  searchTerms: string
   transferApplications: TransferApplicationFilter
-  setTransferApplications: Dispatch<SetStateAction<TransferApplicationFilter>>
   voucherApplications: VoucherApplicationFilter
-  setVoucherApplications: Dispatch<SetStateAction<VoucherApplicationFilter>>
+  preschoolType: PreschoolType[]
+  allStatuses: ApplicationSummaryStatusAllOptions[]
+  distinctions: ApplicationDistinctions[]
 }
 
 export type VoucherApplicationFilter =
@@ -83,46 +71,37 @@ export type VoucherApplicationFilter =
   | 'NO_VOUCHER'
   | undefined
 
+const clearApplicationSearchFilters: ApplicationSearchFilters = {
+  area: [],
+  units: [],
+  basis: [],
+  status: 'SENT',
+  type: 'ALL',
+  startDate: undefined,
+  endDate: undefined,
+  dateType: [],
+  searchTerms: '',
+  transferApplications: 'ALL',
+  voucherApplications: undefined,
+  preschoolType: [],
+  allStatuses: [],
+  distinctions: []
+}
+
 const defaultState: UIState = {
   applicationsResult: Loading.of(),
   setApplicationsResult: () => undefined,
-  area: [],
-  setArea: () => undefined,
   availableAreas: Loading.of(),
   setAvailableAreas: () => undefined,
-  units: [],
-  setUnits: () => undefined,
-  type: 'ALL',
-  setType: () => undefined,
-  status: 'SENT' as const,
-  setStatus: () => undefined,
-  dateType: [],
-  setDateType: () => undefined,
-  startDate: undefined,
-  setStartDate: () => undefined,
-  endDate: undefined,
-  setEndDate: () => undefined,
   allUnits: Loading.of(),
   setAllUnits: () => undefined,
-  searchTerms: '',
-  setSearchTerms: () => undefined,
-  debouncedSearchTerms: '',
+  applicationSearchFilters: clearApplicationSearchFilters,
+  setApplicationSearchFilters: () => undefined,
+  debouncedApplicationSearchFilters: clearApplicationSearchFilters,
   clearSearchFilters: () => undefined,
-  basis: [],
-  setBasis: () => undefined,
   checkedIds: [],
   setCheckedIds: () => undefined,
-  showCheckboxes: false,
-  preschoolType: [],
-  setPreschoolType: () => undefined,
-  allStatuses: [],
-  setAllStatuses: () => undefined,
-  distinctions: [],
-  setDistinctions: () => undefined,
-  transferApplications: 'ALL',
-  setTransferApplications: () => undefined,
-  voucherApplications: undefined,
-  setVoucherApplications: () => undefined
+  showCheckboxes: false
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -136,144 +115,63 @@ export const ApplicationUIContextProvider = React.memo(
     const [applicationsResult, setApplicationsResult] = useState<
       Result<Paged<ApplicationSummary>>
     >(Loading.of())
-    const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<
       Result<DaycareCareArea[]>
     >(defaultState.availableAreas)
-    const [status, setStatus] = useState<ApplicationSummaryStatusOptions>(
-      defaultState.status
-    )
-    const [dateType, setDateType] = useState<ApplicationDateType[]>(
-      defaultState.dateType
-    )
-    const [units, setUnits] = useState<string[]>(defaultState.units)
-    const [type, setType] = useState<ApplicationTypeToggle>(defaultState.type)
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
       defaultState.allUnits
     )
-    const [startDate, setStartDate] = useState(defaultState.startDate)
-    const [endDate, setEndDate] = useState(defaultState.endDate)
-    const [searchTerms, setSearchTerms] = useState<string>(
-      defaultState.searchTerms
-    )
-    const [distinctions, setDistinctions] = useState<ApplicationDistinctions[]>(
-      defaultState.distinctions
-    )
-    const [transferApplications, setTransferApplications] =
-      useState<TransferApplicationFilter>(defaultState.transferApplications)
-    const [voucherApplications, setVoucherApplications] =
-      useState<VoucherApplicationFilter>(defaultState.voucherApplications)
-    const debouncedSearchTerms = useDebounce(searchTerms, 500)
-
+    const [applicationSearchFilters, setApplicationSearchFilters] =
+      useState<ApplicationSearchFilters>(defaultState.applicationSearchFilters)
     const clearSearchFilters = useCallback(() => {
-      setArea(defaultState.area)
-      setUnits(defaultState.units)
-      setBasis(defaultState.basis)
-      setType(defaultState.type)
-      setStatus(defaultState.status)
-      setStartDate(defaultState.startDate)
-      setEndDate(defaultState.endDate)
-      setDateType(defaultState.dateType)
+      setApplicationSearchFilters(defaultState.applicationSearchFilters)
     }, [])
-    const [basis, setBasis] = useState<ApplicationBasis[]>(defaultState.basis)
+
+    const debouncedApplicationSearchFilters = useDebounce(
+      applicationSearchFilters,
+      500
+    )
+
     const [checkedIds, setCheckedIds] = useState<string[]>(
       defaultState.checkedIds
     )
-    const [preschoolType, setPreschoolType] = useState<PreschoolType[]>(
-      defaultState.preschoolType
-    )
-    const [allStatuses, setAllStatuses] = useState<
-      ApplicationSummaryStatusAllOptions[]
-    >(defaultState.allStatuses)
     const showCheckboxes = [
       'SENT',
       'WAITING_PLACEMENT',
       'WAITING_DECISION',
       'WAITING_UNIT_CONFIRMATION'
-    ].includes(status)
+    ].includes(applicationSearchFilters.status)
 
     const value = useMemo(
       () => ({
         applicationsResult,
         setApplicationsResult,
-        area,
-        setArea,
         availableAreas,
         setAvailableAreas,
-        status,
-        setStatus,
-        dateType,
-        setDateType,
-        startDate,
-        setStartDate,
-        endDate,
-        setEndDate,
-        units,
-        setUnits,
-        type,
-        setType,
         allUnits,
         setAllUnits,
-        searchTerms,
-        setSearchTerms,
-        debouncedSearchTerms,
+        applicationSearchFilters,
+        setApplicationSearchFilters,
+        debouncedApplicationSearchFilters,
         clearSearchFilters,
-        basis,
-        setBasis,
         checkedIds,
         setCheckedIds,
-        showCheckboxes,
-        preschoolType,
-        setPreschoolType,
-        allStatuses,
-        setAllStatuses,
-        distinctions,
-        setDistinctions,
-        transferApplications,
-        setTransferApplications,
-        voucherApplications,
-        setVoucherApplications
+        showCheckboxes
       }),
       [
         applicationsResult,
         setApplicationsResult,
-        area,
-        setArea,
         availableAreas,
         setAvailableAreas,
-        status,
-        setStatus,
-        dateType,
-        setDateType,
-        startDate,
-        setStartDate,
-        endDate,
-        setEndDate,
-        units,
-        setUnits,
-        type,
-        setType,
         allUnits,
         setAllUnits,
-        searchTerms,
-        setSearchTerms,
-        debouncedSearchTerms,
+        applicationSearchFilters,
+        setApplicationSearchFilters,
+        debouncedApplicationSearchFilters,
         clearSearchFilters,
-        basis,
-        setBasis,
         checkedIds,
         setCheckedIds,
-        showCheckboxes,
-        preschoolType,
-        setPreschoolType,
-        allStatuses,
-        setAllStatuses,
-        distinctions,
-        setDistinctions,
-        transferApplications,
-        setTransferApplications,
-        voucherApplications,
-        setVoucherApplications
+        showCheckboxes
       ]
     )
 
