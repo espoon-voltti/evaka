@@ -11,14 +11,16 @@ import {
   ApplicationAttachment,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { H4, Label, Dimmed } from 'lib-components/typography'
+import { Dimmed, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import {
   faChild,
+  faExternalLink,
   faFileAlt,
   faInfo,
   faMapMarkerAlt,
@@ -325,6 +327,12 @@ export default React.memo(function ApplicationReadView({
               <Link to={`/units/${unit.id}`}>{`${i + 1}. ${unit.name}`}</Link>
             </React.Fragment>
           ))}
+          <Label />
+          <InlineButton
+            icon={faExternalLink}
+            text={i18n.application.preferences.unitsOnMap}
+            onClick={() => window.open('/map', '_blank')}
+          />
         </ListGrid>
         <Gap size="s" />
         <ListGrid>

@@ -415,6 +415,7 @@ export const fi = {
       preferredUnits: 'Hakutoiveet',
       missingPreferredUnits: 'Valitse vähintään yksi hakutoive',
       unitMismatch: 'Hakutoiveet eivät vastaa haettavia yksiköitä',
+      unitsOnMap: 'Yksiköt kartalla',
       siblingBasisLabel: 'Sisarusperuste',
       siblingBasisValue: 'Haen paikkaa sisarusperusteella',
       siblingName: 'Sisaruksen nimi',
