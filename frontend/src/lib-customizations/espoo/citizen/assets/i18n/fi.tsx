@@ -103,7 +103,6 @@ export default {
       income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri',
-      applying: 'Hakeminen',
       pedagogicalDocuments: 'Kasvu ja oppiminen',
       children: 'Lapset'
     },

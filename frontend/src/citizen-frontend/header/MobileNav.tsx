@@ -267,7 +267,7 @@ const Navigation = React.memo(function Navigation({
         {t.header.nav.children} {maybeLockElem}
       </StyledNavLink>
       <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
-        {t.header.nav.applying} {maybeLockElem}
+        {t.header.nav.applications} {maybeLockElem}
       </StyledNavLink>
     </Nav>
   )

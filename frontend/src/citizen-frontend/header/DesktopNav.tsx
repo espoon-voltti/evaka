@@ -90,7 +90,7 @@ export default React.memo(function DesktopNav({
                     {t.header.nav.children} {maybeLockElem}
                   </StyledNavLink>
                   <StyledNavLink to="/applying" data-qa="nav-applying">
-                    {t.header.nav.applying} {maybeLockElem}
+                    {t.header.nav.applications} {maybeLockElem}
                   </StyledNavLink>
                 </>
               ) : null}

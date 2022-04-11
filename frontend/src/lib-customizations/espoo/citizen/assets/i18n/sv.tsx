@@ -104,7 +104,6 @@ const sv: Translations = {
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
-      applying: 'Ansökningar',
       pedagogicalDocuments: 'Tillväxt och inlärning',
       children: 'Barn'
     },
