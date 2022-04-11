@@ -69,7 +69,7 @@ export default React.memo(function ThreadListItem({
                 onFileUnavailable={onAttachmentUnavailable}
                 icon
                 data-qa="thread-list-attachment"
-                openInBrowser={true}
+                openInBrowser
               />
             ))}
           </FixedSpaceColumn>
