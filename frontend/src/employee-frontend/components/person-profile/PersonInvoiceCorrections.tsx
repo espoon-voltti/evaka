@@ -33,7 +33,6 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import { faChild } from 'lib-icons'
 
 import {
@@ -151,10 +150,6 @@ export default React.memo(function PersonInvoiceCorrections({
     setNoteModalState(undefined)
     if (noteModalState && noteModalState.id !== 'new') reloadCorrections()
   }, [noteModalState, reloadCorrections])
-
-  if (!featureFlags.experimental?.invoiceCorrections) {
-    return null
-  }
 
   return (
     <CollapsibleSection
