@@ -77,10 +77,24 @@ class ScheduledJobs(
             it.createUpdate(
                 // language=SQL
                 """
-UPDATE child_attendance ca
-SET end_time = '23:59'::time
-FROM daycare u
-WHERE ca.unit_id = u.id AND NOT u.round_the_clock AND ca.end_time IS NULL
+WITH attendances_to_end AS (
+    SELECT ca.id
+    FROM child_attendance ca
+    JOIN daycare u ON u.id = ca.unit_id
+    WHERE ca.end_time IS NULL AND (
+        NOT u.round_the_clock OR
+        -- No placement to this unit anymore, as of today
+        NOT EXISTS (
+            SELECT 1 FROM placement p
+            WHERE
+                p.child_id = ca.child_id AND
+                p.unit_id = ca.unit_id AND
+                current_date BETWEEN p.start_date AND p.end_date
+        )
+    )
+)
+UPDATE child_attendance SET end_time = '23:59'::time
+WHERE id IN (SELECT id FROM attendances_to_end)
                 """.trimIndent()
             ).execute()
         }
