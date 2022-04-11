@@ -95,6 +95,7 @@ export default React.memo(function ApplicationFilters() {
     ) {
       setApplicationSearchFilters({
         ...applicationSearchFilters,
+        status: newStatus,
         allStatuses: [
           'SENT',
           'WAITING_PLACEMENT',
@@ -113,13 +114,10 @@ export default React.memo(function ApplicationFilters() {
     ) {
       setApplicationSearchFilters({
         ...applicationSearchFilters,
+        status: newStatus,
         allStatuses: []
       })
     }
-    setApplicationSearchFilters({
-      ...applicationSearchFilters,
-      status: newStatus
-    })
   }
 
   const toggleApplicationType = (type: ApplicationTypeToggle) => () => {
