@@ -2178,7 +2178,7 @@ export const fi = {
       CITIZEN: 'Huoltaja',
       EMPLOYEE: 'Henkilökunta',
       SYSTEM: '?',
-      MOBILE_DEVICE: '?',
+      MOBILE_DEVICE: 'Henkilökunta',
       UNKNOWN: '?'
     },
     modal: {
