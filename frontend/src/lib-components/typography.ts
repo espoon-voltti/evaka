@@ -38,7 +38,7 @@ export const H1 = styled.h1<HeadingProps>`
     p.primary || p.primary === undefined
       ? p.theme.colors.main.m1
       : p.theme.colors.grayscale.g100};
-  font-size: ${(p) => (p.smaller ? fontSizesMobile.h1 : '36px')};
+  font-size: ${(p) => (p.smaller ? fontSizesMobile.h1 : '32px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => p.theme.typography.h1.weight};
   ${(p) =>
