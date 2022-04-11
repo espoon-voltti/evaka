@@ -104,7 +104,6 @@ const en: Translations = {
       income: 'Income',
       messages: 'Messages',
       calendar: 'Calendar',
-      applying: 'Applications',
       pedagogicalDocuments: 'Growth and learning',
       children: 'Children'
     },

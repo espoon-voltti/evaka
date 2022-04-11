@@ -25,7 +25,7 @@ describe('Citizen page', () => {
     await header.waitUntilLoggedIn()
 
     await header.selectLanguage('fi')
-    await header.assertApplyingTabHasText('Hakeminen')
+    await header.assertApplyingTabHasText('Hakemukset')
     await header.assertDOMLangAttrib('fi')
 
     await header.selectLanguage('sv')
