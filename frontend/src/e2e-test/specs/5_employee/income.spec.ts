@@ -187,4 +187,18 @@ describe('Income', () => {
       'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.'
     )
   })
+
+  it('Attachments can be added.', async () => {
+    await incomesSection.openNewIncomeForm()
+
+    await incomesSection.addAttachment()
+    await incomesSection.save()
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+
+    await incomesSection.edit()
+
+    await incomesSection.addAttachment()
+    await incomesSection.save()
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
+  })
 })

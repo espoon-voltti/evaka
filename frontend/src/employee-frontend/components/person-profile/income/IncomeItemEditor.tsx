@@ -363,6 +363,7 @@ function IncomeAttachments({
       <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
       <P>{i18n.incomeStatement.employeeAttachments.description}</P>
       <FileUpload
+        data-qa="income-attachment-upload"
         files={attachments}
         onUpload={handleUpload}
         onDelete={handleDelete}
