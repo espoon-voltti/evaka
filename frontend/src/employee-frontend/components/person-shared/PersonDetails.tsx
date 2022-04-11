@@ -15,6 +15,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -137,6 +138,8 @@ export default React.memo(function PersonDetails({
     [setShowSsnAddingDisabledInfo]
   )
 
+  const [vtjUpdateOngoing, setVtjUpdateOngoing] = useState<boolean>(false)
+
   useEffect(() => {
     if (editing) {
       setForm({
@@ -183,7 +186,9 @@ export default React.memo(function PersonDetails({
   }
 
   const onVtjUpdate = () => {
+    setVtjUpdateOngoing(true)
     void updatePersonAndFamilyFromVtj(person.id).then((res) => {
+      setVtjUpdateOngoing(false)
       if (res.isSuccess) {
         if (onUpdateComplete) onUpdateComplete(res.value)
         clearUiMode()
@@ -201,12 +206,16 @@ export default React.memo(function PersonDetails({
           {permittedActions.has('UPDATE_FROM_VTJ') &&
           uiMode != 'person-details-editing' ? (
             <ButtonSpacer>
-              <InlineButton
-                icon={faSync}
-                onClick={onVtjUpdate}
-                data-qa="update-from-vtj-button"
-                text={i18n.personProfile.updateFromVtj}
-              />
+              {vtjUpdateOngoing ? (
+                <SpinnerSegment size="xxs" />
+              ) : (
+                <InlineButton
+                  icon={faSync}
+                  onClick={onVtjUpdate}
+                  data-qa="update-from-vtj-button"
+                  text={i18n.personProfile.updateFromVtj}
+                />
+              )}
             </ButtonSpacer>
           ) : null}
           {permittedActions.has('UPDATE') ? (
