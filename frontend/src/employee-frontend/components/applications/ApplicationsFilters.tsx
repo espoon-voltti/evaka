@@ -117,6 +117,11 @@ export default React.memo(function ApplicationFilters() {
         status: newStatus,
         allStatuses: []
       })
+    } else {
+      setApplicationSearchFilters({
+        ...applicationSearchFilters,
+        status: newStatus
+      })
     }
   }
 
