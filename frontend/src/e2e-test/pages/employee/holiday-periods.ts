@@ -82,7 +82,6 @@ export class HolidayPeriodsPage {
   }
 
   async fillQuestionnaireForm(params: {
-    period?: string
     title?: string
     description?: string
     descriptionSv?: string

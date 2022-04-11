@@ -16,7 +16,6 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `fixed period questionnaires can be saved`() {
-        val holidayPeriod = createHolidayPeriod(summerPeriod)
         val options = listOf(
             FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),
             FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14)),
@@ -24,7 +23,6 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest() {
         val active = FiniteDateRange(summerRange.start.minusMonths(2), summerRange.start.minusMonths(1))
         val summerQuestionnaire = createFixedPeriodQuestionnaire(
             FixedPeriodQuestionnaireBody(
-                holidayPeriodId = holidayPeriod.id,
                 description = Translatable("Varaathan \n 'quote' \"double\" loma-aikasi", "", ""),
                 active = active,
                 descriptionLink = emptyTranslatable,
@@ -39,7 +37,6 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest() {
             )
         )
 
-        assertEquals(holidayPeriod.period, summerQuestionnaire.period)
         assertEquals("8 vko maksuton", summerQuestionnaire.title.fi)
         assertEquals(active, summerQuestionnaire.active)
         assertEquals(options, summerQuestionnaire.periodOptions)

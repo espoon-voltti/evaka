@@ -15,11 +15,9 @@ import {
 } from 'lib-common/form-validation'
 import {
   FixedPeriodQuestionnaire,
-  FixedPeriodQuestionnaireBody,
-  HolidayPeriod
+  FixedPeriodQuestionnaireBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -42,7 +40,6 @@ import {
 } from './api'
 
 interface FormState {
-  holidayPeriodId: string
   requiresStrongAuth: boolean
   absenceType: 'FREE_ABSENCE'
   titleFi: string
@@ -133,8 +130,7 @@ const formToQuestionnaireBody = (
   }
 }
 
-const emptyFormState = (holidayPeriodId: UUID): FormState => ({
-  holidayPeriodId,
+const emptyFormState: FormState = {
   absenceType: 'FREE_ABSENCE',
   requiresStrongAuth: false,
   titleFi: '',
@@ -154,12 +150,11 @@ const emptyFormState = (holidayPeriodId: UUID): FormState => ({
   periodOptionLabelEn: '',
   conditionContinuousPlacementStart: '',
   conditionContinuousPlacementEnd: ''
-})
+}
 
 const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
   p
     ? {
-        holidayPeriodId: p.holidayPeriodId,
         absenceType: 'FREE_ABSENCE',
         requiresStrongAuth: p.requiresStrongAuth,
         titleFi: p.title.fi,
@@ -182,19 +177,17 @@ const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
         conditionContinuousPlacementEnd:
           p.conditions.continuousPlacement?.end.format() ?? ''
       }
-    : emptyFormState('')
+    : emptyFormState
 
 interface Props {
   onSuccess: () => void
   onCancel: () => void
-  holidayPeriods: HolidayPeriod[]
   questionnaire?: FixedPeriodQuestionnaire
 }
 
 export default React.memo(function FixedPeriodQuestionnaireForm({
   onCancel,
   onSuccess,
-  holidayPeriods,
   questionnaire
 }: Props) {
   const { i18n, lang } = useTranslation()
@@ -223,7 +216,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     )
 
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
-      holidayPeriodId: validate(form.holidayPeriodId, required),
       absenceType: undefined,
       requiresStrongAuth: undefined,
       titleFi: validate(form.titleFi, required),
@@ -311,19 +303,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
         {i18n.holidayQuestionnaires.types.FIXED_PERIOD}
       </H1>
       <ListGrid>
-        <Label inputRow>{i18n.holidayQuestionnaires.holidayPeriod} *</Label>
-        <FixedSpaceRow>
-          {holidayPeriods.map((h) => (
-            <Radio
-              key={h.id}
-              data-qa={`period-${h.period.format()}`}
-              label={h.period.formatCompact()}
-              checked={form.holidayPeriodId === h.id}
-              onChange={() => update({ holidayPeriodId: h.id })}
-            />
-          ))}
-        </FixedSpaceRow>
-
         <Label inputRow>{i18n.holidayQuestionnaires.absenceType} *</Label>
         <FixedSpaceRow>
           <SelectionChip

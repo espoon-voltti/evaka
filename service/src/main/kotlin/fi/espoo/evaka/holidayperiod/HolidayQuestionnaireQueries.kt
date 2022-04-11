@@ -25,11 +25,8 @@ SELECT q.id,
        q.description_link,
        q.period_options,
        q.period_option_label,
-       q.condition_continuous_placement,
-       hp.id AS holiday_period_id,
-       hp.period
+       q.condition_continuous_placement
 FROM holiday_period_questionnaire q
-JOIN holiday_period hp ON q.holiday_period_id = hp.id
 """.trimIndent()
 
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
@@ -74,7 +71,6 @@ fun Database.Transaction.createFixedPeriodQuestionnaire(data: FixedPeriodQuestio
     this.createQuery(
         """
 INSERT INTO holiday_period_questionnaire (
-    holiday_period_id,
     type,
     absence_type,
     requires_strong_auth,
@@ -87,7 +83,6 @@ INSERT INTO holiday_period_questionnaire (
     condition_continuous_placement
 )
 VALUES (
-    :holidayPeriodId,
     :type,
     :absenceType,
     :requiresStrongAuth,
@@ -115,7 +110,6 @@ fun Database.Transaction.updateFixedPeriodQuestionnaire(
         """
 UPDATE holiday_period_questionnaire
 SET
-    holiday_period_id = :holidayPeriodId,
     type = :type,
     absence_type = :absenceType,
     requires_strong_auth = :requiresStrongAuth,

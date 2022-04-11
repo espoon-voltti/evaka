@@ -29,9 +29,7 @@ export interface FixedPeriodQuestionnaire {
   conditions: QuestionnaireConditions
   description: Translatable
   descriptionLink: Translatable
-  holidayPeriodId: UUID
   id: UUID
-  period: FiniteDateRange
   periodOptionLabel: Translatable
   periodOptions: FiniteDateRange[]
   requiresStrongAuth: boolean
@@ -48,7 +46,6 @@ export interface FixedPeriodQuestionnaireBody {
   conditions: QuestionnaireConditions
   description: Translatable
   descriptionLink: Translatable
-  holidayPeriodId: UUID
   periodOptionLabel: Translatable
   periodOptions: FiniteDateRange[]
   requiresStrongAuth: boolean

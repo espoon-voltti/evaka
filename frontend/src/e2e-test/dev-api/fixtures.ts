@@ -1365,13 +1365,11 @@ export class Fixture {
   static holidayQuestionnaire(): HolidayQuestionnaireBuilder {
     return new HolidayQuestionnaireBuilder({
       id: uuidv4(),
-      holidayPeriodId: '',
       type: 'FIXED_PERIOD',
       absenceType: 'OTHER_ABSENCE',
       title: { fi: '', sv: '', en: '' },
       description: { fi: '', sv: '', en: '' },
       descriptionLink: { fi: '', sv: '', en: '' },
-      period: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
       active: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
       conditions: {
         continuousPlacement: null
@@ -1793,15 +1791,6 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
 
   copy() {
     return new HolidayQuestionnaireBuilder({ ...this.data })
-  }
-
-  withHolidayPeriod(holidayPeriod: HolidayPeriodBuilder): this {
-    this.data = {
-      ...this.data,
-      holidayPeriodId: holidayPeriod.data.id,
-      period: holidayPeriod.data.period
-    }
-    return this
   }
 }
 
