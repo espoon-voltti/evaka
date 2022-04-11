@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+
 export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
@@ -1019,7 +1021,18 @@ export const fi = {
       createRetroactive: 'Luo takautuvia maksupäätösluonnoksia'
     },
     invoices: 'Päämiehen laskut',
-    invoiceCorrections: 'Hyvitykset ja korotukset',
+    invoiceCorrections: {
+      title: 'Hyvitykset ja korotukset',
+      noteModalTitle: 'Talouden oma muistiinpano',
+      noteModalInfo: 'Muistiinpano ei tule näkyviin laskulle.',
+      invoiceStatusHeader: 'Tila',
+      invoiceStatus: (status: InvoiceStatus) =>
+        status === 'DRAFT'
+          ? 'Seuraavalla luonnoksella'
+          : status
+          ? 'Laskulla osittain'
+          : 'Ei vielä laskulla'
+    },
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',
       createRetroactive: 'Luo takautuvia arvopäätösluonnoksia'

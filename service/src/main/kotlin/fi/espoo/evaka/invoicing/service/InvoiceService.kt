@@ -15,7 +15,6 @@ import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -28,8 +27,6 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
-
-data class DaycareCodes(val unitId: DaycareId, val areaId: AreaId)
 
 data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
 
@@ -65,6 +62,7 @@ class InvoiceService(
         tx.setDraftsSent(sendResult.succeeded, user.evakaUserId)
         tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
         tx.saveCostCenterFields(sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id })
+        tx.markInvoicedCorrectionsAsComplete()
     }
 
     fun updateInvoice(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
@@ -118,4 +116,21 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
         .list()
 
     if (updatedIds.toSet() != invoiceIds.toSet()) throw BadRequest("Some invoices have incorrect status")
+}
+
+fun Database.Transaction.markInvoicedCorrectionsAsComplete() {
+    execute(
+        """
+WITH applied_corrections AS (
+    SELECT c.id
+    FROM invoice_correction c
+    LEFT JOIN invoice_row r ON c.id = r.correction_id AND NOT c.applied_completely
+    LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
+    GROUP BY c.id
+    HAVING c.amount * c.unit_price = coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
+)
+UPDATE invoice_correction SET applied_completely = true
+WHERE id IN (SELECT id FROM applied_corrections)
+"""
+    )
 }

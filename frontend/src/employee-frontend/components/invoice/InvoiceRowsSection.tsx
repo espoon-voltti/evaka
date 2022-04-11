@@ -64,7 +64,8 @@ const emptyInvoiceRow = (
   amount: 0,
   unitPrice: 0,
   price: 0,
-  correctionId: null
+  correctionId: null,
+  note: null
 })
 
 interface Props {
@@ -215,11 +216,12 @@ export default React.memo(function InvoiceRowsSection({
                       key={firstRow.id || ''}
                       row={firstRow}
                       update={updateInvoiceRow(updateRows, rows, firstRow)}
-                      remove={() =>
+                      remove={
                         editable
-                          ? updateRows(
-                              rows.filter(({ id }) => id !== firstRow.id)
-                            )
+                          ? () =>
+                              updateRows(
+                                rows.filter(({ id }) => id !== firstRow.id)
+                              )
                           : undefined
                       }
                       products={products}
@@ -232,9 +234,12 @@ export default React.memo(function InvoiceRowsSection({
                         key={index}
                         row={row}
                         update={updateInvoiceRow(updateRows, rows, row)}
-                        remove={() =>
+                        remove={
                           editable
-                            ? updateRows(rows.filter(({ id }) => id !== row.id))
+                            ? () =>
+                                updateRows(
+                                  rows.filter(({ id }) => id !== row.id)
+                                )
                             : undefined
                         }
                         products={products}

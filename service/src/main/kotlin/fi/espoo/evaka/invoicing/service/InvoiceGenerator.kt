@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.invoicing.controller.InvoiceCorrection
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
@@ -21,9 +20,11 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
+import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -55,7 +57,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             invoiceCalculationData.decisions,
             invoiceCalculationData.placements,
             invoiceCalculationData.period,
-            invoiceCalculationData.daycareCodes,
+            invoiceCalculationData.areaIds,
             invoiceCalculationData.operationalDays,
             invoiceCalculationData.feeThresholds,
             invoiceCalculationData.absences,
@@ -63,7 +65,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             invoiceCalculationData.freeChildren,
             invoiceCalculationData.codebtors
         )
-        val invoicesWithCorrections = applyCorrections(tx, invoices)
+        val invoicesWithCorrections = applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
         tx.deleteDraftInvoicesByDateRange(range)
         tx.upsertInvoices(invoicesWithCorrections)
     }
@@ -78,7 +80,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
         val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-        val daycareCodes = tx.getDaycareCodes()
+        val areaIds = tx.getAreaIds()
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
@@ -99,7 +101,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             decisions = unhandledDecisions,
             placements = unhandledPlacements,
             period = range,
-            daycareCodes = daycareCodes,
+            areaIds = areaIds,
             operationalDays = operationalDays,
             feeThresholds = feeThresholds,
             absences = absences,
@@ -113,7 +115,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val decisions: Map<PersonId, List<FeeDecision>>,
         val placements: Map<PersonId, List<Placements>>,
         val period: DateRange,
-        val daycareCodes: Map<DaycareId, DaycareCodes>,
+        val areaIds: Map<DaycareId, AreaId>,
         val operationalDays: OperationalDays,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
@@ -142,11 +144,27 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         return DateRange(from, to)
     }
 
-    fun applyCorrections(tx: Database.Read, invoices: List<Invoice>): List<Invoice> {
+    fun applyCorrections(
+        tx: Database.Read,
+        invoices: List<Invoice>,
+        invoicePeriod: DateRange,
+        areaIds: Map<DaycareId, AreaId>
+    ): List<Invoice> {
         val corrections = getUninvoicedCorrections(tx)
 
-        return invoices.map { invoice ->
-            val headOfFamilyCorrections = corrections[invoice.headOfFamily] ?: return@map invoice
+        val invoicesWithCorrections = corrections.map { (headOfFamily, headOfFamilyCorrections) ->
+            val invoice = invoices.find { it.headOfFamily == headOfFamily } ?: Invoice(
+                id = InvoiceId(UUID.randomUUID()),
+                status = InvoiceStatus.DRAFT,
+                periodStart = invoicePeriod.start,
+                periodEnd = invoicePeriod.end!!,
+                areaId = headOfFamilyCorrections.first().unitId.let {
+                    areaIds[it] ?: error("No areaId found for unit $it")
+                },
+                headOfFamily = headOfFamily,
+                codebtor = null,
+                rows = listOf()
+            )
 
             val (additions, subtractions) = headOfFamilyCorrections.partition { it.unitPrice > 0 }
             val withAdditions = invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
@@ -173,6 +191,10 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                     }
                 }
         }
+
+        return invoicesWithCorrections + invoices.filterNot { invoice ->
+            invoicesWithCorrections.any { correction -> invoice.id == correction.id }
+        }
     }
 
     private fun getUninvoicedCorrections(tx: Database.Read): Map<PersonId, List<InvoiceCorrection>> {
@@ -185,7 +207,7 @@ SELECT
         '[]'::jsonb
     ) AS invoiced_corrections
 FROM invoice_correction c
-LEFT JOIN invoice_row r ON c.id = r.correction_id
+LEFT JOIN invoice_row r ON c.id = r.correction_id AND NOT c.applied_completely
 LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
 GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
@@ -217,24 +239,36 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
             }
     }
 
-    data class InvoicedTotal(
+    private data class InvoicedTotal(
         val amount: Int,
         val unitPrice: Int,
         val periodStart: LocalDate
     )
 
-    private fun InvoiceCorrection.toInvoiceRow() = InvoiceRow(
-        id = InvoiceRowId(UUID.randomUUID()),
-        child = childId,
-        amount = amount,
-        unitPrice = unitPrice,
-        periodStart = period.start,
-        periodEnd = period.end,
-        product = product,
-        unitId = unitId,
-        description = description,
-        correctionId = id
-    )
+    private data class InvoiceCorrection(
+        val id: InvoiceCorrectionId,
+        val headOfFamilyId: PersonId,
+        val childId: ChildId,
+        val unitId: DaycareId,
+        val product: ProductKey,
+        val period: FiniteDateRange,
+        val amount: Int,
+        val unitPrice: Int,
+        val description: String
+    ) {
+        fun toInvoiceRow() = InvoiceRow(
+            id = InvoiceRowId(UUID.randomUUID()),
+            child = childId,
+            amount = amount,
+            unitPrice = unitPrice,
+            periodStart = period.start,
+            periodEnd = period.end,
+            product = product,
+            unitId = unitId,
+            description = description,
+            correctionId = id
+        )
+    }
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
@@ -415,14 +449,14 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
         .list()
 }
 
-fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
+fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
     val sql =
         """
         SELECT daycare.id AS unit_id, area.id AS area_id
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
     return createQuery(sql)
-        .map { row -> row.mapColumn<DaycareId>("unit_id") to row.mapRow<DaycareCodes>() }
+        .map { row -> row.mapColumn<DaycareId>("unit_id") to row.mapColumn<AreaId>("area_id") }
         .toMap()
 }
 
