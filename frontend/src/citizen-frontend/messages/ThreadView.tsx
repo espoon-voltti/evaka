@@ -125,6 +125,7 @@ const SingleMessage = React.memo(function SingleMessage({
                 }
                 icon
                 data-qa="attachment"
+                openInBrowser
               />
             ))}
           </FixedSpaceColumn>
