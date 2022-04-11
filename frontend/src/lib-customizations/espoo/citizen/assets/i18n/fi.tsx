@@ -1412,7 +1412,7 @@ export default {
     childFormDescription: (
       <>
         <P>
-          Varhaiskasvatuksessa olevan lapsen tuloista tulee tehdä selvistys,
+          Varhaiskasvatuksessa olevan lapsen tuloista tulee tehdä selvitys,
           sillä tulot vaikuttavat varhaiskasvatusmaksuun. Lapsen tuloja voivat
           olla muun muassa elatusapu tai -tuki, korko- ja osinkotulot sekä
           eläke.
@@ -1741,7 +1741,7 @@ export default {
       title: 'Lasten tuloselvitykset',
       description: (
         <>
-          Varhaiskasvatuksessa olevien lasten tuloista tulee tehdä selvistys.
+          Varhaiskasvatuksessa olevien lasten tuloista tulee tehdä selvitys.
           Yleisimpiä lapsen tuloja ovat elatusapu tai -tuki, korko- ja
           osinkotulot sekä eläke.
         </>
