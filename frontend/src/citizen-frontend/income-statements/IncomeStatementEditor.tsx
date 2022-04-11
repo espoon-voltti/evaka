@@ -83,7 +83,7 @@ export default React.memo(function IncomeStatementEditor() {
     const { id, formData, startDates } = state
 
     const save = (cancel: () => Promise<void>) => {
-      const validatedData = formData ? fromBody(formData) : undefined
+      const validatedData = formData ? fromBody('adult', formData) : undefined
       if (validatedData) {
         if (id) {
           return updateIncomeStatement(id, validatedData)

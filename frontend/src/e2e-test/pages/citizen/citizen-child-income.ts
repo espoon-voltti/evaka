@@ -3,27 +3,34 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { FileInput, Page } from '../../utils/page'
+import { FileInput, Page, TextInput } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   constructor(private readonly page: Page) {}
 
-  private startDate = this.page.find('[data-qa="start-date"]')
+  private startDate = this.page.findByDataQa('start-date')
+  private otherInfo = this.page.findByDataQa('other-info')
 
   async waitUntilReady() {
     await this.startDate.waitUntilVisible()
   }
 
+  async assertOtherInfo(expected: string) {
+    await waitUntilEqual(() => this.otherInfo.innerText, expected)
+  }
+
   async assertAttachmentExists(name: string) {
     await waitUntilTrue(async () =>
       (
-        await this.page.find('[data-qa="attachment-download-button"]').innerText
+        await this.page
+          .findAllByDataQa('attachment-download-button')
+          .allInnerTexts()
       ).includes(name)
     )
   }
 
   async clickEdit() {
-    await this.page.find('[data-qa="edit-button"]').click()
+    await this.page.findByDataQa('edit-button').click()
   }
 
   async clickGoBack() {
@@ -34,24 +41,17 @@ export class CitizenChildIncomeStatementViewPage {
 export class CitizenChildIncomeStatementEditPage {
   constructor(private readonly page: Page) {}
 
-  private startDateInput = this.page.find('[data-qa="start-date"]')
-  private noIncomeSelect = this.page.find('[data-qa="child-income-no-income"]')
-  private hasIncomeSelect = this.page.find(
-    '[data-qa="child-income-has-income"]'
-  )
-  private assure = this.page.find('[data-qa="assure-checkbox"]')
-  private saveButton = this.page.find('[data-qa="save-btn"]')
+  private startDateInput = this.page.findByDataQa('start-date')
+  private otherInfoInput = new TextInput(this.page.findByDataQa('other-info'))
+  private assure = this.page.findByDataQa('assure-checkbox')
+  private saveButton = this.page.findByDataQa('save-btn')
 
   async waitUntilReady() {
     await this.startDateInput.waitUntilVisible()
   }
 
-  async selectNoIncome() {
-    await this.noIncomeSelect.click()
-  }
-
-  async selectHasIncome() {
-    await this.hasIncomeSelect.click()
+  async typeOtherInfo(text: string) {
+    await this.otherInfoInput.type(text)
   }
 
   async selectAssure() {
@@ -64,7 +64,7 @@ export class CitizenChildIncomeStatementEditPage {
 
   async uploadAttachment(filePath: string) {
     await new FileInput(
-      this.page.find('[data-qa="btn-upload-file"]')
+      this.page.findByDataQa('btn-upload-file')
     ).setInputFiles(filePath)
   }
 }
