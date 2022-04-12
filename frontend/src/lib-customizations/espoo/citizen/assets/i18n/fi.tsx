@@ -145,7 +145,7 @@ export default {
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
-      paragraph: 'Tunnistautumalla eVakaan vahvasti Suomi:fissä voit',
+      paragraph: 'Tunnistautumalla eVakaan vahvasti Suomi.fi:ssä voit',
       infoBoxText:
         'Tunnistautumisen yhteydessä väestötietojärjestelmästä haetaan kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.  ',
       infoBullets: [
