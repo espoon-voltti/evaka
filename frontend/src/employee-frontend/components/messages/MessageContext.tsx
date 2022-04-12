@@ -135,7 +135,21 @@ export const MessageContextProvider = React.memo(
 
     usePeriodicRefresh(client, refreshUnreadCounts, { thresholdInMinutes: 1 })
 
-    const [selectedAccount, setSelectedAccount] = useState<AccountView>()
+    const [unverifiedSelectedAccount, setSelectedAccount] =
+      useState<AccountView>()
+
+    const selectedAccount = useMemo(
+      () =>
+        unverifiedSelectedAccount &&
+        accounts.isSuccess &&
+        accounts.value.find(
+          (a) => a.account.id === unverifiedSelectedAccount.account.id
+        )
+          ? unverifiedSelectedAccount
+          : undefined,
+      [accounts, unverifiedSelectedAccount]
+    )
+
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
     )
