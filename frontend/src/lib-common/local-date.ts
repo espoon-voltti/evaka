@@ -2,15 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
 import {
   addBusinessDays,
   addDays,
   addMonths,
   addWeeks,
   addYears,
+  differenceInDays,
   differenceInYears,
   format,
   getISODay,
+  getISOWeek,
   isAfter,
   isBefore,
   isToday,
@@ -20,13 +23,11 @@ import {
   setMonth,
   startOfMonth,
   startOfToday,
+  startOfWeek,
   subDays,
   subMonths,
   subWeeks,
-  subYears,
-  differenceInDays,
-  startOfWeek,
-  getISOWeek
+  subYears
 } from 'date-fns'
 
 import { DateFormat, DateFormatWithWeekday, formatDate, locales } from './date'
@@ -171,10 +172,26 @@ export default class LocalDate {
     return this.formatIso()
   }
   toSystemTzDate(): Date {
-    return new Date(`${this.formatIso()}T00:00`)
+    const iso = `${this.formatIso()}T00:00`
+    const date = new Date(iso)
+    if (!isValid(date)) {
+      Sentry.captureMessage(
+        `Invalid date generated from ${iso}`,
+        Sentry.Severity.Warning
+      )
+    }
+    return date
   }
   toSystemTzDateAtTime(time: string): Date {
-    return new Date(`${this.formatIso()}T${time}`)
+    const iso = `${this.formatIso()}T${time}`
+    const date = new Date(iso)
+    if (!isValid(date)) {
+      Sentry.captureMessage(
+        `Invalid date generated from ${iso}`,
+        Sentry.Severity.Warning
+      )
+    }
+    return date
   }
   static today(): LocalDate {
     if (isAutomatedTest) {
