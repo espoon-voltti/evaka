@@ -13,6 +13,8 @@ import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
+import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
+import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
@@ -47,8 +49,19 @@ class EspooConfig {
         }
 
     @Bean
+    fun patuIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooPatuIntegrationEnv>, jsonMapper: JsonMapper): PatuIntegrationClient =
+        when (env.patuIntegrationEnabled) {
+            true -> EspooPatuIntegrationClient(invoiceEnv.getObject(), jsonMapper)
+            false -> PatuIntegrationClient.MockPatuClient(jsonMapper)
+        }
+
+    @Bean
     @Lazy
     fun espooInvoiceIntegrationEnv(env: Environment) = EspooInvoiceIntegrationEnv.fromEnvironment(env)
+
+    @Bean
+    @Lazy
+    fun espooPatuIntegrationEnv(env: Environment) = EspooPatuIntegrationEnv.fromEnvironment(env)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
@@ -90,10 +103,11 @@ class EspooConfig {
     fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 }
 
-data class EspooEnv(val invoiceIntegrationEnabled: Boolean) {
+data class EspooEnv(val invoiceIntegrationEnabled: Boolean, val patuIntegrationEnabled: Boolean) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv = EspooEnv(
-            invoiceIntegrationEnabled = env.lookup("espoo.integration.invoice.enabled", "fi.espoo.integration.invoice.enabled") ?: true
+            invoiceIntegrationEnabled = env.lookup("espoo.integration.invoice.enabled", "fi.espoo.integration.invoice.enabled") ?: true,
+            patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false
         )
     }
 }
@@ -110,6 +124,20 @@ data class EspooInvoiceIntegrationEnv(
             username = env.lookup("espoo.integration.invoice.username", "fi.espoo.integration.invoice.username"),
             password = Sensitive(env.lookup("espoo.integration.invoice.password", "fi.espoo.integration.invoice.password")),
             sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
+        )
+    }
+}
+
+data class EspooPatuIntegrationEnv(
+    val url: String,
+    val username: String,
+    val password: Sensitive<String>
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = EspooPatuIntegrationEnv(
+            url = env.lookup("espoo.integration.patu.url"),
+            username = env.lookup("espoo.integration.patu.username",),
+            password = Sensitive(env.lookup("espoo.integration.patu.password",))
         )
     }
 }

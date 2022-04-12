@@ -149,7 +149,7 @@ sealed interface Action {
         CREATE_HOLIDAY_QUESTIONNAIRE,
         DELETE_HOLIDAY_QUESTIONNAIRE,
         UPDATE_HOLIDAY_QUESTIONNAIRE,
-        ;
+        SEND_PATU_REPORT;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
