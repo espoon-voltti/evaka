@@ -9,23 +9,14 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PersonIntegrationTest : PureJdbiTest() {
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction {
-            it.resetDatabase()
-        }
-    }
-
+class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `creating an empty person creates a message account`() {
         val person = db.transaction { createEmptyPerson(it) }

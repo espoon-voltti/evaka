@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -47,7 +46,7 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
+class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.FINANCE_ADMIN))
@@ -55,7 +54,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
         }

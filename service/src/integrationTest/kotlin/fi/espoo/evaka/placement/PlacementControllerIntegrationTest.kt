@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class PlacementControllerIntegrationTest : FullApplicationTest() {
+class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     final val childId = testChild_1.id
     final val daycareId = testDaycare.id
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
@@ -50,7 +49,6 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.insertTestPlacement(
                 childId = childId,

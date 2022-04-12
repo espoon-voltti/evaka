@@ -10,7 +10,7 @@ import org.mockito.kotlin.verify
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceIntegrationTestBase() {
+class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = false) {
 
     @Test
     fun `get modification token for today`() {

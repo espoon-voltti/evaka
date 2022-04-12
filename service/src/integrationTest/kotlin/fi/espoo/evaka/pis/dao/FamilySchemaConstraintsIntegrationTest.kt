@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.dao
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
+class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `basic partnership is ok`() {
         val person1 = testPerson1()

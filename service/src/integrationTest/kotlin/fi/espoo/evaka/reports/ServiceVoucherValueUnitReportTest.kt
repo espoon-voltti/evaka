@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
@@ -45,14 +44,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
+class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.execute("INSERT INTO holiday (date, description) VALUES (?, ?)", janFirst, "New Year")
             it.execute("INSERT INTO holiday (date, description) VALUES (?, ?)", janFirst.plusDays(5), "Epiphany")

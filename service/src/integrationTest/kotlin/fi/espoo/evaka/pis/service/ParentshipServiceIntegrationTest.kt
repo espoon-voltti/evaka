@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
+class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var parentshipService: ParentshipService
 

@@ -5,10 +5,8 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
@@ -16,12 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class DatabaseTest : PureJdbiTest() {
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction { it.resetDatabase() }
-    }
-
+class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
     private class TestException : RuntimeException()
 
     @Test

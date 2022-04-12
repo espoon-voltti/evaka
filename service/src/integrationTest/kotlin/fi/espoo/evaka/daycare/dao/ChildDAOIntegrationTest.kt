@@ -4,21 +4,20 @@
 
 package fi.espoo.evaka.daycare.dao
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.shared.ChildId
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 import kotlin.test.assertEquals
 
-class ChildDAOIntegrationTest : AbstractIntegrationTest() {
+class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val childId = ChildId(randomUUID())
     private lateinit var child: Child
 
@@ -37,11 +36,6 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
                 )
             )
         }
-    }
-
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.execute("DELETE FROM person WHERE id = '$childId'") }
     }
 
     @Test

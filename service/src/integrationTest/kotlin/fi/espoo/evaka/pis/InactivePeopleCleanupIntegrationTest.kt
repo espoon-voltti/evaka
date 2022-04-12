@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -45,14 +44,13 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class InactivePeopleCleanupIntegrationTest : PureJdbiTest() {
+class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val testDate = LocalDate.of(2020, 3, 1)
     private val testUnit = testDaycare
 
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.resetDatabase()
             it.insertTestCareArea(testArea)
             it.insertTestDaycare(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id))
         }

@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.controller
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PersonController
 import fi.espoo.evaka.pis.controllers.SearchPersonBody
 import fi.espoo.evaka.pis.getPersonById
@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class PersonControllerIntegrationTest : AbstractIntegrationTest() {
+class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @Autowired

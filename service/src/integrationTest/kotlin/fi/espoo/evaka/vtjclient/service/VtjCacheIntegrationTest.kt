@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import redis.clients.jedis.JedisPool
 import kotlin.test.assertEquals
 
-class VtjCacheIntegrationTest : FullApplicationTest() {
+class VtjCacheIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
     @Autowired
     lateinit var service: VtjCache
 

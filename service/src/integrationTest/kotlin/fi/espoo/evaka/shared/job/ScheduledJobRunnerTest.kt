@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.config.getTestDataSource
-import fi.espoo.evaka.shared.dev.resetDatabase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class ScheduledJobRunnerTest : PureJdbiTest() {
+class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
     private val testSchedule = object : JobSchedule {
@@ -35,7 +34,6 @@ class ScheduledJobRunnerTest : PureJdbiTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.resetDatabase() }
         asyncJobRunner = AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig())
     }
 

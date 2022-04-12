@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -14,21 +14,18 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var staffAttendanceService: StaffAttendanceService
+class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val staffAttendanceService = StaffAttendanceService()
 
     val areaId: AreaId = AreaId(UUID.randomUUID())
     val daycareId: DaycareId = DaycareId(UUID.randomUUID())
@@ -42,7 +39,6 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     protected fun insertDaycareGroup() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertTestCareArea(DevCareArea(id = areaId))
             tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
             tx.insertTestDaycareGroup(

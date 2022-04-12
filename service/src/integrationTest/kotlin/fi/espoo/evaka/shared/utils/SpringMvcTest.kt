@@ -13,7 +13,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SpringMvcTest : FullApplicationTest() {
+class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
     private val employee = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
 
     @Test

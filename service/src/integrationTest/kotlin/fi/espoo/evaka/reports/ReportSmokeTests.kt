@@ -10,29 +10,21 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ReportSmokeTests : FullApplicationTest() {
+class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @BeforeAll
-    fun beforeEach() {
+    override fun beforeAll() {
+        super.beforeAll()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-        }
-    }
-
-    @AfterAll
-    fun afterEach() {
-        db.transaction { tx ->
-            tx.resetDatabase()
         }
     }
 

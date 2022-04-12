@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -44,7 +43,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class DaycareControllerIntegrationTest : FullApplicationTest() {
+class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val childId = testChild_1.id
     private val daycareId = testDaycare.id
     private val supervisorId = EmployeeId(UUID.randomUUID())
@@ -55,7 +54,6 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
             tx.insertTestEmployee(

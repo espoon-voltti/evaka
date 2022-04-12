@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalDate
@@ -21,17 +20,12 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class AsyncJobQueriesTest : PureJdbiTest() {
+class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private data class TestJob(val data: UUID) : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
     private val jobType = AsyncJobType(TestJob::class)
-
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction { it.execute("TRUNCATE async_job") }
-    }
 
     @Test
     fun testCompleteHappyCase() {

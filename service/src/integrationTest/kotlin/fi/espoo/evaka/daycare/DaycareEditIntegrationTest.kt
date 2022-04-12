@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testArea
@@ -30,7 +29,7 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class DaycareEditIntegrationTest : FullApplicationTest() {
+class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
     private val fields = DaycareFields(
         name = "Uusi päiväkoti",
@@ -86,7 +85,6 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name))
         }

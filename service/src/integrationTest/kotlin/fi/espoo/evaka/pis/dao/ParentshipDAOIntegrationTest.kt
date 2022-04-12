@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.dao
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -19,7 +19,7 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
+class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `test creating parentship`() {
         val child = testPerson1()

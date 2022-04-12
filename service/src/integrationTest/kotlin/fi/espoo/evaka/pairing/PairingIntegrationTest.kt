@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
@@ -28,14 +27,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class PairingIntegrationTest : FullApplicationTest() {
+class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, emptySet())
     private val testUnitId = testDaycare.id
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             tx.updateDaycareAclWithEmployee(testUnitId, EmployeeId(user.id), UserRole.UNIT_SUPERVISOR)
         }

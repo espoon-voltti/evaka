@@ -4,14 +4,10 @@
 
 package fi.espoo.evaka.shared.async
 
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.getTestDataSource
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.voltti.logging.MdcKey
-import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -28,7 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AsyncJobRunnerTest {
+class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private data class TestJob(
         val data: UUID = UUID.randomUUID(),
         override val user: AuthenticatedUser? = null
@@ -37,21 +33,13 @@ class AsyncJobRunnerTest {
     private class LetsRollbackException : RuntimeException()
 
     private lateinit var asyncJobRunner: AsyncJobRunner<TestJob>
-    private lateinit var jdbi: Jdbi
-    private lateinit var db: Database.Connection
 
     private val currentCallback: AtomicReference<(msg: TestJob) -> Unit> = AtomicReference()
-
-    @BeforeAll
-    fun setup() {
-        jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-    }
 
     @AfterEach
     fun afterEach() {
         asyncJobRunner.close()
         currentCallback.set(null)
-        db.close()
     }
 
     @BeforeEach
@@ -60,8 +48,6 @@ class AsyncJobRunnerTest {
         asyncJobRunner.registerHandler { _, msg: TestJob ->
             currentCallback.get()(msg)
         }
-        jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
-        db = Database(jdbi).connectWithManualLifecycle()
     }
 
     @Test

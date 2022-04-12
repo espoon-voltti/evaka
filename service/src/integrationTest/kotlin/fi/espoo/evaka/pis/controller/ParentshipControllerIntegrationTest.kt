@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.controller
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
@@ -34,7 +34,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
+class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var controller: ParentshipController
 

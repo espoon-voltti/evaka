@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -35,14 +34,13 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class RealtimeOccupancyTest : FullApplicationTest() {
+class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     val date = LocalDate.now().minusDays(1)
     val groupId = GroupId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
         db.transaction {
-            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
         }

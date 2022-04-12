@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.pis.controller
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.controllers.EmployeeController
@@ -19,7 +19,7 @@ import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
+class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired
     lateinit var employeeController: EmployeeController

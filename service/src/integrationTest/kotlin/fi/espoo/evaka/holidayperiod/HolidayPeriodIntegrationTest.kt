@@ -6,27 +6,20 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.HolidayPeriodId
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
-class HolidayPeriodIntegrationTest : PureJdbiTest() {
+class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val christmasRange =
         FiniteDateRange(start = LocalDate.of(2021, 12, 18), end = LocalDate.of(2022, 1, 6))
     private val christmasPeriod =
         summerPeriod.copy(period = christmasRange)
-
-    @BeforeEach
-    private fun prepare() {
-        db.transaction { it.resetDatabase() }
-    }
 
     @Test
     fun `holiday periods can be created, updated and deleted`() {

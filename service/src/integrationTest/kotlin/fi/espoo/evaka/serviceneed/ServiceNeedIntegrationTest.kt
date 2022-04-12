@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
@@ -33,7 +32,7 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ServiceNeedIntegrationTest : FullApplicationTest() {
+class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id.raw, setOf(UserRole.UNIT_SUPERVISOR))
 
     lateinit var placementId: PlacementId
@@ -41,7 +40,6 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
             placementId = tx.insertTestPlacement(
                 childId = testChild_1.id,

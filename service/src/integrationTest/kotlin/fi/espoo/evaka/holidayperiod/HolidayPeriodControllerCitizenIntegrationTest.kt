@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
@@ -35,7 +34,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
-class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
+class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val freePeriodQuestionnaire = FixedPeriodQuestionnaireBody(
         active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
         periodOptions = listOf(
@@ -59,7 +58,6 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
             tx.insertGuardian(parent.id, child1.id)

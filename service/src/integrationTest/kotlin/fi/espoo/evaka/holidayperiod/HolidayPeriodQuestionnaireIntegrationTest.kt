@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
-class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest() {
+class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `fixed period questionnaires can be saved`() {

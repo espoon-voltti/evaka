@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testAdult_1
@@ -26,14 +25,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
-class ReservationUpkeepIntegrationTest : FullApplicationTest() {
+class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var scheduledJobs: ScheduledJobs
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             tx.insertGeneralTestFixtures()
         }
     }

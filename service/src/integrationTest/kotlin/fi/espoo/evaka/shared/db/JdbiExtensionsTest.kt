@@ -38,7 +38,7 @@ private inline fun <reified T : Any> Database.Read.checkMatch(@Language("sql") s
     .mapTo<Boolean>()
     .single()
 
-class JdbiExtensionsTest : PureJdbiTest() {
+class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val utc: ZoneId = ZoneId.of("UTC")
 
     @Test

@@ -13,7 +13,7 @@ import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 
-abstract class VardaIntegrationTest : FullApplicationTest() {
+abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) : FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
 

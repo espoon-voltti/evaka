@@ -20,26 +20,17 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 
-class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest() {
+class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val firstOfAugust2021 = HelsinkiDateTime.of(
         LocalDate.of(2021, 8, 1),
         LocalTime.of(3, 15)
     )
-
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction {
-            it.resetDatabase()
-        }
-    }
 
     @Test
     fun `global roles are not reset when last_login is now`() {

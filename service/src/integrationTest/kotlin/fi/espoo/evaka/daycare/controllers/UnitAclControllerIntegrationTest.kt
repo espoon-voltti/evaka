@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -30,7 +29,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class UnitAclControllerIntegrationTest : FullApplicationTest() {
+class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employee = DaycareAclRowEmployee(
         id = EmployeeId(UUID.randomUUID()),
         firstName = "First",
@@ -42,7 +41,6 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     protected fun beforeEach() {
         db.transaction { tx ->
-            tx.resetDatabase()
             admin = AuthenticatedUser.Employee(
                 tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))).raw,
                 roles = setOf(UserRole.ADMIN)

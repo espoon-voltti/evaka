@@ -17,13 +17,12 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import org.junit.jupiter.api.BeforeEach
 
-abstract class AccessControlTest : PureJdbiTest() {
+abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     protected lateinit var rules: TestActionRuleMapping
     protected lateinit var accessControl: AccessControl
 
@@ -31,7 +30,6 @@ abstract class AccessControlTest : PureJdbiTest() {
     private fun prepareRules() {
         rules = TestActionRuleMapping()
         accessControl = AccessControl(rules, AccessControlList(jdbi), jdbi)
-        db.transaction { it.resetDatabase() }
     }
 
     class TestActionRuleMapping : ActionRuleMapping {

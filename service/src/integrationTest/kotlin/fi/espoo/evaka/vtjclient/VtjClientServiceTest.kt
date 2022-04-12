@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.vtjclient
 
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.lookup
-import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
@@ -27,7 +27,6 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 import org.springframework.ws.client.core.WebServiceTemplate
@@ -42,7 +41,7 @@ import java.util.UUID
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
-class VtjClientServiceTest : AbstractIntegrationTest() {
+class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Autowired
     lateinit var vtjClientService: IVtjClientService
@@ -67,12 +66,8 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
 
     var mockServer: MockWebServiceServer? = null
 
-    @Autowired
-    protected lateinit var env: Environment
-
     @BeforeEach
-    override fun beforeEach() {
-        super.beforeEach()
+    private fun beforeEach() {
         if (!env.lookup<Boolean>("evaka.integration.vtj.test.use_actual_vtj", "fi.espoo.voltti.vtj.test.use_actual_vtj")) {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
         }
