@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ChartData, ChartOptions } from 'chart.js'
-import { max, min, setHours, setMinutes } from 'date-fns'
+import {
+  isBefore,
+  max,
+  min,
+  roundToNearestMinutes,
+  setHours,
+  setMinutes
+} from 'date-fns'
 import { fi } from 'date-fns/locale'
 import { ceil } from 'lodash'
 import React, { useMemo } from 'react'
@@ -30,9 +37,10 @@ export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
 const Graph = React.memo(function Graph({ occupancy }: Props) {
   const { i18n } = useTranslation()
 
+  const currentMinute = getCurrentMinute().getTime()
   const { data, graphOptions } = useMemo(
-    () => graphData(occupancy, i18n),
-    [occupancy, i18n]
+    () => graphData(new Date(currentMinute), occupancy, i18n),
+    [occupancy, currentMinute, i18n]
   )
 
   if (occupancy.occupancySeries.length === 0) return null
@@ -45,6 +53,7 @@ const Graph = React.memo(function Graph({ occupancy }: Props) {
 })
 
 function graphData(
+  now: Date,
   occupancy: RealtimeOccupancy,
   i18n: Translations
 ): {
@@ -63,9 +72,16 @@ function graphData(
 
   const firstStaffAttendance = staffData[0]
   const lastStaffAttendance = staffData[staffData.length - 1]
+  const lastChildAttendance = childData[childData.length - 1]
 
   const sixAm = setTime(firstStaffAttendance.x, 6, 0)
   const sixPm = setTime(lastStaffAttendance.x, 18, 0)
+
+  // If staff is still present, extend the graph up to current time
+  if (lastStaffAttendance.y > 0 && isBefore(lastStaffAttendance.x, now)) {
+    staffData.push({ ...lastStaffAttendance, x: new Date(now) })
+    childData.push({ ...lastChildAttendance, x: new Date(now) })
+  }
 
   const data: ChartData<'line', DatePoint[]> = {
     datasets: [
@@ -150,6 +166,10 @@ function graphData(
   }
 
   return { data, graphOptions }
+}
+
+function getCurrentMinute(): Date {
+  return roundToNearestMinutes(new Date())
 }
 
 function setTime(date: Date, hours: number, minutes: number): Date {
