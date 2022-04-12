@@ -136,8 +136,8 @@ data class EspooPatuIntegrationEnv(
     companion object {
         fun fromEnvironment(env: Environment) = EspooPatuIntegrationEnv(
             url = env.lookup("espoo.integration.patu.url"),
-            username = env.lookup("espoo.integration.patu.username",),
-            password = Sensitive(env.lookup("espoo.integration.patu.password",))
+            username = env.lookup("espoo.integration.patu.username"),
+            password = Sensitive(env.lookup("espoo.integration.patu.password"))
         )
     }
 }

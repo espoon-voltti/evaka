@@ -34,7 +34,7 @@ class EspooPatuIntegrationClient(private val env: EspooPatuIntegrationEnv, priva
     override fun send(patuReport: List<RawReportRow>): PatuIntegrationClient.Result {
         logger.debug("Sending patu report of ${patuReport.size} rows to integration")
         val payload = jsonMapper.writeValueAsString(patuReport)
-        val (_, _, result) = Fuel.post("${env.url}/invoice-batches")
+        val (_, _, result) = Fuel.post("${env.url}/report")
             .authentication().basic(env.username, env.password.value)
             .jsonBody(payload)
             .responseString()
