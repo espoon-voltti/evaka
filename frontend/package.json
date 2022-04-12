@@ -18,8 +18,8 @@
     "test": "jest src/*-frontend src/lib-*",
     "test:watch": "jest --watchAll src/*-frontend src/lib-*",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --testTimeout 60000 --runInBand src/e2e-test/specs",
-    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://evaka-proxy:8080} jest --testTimeout 60000 --runInBand --bail 1 --retries=2"
+    "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --runInBand src/e2e-test/specs",
+    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://evaka-proxy:8080} jest --runInBand --bail 1 --retries=2"
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",
