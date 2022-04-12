@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartData, ChartOptions } from 'chart.js'
+import { ChartData, ChartDataset, ChartOptions } from 'chart.js'
 import {
   isBefore,
   max,
@@ -85,24 +85,16 @@ function graphData(
 
   const data: ChartData<'line', DatePoint[]> = {
     datasets: [
-      {
-        label: i18n.unit.occupancy.realtime.children,
-        data: childData,
-        spanGaps: true,
-        stepped: 'before',
-        fill: false,
-        pointBackgroundColor: colors.grayscale.g100,
-        borderColor: colors.grayscale.g100
-      },
-      {
-        label: i18n.unit.occupancy.realtime.childrenMax,
-        data: staffData,
-        spanGaps: true,
-        stepped: 'before',
-        fill: false,
-        pointBackgroundColor: colors.status.danger,
-        borderColor: colors.status.danger
-      }
+      line(
+        i18n.unit.occupancy.realtime.children,
+        childData,
+        colors.grayscale.g100
+      ),
+      line(
+        i18n.unit.occupancy.realtime.childrenMax,
+        staffData,
+        colors.status.danger
+      )
     ]
   }
 
@@ -166,6 +158,25 @@ function graphData(
   }
 
   return { data, graphOptions }
+}
+
+function line(
+  label: string,
+  data: DatePoint[],
+  color: string
+): ChartDataset<'line', DatePoint[]> {
+  return {
+    label,
+    data,
+    spanGaps: true,
+    stepped: 'before',
+    fill: false,
+    pointRadius: 0,
+    pointBackgroundColor: color,
+    borderWidth: 2,
+    borderColor: color,
+    borderJoinStyle: 'miter'
+  }
 }
 
 function getCurrentMinute(): Date {
