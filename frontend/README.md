@@ -210,7 +210,7 @@ You can run a single spec by specifying the corresponding subdirectory. For exam
 in order to only run tests related to messaging, use the following command:
 
 ```sh
-yarn jest --testTimeout 600000 --runInBand src/e2e-test/specs/7_messaging
+yarn jest --runInBand src/e2e-test/specs/7_messaging
 ```
 
 [Playwright traces](https://playwright.dev/docs/trace-viewer) are collected from
