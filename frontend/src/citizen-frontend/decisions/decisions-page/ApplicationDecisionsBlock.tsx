@@ -17,7 +17,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
 import { PdfLink } from '../PdfLink'
-import { decisionOrderComparator, Status, decisionStatusIcon } from '../shared'
+import { Status, decisionStatusIcon, sortDecisions } from '../shared'
 
 const preschoolInfoTypes: DecisionType[] = [
   'PRESCHOOL',
@@ -41,9 +41,8 @@ export default React.memo(function ApplicationDecisionsBlock({
       <H2 noMargin data-qa={`title-decision-child-name-${applicationId}`}>
         {childName}
       </H2>
-      {decisions
-        .sort(decisionOrderComparator)
-        .map(({ decisionId, type, status, sentDate, resolved }) => (
+      {sortDecisions(decisions).map(
+        ({ decisionId, type, status, sentDate, resolved }) => (
           <React.Fragment key={decisionId}>
             <Gap size="L" />
             <H3 noMargin data-qa={`title-decision-type-${decisionId}`}>
@@ -83,7 +82,8 @@ export default React.memo(function ApplicationDecisionsBlock({
               <PdfLink decisionId={decisionId} />
             )}
           </React.Fragment>
-        ))}
+        )
+      )}
     </ContentArea>
   )
 })

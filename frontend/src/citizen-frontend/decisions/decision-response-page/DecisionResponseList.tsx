@@ -18,11 +18,11 @@ import { faChevronLeft, faExclamation } from 'lib-icons'
 
 import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
-import { getApplicationDecisions } from '../../decisions/api'
-import { decisionOrderComparator } from '../../decisions/shared'
-import { Decision } from '../../decisions/types'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
+import { getApplicationDecisions } from '../api'
+import { sortDecisions } from '../shared'
+import { Decision } from '../types'
 
 import DecisionResponse from './DecisionResponse'
 
@@ -71,7 +71,7 @@ export default React.memo(function DecisionResponseList() {
         <Gap size="s" />
         <ContentArea opaque>
           <H1>{t.decisions.title}</H1>
-          {renderResult(decisionsRequest, (decisionsRequest) => (
+          {renderResult(decisionsRequest, (decisions) => (
             <div>
               <P width="800px">{t.decisions.applicationDecisions.summary}</P>
               {unconfirmedDecisionsCount > 0 ? (
@@ -83,25 +83,18 @@ export default React.memo(function DecisionResponseList() {
                 />
               ) : null}
               <Gap size="L" />
-              {decisionsRequest
-                .sort(decisionOrderComparator)
-                .map((decision, i) => (
-                  <React.Fragment key={decision.id}>
-                    <DecisionResponse
-                      decision={decision}
-                      blocked={isDecisionBlocked(decision, decisionsRequest)}
-                      rejectCascade={isRejectCascaded(
-                        decision,
-                        decisionsRequest
-                      )}
-                      refreshDecisionList={loadDecisions}
-                      handleReturnToPreviousPage={handleReturnToPreviousPage}
-                    />
-                    {i < decisionsRequest.length - 1 ? (
-                      <HorizontalLine />
-                    ) : null}
-                  </React.Fragment>
-                ))}
+              {sortDecisions(decisions).map((decision, i) => (
+                <React.Fragment key={decision.id}>
+                  <DecisionResponse
+                    decision={decision}
+                    blocked={isDecisionBlocked(decision, decisions)}
+                    rejectCascade={isRejectCascaded(decision, decisions)}
+                    refreshDecisionList={loadDecisions}
+                    handleReturnToPreviousPage={handleReturnToPreviousPage}
+                  />
+                  {i < decisions.length - 1 ? <HorizontalLine /> : null}
+                </React.Fragment>
+              ))}
             </div>
           ))}
           <Gap size="m" />

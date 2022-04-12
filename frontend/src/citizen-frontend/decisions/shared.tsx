@@ -3,18 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { orderBy } from 'lodash'
 import styled from 'styled-components'
 
 import { DecisionSummary } from 'lib-common/generated/api-types/application'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import {
-  faGavel,
   faCheck,
-  faTimes,
   faEnvelope,
+  faFile,
+  faGavel,
   faPlay,
-  faFile
+  faTimes
 } from 'lib-icons'
 
 import { Decision } from './types'
@@ -72,15 +73,6 @@ export const applicationStatusIcon: {
 
 type ComparableDecision = Decision | DecisionSummary
 
-export const decisionOrderComparator = (
-  decisionA: ComparableDecision,
-  decisionB: ComparableDecision
-) => {
-  if (decisionA.type === 'PRESCHOOL_DAYCARE') {
-    return 1
-  } else if (decisionB.type === 'PRESCHOOL_DAYCARE') {
-    return -1
-  } else {
-    return 0
-  }
-}
+export const sortDecisions = <T extends ComparableDecision>(
+  decisions: T[]
+): T[] => orderBy(decisions, (d) => d.sentDate.toSystemTzDate(), 'desc')
