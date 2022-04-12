@@ -44,6 +44,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
@@ -3606,6 +3607,195 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertResult(db.read(getAllInvoices))
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
         assertResult(db.read(getAllInvoices))
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days, 1 sick leave and 1 surplus day`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 14 operational days first
+        // then 1 sickleabe
+        val sickleaveDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.SICKLEAVE)
+        // then planned absences
+        val plannedAbsenceDays = listOf(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 24),
+            LocalDate.of(2019, 1, 25),
+            LocalDate.of(2019, 1, 28),
+            LocalDate.of(2019, 1, 29),
+            LocalDate.of(2019, 1, 30),
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        // then 1 more operational days
+
+        initDataForAbsences(
+            listOf(period),
+            sickleaveDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(30827, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(1927, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 10 contract days, 10 sick leaves`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 10 sickleaves
+        val sickleaveDays = listOf(
+            LocalDate.of(2019, 1, 2) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
+        )
+        // then 12 planned absences
+        val plannedAbsenceDays = listOf(
+            LocalDate.of(2019, 1, 16),
+            LocalDate.of(2019, 1, 17),
+            LocalDate.of(2019, 1, 18),
+            LocalDate.of(2019, 1, 21),
+            LocalDate.of(2019, 1, 22),
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 24),
+            LocalDate.of(2019, 1, 25),
+            LocalDate.of(2019, 1, 28),
+            LocalDate.of(2019, 1, 29),
+            LocalDate.of(2019, 1, 30),
+            LocalDate.of(2019, 1, 31)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        initDataForAbsences(
+            listOf(period),
+            sickleaveDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays10
+        )
+
+        // freeSickLeaveOnContractDays = true
+        // ==> 100 % discount because this case is considered a full month of sick leaves
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(freeSickLeaveOnContractDays = true)
+            )
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(0, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.fullMonthSickLeave, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 10 contract days, 11 sick leave and 2 surplus day`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 1 operational days first
+        // then 11 sickleaves
+        val sickleaveDays = listOf(
+            LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 16) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 17) to AbsenceType.SICKLEAVE
+        )
+        // then 10 planned absences
+        val plannedAbsenceDays = listOf(
+            LocalDate.of(2019, 1, 18),
+            LocalDate.of(2019, 1, 21),
+            LocalDate.of(2019, 1, 22),
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 24),
+            LocalDate.of(2019, 1, 25),
+            LocalDate.of(2019, 1, 28),
+            LocalDate.of(2019, 1, 29),
+            LocalDate.of(2019, 1, 30),
+            LocalDate.of(2019, 1, 31)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        initDataForAbsences(
+            listOf(period),
+            sickleaveDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays10
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(17340, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(2890, invoiceRow.unitPrice) // 28900 / 10
+                assertEquals(5780, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-17340, invoiceRow.unitPrice)
+                assertEquals(-17340, invoiceRow.price)
+            }
+        }
     }
 
     private fun initByPeriodAndPlacementType(

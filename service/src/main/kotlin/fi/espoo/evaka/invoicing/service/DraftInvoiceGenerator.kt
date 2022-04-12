@@ -505,7 +505,8 @@ class DraftInvoiceGenerator(
             dailyFeeDivisor,
             contractDaysPerMonth,
             attendanceDates,
-            absences
+            absences,
+            fullMonthAbsenceType in listOf(FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH, FullMonthAbsenceType.ABSENCE_FULL_MONTH)
         )
 
         val withDailyModifiers = initialRows + dailyAbsenceRefund(
@@ -555,15 +556,18 @@ class DraftInvoiceGenerator(
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
-        absences: List<AbsenceStub>
+        absences: List<AbsenceStub>,
+        isAbsentFullMonth: Boolean
     ): List<InvoiceRow> {
-        if (contractDaysPerMonth == null) return listOf()
+        if (contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
 
         fun hasAbsence(date: LocalDate) = absences.any { it.date == date }
 
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
-        val surplusAttendanceDays = attendancesBeforePeriod + attendancesInPeriod - contractDaysPerMonth
+        val sickleavesBeforePeriod = absences.filter { it.absenceType == AbsenceType.SICKLEAVE && it.date < period.start }.size
+        val sickleavesInPeriod = absences.filter { it.absenceType == AbsenceType.SICKLEAVE && period.includes(it.date) }.size
+        val surplusAttendanceDays = attendancesBeforePeriod + attendancesInPeriod + sickleavesBeforePeriod + sickleavesInPeriod - contractDaysPerMonth
 
         return if (surplusAttendanceDays > 0) {
             listOf(
