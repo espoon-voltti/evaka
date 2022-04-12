@@ -15,32 +15,30 @@ export default React.memo(function GlobalDialog() {
   const { errorMessage, clearErrorMessage, infoMessage, clearInfoMessage } =
     useContext(OverlayContext)
 
-  return (
-    <ModalAccessibilityWrapper>
-      {errorMessage ? (
-        <InfoModal
-          title={errorMessage.title}
-          icon={faExclamation}
-          type={errorMessage.type === 'error' ? 'danger' : 'warning'}
-          text={errorMessage.text}
-          resolve={{
-            label: errorMessage.resolveLabel ?? 'Ok',
-            action: clearErrorMessage
-          }}
-          close={clearErrorMessage}
-        />
-      ) : infoMessage ? (
-        <InfoModal
-          title={infoMessage.title}
-          icon={infoMessage.icon}
-          type={infoMessage.type}
-          text={infoMessage.text}
-          resolve={infoMessage.resolve}
-          reject={infoMessage.reject}
-          close={clearInfoMessage}
-          data-qa={infoMessage['data-qa']}
-        />
-      ) : null}
-    </ModalAccessibilityWrapper>
-  )
+  const modal = errorMessage ? (
+    <InfoModal
+      title={errorMessage.title}
+      icon={faExclamation}
+      type={errorMessage.type === 'error' ? 'danger' : 'warning'}
+      text={errorMessage.text}
+      resolve={{
+        label: errorMessage.resolveLabel ?? 'Ok',
+        action: clearErrorMessage
+      }}
+      close={clearErrorMessage}
+    />
+  ) : infoMessage ? (
+    <InfoModal
+      title={infoMessage.title}
+      icon={infoMessage.icon}
+      type={infoMessage.type}
+      text={infoMessage.text}
+      resolve={infoMessage.resolve}
+      reject={infoMessage.reject}
+      close={clearInfoMessage}
+      data-qa={infoMessage['data-qa']}
+    />
+  ) : null
+
+  return modal && <ModalAccessibilityWrapper>{modal}</ModalAccessibilityWrapper>
 })
