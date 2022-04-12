@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("/patu-reporting")
+@RequestMapping("/patu-report")
 class PatuReportingController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
 
     @PostMapping
