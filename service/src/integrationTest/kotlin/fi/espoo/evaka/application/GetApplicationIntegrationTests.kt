@@ -74,7 +74,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `application found returns 200`() {
         val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(childId = testChild_1.id, guardianId = testAdult_1.id)
+            tx.insertTestApplication(childId = testChild_1.id, guardianId = testAdult_1.id, type = ApplicationType.DAYCARE)
         }
 
         db.transaction { tx ->
@@ -119,7 +119,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id)
+            tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id, type = ApplicationType.DAYCARE)
         }
 
         db.transaction { tx ->
@@ -159,7 +159,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         }
 
         val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(childId = testChild_1.id, guardianId = guardianId)
+            tx.insertTestApplication(childId = testChild_1.id, guardianId = guardianId, type = ApplicationType.DAYCARE)
         }
 
         db.transaction { tx ->
@@ -195,14 +195,20 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    status = ApplicationStatus.CREATED
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE
                 ),
                 tx.insertTestApplication(
                     childId = testChild_2.id,
                     guardianId = testAdult_1.id,
-                    status = ApplicationStatus.CREATED
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE
                 ),
-                tx.insertTestApplication(childId = testChild_3.id, guardianId = testAdult_1.id)
+                tx.insertTestApplication(
+                    childId = testChild_3.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE
+                )
             )
         }
 
@@ -278,7 +284,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = PersonId(endUser.id),
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE
             )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,

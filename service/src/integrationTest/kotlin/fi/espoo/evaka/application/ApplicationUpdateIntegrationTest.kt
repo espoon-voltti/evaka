@@ -274,7 +274,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         urgent: Boolean,
         shiftCare: Boolean = false
     ): ApplicationDetails = db.transaction { tx ->
-        val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
+        val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id, type = ApplicationType.DAYCARE)
         val validDaycareForm = DaycareFormV0.fromApplication2(getValidDaycareApplication(shiftCare = shiftCare))
         tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
         tx.fetchApplicationDetails(applicationId)!!

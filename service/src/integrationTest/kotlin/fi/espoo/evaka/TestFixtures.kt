@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.ChildDetails
 import fi.espoo.evaka.application.Guardian
 import fi.espoo.evaka.application.PersonBasics
@@ -669,18 +668,12 @@ fun Database.Transaction.insertApplication(
         status = status,
         guardianId = guardian.id,
         childId = child.id,
-        transferApplication = transferApplication
+        transferApplication = transferApplication,
+        type = appliedType.toApplicationType()
     )
     val application = ApplicationDetails(
         id = applicationId,
-        type = when (appliedType) {
-            PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
-            PlacementType.CLUB -> ApplicationType.CLUB
-            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY, PlacementType.SCHOOL_SHIFT_CARE ->
-                error("Unsupported placement type ($appliedType)")
-        },
+        type = appliedType.toApplicationType(),
         form = ApplicationForm(
             child = ChildDetails(
                 person = PersonBasics(

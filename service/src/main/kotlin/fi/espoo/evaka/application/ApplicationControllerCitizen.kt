@@ -132,6 +132,7 @@ class ApplicationControllerCitizen(
                     ?: throw IllegalStateException("Child not found")
 
                 tx.insertApplication(
+                    type = body.type,
                     guardianId = PersonId(user.id),
                     childId = body.childId,
                     origin = ApplicationOrigin.ELECTRONIC

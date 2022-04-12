@@ -414,7 +414,8 @@ WHERE id = :unitId
         val applicationId = tx.insertTestApplication(
             status = ApplicationStatus.WAITING_PLACEMENT,
             guardianId = adult.id,
-            childId = child.id
+            childId = child.id,
+            type = type.toApplicationType(),
         )
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
         tx.insertTestApplicationForm(

@@ -483,7 +483,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = status,
                 childId = childId,
                 guardianId = testAdult_1.id,
-                transferApplication = true
+                transferApplication = true,
+                type = type
             )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,
@@ -507,7 +508,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             val applicationId = tx.insertTestApplication(
                 status = ApplicationStatus.SENT,
                 childId = childId,
-                guardianId = testAdult_1.id
+                guardianId = testAdult_1.id,
+                type = type
             )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,

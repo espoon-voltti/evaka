@@ -132,7 +132,7 @@ SELECT
   appl.child_id                                                                               AS childId,
   appl.guardian_id                                                                            AS guardianId,
   appl.other_guardian_id                                                                      AS otherGuardianId,
-  data.document ->> 'type'                                                                    AS type,
+  appl.type                                                                                   AS type,
   (data.document ->> 'urgent') :: BOOLEAN                                                     AS urgent,
   (data.document ->> 'preferredStartDate')::DATE                                              AS preferredStartDate,
   COALESCE(

@@ -195,7 +195,8 @@ class FixtureBuilder(
             val applicationId = tx.insertTestApplication(
                 guardianId = applicationGuardianId,
                 childId = childFixture.childId,
-                status = ApplicationStatus.WAITING_DECISION
+                status = ApplicationStatus.WAITING_DECISION,
+                type = type?.toApplicationType() ?: error("type not set")
             )
             tx.insertTestPlacementPlan(
                 applicationId = applicationId,

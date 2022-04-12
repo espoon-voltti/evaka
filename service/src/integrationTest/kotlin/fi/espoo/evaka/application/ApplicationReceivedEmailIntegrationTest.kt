@@ -85,7 +85,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,
@@ -125,7 +126,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,
@@ -166,7 +168,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
-                hideFromGuardian = false
+                hideFromGuardian = false,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,
@@ -205,7 +208,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.CLUB
             ).also { id ->
                 tx.insertTestClubApplicationForm(
                     applicationId = id,
@@ -273,7 +277,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
-                hideFromGuardian = true
+                hideFromGuardian = true,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,
@@ -305,7 +310,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = testAdult_1.id,
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,
@@ -342,7 +348,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 childId = testChild_1.id,
                 guardianId = testAdult_1.id,
                 status = ApplicationStatus.CREATED,
-                sentDate = manuallySetSentDate
+                sentDate = manuallySetSentDate,
+                type = ApplicationType.DAYCARE
             ).also { id ->
                 tx.insertTestApplicationForm(
                     applicationId = id,

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.s3.ContentType
@@ -58,7 +59,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
         val attachmentId = AttachmentId(UUID.randomUUID())
         val guardianId = tx.insertTestPerson(DevPerson())
         val childId = tx.insertTestPerson(DevPerson())
-        val applicationId = tx.insertTestApplication(guardianId = guardianId, childId = childId)
+        val applicationId = tx.insertTestApplication(guardianId = guardianId, childId = childId, type = ApplicationType.DAYCARE)
         tx.insertAttachment(user, attachmentId, "test.pdf", ContentType.PDF.value, AttachmentParent.Application(applicationId), type = null)
         attachmentId
     }
