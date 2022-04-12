@@ -32,7 +32,7 @@ interface Props {
   realtimeOccupancies: RealtimeOccupancy | null
 }
 
-function OccupancySingleDay({
+const OccupancySingleDay = React.memo(function OccupancySingleDay({
   occupancies,
   plannedOccupancies,
   realizedOccupancies,
@@ -82,6 +82,6 @@ function OccupancySingleDay({
       )}
     </Container>
   )
-}
+})
 
 export default OccupancySingleDay
