@@ -1,0 +1,1 @@
+ALTER TABLE holiday_period_questionnaire DROP COLUMN holiday_period_id;

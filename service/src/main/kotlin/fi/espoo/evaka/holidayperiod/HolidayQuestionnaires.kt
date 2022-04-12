@@ -6,7 +6,6 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Translatable
@@ -24,11 +23,9 @@ data class QuestionnaireConditions(
 // TODO use sealed class when OPEN_RANGES is implemented
 data class FixedPeriodQuestionnaire(
     val id: HolidayQuestionnaireId,
-    val holidayPeriodId: HolidayPeriodId,
     val type: QuestionnaireType,
     val absenceType: AbsenceType,
     val requiresStrongAuth: Boolean,
-    val period: FiniteDateRange,
     val active: FiniteDateRange,
     @Json
     val title: Translatable,
@@ -47,7 +44,6 @@ data class FixedPeriodQuestionnaire(
 )
 
 data class FixedPeriodQuestionnaireBody(
-    val holidayPeriodId: HolidayPeriodId,
     val absenceType: AbsenceType,
     val requiresStrongAuth: Boolean,
     val active: FiniteDateRange,

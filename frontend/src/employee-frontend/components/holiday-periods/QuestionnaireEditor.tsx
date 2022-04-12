@@ -5,14 +5,14 @@
 import React, { useCallback } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
-import { combine, Success } from 'lib-common/api'
+import { Success } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
 import { renderResult } from '../async-rendering'
 
 import FixedPeriodQuestionnaireForm from './FixedPeriodQuestionnaireForm'
-import { getHolidayPeriods, getQuestionnaire } from './api'
+import { getQuestionnaire } from './api'
 
 export default React.memo(function QuestionnaireEditor() {
   const { id } = useParams<{ id: string }>()
@@ -26,8 +26,6 @@ export default React.memo(function QuestionnaireEditor() {
     [questionnaireId]
   )
 
-  const [holidayPeriods] = useApiState(getHolidayPeriods, [])
-
   const history = useHistory()
 
   const navigateToList = useCallback(
@@ -38,17 +36,13 @@ export default React.memo(function QuestionnaireEditor() {
   return (
     <Container>
       <ContentArea opaque>
-        {renderResult(
-          combine(holidayPeriods, questionnaire),
-          ([holidayPeriods, questionnaire]) => (
-            <FixedPeriodQuestionnaireForm
-              questionnaire={questionnaire}
-              holidayPeriods={holidayPeriods}
-              onSuccess={navigateToList}
-              onCancel={navigateToList}
-            />
-          )
-        )}
+        {renderResult(questionnaire, (questionnaire) => (
+          <FixedPeriodQuestionnaireForm
+            questionnaire={questionnaire}
+            onSuccess={navigateToList}
+            onCancel={navigateToList}
+          />
+        ))}
       </ContentArea>
     </Container>
   )

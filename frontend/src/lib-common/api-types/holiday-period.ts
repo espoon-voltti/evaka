@@ -27,7 +27,6 @@ export const deserializeHolidayPeriod = ({
 export const deserializeFixedPeriodQuestionnaire = ({
   conditions: { continuousPlacement },
   active,
-  period,
   periodOptions,
   ...rest
 }: JsonOf<FixedPeriodQuestionnaire>): FixedPeriodQuestionnaire => ({
@@ -38,7 +37,6 @@ export const deserializeFixedPeriodQuestionnaire = ({
       : null
   },
   active: FiniteDateRange.parseJson(active),
-  period: FiniteDateRange.parseJson(period),
   periodOptions: periodOptions.map((o) => FiniteDateRange.parseJson(o))
 })
 

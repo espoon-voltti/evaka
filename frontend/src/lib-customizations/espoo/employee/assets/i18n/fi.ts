@@ -3101,7 +3101,6 @@ export const fi = {
     reservationDeadline: 'Varausten takaraja'
   },
   holidayQuestionnaires: {
-    holidayPeriod: 'Loma-aika',
     confirmDelete: 'Haluatko varmasti poistaa kyselyn?',
     types: {
       FIXED_PERIOD: 'Kiinteä kausi'

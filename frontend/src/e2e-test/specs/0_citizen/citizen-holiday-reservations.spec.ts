@@ -15,7 +15,6 @@ import {
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
   Fixture,
-  HolidayPeriodBuilder,
   PersonBuilder
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -34,10 +33,6 @@ const mockedDate = LocalDate.of(2035, 12, 1)
 let daycare: DaycareBuilder
 let guardian: PersonBuilder
 
-const holidayPeriodFixture = () =>
-  Fixture.holidayPeriod().with({
-    period
-  })
 const holidayQuestionnaireFixture = () =>
   Fixture.holidayQuestionnaire().with({
     absenceType: 'FREE_ABSENCE',
@@ -145,10 +140,7 @@ describe('Holiday periods', () => {
 
   describe('Holiday period questionnaire is active', () => {
     beforeEach(async () => {
-      const holidayPeriod = await holidayPeriodFixture().save()
-      await holidayQuestionnaireFixture()
-        .withHolidayPeriod(holidayPeriod)
-        .save()
+      await holidayQuestionnaireFixture().save()
     })
 
     test('The holiday reservations banner is shown on calendar page', async () => {
@@ -239,9 +231,7 @@ describe('Holiday periods', () => {
 
   describe('Holiday period questionnaire is inactive', () => {
     beforeEach(async () => {
-      const holidayPeriod = await holidayPeriodFixture().save()
       await holidayQuestionnaireFixture()
-        .withHolidayPeriod(holidayPeriod)
         .with({
           active: new FiniteDateRange(
             LocalDate.of(1990, 1, 1),
@@ -260,14 +250,8 @@ describe('Holiday periods', () => {
   })
 
   describe('Child eligibility', () => {
-    let holidayPeriod: HolidayPeriodBuilder
-    beforeEach(async () => {
-      holidayPeriod = await holidayPeriodFixture().save()
-    })
-
     test('The holiday reservations banner is not shown if no child is eligible', async () => {
       await holidayQuestionnaireFixture()
-        .withHolidayPeriod(holidayPeriod)
         .with({
           conditions: {
             continuousPlacement: new FiniteDateRange(
@@ -289,7 +273,6 @@ describe('Holiday periods', () => {
       const placementConditionEnd = LocalDate.of(2022, 1, 31)
 
       await holidayQuestionnaireFixture()
-        .withHolidayPeriod(holidayPeriod)
         .with({
           conditions: {
             continuousPlacement: new FiniteDateRange(

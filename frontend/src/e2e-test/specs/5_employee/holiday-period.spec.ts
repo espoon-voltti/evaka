@@ -79,7 +79,6 @@ describe('Holiday periods page', () => {
 
     await holidayPeriodsPage.clickAddQuestionnaireButton()
     await holidayPeriodsPage.fillQuestionnaireForm({
-      period: '15.12.2021 - 31.12.2021',
       activeStart: '15.2.2022',
       activeEnd: '3.5.2022',
       title: '8 viikon maksuton jakso',
@@ -93,14 +92,7 @@ describe('Holiday periods page', () => {
 
     await waitUntilEqual(
       () => holidayPeriodsPage.visibleQuestionnaires,
-      [
-        [
-          '15.12.2021 - 31.12.2021',
-          '15.02.2022 - 03.05.2022',
-          '8 viikon maksuton jakso',
-          ''
-        ].join('\t')
-      ]
+      [['15.02.2022 - 03.05.2022', '8 viikon maksuton jakso', ''].join('\t')]
     )
 
     await holidayPeriodsPage.editQuestionnaire(0)
