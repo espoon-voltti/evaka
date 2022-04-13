@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 import { Redirect, useLocation } from 'react-router-dom'
 
 import { AuthContext } from './auth/state'
-import { getStrongLoginUri, getWeakLoginUri } from './header/const'
+import { getStrongLoginUri } from './header/const'
 
 interface Props {
   strength?: 'STRONG' | 'WEAK' | undefined
@@ -34,10 +34,8 @@ export default React.memo(function RequireAuth({
     ) : (
       <>{children}</>
     )
-  ) : strength === 'STRONG' ? (
-    <Redirect to="/" />
   ) : (
-    refreshRedirect(getWeakLoginUri(location.pathname))
+    <Redirect to="/login" />
   )
 })
 
