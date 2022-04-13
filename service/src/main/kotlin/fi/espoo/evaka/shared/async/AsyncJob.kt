@@ -153,6 +153,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendPedagogicalDocumentNotificationEmail(val pedagogicalDocumentId: PedagogicalDocumentId, val recipientEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    data class SendPatuReport(val dateRange: DateRange) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 data class JobParams<T : AsyncJobPayload>(

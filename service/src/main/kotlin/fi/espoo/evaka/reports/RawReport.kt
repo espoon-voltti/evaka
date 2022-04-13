@@ -47,7 +47,7 @@ class RawReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
+fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
     // language=sql
     val sql =
         """

@@ -9,11 +9,12 @@ import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { getRawReport, PeriodFilters } from '../../api/reports'
+import { getRawReport, PeriodFilters, sendPatuReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
@@ -50,12 +51,15 @@ export default React.memo(function Raw() {
   const mapFloat = (value: number | null) =>
     value?.toString().replace(/\./, ',') ?? null
 
+  const submitPatuReport = () => {
+    return sendPatuReport(filters)
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.raw.title}</Title>
-
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
@@ -159,6 +163,15 @@ export default React.memo(function Raw() {
             )}
           </>
         )}
+        <div hidden>
+          <AsyncButton
+            primary
+            text="Lähetä patu-raportti"
+            onClick={submitPatuReport}
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onSuccess={() => {}}
+          />
+        </div>
       </ContentArea>
     </Container>
   )

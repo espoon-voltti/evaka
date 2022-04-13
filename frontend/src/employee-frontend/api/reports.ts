@@ -519,3 +519,14 @@ export async function getInvoiceGeneratorDiffReport(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function sendPatuReport(
+  filters: PeriodFilters
+): Promise<Result<void>> {
+  return client
+    .post<void>(
+      `/patu-report?from=${filters.from.formatIso()}&to=${filters.to.formatIso()}`
+    )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
