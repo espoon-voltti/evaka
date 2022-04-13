@@ -12,7 +12,11 @@ import React, {
 } from 'react'
 
 import { Result, Loading, Paged } from 'lib-common/api'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationSummary,
+  ApplicationTypeToggle,
+  TransferApplicationFilter
+} from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -21,13 +25,11 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { Unit } from '../api/daycare'
 import {
   ApplicationDateType,
-  ApplicationTypeToggle,
   ApplicationBasis,
   ApplicationSummaryStatusOptions,
   PreschoolType,
   ApplicationSummaryStatusAllOptions,
-  ApplicationDistinctions,
-  TransferApplicationFilter
+  ApplicationDistinctions
 } from '../components/common/Filters'
 
 interface UIState {

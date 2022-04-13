@@ -5,6 +5,7 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 
 import { Loading } from 'lib-common/api'
+import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
@@ -22,7 +23,6 @@ import {
   ApplicationStatusFilter,
   ApplicationTypeFilter,
   ApplicationDateFilter,
-  ApplicationTypeToggle,
   ApplicationDateType,
   ApplicationBasisFilter,
   ApplicationBasis,

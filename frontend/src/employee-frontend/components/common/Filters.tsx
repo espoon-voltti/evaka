@@ -6,7 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationTypeToggle,
+  TransferApplicationFilter
+} from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
@@ -692,8 +695,6 @@ export function InvoiceDistinctionsFilter({
   )
 }
 
-export type ApplicationTypeToggle = ApplicationType | 'ALL'
-
 export const preschoolTypes = [
   'PRESCHOOL_ONLY',
   'PRESCHOOL_DAYCARE',
@@ -1178,8 +1179,6 @@ export function ApplicationDistinctionsFilter({
     </Fragment>
   )
 }
-
-export type TransferApplicationFilter = 'TRANSFER_ONLY' | 'NO_TRANSFER' | 'ALL'
 
 export function TransferApplicationsFilter({
   selected,
