@@ -6,6 +6,8 @@ import styled from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 
+import { buttonBorderRadius } from './button-commons'
+
 export default styled.a`
   -webkit-font-smoothing: antialiased;
   text-size-adjust: 100%;
@@ -17,7 +19,7 @@ export default styled.a`
   text-align: center;
   overflow-x: hidden;
   border: 1px solid ${(p) => p.theme.colors.main.m2};
-  border-radius: 2px;
+  border-radius: ${buttonBorderRadius};
   outline: none;
   cursor: pointer;
   font-family: 'Open Sans', sans-serif;
