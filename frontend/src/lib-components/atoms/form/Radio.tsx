@@ -18,6 +18,7 @@ const Wrapper = styled.div<SizeProps>`
   display: inline-flex;
   align-items: flex-start;
   cursor: pointer;
+  width: fit-content;
 
   label {
     margin-top: ${(p) => (p.small ? '3px' : '6px')};
