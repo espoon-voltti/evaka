@@ -56,7 +56,14 @@ enum class ApplicationTypeToggle {
     CLUB,
     DAYCARE,
     PRESCHOOL,
-    ALL
+    ALL;
+
+    fun toApplicationType(): ApplicationType? = when (this) {
+        CLUB -> ApplicationType.CLUB
+        DAYCARE -> ApplicationType.DAYCARE
+        PRESCHOOL -> ApplicationType.PRESCHOOL
+        ALL -> null
+    }
 }
 
 enum class ApplicationPreschoolTypeToggle {

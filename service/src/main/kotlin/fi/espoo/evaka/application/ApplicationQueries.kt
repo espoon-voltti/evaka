@@ -184,7 +184,7 @@ fun Database.Read.fetchApplicationSummaries(
         "units" to units.toTypedArray(),
         "authorizedUnitsForApplicationsWithoutAssistanceNeed" to authorizedUnitsForApplicationsWithoutAssistanceNeed.ids?.toTypedArray(),
         "authorizedUnitsForApplicationsWithAssistanceNeed" to authorizedUnitsForApplicationsWithAssistanceNeed.ids?.toTypedArray(),
-        "documentType" to type.toString(),
+        "documentType" to type.toApplicationType(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
         "distinctions" to distinctions.map { it.toString() }.toTypedArray(),
