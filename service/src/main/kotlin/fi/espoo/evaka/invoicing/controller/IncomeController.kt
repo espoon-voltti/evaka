@@ -76,7 +76,7 @@ class IncomeController(
                 val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                 tx.splitEarlierIncome(validIncome.personId, period)
                 tx.upsertIncome(mapper, validIncome, user.evakaUserId)
-                tx.associateIncomeAttachments(user.id, id, income.attachments.map { it.id })
+                tx.associateIncomeAttachments(user.evakaUserId, id, income.attachments.map { it.id })
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)))
                 id

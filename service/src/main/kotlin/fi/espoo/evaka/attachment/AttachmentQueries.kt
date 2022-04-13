@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.lang.IllegalArgumentException
-import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
@@ -148,7 +147,7 @@ fun Database.Transaction.associateAttachments(
 }
 
 fun Database.Transaction.associateIncomeAttachments(
-    personId: UUID,
+    personId: EvakaUserId,
     incomeId: IncomeId,
     attachmentIds: List<AttachmentId>
 ) {
