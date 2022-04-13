@@ -138,6 +138,7 @@ export default React.memo(function PlacementDraftSection({
             date={placement.period.start}
             type="full-width"
             onChange={updateStart}
+            minDate={LocalDate.today()}
           />
           <DateRowSpacer>-</DateRowSpacer>
           <DatePickerDeprecated
