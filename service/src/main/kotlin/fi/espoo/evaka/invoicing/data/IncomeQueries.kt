@@ -7,28 +7,21 @@ package fi.espoo.evaka.invoicing.data
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
-import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getNullableUUID
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.result.RowView
-import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
-import java.sql.ResultSet
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.upsertIncome(mapper: JsonMapper, income: Income, updatedBy: EvakaUserId) {
     val sql =
@@ -115,7 +108,7 @@ fun Database.Read.getIncome(mapper: JsonMapper, incomeTypesProvider: IncomeTypes
         """.trimIndent()
     )
         .bind("id", id)
-        .map(mapIncomeWithAttachments(mapper, incomeTypesProvider.get()))
+        .map(toIncome(mapper, incomeTypesProvider.get()))
         .firstOrNull()
 }
 
@@ -148,7 +141,7 @@ fun Database.Read.getIncomesForPerson(
     return createQuery(sql)
         .bind("personId", personId)
         .bindNullable("validAt", validAt)
-        .map(mapIncomeWithAttachments(mapper, incomeTypesProvider.get()))
+        .map(toIncome(mapper, incomeTypesProvider.get()))
         .toList()
 }
 
@@ -160,7 +153,7 @@ fun Database.Read.getIncomesFrom(
 ): List<Income> {
     val sql =
         """
-        SELECT income.*, evaka_user.name AS updated_by_name
+        SELECT income.*, evaka_user.name AS updated_by_name, '[]' as attachments
         FROM income
         JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE
@@ -201,24 +194,7 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun toIncome(jsonMapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rs: ResultSet, _: StatementContext ->
-    Income(
-        id = IncomeId(rs.getUUID("id")),
-        personId = PersonId(UUID.fromString(rs.getString("person_id"))),
-        effect = IncomeEffect.valueOf(rs.getString("effect")),
-        data = parseIncomeDataJson(rs.getString("data"), jsonMapper, incomeTypes),
-        isEntrepreneur = rs.getBoolean("is_entrepreneur"),
-        worksAtECHA = rs.getBoolean("works_at_echa"),
-        validFrom = rs.getDate("valid_from").toLocalDate(),
-        validTo = rs.getDate("valid_to")?.toLocalDate(),
-        notes = rs.getString("notes"),
-        updatedAt = rs.getTimestamp("updated_at").toInstant(),
-        updatedBy = rs.getString("updated_by_name"),
-        applicationId = rs.getNullableUUID("application_id")?.let(::ApplicationId),
-    )
-}
-
-fun mapIncomeWithAttachments(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rv: RowView ->
+fun toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rv: RowView ->
     Income(
         id = rv.mapColumn<IncomeId>("id"),
         personId = rv.mapColumn("person_id"),

@@ -11,6 +11,7 @@ import fi.espoo.evaka.attachment.IncomeAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
+import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -31,6 +32,7 @@ data class Income(
     val updatedAt: Instant? = null,
     val updatedBy: String? = null,
     val applicationId: ApplicationId? = null,
+    @Json
     val attachments: List<IncomeAttachment> = listOf()
 ) {
     @JsonProperty("totalIncome")
