@@ -59,11 +59,14 @@ type Message = UpsertableDraftContent & {
   attachments: Attachment[]
 }
 
-const messageToUpsertableDraftWithAccount = ({
-  sender: { value: accountId },
-  recipientAccountIds: _,
-  ...rest
-}: Message): Draft => ({ ...rest, accountId })
+const messageToUpsertableDraftWithAccount = (m: Message): Draft => ({
+  content: m.content,
+  recipientIds: m.recipientIds,
+  recipientNames: m.recipientNames,
+  title: m.title,
+  type: m.type,
+  accountId: m.sender.value
+})
 
 const emptyMessage = {
   content: '',
@@ -161,7 +164,7 @@ export default React.memo(function MessageEditor({
   selectedUnit,
   sending
 }: Props) {
-  const [receiverTree, setReceiverTree] = useState<SelectorNode>(
+  const [receiverTree, setReceiverTree] = useState<SelectorNode>(() =>
     draftContent
       ? createReceiverTree(availableReceivers, draftContent.recipientIds)
       : availableReceivers
@@ -175,7 +178,7 @@ export default React.memo(function MessageEditor({
     [receiverTree]
   )
 
-  const [message, setMessage] = useState<Message>(
+  const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender)
   )
   const [contentTouched, setContentTouched] = useState(false)
