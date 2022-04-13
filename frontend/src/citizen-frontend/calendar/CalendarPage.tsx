@@ -31,7 +31,7 @@ import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
 import DayView from './DayView'
-import HolidayPeriodBanner from './HolidayPeriodBanner'
+import HolidayPeriodCta from './HolidayPeriodCta'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
@@ -102,7 +102,7 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   return renderResult(data, (response) => (
     <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-      <HolidayPeriodBanner />
+      <HolidayPeriodCta />
       <MobileAndTablet>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
           <CalendarListView

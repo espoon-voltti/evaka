@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'styled-components'
 
 import { appVersion } from 'lib-common/globals'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faInfo, faRedo } from 'lib-icons'
 
 import InlineButton from '../atoms/buttons/InlineButton'
@@ -50,16 +51,18 @@ export default function ReloadNotification({ apiVersion, i18n }: Props) {
 
   return show ? (
     <Toast icon={faInfo} iconColor={theme.colors.main.m1} onClose={close}>
-      <div>{i18n.title}</div>
-      <div>
-        <InlineButton
-          icon={faRedo}
-          text={i18n.buttonText}
-          onClick={() => {
-            window.location.reload()
-          }}
-        />
-      </div>
+      <FixedSpaceColumn spacing="xs">
+        <div>{i18n.title}</div>
+        <div>
+          <InlineButton
+            icon={faRedo}
+            text={i18n.buttonText}
+            onClick={() => {
+              window.location.reload()
+            }}
+          />
+        </div>
+      </FixedSpaceColumn>
     </Toast>
   ) : null
 }

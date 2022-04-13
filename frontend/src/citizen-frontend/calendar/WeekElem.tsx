@@ -16,7 +16,7 @@ import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { bannerApproxHeightMobile, headerHeightMobile } from '../header/const'
+import { headerHeightMobile } from '../header/const'
 import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
 
@@ -141,7 +141,7 @@ const DayElem = React.memo(function DayElem({
       const pos = ref.current?.getBoundingClientRect().top
 
       if (pos) {
-        const offset = bannerApproxHeightMobile + headerHeightMobile + 16
+        const offset = headerHeightMobile + 16
         scrollMainToPos({
           left: 0,
           top: pos - offset
