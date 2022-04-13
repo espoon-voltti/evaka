@@ -229,7 +229,7 @@ fun Database.Read.fetchApplicationSummaries(
                         PREPARATORY_DAYCARE -> PreschoolFlags(preparatory = true, connectedDaycare = true, additionalDaycareApplication = false)
                         DAYCARE_ONLY -> PreschoolFlags(preparatory = false, connectedDaycare = true, additionalDaycareApplication = true)
                     }.run {
-                        "((f.document->'careDetails'->>'preparatory')::boolean, (f.document->'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)"
+                        "((f.document->'careDetails'->>'preparatory')::boolean, (f.document->>'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)"
                     }
                 }
             }
