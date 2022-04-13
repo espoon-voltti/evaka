@@ -160,7 +160,7 @@ const sv: Translations = {
       mapLink: 'Enheter på kartan'
     }
   },
-  ctaBanner: {
+  ctaToast: {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>

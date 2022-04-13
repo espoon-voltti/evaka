@@ -24,7 +24,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import { bannerHeightDesktop, headerHeightDesktop } from '../header/const'
+import { headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
 import { scrollMainToPos } from '../utils'
@@ -68,10 +68,7 @@ export default React.memo(function CalendarGridView({
 
     if (pos) {
       const offset =
-        headerHeightDesktop +
-        bannerHeightDesktop +
-        (headerRef.current?.clientHeight ?? 0) +
-        16
+        headerHeightDesktop + (headerRef.current?.clientHeight ?? 0) + 16
 
       scrollMainToPos({
         left: 0,
@@ -85,23 +82,16 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const {
-    holidayPeriods: holidayPeriodResult,
-    questionnaireAvailable,
-    holidayBanner
-  } = useHolidayPeriods()
+  const { holidayPeriods: holidayPeriodResult, questionnaireAvailable } =
+    useHolidayPeriods()
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
   )
-  const showBanner = useMemo(
-    () => holidayBanner.map<boolean>((b) => b.type !== 'none').getOrElse(false),
-    [holidayBanner]
-  )
 
   return (
     <>
-      <StickyHeader ref={headerRef} bannerIsVisible={showBanner}>
+      <StickyHeader ref={headerRef}>
         <Container>
           <PageHeaderRow>
             <H1 noMargin>{i18n.calendar.title}</H1>
@@ -418,16 +408,19 @@ const ChildImagesContainer = styled.div`
   right: 8px;
 `
 
-const StickyHeader = styled.div<{ bannerIsVisible: boolean }>`
+const StickyHeader = styled.div`
   position: sticky;
-  top: ${(p) => (p.bannerIsVisible ? bannerHeightDesktop : 0)}px;
+  top: 0;
   z-index: 2;
   width: 100%;
   background: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0 4px 8px 2px #0000000a;
 `
 
-const PageHeaderRow = styled(ContentArea).attrs({ opaque: false })`
+const PageHeaderRow = styled(ContentArea).attrs({
+  opaque: false,
+  paddingVertical: defaultMargins.m
+})`
   display: flex;
   justify-content: space-between;
   align-items: center;

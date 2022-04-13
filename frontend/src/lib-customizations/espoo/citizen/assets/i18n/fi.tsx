@@ -159,7 +159,7 @@ export default {
       mapLink: 'Yksiköt kartalla'
     }
   },
-  ctaBanner: {
+  ctaToast: {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Ilmoita lomat ja tee varaukset ${period} välille viimeistään ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>

@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { head } from 'lodash'
-import React, { createContext, useContext, useMemo } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { combine, Loading, Result, Success } from 'lib-common/api'
@@ -18,8 +24,9 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import { getActiveQuestionnaires, getHolidayPeriods } from './api'
 
 type QuestionnaireAvailability = boolean | 'with-strong-auth'
-export type HolidayBanner =
-  | { type: 'none' }
+export type NoCta = { type: 'none' }
+export type HolidayCta =
+  | NoCta
   | { type: 'holiday'; period: FiniteDateRange; deadline: LocalDate }
   | { type: 'questionnaire'; deadline: LocalDate }
 
@@ -27,7 +34,9 @@ export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
   activeFixedPeriodQuestionnaire: Result<ActiveQuestionnaire | undefined>
   questionnaireAvailable: QuestionnaireAvailability
-  holidayBanner: Result<HolidayBanner>
+  holidayCta: Result<HolidayCta>
+  ctaClosed: boolean
+  closeCta: () => void
   refreshQuestionnaires: () => void
 }
 
@@ -35,7 +44,9 @@ const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
   activeFixedPeriodQuestionnaire: Loading.of(),
   questionnaireAvailable: false,
-  holidayBanner: Loading.of(),
+  holidayCta: Loading.of(),
+  ctaClosed: false,
+  closeCta: () => null,
   refreshQuestionnaires: () => null
 }
 
@@ -70,10 +81,10 @@ export const HolidayPeriodsContextProvider = React.memo(
       )
       .getOrElse(false)
 
-    const holidayBanner = combine(
+    const holidayCta = combine(
       activeFixedPeriodQuestionnaire,
       holidayPeriods
-    ).map<HolidayBanner>(([questionnaire, periods]) => {
+    ).map<HolidayCta>(([questionnaire, periods]) => {
       if (questionnaire) {
         return {
           type: 'questionnaire',
@@ -94,19 +105,26 @@ export const HolidayPeriodsContextProvider = React.memo(
         : { type: 'none' }
     })
 
+    const [ctaClosed, setCtaClosed] = useState(false)
+    const closeCta = useCallback(() => setCtaClosed(true), [])
+
     const value = useMemo(
       () => ({
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayBanner,
+        holidayCta,
+        ctaClosed,
+        closeCta,
         refreshQuestionnaires
       }),
       [
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayBanner,
+        holidayCta,
+        ctaClosed,
+        closeCta,
         refreshQuestionnaires
       ]
     )

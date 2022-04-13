@@ -121,7 +121,7 @@ async function setupAnotherChild(
 
 describe('Holiday periods', () => {
   describe('Holiday period questionnaire is inactive and there is a holiday', () => {
-    test('show banner when a holiday with a deadline exists', async () => {
+    test('cta toast is shown when a holiday with a deadline exists', async () => {
       await Fixture.holidayPeriod()
         .with({
           period,
@@ -132,7 +132,7 @@ describe('Holiday periods', () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      expect(await calendar.getHolidayBannerContent()).toEqual(
+      expect(await calendar.getHolidayCtaContent()).toEqual(
         'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
       )
     })
@@ -143,11 +143,11 @@ describe('Holiday periods', () => {
       await holidayQuestionnaireFixture().save()
     })
 
-    test('The holiday reservations banner is shown on calendar page', async () => {
+    test('The holiday reservations toast is shown on calendar page', async () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      expect(await calendar.getHolidayBannerContent()).toEqual(
+      expect(await calendar.getHolidayCtaContent()).toEqual(
         'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
       )
     })
@@ -241,16 +241,16 @@ describe('Holiday periods', () => {
         .save()
     })
 
-    test('The holiday reservations banner is not shown on calendar page', async () => {
+    test('The holiday reservations toast is not shown on calendar page', async () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      await calendar.assertHolidayBannerNotVisible()
+      await calendar.assertHolidayCtaNotVisible()
     })
   })
 
   describe('Child eligibility', () => {
-    test('The holiday reservations banner is not shown if no child is eligible', async () => {
+    test('The holiday reservations toast is not shown if no child is eligible', async () => {
       await holidayQuestionnaireFixture()
         .with({
           conditions: {
@@ -265,7 +265,7 @@ describe('Holiday periods', () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      await calendar.assertHolidayBannerNotVisible()
+      await calendar.assertHolidayCtaNotVisible()
     })
 
     test('Holidays can be marked if one of two children is eligible', async () => {

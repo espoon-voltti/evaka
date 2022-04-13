@@ -160,7 +160,7 @@ const en: Translations = {
       mapLink: 'Units on the map'
     }
   },
-  ctaBanner: {
+  ctaToast: {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Report holidays and make reservations for ${period} by ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>
