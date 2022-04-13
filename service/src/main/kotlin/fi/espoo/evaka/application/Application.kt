@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Instant
 import java.time.LocalDate
@@ -133,10 +134,12 @@ data class ApplicationAttachment(
     val uploadedByPerson: PersonId?
 )
 
-enum class ApplicationType {
+enum class ApplicationType : DatabaseEnum {
     CLUB,
     DAYCARE,
-    PRESCHOOL
+    PRESCHOOL;
+
+    override val sqlType: String = "application_type"
 }
 
 enum class ApplicationStatus {
