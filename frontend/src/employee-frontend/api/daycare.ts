@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
 import {
   DaycareCareArea,
   PublicUnit
@@ -21,7 +22,7 @@ export interface Unit {
 
 export async function getUnits(
   areas: string[],
-  type: 'ALL' | 'CLUB' | 'DAYCARE' | 'PRESCHOOL'
+  type: ApplicationTypeToggle
 ): Promise<Result<Unit[]>> {
   return client
     .get<JsonOf<Unit[]>>(
