@@ -11,7 +11,7 @@ import styled from 'styled-components'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 
-import { defaultButtonTextStyle } from './button-commons'
+import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 
 const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   width: fit-content;
@@ -20,7 +20,7 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
   border: none;
   padding: 0;
   margin: 0;
-  border-radius: 2px;
+  border-radius: ${buttonBorderRadius};
   background: none;
 
   outline: none;

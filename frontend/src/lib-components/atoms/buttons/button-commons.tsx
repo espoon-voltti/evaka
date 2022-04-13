@@ -15,3 +15,5 @@ export const defaultButtonTextStyle = ({ colors }: DefaultTheme) => `
   white-space: nowrap;
   letter-spacing: 0;
 `
+
+export const buttonBorderRadius = '4px'

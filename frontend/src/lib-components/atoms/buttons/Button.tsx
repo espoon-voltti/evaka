@@ -11,7 +11,7 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 
-import { defaultButtonTextStyle } from './button-commons'
+import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 
 export const StyledButton = styled.button`
   min-height: 45px;
@@ -23,7 +23,7 @@ export const StyledButton = styled.button`
   overflow-x: hidden;
 
   border: 1px solid ${(p) => p.theme.colors.main.m2};
-  border-radius: 2px;
+  border-radius: ${buttonBorderRadius};
   background: ${(p) => p.theme.colors.grayscale.g0};
 
   outline: none;
