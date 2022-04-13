@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
+import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -37,14 +38,31 @@ export default React.memo(function ThreadList({
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
+  const history = useHistory()
+  const params = useParams<{ threadId: UUID | undefined }>()
   const t = useTranslation()
   const {
     selectedThread,
-    selectThread,
+    setSelectedThread,
     threads,
     threadLoadingResult,
     loadMoreThreads
   } = useContext(MessageContext)
+
+  useEffect(() => {
+    setSelectedThread(params.threadId)
+  }, [setSelectedThread, params.threadId])
+
+  const selectThread = useCallback(
+    (threadId: UUID | undefined) => {
+      if (!threadId) {
+        history.push('/messages')
+      } else {
+        history.push(`/messages/${threadId}`)
+      }
+    },
+    [history]
+  )
 
   const { setErrorMessage } = useContext(OverlayContext)
   const onAttachmentUnavailable = useCallback(
@@ -103,7 +121,7 @@ export default React.memo(function ThreadList({
           <ThreadListItem
             key={thread.id}
             thread={thread}
-            onClick={() => selectThread(thread)}
+            onClick={() => selectThread(thread.id)}
             active={selectedThread?.id === thread.id}
             hasUnreadMessages={hasUnreadMessages(thread, accountId)}
             onAttachmentUnavailable={onAttachmentUnavailable}

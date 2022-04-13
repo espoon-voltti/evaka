@@ -54,7 +54,7 @@ export interface MessagePageState {
   threadLoadingResult: Result<void>
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
-  selectThread: (thread: MessageThread | undefined) => void
+  setSelectedThread: (threadId: UUID | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
   replyState: Result<void> | undefined
   setReplyContent: (threadId: UUID, content: string) => void
@@ -71,7 +71,7 @@ const defaultState: MessagePageState = {
   threadLoadingResult: Loading.of(),
   loadMoreThreads: () => undefined,
   selectedThread: undefined,
-  selectThread: () => undefined,
+  setSelectedThread: () => undefined,
   sendReply: () => undefined,
   replyState: undefined,
   getReplyContent: () => '',
@@ -206,36 +206,10 @@ export const MessageContextProvider = React.memo(
       setUnreadResult
     )
 
-    const selectThread = useCallback(
-      (thread: MessageThread | undefined) => {
-        if (!thread) {
-          return setThreads((state) => ({
-            ...state,
-            selectedThread: undefined
-          }))
-        }
-
-        const hasUnreadMessages =
-          !!accountId?.isSuccess &&
-          thread.messages.some(
-            (m) => !m.readAt && m.sender.id !== accountId.value
-          )
-
-        setThreads((state) => {
-          return {
-            ...state,
-            threads: markMatchingThreadRead(state.threads, thread.id),
-            selectedThread: thread.id
-          }
-        })
-
-        if (hasUnreadMessages) {
-          void markThreadRead(thread.id).then(() => {
-            refreshUnreadMessagesCount()
-          })
-        }
-      },
-      [accountId, refreshUnreadMessagesCount]
+    const setSelectedThread = useCallback(
+      (threadId: UUID | undefined) =>
+        setThreads((state) => ({ ...state, selectedThread: threadId })),
+      [setThreads]
     )
 
     const selectedThread = useMemo(
@@ -245,6 +219,29 @@ export const MessageContextProvider = React.memo(
           : undefined,
       [threads.selectedThread, threads.threads]
     )
+
+    useEffect(() => {
+      if (!selectedThread) return
+
+      if (!accountId.isSuccess) return
+
+      const hasUnreadMessages = selectedThread?.messages.some(
+        (m) => !m.readAt && m.sender.id !== accountId.value
+      )
+
+      if (hasUnreadMessages) {
+        setThreads((state) => {
+          return {
+            ...state,
+            threads: markMatchingThreadRead(state.threads, selectedThread.id)
+          }
+        })
+
+        void markThreadRead(selectedThread.id).then(() => {
+          refreshUnreadMessagesCount()
+        })
+      }
+    }, [selectedThread, accountId, refreshUnreadMessagesCount])
 
     const value = useMemo(
       () => ({
@@ -257,7 +254,7 @@ export const MessageContextProvider = React.memo(
         setReplyContent,
         loadMoreThreads,
         selectedThread,
-        selectThread,
+        setSelectedThread,
         replyState,
         sendReply,
         unreadMessagesCount,
@@ -273,7 +270,7 @@ export const MessageContextProvider = React.memo(
         setReplyContent,
         loadMoreThreads,
         selectedThread,
-        selectThread,
+        setSelectedThread,
         replyState,
         sendReply,
         unreadMessagesCount,

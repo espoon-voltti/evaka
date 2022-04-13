@@ -197,6 +197,15 @@ const Content = React.memo(function Content() {
           />
           <Route
             exact
+            path="/messages/:threadId"
+            render={() => (
+              <RequireAuth strength="WEAK">
+                <MessagesPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            exact
             path="/messages"
             render={() => (
               <RequireAuth strength="WEAK">
