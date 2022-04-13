@@ -261,6 +261,7 @@ sealed interface Action {
     enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) : ScopedAction<AttachmentId> {
         READ_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         READ_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        READ_INCOME_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN)),
         READ_MESSAGE_CONTENT_ATTACHMENT(
             IsEmployee.hasPermissionForAttachmentThroughMessageContent(),
             IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent(),
@@ -273,6 +274,7 @@ sealed interface Action {
         ),
         DELETE_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
+        DELETE_INCOME_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN)),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
@@ -440,7 +442,8 @@ sealed interface Action {
     }
     enum class Income(override vararg val defaultRules: ScopedActionRule<in IncomeId>) : ScopedAction<IncomeId> {
         UPDATE(HasGlobalRole(FINANCE_ADMIN)),
-        DELETE(HasGlobalRole(FINANCE_ADMIN));
+        DELETE(HasGlobalRole(FINANCE_ADMIN)),
+        UPLOAD_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

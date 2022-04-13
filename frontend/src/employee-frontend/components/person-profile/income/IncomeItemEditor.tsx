@@ -5,6 +5,7 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
+import { Attachment } from 'lib-common/api-types/attachment'
 import {
   IncomeCoefficient,
   IncomeEffect,
@@ -14,6 +15,7 @@ import {
 import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -25,9 +27,15 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveIncomeAttachment
+} from '../../../api/attachments'
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeFields } from '../../../types/income'
@@ -50,6 +58,7 @@ export interface IncomeForm {
   validFrom: LocalDate
   validTo?: LocalDate
   notes: string
+  attachments: Attachment[]
 }
 
 function incomeFormFromIncome(value: IncomeBody): IncomeForm {
@@ -63,7 +72,8 @@ const emptyIncome: IncomeForm = {
   worksAtECHA: false,
   notes: '',
   validFrom: LocalDate.today(),
-  validTo: undefined
+  validTo: undefined,
+  attachments: []
 }
 
 export const coefficientMultipliers: Record<IncomeCoefficient, number> = {
@@ -273,6 +283,22 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           />
         </>
       ) : null}
+      <IncomeAttachments
+        incomeId={baseIncome?.id ?? null}
+        attachments={baseIncome?.attachments ?? []}
+        onUploaded={(attachment) => {
+          setEditedIncome((prev) => ({
+            ...prev,
+            attachments: prev.attachments.concat(attachment)
+          }))
+        }}
+        onDeleted={(deletedId) => {
+          setEditedIncome((prev) => ({
+            ...prev,
+            attachments: prev.attachments.filter(({ id }) => id !== deletedId)
+          }))
+        }}
+      />
       <ButtonsContainer>
         <Button onClick={cancel} text={i18n.common.cancel} />
         <AsyncButton
@@ -295,5 +321,57 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
     </>
   )
 })
+
+function IncomeAttachments({
+  incomeId,
+  attachments,
+  onUploaded,
+  onDeleted
+}: {
+  incomeId: UUID | null
+  attachments: Attachment[]
+  onUploaded: (attachment: Attachment) => void
+  onDeleted: (id: UUID) => void
+}) {
+  const { i18n } = useTranslation()
+
+  const handleUpload = useCallback(
+    async (
+      file: File,
+      onUploadProgress: (progressEvent: ProgressEvent) => void
+    ) =>
+      (await saveIncomeAttachment(incomeId, file, onUploadProgress)).map(
+        (id) => {
+          onUploaded({ id, name: file.name, contentType: file.type })
+          return id
+        }
+      ),
+    [incomeId, onUploaded]
+  )
+
+  const handleDelete = useCallback(
+    async (id: UUID) => {
+      return (await deleteAttachment(id)).map(() => {
+        onDeleted(id)
+      })
+    },
+    [onDeleted]
+  )
+
+  return (
+    <>
+      <H1>{i18n.incomeStatement.employeeAttachments.title}</H1>
+      <P>{i18n.incomeStatement.employeeAttachments.description}</P>
+      <FileUpload
+        data-qa="income-attachment-upload"
+        files={attachments}
+        onUpload={handleUpload}
+        onDelete={handleDelete}
+        onDownloadFile={getAttachmentBlob}
+        i18n={i18n.fileUpload}
+      />
+    </>
+  )
+}
 
 export default IncomeItemEditor

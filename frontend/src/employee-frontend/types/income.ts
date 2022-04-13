@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -18,6 +19,7 @@ export interface IncomeBody {
   validFrom: LocalDate
   validTo?: LocalDate
   notes: string
+  attachments: Attachment[]
 }
 
 export interface Income extends IncomeBody {

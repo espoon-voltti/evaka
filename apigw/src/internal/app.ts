@@ -157,6 +157,12 @@ function internalApiRouter() {
     createProxy({ multipart: true })
   )
   router.put('/children/:childId/image', createProxy({ multipart: true }))
+
+  router.post(
+    '/attachments/income/:incomeId?',
+    createProxy({ multipart: true })
+  )
+
   router.use(createProxy())
   return router
 }
