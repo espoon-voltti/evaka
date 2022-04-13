@@ -212,4 +212,81 @@ describe('Employee searches applications', () => {
     )
     await applicationListView.assertApplicationCount(1)
   })
+  test('Application type filters work', async () => {
+    const careArea = await Fixture.careArea().save()
+    const club = await Fixture.daycare()
+      .with({
+        type: ['CLUB']
+      })
+      .careArea(careArea)
+      .save()
+    const daycare = await Fixture.daycare()
+      .with({
+        type: ['CENTRE']
+      })
+      .careArea(careArea)
+      .save()
+    const preschool = await Fixture.daycare()
+      .with({
+        type: ['PRESCHOOL']
+      })
+      .careArea(careArea)
+      .save()
+    const clubApplication = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'CLUB',
+        null,
+        [club.data.id]
+      ),
+      id: uuidv4()
+    }
+    const daycareApplication = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'DAYCARE',
+        null,
+        [daycare.data.id]
+      ),
+      id: uuidv4()
+    }
+    const preschoolApplication = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'PRESCHOOL',
+        null,
+        [preschool.data.id]
+      ),
+      id: uuidv4()
+    }
+    await insertApplications([
+      clubApplication,
+      daycareApplication,
+      preschoolApplication
+    ])
+    const applicationListView = await openPage()
+
+    await applicationListView.filterByApplicationType('ALL')
+    await applicationListView.assertApplicationCount(3)
+
+    await applicationListView.filterByApplicationType('CLUB')
+    await applicationListView.assertApplicationCount(1)
+    await applicationListView.assertApplicationIsVisible(clubApplication.id)
+
+    await applicationListView.filterByApplicationType('DAYCARE')
+    await applicationListView.assertApplicationCount(1)
+    await applicationListView.assertApplicationIsVisible(daycareApplication.id)
+
+    await applicationListView.filterByApplicationType('PRESCHOOL')
+    await applicationListView.assertApplicationCount(1)
+    await applicationListView.assertApplicationIsVisible(
+      preschoolApplication.id
+    )
+  })
 })

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
 import { MultiSelect, Page } from '../../../utils/page'
@@ -67,5 +69,9 @@ export default class ApplicationListView {
     voucherOnly: this.page.find('[data-qa="filter-voucher-all"]'),
     voucherHide: this.page.find('[data-qa="filter-voucher-hide"]'),
     noFilter: this.page.find('[data-qa="filter-voucher-no-filter"]')
+  }
+
+  async filterByApplicationType(type: ApplicationTypeToggle) {
+    await this.page.find(`[data-qa="application-type-filter-${type}"]`).click()
   }
 }
