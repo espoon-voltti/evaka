@@ -14,8 +14,11 @@ import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
+import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.DevDataInitializer
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
@@ -49,9 +52,9 @@ class EspooConfig {
         }
 
     @Bean
-    fun patuIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooPatuIntegrationEnv>, jsonMapper: JsonMapper): PatuIntegrationClient =
+    fun patuIntegrationClient(env: EspooEnv, patuEnv: ObjectProvider<EspooPatuIntegrationEnv>, jsonMapper: JsonMapper): PatuIntegrationClient =
         when (env.patuIntegrationEnabled) {
-            true -> EspooPatuIntegrationClient(invoiceEnv.getObject(), jsonMapper)
+            true -> EspooPatuIntegrationClient(patuEnv.getObject(), jsonMapper)
             false -> PatuIntegrationClient.MockPatuClient(jsonMapper)
         }
 
@@ -62,6 +65,10 @@ class EspooConfig {
     @Bean
     @Lazy
     fun espooPatuIntegrationEnv(env: Environment) = EspooPatuIntegrationEnv.fromEnvironment(env)
+
+    @Bean
+    fun espooPatuAsyncJobProcessor(asyncJobRunner: AsyncJobRunner<AsyncJob>, patuIntegrationClient: PatuIntegrationClient) =
+        PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
@@ -135,9 +142,9 @@ data class EspooPatuIntegrationEnv(
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = EspooPatuIntegrationEnv(
-            url = env.lookup("espoo.integration.patu.url"),
-            username = env.lookup("espoo.integration.patu.username"),
-            password = Sensitive(env.lookup("espoo.integration.patu.password"))
+            url = env.lookup("fi.espoo.integration.patu.url"),
+            username = env.lookup("fi.espoo.integration.patu.username"),
+            password = Sensitive(env.lookup("fi.espoo.integration.patu.password"))
         )
     }
 }
