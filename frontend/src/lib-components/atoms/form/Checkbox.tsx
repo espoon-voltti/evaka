@@ -18,6 +18,7 @@ const Wrapper = styled.div`
   display: flex;
   align-items: flex-start;
   cursor: pointer;
+  width: fit-content;
 
   label {
     font-size: 1rem;
