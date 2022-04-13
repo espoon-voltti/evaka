@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
+import Footer from 'citizen-frontend/Footer'
 import {
   Attachment,
   PedagogicalDocumentCitizen
@@ -370,6 +371,7 @@ export default React.memo(function PedagogicalDocuments() {
             onAttachmentUnavailable={onAttachmentUnavailable}
           />
         ))}
+        <Footer />
       </Container>
     </>
   )
