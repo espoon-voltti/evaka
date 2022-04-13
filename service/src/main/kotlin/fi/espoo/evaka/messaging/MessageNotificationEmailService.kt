@@ -9,6 +9,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -42,14 +43,16 @@ class MessageNotificationEmailService(
         return tx.createQuery(
             """
             SELECT DISTINCT
+                m.thread_id,
                 mr.id as message_recipient_id,
                 p.id as person_id,
                 p.email as person_email,
                 coalesce(lower(p.language), 'fi') as language
-            FROM message_recipients mr
+            FROM message m
+            JOIN message_recipients mr ON mr.message_id = m.id
             JOIN message_account ma ON ma.id = mr.recipient_id 
             JOIN person p ON p.id = ma.person_id
-            WHERE mr.message_id = :messageId
+            WHERE m.id = :messageId
               AND mr.read_at IS NULL
               AND mr.notification_sent_at IS NULL
               AND p.email IS NOT NULL
@@ -58,6 +61,7 @@ class MessageNotificationEmailService(
             .bind("messageId", messageId)
             .map { row ->
                 AsyncJob.SendMessageNotificationEmail(
+                    threadId = row.mapColumn("thread_id"),
                     messageRecipientId = row.mapColumn("message_recipient_id"),
                     personEmail = row.mapColumn("person_email"),
                     language = getLanguage(row.mapColumn("language"))
@@ -84,7 +88,7 @@ class MessageNotificationEmailService(
     }
 
     fun sendMessageNotification(db: Database.Connection, msg: AsyncJob.SendMessageNotificationEmail) {
-        val (messageRecipientId, personEmail, language) = msg
+        val (threadId, messageRecipientId, personEmail, language) = msg
 
         db.transaction { tx ->
             emailClient.sendEmail(
@@ -92,8 +96,8 @@ class MessageNotificationEmailService(
                 toAddress = personEmail,
                 fromAddress = getFromAddress(language),
                 subject = getSubject(),
-                htmlBody = getHtml(language),
-                textBody = getText(language)
+                htmlBody = getHtml(language, threadId),
+                textBody = getText(language, threadId)
             )
             tx.markNotificationAsSent(messageRecipientId)
         }
@@ -105,16 +109,16 @@ class MessageNotificationEmailService(
         return "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
     }
 
-    private fun getCitizenMessagesUrl(lang: Language): String {
+    private fun getCitizenMessageUrl(lang: Language, threadId: MessageThreadId?): String {
         val base = when (lang) {
             Language.sv -> baseUrlSv
             else -> baseUrl
         }
-        return "$base/messages"
+        return "$base/messages${if (threadId == null) "" else "/$threadId"}"
     }
 
-    private fun getHtml(language: Language): String {
-        val messagesUrl = getCitizenMessagesUrl(language)
+    private fun getHtml(language: Language, threadId: MessageThreadId?): String {
+        val messagesUrl = getCitizenMessageUrl(language, threadId)
         return """
                 <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
@@ -131,22 +135,22 @@ class MessageNotificationEmailService(
         """.trimIndent()
     }
 
-    private fun getText(language: Language): String {
-        val messagesUrl = getCitizenMessagesUrl(language)
+    private fun getText(language: Language, threadId: MessageThreadId?): String {
+        val messageUrl = getCitizenMessageUrl(language, threadId)
         return """
-                Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messagesUrl
+                Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messageUrl
                 
                 Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
                 
                 -----
        
-                Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messagesUrl
+                Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messageUrl
                 
                 Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
                 
                 -----
                 
-                You have received a new eVaka bulletin/message. Read the message here: $messagesUrl
+                You have received a new eVaka bulletin/message. Read the message here: $messageUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
         """.trimIndent()

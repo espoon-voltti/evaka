@@ -26,7 +26,7 @@ class MockEmailClient : IEmailClient {
         textBody: String
     ) {
         if (validateToAddress(traceId, toAddress)) {
-            logger.info { "Mock sending application email (personId: $traceId toAddress: $toAddress)" }
+            logger.info { "Mock sending email (personId: $traceId toAddress: $toAddress)" }
             emails.add(MockEmail(traceId, toAddress, fromAddress, subject, htmlBody, textBody))
         }
     }

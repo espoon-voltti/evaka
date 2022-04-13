@@ -31,7 +31,7 @@ export const Truncated = styled.span`
     margin-right: ${defaultMargins.s};
   }
 `
-export const Container = styled.div<{ isRead: boolean; active: boolean }>`
+export const Container = styled.button<{ isRead: boolean; active: boolean }>`
   text-align: left;
   width: 100%;
 
@@ -42,9 +42,9 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   &:focus {
+    outline: none;
     border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
-    margin: -1px 0;
-    padding: ${defaultMargins.s} calc(${defaultMargins.m} - 1px);
+    padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 1px);
   }
 
   ${(p) =>

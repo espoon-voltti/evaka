@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -85,7 +86,8 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendMessageNotificationEmail(val messageRecipientId: MessageAccountId, val personEmail: String, val language: Language) : AsyncJob {
+    // threadId is nullable for backwards compatibility
+    data class SendMessageNotificationEmail(val threadId: MessageThreadId?, val messageRecipientId: MessageAccountId, val personEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
