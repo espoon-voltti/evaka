@@ -93,20 +93,34 @@ function HeaderContainer({
   )
 }
 
+const NavLinkWrapper = styled.div`
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  border-bottom: 4px solid transparent;
+  margin: 6px 24px;
+  padding: 10px 0;
+`
+
 const NavbarLink = styled(NavLink)`
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   min-height: 2.5rem;
-  border-bottom: 4px solid transparent;
+  border: 2px solid transparent;
+  border-radius: 2px;
 
   &.active {
-    border-bottom: 4px solid ${(p) => p.theme.colors.main.m2};
-
+    ${NavLinkWrapper} {
+      border-bottom: 4px solid ${(p) => p.theme.colors.main.m2};
+    }
     ${NavLinkText} {
       color: ${(p) => p.theme.colors.main.m2};
       font-weight: ${fontWeights.bold};
     }
+  }
+  :focus {
+    border-color: ${(p) => p.theme.colors.main.m3};
   }
   :hover {
     ${NavLinkText} {
@@ -216,7 +230,9 @@ export default React.memo(function Header() {
                 to="/applications"
                 data-qa="applications-nav"
               >
-                <NavLinkText>{i18n.header.applications}</NavLinkText>
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.applications}</NavLinkText>
+                </NavLinkWrapper>
               </NavbarLink>
             )}
 
@@ -227,7 +243,9 @@ export default React.memo(function Header() {
                 to="/units"
                 data-qa="units-nav"
               >
-                <NavLinkText>{i18n.header.units}</NavLinkText>
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.units}</NavLinkText>
+                </NavLinkWrapper>
               </NavbarLink>
             )}
 
@@ -240,7 +258,9 @@ export default React.memo(function Header() {
                 to="/search"
                 data-qa="search-nav"
               >
-                <NavLinkText>{i18n.header.search}</NavLinkText>
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.search}</NavLinkText>
+                </NavLinkWrapper>
               </NavbarLink>
             )}
 
@@ -251,7 +271,9 @@ export default React.memo(function Header() {
                 to="/finance"
                 data-qa="finance-nav"
               >
-                <NavLinkText>{i18n.header.finance}</NavLinkText>
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.finance}</NavLinkText>
+                </NavLinkWrapper>
               </NavbarLink>
             )}
 
@@ -262,7 +284,9 @@ export default React.memo(function Header() {
                 to="/reports"
                 data-qa="reports-nav"
               >
-                <NavLinkText>{i18n.header.reports}</NavLinkText>
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.reports}</NavLinkText>
+                </NavLinkWrapper>
               </NavbarLink>
             )}
 
@@ -273,8 +297,10 @@ export default React.memo(function Header() {
                 to="/messages"
                 data-qa="messages-nav"
               >
-                <NavLinkText>{i18n.header.messages} </NavLinkText>
-                {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+                <NavLinkWrapper>
+                  <NavLinkText>{i18n.header.messages} </NavLinkText>
+                  {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+                </NavLinkWrapper>
               </NavbarLink>
             )}
           </NavLinks>
