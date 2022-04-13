@@ -12,6 +12,7 @@ import { colors } from 'lib-customizations/common'
 
 import RequireAuth from '../RequireAuth'
 import Applications from '../applications/Applications'
+import { useUser } from '../auth/state'
 import Decisions from '../decisions/decisions-page/Decisions'
 import { useTranslation } from '../localization'
 import MapView from '../map/MapView'
@@ -22,6 +23,7 @@ const WhiteBg = styled.div`
 
 export default React.memo(function ApplyingRouter() {
   const t = useTranslation()
+  const user = useUser()
 
   const tabs = [
     {
@@ -44,9 +46,11 @@ export default React.memo(function ApplyingRouter() {
   return (
     <>
       <Gap size="s" />
-      <WhiteBg>
-        <Tabs tabs={tabs} data-qa="applying-subnavigation" />
-      </WhiteBg>
+      {user && (
+        <WhiteBg>
+          <Tabs tabs={tabs} data-qa="applying-subnavigation" />
+        </WhiteBg>
+      )}
       <Switch>
         <Route
           exact
