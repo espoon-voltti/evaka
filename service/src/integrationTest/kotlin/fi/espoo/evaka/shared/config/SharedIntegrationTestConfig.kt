@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
+import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -132,6 +133,9 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(jsonMapper)
+
+    @Bean
+    fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient = PatuIntegrationClient.MockPatuClient(jsonMapper)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()

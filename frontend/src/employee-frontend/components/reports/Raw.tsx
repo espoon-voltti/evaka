@@ -52,7 +52,6 @@ export default React.memo(function Raw() {
     value?.toString().replace(/\./, ',') ?? null
 
   const submitPatuReport = () => {
-    console.log('SEND', filters)
     return sendPatuReport(filters)
   }
 

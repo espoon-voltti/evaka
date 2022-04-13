@@ -10,11 +10,13 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
+import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
 
+@Component
 class PatuAsyncJobProcessor(
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val patuIntegrationClient: PatuIntegrationClient
 ) {
     init {
