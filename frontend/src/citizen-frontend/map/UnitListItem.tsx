@@ -45,7 +45,12 @@ export default React.memo(function UnitListItem({
   )
 })
 
-const Wrapper = styled.div`
+const Wrapper = styled.button`
+  background: none;
+  border: none;
+  display: block;
+  width: 100%;
+  text-align: left;
   margin-bottom: ${dM.s};
   cursor: pointer;
 
