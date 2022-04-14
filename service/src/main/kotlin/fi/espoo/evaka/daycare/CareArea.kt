@@ -117,13 +117,6 @@ data class Location(
     val url: String? = null
 )
 
-data class CareArea(
-    val id: AreaId,
-    val name: String,
-    val shortName: String,
-    val locations: List<Location>
-)
-
 data class UnitStub(
     val id: DaycareId,
     val name: String
