@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components'
@@ -9,6 +10,7 @@ import styled from 'styled-components'
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
+import { faLockAlt } from 'lib-icons'
 
 import RequireAuth from '../RequireAuth'
 import Applications from '../applications/Applications'
@@ -24,12 +26,21 @@ const WhiteBg = styled.div`
 export default React.memo(function ApplyingRouter() {
   const t = useTranslation()
   const user = useUser()
+  const isEndUser = user?.userType === 'ENDUSER'
+
+  const maybeLockElem = !isEndUser && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
 
   const tabs = [
     {
       id: 'applications',
       link: '/applying/applications',
-      label: t.header.nav.applications
+      label: (
+        <>
+          {t.header.nav.applications} {maybeLockElem}
+        </>
+      )
     },
     {
       id: 'map',
@@ -39,18 +50,20 @@ export default React.memo(function ApplyingRouter() {
     {
       id: 'decisions',
       link: '/applying/decisions',
-      label: t.header.nav.decisions
+      label: (
+        <>
+          {t.header.nav.decisions} {maybeLockElem}
+        </>
+      )
     }
   ]
 
   return (
     <>
       <Gap size="s" />
-      {user && (
-        <WhiteBg>
-          <Tabs tabs={tabs} data-qa="applying-subnavigation" />
-        </WhiteBg>
-      )}
+      <WhiteBg>
+        <Tabs tabs={tabs} data-qa="applying-subnavigation" />
+      </WhiteBg>
       <Switch>
         <Route
           exact
@@ -73,7 +86,11 @@ export default React.memo(function ApplyingRouter() {
         />
         <Route
           path="/"
-          render={() => <Redirect to="/applying/applications" />}
+          render={() => (
+            <Redirect
+              to={isEndUser ? '/applying/applications' : '/applying/map'}
+            />
+          )}
         />
       </Switch>
     </>
