@@ -7,7 +7,6 @@ package fi.espoo.evaka.application
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
@@ -294,8 +293,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         }
         uploadAttachment(applicationId, endUser, AttachmentType.URGENCY)
         uploadAttachment(applicationId, endUser, AttachmentType.EXTENDED_CARE)
+        val today = LocalDate.of(2021, 1, 1)
         db.transaction { tx ->
-            stateService.sendApplication(tx, serviceWorker, applicationId, currentDateInFinland())
+            stateService.sendApplication(tx, serviceWorker, applicationId, today)
             stateService.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             stateService.createPlacementPlan(
                 tx,
