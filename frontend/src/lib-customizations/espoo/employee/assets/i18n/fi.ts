@@ -1027,7 +1027,7 @@ export const fi = {
       noteModalTitle: 'Talouden oma muistiinpano',
       noteModalInfo: 'Muistiinpano ei tule näkyviin laskulle.',
       invoiceStatusHeader: 'Tila',
-      invoiceStatus: (status: InvoiceStatus) =>
+      invoiceStatus: (status: InvoiceStatus | null) =>
         status === 'DRAFT'
           ? 'Seuraavalla luonnoksella'
           : status
