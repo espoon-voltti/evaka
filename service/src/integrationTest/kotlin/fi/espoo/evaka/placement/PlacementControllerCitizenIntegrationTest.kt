@@ -117,7 +117,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
-        assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
+        assertEquals("${parent.lastName} ${parent.firstName}", childPlacements[0].placements[0].terminatedBy?.name)
 
         assertEquals(false, childPlacements[1].terminatable)
         assertEquals(listOf(null), childPlacements[1].placements.map { it.terminationRequestedDate })
@@ -193,7 +193,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(placementTerminationDate, preschoolPlacement.endDate)
         assertEquals(1, preschoolPlacement.placements.size)
         assertEquals(today, preschoolPlacement.placements[0].terminationRequestedDate)
-        assertEquals("${parent.firstName} ${parent.lastName}", preschoolPlacement.placements[0].terminatedBy?.name)
+        assertEquals("${parent.lastName} ${parent.firstName}", preschoolPlacement.placements[0].terminatedBy?.name)
         assertEquals(PlacementType.PRESCHOOL, preschoolPlacement.placements[0].type)
 
         // club placement is unaffected
@@ -601,7 +601,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(TerminatablePlacementType.DAYCARE, childPlacements[0].type)
         assertEquals(1, childPlacements[0].placements.size)
         assertEquals(today, childPlacements[0].placements[0].terminationRequestedDate)
-        assertEquals("${parent.firstName} ${parent.lastName}", childPlacements[0].placements[0].terminatedBy?.name)
+        assertEquals("${parent.lastName} ${parent.firstName}", childPlacements[0].placements[0].terminatedBy?.name)
 
         assertEquals(listOf(null), (childPlacements[1].placements + childPlacements[1].additionalPlacements).map { it.terminationRequestedDate })
     }

@@ -484,7 +484,7 @@ class DevApi(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val personId = tx.insertTestPerson(body)
-                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId.raw), type = EvakaUserType.CITIZEN, name = body.firstName.plus(' ').plus(body.lastName)))
+                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId.raw), type = EvakaUserType.CITIZEN, name = "${body.lastName} ${body.firstName}"))
                 tx.createPersonMessageAccount(personId)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {

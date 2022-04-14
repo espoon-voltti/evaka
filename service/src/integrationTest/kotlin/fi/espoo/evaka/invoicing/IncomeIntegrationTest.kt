@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -68,6 +68,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     )
 
     private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUserName = "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}"
 
     @Test
     fun `getIncome works with no data in DB`() {
@@ -90,7 +91,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(testIncome.copy(updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
+            listOf(testIncome.copy(updatedBy = financeUserName)),
             deserializeResult(result.get()).data
         )
     }
@@ -114,7 +115,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            incomes.map { it.copy(updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}") },
+            incomes.map { it.copy(updatedBy = financeUserName) },
             deserializeResult(result.get()).data
         )
     }
@@ -134,7 +135,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(testIncome.copy(updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
+            listOf(testIncome.copy(updatedBy = financeUserName)),
             deserializeResult(result.get()).data
         )
     }
@@ -231,7 +232,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(income.copy(data = emptyMap(), updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
+            listOf(income.copy(data = emptyMap(), updatedBy = financeUserName)),
             deserializeResult(result.get()).data
         )
     }
@@ -262,7 +263,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
+            listOf(updated.copy(updatedBy = financeUserName)),
             deserializeResult(result.get()).data
         )
     }
@@ -320,7 +321,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(data = emptyMap(), updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
+            listOf(updated.copy(data = emptyMap(), updatedBy = financeUserName)),
             deserializeResult(result.get()).data
         )
     }

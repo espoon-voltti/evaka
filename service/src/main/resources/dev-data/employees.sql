@@ -16,7 +16,7 @@ INSERT INTO employee (id, first_name, last_name, email, external_id) VALUES
     ('00000000-0000-0000-0006-000000000000', 'Erkki', 'Erityisopettaja', 'erkki.erityisopettaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0006-000000000000');
 
 INSERT INTO evaka_user (id, type, employee_id, name)
-SELECT id, 'EMPLOYEE', id, first_name || ' ' || last_name
+SELECT id, 'EMPLOYEE', id, last_name || ' ' || first_name
 FROM employee;
 
 INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
