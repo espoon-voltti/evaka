@@ -53,13 +53,13 @@ import { ApplicationSummaryStatus } from '../../types/application'
 import { FlexRow } from './styled/containers'
 
 interface Props {
-  freeText: string
-  setFreeText: (s: string) => void
+  freeText?: string
+  setFreeText?: (s: string) => void
   clearFilters: () => void
   column1?: JSX.Element
   column2?: JSX.Element
   column3?: JSX.Element
-  searchPlaceholder: string
+  searchPlaceholder?: string
   clearMargin?: number
 }
 
@@ -110,11 +110,13 @@ export function Filters({
 
   return (
     <FiltersContainer>
-      <FreeTextSearch
-        value={freeText}
-        setValue={setFreeText}
-        placeholder={searchPlaceholder}
-      />
+      {freeText && setFreeText && (
+        <FreeTextSearch
+          value={freeText}
+          setValue={setFreeText}
+          placeholder={searchPlaceholder}
+        />
+      )}
       <Gap size="s" />
       <FilterColumns>
         <Column>{column1}</Column>
