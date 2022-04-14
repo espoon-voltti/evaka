@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import java.util.UUID
 
@@ -244,6 +245,15 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: 
     }
 }
 
-fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, capacityFactor: BigDecimal, serviceCoefficient: BigDecimal): Int {
-    return (BigDecimal(voucherValues.baseValue) * ageCoefficient * capacityFactor * serviceCoefficient).toInt()
+fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, capacityFactor: BigDecimal, serviceCoefficient: BigDecimal, ageCoefficientRoundingEnabled: Boolean): Int {
+    val baseValueWithAgeCoefficient = calculateBaseValueWithAgeCoefficient(voucherValues.baseValue, ageCoefficient, ageCoefficientRoundingEnabled)
+    return (baseValueWithAgeCoefficient * capacityFactor * serviceCoefficient).toInt()
+}
+
+private fun calculateBaseValueWithAgeCoefficient(baseValue: Int, ageCoefficient: BigDecimal, roundingEnabled: Boolean): BigDecimal {
+    val value = BigDecimal(baseValue) * ageCoefficient
+    return when (roundingEnabled) {
+        true -> value.divide(BigDecimal("100"), 0, RoundingMode.HALF_UP).multiply(BigDecimal("100"))
+        false -> value
+    }
 }

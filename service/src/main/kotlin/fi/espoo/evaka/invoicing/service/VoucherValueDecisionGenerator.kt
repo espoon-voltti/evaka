@@ -36,6 +36,7 @@ import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -48,7 +49,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 internal fun Database.Transaction.handleValueDecisionChanges(
-    capacityFactorEnabled: Boolean,
+    featureConfig: FeatureConfig,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
@@ -62,7 +63,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val voucherValues = getVoucherValues(from)
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val capacityFactors = if (capacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
+    val capacityFactors = if (featureConfig.valueDecisionCapacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
@@ -79,7 +80,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             incomes,
             capacityFactors,
             feeAlterations,
-            serviceVoucherUnits
+            serviceVoucherUnits,
+            featureConfig
         )
 
     lockValueDecisionsForChild(child.id)
@@ -112,7 +114,8 @@ private fun generateNewValueDecisions(
     incomes: List<Income>,
     capacityFactors: List<AssistanceNeedCapacityFactor>,
     feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<DaycareId>
+    serviceVoucherUnits: List<DaycareId>,
+    featureConfig: FeatureConfig
 ): List<VoucherValueDecision> {
     val periods = families.map { it.period } +
         incomes.map { DateRange(it.validFrom, it.validTo) } +
@@ -198,7 +201,7 @@ private fun generateNewValueDecisions(
                     val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
                     val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
-                    val value = calculateVoucherValue(voucherValue, ageCoefficient, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
+                    val value = calculateVoucherValue(voucherValue, ageCoefficient, capacityFactor, placement.serviceNeed.voucherValueCoefficient, featureConfig.valueDecisionAgeCoefficientRoundingEnabled)
 
                     // Do not generate a decision if the value towards the voucher unit is zero
                     if (value == 0) null

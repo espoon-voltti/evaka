@@ -12,6 +12,13 @@ data class FeatureConfig(
      */
     val valueDecisionCapacityFactorEnabled: Boolean,
 
+    /** Should voucher value be rounded to euros after multiplying with age coefficient?
+     *
+     * If true, voucher value is rounded to euros after multiplying with age coefficient (and before capacity factor and service coefficient)
+     * If false, voucher value is NOT rounded after multiplying with age coefficient
+     */
+    val valueDecisionAgeCoefficientRoundingEnabled: Boolean,
+
     /** Whether to show service needs on application form */
     val daycareApplicationServiceNeedOptionsEnabled: Boolean,
 
