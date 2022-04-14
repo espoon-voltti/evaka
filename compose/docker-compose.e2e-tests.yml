@@ -8,13 +8,20 @@ version: "3.5"
 
 services:
   playwright:
-    image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-playwright:${COMPOSE_TAG:-v0.1.0}
+    image: public.ecr.aws/p6g0g5e1/evaka/e2e-playwright:${COMPOSE_TAG:-v0.1.0}
     build:
       context: ./e2e
       dockerfile: ./playwright.Dockerfile
     volumes:
       - ..:/repo
     ipc: host
+    network_mode: host
     environment:
-      CI: ${CI:-false}
+      HEADLESS: ${HEADLESS:-true}
       DEBUG: ${DEBUG:-}
+    depends_on:
+      - keycloak
+      - evaka-proxy
+      - enduser-gw
+      - internal-gw
+      - evaka-srv

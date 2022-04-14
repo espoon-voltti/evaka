@@ -17,7 +17,7 @@ export async function delay(ms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }
 
-const WAIT_TIMEOUT_SECONDS = config.playwright.ci ? 30 : 5
+const WAIT_TIMEOUT_SECONDS = config.playwright.headless ? 30 : 5
 const WAIT_LOOP_INTERVAL_MS = 100
 
 export class WaitTimeout extends BaseError {}

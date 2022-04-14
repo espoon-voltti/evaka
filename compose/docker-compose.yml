@@ -64,6 +64,52 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    build:
+      context: ../keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_FRONTEND_URL: "http://${KEYCLOAK_HOST:-localhost}:8080/auth/"
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      DB_VENDOR: POSTGRES
+      DB_ADDR: db
+      DB_DATABASE: keycloak
+      DB_SCHEMA: public
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      KEYCLOAK_WELCOME_THEME: evaka
+      DISABLE_JSON_LOG: "true"
+      #KEYCLOAK_LOGLEVEL: DEBUG
+    command: [
+        '-b',
+        '0.0.0.0',
+        '-Dkeycloak.migration.action=import',
+        '-Dkeycloak.migration.provider=singleFile',
+        '-Dkeycloak.migration.file=/configuration/evaka.json',
+        '-Dkeycloak.migration.strategy=OVERWRITE_EXISTING',
+        '-Dkeycloak.profile.feature.scripts=enabled',
+        '--server-config=standalone.xml',
+      ]
+    volumes:
+      - ../keycloak/compose-resources/configuration:/configuration
+    entrypoint: /configuration/entrypoint-no-cache.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    depends_on:
+      - smtp
+      - db
+
+  smtp:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
 volumes:
   db-data:
     driver: local

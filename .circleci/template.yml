@@ -462,7 +462,7 @@ commands:
               echo "Retrying ..."
               sleep 5
             done
-            CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
+            CI=true ./compose-e2e up -d
       - restore_frontend_deps
       - restore_frontend_comm_deps
       - run:
@@ -470,8 +470,11 @@ commands:
           working_directory: << pipeline.parameters.workspace_root >>
           command: |
             export COMPOSE_TAG=master
-            docker pull "307238562370.dkr.ecr.eu-west-1.amazonaws.com/evaka/e2e-playwright:${CIRCLE_SHA1}" \
+            docker pull "<< pipeline.parameters.ecr_public >>/evaka/e2e-playwright:${CIRCLE_SHA1}" \
               && export COMPOSE_TAG=${CIRCLE_SHA1} || true
+            cd ./compose
+            ./test-e2e build playwright
+            cd -
             CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
       - run:
           name: Collect docker-compose logs

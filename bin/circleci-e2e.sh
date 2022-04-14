@@ -17,15 +17,21 @@ if [ "${DEBUG:-X}" = "true" ]; then
   set -x
 fi
 
-if [ "${1:-X}" = "X" ]; then
-  echo "Usage: $0 playwright"
+if [ "$#" != "0" ] && [ "$#" != "1" ]; then
+  echo "Usage: $0"
+  echo "       $0 playwright"
   exit 1
 fi
 
 COMPOSE_NETWORK=${COMPOSE_NETWORK:-compose_default}
 SKIP_SPLIT=${SKIP_SPLIT:-false}
 PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION:-v1.21.1}
-TEST_RUNNER=$1
+TEST_RUNNER="${1:-"playwright"}"
+
+if [ "$TEST_RUNNER" != "playwright" ]; then
+    echo "ERROR: Invalid test_runner: $TEST_RUNNER"
+    exit 1
+fi
 
 # Ensure we are in repository root
 pushd "$(dirname "${BASH_SOURCE[0]}")"/..
@@ -33,17 +39,13 @@ pushd "$(dirname "${BASH_SOURCE[0]}")"/..
 if [ "$SKIP_SPLIT" != 'true' ]; then
   pushd frontend
   # Get list of test files that should run on this node.
-  if [ "$TEST_RUNNER" = "playwright" ]; then
-    mapfile -t FILENAMES < <(circleci tests glob \
-        'src/e2e-test/specs/**/*.spec.ts' \
-        | sort -h \
-        | circleci tests split --split-by=timings --timings-type=filename)
-    printf '%s\n' 'Spec files selected for node:' "${FILENAMES[@]}"
-    printf "%s\n" "${FILENAMES[@]}" > playwright-filenames.txt
-  else
-    echo "ERROR: Invalid test_runner: $TEST_RUNNER"
-    exit 1
-  fi
+  mapfile -t FILENAMES < <(circleci tests glob \
+      'src/e2e-test/specs/**/*.spec.ts' \
+      | sort -h \
+      | circleci tests split --split-by=timings --timings-type=filename)
+  printf '%s\n' 'Spec files selected for node:' "${FILENAMES[@]}"
+  printf "%s\n" "${FILENAMES[@]}" > playwright-filenames.txt
+
   popd
 fi
 

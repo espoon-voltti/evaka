@@ -37,7 +37,7 @@ declare global {
 let browser: Browser
 
 const DISABLE_JEST_TIMEOUT = 1_000_000_000 // 0 or Infinity unfortunately don't work
-jest.setTimeout(config.playwright.ci ? 60_000 : DISABLE_JEST_TIMEOUT)
+jest.setTimeout(config.playwright.headless ? 60_000 : DISABLE_JEST_TIMEOUT)
 
 beforeAll(async () => {
   browser = await playwright[config.playwright.browser].launch({
@@ -194,7 +194,7 @@ export async function newBrowserContext(
     sources: true
   })
   ctx.on('page', configurePage)
-  ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
+  ctx.setDefaultTimeout(config.playwright.headless ? 30_000 : 5_000)
   await ctx.addInitScript({
     content: initScript({
       mockedTime,
