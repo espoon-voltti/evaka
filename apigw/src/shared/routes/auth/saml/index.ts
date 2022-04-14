@@ -80,6 +80,15 @@ function createLoginHandler({
           const description =
             parseDescriptionFromSamlError(err, req) ||
             'Could not parse SAML message'
+
+          if (err.message === 'InResponseTo is not valid' && req.user) {
+            // When user uses browse back functionality after login we get invalid InResponseTo
+            // This will ignore the error
+            const redirectUrl = getRedirectUrl(req)
+            logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
+            return res.redirect(redirectUrl)
+          }
+
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in_failed`,
             req,
