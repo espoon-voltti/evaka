@@ -36,6 +36,7 @@ export default function ReloadNotification({ apiVersion, i18n }: Props) {
       clearInterval(timer.current)
       timer.current = undefined
     }
+
     if (apiVersion !== undefined && apiVersion !== appVersion) {
       setShow(true)
     }

@@ -10,12 +10,17 @@ services:
   evaka-proxy:
     image: nginx:1.21.3-alpine
     ports:
-      - "9999:8080"
+      - "9099:8080"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/conf.d/evaka-nginx.conf
       - ./s3-mount:/static
     # Enable for debug logging
     # command: [nginx-debug, '-g', 'daemon off;']
+    depends_on:
+      - enduser-gw
+      - internal-gw
+      - evaka-srv
+      - keycloak
 
   enduser-gw:
     image: ${EVAKA_GW_IMAGE}
@@ -24,6 +29,7 @@ services:
     hostname: enduser-gw
     depends_on:
       - redis
+      - evaka-srv
     volumes:
       - ../apigw/config/test-cert:/home/evaka/test-cert
     env_file:
@@ -46,10 +52,11 @@ services:
   internal-gw:
     image: ${EVAKA_GW_IMAGE}
     ports:
-      - "3020"
+      - "3020:3020"
     hostname: internal-gw
     depends_on:
       - redis
+      - evaka-srv
     volumes:
       - ../apigw/config/test-cert:/home/evaka/test-cert
     environment:
@@ -74,6 +81,7 @@ services:
     hostname: evaka-srv
     depends_on:
       - db
+      - db_it
       - redis
       - s3.mock.evaka
     environment:

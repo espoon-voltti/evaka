@@ -9,7 +9,8 @@ set -euo pipefail
 export DEBUG="${DEBUG:-false}"
 export CI="${CI:-false}"
 export FORCE_COLOR=1
-export PROXY_URL=${PROXY_URL:-http://evaka-proxy:8080}
+export PROXY_URL=${PROXY_URL:-http://localhost:9099}
+export KEYCLOAK_URL=${KEYCLOAK_URL:-http://localhost:8080}
 
 if [ "${DEBUG}" = "true" ]; then
     set -x
@@ -19,8 +20,15 @@ export FORCE_COLOR=1
 
 cd /repo/frontend
 
-echo 'INFO: Waiting for compose stack to be up...'
-./wait-for-dev-api.sh "$PROXY_URL"
+echo 'INFO: Waiting for compose stack to be up ...'
+./wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
+./wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "302"
 
-mapfile -t FILENAMES < playwright-filenames.txt
-yarn e2e-ci "${FILENAMES[@]}"
+echo "Running tests ..."
+
+if test -f playwright-filenames.txt; then
+    mapfile -t FILENAMES < playwright-filenames.txt
+    yarn e2e-ci "${FILENAMES[@]}"
+else
+    yarn e2e-ci "src/e2e-test/specs/"
+fi

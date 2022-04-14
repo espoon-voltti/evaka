@@ -179,7 +179,7 @@ E2E tests are written using Typescript, Jest and Playwright.
 **NOTE:** For all test scripts, you can override the target URL with:
 
 ```sh
-BASE_URL=http://localhost:9999 yarn <cmd>
+BASE_URL=http://localhost:9099 yarn <cmd>
 ```
 
 #### Creating a new test

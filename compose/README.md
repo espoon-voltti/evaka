@@ -136,9 +136,9 @@ wrapper for `docker-compose`.
 
 Access the frontends at
 
-- <http://localhost:9999/> – Frontend for the citizen
-- <http://localhost:9999/employee> – Frontend for the employee
-- <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
+- <http://localhost:9099/> – Frontend for the citizen
+- <http://localhost:9099/employee> – Frontend for the employee
+- <http://localhost:9099/employee/mobile> – Frontend for the employee mobile
 
 ## Database dump
 

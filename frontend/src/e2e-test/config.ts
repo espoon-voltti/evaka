@@ -49,15 +49,12 @@ const staffAad = '00000000-0000-0000-0005-000000000000'
 const specialEducationTeacher = '00000000-0000-0000-0006-000000000000'
 const reportViewerAad = '00000000-0000-0000-0007-000000000000'
 
-const ci = env('CI', parseBoolean) ?? false
-
 const baseUrl = env('BASE_URL', (url) => url)
 const browserUrl = baseUrl ?? 'http://localhost:9099'
 
 const config = {
   playwright: {
-    ci,
-    headless: env('HEADLESS', parseBoolean) ?? ci,
+    headless: env('HEADLESS', parseBoolean) ?? false,
     browser:
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
@@ -71,6 +68,7 @@ const config = {
   mobileBaseUrl: browserUrl,
   mobileUrl: `${browserUrl}/employee/mobile`,
   enduserMessagesUrl: `${browserUrl}/messages`,
+  enduserLoginUrl: `${browserUrl}/login`,
 
   // TODO: Remove these
   supervisorAad,

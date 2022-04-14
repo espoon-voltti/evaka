@@ -4,7 +4,7 @@
 
 import config from '../config'
 
-import { Page } from './page'
+import { Page, TextInput } from './page'
 
 export type DevLoginRole = typeof devLoginRoles[number]
 const devLoginRoles = [
@@ -18,6 +18,17 @@ const devLoginRoles = [
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
   await page.findByDataQa('strong-login').click()
+}
+
+export async function enduserLoginWeak(page: Page) {
+  await page.goto(config.enduserLoginUrl)
+  await page.findByDataQa('weak-login').click()
+
+  await new TextInput(page.find('[id="username"]')).fill('test@example.com')
+  await new TextInput(page.find('[id="password"]')).fill('test123')
+  await page.find('[id="kc-login"]').click()
+
+  await page.find('[data-qa="nav-messages"]').waitUntilVisible()
 }
 
 export async function employeeLogin(page: Page, user: { externalId: string }) {
