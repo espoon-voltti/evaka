@@ -5,6 +5,7 @@
 import React from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -256,13 +257,15 @@ const en: Translations = {
       selectChildrenLabel: 'Selected children',
       dateRange: 'Validity',
       dateRangeLabel: 'Make a reservation for dates',
+      dateRangeInfo: (date: LocalDate) =>
+        `You can make reservations until ${date.format()}.`,
       missingDateRange: 'Select days to reserve',
-      repetition: 'Repetition',
+      selectRecurrence: 'Choose how the reservation repeats',
       postError: 'The reservation failed',
       repetitions: {
-        DAILY: 'Daily',
-        WEEKLY: 'Weekly',
-        IRREGULAR: 'Irregular'
+        DAILY: 'Same every day',
+        WEEKLY: 'Different depending on the day of the week',
+        IRREGULAR: 'Changes frequently'
       },
       start: 'Start',
       end: 'End'

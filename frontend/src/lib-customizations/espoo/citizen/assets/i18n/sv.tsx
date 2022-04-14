@@ -5,6 +5,7 @@
 import React from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -255,13 +256,15 @@ const sv: Translations = {
       selectChildrenLabel: 'Utvalda barn',
       dateRange: 'Reservationens giltighet',
       dateRangeLabel: 'Reservera dagarna',
+      dateRangeInfo: (date: LocalDate) =>
+        `Du kan göra bokningar fram till ${date.format()}.`,
       missingDateRange: 'Välj barn att reservera',
-      repetition: 'Upprepning',
+      selectRecurrence: 'Välj hur reservationen repeterar',
       postError: 'Misslyckades med att reservera',
       repetitions: {
-        DAILY: 'Dagligen',
-        WEEKLY: 'Veckovis',
-        IRREGULAR: 'Irreguljär'
+        DAILY: 'Samma tider varje dag',
+        WEEKLY: 'Olika tid beroende på veckodag',
+        IRREGULAR: 'Varierar ofta'
       },
       start: 'Börjar',
       end: 'Slutar'

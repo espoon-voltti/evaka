@@ -25,6 +25,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker, {
   DatePickerSpacer
 } from 'lib-components/molecules/date-picker/DatePicker'
@@ -177,8 +178,8 @@ export default React.memo(function ReservationModal({
           ))}
         </FixedSpaceFlexWrap>
 
-        <H2>{i18n.calendar.reservationModal.repetition}</H2>
-        <Label>{i18n.common.select}</Label>
+        <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+        <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
         <Select<Repetition>
           items={['DAILY', 'WEEKLY', 'IRREGULAR']}
           selectedItem={formData.repetition}
@@ -190,9 +191,17 @@ export default React.memo(function ReservationModal({
           }
           data-qa="repetition"
         />
+        <Gap size="s" />
 
-        <H2>{i18n.calendar.reservationModal.dateRange}</H2>
-        <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+        <ExpandingInfo
+          width="auto"
+          ariaLabel={i18n.common.openExpandingInfo}
+          info={i18n.calendar.reservationModal.dateRangeInfo(
+            reservableDays[0].end
+          )}
+        >
+          <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+        </ExpandingInfo>
         <FixedSpaceRow>
           <DatePicker
             date={formData.startDate}
