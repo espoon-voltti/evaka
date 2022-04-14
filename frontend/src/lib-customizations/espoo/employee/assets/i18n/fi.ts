@@ -462,7 +462,7 @@ export const fi = {
         DAYCARE: 'Varhaiskasvatuspäätös',
         DAYCARE_PART_TIME: 'Varhaiskasvatuspäätös (osapäiväinen)',
         PRESCHOOL: 'Esiopetuspäätös',
-        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvastuspäätös',
+        PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatuspäätös',
         PREPARATORY_EDUCATION: 'Valmistavan opetuksen päätös'
       },
       num: 'Päätösnumero',
