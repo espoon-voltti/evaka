@@ -18,6 +18,6 @@ class MockEvakaClock(private val now: HelsinkiDateTime) : EvakaClock {
 }
 
 class RealEvakaClock(private val clock: Clock = Clock.systemUTC()) : EvakaClock {
-    override fun today(): LocalDate = LocalDate.now()
+    override fun today(): LocalDate = LocalDate.now(europeHelsinki)
     override fun now(): HelsinkiDateTime = HelsinkiDateTime.now(clock)
 }
