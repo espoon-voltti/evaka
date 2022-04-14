@@ -12,7 +12,9 @@ import React, {
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea, ProviderType
+} from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
@@ -88,6 +90,19 @@ interface InvoiceSearchFilterState {
   clearSearchFilters: () => void
 }
 
+export interface InvoiceStatementSearchFilters {
+  area: string[]
+  providerTypes: ProviderType[]
+  sentStartDate: LocalDate | undefined
+  sentEndDate: LocalDate | undefined
+}
+
+interface InvoiceStatementSearchFilterState {
+  searchFilters: InvoiceStatementSearchFilters
+  setSearchFilters: Dispatch<SetStateAction<InvoiceStatementSearchFilters>>
+  clearSearchFilters: () => void
+}
+
 export interface FinanceDecisionHandlerOption {
   value: UUID
   label: string
@@ -108,6 +123,7 @@ interface UiState {
   feeDecisions: FeeDecisionSearchFilterState
   valueDecisions: ValueDecisionSearchFilterState
   invoices: InvoiceSearchFilterState
+  invoiceStatements: InvoiceStatementSearchFilterState
   shared: SharedState
 }
 
@@ -155,6 +171,16 @@ const defaultState: UiState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
+    clearSearchFilters: () => undefined
+  },
+  invoiceStatements: {
+    searchFilters: {
+      area: [],
+      providerTypes: [],
+      sentStartDate: undefined,
+      sentEndDate: undefined
+    },
+    setSearchFilters: () => undefined,
     clearSearchFilters: () => undefined
   },
   shared: {
@@ -217,6 +243,18 @@ export const InvoicingUIContextProvider = React.memo(
       [setInvoiceSearchFilters]
     )
 
+    const [invoiceStatementSearchFilters, setInvoiceStatementSearchFilters] =
+      useState<InvoiceStatementSearchFilters>(
+        defaultState.invoiceStatements.searchFilters
+      )
+    const clearInvoiceStatementSearchFilters = useCallback(
+      () =>
+        setInvoiceStatementSearchFilters(
+          defaultState.invoiceStatements.searchFilters
+        ),
+      [setInvoiceStatementSearchFilters]
+    )
+
     const [units, setUnits] = useState<Result<Unit[]>>(
       defaultState.shared.units
     )
@@ -253,6 +291,11 @@ export const InvoicingUIContextProvider = React.memo(
           debouncedSearchTerms: invoiceDebouncedFreeText,
           clearSearchFilters: clearInvoiceSearchFilters
         },
+        invoiceStatements: {
+          searchFilters: invoiceStatementSearchFilters,
+          setSearchFilters: setInvoiceStatementSearchFilters,
+          clearSearchFilters: clearInvoiceStatementSearchFilters
+        },
         shared: {
           units,
           setUnits,
@@ -282,6 +325,9 @@ export const InvoicingUIContextProvider = React.memo(
         setInvoiceFreeTextSearch,
         invoiceDebouncedFreeText,
         clearInvoiceSearchFilters,
+        invoiceStatementSearchFilters,
+        setInvoiceStatementSearchFilters,
+        clearInvoiceStatementSearchFilters,
         units,
         setUnits,
         availableAreas,
