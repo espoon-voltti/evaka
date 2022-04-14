@@ -349,8 +349,8 @@ export interface InvoiceCorrection {
   description: string
   headOfFamilyId: UUID
   id: UUID
-  invoiceId: UUID
-  invoiceStatus: InvoiceStatus
+  invoiceId: UUID | null
+  invoiceStatus: InvoiceStatus | null
   note: string
   period: FiniteDateRange
   product: string

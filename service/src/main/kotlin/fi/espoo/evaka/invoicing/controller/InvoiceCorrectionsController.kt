@@ -153,8 +153,8 @@ data class InvoiceCorrection(
     val unitPrice: Int,
     val description: String,
     val note: String,
-    val invoiceId: InvoiceId,
-    val invoiceStatus: InvoiceStatus
+    val invoiceId: InvoiceId?,
+    val invoiceStatus: InvoiceStatus?
 )
 
 data class NewInvoiceCorrection(
