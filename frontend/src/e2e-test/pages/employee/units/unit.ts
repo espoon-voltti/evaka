@@ -495,12 +495,6 @@ class StaffAclRowEditor extends Element {
 export class ApplicationProcessPage {
   constructor(private readonly page: Page) {}
 
-  async assertIsLoading() {
-    await this.page
-      .find('[data-qa="application-process-page"][data-isloading="true"]')
-      .waitUntilVisible()
-  }
-
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="application-process-page"][data-isloading="false"]')
