@@ -22,7 +22,6 @@ fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStick
     """.trimIndent()
 )
     .bind("childId", childId)
-    .bind("today", LocalDate.now())
     .mapTo<ChildStickyNote>()
     .list()
 
