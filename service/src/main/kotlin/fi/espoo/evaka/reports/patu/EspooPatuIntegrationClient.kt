@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports.patu
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
@@ -20,6 +21,7 @@ class EspooPatuIntegrationClient(private val env: EspooPatuIntegrationEnv, priva
         val payload = jsonMapper.writeValueAsString(patuReport)
         val (_, _, result) = Fuel.post("${env.url}/report")
             .authentication().basic(env.username, env.password.value)
+            .header(Headers.ACCEPT, "application/json")
             .jsonBody(payload)
             .responseString()
 
