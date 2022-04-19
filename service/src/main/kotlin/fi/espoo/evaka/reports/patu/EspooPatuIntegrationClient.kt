@@ -17,13 +17,15 @@ private val logger = KotlinLogging.logger {}
 
 class EspooPatuIntegrationClient(private val env: EspooPatuIntegrationEnv, private val jsonMapper: JsonMapper) : PatuIntegrationClient {
     override fun send(patuReport: List<RawReportRow>): PatuIntegrationClient.Result {
-        logger.debug("Sending patu report of ${patuReport.size} rows to integration")
+        logger.info("Sending patu report of ${patuReport.size} rows")
         val payload = jsonMapper.writeValueAsString(patuReport)
-        val (_, _, result) = Fuel.post("${env.url}/report")
+        val (req, res, result) = Fuel.post("${env.url}/report")
             .authentication().basic(env.username, env.password.value)
             .header(Headers.ACCEPT, "application/json")
             .jsonBody(payload)
             .responseString()
+
+        logger.info("Patu: REQ: $req RES: $res")
 
         return when (result) {
             is Result.Success -> {
