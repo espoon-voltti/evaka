@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.setting.SettingType
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
@@ -172,7 +173,7 @@ class PDFService(
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
             "showValidTo" to (
                 (isReliefDecision && decision.validTo != null) ||
-                    (decision.validTo?.isBefore(LocalDate.now()) ?: false)
+                    (decision.validTo?.isBefore(LocalDate.now(europeHelsinki)) ?: false)
                 ),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
@@ -274,7 +275,7 @@ class PDFService(
             "familySize" to decision.familySize,
             "showValidTo" to (
                 (isReliefDecision && decision.validDuring.end != null) ||
-                    (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false)
+                    (decision.validDuring.end?.isBefore(LocalDate.now(europeHelsinki)) ?: false)
                 ),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName

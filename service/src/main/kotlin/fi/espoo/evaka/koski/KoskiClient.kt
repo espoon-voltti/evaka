@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import java.time.LocalDate
@@ -45,7 +46,14 @@ class KoskiClient(
         .build()
 
     init {
-        asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski -> uploadToKoski(db, msg, today = LocalDate.now()) }
+        asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski ->
+            uploadToKoski(
+                db, msg,
+                today = LocalDate.now(
+                    europeHelsinki
+                )
+            )
+        }
     }
 
     fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->

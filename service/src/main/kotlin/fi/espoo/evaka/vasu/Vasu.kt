@@ -13,8 +13,10 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
@@ -165,7 +167,7 @@ data class VasuContent(
     /*
      * returns a copy of this VasuContent where the followup entry has been updated with the text and editor metadata
      */
-    fun editFollowupEntry(entryId: UUID, editor: Employee?, text: String): VasuContent {
+    fun editFollowupEntry(entryId: UUID, evakaClock: EvakaClock, editor: Employee?, text: String): VasuContent {
         return this.copy(
             sections = this.sections.map { section ->
                 section.copy(
@@ -177,7 +179,7 @@ data class VasuContent(
                                         entry.copy(
                                             text = text,
                                             edited = FollowupEntryEditDetails(
-                                                editedAt = LocalDate.now(),
+                                                editedAt = evakaClock.today(),
                                                 editorId = editor?.id,
                                                 editorName = "${editor?.firstName} ${editor?.lastName}"
                                             )
@@ -376,7 +378,7 @@ enum class VasuQuestionType {
 
 @Json
 data class FollowupEntry(
-    val date: LocalDate = LocalDate.now(),
+    val date: LocalDate = LocalDate.now(europeHelsinki),
     val authorName: String = "",
     val text: String = "",
     val id: UUID = UUID.randomUUID(),
@@ -386,7 +388,7 @@ data class FollowupEntry(
 
 @Json
 data class FollowupEntryEditDetails(
-    val editedAt: LocalDate = LocalDate.now(),
+    val editedAt: LocalDate = LocalDate.now(europeHelsinki),
     val editorName: String = "",
     val editorId: EmployeeId? = null
 )

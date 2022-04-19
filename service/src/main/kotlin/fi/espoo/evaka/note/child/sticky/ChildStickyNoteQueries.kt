@@ -25,19 +25,19 @@ fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStick
     .mapTo<ChildStickyNote>()
     .list()
 
-fun Database.Read.getChildStickyNotesForGroup(groupId: GroupId): List<ChildStickyNote> {
-    return getChildStickyNotesForGroups(listOf(groupId))
+fun Database.Read.getChildStickyNotesForGroup(groupId: GroupId, today: LocalDate): List<ChildStickyNote> {
+    return getChildStickyNotesForGroups(listOf(groupId), today)
 }
 
-fun Database.Read.getChildStickyNotesForUnit(unitId: DaycareId): List<ChildStickyNote> {
+fun Database.Read.getChildStickyNotesForUnit(unitId: DaycareId, today: LocalDate): List<ChildStickyNote> {
     return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<GroupId>()
         .list()
-        .let { groupIds -> getChildStickyNotesForGroups(groupIds) }
+        .let { groupIds -> getChildStickyNotesForGroups(groupIds, today) }
 }
 
-private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>): List<ChildStickyNote> = createQuery(
+private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>, today: LocalDate): List<ChildStickyNote> = createQuery(
     """
     SELECT id, child_id, note, modified_at, expires
     FROM child_sticky_note csn
@@ -56,7 +56,7 @@ private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>):
     """.trimIndent()
 )
     .bind("groupIds", groupIds.toTypedArray())
-    .bind("today", LocalDate.now())
+    .bind("today", today)
     .mapTo<ChildStickyNote>()
     .list()
 

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -104,10 +105,11 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getFutureAbsencesByChild(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, childId) } }
+        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, evakaClock, childId) } }
     }
 }

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.vtjclient.mapper
 
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
@@ -31,7 +32,7 @@ fun rangeIncludesNow(from: String?, to: String?): Boolean {
     val validFrom = parseLocalDateFromString(from)
     val validTo = parseLocalDateFromString(to)
 
-    return LocalDate.now().let { validFrom != null && it >= validFrom && (validTo == null || it <= validTo) }
+    return LocalDate.now(europeHelsinki).let { validFrom != null && it >= validFrom && (validTo == null || it <= validTo) }
 }
 
 fun notAllBlanks(vararg s: String?): Boolean = listOf(*s).any { !it.isNullOrBlank() }

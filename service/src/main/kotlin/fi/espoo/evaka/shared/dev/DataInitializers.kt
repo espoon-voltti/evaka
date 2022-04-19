@@ -62,6 +62,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
@@ -689,7 +690,7 @@ fun Database.Transaction.insertTestPlacementPlan(
 
 data class TestDecision(
     val createdBy: EvakaUserId,
-    val sentDate: LocalDate = LocalDate.now(),
+    val sentDate: LocalDate = LocalDate.now(europeHelsinki),
     val unitId: DaycareId,
     val applicationId: ApplicationId,
     val type: DecisionType,

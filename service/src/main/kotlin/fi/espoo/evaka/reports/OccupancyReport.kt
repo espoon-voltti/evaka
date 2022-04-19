@@ -62,6 +62,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
     fun getOccupancyGroupReport(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
@@ -75,7 +76,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.calculateGroupOccupancyReport(
-                    LocalDate.now(),
+                    evakaClock.today(),
                     careAreaId,
                     FiniteDateRange(from, to),
                     type,

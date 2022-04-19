@@ -9,10 +9,11 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,10 +24,10 @@ class FridgeFamilyService(
 ) {
 
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
-        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, msg.personId)
+        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, RealEvakaClock(), msg.personId)
     }
 
-    fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, personId: PersonId) {
+    fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, evakaClock: EvakaClock, personId: PersonId) {
         logger.info("Refreshing $personId from VTJ")
         val head = db.transaction {
             personService.getPersonWithChildren(
@@ -63,7 +64,7 @@ class FridgeFamilyService(
                 .asSequence()
                 .distinct()
                 .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                .filter { child -> child.dateOfBirth.isAfter(LocalDate.now().minusYears(18)) }
+                .filter { child -> child.dateOfBirth.isAfter(evakaClock.today().minusYears(18)) }
                 .filter { livesInSameAddress(it.address, head.address) }
                 .filter { !currentFridgeChildren.contains(it.id) }
                 .toList()
@@ -76,7 +77,7 @@ class FridgeFamilyService(
                             tx,
                             childId = child.id,
                             headOfChildId = personId,
-                            startDate = LocalDate.now(),
+                            startDate = evakaClock.today(),
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }

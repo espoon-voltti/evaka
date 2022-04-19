@@ -20,9 +20,12 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -39,8 +42,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `creating an empty person sets their date of birth to current date`() = db.transaction { tx ->
-        val identity: PersonDTO = tx.createEmptyPerson()
-        assertEquals(identity.dateOfBirth, LocalDate.now())
+        val now = HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 1))
+        val identity: PersonDTO = tx.createEmptyPerson(MockEvakaClock(now))
+        assertEquals(identity.dateOfBirth, now.toLocalDate())
     }
 
     @Test

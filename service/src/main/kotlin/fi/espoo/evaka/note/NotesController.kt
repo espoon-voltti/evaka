@@ -64,6 +64,7 @@ class NotesController(
     fun getNotesByGroup(
         user: AuthenticatedUser,
         db: Database,
+        evakaClock: EvakaClock,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
         Audit.NotesByGroupRead.log(groupId)
@@ -72,8 +73,8 @@ class NotesController(
         return db.connect { dbc ->
             dbc.read {
                 NotesByGroupResponse(
-                    childDailyNotes = it.getChildDailyNotesInGroup(groupId),
-                    childStickyNotes = it.getChildStickyNotesForGroup(groupId),
+                    childDailyNotes = it.getChildDailyNotesInGroup(groupId, evakaClock.today()),
+                    childStickyNotes = it.getChildStickyNotesForGroup(groupId, evakaClock.today()),
                     groupNotes = it.getGroupNotesForGroup(groupId)
                 )
             }

@@ -22,9 +22,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -98,7 +98,7 @@ class InvoiceService(
     }
 }
 
-fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<InvoiceId>) {
+fun Database.Transaction.markManuallySent(user: AuthenticatedUser, now: HelsinkiDateTime, invoiceIds: List<InvoiceId>) {
     val sql =
         """
         UPDATE invoice SET status = :status_sent::invoice_status, sent_at = :sent_at, sent_by = :sent_by
@@ -109,7 +109,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
     val updatedIds = createQuery(sql)
         .bind("status_sent", InvoiceStatus.SENT.toString())
         .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
-        .bind("sent_at", Instant.now())
+        .bind("sent_at", now)
         .bind("sent_by", user.evakaUserId)
         .bind("ids", invoiceIds.toTypedArray())
         .mapTo<InvoiceId>()
