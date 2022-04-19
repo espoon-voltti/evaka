@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.db.Database
 fun Database.Transaction.upsertCitizenUser(id: PersonId) = createUpdate(
     """
 INSERT INTO evaka_user (id, type, citizen_id, name)
-SELECT id, 'CITIZEN', id, first_name || ' ' || last_name
+SELECT id, 'CITIZEN', id, last_name || ' ' || first_name
 FROM person
 WHERE id = :id
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
@@ -24,7 +24,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name
 fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) = createUpdate(
     """
 INSERT INTO evaka_user (id, type, employee_id, name)
-SELECT id, 'EMPLOYEE', id, first_name || ' ' || last_name
+SELECT id, 'EMPLOYEE', id, last_name || ' ' || first_name
 FROM employee
 WHERE id = :id
 ON CONFLICT (id) DO UPDATE SET name = excluded.name

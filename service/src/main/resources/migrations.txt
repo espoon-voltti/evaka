@@ -225,3 +225,4 @@ V224__track_invoice_correction_status.sql
 V225__remove_holiday_questionnaire_linking.sql
 V226__application_type.sql
 V227__income_attachments.sql
+V228__evaka_user_lastname_firstname.sql

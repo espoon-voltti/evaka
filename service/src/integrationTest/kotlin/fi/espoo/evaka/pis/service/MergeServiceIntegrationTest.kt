@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -354,7 +354,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .first()
 
             assertEquals(duplicate.id, citizenId)
-            assertEquals("${duplicate.firstName} ${duplicate.lastName}", name)
+            assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
         }
 
         db.transaction {
@@ -368,7 +368,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .first()
 
             assertEquals(null, citizenId)
-            assertEquals("${duplicate.firstName} ${duplicate.lastName}", name)
+            assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
         }
     }
 }
