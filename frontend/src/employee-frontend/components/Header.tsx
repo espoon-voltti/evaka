@@ -98,7 +98,7 @@ const NavLinkWrapper = styled.div`
   display: flex;
   align-items: center;
   border-bottom: 4px solid transparent;
-  margin: 6px 24px;
+  margin: 6px 16px;
   padding: 10px 0;
 `
 
@@ -160,7 +160,9 @@ const NavBarItems = styled.div`
 `
 const NavLinks = styled.div`
   display: flex;
-  gap: ${defaultMargins.L};
+  @media screen and (min-width: 1216px) {
+    gap: ${defaultMargins.L};
+  }
 `
 
 const NavbarButton = styled(InlineButton)`
