@@ -673,7 +673,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 onCleared={() => updateForm({ closingDate: null })}
                 onChange={(closingDate) => updateForm({ closingDate })}
                 className="inline-block"
-                minDate={form.openingDate ?? LocalDate.of(1960, 0, 0)}
+                minDate={form.openingDate ?? LocalDate.of(1960, 1, 1)}
                 data-qa="closing-date-input"
               />
             ) : (
