@@ -173,11 +173,10 @@ export default class LocalDate {
     return this.formatIso()
   }
   toSystemTzDate(): Date {
-    const iso = `${this.formatIso()}T00:00`
-    const date = new Date(iso)
+    const date = new Date(this.year, this.month - 1, this.date)
     if (!isValid(date)) {
       Sentry.captureMessage(
-        `Invalid date generated from ${iso}`,
+        `Invalid date generated from ${this.toString()}`,
         Sentry.Severity.Warning
       )
     }
