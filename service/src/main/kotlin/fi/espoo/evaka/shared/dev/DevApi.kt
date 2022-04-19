@@ -1205,7 +1205,7 @@ INSERT INTO service_need_option (name_fi, name_sv, name_en, valid_placement_type
 fun Database.Transaction.insertVoucherValues() {
     execute(
         """
-INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 1.55);
+INSERT INTO voucher_value (id, validity, base_value, base_value_age_under_three) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 134850);
 """
     )
 }
