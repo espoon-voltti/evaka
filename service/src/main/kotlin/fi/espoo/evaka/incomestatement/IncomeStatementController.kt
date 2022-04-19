@@ -5,6 +5,7 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -111,24 +112,22 @@ class IncomeStatementController(
         }
     }
 
-    @GetMapping("/awaiting-handler")
+    @PostMapping("/awaiting-handler")
     fun getIncomeStatementsAwaitingHandler(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam areas: String,
-        @RequestParam page: Int,
-        @RequestParam pageSize: Int
+        @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
         Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
-        val areasList = areas.split(",").filter { it.isNotEmpty() }
+        val areasList = body.area?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(
                     HelsinkiDateTime.now().toLocalDate(),
                     areasList,
-                    page,
-                    pageSize
+                    body.page,
+                    body.pageSize
                 )
             }
         }
@@ -149,3 +148,12 @@ class IncomeStatementController(
         }
     }
 }
+
+data class SearchIncomeStatementsRequest(
+    val page: Int,
+    val pageSize: Int,
+    val area: String?,
+    val providerType: ProviderType?,
+    val sentStartDate: String?,
+    val sentEndDate: String?,
+)

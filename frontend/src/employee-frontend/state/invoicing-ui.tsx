@@ -13,7 +13,8 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  DaycareCareArea, ProviderType
+  DaycareCareArea,
+  ProviderType
 } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
@@ -90,7 +91,7 @@ interface InvoiceSearchFilterState {
   clearSearchFilters: () => void
 }
 
-export interface InvoiceStatementSearchFilters {
+export interface IncomeStatementSearchFilters {
   area: string[]
   providerTypes: ProviderType[]
   sentStartDate: LocalDate | undefined
@@ -98,8 +99,8 @@ export interface InvoiceStatementSearchFilters {
 }
 
 interface InvoiceStatementSearchFilterState {
-  searchFilters: InvoiceStatementSearchFilters
-  setSearchFilters: Dispatch<SetStateAction<InvoiceStatementSearchFilters>>
+  searchFilters: IncomeStatementSearchFilters
+  setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFilters>>
   clearSearchFilters: () => void
 }
 
@@ -244,7 +245,7 @@ export const InvoicingUIContextProvider = React.memo(
     )
 
     const [invoiceStatementSearchFilters, setInvoiceStatementSearchFilters] =
-      useState<InvoiceStatementSearchFilters>(
+      useState<IncomeStatementSearchFilters>(
         defaultState.invoiceStatements.searchFilters
       )
     const clearInvoiceStatementSearchFilters = useCallback(

@@ -16,6 +16,8 @@ import {
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
+import { IncomeStatementSearchFilters } from '../state/invoicing-ui'
+
 import { client } from './client'
 
 export async function getIncomeStatements(
@@ -38,23 +40,27 @@ export async function getIncomeStatements(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface IncomeStatementsAwaitingHandlerParams {
-  areas: string[]
-  page: number
-  pageSize: number
-}
-
-export async function getIncomeStatementsAwaitingHandler({
-  areas,
-  page,
-  pageSize
-}: IncomeStatementsAwaitingHandlerParams): Promise<
-  Result<Paged<IncomeStatementAwaitingHandler>>
-> {
+export async function getIncomeStatementsAwaitingHandler(
+  page: number,
+  pageSize: number,
+  searchFilters: IncomeStatementSearchFilters
+): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
   return client
-    .get<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
+    .post<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
       '/income-statements/awaiting-handler',
-      { params: { areas: areas.join(','), page, pageSize } }
+      {
+        params: {
+          areas: searchFilters.area.length > 0 ? searchFilters.area : undefined,
+          providerTypes:
+            searchFilters.providerTypes.length > 0
+              ? searchFilters.providerTypes
+              : undefined,
+          sentStartDate: searchFilters.sentStartDate?.formatIso(),
+          sentEndDate: searchFilters.sentEndDate?.formatIso(),
+          page: page - 1,
+          pageSize
+        }
+      }
     )
     .then((res) => res.data)
     .then((body) => ({

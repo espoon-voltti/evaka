@@ -110,7 +110,7 @@ export function Filters({
 
   return (
     <FiltersContainer>
-      {freeText && setFreeText && (
+      {freeText && setFreeText && searchPlaceholder && (
         <FreeTextSearch
           value={freeText}
           setValue={setFreeText}
