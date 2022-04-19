@@ -480,8 +480,11 @@ function useEditState(
       .finally(() => setSaving(false))
   }, [date, editorState, reloadData, stateIsValid])
 
-  const [confirmationModal, setConfirmationModal] =
-    useState<{ close: () => void; resolve: () => void; reject: () => void }>()
+  const [confirmationModal, setConfirmationModal] = useState<{
+    close: () => void
+    resolve: () => void
+    reject: () => void
+  }>()
 
   const navigate = useCallback(
     (callback: () => void) => () => {

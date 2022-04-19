@@ -168,8 +168,10 @@ export default React.memo(function Group({
     [hasNotesPermission, group.id]
   )
 
-  const [notesModal, setNotesModal] =
-    useState<{ child?: IdAndName; group: IdAndName }>()
+  const [notesModal, setNotesModal] = useState<{
+    child?: IdAndName
+    group: IdAndName
+  }>()
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
