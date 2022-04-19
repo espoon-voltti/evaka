@@ -209,26 +209,25 @@ export default class LocalDate {
     return result
   }
   static parseFiOrThrow(value: string): LocalDate {
-    const parts = fiPattern.exec(value)
-    if (!parts) {
-      throw new RangeError(`Invalid FI date ${value}`)
-    }
-    const date = LocalDate.tryCreate(
-      Number(parts[3]),
-      Number(parts[2]),
-      Number(parts[1])
-    )
+    const date = LocalDate.parseFiOrNull(value)
     if (!date) {
       throw new RangeError(`Invalid date ${value}`)
     }
     return date
   }
   static parseFiOrNull(value: string): LocalDate | null {
-    try {
-      return this.parseFiOrThrow(value)
-    } catch (e) {
-      return null
+    const parts = fiPattern.exec(value)
+    if (parts) {
+      const date = LocalDate.tryCreate(
+        Number(parts[3]),
+        Number(parts[2]),
+        Number(parts[1])
+      )
+      if (date) {
+        return date
+      }
     }
+    return null
   }
   static parseIso(value: string): LocalDate {
     const result = LocalDate.tryParseIso(value)
