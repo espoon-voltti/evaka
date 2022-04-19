@@ -1438,6 +1438,7 @@ export const fi = {
       noValidValues: 'Aikavälille ei voitu laskea täyttöastetta',
       noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta',
       realtime: {
+        noData: 'Ei tietoja valitulle päivälle',
         children: 'Lasten määrä kertoimella',
         childrenMax: 'Lasten maksimimäärä',
         chartYAxisTitle: 'Lapsia kertoimilla',

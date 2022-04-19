@@ -15,9 +15,11 @@ import { fi } from 'date-fns/locale'
 import { ceil } from 'lodash'
 import React, { useMemo } from 'react'
 import { Line } from 'react-chartjs-2'
+import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { Translations, useTranslation } from '../../../../state/i18n'
@@ -29,7 +31,10 @@ interface Props {
 }
 
 export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
-  return occupancy.occupancySeries.length === 0 ? null : (
+  const { i18n } = useTranslation()
+  return occupancy.occupancySeries.length === 0 ? (
+    <GraphPlaceholder>{i18n.unit.occupancy.realtime.noData}</GraphPlaceholder>
+  ) : (
     <Graph occupancy={occupancy} />
   )
 })
@@ -186,3 +191,7 @@ function getCurrentMinute(): Date {
 function setTime(date: Date, hours: number, minutes: number): Date {
   return setHours(setMinutes(date, minutes), hours)
 }
+
+const GraphPlaceholder = styled.div`
+  margin: ${defaultMargins.XXL} 0;
+`
