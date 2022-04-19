@@ -27,4 +27,9 @@ describe('LocalDate', () => {
       date: '2020-02-01'
     })
   })
+  it('considers non-existing dates invalid', () => {
+    expect(LocalDate.tryParseIso('2020-00-01')).toBeUndefined()
+    expect(() => LocalDate.of(2020, 0, 1)).toThrow()
+    expect(LocalDate.parseFiOrNull('31.02.2020')).toBeNull()
+  })
 })

@@ -16,6 +16,7 @@ import {
   getISOWeek,
   isAfter,
   isBefore,
+  isExists,
   isToday,
   isValid,
   isWeekend,
@@ -274,7 +275,7 @@ export default class LocalDate {
     month: number,
     date: number
   ): LocalDate | undefined {
-    return isValid(new Date(year, month - 1, date))
+    return isExists(year, month - 1, date)
       ? new LocalDate(year, month, date)
       : undefined
   }
