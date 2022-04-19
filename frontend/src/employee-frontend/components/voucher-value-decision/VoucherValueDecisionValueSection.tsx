@@ -20,7 +20,7 @@ type Props = {
 export default React.memo(function VoucherValueDecisionValueSection({
   decision: {
     childAge,
-    ageCoefficient,
+    baseValue,
     capacityFactor,
     placement,
     serviceNeed,
@@ -31,11 +31,9 @@ export default React.memo(function VoucherValueDecisionValueSection({
 
   const mainDescription = `${
     i18n.valueDecision.summary.age[childAge < 3 ? 'LESS_THAN_3' : 'OVER_3']
-  } (${ageCoefficient * 100} %), ${i18n.placement.type[
-    placement.type
-  ].toLowerCase()} ${serviceNeed.voucherValueDescriptionFi} (${
-    serviceNeed.voucherValueCoefficient * 100
-  } %)${
+  } (${baseValue} €), ${i18n.placement.type[placement.type].toLowerCase()} ${
+    serviceNeed.voucherValueDescriptionFi
+  } (${serviceNeed.voucherValueCoefficient * 100} %)${
     capacityFactor !== 1
       ? `, ${i18n.valueDecision.summary.capacityFactor} ${formatDecimal(
           capacityFactor

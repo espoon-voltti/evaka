@@ -537,7 +537,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             id = VoucherValueId(UUID.randomUUID()),
             validity = DateRange(LocalDate.of(2000, 1, 1), null),
             baseValue = 87000,
-            ageUnderThreeCoefficient = BigDecimal("1.55")
+            baseValueAgeUnderThree = 134850 // 87000 * 1.55
         )
     )
 

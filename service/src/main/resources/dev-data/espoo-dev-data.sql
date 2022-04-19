@@ -20,7 +20,7 @@ INSERT INTO fee_thresholds (id, valid_during, min_income_threshold_2, min_income
     ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', daterange('2000-01-01', '2020-07-31', '[]'), 210200, 271300, 308000, 344700, 381300, 210200 + 269700, 271300 + 269700, 308000 + 269700, 344700 + 269700, 381300 + 269700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28900, 2700, 2800, 1500, 1500, 800),
     ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', daterange('2020-08-01', NULL), 213600, 275600, 312900, 350200, 387400, 213600 + 268700, 275600 + 268700, 312900 + 268700, 350200 + 268700, 387400 + 268700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28800, 2700, 2800, 1500, 1500, 800);
 
-INSERT INTO voucher_value (id, validity, base_value, age_under_three_coefficient) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 1.55);
+INSERT INTO voucher_value (id, validity, base_value, base_value_age_under_three) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000, 134850);
 
 INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
     ('6f82b730-5963-11ea-b4d8-6f19186c8118', '2dcf0fc0-788e-11e9-bd12-db78e886e666', 'Ryhmä 1', '2020-03-01', NULL),

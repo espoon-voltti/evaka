@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import java.util.UUID
 
@@ -51,7 +50,6 @@ data class VoucherValueDecision(
     val feeAlterations: List<FeeAlterationWithEffect>,
     val finalCoPayment: Int,
     val baseValue: Int,
-    val ageCoefficient: BigDecimal,
     val capacityFactor: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
@@ -77,7 +75,6 @@ data class VoucherValueDecision(
             this.feeAlterations == decision.feeAlterations &&
             this.finalCoPayment == decision.finalCoPayment &&
             this.baseValue == decision.baseValue &&
-            this.ageCoefficient == decision.ageCoefficient &&
             this.voucherValue == decision.voucherValue &&
             this.childIncome == decision.childIncome
     }
@@ -150,7 +147,6 @@ data class VoucherValueDecisionDetailed(
     val finalCoPayment: Int,
     val baseValue: Int,
     val childAge: Int,
-    val ageCoefficient: BigDecimal,
     val capacityFactor: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
@@ -231,7 +227,7 @@ fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (da
     else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
 }
 
-fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: VoucherValue): BigDecimal {
+fun getBaseValue(period: DateRange, dateOfBirth: LocalDate, voucherValues: VoucherValue): Int {
     val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
     val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
 
@@ -240,20 +236,11 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate, voucherValues: 
     }
 
     return when {
-        period.start < thirdBirthdayPeriodStart -> voucherValues.ageUnderThreeCoefficient
-        else -> BigDecimal("1.00")
+        period.start < thirdBirthdayPeriodStart -> voucherValues.baseValueAgeUnderThree
+        else -> voucherValues.baseValue
     }
 }
 
-fun calculateVoucherValue(voucherValues: VoucherValue, ageCoefficient: BigDecimal, capacityFactor: BigDecimal, serviceCoefficient: BigDecimal, ageCoefficientRoundingEnabled: Boolean): Int {
-    val baseValueWithAgeCoefficient = calculateBaseValueWithAgeCoefficient(voucherValues.baseValue, ageCoefficient, ageCoefficientRoundingEnabled)
-    return (baseValueWithAgeCoefficient * capacityFactor * serviceCoefficient).toInt()
-}
-
-private fun calculateBaseValueWithAgeCoefficient(baseValue: Int, ageCoefficient: BigDecimal, roundingEnabled: Boolean): BigDecimal {
-    val value = BigDecimal(baseValue) * ageCoefficient
-    return when (roundingEnabled) {
-        true -> value.divide(BigDecimal("100"), 0, RoundingMode.HALF_UP).multiply(BigDecimal("100"))
-        false -> value
-    }
+fun calculateVoucherValue(baseValue: Int, capacityFactor: BigDecimal, serviceCoefficient: BigDecimal): Int {
+    return (BigDecimal(baseValue) * capacityFactor * serviceCoefficient).toInt()
 }

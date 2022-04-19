@@ -33,7 +33,7 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
-import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
+import fi.espoo.evaka.invoicing.domain.getBaseValue
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -80,8 +80,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             incomes,
             capacityFactors,
             feeAlterations,
-            serviceVoucherUnits,
-            featureConfig
+            serviceVoucherUnits
         )
 
     lockValueDecisionsForChild(child.id)
@@ -114,8 +113,7 @@ private fun generateNewValueDecisions(
     incomes: List<Income>,
     capacityFactors: List<AssistanceNeedCapacityFactor>,
     feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<DaycareId>,
-    featureConfig: FeatureConfig
+    serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = families.map { it.period } +
         incomes.map { DateRange(it.validFrom, it.validTo) } +
@@ -200,8 +198,8 @@ private fun generateNewValueDecisions(
                         toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
                     val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
-                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth, voucherValue)
-                    val value = calculateVoucherValue(voucherValue, ageCoefficient, capacityFactor, placement.serviceNeed.voucherValueCoefficient, featureConfig.valueDecisionAgeCoefficientRoundingEnabled)
+                    val baseValue = getBaseValue(period, voucherChild.dateOfBirth, voucherValue)
+                    val value = calculateVoucherValue(baseValue, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
 
                     // Do not generate a decision if the value towards the voucher unit is zero
                     if (value == 0) null
@@ -236,8 +234,7 @@ private fun generateNewValueDecisions(
                             relevantFeeAlterations
                         ),
                         finalCoPayment = finalCoPayment,
-                        baseValue = voucherValue.baseValue,
-                        ageCoefficient = ageCoefficient,
+                        baseValue = baseValue,
                         capacityFactor = capacityFactor,
                         voucherValue = value
                     )
@@ -260,7 +257,7 @@ SELECT
     id,
     validity,
     base_value,
-    age_under_three_coefficient
+    base_value_age_under_three
 FROM voucher_value
 WHERE validity && daterange(:from, null, '[]')
         """.trimIndent()
