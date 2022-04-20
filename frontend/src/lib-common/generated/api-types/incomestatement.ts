@@ -46,7 +46,7 @@ export interface SearchIncomeStatementsRequest {
   areas: string[] | null
   page: number
   pageSize: number
-  providerType: ProviderType | null
+  providerTypes: ProviderType[] | null
   sentEndDate: string | null
   sentStartDate: string | null
 }

@@ -127,6 +127,7 @@ class IncomeStatementController(
                 it.fetchIncomeStatementsAwaitingHandler(
                     HelsinkiDateTime.now().toLocalDate(),
                     body.areas ?: emptyList(),
+                    body.providerTypes ?: emptyList(),
                     body.sentStartDate?.let { LocalDate.parse(body.sentStartDate, DateTimeFormatter.ISO_DATE) },
                     body.sentEndDate?.let { LocalDate.parse(body.sentEndDate, DateTimeFormatter.ISO_DATE) },
                     body.page,
@@ -156,7 +157,7 @@ data class SearchIncomeStatementsRequest(
     val page: Int,
     val pageSize: Int,
     val areas: List<String>?,
-    val providerType: ProviderType?,
+    val providerTypes: List<ProviderType>?,
     val sentStartDate: String?,
     val sentEndDate: String?,
 )
