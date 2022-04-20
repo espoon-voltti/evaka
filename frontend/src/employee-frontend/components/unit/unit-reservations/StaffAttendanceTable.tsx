@@ -24,12 +24,14 @@ import { validateTimeRange } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
+import { faClock } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
@@ -42,7 +44,7 @@ import {
   NameTd,
   NameWrapper,
   StyledTd,
-  TimeRangeEditor
+  TimeInputWithoutPadding
 } from './attendance-elements'
 import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
@@ -155,6 +157,57 @@ const emptyTimeRangeAt = (date: LocalDate): TimeRangeWithErrorsAndIds => ({
   groupId: undefined,
   date
 })
+
+const OvernightAwareTimeRangeEditor = React.memo(
+  function OvernightAwareTimeRangeEditor({
+    timeRange,
+    update,
+    save
+  }: {
+    timeRange: TimeRangeWithErrors
+    update: (v: TimeRange) => void
+    save: () => void
+  }) {
+    const { startTime, endTime, errors } = timeRange
+    const [editingArrival, setEditingArrival] = useState<boolean>(
+      startTime !== '00:00'
+    )
+    const [editingDeparture, setEditingDeparture] = useState<boolean>(
+      endTime !== '23:59'
+    )
+    const editArrival = useCallback(() => setEditingArrival(true), [])
+    const editDeparture = useCallback(() => setEditingDeparture(true), [])
+
+    return (
+      <>
+        {editingArrival ? (
+          <TimeInputWithoutPadding
+            value={startTime}
+            onChange={(value) => update({ startTime: value, endTime })}
+            onBlur={save}
+            info={
+              errors.startTime ? { status: 'warning', text: '' } : undefined
+            }
+            data-qa="input-start-time"
+          />
+        ) : (
+          <IconButton icon={faClock} onClick={editArrival} />
+        )}
+        {editingDeparture ? (
+          <TimeInputWithoutPadding
+            value={endTime}
+            onChange={(value) => update({ startTime, endTime: value })}
+            onBlur={save}
+            info={errors.endTime ? { status: 'warning', text: '' } : undefined}
+            data-qa="input-end-time"
+          />
+        ) : (
+          <IconButton icon={faClock} onClick={editDeparture} />
+        )}
+      </>
+    )
+  }
+)
 
 interface AttendanceRowProps extends BaseProps {
   rowIndex: number
@@ -303,7 +356,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
           }))
         : []
     }).then(() => reloadStaffAttendances())
-  }, [setEditing, values, saveAttendances, reloadStaffAttendances])
+  }, [
+    setEditing,
+    values,
+    saveAttendances,
+    reloadStaffAttendances,
+    employeeId,
+    name
+  ])
 
   const renderTime = useCallback((time: string) => {
     switch (time) {
@@ -350,7 +410,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
           {timeRanges.map((range, rangeIx) => (
             <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
               {editing && (range.id || enableNewEntries) ? (
-                <TimeRangeEditor
+                <OvernightAwareTimeRangeEditor
                   timeRange={range}
                   update={(updatedValue) =>
                     updateValue(date, rangeIx, updatedValue)

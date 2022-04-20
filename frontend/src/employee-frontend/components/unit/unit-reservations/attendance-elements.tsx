@@ -180,7 +180,7 @@ export const TimeRangeEditor = React.memo(function TimeRangeEditor({
   )
 })
 
-const TimeInputWithoutPadding = styled(TimeInput)`
+export const TimeInputWithoutPadding = styled(TimeInput)`
   padding: 0;
   width: calc(2.8em);
   max-width: calc(2.8em);
