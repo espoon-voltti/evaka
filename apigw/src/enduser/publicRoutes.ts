@@ -3,11 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Router } from 'express'
+import { appCommit } from '../shared/config'
 import { createProxy } from '../shared/proxy-utils'
 
 const router = Router()
 const proxy = createProxy()
 
+router.get('/version', (_, res) => {
+  res.send({ commitId: appCommit })
+})
 router.get('/units', proxy)
 router.get('/public/units/*', proxy)
 router.get('/public/club-terms', proxy)
