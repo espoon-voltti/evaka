@@ -644,7 +644,6 @@ export interface UnitData {
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {
-  ageCoefficient: number
   approvedAt: Date | null
   approvedById: UUID | null
   baseCoPayment: number
@@ -680,7 +679,6 @@ export interface VoucherValueDecision {
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 */
 export interface VoucherValueDecisionDetailed {
-  ageCoefficient: number
   approvedAt: Date | null
   approvedBy: EmployeeWithName | null
   baseCoPayment: number

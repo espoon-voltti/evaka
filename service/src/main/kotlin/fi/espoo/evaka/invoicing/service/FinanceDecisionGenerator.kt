@@ -41,10 +41,9 @@ class FinanceDecisionGenerator(
     private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
     env: EvakaEnv,
-    featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
-    private val valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled
 
     fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
@@ -67,7 +66,7 @@ class FinanceDecisionGenerator(
             }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
-                    valueDecisionCapacityFactorEnabled,
+                    featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
                     from,
@@ -125,7 +124,7 @@ class FinanceDecisionGenerator(
             }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
-                    valueDecisionCapacityFactorEnabled,
+                    featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
                     from,

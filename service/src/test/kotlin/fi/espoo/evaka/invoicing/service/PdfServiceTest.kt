@@ -180,7 +180,6 @@ class PdfServiceTest {
             voucherValueDescriptionSv = "mer än 25 h/vecka"
         ),
         voucherValue = 120000,
-        ageCoefficient = BigDecimal("1.00"),
         capacityFactor = BigDecimal("1"),
         baseCoPayment = 900,
         baseValue = 90000,

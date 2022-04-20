@@ -114,7 +114,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
             assertEquals(testVoucherDaycare.id, decision.placement.unitId)
             assertEquals(5800, decision.coPayment)
             assertEquals(87000, decision.baseValue)
-            assertEquals(BigDecimal("1.00"), decision.ageCoefficient)
             assertEquals(BigDecimal("1.00"), decision.serviceNeed.voucherValueCoefficient)
             assertEquals(87000, decision.voucherValue)
         }
