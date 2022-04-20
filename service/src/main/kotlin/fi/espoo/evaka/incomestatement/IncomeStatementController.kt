@@ -154,10 +154,10 @@ class IncomeStatementController(
 }
 
 data class SearchIncomeStatementsRequest(
-    val page: Int,
-    val pageSize: Int,
-    val areas: List<String>?,
-    val providerTypes: List<ProviderType>?,
-    val sentStartDate: String?,
-    val sentEndDate: String?,
+    val page: Int = 1,
+    val pageSize: Int = 50,
+    val areas: List<String>? = emptyList(),
+    val providerTypes: List<ProviderType>? = emptyList(),
+    val sentStartDate: String? = null,
+    val sentEndDate: String? = null,
 )

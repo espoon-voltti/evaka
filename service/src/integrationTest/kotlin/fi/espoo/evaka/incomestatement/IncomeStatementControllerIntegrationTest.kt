@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -221,7 +222,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - no income statements`() {
         assertEquals(
             Paged(listOf(), 0, 1),
-            getIncomeStatementsAwaitingHandler(listOf())
+            getIncomeStatementsAwaitingHandler()
         )
     }
 
@@ -355,7 +356,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 ),
                 7, 1
             ),
-            getIncomeStatementsAwaitingHandler(listOf())
+            getIncomeStatementsAwaitingHandler()
         )
     }
 
@@ -406,7 +407,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1, 1
             ),
             // short name for the "Lwiz Foo" care area is "short name 2"
-            getIncomeStatementsAwaitingHandler(listOf("short name 2"))
+            // getIncomeStatementsAwaitingHandler(listOf("short name 2"))
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    areas = listOf("short name 2"),
+                    providerTypes = listOf(ProviderType.MUNICIPAL)
+                )
+            )
         )
     }
 
@@ -436,12 +443,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     private fun getIncomeStatementsAwaitingHandler(
-        areas: List<String>,
-        page: Int = 1,
-        pageSize: Int = 50
+        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, emptyList(), emptyList(), null, null)
     ): Paged<IncomeStatementAwaitingHandler> =
-        http.get("/income-statements/awaiting-handler?areas=${areas.joinToString(",")}&page=$page&pageSize=$pageSize")
+        http.post("/income-statements/awaiting-handler")
             .asUser(employee)
+            .objectBody(body, mapper = jsonMapper)
             .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 

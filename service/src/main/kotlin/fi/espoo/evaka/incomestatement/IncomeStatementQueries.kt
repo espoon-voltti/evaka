@@ -506,8 +506,8 @@ LEFT JOIN care_area ca ON ca.id = d.care_area_id
 
 WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
+AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
 AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
-AND d.provider_type = ANY(:providerTypes::unit_provider_type[])
 ORDER BY i.created, i.start_date, i.id, a.id  -- order by area to get the same result each time
 """
 
