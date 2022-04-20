@@ -10,10 +10,7 @@ import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  UpsertStaffAttendanceRequest,
-  UpsertExternalAttendanceRequest
-} from 'lib-common/generated/api-types/attendance'
+import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -31,8 +28,7 @@ import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import {
   getStaffAttendances,
-  postStaffAttendance,
-  postExternalAttendance
+  postStaffAndExternalAttendances
 } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
@@ -108,18 +104,20 @@ export default React.memo(function UnitAttendanceReservationsView({
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
 
-  const saveAttendance = useCallback(
-    (body: UpsertStaffAttendanceRequest) =>
+  const saveAttendances = useCallback(
+    (body: UpsertStaffAndExternalAttendanceRequest) =>
       groupId === 'staff'
-        ? postStaffAttendance(unitId, body)
-        : postStaffAttendance(unitId, { ...body, groupId }),
-    [groupId, unitId]
-  )
-  const saveExternalAttendance = useCallback(
-    (body: UpsertExternalAttendanceRequest) =>
-      groupId === 'staff'
-        ? postExternalAttendance(unitId, body)
-        : postExternalAttendance(unitId, { ...body, groupId }),
+        ? postStaffAndExternalAttendances(unitId, body)
+        : postStaffAndExternalAttendances(unitId, {
+            staffAttendances: body.staffAttendances.map((a) => ({
+              ...a,
+              groupId
+            })),
+            externalAttendances: body.externalAttendances.map((a) => ({
+              ...a,
+              groupId
+            }))
+          }),
     [groupId, unitId]
   )
 
@@ -159,8 +157,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               operationalDays={childData.operationalDays}
               staffAttendances={staffData.staff}
               extraAttendances={staffData.extraAttendances}
-              saveAttendance={saveAttendance}
-              saveExternalAttendance={saveExternalAttendance}
+              saveAttendances={saveAttendances}
               reloadStaffAttendances={reloadStaffAttendances}
             />
           ) : (
@@ -174,8 +171,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   extraAttendances={staffData.extraAttendances.filter(
                     (ea) => ea.groupId === groupId
                   )}
-                  saveAttendance={saveAttendance}
-                  saveExternalAttendance={saveExternalAttendance}
+                  saveAttendances={saveAttendances}
                   reloadStaffAttendances={reloadStaffAttendances}
                   enableNewEntries
                 />

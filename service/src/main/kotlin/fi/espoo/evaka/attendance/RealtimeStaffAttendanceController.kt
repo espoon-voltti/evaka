@@ -80,55 +80,65 @@ class RealtimeStaffAttendanceController(
         }
     }
 
-    data class UpsertStaffAttendanceRequest(
+    data class UpsertStaffAttendance(
         val attendanceId: StaffAttendanceId?,
         val employeeId: EmployeeId,
         val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
-
-    @PostMapping("/{unitId}/upsert")
-    fun upsertStaffAttendance(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable unitId: DaycareId,
-        @RequestBody body: UpsertStaffAttendanceRequest
-    ) {
-        Audit.StaffAttendanceUpdate.log(targetId = unitId)
-
-        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
-
-        db.connect { dbc ->
-            dbc.transaction {
-                val occupancyCoefficient = it.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
-                it.upsertStaffAttendance(body.attendanceId, body.employeeId, body.groupId, body.arrived, body.departed, occupancyCoefficient)
-            }
-        }
-    }
-
-    data class UpsertExternalAttendanceRequest(
+    data class UpsertExternalAttendance(
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
         val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
+    data class UpsertStaffAndExternalAttendanceRequest(
+        val staffAttendances: List<UpsertStaffAttendance>,
+        val externalAttendances: List<UpsertExternalAttendance>
+    )
 
-    @PostMapping("/{unitId}/upsert-external")
-    fun updateExternalAttendance(
+    @PostMapping("/{unitId}/upsert")
+    fun upsertStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
-        @RequestBody body: UpsertExternalAttendanceRequest
+        @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
 
         ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
-            dbc.transaction {
-                it.upsertExternalStaffAttendance(body.attendanceId, body.name, body.groupId, body.arrived, body.departed, occupancyCoefficientSeven)
+            dbc.transaction { tx ->
+                val occupancyCoefficients = body.staffAttendances.associate {
+                    Pair(
+                        it.employeeId,
+                        tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
+                    )
+                }
+                body.staffAttendances.forEach {
+                    tx.upsertStaffAttendance(
+                        it.attendanceId,
+                        it.employeeId,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficients[it.employeeId]
+                    )
+                }
+
+                body.externalAttendances.forEach {
+                    tx.upsertExternalStaffAttendance(
+                        it.attendanceId,
+                        it.name,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficientSeven
+                    )
+                }
             }
         }
     }

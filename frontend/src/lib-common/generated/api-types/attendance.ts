@@ -328,9 +328,9 @@ export interface UnitStats {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertExternalAttendanceRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertExternalAttendance
 */
-export interface UpsertExternalAttendanceRequest {
+export interface UpsertExternalAttendance {
   arrived: Date
   attendanceId: UUID | null
   departed: Date | null
@@ -339,9 +339,17 @@ export interface UpsertExternalAttendanceRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAttendanceRequest
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAndExternalAttendanceRequest
 */
-export interface UpsertStaffAttendanceRequest {
+export interface UpsertStaffAndExternalAttendanceRequest {
+  externalAttendances: UpsertExternalAttendance[]
+  staffAttendances: UpsertStaffAttendance[]
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAttendance
+*/
+export interface UpsertStaffAttendance {
   arrived: Date
   attendanceId: UUID | null
   departed: Date | null
