@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import LocalDate from '../../local-date'
+import { ProviderType } from './daycare'
 import { UUID } from '../../types'
 
 /**
@@ -37,6 +38,18 @@ export type IncomeStatementType =
   | 'HIGHEST_FEE'
   | 'INCOME'
   | 'CHILD_INCOME'
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.SearchIncomeStatementsRequest
+*/
+export interface SearchIncomeStatementsRequest {
+  areas: string[] | null
+  page: number
+  pageSize: number
+  providerType: ProviderType | null
+  sentEndDate: string | null
+  sentStartDate: string | null
+}
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.SetIncomeStatementHandledBody

@@ -49,17 +49,15 @@ export async function getIncomeStatementsAwaitingHandler(
     .post<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
       '/income-statements/awaiting-handler',
       {
-        params: {
-          areas: searchFilters.area.length > 0 ? searchFilters.area : undefined,
-          providerTypes:
-            searchFilters.providerTypes.length > 0
-              ? searchFilters.providerTypes
-              : undefined,
-          sentStartDate: searchFilters.sentStartDate?.formatIso(),
-          sentEndDate: searchFilters.sentEndDate?.formatIso(),
-          page: page - 1,
-          pageSize
-        }
+        areas: searchFilters.area.length > 0 ? searchFilters.area : undefined,
+        providerTypes:
+          searchFilters.providerTypes.length > 0
+            ? searchFilters.providerTypes
+            : undefined,
+        sentStartDate: searchFilters.sentStartDate?.formatIso(),
+        sentEndDate: searchFilters.sentEndDate?.formatIso(),
+        page: page,
+        pageSize
       }
     )
     .then((res) => res.data)

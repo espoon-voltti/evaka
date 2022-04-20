@@ -10,7 +10,10 @@ import {
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
   FeeDecisionStatus,
@@ -1269,6 +1272,43 @@ export function DateFilter({
           </span>
         </>
       ) : null}
+    </>
+  )
+}
+
+interface ProviderTypeFilterProps {
+  toggled: ProviderType[]
+  toggle: (providerType: ProviderType) => () => void
+}
+
+export function ProviderTypeFilter({
+  toggled,
+  toggle
+}: ProviderTypeFilterProps) {
+  const { i18n } = useTranslation()
+
+  const providerTypes: ProviderType[] = [
+    'MUNICIPAL',
+    'PURCHASED',
+    'PRIVATE',
+    'MUNICIPAL_SCHOOL',
+    'PRIVATE_SERVICE_VOUCHER',
+    'EXTERNAL_PURCHASED'
+  ]
+
+  return (
+    <>
+      <Label>{i18n.filters.providerType}</Label>
+      <Gap size="xs" />
+      {providerTypes.map((id) => (
+        <Checkbox
+          key={id}
+          label={i18n.common.providerType[id]}
+          checked={toggled.includes(id)}
+          onChange={toggle(id)}
+          data-qa={`provider-type-filter-${id}`}
+        />
+      ))}
     </>
   )
 }

@@ -2020,6 +2020,7 @@ export const fi = {
     unitPlaceholder: 'Valitse toimipaikka',
     financeDecisionHandlerPlaceholder: 'Valitse työntekijä',
     distinctiveDetails: 'Muuta huomioitavaa',
+    providerType: 'Järjestämismuoto',
     status: 'Tila',
     clear: 'Tyhjennä valinnat',
     validityPeriod: 'Voimassaoloaika',

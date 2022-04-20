@@ -4,12 +4,18 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 
 import { getAreas } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { AreaFilter, DateFilter, Filters } from '../common/Filters'
+import {
+  AreaFilter,
+  DateFilter,
+  Filters,
+  ProviderTypeFilter
+} from '../common/Filters'
 
 export default React.memo(function IncomeStatementsFilters() {
   const {
@@ -52,6 +58,15 @@ export default React.memo(function IncomeStatementsFilters() {
     [setSearchFilters]
   )
 
+  const toggleProviderType = (providerType: ProviderType) => () => {
+    setSearchFilters({
+      ...searchFilters,
+      providerTypes: searchFilters.providerTypes.includes(providerType)
+        ? searchFilters.providerTypes.filter((p) => p !== providerType)
+        : [...searchFilters.providerTypes, providerType]
+    })
+  }
+
   return (
     <Filters
       clearFilters={clearSearchFilters}
@@ -62,7 +77,14 @@ export default React.memo(function IncomeStatementsFilters() {
           toggle={toggleArea}
         />
       }
-      column2={<Fragment></Fragment>}
+      column2={
+        <Fragment>
+          <ProviderTypeFilter
+            toggled={searchFilters.providerTypes}
+            toggle={toggleProviderType}
+          />
+        </Fragment>
+      }
       column3={
         <Fragment>
           <DateFilter
