@@ -23,16 +23,14 @@ import {
 import config from './config'
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface Global {
-      evaka?: {
+  // eslint-disable-next-line no-var
+  var evaka:
+    | {
         captureScreenshots: (namePrefix: string) => Promise<void>
         saveTraces: (namePrefix: string) => Promise<void>
         promises: Promise<void>[]
       }
-    }
-  }
+    | undefined
 }
 
 let browser: Browser
