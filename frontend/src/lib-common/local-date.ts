@@ -16,6 +16,7 @@ import {
   getISOWeek,
   isAfter,
   isBefore,
+  isExists,
   isToday,
   isValid,
   isWeekend,
@@ -172,11 +173,10 @@ export default class LocalDate {
     return this.formatIso()
   }
   toSystemTzDate(): Date {
-    const iso = `${this.formatIso()}T00:00`
-    const date = new Date(iso)
+    const date = new Date(this.year, this.month - 1, this.date)
     if (!isValid(date)) {
       Sentry.captureMessage(
-        `Invalid date generated from ${iso}`,
+        `Invalid date generated from ${this.toString()}`,
         Sentry.Severity.Warning
       )
     }
@@ -208,26 +208,25 @@ export default class LocalDate {
     return result
   }
   static parseFiOrThrow(value: string): LocalDate {
-    const parts = fiPattern.exec(value)
-    if (!parts) {
-      throw new RangeError(`Invalid FI date ${value}`)
-    }
-    const date = LocalDate.tryCreate(
-      Number(parts[3]),
-      Number(parts[2]),
-      Number(parts[1])
-    )
+    const date = LocalDate.parseFiOrNull(value)
     if (!date) {
       throw new RangeError(`Invalid date ${value}`)
     }
     return date
   }
   static parseFiOrNull(value: string): LocalDate | null {
-    try {
-      return this.parseFiOrThrow(value)
-    } catch (e) {
-      return null
+    const parts = fiPattern.exec(value)
+    if (parts) {
+      const date = LocalDate.tryCreate(
+        Number(parts[3]),
+        Number(parts[2]),
+        Number(parts[1])
+      )
+      if (date) {
+        return date
+      }
     }
+    return null
   }
   static parseIso(value: string): LocalDate {
     const result = LocalDate.tryParseIso(value)
@@ -274,7 +273,7 @@ export default class LocalDate {
     month: number,
     date: number
   ): LocalDate | undefined {
-    return isValid(new Date(year, month - 1, date))
+    return isExists(year, month - 1, date)
       ? new LocalDate(year, month, date)
       : undefined
   }
