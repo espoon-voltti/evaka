@@ -4,15 +4,20 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
+import LocalDate from 'lib-common/local-date'
+
 import { getAreas } from '../../api/daycare'
+import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { AreaFilter, Filters } from '../common/Filters'
+import { AreaFilter, DateFilter, Filters } from '../common/Filters'
 
 export default React.memo(function IncomeStatementsFilters() {
   const {
     invoiceStatements: { searchFilters, setSearchFilters, clearSearchFilters },
     shared: { availableAreas, setAvailableAreas }
   } = useContext(InvoicingUiContext)
+
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
@@ -35,19 +40,18 @@ export default React.memo(function IncomeStatementsFilters() {
     [setSearchFilters]
   )
 
-  /*
   const setSentStartDate = useCallback(
     (sentStartDate: LocalDate | undefined) =>
-      setSearchFilters((old) => ({ ...old, startDate: sentStartDate })),
+      setSearchFilters((old) => ({ ...old, sentStartDate })),
     [setSearchFilters]
   )
 
   const setSentEndDate = useCallback(
     (sentEndDate: LocalDate | undefined) =>
-      setSearchFilters((old) => ({ ...old, endDate: sentEndDate })),
+      setSearchFilters((old) => ({ ...old, sentEndDate })),
     [setSearchFilters]
   )
-*/
+
   return (
     <Filters
       clearFilters={clearSearchFilters}
@@ -58,12 +62,16 @@ export default React.memo(function IncomeStatementsFilters() {
           toggle={toggleArea}
         />
       }
-      column2={
-        <Fragment>
-        </Fragment>
-      }
+      column2={<Fragment></Fragment>}
       column3={
         <Fragment>
+          <DateFilter
+            title={i18n.filters.incomeStatementSent}
+            startDate={searchFilters.sentStartDate}
+            setStartDate={setSentStartDate}
+            endDate={searchFilters.sentEndDate}
+            setEndDate={setSentEndDate}
+          />
         </Fragment>
       }
     />

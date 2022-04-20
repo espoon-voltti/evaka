@@ -2025,7 +2025,8 @@ export const fi = {
     validityPeriod: 'Voimassaoloaika',
     searchByStartDate: 'Alkupäivä sijoittuu valitulle aikavälille',
     invoiceDate: 'Laskun päiväys',
-    invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta'
+    invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta',
+    incomeStatementSent: 'Tuloselvitys lähetetty'
   },
   valueDecision: {
     title: {

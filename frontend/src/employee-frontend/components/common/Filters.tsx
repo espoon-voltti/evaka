@@ -1220,3 +1220,55 @@ export function TransferApplicationsFilter({
     </>
   )
 }
+
+interface DateFilterProps {
+  title: string
+  startDate: LocalDate | undefined
+  setStartDate: (startDate: LocalDate | undefined) => void
+  endDate: LocalDate | undefined
+  setEndDate: (endDate: LocalDate | undefined) => void
+}
+
+export function DateFilter({
+  title,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate
+}: DateFilterProps) {
+  const { i18n } = useTranslation()
+
+  return (
+    <>
+      <Label>{title}</Label>
+      <FlexRow>
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
+          data-qa="start-date-filter-input"
+          onCleared={() => setStartDate(undefined)}
+        />
+        <Gap horizontal size="xs" />
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
+          data-qa="end-date-filter-input"
+          onCleared={() => setEndDate(undefined)}
+        />
+      </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={colors.status.warning}
+            />
+          </span>
+        </>
+      ) : null}
+    </>
+  )
+}

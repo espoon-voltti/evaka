@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/income-statements")
@@ -120,12 +122,13 @@ class IncomeStatementController(
     ): Paged<IncomeStatementAwaitingHandler> {
         Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
-        val areasList = body.area?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(
                     HelsinkiDateTime.now().toLocalDate(),
-                    areasList,
+                    body.areas ?: emptyList(),
+                    body.sentStartDate?.let { LocalDate.parse(body.sentStartDate, DateTimeFormatter.ISO_DATE) },
+                    body.sentEndDate?.let { LocalDate.parse(body.sentEndDate, DateTimeFormatter.ISO_DATE) },
                     body.page,
                     body.pageSize
                 )
@@ -152,7 +155,7 @@ class IncomeStatementController(
 data class SearchIncomeStatementsRequest(
     val page: Int,
     val pageSize: Int,
-    val area: String?,
+    val areas: List<String>?,
     val providerType: ProviderType?,
     val sentStartDate: String?,
     val sentEndDate: String?,
