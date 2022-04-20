@@ -568,9 +568,9 @@ export const fi = {
       previousServiceNeeds: 'Aiemmin luodut palveluntarpeet',
       errors: {
         conflict:
-          'Palveluntarve menee päällekäin toisen palveluntarpeen kanssa.',
+          'Palveluntarve menee päällekkäin toisen palveluntarpeen kanssa.',
         hardConflict:
-          'Palveluntarve menee päällekäin toisen palveluntarpeen alkupäivämäärän kanssa.',
+          'Palveluntarve menee päällekkäin toisen palveluntarpeen alkupäivämäärän kanssa.',
         checkHours: 'Tarkista',
         placementMismatchWarning:
           'Viikottainen palveluntarve ei vastaa sijoituksen toimintamuotoa.',
@@ -628,9 +628,9 @@ export const fi = {
       removeConfirmation: 'Haluatko poistaa tuen tarpeen?',
       errors: {
         invalidCoefficient: 'Virheellinen kerroin.',
-        conflict: 'Tuen tarve menee päällekäin toisen tuen tarpeen kanssa.',
+        conflict: 'Tuen tarve menee päällekkäin toisen tuen tarpeen kanssa.',
         hardConflict:
-          'Tuen tarve menee päällekäin toisen tuen tarpeen alkupäivämäärän kanssa.',
+          'Tuen tarve menee päällekkäin toisen tuen tarpeen alkupäivämäärän kanssa.',
         autoCutWarning:
           'Aiemmat päällekkäiset tuentarpeet katkaistaan automaattisesti.'
       }
@@ -669,9 +669,9 @@ export const fi = {
       create: 'Luo uusi tukitoimien ajanjakso',
       removeConfirmation: 'Haluatko poistaa tukitoimien ajanjakson?',
       errors: {
-        conflict: 'Tukitoimet menevät päällekäin toisen ajanjakson kanssa.',
+        conflict: 'Tukitoimet menevät päällekkäin toisen ajanjakson kanssa.',
         hardConflict:
-          'Tukitoimet menevät päällekäin toisen ajanjakson alkupäivämäärän kanssa.',
+          'Tukitoimet menevät päällekkäin toisen ajanjakson alkupäivämäärän kanssa.',
         autoCutWarning:
           'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.'
       }
@@ -787,7 +787,7 @@ export const fi = {
       createPlacement: {
         btn: 'Luo uusi sijoitus',
         title: 'Uusi sijoitus',
-        text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
+        text: 'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekkäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
         temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
         unitMissing: 'Yksikkö puuttuu'
       },
@@ -795,7 +795,7 @@ export const fi = {
         conflict: {
           title: 'Päivämäärää ei voitu muokata',
           text:
-            'Lapsella on sijoitus, joka menee päällekäin' +
+            'Lapsella on sijoitus, joka menee päällekkäin' +
             ' nyt ilmoittamiesi päivämäärien kanssa. Voit palata muokkaamaan' +
             ' ilmoittamiasi päivämääriä tai ottaa yhteyttä pääkäyttäjään.'
         }
@@ -2244,7 +2244,7 @@ export const fi = {
     noCurrentPlacements: 'Ei olemassaolevia sijoituksia',
     addOtherUnit: 'Lisää muu yksikkö',
     placementOverlapError:
-      'Aiemmat päällekäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
+      'Aiemmat päällekkäiset sijoitukset katkaistaan automaattisesti mikäli kuntalainen ottaa tarjottavan paikan vastaan.',
     createPlacementDraft: 'Luo sijoitushahmotelma',
     datesTitle: 'Nyt luotava sijoitushahmotelma',
     type: 'Toimintamuoto',
@@ -2379,7 +2379,7 @@ export const fi = {
       confirmDeleteTitle: 'Haluatko varmasti poistaa tämän henkilön?',
       errorTitle: 'Tietojen siirtäminen epäonnistui',
       errorText:
-        'Tarkista ettei henkilöillä ole esimerkiksi päällekäisiä sijoituksia, palveluntarpeita tai muita päällekkäisyyksiä, jotka voisivat estää yhdistämisen.',
+        'Tarkista ettei henkilöillä ole esimerkiksi päällekkäisiä sijoituksia, palveluntarpeita tai muita päällekkäisyyksiä, jotka voisivat estää yhdistämisen.',
       columns: {
         'absence.child_id': 'Poissa- oloja',
         'absence.modified_by_guardian_id': 'Itse merkittyjä poissa -oloja',
