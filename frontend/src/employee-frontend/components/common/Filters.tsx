@@ -110,12 +110,11 @@ export function Filters({
   clearMargin
 }: Props) {
   const { i18n } = useTranslation()
-
   return (
     <FiltersContainer>
-      {freeText && setFreeText && searchPlaceholder && (
+      {setFreeText && searchPlaceholder && (
         <FreeTextSearch
-          value={freeText}
+          value={freeText || ''}
           setValue={setFreeText}
           placeholder={searchPlaceholder}
         />

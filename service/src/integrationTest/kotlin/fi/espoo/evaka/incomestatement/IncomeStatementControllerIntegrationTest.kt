@@ -40,6 +40,7 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testPurchasedDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -407,10 +408,63 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1, 1
             ),
             // short name for the "Lwiz Foo" care area is "short name 2"
-            // getIncomeStatementsAwaitingHandler(listOf("short name 2"))
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     areas = listOf("short name 2"),
+                    providerTypes = listOf(ProviderType.MUNICIPAL)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - provider type filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(citizenId, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testPurchasedDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        createTestIncomeStatement(citizenId)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Joan Doe",
+                        primaryCareArea = "Test Area",
+                    )
+                ),
+                1, 1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
                     providerTypes = listOf(ProviderType.MUNICIPAL)
                 )
             )
