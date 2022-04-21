@@ -23,9 +23,11 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     private lateinit var employee1Id: EmployeeId
     private lateinit var employee2Id: EmployeeId
     private lateinit var employee3Id: EmployeeId
+    private lateinit var employee4Id: EmployeeId
     private val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Koirat")
     private val group2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kissat")
     private val group3 = DevDaycareGroup(daycareId = testDaycare.id, name = "Tyhjät")
+    private val group4 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kookoskalmarit")
 
     @BeforeEach
     fun beforeEach() {
@@ -56,6 +58,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 .saveAnd {
                     employee3Id = employeeId
                 }
+                .addEmployee()
+                .withName("Four", "in group 2")
+                .withGroupAccess(testDaycare.id, group2.id)
+                .withScopedRole(UserRole.STAFF, testDaycare.id)
+                .saveAnd {
+                    employee4Id = employeeId
+                }
         }
     }
 
@@ -75,16 +84,20 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             tx.markStaffArrival(employee2Id, group2.id, now.plusHours(2), BigDecimal(3.5)).let {
                 tx.markStaffDeparture(it, now.plusHours(8))
             }
+            // Exactly same values as above
+            tx.markStaffArrival(employee4Id, group2.id, now.plusHours(2), BigDecimal(3.5)).let {
+                tx.markStaffDeparture(it, now.plusHours(8))
+            }
         }
 
         db.read {
             val attendances = it.getStaffAttendances(testDaycare.id, now)
-            assertEquals(3, attendances.size)
-            assertEquals(listOf("One", "Three", "Two"), attendances.map { a -> a.firstName })
-            assertEquals(listOf(group1.id, group1.id, group2.id), attendances.flatMap { a -> a.groupIds })
+            assertEquals(4, attendances.size)
+            assertEquals(listOf("One", "Three", "Four", "Two"), attendances.map { a -> a.firstName })
+            assertEquals(listOf(group1.id, group1.id, group2.id, group2.id), attendances.flatMap { a -> a.groupIds })
 
             val occupancyAttendances = it.getStaffOccupancyAttendances(testDaycare.id, now.toLocalDate())
-            assertEquals(listOf(0.0, 0.0, 3.5), occupancyAttendances.map { a -> a.capacity })
+            assertEquals(listOf(0.0, 0.0, 3.5, 3.5), occupancyAttendances.map { a -> a.capacity })
         }
     }
 
