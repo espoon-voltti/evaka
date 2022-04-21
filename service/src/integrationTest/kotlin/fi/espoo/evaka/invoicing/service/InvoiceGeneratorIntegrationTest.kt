@@ -311,7 +311,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
-        val result = db.read(getAllInvoices)
+        val result = db.read(getAllInvoices).sortedBy { it.headOfFamily == testAdult_2.id }
 
         assertEquals(2, result.size)
         result.first().let { invoice ->
@@ -3982,6 +3982,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .map(toInvoice)
             .list()
             .let(::flatten)
+            .shuffled() // randomize order to expose assumptions
     }
 
     private fun datesBetween(start: LocalDate, endInclusive: LocalDate?): List<LocalDate> {

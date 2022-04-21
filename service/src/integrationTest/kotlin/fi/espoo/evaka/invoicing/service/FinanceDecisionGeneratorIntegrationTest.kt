@@ -144,7 +144,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
             tx.createQuery(feeDecisionQueryBase)
                 .mapTo<FeeDecision>()
                 .let { it.merge() }
-        }
+        }.shuffled() // randomize order to expose assumptions
     }
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
@@ -152,6 +152,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
             tx.createQuery("SELECT * FROM voucher_value_decision")
                 .mapTo<VoucherValueDecision>()
                 .toList()
-        }
+        }.shuffled() // randomize order to expose assumptions
     }
 }

@@ -220,7 +220,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
 
-        val result = getAllFeeDecisions()
+        val result = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, result.size)
         result.first().let {
             assertEquals(periodInPast.start, it.validFrom)
@@ -376,7 +376,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertServiceNeed(placementId, serviceNeedPeriod, serviceNeed.id)
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
 
-        val updated = getAllFeeDecisions()
+        val updated = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, updated.size)
         updated[0].let { decision ->
             assertEquals(placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)), decision.validDuring)
@@ -399,7 +399,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
 
-        val original = getAllFeeDecisions()
+        val original = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, original.size)
         original[0].let { decision ->
             assertEquals(placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)), decision.validDuring)
@@ -814,7 +814,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, placementPeriod.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions.first().let { decision ->
             assertEquals(3, decision.familySize)
@@ -959,7 +959,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id, period.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
 
         val drafts = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
@@ -1057,7 +1057,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id, newerPeriod.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
 
         val drafts = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
@@ -1092,7 +1092,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
         decisions[0].let { decision ->
             assertEquals(4, decision.familySize)
@@ -1187,7 +1187,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period_1.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
         decisions[0].let { decision ->
             assertEquals(4, decision.familySize)
@@ -1251,7 +1251,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(subPeriod_1.start, decision.validFrom)
@@ -1298,7 +1298,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1344,7 +1344,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(1, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1397,7 +1397,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1537,7 +1537,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(it, testAdult_2.id, period.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         assertEquals(setOf(5), decisions.map { it.familySize }.toSet())
         assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
@@ -1576,7 +1576,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(it, testAdult_2.id, period.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
         assertEquals(setOf(6), decisions.map { it.familySize }.toSet())
@@ -1614,7 +1614,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(it, testAdult_2.id, period.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         assertEquals(setOf(3, 2), decisions.map { it.familySize }.toSet())
         assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
@@ -1644,7 +1644,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1692,7 +1692,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1769,7 +1769,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, combinedPeriod.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         decisions[0].let { decision ->
             assertEquals(2, decision.familySize)
@@ -1864,7 +1864,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id, newPeriod.start) }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         assertEqualEnoughDecisions(sentDecision, decisions.first())
         decisions.last().let { decision ->
@@ -1926,7 +1926,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id, familyPeriod.start)
         }
 
-        val decisions = getAllFeeDecisions()
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
         val sent = decisions.find { it.status == FeeDecisionStatus.SENT }!!
         val (firstDraft, secondDraft) = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
@@ -2178,6 +2178,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.createQuery(feeDecisionQueryBase)
                 .mapTo<FeeDecision>()
                 .merge()
-        }
+        }.shuffled() // randomize order to expose assumptions
     }
 }

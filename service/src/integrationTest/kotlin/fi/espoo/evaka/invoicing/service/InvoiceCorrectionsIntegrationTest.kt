@@ -355,6 +355,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31))
     ): List<Invoice> {
         return generator.applyCorrections(this, invoices, period.asDateRange(), mapOf(testDaycare.id to testArea.id))
+            .shuffled() // randomize order to expose assumptions
     }
 
     private fun createTestInvoice(
