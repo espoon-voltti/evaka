@@ -129,7 +129,7 @@ fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDat
     JOIN daycare_group dg ON dg.id = sa.group_id
     WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:dayStart, :dayEnd)
     
-    UNION 
+    UNION ALL
     
     SELECT sae.arrived, sae.departed, sae.occupancy_coefficient AS capacity
     FROM staff_attendance_external sae
