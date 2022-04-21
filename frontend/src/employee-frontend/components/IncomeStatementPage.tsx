@@ -50,8 +50,10 @@ import { Translations, useTranslation } from '../state/i18n'
 import { renderResult } from './async-rendering'
 
 export default React.memo(function IncomeStatementPage() {
-  const { personId, incomeStatementId } =
-    useParams<{ personId: UUID; incomeStatementId: UUID }>()
+  const { personId, incomeStatementId } = useParams<{
+    personId: UUID
+    incomeStatementId: UUID
+  }>()
   const { i18n } = useTranslation()
   const history = useHistory()
 

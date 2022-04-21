@@ -66,8 +66,10 @@ export default React.memo(function PersonInvoiceCorrections({
   )
   const { editState, updateState, cancelEditing, addNewRow } =
     useCorrectionEditState(id)
-  const [noteModalState, setNoteModalState] =
-    useState<{ id: UUID; note: string }>()
+  const [noteModalState, setNoteModalState] = useState<{
+    id: UUID
+    note: string
+  }>()
 
   const children = useMemo(
     () =>

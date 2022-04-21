@@ -39,8 +39,11 @@ export default React.memo(function PersonalMobileDevicesPage() {
     () => getPersonalMobileDevices(),
     []
   )
-  const [openModal, setOpenModal] =
-    useState<{ id: UUID; action: 'rename' | 'delete'; currentName?: string }>()
+  const [openModal, setOpenModal] = useState<{
+    id: UUID
+    action: 'rename' | 'delete'
+    currentName?: string
+  }>()
 
   const pairNewDevice = useCallback(
     () =>

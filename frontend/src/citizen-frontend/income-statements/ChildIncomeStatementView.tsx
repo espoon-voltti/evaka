@@ -34,8 +34,10 @@ import { OverlayContext } from '../overlay/state'
 import { getChildIncomeStatement } from './api'
 
 export default React.memo(function ChildIncomeStatementView() {
-  const { childId, incomeStatementId } =
-    useParams<{ childId: UUID; incomeStatementId: UUID }>()
+  const { childId, incomeStatementId } = useParams<{
+    childId: UUID
+    incomeStatementId: UUID
+  }>()
   const t = useTranslation()
   const history = useHistory()
   const [result] = useApiState(
