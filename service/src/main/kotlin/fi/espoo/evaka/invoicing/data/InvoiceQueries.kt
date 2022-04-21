@@ -123,6 +123,7 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
         """
         $invoiceDetailedQueryBase
         WHERE invoice.id = ANY(:ids)
+        ORDER BY invoice.id, row.idx
     """
 
     return createQuery(sql)
@@ -136,6 +137,7 @@ fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
         """
         $invoiceQueryBase
         WHERE invoice.id = :id
+        ORDER BY invoice.id, row.idx
     """
 
     return createQuery(sql)
@@ -150,6 +152,7 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         """
         $invoiceDetailedQueryBase
         WHERE invoice.id = :id
+        ORDER BY invoice.id, row.idx
     """
     return createQuery(sql)
         .bind("id", id)
@@ -163,6 +166,7 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invo
         """
         $invoiceQueryBase
         WHERE invoice.head_of_family = :headOfFamilyId
+        ORDER BY invoice.id, row.idx
     """
     return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyUuid)
@@ -291,7 +295,7 @@ fun Database.Read.paginatedSearch(
             LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
             LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
             LEFT JOIN person as child ON row.child = child.id
-        ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
+        ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id, row.idx
         """.trimIndent()
 
     return createQuery(sql)
@@ -340,7 +344,7 @@ fun Database.Read.searchInvoices(
         """
         $invoiceDetailedQueryBase
         $where
-        ORDER BY status DESC, due_date
+        ORDER BY status DESC, due_date, invoice.id, row.idx
         """.trimIndent()
 
     return createQuery(sql)
@@ -499,6 +503,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
         """
             INSERT INTO invoice_row (
                 invoice_id,
+                idx,
                 id,
                 child,
                 amount,
@@ -511,6 +516,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
                 correction_id
             ) VALUES (
                 :invoice_id,
+                :idx,
                 :id,
                 :child,
                 :amount,
@@ -527,9 +533,10 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
     prepareBatch(sql)
         .also { batch ->
             invoiceRows.forEach { (invoiceId, rows) ->
-                rows.forEach { row ->
+                rows.withIndex().forEach { (idx, row) ->
                     batch
                         .bind("invoice_id", invoiceId)
+                        .bind("idx", idx)
                         .bindKotlin(row)
                         .add()
                 }
