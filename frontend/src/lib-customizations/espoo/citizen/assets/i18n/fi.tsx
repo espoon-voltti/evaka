@@ -5,6 +5,7 @@
 import React from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { P } from 'lib-components/typography'
@@ -255,13 +256,15 @@ export default {
       selectChildrenLabel: 'Valitse lapset',
       dateRange: 'Varauksen voimassaolo',
       dateRangeLabel: 'Tee varaus päiville',
+      dateRangeInfo: (date: LocalDate) =>
+        `Voit tehdä varauksia enimmillään ${date.format()} asti.`,
       missingDateRange: 'Valitse varattavat päivät',
-      repetition: 'Toistuvuus',
+      selectRecurrence: 'Valitse miten kellonaika toistuu',
       postError: 'Varauksen luominen ei onnistunut',
       repetitions: {
-        DAILY: 'Päivittäin',
-        WEEKLY: 'Viikoittain',
-        IRREGULAR: 'Epäsäännöllinen'
+        DAILY: 'Päivittäin sama aika',
+        WEEKLY: 'Viikonpäivittäin sama aika',
+        IRREGULAR: 'Vaihtelevat ajat'
       },
       start: 'Alkaa',
       end: 'Päättyy'
