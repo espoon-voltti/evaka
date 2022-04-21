@@ -17,6 +17,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { UnitData } from '../../api/unit'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
@@ -58,7 +59,9 @@ export default React.memo(function TabAttendances() {
   const { id: unitId } = useParams<{ id: UUID }>()
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
-  const [mode, setMode] = useState<CalendarMode>('month')
+  const [mode, setMode] = useState<CalendarMode>(
+    featureFlags.experimental?.realtimeStaffAttendance ? 'week' : 'month'
+  )
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
   const { roles } = useContext(UserContext)
 
