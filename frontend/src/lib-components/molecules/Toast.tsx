@@ -18,6 +18,7 @@ import { defaultMargins } from '../white-space'
 export interface Props {
   icon: IconDefinition
   iconColor: string
+  onClick?: () => void
   onClose?: () => void
   offsetTop?: string
   offsetTopDesktop?: string
@@ -27,6 +28,7 @@ export interface Props {
 export default React.memo(function Toast({
   icon,
   iconColor,
+  onClick,
   onClose,
   offsetTop,
   offsetTopDesktop,
@@ -37,10 +39,16 @@ export default React.memo(function Toast({
       role="dialog"
       offsetTop={offsetTop}
       offsetTopDesktop={offsetTopDesktop}
+      showPointer={!!onClick}
     >
       <FixedSpaceRow alignItems="center">
-        <RoundIcon content={icon} color={iconColor} size="L" />
-        <ToastContent>{children}</ToastContent>
+        <RoundIcon
+          content={icon}
+          color={iconColor}
+          size="L"
+          onClick={onClick}
+        />
+        <ToastContent onClick={onClick}>{children}</ToastContent>
         {onClose && (
           <CloseButton icon={faTimes} onClick={onClose} altText="Close" />
         )}
@@ -49,7 +57,11 @@ export default React.memo(function Toast({
   )
 })
 
-const ToastRoot = styled.div<{ offsetTop?: string; offsetTopDesktop?: string }>`
+const ToastRoot = styled.div<{
+  offsetTop?: string
+  offsetTopDesktop?: string
+  showPointer: boolean
+}>`
   position: fixed;
   top: ${(p) => p.offsetTop ?? '8px'};
   right: 8px;
@@ -71,6 +83,7 @@ const ToastRoot = styled.div<{ offsetTop?: string; offsetTopDesktop?: string }>`
   box-shadow: 4px 4px 8px rgba(15, 15, 15, 0.15),
     -2px 0 4px rgba(15, 15, 15, 0.15);
   z-index: ${modalZIndex};
+  cursor: ${(p) => (p.showPointer ? 'pointer' : 'auto')};
 `
 
 const ToastContent = styled.div`

@@ -13,7 +13,11 @@ import { UnwrapResult } from '../async-rendering'
 import { HolidayCta, NoCta, useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
 
-export default React.memo(function HolidayPeriodCta() {
+export default React.memo(function HolidayPeriodCta({
+  openModal
+}: {
+  openModal: () => void
+}) {
   const { holidayCta, ctaClosed, closeCta } = useHolidayPeriods()
   const status = useDataStatus(holidayCta)
   const i18n = useTranslation()
@@ -33,6 +37,11 @@ export default React.memo(function HolidayPeriodCta() {
     [i18n]
   )
 
+  const clickAction = useCallback(() => {
+    closeCta()
+    openModal()
+  }, [closeCta, openModal])
+
   return (
     <div data-qa="holiday-period-cta-container" data-status={status}>
       <UnwrapResult
@@ -45,6 +54,7 @@ export default React.memo(function HolidayPeriodCta() {
             <Toast
               icon={faTreePalm}
               iconColor={colors.status.warning}
+              onClick={cta.type === 'questionnaire' ? clickAction : undefined}
               onClose={closeCta}
               offsetTop="64px"
               offsetTopDesktop="180px"

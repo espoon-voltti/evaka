@@ -59,6 +59,12 @@ export default class CitizenCalendarPage {
     )
   }
 
+  async assertHolidayModalVisible(): Promise<void> {
+    return await this.page
+      .findByDataQa('fixed-period-selection-modal')
+      .waitUntilVisible()
+  }
+
   async assertHolidayModalButtonVisible() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
@@ -101,6 +107,14 @@ export default class CitizenCalendarPage {
       'success'
     )
     return this.#ctaContainer.findByDataQa('holiday-period-cta').innerText
+  }
+
+  async clickHoliayCta(): Promise<void> {
+    await waitUntilEqual(
+      () => this.#ctaContainer.getAttribute('data-status'),
+      'success'
+    )
+    return this.#ctaContainer.findByDataQa('holiday-period-cta').click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
