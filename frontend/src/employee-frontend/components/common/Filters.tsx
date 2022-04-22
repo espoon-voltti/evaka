@@ -10,7 +10,10 @@ import {
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea,
+  ProviderType
+} from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
   FeeDecisionStatus,
@@ -53,13 +56,13 @@ import { ApplicationSummaryStatus } from '../../types/application'
 import { FlexRow } from './styled/containers'
 
 interface Props {
-  freeText: string
-  setFreeText: (s: string) => void
+  freeText?: string
+  setFreeText?: (s: string) => void
   clearFilters: () => void
   column1?: JSX.Element
   column2?: JSX.Element
   column3?: JSX.Element
-  searchPlaceholder: string
+  searchPlaceholder?: string
   clearMargin?: number
 }
 
@@ -107,14 +110,15 @@ export function Filters({
   clearMargin
 }: Props) {
   const { i18n } = useTranslation()
-
   return (
     <FiltersContainer>
-      <FreeTextSearch
-        value={freeText}
-        setValue={setFreeText}
-        placeholder={searchPlaceholder}
-      />
+      {setFreeText && searchPlaceholder && (
+        <FreeTextSearch
+          value={freeText || ''}
+          setValue={setFreeText}
+          placeholder={searchPlaceholder}
+        />
+      )}
       <Gap size="s" />
       <FilterColumns>
         <Column>{column1}</Column>
@@ -1215,6 +1219,95 @@ export function TransferApplicationsFilter({
           small
         />
       </FixedSpaceColumn>
+    </>
+  )
+}
+
+interface DateFilterProps {
+  title: string
+  startDate: LocalDate | undefined
+  setStartDate: (startDate: LocalDate | undefined) => void
+  endDate: LocalDate | undefined
+  setEndDate: (endDate: LocalDate | undefined) => void
+}
+
+export function DateFilter({
+  title,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate
+}: DateFilterProps) {
+  const { i18n } = useTranslation()
+
+  return (
+    <>
+      <Label>{title}</Label>
+      <FlexRow>
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
+          data-qa="start-date-filter-input"
+          onCleared={() => setStartDate(undefined)}
+        />
+        <Gap horizontal size="xs" />
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
+          data-qa="end-date-filter-input"
+          onCleared={() => setEndDate(undefined)}
+        />
+      </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={colors.status.warning}
+            />
+          </span>
+        </>
+      ) : null}
+    </>
+  )
+}
+
+interface ProviderTypeFilterProps {
+  toggled: ProviderType[]
+  toggle: (providerType: ProviderType) => () => void
+}
+
+export function ProviderTypeFilter({
+  toggled,
+  toggle
+}: ProviderTypeFilterProps) {
+  const { i18n } = useTranslation()
+
+  const providerTypes: ProviderType[] = [
+    'MUNICIPAL',
+    'PURCHASED',
+    'PRIVATE',
+    'MUNICIPAL_SCHOOL',
+    'PRIVATE_SERVICE_VOUCHER',
+    'EXTERNAL_PURCHASED'
+  ]
+
+  return (
+    <>
+      <Label>{i18n.filters.providerType}</Label>
+      <Gap size="xs" />
+      {providerTypes.map((id) => (
+        <Checkbox
+          key={id}
+          label={i18n.common.providerType[id]}
+          checked={toggled.includes(id)}
+          onChange={toggle(id)}
+          data-qa={`provider-type-filter-${id}`}
+        />
+      ))}
     </>
   )
 }

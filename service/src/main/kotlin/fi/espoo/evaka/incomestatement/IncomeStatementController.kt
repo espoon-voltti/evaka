@@ -5,6 +5,7 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/income-statements")
@@ -111,24 +113,24 @@ class IncomeStatementController(
         }
     }
 
-    @GetMapping("/awaiting-handler")
+    @PostMapping("/awaiting-handler")
     fun getIncomeStatementsAwaitingHandler(
         db: Database,
         user: AuthenticatedUser,
-        @RequestParam areas: String,
-        @RequestParam page: Int,
-        @RequestParam pageSize: Int
+        @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
         Audit.IncomeStatementsAwaitingHandler.log()
         accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
-        val areasList = areas.split(",").filter { it.isNotEmpty() }
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(
                     HelsinkiDateTime.now().toLocalDate(),
-                    areasList,
-                    page,
-                    pageSize
+                    body.areas ?: emptyList(),
+                    body.providerTypes ?: emptyList(),
+                    body.sentStartDate,
+                    body.sentEndDate,
+                    body.page,
+                    body.pageSize
                 )
             }
         }
@@ -149,3 +151,12 @@ class IncomeStatementController(
         }
     }
 }
+
+data class SearchIncomeStatementsRequest(
+    val page: Int = 1,
+    val pageSize: Int = 50,
+    val areas: List<String>? = emptyList(),
+    val providerTypes: List<ProviderType>? = emptyList(),
+    val sentStartDate: LocalDate? = null,
+    val sentEndDate: LocalDate? = null,
+)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
@@ -15,14 +15,12 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getAreas } from '../../api/daycare'
-import {
-  getIncomeStatementsAwaitingHandler,
-  IncomeStatementsAwaitingHandlerParams
-} from '../../api/income-statement'
+import { getIncomeStatementsAwaitingHandler } from '../../api/income-statement'
 import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
-import { AreaFilter } from '../common/Filters'
+
+import IncomeStatementFilters from './IncomeStatementFilters'
 
 function IncomeStatementsList({
   data
@@ -72,48 +70,24 @@ function IncomeStatementsList({
 export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
-  const [areas] = useApiState(getAreas, [])
+  const [page, setPage] = useState(1)
+  const pageSize = 50
 
-  const [searchParams, setSearchParams] =
-    useState<IncomeStatementsAwaitingHandlerParams>({
-      areas: [],
-      page: 1,
-      pageSize: 50
-    })
+  const {
+    incomeStatements: { searchFilters }
+  } = useContext(InvoicingUiContext)
 
   const [incomeStatements] = useApiState(
-    () => getIncomeStatementsAwaitingHandler(searchParams),
-    [searchParams]
+    () => getIncomeStatementsAwaitingHandler(page, pageSize, searchFilters),
+    [page, searchFilters]
   )
-
-  const toggleArea = useCallback(
-    (area: string) => () => {
-      setSearchParams((prev) => ({
-        ...prev,
-        areas: prev.areas.includes(area)
-          ? prev.areas.filter((t) => t !== area)
-          : [...prev.areas, area]
-      }))
-    },
-    []
-  )
-
-  const handlePageChange = useCallback((page: number) => {
-    setSearchParams((prev) => ({ ...prev, page }))
-  }, [])
 
   return (
     <Container data-qa="income-statements-page">
-      {renderResult(areas, (availableAreas) => (
-        <ContentArea opaque>
-          <H1>{i18n.incomeStatement.table.title}</H1>
-          <AreaFilter
-            areas={availableAreas}
-            toggled={searchParams.areas}
-            toggle={toggleArea}
-          />
-        </ContentArea>
-      ))}
+      <ContentArea opaque>
+        <H1>{i18n.incomeStatement.table.title}</H1>
+        <IncomeStatementFilters />
+      </ContentArea>
       <Gap size="s" />
       {renderResult(incomeStatements, ({ data, pages, total }) => (
         <ContentArea opaque>
@@ -125,8 +99,8 @@ export default React.memo(function IncomeStatementsPage() {
           {pages > 1 && (
             <Pagination
               pages={pages}
-              currentPage={searchParams.page}
-              setPage={handlePageChange}
+              currentPage={page}
+              setPage={setPage}
               label={i18n.common.page}
             />
           )}

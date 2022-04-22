@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.incomestatement
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -505,23 +506,34 @@ LEFT JOIN care_area ca ON ca.id = d.care_area_id
 
 WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
+AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
+AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
 ORDER BY i.created, i.start_date, i.id, a.id  -- order by area to get the same result each time
 """
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     today: LocalDate,
     areas: List<String>,
+    providerTypes: List<ProviderType>,
+    sentStartDate: LocalDate?,
+    sentEndDate: LocalDate?,
     page: Int,
     pageSize: Int
 ): Paged<IncomeStatementAwaitingHandler> {
     val count = createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
         .bind("today", today)
         .bind("areas", areas.toTypedArray())
+        .bind("providerTypes", providerTypes.toTypedArray())
+        .bind("sentStartDate", sentStartDate)
+        .bind("sentEndDate", sentEndDate)
         .mapTo<Int>()
         .one()
     val rows = createQuery("""$awaitingHandlerQuery LIMIT :pageSize OFFSET :offset""")
         .bind("today", today)
         .bind("areas", areas.toTypedArray())
+        .bind("providerTypes", providerTypes.toTypedArray())
+        .bind("sentStartDate", sentStartDate)
+        .bind("sentEndDate", sentEndDate)
         .bind("pageSize", pageSize)
         .bind("offset", (page - 1) * pageSize)
         .mapTo<IncomeStatementAwaitingHandler>()

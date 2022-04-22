@@ -6,15 +6,19 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
+  insertDaycarePlacementFixtures,
   insertGuardianFixtures,
   insertIncomeStatements,
-  insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
+  createDaycarePlacementFixture,
+  daycareFixture,
   enduserChildFixtureJari,
   enduserGuardianFixture,
-  Fixture
+  Fixture,
+  uuidv4
 } from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -30,10 +34,9 @@ let nav: EmployeeNav
 
 beforeEach(async () => {
   await resetDatabase()
-  page = await Page.open({ acceptDownloads: true })
+  await initializeAreaAndPersonData()
 
-  await insertPersonFixture(enduserGuardianFixture)
-  await insertPersonFixture(enduserChildFixtureJari)
+  page = await Page.open({ acceptDownloads: true })
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   await employeeLogin(page, financeAdmin.data)
@@ -89,6 +92,49 @@ describe('Income statements', () => {
 
     incomeStatementsPage = await navigateToIncomeStatements()
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+  })
+
+  test('Income statement can be filtered by child placement unit provider type', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: enduserChildFixtureJari.id
+      }
+    ])
+
+    const startDate = LocalDate.today().addYears(-1)
+    const endDate = LocalDate.today().addDays(-1)
+
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        enduserChildFixtureJari.id,
+        daycareFixture.id,
+        startDate.formatIso(),
+        endDate.formatIso()
+      )
+    ])
+
+    await insertIncomeStatements(enduserGuardianFixture.id, [
+      {
+        type: 'HIGHEST_FEE',
+        startDate,
+        endDate
+      }
+    ])
+
+    const incomeStatementsPage = await navigateToIncomeStatements()
+    // No filters -> is shown
+    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+
+    // Filter by the placed unit provider type -> is shown
+    await incomeStatementsPage.selectProviderType(daycareFixture.providerType)
+    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
+
+    // Filter by other unit provider type -> not shown
+    await incomeStatementsPage.unSelectProviderType(daycareFixture.providerType)
+    await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
+    await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 0)
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {

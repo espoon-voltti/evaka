@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -26,6 +27,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -39,6 +41,7 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testPurchasedDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -221,7 +224,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - no income statements`() {
         assertEquals(
             Paged(listOf(), 0, 1),
-            getIncomeStatementsAwaitingHandler(listOf())
+            getIncomeStatementsAwaitingHandler()
         )
     }
 
@@ -355,7 +358,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 ),
                 7, 1
             ),
-            getIncomeStatementsAwaitingHandler(listOf())
+            getIncomeStatementsAwaitingHandler()
         )
     }
 
@@ -406,7 +409,152 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1, 1
             ),
             // short name for the "Lwiz Foo" care area is "short name 2"
-            getIncomeStatementsAwaitingHandler(listOf("short name 2"))
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    areas = listOf("short name 2"),
+                    providerTypes = listOf(ProviderType.MUNICIPAL)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - provider type filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(citizenId, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testPurchasedDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        createTestIncomeStatement(citizenId)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Joan Doe",
+                        primaryCareArea = "Test Area",
+                    )
+                ),
+                1, 1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    providerTypes = listOf(ProviderType.MUNICIPAL)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - sent date filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(citizenId, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        val incomeStatement1 = createTestIncomeStatement(citizenId)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        val newCreated = HelsinkiDateTime.now().minusDays(2)
+
+        db.transaction {
+            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
+                .bind("newCreated", newCreated)
+                .bind("id", incomeStatement1.id)
+                .execute()
+        }
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement1.id,
+                        created = newCreated,
+                        startDate = incomeStatement1.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = citizenId,
+                        personName = "John Doe",
+                        primaryCareArea = "Test Area"
+                    )
+                ),
+                1, 1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sentStartDate = LocalDate.now().minusDays(3),
+                    sentEndDate = LocalDate.now().minusDays(1),
+                )
+            )
+        )
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Joan Doe",
+                        primaryCareArea = "Test Area",
+                    )
+                ),
+                1, 1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sentStartDate = LocalDate.now()
+                )
+            )
         )
     }
 
@@ -436,12 +584,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     private fun getIncomeStatementsAwaitingHandler(
-        areas: List<String>,
-        page: Int = 1,
-        pageSize: Int = 50
+        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, emptyList(), emptyList(), null, null)
     ): Paged<IncomeStatementAwaitingHandler> =
-        http.get("/income-statements/awaiting-handler?areas=${areas.joinToString(",")}&page=$page&pageSize=$pageSize")
+        http.post("/income-statements/awaiting-handler")
             .asUser(employee)
+            .objectBody(body, mapper = jsonMapper)
             .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 

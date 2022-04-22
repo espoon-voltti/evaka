@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   AsyncButton,
+  Checkable,
   Checkbox,
   Combobox,
   DatePickerDeprecated,
@@ -392,9 +394,19 @@ export class IncomeStatementsPage {
   constructor(private readonly page: Page) {}
 
   #incomeStatementRows = this.page.findAll(`[data-qa="income-statement-row"]`)
+  #providerTypeFilter = (type: ProviderType) =>
+    new Checkable(this.page.find(`[data-qa="provider-type-filter-${type}"]`))
 
   async getRowCount(): Promise<number> {
     return this.#incomeStatementRows.count()
+  }
+
+  async selectProviderType(type: ProviderType) {
+    await this.#providerTypeFilter(type).check()
+  }
+
+  async unSelectProviderType(type: ProviderType) {
+    await this.#providerTypeFilter(type).uncheck()
   }
 
   async openNthIncomeStatementForGuardian(nth: number) {
