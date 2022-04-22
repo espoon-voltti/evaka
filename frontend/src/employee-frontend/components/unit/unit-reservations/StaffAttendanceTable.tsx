@@ -137,12 +137,13 @@ export default React.memo(function StaffAttendanceTable({
   )
 })
 
-type TimeRangeWithErrorsAndIds = TimeRangeWithErrors & {
+type TimeRangeWithErrorsAndMetadata = TimeRangeWithErrors & {
   id?: UUID
   groupId?: UUID
-  date: LocalDate
+  arrived: LocalDate
+  departed: LocalDate
 }
-const emptyTimeRangeAt = (date: LocalDate): TimeRangeWithErrorsAndIds => ({
+const emptyTimeRangeAt = (date: LocalDate): TimeRangeWithErrorsAndMetadata => ({
   startTime: '',
   endTime: '',
   errors: {
@@ -155,7 +156,8 @@ const emptyTimeRangeAt = (date: LocalDate): TimeRangeWithErrorsAndIds => ({
   },
   id: undefined,
   groupId: undefined,
-  date
+  arrived: date,
+  departed: date
 })
 
 const OvernightAwareTimeRangeEditor = React.memo(
@@ -237,50 +239,73 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
   const [values, setValues] = useState<
-    Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndIds[] }>
+    Array<{ date: LocalDate; timeRanges: TimeRangeWithErrorsAndMetadata[] }>
   >([])
   const [dirtyDates, setDirtyDates] = useState<Set<LocalDate>>(
     new Set<LocalDate>()
   )
 
-  useEffect(
-    () =>
-      setValues(
-        operationalDays.map((day) => {
-          const attendancesOnDay = attendances.filter((a) =>
-            isSameDay(a.arrived, day.date.toSystemTzDate())
-          )
-          return {
-            date: day.date,
-            timeRanges:
-              attendancesOnDay.length > 0
-                ? attendancesOnDay.map((attendance) => {
-                    const startTime = formatTime(attendance.arrived)
-                    const endTime = attendance.departed
-                      ? formatTime(attendance.departed)
-                      : ''
-                    return {
-                      id: attendance.id,
-                      groupId: attendance.groupId,
-                      date: day.date,
-                      startTime,
-                      endTime,
-                      errors: {
-                        startTime: undefined,
-                        endTime: undefined
-                      },
-                      lastSavedState: {
-                        startTime,
-                        endTime
-                      }
-                    }
-                  })
-                : [emptyTimeRangeAt(day.date)]
+  useEffect(() => {
+    // Splits overnight attendances to separate days
+    const dailyAttendances = attendances.flatMap<Attendance>((attendance) => {
+      if (
+        attendance.departed &&
+        !isSameDay(attendance.arrived, attendance.departed)
+      ) {
+        return [
+          {
+            ...attendance,
+            departed: LocalDate.fromSystemTzDate(
+              attendance.arrived
+            ).toSystemTzDateAtTime('23:59')
+          },
+          {
+            ...attendance,
+            id: '',
+            arrived: LocalDate.fromSystemTzDate(
+              attendance.departed
+            ).toSystemTzDateAtTime('00:00')
           }
-        })
-      ),
-    [operationalDays, attendances]
-  )
+        ]
+      }
+      return attendance
+    })
+
+    const daysAndRanges = operationalDays.map((day) => {
+      const attendancesOnDay = dailyAttendances.filter((a) =>
+        isSameDay(a.arrived, day.date.toSystemTzDate())
+      )
+      return {
+        date: day.date,
+        timeRanges:
+          attendancesOnDay.length > 0
+            ? attendancesOnDay.map((attendance) => {
+                const startTime = formatTime(attendance.arrived)
+                const endTime = attendance.departed
+                  ? formatTime(attendance.departed)
+                  : ''
+                return {
+                  id: attendance.id,
+                  groupId: attendance.groupId,
+                  arrived: day.date,
+                  departed: day.date,
+                  startTime,
+                  endTime,
+                  errors: {
+                    startTime: undefined,
+                    endTime: undefined
+                  },
+                  lastSavedState: {
+                    startTime,
+                    endTime
+                  }
+                }
+              })
+            : [emptyTimeRangeAt(day.date)]
+      }
+    })
+    setValues(daysAndRanges)
+  }, [operationalDays, attendances])
 
   const updateValue = useCallback(
     (date: LocalDate, rangeIx: number, updatedRange: TimeRange) => {
@@ -307,53 +332,44 @@ const AttendanceRow = React.memo(function AttendanceRow({
   )
 
   const saveChanges = useCallback(() => {
-    const isNotEmptyRange = (r: TimeRangeWithErrorsAndIds) =>
-      r.startTime !== '' || r.endTime !== ''
     setEditing(false)
 
-    // Make sure attendances are ending
-    const toSave = values.reduce((ranges, value) => {
-      const prevRange = last(ranges)
-      if (prevRange && prevRange.endTime === '') {
-        return [
-          ...initial(ranges),
-          {
-            ...prevRange,
-            endTime: '23:59'
-          },
-          ...value.timeRanges.filter(isNotEmptyRange).map((r) => ({
-            ...r,
-            startTime: r.startTime === '' ? '00:00' : r.startTime
-          }))
-        ]
-      }
-      return [...ranges, ...value.timeRanges.filter(isNotEmptyRange)]
-    }, new Array<TimeRangeWithErrorsAndIds>())
-    const rangeToAttendance = (range: TimeRangeWithErrorsAndIds) => ({
-      attendanceId: range.id || null,
-      arrived:
-        range.startTime !== ''
-          ? range.date.toSystemTzDateAtTime(range.startTime)
-          : range.date.toSystemTzDateAtTime('00:00'),
+    const rangeToUpsertParams = (range: TimeRangeWithErrorsAndMetadata) => ({
+      attendanceId: !range.id || range.id === '' ? null : range.id,
+      arrived: range.arrived.toSystemTzDateAtTime(range.startTime),
       departed:
         range.endTime !== ''
-          ? range.date.toSystemTzDateAtTime(range.endTime)
+          ? range.departed.toSystemTzDateAtTime(range.endTime)
           : null,
       groupId: range.groupId || ''
     })
 
+    const ranges = values
+      .flatMap(({ timeRanges }) => timeRanges)
+      .filter((r) => !(r.startTime === '' && r.endTime === ''))
+      .reduce((ranges, r) => {
+        const prevRange = last(ranges)
+        if (prevRange && prevRange.endTime === '' && r.startTime === '') {
+          // This is an overnight entry. Merge with the previous day for saving
+          return [
+            ...initial(ranges),
+            {
+              ...prevRange,
+              departed: r.departed,
+              endTime: r.endTime
+            }
+          ]
+        }
+        return [...ranges, r]
+      }, [] as TimeRangeWithErrorsAndMetadata[])
+      .map(rangeToUpsertParams)
+
     return saveAttendances({
       staffAttendances: employeeId
-        ? toSave.map((range) => ({
-            ...rangeToAttendance(range),
-            employeeId
-          }))
+        ? ranges.map((r) => ({ ...r, employeeId }))
         : [],
       externalAttendances: !employeeId
-        ? toSave.map((range) => ({
-            ...rangeToAttendance(range),
-            name: name
-          }))
+        ? ranges.map((r) => ({ ...r, name }))
         : []
     }).then(() => reloadStaffAttendances())
   }, [
