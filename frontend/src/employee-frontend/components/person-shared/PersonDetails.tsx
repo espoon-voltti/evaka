@@ -391,6 +391,12 @@ export default React.memo(function PersonDetails({
               </span>
             )
           },
+          {
+            label: i18n.common.form.updatedFromVtj,
+            value: person.updatedFromVtj
+              ? person.updatedFromVtj.toLocaleString()
+              : ''
+          },
           ...(permittedActions.has('READ_OPH_OID')
             ? [
                 {

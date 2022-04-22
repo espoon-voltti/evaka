@@ -404,7 +404,8 @@ data class PersonJSON(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
-    val ophPersonOid: String? = ""
+    val ophPersonOid: String? = "",
+    val updatedFromVtj: HelsinkiDateTime? = null
 ) {
     companion object {
         fun from(p: PersonDTO): PersonJSON = PersonJSON(
@@ -429,7 +430,8 @@ data class PersonJSON(
             invoicingPostalCode = p.invoicingPostalCode,
             invoicingPostOffice = p.invoicingPostOffice,
             forceManualFeeDecisions = p.forceManualFeeDecisions,
-            ophPersonOid = p.ophPersonOid
+            ophPersonOid = p.ophPersonOid,
+            updatedFromVtj = p.updatedFromVtj
         )
     }
 }

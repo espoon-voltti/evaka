@@ -11,7 +11,8 @@ export const deserializePersonJSON = (
 ): PersonJSON => ({
   ...data,
   dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
-  dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath)
+  dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath),
+  updatedFromVtj: data.updatedFromVtj ? new Date(data.updatedFromVtj) : null
 })
 
 export type SearchColumn =
