@@ -74,7 +74,7 @@ export default React.memo(function IncomeStatementsPage() {
   const pageSize = 50
 
   const {
-    invoiceStatements: { searchFilters }
+    incomeStatements: { searchFilters }
   } = useContext(InvoicingUiContext)
 
   const [incomeStatements] = useApiState(

@@ -98,7 +98,7 @@ export interface IncomeStatementSearchFilters {
   sentEndDate: LocalDate | undefined
 }
 
-interface InvoiceStatementSearchFilterState {
+interface IncomeStatementSearchFilterState {
   searchFilters: IncomeStatementSearchFilters
   setSearchFilters: Dispatch<SetStateAction<IncomeStatementSearchFilters>>
   clearSearchFilters: () => void
@@ -124,7 +124,7 @@ interface UiState {
   feeDecisions: FeeDecisionSearchFilterState
   valueDecisions: ValueDecisionSearchFilterState
   invoices: InvoiceSearchFilterState
-  invoiceStatements: InvoiceStatementSearchFilterState
+  incomeStatements: IncomeStatementSearchFilterState
   shared: SharedState
 }
 
@@ -174,7 +174,7 @@ const defaultState: UiState = {
     debouncedSearchTerms: '',
     clearSearchFilters: () => undefined
   },
-  invoiceStatements: {
+  incomeStatements: {
     searchFilters: {
       area: [],
       providerTypes: [],
@@ -244,16 +244,16 @@ export const InvoicingUIContextProvider = React.memo(
       [setInvoiceSearchFilters]
     )
 
-    const [invoiceStatementSearchFilters, setInvoiceStatementSearchFilters] =
+    const [incomeStatementSearchFilters, setIncomeStatementSearchFilters] =
       useState<IncomeStatementSearchFilters>(
-        defaultState.invoiceStatements.searchFilters
+        defaultState.incomeStatements.searchFilters
       )
-    const clearInvoiceStatementSearchFilters = useCallback(
+    const clearIncomeStatementSearchFilters = useCallback(
       () =>
-        setInvoiceStatementSearchFilters(
-          defaultState.invoiceStatements.searchFilters
+        setIncomeStatementSearchFilters(
+          defaultState.incomeStatements.searchFilters
         ),
-      [setInvoiceStatementSearchFilters]
+      [setIncomeStatementSearchFilters]
     )
 
     const [units, setUnits] = useState<Result<Unit[]>>(
@@ -292,10 +292,10 @@ export const InvoicingUIContextProvider = React.memo(
           debouncedSearchTerms: invoiceDebouncedFreeText,
           clearSearchFilters: clearInvoiceSearchFilters
         },
-        invoiceStatements: {
-          searchFilters: invoiceStatementSearchFilters,
-          setSearchFilters: setInvoiceStatementSearchFilters,
-          clearSearchFilters: clearInvoiceStatementSearchFilters
+        incomeStatements: {
+          searchFilters: incomeStatementSearchFilters,
+          setSearchFilters: setIncomeStatementSearchFilters,
+          clearSearchFilters: clearIncomeStatementSearchFilters
         },
         shared: {
           units,
@@ -326,9 +326,9 @@ export const InvoicingUIContextProvider = React.memo(
         setInvoiceFreeTextSearch,
         invoiceDebouncedFreeText,
         clearInvoiceSearchFilters,
-        invoiceStatementSearchFilters,
-        setInvoiceStatementSearchFilters,
-        clearInvoiceStatementSearchFilters,
+        incomeStatementSearchFilters,
+        setIncomeStatementSearchFilters,
+        clearIncomeStatementSearchFilters,
         units,
         setUnits,
         availableAreas,

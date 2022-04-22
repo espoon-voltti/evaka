@@ -19,7 +19,7 @@ import {
 
 export default React.memo(function IncomeStatementsFilters() {
   const {
-    invoiceStatements: { searchFilters, setSearchFilters, clearSearchFilters },
+    incomeStatements: { searchFilters, setSearchFilters, clearSearchFilters },
     shared: { availableAreas, setAvailableAreas }
   } = useContext(InvoicingUiContext)
 
