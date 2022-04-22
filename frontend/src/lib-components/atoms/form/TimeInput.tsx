@@ -9,7 +9,7 @@ import { autocomplete } from 'lib-common/time'
 
 import InputField, { TextInputProps } from './InputField'
 
-interface Props
+export interface TimeInputProps
   extends Pick<
     TextInputProps,
     | 'placeholder'
@@ -31,7 +31,7 @@ export default React.memo(function TimeInput({
   value,
   onChange,
   ...props
-}: Props) {
+}: TimeInputProps) {
   const onChangeWithAutocomplete = useCallback(
     (v: string) => onChange(autocomplete(value, v)),
     [value, onChange]

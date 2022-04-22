@@ -8,8 +8,7 @@ import {
   EmployeeAttendance,
   ExternalAttendance,
   StaffAttendanceResponse,
-  UpsertExternalAttendanceRequest,
-  UpsertStaffAttendanceRequest
+  UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -58,22 +57,12 @@ export function getStaffAttendances(
     .catch((e) => Failure.fromError(e))
 }
 
-export function postStaffAttendance(
+export function postStaffAndExternalAttendances(
   unitId: UUID,
-  body: UpsertStaffAttendanceRequest
+  body: UpsertStaffAndExternalAttendanceRequest
 ): Promise<Result<void>> {
   return client
     .post(`/staff-attendances/realtime/${unitId}/upsert`, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export function postExternalAttendance(
-  unitId: UUID,
-  body: UpsertExternalAttendanceRequest
-): Promise<Result<void>> {
-  return client
-    .post(`/staff-attendances/realtime/${unitId}/upsert-external`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
