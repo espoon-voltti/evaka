@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/income-statements")
@@ -128,8 +127,8 @@ class IncomeStatementController(
                     HelsinkiDateTime.now().toLocalDate(),
                     body.areas ?: emptyList(),
                     body.providerTypes ?: emptyList(),
-                    body.sentStartDate?.let { LocalDate.parse(body.sentStartDate, DateTimeFormatter.ISO_DATE) },
-                    body.sentEndDate?.let { LocalDate.parse(body.sentEndDate, DateTimeFormatter.ISO_DATE) },
+                    body.sentStartDate,
+                    body.sentEndDate,
                     body.page,
                     body.pageSize
                 )
@@ -158,6 +157,6 @@ data class SearchIncomeStatementsRequest(
     val pageSize: Int = 50,
     val areas: List<String>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
-    val sentStartDate: String? = null,
-    val sentEndDate: String? = null,
+    val sentStartDate: LocalDate? = null,
+    val sentEndDate: LocalDate? = null,
 )

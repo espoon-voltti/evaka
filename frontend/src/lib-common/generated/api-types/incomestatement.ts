@@ -47,8 +47,8 @@ export interface SearchIncomeStatementsRequest {
   page: number
   pageSize: number
   providerTypes: ProviderType[] | null
-  sentEndDate: string | null
-  sentStartDate: string | null
+  sentEndDate: LocalDate | null
+  sentStartDate: LocalDate | null
 }
 
 /**

@@ -529,8 +529,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
-                    sentStartDate = LocalDate.now().minusDays(3).toString(),
-                    sentEndDate = LocalDate.now().minusDays(1).toString(),
+                    sentStartDate = LocalDate.now().minusDays(3),
+                    sentEndDate = LocalDate.now().minusDays(1),
                 )
             )
         )
@@ -552,7 +552,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
-                    sentStartDate = LocalDate.now().toString()
+                    sentStartDate = LocalDate.now()
                 )
             )
         )
