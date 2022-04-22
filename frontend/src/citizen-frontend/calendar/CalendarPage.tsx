@@ -102,7 +102,7 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   return renderResult(data, (response) => (
     <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-      <HolidayPeriodCta />
+      <HolidayPeriodCta openModal={openHolidayModal} />
       <MobileAndTablet>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
           <CalendarListView

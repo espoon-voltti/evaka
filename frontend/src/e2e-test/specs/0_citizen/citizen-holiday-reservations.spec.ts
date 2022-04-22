@@ -152,6 +152,14 @@ describe('Holiday periods', () => {
       )
     })
 
+    test('Clicking on the holiday reservations toast opens the holiday modal', async () => {
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.clickHoliayCta()
+      await calendar.assertHolidayModalVisible()
+    })
+
     test('The calendar page should show a button for reporting holidays', async () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
