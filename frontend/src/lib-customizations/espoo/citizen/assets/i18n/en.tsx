@@ -244,7 +244,7 @@ const en: Translations = {
     contactStaffToEditAbsence:
       'Contact staff if you want to change the absence',
     newReservationOrAbsence: 'Reservation / Absence',
-    newHoliday: 'Report holiday',
+    newHoliday: 'Holiday questionnaire',
     newAbsence: 'Report absence',
     newReservationBtn: 'Make a reservation',
     noReservation: 'No reservations',

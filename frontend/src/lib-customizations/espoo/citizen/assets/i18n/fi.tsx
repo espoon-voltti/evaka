@@ -243,7 +243,7 @@ export default {
     contactStaffToEditAbsence:
       'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
     newReservationOrAbsence: 'Varaus / Poissaolo',
-    newHoliday: 'Ilmoita loma',
+    newHoliday: 'Vastaa poissaolokyselyyn',
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Tee varaus',
     noReservation: 'Ei varausta',

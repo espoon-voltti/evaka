@@ -166,7 +166,7 @@ const sv: Translations = {
     holidayPeriodCta: (period: string, deadline: string) =>
       `Meddela semester och gör bokningar för tiden ${period} senast ${deadline}.`,
     fixedPeriodCta: (deadline: string) =>
-      `Answer the absence questionnarie before ${deadline}.`
+      `Svara på frånvaroenkäten före ${deadline}.`
   },
   errorPage: {
     reload: 'Ladda om sidan',
@@ -243,7 +243,7 @@ const sv: Translations = {
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
     newReservationOrAbsence: 'Reservation / Frånvaro',
-    newHoliday: 'Meddela semester',
+    newHoliday: 'Besvara frånvaroenkäten',
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Reservera',
     noReservation: 'Ingen reservation',
