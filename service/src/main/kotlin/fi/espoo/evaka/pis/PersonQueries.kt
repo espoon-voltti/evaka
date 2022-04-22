@@ -54,6 +54,7 @@ val personDTOColumns = listOf(
     "invoicing_post_office",
     "force_manual_fee_decisions",
     "oph_person_oid",
+    "updated_from_vtj"
 )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
