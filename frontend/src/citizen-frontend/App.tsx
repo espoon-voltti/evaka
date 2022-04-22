@@ -3,16 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { ReactNode, useCallback, useContext } from 'react'
+import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 import { Route, BrowserRouter, Redirect, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
 
+import { scrollElementToPos } from 'lib-common/utils/scrolling'
 import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
 
+import AccessibilityStatement from './AccessibilityStatement'
 import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
 import RequireAuth from './RequireAuth'
@@ -79,14 +81,31 @@ export default function App() {
 const Content = React.memo(function Content() {
   const { modalOpen } = useContext(OverlayContext)
 
+  const mainRef = useRef<HTMLElement>(null)
+  const scrollMainToTop = useCallback(
+    () =>
+      scrollElementToPos(mainRef.current, {
+        top: 0,
+        left: 0,
+        behavior: 'auto'
+      }),
+    []
+  )
+
   return (
     <>
       <Header ariaHidden={modalOpen} />
-      <Main ariaHidden={modalOpen}>
+      <Main ariaHidden={modalOpen} ref={mainRef}>
         <Switch>
           <Route path="/login" render={() => <LoginPage />} />
           <Route path="/map" render={() => <MapView />} />
           <Route path="/applying" render={() => <ApplyingRouter />} />
+          <Route
+            path="/accessibility"
+            render={() => (
+              <AccessibilityStatement scrollToTop={scrollMainToTop} />
+            )}
+          />
           <Route
             exact
             path="/applications/new/:childId"
@@ -238,21 +257,27 @@ const Content = React.memo(function Content() {
   )
 })
 
-function Main({
-  ariaHidden,
-  children
-}: {
-  ariaHidden: boolean
-  children: ReactNode
-}) {
-  const { user } = useContext(AuthContext)
-  const render = useCallback(() => <>{children}</>, [children])
-  return (
-    <ScrollableMain id="main" aria-hidden={ariaHidden}>
-      <UnwrapResult result={user}>{render}</UnwrapResult>
-    </ScrollableMain>
-  )
-}
+// eslint-disable-next-line react/display-name
+const Main = React.memo(
+  React.forwardRef(function Main(
+    {
+      ariaHidden,
+      children
+    }: {
+      ariaHidden: boolean
+      children: ReactNode
+    },
+    ref: React.ForwardedRef<HTMLElement>
+  ) {
+    const { user } = useContext(AuthContext)
+    const render = useCallback(() => <>{children}</>, [children])
+    return (
+      <ScrollableMain id="main" aria-hidden={ariaHidden} ref={ref}>
+        <UnwrapResult result={user}>{render}</UnwrapResult>
+      </ScrollableMain>
+    )
+  })
+)
 
 function HandleRedirection() {
   const user = useUser()

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { desktopMin } from 'lib-components/breakpoints'
@@ -18,6 +19,9 @@ export const FooterContent = React.memo(function FooterContent() {
     <>
       <FooterItem data-qa="footer-citylabel">{t.footer.cityLabel}</FooterItem>
       <FooterItem>{t.footer.privacyPolicyLink}</FooterItem>
+      <FooterItem>
+        <Link to="/accessibility">{t.footer.accessibilityStatement}</Link>
+      </FooterItem>
       <FooterItem>{t.footer.sendFeedbackLink}</FooterItem>
     </>
   )
@@ -48,7 +52,7 @@ const LogoItem = styled.div`
 const FooterContainer = styled(Container)`
   position: static;
   display: grid;
-  grid-template-columns: 1fr repeat(3, auto) 1fr;
+  grid-template-columns: 1fr repeat(4, auto) 1fr;
   grid-column-gap: 80px;
   justify-content: center;
   align-items: center;
@@ -56,14 +60,16 @@ const FooterContainer = styled(Container)`
   padding: 20px 0 20px 0;
   font-size: 12px;
   font-weight: ${fontWeights.normal};
+
   ${FooterItem}:nth-child(1) {
     grid-column-start: 2;
     @media (max-width: ${desktopMin}) {
       grid-column-start: 1;
     }
   }
+
   @media (max-width: ${desktopMin}) {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
   a:hover {

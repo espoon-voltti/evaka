@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { P } from 'lib-components/typography'
+import { H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
@@ -127,6 +127,7 @@ const sv: Translations = {
         Dataskyddsbeskrivningar
       </a>
     ),
+    accessibilityStatement: 'Tillgänglighetsutlåtande',
     sendFeedbackLink: (
       <a
         href="https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
@@ -1868,7 +1869,134 @@ const sv: Translations = {
         `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
       terminate: 'Säg upp platsen'
     }
-  }
+  },
+  // TODO: Translate
+  accessibilityStatement: (
+    <>
+      <H1>Saavutettavuusseloste</H1>
+      <P>
+        Tämä saavutettavuusseloste koskee Espoon kaupungin varhaiskasvatuksen
+        eVaka-verkkopalvelua osoitteessa{' '}
+        <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
+        Espoon kaupunki pyrkii takaamaan verkkopalvelun saavutettavuuden,
+        parantamaan käyttäjäkokemusta jatkuvasti ja soveltamaan asianmukaisia
+        saavutettavuusstandardeja.
+      </P>
+      <P>
+        Palvelun saavutettavuuden on arvioinut palvelun kehitystiimi, ja seloste
+        on laadittu 12.4.2022.
+      </P>
+      <H2>Palvelun vaatimustenmukaisuus</H2>
+      <P>
+        Verkkopalvelu täyttää lain asettamat kriittiset
+        saavutettavuusvaatimukset WCAG v2.1 -tason AA mukaisesti. Palvelu ei ole
+        vielä kaikilta osin vaatimusten mukainen.
+      </P>
+      <H2>Toimet saavutettavuuden tukemiseksi</H2>
+      <P>
+        Verkkopalvelun saavutettavuus varmistetaan muun muassa seuraavilla
+        toimenpiteillä:
+      </P>
+      <ul>
+        <li>
+          Saavutettavuus huomioidaan alusta lähtien suunnitteluvaiheessa, mm.
+          valitsemalla palvelun värit ja kirjaisinten koot saavutettavasti.
+        </li>
+        <li>
+          Palvelun elementit on määritelty semantiikaltaan johdonmukaisesti.
+        </li>
+        <li>Palvelua testataan jatkuvasti ruudunlukijalla.</li>
+        <li>
+          Erilaiset käyttäjät testaavat palvelua ja antavat saavutettavuudesta
+          palautetta.
+        </li>
+        <li>
+          Sivuston saavutettavuudesta huolehditaan jatkuvalla valvonnalla
+          tekniikan tai sisällön muuttuessa.
+        </li>
+      </ul>
+      <P>
+        Tätä selostetta päivitetään sivuston muutosten ja saavutettavuuden
+        tarkistusten yhteydessä.
+      </P>
+      <H2>Tunnetut saavutettavuusongelmat</H2>
+      <P>
+        Käyttäjät saattavat edelleen kohdata sivustolla joitakin ongelmia.
+        Seuraavassa on kuvaus tunnetuista saavutettavuusongelmista. Jos huomaat
+        sivustolla ongelman, joka ei ole luettelossa, otathan meihin yhteyttä.
+      </P>
+      <ul>
+        <li>
+          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
+          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
+        </li>
+        <li>
+          Palvelun yksikkökartassa ei pysty liikkumaan
+          näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
+          näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen
+          osapuolen tuottama.
+        </li>
+      </ul>
+      <H2>Kolmannet osapuolet</H2>
+      <P>
+        Verkkopalvelussa käytetään seuraavia kolmannen osapuolen palveluita,
+        joiden saavutettavuudesta emme voi vastata.
+      </P>
+      <ul>
+        <li>Keycloak käyttäjän tunnistautumispalvelu</li>
+        <li>Suomi.fi-tunnistautuminen</li>
+        <li>Leaflet-karttapalvelu</li>
+      </ul>
+      <H2>Vaihtoehtoiset asiointitavat</H2>
+      <P>
+        <ExternalLink
+          href="https://www.espoo.fi/fi/espoon-kaupunki/asiakaspalvelu/asiointipisteet-ja-espoo-info/asiointipisteet"
+          text="Espoon kaupungin asiointipisteistä"
+        />{' '}
+        saa apua sähköiseen asiointiin. Asiointipisteiden palveluneuvojat
+        auttavat käyttäjiä, joille digipalvelut eivät ole saavutettavissa.
+      </P>
+      <H2>Anna palautetta</H2>
+      <P>
+        Jos huomaat saavutettavuuspuutteen verkkopalvelussamme, kerro siitä
+        meille. Voit antaa palautetta{' '}
+        <ExternalLink
+          href="https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
+          text="verkkolomakkeella"
+        />{' '}
+        tai sähköpostitse{' '}
+        <a href="mailto:evakatuki@espoo.fi">evakatuki@espoo.fi</a>.
+      </P>
+      <H2>Valvontaviranomainen</H2>
+      <P>
+        Jos huomaat sivustolla saavutettavuusongelmia, anna ensin palautetta
+        meille sivuston ylläpitäjille. Vastauksessa voi mennä 14 päivää. Jos et
+        ole tyytyväinen saamaasi vastaukseen, tai et saa vastausta lainkaan
+        kahden viikon aikana, voit antaa palautteen Etelä-Suomen
+        aluehallintovirastoon. Etelä-Suomen aluehallintoviraston sivulla
+        kerrotaan tarkasti, miten valituksen voi tehdä, ja miten asia
+        käsitellään.
+      </P>
+
+      <P>
+        <strong>Valvontaviranomaisen yhteystiedot </strong>
+        <br />
+        Etelä-Suomen aluehallintovirasto <br />
+        Saavutettavuuden valvonnan yksikkö
+        <br />
+        <ExternalLink
+          href="www.saavutettavuusvaatimukset.fi"
+          text="www.saavutettavuusvaatimukset.fi"
+        />
+        <br />
+        <a href="mailto:saavutettavuus@avi.fi">saavutettavuus@avi.fi</a>
+        <br />
+        puhelinnumero vaihde 0295 016 000
+        <br />
+        Avoinna: ma-pe klo 8.00–16.15
+      </P>
+    </>
+  )
 }
 
 export default sv
