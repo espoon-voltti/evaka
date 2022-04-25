@@ -23,9 +23,9 @@ export async function getAdditionalInformation(
 export async function updateAdditionalInformation(
   id: UUID,
   data: AdditionalInformation
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .put(`/children/${id}/additional-information`, data)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
