@@ -71,7 +71,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val voucherValueDecisions = getAllVoucherValueDecisions()
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
         voucherValueDecisions.first().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
@@ -106,7 +106,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val voucherValueDecisions = getAllVoucherValueDecisions()
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
         val assumedPeriodStart = testChild.dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
         voucherValueDecisions.first().let { decision ->
@@ -139,7 +139,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
 
-        val voucherValueDecisions = getAllVoucherValueDecisions()
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
         voucherValueDecisions.first().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
@@ -330,7 +330,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_2.id, firstPeriod.start) }
 
-        val voucherValueDecisions = getAllVoucherValueDecisions()
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
         voucherValueDecisions.first().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
@@ -476,7 +476,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             tx.createQuery("SELECT * FROM voucher_value_decision")
                 .mapTo<VoucherValueDecision>()
                 .toList()
-        }
+        }.shuffled() // randomize order to expose assumptions
     }
 
     private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {

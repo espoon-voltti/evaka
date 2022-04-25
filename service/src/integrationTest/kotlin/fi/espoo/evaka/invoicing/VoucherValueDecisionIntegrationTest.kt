@@ -546,7 +546,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             it.createQuery("SELECT * FROM voucher_value_decision")
                 .mapTo<VoucherValueDecision>()
                 .toList()
-        }
+        }.shuffled() // randomize order to expose assumptions
     }
 
     private fun endDecisions(now: LocalDate) {
