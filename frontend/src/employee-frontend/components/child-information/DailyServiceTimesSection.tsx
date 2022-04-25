@@ -6,10 +6,9 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   isRegular,
-  DailyServiceTimes,
   isIrregular,
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes,
@@ -19,7 +18,8 @@ import {
 } from 'lib-common/api-types/child/common'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -162,7 +162,7 @@ function validate(
   }
 }
 
-function saveFormData(id: UUID, formData: FormData) {
+function saveFormData(id: UUID, formData: FormData): Promise<Result<void>> {
   switch (formData.type) {
     case 'NOT_SET':
       return deleteChildDailyServiceTimes(id)
@@ -248,18 +248,16 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
 
   const [open, setOpen] = useState(startOpen)
 
-  const [apiData, setApiData] = useState<Result<DailyServiceTimes | null>>(
-    Loading.of()
+  const [apiData, loadData] = useApiState(
+    () => getChildDailyServiceTimes(id),
+    [id]
   )
   const [formData, setFormData] = useState<FormData | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [validationResult, setValidationResult] =
     useState<ValidationResult | null>(null)
 
-  const loadData = useRestApi(getChildDailyServiceTimes, setApiData)
-  useEffect(() => loadData(id), [id, loadData])
-
-  const startEditing = () => {
+  const startEditing = useCallback(() => {
     if (apiData.isSuccess) {
       if (apiData.value === null) {
         setFormData(emptyForm)
@@ -321,7 +319,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     } else {
       setFormData(null)
     }
-  }
+  }, [apiData])
 
   const formIsValid = useMemo(
     () =>
@@ -346,26 +344,27 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     setValidationResult(validate(i18n, formData))
   }, [i18n, formData])
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     if (!formIsValid || !formData) return
     setSubmitting(true)
+    return saveFormData(id, formData)
+  }, [formData, formIsValid, id])
 
-    saveFormData(id, formData)
-      .then((res) => {
-        if (res.isSuccess) {
-          setFormData(null)
-          loadData(id)
-        } else {
-          setErrorMessage({
-            type: 'error',
-            title: i18n.common.error.unknown,
-            text: i18n.common.error.saveFailed,
-            resolveLabel: i18n.common.ok
-          })
-        }
-      })
-      .finally(() => setSubmitting(false))
-  }, [formData, formIsValid, i18n, id, loadData, setErrorMessage])
+  const onSuccess = useCallback(() => {
+    setSubmitting(false)
+    setFormData(null)
+    loadData()
+  }, [loadData])
+
+  const onFailure = useCallback(() => {
+    setSubmitting(false)
+    setErrorMessage({
+      type: 'error',
+      title: i18n.common.error.unknown,
+      text: i18n.common.error.saveFailed,
+      resolveLabel: i18n.common.ok
+    })
+  }, [i18n, setErrorMessage])
 
   const setType = (type: 'NOT_SET' | DailyServiceTimesType) => () =>
     setFormData((old) => (old !== null ? { ...old, type } : null))
@@ -572,10 +571,12 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     onClick={() => setFormData(null)}
                     disabled={submitting}
                   />
-                  <Button
+                  <AsyncButton
                     text={i18n.common.confirm}
                     onClick={onSubmit}
-                    disabled={submitting || !formIsValid}
+                    onSuccess={onSuccess}
+                    onFailure={onFailure}
+                    disabled={!formIsValid}
                     primary
                     data-qa="submit-button"
                   />
