@@ -580,19 +580,23 @@ export default React.memo(function MessageEditor({
 })
 
 const FullScreenContainer = styled.div`
+  position: fixed;
+  top: ${defaultMargins.s};
+  bottom: ${defaultMargins.s};
+  right: ${defaultMargins.s};
+  z-index: 9999;
+
   &.fullscreen {
-    position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
     bottom: 0;
+    right: 0;
+    left: 0;
   }
 `
 
 const Container = styled.div`
   width: 680px;
-  max-height: 900px;
-  height: 105%;
+  height: 100%;
   position: absolute;
   z-index: ${modalZIndex - 1};
   right: 0;
@@ -604,12 +608,7 @@ const Container = styled.div`
   overflow: auto;
 
   &.fullscreen {
-    width: 95%;
-    max-height: none;
-    height: 95%;
-    right: none;
-    bottom: none;
-    margin: 20px;
+    width: 100%;
   }
 `
 
