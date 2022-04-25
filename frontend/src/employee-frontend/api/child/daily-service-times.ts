@@ -27,18 +27,18 @@ export async function getChildDailyServiceTimes(
 export async function putChildDailyServiceTimes(
   childId: UUID,
   data: DailyServiceTimes
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .put(`/children/${childId}/daily-service-times`, data)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteChildDailyServiceTimes(
   childId: UUID
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .delete(`/children/${childId}/daily-service-times`)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
