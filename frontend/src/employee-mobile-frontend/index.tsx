@@ -28,3 +28,8 @@ Sentry.init({
 smoothScrollPolyfill()
 
 ReactDOM.render(<App />, document.getElementById('app'))
+
+// Let the HTML template inline script know we have loaded successfully
+if (!window.evaka) {
+  window.evaka = {}
+}

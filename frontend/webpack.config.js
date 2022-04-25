@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+const fs = require('fs')
 const path = require('path')
 
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
@@ -57,7 +58,13 @@ const icons = resolveIcons()
 function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   const plugins = [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, `src/${name}/index.html`)
+      template: path.resolve(__dirname, `src/${name}/index.html`),
+      templateParameters: {
+        appBody: fs.readFileSync(
+          path.resolve(__dirname, 'src/body.html'),
+          'utf-8'
+        )
+      }
     }),
     new webpack.NormalModuleReplacementPlugin(
       /@evaka\/customizations\/(.*)/,
