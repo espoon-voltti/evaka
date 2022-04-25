@@ -47,6 +47,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
   await insertDefaultServiceNeedOptions()
+  await Fixture.feeThresholds().save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
