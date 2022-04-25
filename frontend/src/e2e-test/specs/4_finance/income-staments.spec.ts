@@ -103,7 +103,7 @@ describe('Income statements', () => {
     ])
 
     const startDate = LocalDate.today().addYears(-1)
-    const endDate = LocalDate.today().addDays(-1)
+    const endDate = LocalDate.today()
 
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
