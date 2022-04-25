@@ -2,12 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useState, useMemo } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useHistory } from 'react-router'
 import { Prompt, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import {
   CheckboxQuestion,
   DateQuestion,
@@ -23,15 +29,13 @@ import {
 import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import Button from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -47,6 +51,7 @@ import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
+import { renderResult } from '../../async-rendering'
 import QuestionInfo from '../QuestionInfo'
 import {
   getQuestionNumber,
@@ -68,7 +73,7 @@ import { getVasuTemplate, updateVasuTemplateContents } from './api'
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useParams<{ id: UUID }>()
   const { i18n, lang } = useTranslation()
-  const h = useHistory()
+  const history = useHistory()
 
   const [template, setTemplate] = useState<Result<VasuTemplate>>(Loading.of())
   const [dirty, setDirty] = useState(false)
@@ -82,6 +87,18 @@ export default React.memo(function VasuTemplateEditor() {
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
+
+  const onSave = useCallback(
+    () =>
+      template.isSuccess
+        ? updateVasuTemplateContents(id, template.value.content)
+        : Promise.resolve(Success.of()),
+    [id, template]
+  )
+  const onSuccess = useCallback(() => {
+    setDirty(false)
+    history.goBack()
+  }, [history])
 
   const readonly = !(template.isSuccess && template.value.documentCount === 0)
 
@@ -445,13 +462,11 @@ export default React.memo(function VasuTemplateEditor() {
       <Prompt when={dirty} message={i18n.vasuTemplates.unsavedWarning} />
 
       <ContentArea opaque>
-        {template.isLoading && <SpinnerSegment />}
-        {template.isFailure && <ErrorSegment />}
-        {template.isSuccess && (
+        {renderResult(template, (template) => (
           <>
-            <H1 noMargin>{template.value.name}</H1>
+            <H1 noMargin>{template.name}</H1>
             <div>
-              {i18n.vasuTemplates.valid}: {template.value.valid.format()}
+              {i18n.vasuTemplates.valid}: {template.valid.format()}
             </div>
 
             <Gap />
@@ -461,7 +476,7 @@ export default React.memo(function VasuTemplateEditor() {
                 <H2>1. {translations.staticSections.basics.title}</H2>
               </ElementContainer>
 
-              {template.value.content.sections.map((section, sectionIndex) => (
+              {template.content.sections.map((section, sectionIndex) => (
                 <Fragment key={`section-${sectionIndex}`}>
                   <ElementContainer>
                     {sectionNameEdit === sectionIndex ? (
@@ -513,7 +528,7 @@ export default React.memo(function VasuTemplateEditor() {
                             onClick={() => moveSection(sectionIndex, 'down')}
                             disabled={
                               sectionIndex ===
-                              template.value.content.sections.length - 1
+                              template.content.sections.length - 1
                             }
                           />
                           <IconButton
@@ -632,8 +647,7 @@ export default React.memo(function VasuTemplateEditor() {
                   {!readonly && (
                     <AddNewContainer
                       showOnHover={
-                        sectionIndex <
-                        template.value.content.sections.length - 1
+                        sectionIndex < template.content.sections.length - 1
                       }
                     >
                       <InlineButton
@@ -647,7 +661,7 @@ export default React.memo(function VasuTemplateEditor() {
                 </Fragment>
               ))}
             </FixedSpaceColumn>
-            {template.value.content.sections.length === 0 && !readonly && (
+            {template.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
                 <InlineButton
                   onClick={() => addSection(0)}
@@ -659,21 +673,12 @@ export default React.memo(function VasuTemplateEditor() {
 
             <Gap />
 
-            <Button
+            <AsyncButton
               text={i18n.common.save}
               primary
               data-qa="save-template"
-              onClick={() => {
-                void updateVasuTemplateContents(
-                  id,
-                  template.value.content
-                ).then((res) => {
-                  if (res.isSuccess) {
-                    setDirty(false)
-                    h.goBack()
-                  }
-                })
-              }}
+              onClick={onSave}
+              onSuccess={onSuccess}
               disabled={readonly}
             />
 
@@ -701,7 +706,7 @@ export default React.memo(function VasuTemplateEditor() {
               />
             )}
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
