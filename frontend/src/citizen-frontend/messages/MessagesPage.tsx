@@ -5,10 +5,11 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { tabletMin } from 'lib-components/breakpoints'
+import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -29,11 +30,15 @@ const FullHeightContainer = styled(Container)`
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;
-  position: absolute;
   top: ${defaultMargins.s};
   right: 0;
   bottom: 0;
   left: 0;
+  height: calc(100% - ${footerHeightDesktop});
+
+  @media (max-width: ${desktopMin}) {
+    height: auto;
+  }
 `
 
 export default React.memo(function MessagesPage() {
@@ -85,6 +90,7 @@ export default React.memo(function MessagesPage() {
                 displaySendError={displaySendError}
               />
             )}
+            <Footer />
           </>
         )}
       </UnwrapResult>

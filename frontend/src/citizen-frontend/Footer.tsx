@@ -40,6 +40,8 @@ export default React.memo(function Footer() {
   )
 })
 
+export const footerHeightDesktop = '62px'
+
 const FooterItem = styled.div`
   display: inline-block;
   margin: auto;
@@ -58,8 +60,8 @@ const FooterContainer = styled(Container)`
   align-items: center;
   flex-wrap: wrap;
   padding: 20px 0 20px 0;
-  font-size: 12px;
   font-weight: ${fontWeights.normal};
+  height: ${footerHeightDesktop};
 
   ${FooterItem}:nth-child(1) {
     grid-column-start: 2;
@@ -70,6 +72,7 @@ const FooterContainer = styled(Container)`
 
   @media (max-width: ${desktopMin}) {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    height: auto;
   }
 
   a:hover {
