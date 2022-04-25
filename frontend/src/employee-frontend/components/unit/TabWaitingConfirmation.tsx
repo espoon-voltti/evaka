@@ -35,6 +35,20 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `
 
+function earliestStartDate(p: DaycarePlacementPlan) {
+  return p.preschoolDaycarePeriod?.start &&
+    p.preschoolDaycarePeriod.start < p.period.start
+    ? p.preschoolDaycarePeriod.start
+    : p.period.start
+}
+
+function latestEndDate(p: DaycarePlacementPlan) {
+  return p.preschoolDaycarePeriod?.end &&
+    p.preschoolDaycarePeriod.end > p.period.end
+    ? p.preschoolDaycarePeriod.end
+    : p.period.end
+}
+
 export default React.memo(function TabWaitingConfirmation() {
   const { i18n } = useTranslation()
 
@@ -133,7 +147,9 @@ export default React.memo(function TabWaitingConfirmation() {
                   </Td>
                   <Td data-qa="placement-duration">
                     {!p.rejectedByCitizen ? (
-                      `${p.period.start.format()} - ${p.period.end.format()}`
+                      `${earliestStartDate(p).format()} - ${latestEndDate(
+                        p
+                      ).format()}`
                     ) : (
                       <FlexRow>
                         <CircleIconSmallOrange>
