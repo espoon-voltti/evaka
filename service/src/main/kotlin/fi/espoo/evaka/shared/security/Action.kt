@@ -369,7 +369,7 @@ sealed interface Action {
         DOWNLOAD(
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChildOfChildImage(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildImage(),
-            IsCitizen(allowWeakLogin = false).guardianOfChildOfChildImage()
+            IsCitizen(allowWeakLogin = true).guardianOfChildOfChildImage()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
