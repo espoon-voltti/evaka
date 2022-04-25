@@ -458,7 +458,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = (CASE
-                WHEN daycare.finance_decision_handler IS NOT NULL THEN daycare.finance_decision_handler
+                WHEN daycare.finance_decision_handler IS NOT NULL AND vd.decision_type = 'NORMAL' THEN daycare.finance_decision_handler
                 ELSE :approvedBy
             END),
             approved_at = :approvedAt

@@ -853,7 +853,8 @@ export const voucherValueDecisionsFixture = (
   approvedById: null,
   decisionNumber: null,
   documentKey: null,
-  created: new Date()
+  created: new Date(),
+  decisionHandler: null
 })
 
 export const invoiceFixture = (
