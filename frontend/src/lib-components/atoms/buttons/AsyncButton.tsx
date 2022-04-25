@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
@@ -52,18 +52,33 @@ export default React.memo(function AsyncButton({
   const onSuccessRef = useRef(onSuccess)
   const canceledRef = useRef(false)
 
-  const handleFailure = (result: Failure<unknown> | undefined) => {
-    setShowFailure(true)
-    onFailure && onFailure(result)
-  }
+  const mountedRef = useRef(true)
+  useEffect(
+    () => () => {
+      mountedRef.current = false
+    },
+    []
+  )
 
-  const callback = () => {
+  const handleFailure = useCallback(
+    (result: Failure<unknown> | undefined) => {
+      if (!mountedRef.current) return
+      setShowFailure(true)
+      onFailure && onFailure(result)
+    },
+    [onFailure]
+  )
+
+  const callback = useCallback(() => {
+    if (!mountedRef.current) return
     setInProgress(true)
+
     onClick(() => {
       canceledRef.current = true
       return Promise.resolve()
     })
       .then((result) => {
+        if (!mountedRef.current) return
         if (canceledRef.current) {
           canceledRef.current = false
           return
@@ -76,8 +91,8 @@ export default React.memo(function AsyncButton({
         }
       })
       .catch(() => handleFailure(undefined))
-      .finally(() => setInProgress(false))
-  }
+      .finally(() => mountedRef.current && setInProgress(false))
+  }, [handleFailure, onClick])
 
   useEffect(() => {
     onSuccessRef.current = onSuccess
@@ -88,7 +103,10 @@ export default React.memo(function AsyncButton({
       ? setTimeout(() => onSuccessRef.current(), isAutomatedTest ? 10 : 500)
       : undefined
     const clearShowSuccess = showSuccess
-      ? setTimeout(() => setShowSuccess(false), isAutomatedTest ? 25 : 2000)
+      ? setTimeout(
+          () => mountedRef.current && setShowSuccess(false),
+          isAutomatedTest ? 25 : 2000
+        )
       : undefined
 
     return () => {
@@ -99,7 +117,10 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     const clearShowFailure = showFailure
-      ? setTimeout(() => setShowFailure(false), isAutomatedTest ? 25 : 2000)
+      ? setTimeout(
+          () => mountedRef.current && setShowFailure(false),
+          isAutomatedTest ? 25 : 2000
+        )
       : undefined
 
     return () => {
