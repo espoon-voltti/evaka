@@ -352,6 +352,7 @@ export interface PersonJSON {
   socialSecurityNumber: string | null
   ssnAddingDisabled: boolean
   streetAddress: string
+  updatedFromVtj: Date | null
 }
 
 /**

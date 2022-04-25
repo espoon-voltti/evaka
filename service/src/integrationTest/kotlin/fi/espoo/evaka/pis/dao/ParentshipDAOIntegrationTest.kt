@@ -30,7 +30,7 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.createParentship(child.id, parent.id, startDate, endDate)
         }
         assertNotNull(parentship.id)
-        assertEquals(child, parentship.child)
+        assertEquals(child.copy(updatedFromVtj = null), parentship.child.copy(updatedFromVtj = null))
         assertEquals(parent.id, parentship.headOfChildId)
         assertEquals(startDate, parentship.startDate)
         assertEquals(endDate, parentship.endDate)

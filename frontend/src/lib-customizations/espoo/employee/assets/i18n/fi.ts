@@ -111,6 +111,7 @@ export const fi = {
       email: 'Sähköposti',
       phone: 'Puhelinnumero',
       backupPhone: 'Varapuhelinnumero',
+      updatedFromVtj: 'Tiedot päivitetty VTJ:stä',
       address: 'Osoite',
       streetAddress: 'Katuosoite',
       postalCode: 'Postinumero',

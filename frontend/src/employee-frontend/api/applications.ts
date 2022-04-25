@@ -56,7 +56,10 @@ export async function getApplication(
       guardians: data.guardians.map((guardian) => ({
         ...guardian,
         dateOfBirth: LocalDate.parseIso(guardian.dateOfBirth),
-        dateOfDeath: LocalDate.parseNullableIso(guardian.dateOfDeath)
+        dateOfDeath: LocalDate.parseNullableIso(guardian.dateOfDeath),
+        updatedFromVtj: guardian.updatedFromVtj
+          ? new Date(guardian.updatedFromVtj)
+          : null
       })),
       attachments: data.attachments.map((attachment) => ({
         ...attachment,
