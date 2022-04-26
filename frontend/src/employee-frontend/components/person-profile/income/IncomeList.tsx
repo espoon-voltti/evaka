@@ -117,7 +117,7 @@ const IncomeList = React.memo(function IncomeList({
                 <IncomeItemEditor
                   baseIncome={item}
                   incomeTypeOptions={incomeTypeOptions}
-                  cancel={() => setEditing(undefined)}
+                  cancel={onSuccessfulUpdate}
                   create={createIncome}
                   update={(income) => updateIncome(item.id, income)}
                   onSuccess={onSuccessfulUpdate}
