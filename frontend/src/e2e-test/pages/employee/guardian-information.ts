@@ -326,6 +326,14 @@ export class IncomeSection extends Section {
     return await this.#incomeListItems.count()
   }
 
+  async deleteIncomeItem(nth: number) {
+    await this.#incomeListItems
+      .nth(nth)
+      .find('[data-qa="delete-income-item"]')
+      .click()
+    await this.find('[data-qa="modal-okBtn"]').click()
+  }
+
   #toggleIncomeItemButton = this.page.find('[data-qa="toggle-income-item"]')
 
   async toggleIncome() {

@@ -201,4 +201,16 @@ describe('Income', () => {
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
   })
+
+  it('Income with attachment can be deleted.', async () => {
+    await incomesSection.openNewIncomeForm()
+
+    await incomesSection.addAttachment()
+    await incomesSection.save()
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+
+    await incomesSection.deleteIncomeItem(0)
+
+    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 0)
+  })
 })
