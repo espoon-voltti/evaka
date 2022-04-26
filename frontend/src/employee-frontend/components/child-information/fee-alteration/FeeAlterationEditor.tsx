@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, FormEvent, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
+import { Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -36,16 +38,20 @@ interface Props {
   personId: UUID
   baseFeeAlteration?: FeeAlteration
   cancel: () => void
-  update: (v: FeeAlteration) => void
-  create: (v: PartialFeeAlteration) => void
+  update?: (v: FeeAlteration) => Promise<Result<unknown>>
+  create?: (v: PartialFeeAlteration) => Promise<Result<unknown>>
+  onSuccess: () => void
+  onFailure?: () => void
 }
 
 export default React.memo(function FeeAlterationEditor({
   personId,
   baseFeeAlteration,
   cancel,
-  create,
-  update
+  create = () => Promise.resolve(Success.of()),
+  update = () => Promise.resolve(Success.of()),
+  onSuccess,
+  onFailure
 }: Props) {
   const { i18n } = useTranslation()
   const [edited, setEdited] = useState(
@@ -62,14 +68,12 @@ export default React.memo(function FeeAlterationEditor({
       : setValidationErrors((prev) => ({ ...prev, validTo: false }))
   }, [edited])
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!Object.values(validationErrors).some(Boolean)) {
-      !baseFeeAlteration
-        ? create(edited)
-        : update({ ...baseFeeAlteration, ...edited })
-    }
-  }
+  const onSubmit = useCallback(() => {
+    if (Object.values(validationErrors).some(Boolean)) return
+    return !baseFeeAlteration
+      ? create(edited)
+      : update({ ...baseFeeAlteration, ...edited })
+  }, [baseFeeAlteration, create, edited, update, validationErrors])
 
   return (
     <div>
@@ -81,7 +85,7 @@ export default React.memo(function FeeAlterationEditor({
           ]
         }
       </Title>
-      <form onSubmit={onSubmit}>
+      <form>
         <LabelValueList
           spacing="large"
           contents={[
@@ -136,9 +140,12 @@ export default React.memo(function FeeAlterationEditor({
             onClick={cancel}
             text={i18n.childInformation.feeAlteration.editor.cancel}
           />
-          <Button
+          <AsyncButton
             primary
             type="submit"
+            onClick={onSubmit}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
             disabled={Object.values(validationErrors).some(Boolean)}
             text={i18n.childInformation.feeAlteration.editor.save}
           />

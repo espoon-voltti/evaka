@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useRef, useState } from 'react'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -23,7 +22,7 @@ import {
 } from '../../api/child/fee-alteration'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
+import { FeeAlteration } from '../../types/fee-alteration'
 import { renderResult } from '../async-rendering'
 
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
@@ -50,18 +49,17 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
   const [deleted, setDeleted] = useState<FeeAlteration>()
   const refSectionTop = useRef(null)
 
-  const handleChange = (result: Result<void>) => {
-    if (result.isSuccess) {
-      clearUiMode()
-      loadFeeAlterations()
-    } else {
-      setErrorMessage({
-        type: 'error',
-        title: i18n.childInformation.feeAlteration.updateError,
-        resolveLabel: i18n.common.ok
-      })
-    }
-  }
+  const onSuccess = useCallback(() => {
+    clearUiMode()
+    loadFeeAlterations()
+  }, [clearUiMode, loadFeeAlterations])
+  const onFailure = useCallback(() => {
+    setErrorMessage({
+      type: 'error',
+      title: i18n.childInformation.feeAlteration.updateError,
+      resolveLabel: i18n.common.ok
+    })
+  }, [i18n, setErrorMessage])
 
   return (
     <div ref={refSectionTop}>
@@ -86,10 +84,9 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
           <FeeAlterationEditor
             personId={id}
             cancel={() => clearUiMode()}
-            update={() => undefined}
-            create={(value: PartialFeeAlteration) =>
-              createFeeAlteration(value).then(handleChange)
-            }
+            create={createFeeAlteration}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
           />
         ) : null}
         {renderResult(feeAlterations, (feeAlterations) => (
@@ -97,11 +94,11 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
             feeAlterations={feeAlterations}
             toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
             isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
-            cancel={() => clearUiMode()}
-            update={(value: FeeAlteration) =>
-              updateFeeAlteration(value).then(handleChange)
-            }
-            toggleDeleteModal={(feeAlteration) => setDeleted(feeAlteration)}
+            cancel={clearUiMode}
+            update={updateFeeAlteration}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
+            toggleDeleteModal={setDeleted}
           />
         ))}
       </CollapsibleContentArea>
