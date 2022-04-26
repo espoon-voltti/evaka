@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as Sentry from '@sentry/browser'
 import {
   addBusinessDays,
   addDays,
@@ -173,25 +172,11 @@ export default class LocalDate {
     return this.formatIso()
   }
   toSystemTzDate(): Date {
-    const date = new Date(this.year, this.month - 1, this.date)
-    if (!isValid(date)) {
-      Sentry.captureMessage(
-        `Invalid date generated from ${this.toString()}`,
-        Sentry.Severity.Warning
-      )
-    }
-    return date
+    return new Date(this.year, this.month - 1, this.date)
   }
   toSystemTzDateAtTime(time: string): Date {
     const iso = `${this.formatIso()}T${time}`
-    const date = new Date(iso)
-    if (!isValid(date)) {
-      Sentry.captureMessage(
-        `Invalid date generated from ${iso}`,
-        Sentry.Severity.Warning
-      )
-    }
-    return date
+    return new Date(iso)
   }
   static today(): LocalDate {
     if (isAutomatedTest) {
