@@ -11,11 +11,13 @@ import { UUID } from '../types'
 export interface User {
   id: UUID
   name: string
+  userType: 'EMPLOYEE'
   accessibleFeatures: EmployeeFeatures
   permittedGlobalActions: Set<Action.Global>
 }
 
 export interface MobileUser extends MobileDeviceDetails {
+  userType: 'MOBILE'
   pinLoginActive: boolean
 }
 
