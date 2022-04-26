@@ -33,6 +33,7 @@ export default toRequestHandler(async (req, res) => {
           user: {
             id,
             name,
+            userType: user.userType,
             unitIds,
             employeeId,
             pinLoginActive,
@@ -72,6 +73,7 @@ export default toRequestHandler(async (req, res) => {
         user: {
           id,
           name,
+          userType: user.userType,
           accessibleFeatures: accessibleFeatures ?? {},
           permittedGlobalActions: permittedGlobalActions ?? []
         },
