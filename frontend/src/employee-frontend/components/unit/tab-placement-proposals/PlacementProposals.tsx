@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import _ from 'lodash'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import {
@@ -11,10 +18,10 @@ import {
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
-import { Table, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
+import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
@@ -131,6 +138,28 @@ export default React.memo(function PlacementProposals({
     }
   }
 
+  const onAccept = useCallback(() => acceptPlacementProposal(unitId), [unitId])
+  const onAcceptSuccess = useCallback(() => {
+    loadUnitData()
+  }, [loadUnitData])
+  const onAcceptFailure = useCallback(() => {
+    setErrorMessage({
+      type: 'error',
+      title: i18n.common.error.unknown,
+      resolveLabel: i18n.common.ok
+    })
+  }, [i18n, setErrorMessage])
+  const acceptDisabled = useMemo(
+    () =>
+      Object.values(confirmationStates).some((state) => state.submitting) ||
+      !Object.values(confirmationStates).some(
+        (state) =>
+          state.confirmation === 'ACCEPTED' ||
+          state.confirmation === 'REJECTED_NOT_CONFIRMED'
+      ),
+    [confirmationStates]
+  )
+
   const sortedRows = _.sortBy(placementPlans, [
     (p: DaycarePlacementPlan) => p.child.lastName,
     (p: DaycarePlacementPlan) => p.child.firstName,
@@ -240,31 +269,14 @@ export default React.memo(function PlacementProposals({
 
       {placementPlans.length > 0 && (
         <ButtonRow>
-          <Button
+          <AsyncButton
             data-qa="placement-proposals-accept-button"
-            onClick={() => {
-              acceptPlacementProposal(unitId)
-                .then(loadUnitData)
-                .catch(() =>
-                  setErrorMessage({
-                    type: 'error',
-                    title: i18n.common.error.unknown,
-                    resolveLabel: i18n.common.ok
-                  })
-                )
-            }}
+            onClick={onAccept}
+            onSuccess={onAcceptSuccess}
+            onFailure={onAcceptFailure}
+            disabled={acceptDisabled}
             text={i18n.unit.placementProposals.acceptAllButton}
             primary
-            disabled={
-              Object.values(confirmationStates).some(
-                (state) => state.submitting
-              ) ||
-              !Object.values(confirmationStates).some(
-                (state) =>
-                  state.confirmation === 'ACCEPTED' ||
-                  state.confirmation === 'REJECTED_NOT_CONFIRMED'
-              )
-            }
           />
         </ButtonRow>
       )}
