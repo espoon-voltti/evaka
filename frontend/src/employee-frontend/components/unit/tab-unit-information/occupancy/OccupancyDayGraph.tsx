@@ -4,6 +4,7 @@
 
 import { ChartData, ChartDataset, ChartOptions } from 'chart.js'
 import {
+  compareAsc,
   isBefore,
   max,
   min,
@@ -103,6 +104,13 @@ function graphData(
     ]
   }
 
+  const getChildrenPresentAtTime = (time: Date): number =>
+    occupancy.childAttendances.filter(
+      (a) =>
+        compareAsc(a.arrived, time) <= 0 &&
+        compareAsc(time, a.departed || time) < 0
+    ).length
+
   const graphOptions: ChartOptions<'line'> = {
     scales: {
       x: {
@@ -151,10 +159,15 @@ function graphData(
             const staffRequired = ceil(child / 7)
 
             const staffPresent = (staff ?? 0) / 7
+
+            const childrenPresent = getChildrenPresentAtTime(
+              new Date(items[0].parsed.x)
+            )
             return i18n.unit.occupancy.realtime.tooltipFooter(
               utilization,
               staffPresent,
-              staffRequired
+              staffRequired,
+              childrenPresent
             )
           }
         }

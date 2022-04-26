@@ -1446,9 +1446,10 @@ export const fi = {
         tooltipFooter(
           utilization: number,
           staffPresent: number,
-          staffRequired: number
+          staffRequired: number,
+          childrenPresent: number
         ) {
-          return `Käyttöaste: ${utilization} %, henkilökunta ${staffPresent}, tarve ${staffRequired}`
+          return `Käyttöaste: ${utilization} %, lapsia ${childrenPresent}, henkilökunta ${staffPresent}, tarve ${staffRequired}`
         }
       }
     },
