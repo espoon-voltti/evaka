@@ -5,6 +5,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -22,7 +23,9 @@ interface Props {
   toggleEditing: (id: UUID) => void
   isEdited: (id: UUID) => boolean
   cancel: () => void
-  update: (v: FeeAlteration) => void
+  update: (v: FeeAlteration) => Promise<Result<unknown>>
+  onSuccess: () => void
+  onFailure?: () => void
   toggleDeleteModal: (v: FeeAlteration) => void
 }
 
@@ -32,6 +35,8 @@ export default React.memo(function FeeAlterationList({
   isEdited,
   cancel,
   update,
+  onSuccess,
+  onFailure,
   toggleDeleteModal
 }: Props) {
   const { i18n } = useTranslation()
@@ -50,8 +55,9 @@ export default React.memo(function FeeAlterationList({
               personId={feeAlteration.personId}
               baseFeeAlteration={feeAlteration}
               cancel={cancel}
-              create={() => undefined}
               update={update}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
             />
           </EditorWrapper>
         ) : (
