@@ -4,7 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
@@ -26,6 +32,7 @@ type Props = {
   onSuccess: () => void
   onFailure?: (result?: Failure<unknown> | undefined) => void
   type?: 'button' | 'submit'
+  preventDefault?: boolean
   primary?: boolean
   disabled?: boolean
   className?: string
@@ -38,6 +45,7 @@ export default React.memo(function AsyncButton({
   textInProgress = text,
   textDone = text,
   type = 'button',
+  preventDefault = type === 'submit',
   primary,
   disabled,
   onClick,
@@ -69,30 +77,35 @@ export default React.memo(function AsyncButton({
     [onFailure]
   )
 
-  const callback = useCallback(() => {
-    if (!mountedRef.current) return
-    setInProgress(true)
+  const callback = useCallback(
+    (e: FormEvent) => {
+      if (preventDefault) e.preventDefault()
 
-    onClick(() => {
-      canceledRef.current = true
-      return Promise.resolve()
-    })
-      .then((result) => {
-        if (!mountedRef.current) return
-        if (canceledRef.current) {
-          canceledRef.current = false
-          return
-        }
+      if (!mountedRef.current) return
+      setInProgress(true)
 
-        if (result && result.isFailure) {
-          handleFailure(result)
-        } else {
-          setShowSuccess(true)
-        }
+      onClick(() => {
+        canceledRef.current = true
+        return Promise.resolve()
       })
-      .catch(() => handleFailure(undefined))
-      .finally(() => mountedRef.current && setInProgress(false))
-  }, [handleFailure, onClick])
+        .then((result) => {
+          if (!mountedRef.current) return
+          if (canceledRef.current) {
+            canceledRef.current = false
+            return
+          }
+
+          if (result && result.isFailure) {
+            handleFailure(result)
+          } else {
+            setShowSuccess(true)
+          }
+        })
+        .catch(() => handleFailure(undefined))
+        .finally(() => mountedRef.current && setInProgress(false))
+    },
+    [preventDefault, handleFailure, onClick]
+  )
 
   useEffect(() => {
     onSuccessRef.current = onSuccess

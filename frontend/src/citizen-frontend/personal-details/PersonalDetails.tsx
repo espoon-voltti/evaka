@@ -67,7 +67,7 @@ export default React.memo(function PersonalDetails() {
 
   const formWrapper = (children: React.ReactNode) =>
     editing ? (
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form>
         {children}
         <FixedSpaceRow justifyContent="flex-end">
           <Button
