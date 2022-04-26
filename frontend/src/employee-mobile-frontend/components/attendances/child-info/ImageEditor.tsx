@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ReactCrop, { Crop } from 'react-image-crop'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { Failure, Result } from 'lib-common/api'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
@@ -65,32 +67,33 @@ export default React.memo(function ImageEditor({
     }
   }, [onReturn, navigate])
 
-  const onSave = () => {
-    if (!crop || !previewCanvasRef.current) {
-      return
-    }
+  const onSave = useCallback(() => {
+    const canvas = previewCanvasRef.current
+    if (!crop || !canvas) return
+    setSubmitting(true)
 
-    previewCanvasRef.current.toBlob(
-      (blob) => {
-        if (blob) {
-          const file = new File([blob], 'cropped-image.jpeg', {
-            type: blob.type
-          })
-          setSubmitting(true)
-          void uploadChildImage(childId, file).then((res) => {
-            setSubmitting(false)
-            if (res.isFailure) {
-              console.error('Uploading image failed', res.message)
-            } else {
-              onReturn()
-            }
-          })
-        }
-      },
-      'image/jpeg',
-      0.7
+    return new Promise<Result<void>>((resolve) =>
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const file = new File([blob], 'cropped-image.jpeg', {
+              type: blob.type
+            })
+            resolve(uploadChildImage(childId, file))
+          } else {
+            resolve(Failure.of({ message: 'Could not convert canvas to blob' }))
+          }
+        },
+        'image/jpeg',
+        0.7
+      )
     )
-  }
+  }, [childId, crop])
+
+  const onSuccess = useCallback(() => {
+    setSubmitting(false)
+    onReturn()
+  }, [onReturn])
 
   useEffect(() => {
     if (!completedCrop || !previewCanvasRef.current || !imageElem) {
@@ -159,11 +162,12 @@ export default React.memo(function ImageEditor({
           onClick={onReturn}
           disabled={submitting}
         />
-        <Button
+        <AsyncButton
           text={i18n.common.save}
           primary
-          disabled={!completedCrop || submitting}
+          disabled={!completedCrop}
           onClick={onSave}
+          onSuccess={onSuccess}
         />
       </ButtonRow>
     </Container>
