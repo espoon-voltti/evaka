@@ -46,6 +46,8 @@ beforeEach(async () => {
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  await insertDefaultServiceNeedOptions()
+  await Fixture.feeThresholds().save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -167,7 +169,6 @@ describe('Application transitions', () => {
 
   test('Placement dialog works', async () => {
     const preferredStartDate = LocalDate.of(2021, 8, 16)
-    await insertDefaultServiceNeedOptions()
 
     const group = await Fixture.daycareGroup()
       .with({ daycareId: fixtures.daycareFixture.id })
