@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -28,7 +28,7 @@ import {
 
 export default React.memo(function HolidayPeriodsPage() {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [holidayPeriods, refreshPeriods] = useApiState(getHolidayPeriods, [])
   const [questionnaires, refreshQuestionnaires] = useApiState(
@@ -43,8 +43,8 @@ export default React.memo(function HolidayPeriodsPage() {
     [periodToDelete]
   )
   const navigateToNewHolidayPeriod = useCallback(() => {
-    history.push('/holiday-periods/new')
-  }, [history])
+    navigate('/holiday-periods/new')
+  }, [navigate])
 
   const [questionnaireToDelete, setQuestionnaireToDelete] = useState<UUID>()
   const onDeleteQuestionnaire = useCallback(
@@ -55,8 +55,8 @@ export default React.memo(function HolidayPeriodsPage() {
     [questionnaireToDelete]
   )
   const navigateToNewQuestionnaire = useCallback(() => {
-    history.push('/holiday-periods/questionnaire/new')
-  }, [history])
+    navigate('/holiday-periods/questionnaire/new')
+  }, [navigate])
 
   return (
     <Container>
@@ -88,7 +88,7 @@ export default React.memo(function HolidayPeriodsPage() {
                         icon={faPen}
                         data-qa="btn-edit"
                         onClick={() =>
-                          history.push(`/holiday-periods/${holiday.id}`)
+                          navigate(`/holiday-periods/${holiday.id}`)
                         }
                       />
                       <IconButton
@@ -131,9 +131,7 @@ export default React.memo(function HolidayPeriodsPage() {
                         icon={faPen}
                         data-qa="btn-edit"
                         onClick={() =>
-                          history.push(
-                            `/holiday-periods/questionnaire/${row.id}`
-                          )
+                          navigate(`/holiday-periods/questionnaire/${row.id}`)
                         }
                       />
                       <IconButton

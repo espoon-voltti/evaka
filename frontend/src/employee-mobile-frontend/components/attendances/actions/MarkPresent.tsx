@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,7 +29,7 @@ import { Actions, BackButtonInline, TimeWrapper } from '../components'
 import DailyNote from '../notes/DailyNote'
 
 export default React.memo(function MarkPresent() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const { attendanceResponse, reloadAttendances } = useContext(
@@ -37,7 +38,7 @@ export default React.memo(function MarkPresent() {
 
   const [time, setTime] = useState<string>(formatTime(new Date()))
 
-  const { childId, unitId, groupId } = useParams<{
+  const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     childId: string
     groupId: string
@@ -74,7 +75,7 @@ export default React.memo(function MarkPresent() {
         <>
           <div>
             <BackButtonInline
-              onClick={() => history.goBack()}
+              onClick={() => navigate(-1)}
               icon={faArrowLeft}
               text={
                 child
@@ -98,7 +99,7 @@ export default React.memo(function MarkPresent() {
               <FixedSpaceRow fullWidth>
                 <Button
                   text={i18n.common.cancel}
-                  onClick={() => history.goBack()}
+                  onClick={() => navigate(-1)}
                 />
                 <AsyncButton
                   primary
@@ -107,7 +108,7 @@ export default React.memo(function MarkPresent() {
                   onClick={() => childArrives()}
                   onSuccess={() => {
                     reloadAttendances()
-                    history.go(-2)
+                    navigate(-2)
                   }}
                   data-qa="mark-present-btn"
                 />

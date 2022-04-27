@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
 
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 
@@ -19,7 +19,7 @@ import useTitle from '../../useTitle'
 import { getApplication } from '../api'
 
 export default React.memo(function ApplicationReadView() {
-  const { applicationId } = useParams<{ applicationId: UUID }>()
+  const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const user = useUser()
   const [apiData] = useApiState(

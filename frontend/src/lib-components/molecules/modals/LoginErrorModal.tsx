@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { P } from 'lib-components/typography'
@@ -26,10 +26,9 @@ interface LoginErrorModalProps {
 export const LoginErrorModal = React.memo(function LoginErrorModal(
   props: LoginErrorModalProps
 ) {
-  const history = useHistory()
-  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const queryParamName = 'loginError'
-  const queryParams = new URLSearchParams(location.search)
+  const queryParams = searchParams
 
   const [errorModalVisible, setErrorModalVisible] = useState<boolean>(
     queryParams.get(queryParamName) === 'true'
@@ -38,9 +37,7 @@ export const LoginErrorModal = React.memo(function LoginErrorModal(
   function onClose(event?: React.UIEvent<unknown>) {
     setErrorModalVisible(false)
     queryParams.delete(queryParamName)
-    history.replace({
-      search: queryParams.toString()
-    })
+    setSearchParams(queryParams, { replace: true })
     if (event) {
       event.preventDefault()
     }

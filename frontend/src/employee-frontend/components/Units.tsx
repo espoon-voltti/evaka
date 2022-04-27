@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -42,7 +42,7 @@ const TopBar = styled.div`
 `
 
 export default React.memo(function Units() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const {
@@ -112,7 +112,7 @@ export default React.memo(function Units() {
     units.value.length === 1 &&
     !user?.accessibleFeatures.createUnits
   ) {
-    history.replace(`/units/${units.value[0].id}`)
+    navigate(`/units/${units.value[0].id}`, { replace: true })
   }
 
   return (

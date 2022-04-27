@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useRef, useState } from 'react'
-import { Link, useHistory, useParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -42,9 +43,9 @@ import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
-  const { unitId, childId, groupId } = useParams<{
+  const { unitId, childId, groupId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID | 'all'
     childId: UUID
@@ -109,7 +110,7 @@ export default React.memo(function AttendanceChildPage() {
         shadow
       >
         <BackButtonMargin
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
           icon={faArrowLeft}
           data-qa="back-btn"
         />

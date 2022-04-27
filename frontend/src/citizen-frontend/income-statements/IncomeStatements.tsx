@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -52,11 +52,11 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
   onRemoveIncomeStatement: (id: UUID) => void
 }) {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const onEdit = useCallback(
-    (id: UUID) => () => history.push(getLink(id, 'edit')),
-    [history]
+    (id: UUID) => () => navigate(getLink(id, 'edit')),
+    [navigate]
   )
 
   return (
@@ -117,7 +117,7 @@ type DeletionState =
 
 export default React.memo(function IncomeStatements() {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [page, setPage] = useState(1)
@@ -166,7 +166,7 @@ export default React.memo(function IncomeStatements() {
           <HeadingContainer>
             <H2>{t.income.table.title}</H2>
             <ResponsiveAddButton
-              onClick={() => history.push('/income/new/edit')}
+              onClick={() => navigate('/income/new/edit')}
               text={t.income.addNew}
               data-qa="new-income-statement-btn"
             />

@@ -6,10 +6,9 @@ import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
+  Navigate,
   Route,
-  Redirect,
-  Switch,
-  useParams
+  Routes
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
@@ -113,585 +112,495 @@ export default function App() {
             <StateProvider>
               <Router basename="/employee">
                 <Header />
-                <Switch>
+                <Routes>
                   <Route
-                    exact
                     path="/login"
-                    render={() => (
+                    element={
                       <EmployeeRoute
                         requireAuth={false}
                         title={i18n.titles.login}
                       >
                         <LoginPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   {featureFlags.experimental?.ai && (
                     <Route
-                      exact
                       path="/ai"
-                      render={() => (
+                      element={
                         <EmployeeRoute title={i18n.titles.ai}>
                           <AIPage />
                         </EmployeeRoute>
-                      )}
+                      }
                     />
                   )}
                   <Route
-                    exact
                     path="/settings"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <SettingsPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/unit-features"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <UnitFeaturesPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/units"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.units}>
                         <Units />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/units/new"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.createUnit}>
                         <CreateUnitPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/units/:id/details"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <UnitDetailsPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/units/:unitId/family-contacts"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <ReportFamilyContacts />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/units/:unitId/groups/:groupId/caretakers"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <GroupCaretakers />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    path="/units/:id"
-                    render={() => (
+                    path="/units/:id/*"
+                    element={
                       <EmployeeRoute>
                         <UnitPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/search"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.customers}>
                         <Search />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/profile/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <PersonProfile />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/profile/:personId/income-statement/:incomeStatementId"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <IncomeStatementPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/child-information/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <ChildInformation />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/applications"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.applications}>
                         <ApplicationsPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/applications/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.applications}>
                         <ApplicationPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/applications/:id/placement"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.placementDraft}>
                         <PlacementDraftPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/applications/:id/decisions"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.decision}>
                         <DecisionPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   {featureFlags.financeBasicsPage ? (
                     <Route
-                      exact
                       path="/finance/basics"
-                      render={() => (
+                      element={
                         <EmployeeRoute>
                           <FinanceBasicsPage />
                         </EmployeeRoute>
-                      )}
+                      }
                     />
                   ) : null}
                   <Route
-                    exact
                     path="/finance/fee-decisions/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <FeeDecisionDetailsPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/finance/value-decisions/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <VoucherValueDecisionPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/finance/invoices/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <InvoicePage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    path="/finance"
-                    render={() => (
+                    path="/finance/*"
+                    element={
                       <EmployeeRoute>
                         <FinancePage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <Reports />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/family-conflicts"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportFamilyConflicts />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/missing-head-of-family"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportMissingHeadOfFamily />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/missing-service-need"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportMissingServiceNeed />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/applications"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportApplications />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/decisions"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportDecisions />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/partners-in-different-address"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportPartnersInDifferentAddress />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/children-in-different-address"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportChildrenInDifferentAddress />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/child-age-language"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportChildAgeLanguage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/assistance-needs-and-actions"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportAssistanceNeedsAndActions />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/occupancies"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportOccupancies />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/invoices"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportInvoices />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/starting-placements"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportStartingPlacements />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/ended-placements"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportEndedPlacements />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/duplicate-people"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportDuplicatePeople />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/presences"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportPresences />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/service-needs"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportServiceNeeds />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/sextet"
-                    render={() => (
+                    element={
                       <EmployeeRoute>
                         <ReportSextet />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/voucher-service-providers"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <VoucherServiceProviders />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/voucher-service-providers/:unitId"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <VoucherServiceProviderUnit />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/varda-errors"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <VardaErrors />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/placement-sketching"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <PlacementSketching />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/reports/raw"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportRaw />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/messages"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.messages}>
                         <MessagesPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/personal-mobile-devices"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.personalMobileDevices}>
                         <PersonalMobileDevicesPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/pin-code"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.employeePinCode}>
                         <EmployeePinCodePage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/employees"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.employees.title}>
                         <EmployeesPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/employees/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.employees.title}>
                         <EmployeePage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/welcome"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.welcomePage}>
                         <WelcomePage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/vasu/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.vasuPage}>
                         <VasuPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/vasu/:id/edit"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.vasuPage}>
                         <VasuEditPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/vasu-templates"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.vasuTemplates}>
                         <VasuTemplatesPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/vasu-templates/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.vasuTemplates}>
                         <VasuTemplateEditor />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/holiday-periods"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.holidayPeriods}>
                         <HolidayPeriodsPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/holiday-periods/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.holidayPeriods}>
                         <HolidayPeriodEditor />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
                     path="/holiday-periods/questionnaire/:id"
-                    render={() => (
+                    element={
                       <EmployeeRoute title={i18n.titles.holidayQuestionnaire}>
                         <QuestionnaireEditor />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
                   <Route
-                    exact
-                    path="/fee-decisions"
-                    render={() => <Redirect to="/finance/fee-decisions" />}
-                  />
-                  <Route
-                    exact
-                    path="/fee-decisions/:id"
-                    render={() => (
-                      <RedirectByParams
-                        to={(params: { id: string }) =>
-                          `/finance/fee-decisions/${params.id}`
-                        }
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/invoices"
-                    render={() => <Redirect to="/finance/invoices" />}
-                  />
-                  <Route
-                    exact
-                    path="/invoices/:id"
-                    render={() => (
-                      <RedirectByParams
-                        to={(params: { id: string }) =>
-                          `/finance/invoices/${params.id}`
-                        }
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/"
-                    render={() => (
+                    index
+                    element={
                       <EmployeeRoute requireAuth={false}>
                         <RedirectToMainPage />
                       </EmployeeRoute>
-                    )}
+                    }
                   />
-                </Switch>
+                </Routes>
                 <Footer />
                 <ErrorMessage />
                 <ReloadNotification
@@ -713,28 +622,23 @@ function RedirectToMainPage() {
   const { loggedIn, roles } = useContext(UserContext)
 
   if (!loggedIn) {
-    return <Redirect to="/login" />
+    return <Navigate replace to="/login" />
   }
 
   if (
     hasRole(roles, 'SERVICE_WORKER') ||
     hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
   ) {
-    return <Redirect to="/applications" />
+    return <Navigate replace to="/applications" />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Redirect to="/units" />
+    return <Navigate replace to="/units" />
   } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
-    return <Redirect to="/reports" />
+    return <Navigate replace to="/reports" />
   } else if (roles.length === 0) {
-    return <Redirect to="/welcome" />
+    return <Navigate replace to="/welcome" />
   } else {
-    return <Redirect to="/search" />
+    return <Navigate replace to="/search" />
   }
-}
-
-function RedirectByParams<T>({ to }: { to: (params: T) => string }) {
-  const params = useParams<T>()
-  return <Redirect to={to(params)} />
 }
 
 function useAuthStatus(): AuthStatus<User> | undefined {

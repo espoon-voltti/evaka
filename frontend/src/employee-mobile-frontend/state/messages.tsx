@@ -10,7 +10,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
@@ -20,6 +19,7 @@ import {
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SelectOption } from 'lib-components/molecules/Select'
@@ -115,7 +115,7 @@ export const MessageContextProvider = React.memo(
 
     const [loadAccounts] = useDebouncedCallback(getAccounts, 100)
 
-    const { groupId } = useParams<{
+    const { groupId } = useNonNullableParams<{
       groupId: UUID | 'all'
     }>()
 

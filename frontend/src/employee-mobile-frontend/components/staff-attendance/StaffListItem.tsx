@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -69,7 +70,7 @@ export default React.memo(function StaffListItem({
   present,
   type
 }: Staff) {
-  const { unitId, groupId } = useParams<{
+  const { unitId, groupId } = useNonNullableParams<{
     unitId: string
     groupId: string
   }>()

@@ -10,8 +10,7 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { useHistory } from 'react-router'
-import { useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading, Loading, Result, Success } from 'lib-common/api'
@@ -19,6 +18,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -90,9 +90,9 @@ function hasOverlap(
 }
 
 export default React.memo(function PlacementDraft() {
-  const { id: applicationId } = useParams<{ id: UUID }>()
+  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [placementDraft, setPlacementDraft] = useState<Result<PlacementDraft>>(
     Loading.of()
   )
@@ -132,8 +132,8 @@ export default React.memo(function PlacementDraft() {
   }
 
   const redirectToMainPage = useCallback(
-    () => history.push('/applications'),
-    [history]
+    () => navigate('/applications'),
+    [navigate]
   )
 
   useEffect(() => {

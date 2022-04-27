@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import colors from 'lib-customizations/common'
@@ -32,7 +32,7 @@ const Shadow = styled.div`
 export function StaffMemberPageContainer({
   children
 }: React.PropsWithChildren<unknown>) {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <TallContentAreaNoOverflow
       opaque
@@ -41,7 +41,7 @@ export function StaffMemberPageContainer({
       shadow
     >
       <BackButtonMargin
-        onClick={() => history.goBack()}
+        onClick={() => navigate(-1)}
         icon={faArrowLeft}
         data-qa="back-btn"
       />

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -38,7 +38,7 @@ export default React.memo(function ThreadList({
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const params = useParams<{ threadId: UUID | undefined }>()
   const t = useTranslation()
   const {
@@ -56,12 +56,12 @@ export default React.memo(function ThreadList({
   const selectThread = useCallback(
     (threadId: UUID | undefined) => {
       if (!threadId) {
-        history.push('/messages')
+        navigate('/messages')
       } else {
-        history.push(`/messages/${threadId}`)
+        navigate(`/messages/${threadId}`)
       }
     },
-    [history]
+    [navigate]
   )
 
   const { setErrorMessage } = useContext(OverlayContext)

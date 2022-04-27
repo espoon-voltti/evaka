@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ReactCrop, { Crop } from 'react-image-crop'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Button from 'lib-components/atoms/buttons/Button'
@@ -41,7 +41,7 @@ export default React.memo(function ImageEditor({
   const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null)
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const [submitting, setSubmitting] = useState(false)
-  const h = useHistory()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const htmlNode = document.querySelector('html')
@@ -51,7 +51,7 @@ export default React.memo(function ImageEditor({
 
     const popStateHandler = (e: PopStateEvent) => {
       e.preventDefault()
-      h.goForward()
+      navigate(1)
       onReturn()
     }
 
@@ -63,7 +63,7 @@ export default React.memo(function ImageEditor({
       }
       window.removeEventListener('popstate', popStateHandler)
     }
-  }, [onReturn, h])
+  }, [onReturn, navigate])
 
   const onSave = () => {
     if (!crop || !previewCanvasRef.current) {

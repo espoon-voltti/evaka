@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -26,7 +26,7 @@ const FooterContainer = styled.div`
 `
 
 export default React.memo(function VasuPage() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
 
   const { vasu, content, translations } = useVasu(id)
 

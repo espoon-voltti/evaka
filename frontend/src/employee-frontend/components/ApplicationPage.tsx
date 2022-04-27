@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
@@ -12,6 +11,7 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -48,7 +48,7 @@ const NotesArea = styled(ContentArea)`
 `
 
 export default React.memo(function ApplicationPage() {
-  const { id: applicationId } = useParams<{ id: UUID }>()
+  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)

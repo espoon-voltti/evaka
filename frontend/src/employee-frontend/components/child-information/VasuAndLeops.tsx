@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
@@ -119,7 +119,7 @@ function VasuInitialization({
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>()
   const loadTemplates = useRestApi(getValidVasuTemplateSummaries, setTemplates)
@@ -160,9 +160,9 @@ function VasuInitialization({
           setTemplates(undefined)
         },
         loading: () => setInitializing(true),
-        success: (id) => history.push(`/vasu/${id}`)
+        success: (id) => navigate(`/vasu/${id}`)
       }),
-    [history, i18n, setErrorMessage]
+    [navigate, i18n, setErrorMessage]
   )
   const createVasu = useRestApi(createVasuDocument, handleVasuResult)
 
@@ -235,7 +235,7 @@ export default React.memo(function VasuAndLeops({
     () => getVasuDocumentSummaries(childId),
     [childId]
   )
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [open, setOpen] = useState(startOpen)
 
@@ -302,7 +302,7 @@ export default React.memo(function VasuAndLeops({
                 <Tr key={vasu.id}>
                   <Td>
                     <InlineButton
-                      onClick={() => history.push(`/vasu/${vasu.id}`)}
+                      onClick={() => navigate(`/vasu/${vasu.id}`)}
                       text={vasu.name}
                     />
                   </Td>
@@ -331,7 +331,7 @@ export default React.memo(function VasuAndLeops({
                       </RequireRole>
                     ) : (
                       <InlineButton
-                        onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
+                        onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
                         text={i18n.common.edit}
                       />
                     )}

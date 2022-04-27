@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 import { UserContext } from '../state/user'
 
@@ -18,7 +18,7 @@ export default React.memo(function LoginPage() {
   const loginError = queryParams.get('loginError') || undefined
 
   if (loggedIn) {
-    return <Redirect to="/" />
+    return <Navigate replace to="/" />
   }
 
   return <Login error={error || loginError} />

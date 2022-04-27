@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Tabs from 'lib-components/molecules/Tabs'
@@ -64,35 +64,33 @@ export default React.memo(function ApplyingRouter() {
       <WhiteBg>
         <Tabs tabs={tabs} data-qa="applying-subnavigation" />
       </WhiteBg>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/applying/applications"
-          render={() => (
+          path="applications"
+          element={
             <RequireAuth>
               <Applications />
             </RequireAuth>
-          )}
+          }
         />
-        <Route exact path="/applying/map" render={() => <MapView />} />
+        <Route path="map" element={<MapView />} />
         <Route
-          exact
-          path="/applying/decisions"
-          render={() => (
+          path="decisions"
+          element={
             <RequireAuth>
               <Decisions />
             </RequireAuth>
-          )}
+          }
         />
         <Route
           path="/"
-          render={() => (
-            <Redirect
+          element={
+            <Navigate
               to={isEndUser ? '/applying/applications' : '/applying/map'}
             />
-          )}
+          }
         />
-      </Switch>
+      </Routes>
     </>
   )
 })

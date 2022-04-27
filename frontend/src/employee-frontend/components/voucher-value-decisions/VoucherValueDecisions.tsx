@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -77,7 +77,7 @@ export default React.memo(function VoucherValueDecisions({
   clearChecked
 }: Props) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const allChecked =
     decisions
@@ -101,7 +101,7 @@ export default React.memo(function VoucherValueDecisions({
         return (
           <Tr
             key={item.id}
-            onClick={() => history.push(`/finance/value-decisions/${item.id}`)}
+            onClick={() => navigate(`/finance/value-decisions/${item.id}`)}
             data-qa="table-value-decision-row"
           >
             <Td>

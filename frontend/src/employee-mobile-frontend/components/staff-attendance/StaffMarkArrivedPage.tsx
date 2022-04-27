@@ -4,11 +4,12 @@
 
 import { isAfter, parse } from 'date-fns'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -34,9 +35,9 @@ import { TimeWrapper } from './components/staff-components'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
-  const { groupId, employeeId } = useParams<{
+  const { groupId, employeeId } = useNonNullableParams<{
     groupId: UUID | 'all'
     employeeId: UUID
   }>()
@@ -111,7 +112,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     >
       <TopBar
         title={backButtonText}
-        onBack={() => history.goBack()}
+        onBack={() => navigate(-1)}
         invertedColors
       />
       <ContentArea
@@ -196,7 +197,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
-                      onClick={() => history.goBack()}
+                      onClick={() => navigate(-1)}
                     />
                     <AsyncButton
                       primary

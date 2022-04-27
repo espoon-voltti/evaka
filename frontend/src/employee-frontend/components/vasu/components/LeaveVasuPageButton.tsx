@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -18,14 +18,14 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
   childId: UUID
   disabled?: boolean
 }) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   return (
     <ExitButtonWrapper>
       <Button
         text={i18n.vasu.leavePage}
-        onClick={() => history.push(`/child-information/${childId}`)}
+        onClick={() => navigate(`/child-information/${childId}`)}
         disabled={disabled}
       />
     </ExitButtonWrapper>

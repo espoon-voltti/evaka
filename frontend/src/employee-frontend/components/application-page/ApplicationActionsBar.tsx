@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
@@ -33,7 +33,7 @@ export default React.memo(function ApplicationActionsBar({
   reloadApplication,
   errors
 }: Props) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const actions = [
@@ -62,7 +62,7 @@ export default React.memo(function ApplicationActionsBar({
       id: 'cancel-new-application',
       enabled: editing && applicationStatus === 'CREATED',
       component: (
-        <Button onClick={() => history.goBack()} text={i18n.common.cancel} />
+        <Button onClick={() => navigate(-1)} text={i18n.common.cancel} />
       )
     },
     {

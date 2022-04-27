@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { isEqual } from 'date-fns'
 import { noop } from 'lodash'
 import React, { useContext } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
@@ -92,7 +92,7 @@ export default React.memo(function ChildApplicationsBlock({
   applicationSummaries,
   reload
 }: ChildApplicationsBlockProps) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const t = useTranslation()
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
@@ -171,7 +171,7 @@ export default React.memo(function ChildApplicationsBlock({
         </H2>
         <AddButton
           text={t.applicationsList.newApplicationLink}
-          onClick={() => history.push(`/applications/new/${childId}`)}
+          onClick={() => navigate(`/applications/new/${childId}`)}
           data-qa={`new-application-${childId}`}
         />
       </TitleContainer>

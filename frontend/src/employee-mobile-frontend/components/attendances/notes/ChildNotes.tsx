@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
@@ -13,6 +13,7 @@ import {
   ChildStickyNote,
   GroupNote
 } from 'lib-common/generated/api-types/note'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -81,9 +82,9 @@ const childDailyNoteToFormData = ({
 
 export default React.memo(function ChildNotes() {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
-  const { childId, groupId } = useParams<{
+  const { childId, groupId } = useNonNullableParams<{
     childId: string
     groupId: string
   }>()
@@ -169,7 +170,7 @@ export default React.memo(function ChildNotes() {
     >
       <TopRow>
         <BackButtonInline
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
           icon={faArrowLeft}
           text={`${child.firstName} ${child.lastName}`}
         />

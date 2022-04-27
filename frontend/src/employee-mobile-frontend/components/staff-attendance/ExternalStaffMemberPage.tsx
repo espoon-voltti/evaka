@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { formatTime } from 'lib-common/date'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -23,8 +24,8 @@ import { TimeInfo } from './components/staff-components'
 import { toStaff } from './staff'
 
 export default React.memo(function ExternalStaffMemberPage() {
-  const history = useHistory()
-  const { attendanceId } = useParams<{
+  const navigate = useNavigate()
+  const { attendanceId } = useNonNullableParams<{
     attendanceId: string
   }>()
   const { i18n } = useTranslation()
@@ -80,7 +81,7 @@ export default React.memo(function ExternalStaffMemberPage() {
                   }
                   onSuccess={() => {
                     reloadStaffAttendance()
-                    history.goBack()
+                    navigate(-1)
                   }}
                 />
               </FixedSpaceColumn>

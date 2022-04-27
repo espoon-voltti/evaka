@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Redirect, useHistory, useParams } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
 import {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -25,8 +26,8 @@ import Heading from './Heading'
 import Summary from './Summary'
 
 export default React.memo(function FeeDecisionDetailsPage() {
-  const history = useHistory()
-  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<Result<FeeDecisionDetailed>>(
@@ -67,10 +68,10 @@ export default React.memo(function FeeDecisionDetailsPage() {
     [decisionType]
   )
 
-  const goBack = useCallback(() => history.goBack(), [history])
+  const goBack = useCallback(() => navigate(-1), [navigate])
 
   if (decision.isFailure) {
-    return <Redirect to="/finance/fee-decisions" />
+    return <Navigate replace to="/finance/fee-decisions" />
   }
 
   return (

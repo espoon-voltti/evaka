@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 
 import { renderResult } from '../async-rendering'
 
@@ -53,8 +54,8 @@ async function initializeEditorState(
 }
 
 export default React.memo(function IncomeStatementEditor() {
-  const params = useParams<{ incomeStatementId: string }>()
-  const history = useHistory()
+  const params = useNonNullableParams<{ incomeStatementId: string }>()
+  const navigate = useNavigate()
   const incomeStatementId =
     params.incomeStatementId === 'new' ? undefined : params.incomeStatementId
   const [state, setState] = useState<Result<EditorState>>(Loading.of())
@@ -66,8 +67,8 @@ export default React.memo(function IncomeStatementEditor() {
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const navigateToList = useCallback(() => {
-    history.push('/income')
-  }, [history])
+    navigate('/income')
+  }, [navigate])
 
   const form = useRef<IncomeStatementFormAPI | null>(null)
 

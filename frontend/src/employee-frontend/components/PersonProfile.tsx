@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
@@ -167,7 +167,7 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
 })
 
 export default React.memo(function PersonProfileWrapper() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   return (
     <PersonContextProvider id={id}>
       <PersonProfile id={id} />

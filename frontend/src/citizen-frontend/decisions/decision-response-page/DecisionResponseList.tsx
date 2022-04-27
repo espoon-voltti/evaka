@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -27,9 +28,9 @@ import { Decision } from '../types'
 import DecisionResponse from './DecisionResponse'
 
 export default React.memo(function DecisionResponseList() {
-  const { applicationId } = useParams<{ applicationId: UUID }>()
+  const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const router = useHistory()
+  const navigate = useNavigate()
 
   const [decisionsRequest, loadDecisions] = useApiState(
     () => getApplicationDecisions(applicationId),
@@ -55,7 +56,7 @@ export default React.memo(function DecisionResponseList() {
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
-      router.push('/applying/decisions')
+      navigate('/applying/decisions')
     }
   }
 
@@ -116,7 +117,7 @@ export default React.memo(function DecisionResponseList() {
                 t.decisions.applicationDecisions.warnings
                   .decisionWithNoResponseWarning.resolveLabel,
               action: () => {
-                router.push('/applying/decisions')
+                navigate('/applying/decisions')
               }
             }}
             reject={{

@@ -4,11 +4,11 @@
 
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -25,7 +25,7 @@ import { WideLinkButton } from '../mobile/components'
 import { HeaderContainer } from './MessagesPage'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
-  const { unitId, groupId } = useParams<{
+  const { unitId, groupId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID
   }>()

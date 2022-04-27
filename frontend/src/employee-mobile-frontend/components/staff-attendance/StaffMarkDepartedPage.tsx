@@ -4,10 +4,11 @@
 
 import { isAfter, parse } from 'date-fns'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { Redirect, useHistory, useParams } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -32,9 +33,9 @@ import { TimeWrapper } from './components/staff-components'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
-  const { unitId, groupId, employeeId } = useParams<{
+  const { unitId, groupId, employeeId } = useNonNullableParams<{
     unitId: string
     groupId: string
     employeeId: string
@@ -98,7 +99,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     >
       <TopBar
         title={backButtonText}
-        onBack={() => history.goBack()}
+        onBack={() => navigate(-1)}
         invertedColors
       />
       <ContentArea
@@ -112,14 +113,16 @@ export default React.memo(function StaffMarkDepartedPage() {
           ([{ pinSet, pinLocked }, { staffMember, attendanceId }]) => {
             if (staffMember === undefined) {
               return (
-                <Redirect
+                <Navigate
+                  replace
                   to={`/units/${unitId}/groups/${groupId}/staff-attendance`}
                 />
               )
             }
             if (attendanceId === undefined) {
               return (
-                <Redirect
+                <Navigate
+                  replace
                   to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
                 />
               )
@@ -167,7 +170,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
-                      onClick={() => history.goBack()}
+                      onClick={() => navigate(-1)}
                     />
                     <AsyncButton
                       primary

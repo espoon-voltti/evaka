@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useEffect, useState, useMemo } from 'react'
-import { useHistory } from 'react-router'
-import { Prompt, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
@@ -22,6 +21,8 @@ import {
 } from 'lib-common/api-types/vasu'
 import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
+import usePrompt from 'lib-common/utils/usePrompt'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -66,9 +67,9 @@ import CreateQuestionModal from './CreateQuestionModal'
 import { getVasuTemplate, updateVasuTemplateContents } from './api'
 
 export default React.memo(function VasuTemplateEditor() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   const { i18n, lang } = useTranslation()
-  const h = useHistory()
+  const navigate = useNavigate()
 
   const [template, setTemplate] = useState<Result<VasuTemplate>>(Loading.of())
   const [dirty, setDirty] = useState(false)
@@ -82,6 +83,7 @@ export default React.memo(function VasuTemplateEditor() {
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
+  usePrompt(i18n.vasuTemplates.unsavedWarning, dirty)
 
   const readonly = !(template.isSuccess && template.value.documentCount === 0)
 
@@ -442,8 +444,6 @@ export default React.memo(function VasuTemplateEditor() {
 
   return (
     <Container>
-      <Prompt when={dirty} message={i18n.vasuTemplates.unsavedWarning} />
-
       <ContentArea opaque>
         {template.isLoading && <SpinnerSegment />}
         {template.isFailure && <ErrorSegment />}
@@ -670,7 +670,7 @@ export default React.memo(function VasuTemplateEditor() {
                 ).then((res) => {
                   if (res.isSuccess) {
                     setDirty(false)
-                    h.goBack()
+                    navigate(-1)
                   }
                 })
               }}

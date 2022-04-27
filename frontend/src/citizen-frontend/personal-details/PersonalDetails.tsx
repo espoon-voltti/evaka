@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { Redirect } from 'react-router'
+import { Navigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { AuthContext, User } from 'citizen-frontend/auth/state'
@@ -112,7 +112,7 @@ export default React.memo(function PersonalDetails() {
           {t.personalDetails.description}
           {renderResult(user, (personalData) => {
             if (personalData === undefined) {
-              return <Redirect to="/" />
+              return <Navigate replace to="/" />
             }
 
             const {

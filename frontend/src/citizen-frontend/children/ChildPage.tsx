@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
 
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -21,7 +21,7 @@ import { getChild } from './api'
 
 export default React.memo(function ChildPage() {
   const t = useTranslation()
-  const { childId } = useParams<{ childId: string }>()
+  const { childId } = useNonNullableParams<{ childId: string }>()
   const [childResponse] = useApiState(() => getChild(childId), [childId])
 
   return (

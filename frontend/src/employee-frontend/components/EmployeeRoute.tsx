@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { TitleContext, TitleState } from '../state/title'
 import { UserContext } from '../state/user'
@@ -34,5 +34,5 @@ const RequireAuth = React.memo(function EnsureAuthenticated({
   element: React.ReactNode
 }) {
   const { loggedIn } = useContext(UserContext)
-  return loggedIn ? <>{element}</> : <Redirect to="/" />
+  return loggedIn ? <>{element}</> : <Navigate replace to="/" />
 })

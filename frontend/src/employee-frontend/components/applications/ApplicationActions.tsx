@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
@@ -45,7 +45,7 @@ export default React.memo(function ApplicationActions({
   application,
   reloadApplications
 }: Props) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const [actionInFlight, setActionInFlight] = useState(false)
@@ -130,7 +130,7 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          history.push(`/applications/${application.id}/placement`)
+          navigate(`/applications/${application.id}/placement`)
         },
         primaryStatus: 'WAITING_PLACEMENT'
       },
@@ -151,7 +151,7 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          history.push(`/applications/${application.id}/decisions`)
+          navigate(`/applications/${application.id}/decisions`)
         },
         primaryStatus: 'WAITING_DECISION'
       },

@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
@@ -16,6 +16,7 @@ import {
   Income
 } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -40,17 +41,19 @@ import { OverlayContext } from '../overlay/state'
 import { getIncomeStatement } from './api'
 
 export default React.memo(function IncomeStatementView() {
-  const { incomeStatementId } = useParams<{ incomeStatementId: UUID }>()
+  const { incomeStatementId } = useNonNullableParams<{
+    incomeStatementId: UUID
+  }>()
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [result] = useApiState(
     () => getIncomeStatement(incomeStatementId),
     [incomeStatementId]
   )
 
   const handleEdit = useCallback(() => {
-    history.push('edit')
-  }, [history])
+    navigate('edit')
+  }, [navigate])
 
   return renderResult(result, (incomeStatement) => (
     <Container>

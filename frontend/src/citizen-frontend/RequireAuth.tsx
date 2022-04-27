@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Redirect, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 import { AuthContext } from './auth/state'
 import { getStrongLoginUri } from './header/const'
@@ -35,7 +35,7 @@ export default React.memo(function RequireAuth({
       <>{children}</>
     )
   ) : (
-    <Redirect to="/login" />
+    <Navigate to="/login" />
   )
 })
 

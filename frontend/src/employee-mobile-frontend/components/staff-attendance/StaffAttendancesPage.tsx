@@ -4,10 +4,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useMemo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -31,8 +32,8 @@ const StaticIconContainer = styled.div`
 type StatusTab = 'present' | 'absent'
 
 export default React.memo(function StaffAttendancesPage() {
-  const history = useHistory()
-  const { unitId, groupId, tab } = useParams<{
+  const navigate = useNavigate()
+  const { unitId, groupId, tab } = useNonNullableParams<{
     unitId: string
     groupId: string
     tab: StatusTab
@@ -43,19 +44,17 @@ export default React.memo(function StaffAttendancesPage() {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      history.push(
+      navigate(
         `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance/${tab}`
       )
     },
-    [history, tab, unitId]
+    [navigate, tab, unitId]
   )
 
   const navigateToExternalMemberArrival = useCallback(
     () =>
-      history.push(
-        `/units/${unitId}/groups/${groupId}/staff-attendance/external`
-      ),
-    [groupId, history, unitId]
+      navigate(`/units/${unitId}/groups/${groupId}/staff-attendance/external`),
+    [groupId, navigate, unitId]
   )
 
   const presentStaffCounts = useMemo(

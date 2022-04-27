@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
@@ -49,48 +49,41 @@ export default React.memo(function FinancePage() {
     <>
       <Tabs tabs={tabs} />
       <Gap size="s" />
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/finance/fee-decisions"
-          render={() => (
+          path="fee-decisions"
+          element={
             <EmployeeRoute title={i18n.titles.feeDecisions}>
               <FeeDecisionsPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
-          exact
-          path="/finance/value-decisions"
-          render={() => (
+          path="value-decisions"
+          element={
             <EmployeeRoute title={i18n.titles.valueDecisions}>
               <VoucherValueDecisionsPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
-          exact
-          path="/finance/invoices"
-          render={() => (
+          path="invoices"
+          element={
             <EmployeeRoute title={i18n.titles.invoices}>
               <InvoicesPage />
             </EmployeeRoute>
-          )}
+          }
         />
         <Route
-          exact
-          path="/finance/income-statements"
-          render={() => (
+          path="income-statements"
+          element={
             <EmployeeRoute title={i18n.titles.incomeStatements}>
               <IncomeStatementsPage />
             </EmployeeRoute>
-          )}
+          }
         />
-        <Route
-          path="/"
-          render={() => <Redirect to="/finance/fee-decisions" />}
-        />
-      </Switch>
+        <Route index element={<Navigate replace to="fee-decisions" />} />
+      </Routes>
     </>
   )
 })

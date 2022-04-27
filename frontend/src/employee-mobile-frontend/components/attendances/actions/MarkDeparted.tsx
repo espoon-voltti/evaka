@@ -4,12 +4,13 @@
 
 import { isAfter, parse } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -69,14 +70,14 @@ function validateTime(
 }
 
 export default React.memo(function MarkDeparted() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const { attendanceResponse, reloadAttendances } = useContext(
     ChildAttendanceContext
   )
 
-  const { childId, unitId, groupId } = useParams<{
+  const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     childId: string
     groupId: string
@@ -146,7 +147,7 @@ export default React.memo(function MarkDeparted() {
           <>
             <div>
               <BackButtonInline
-                onClick={() => history.goBack()}
+                onClick={() => navigate(-1)}
                 icon={faArrowLeft}
                 text={
                   child
@@ -188,7 +189,7 @@ export default React.memo(function MarkDeparted() {
                     <FixedSpaceRow fullWidth>
                       <Button
                         text={i18n.common.cancel}
-                        onClick={() => history.goBack()}
+                        onClick={() => navigate(-1)}
                       />
                       {selectedAbsenceType && !timeError ? (
                         <AsyncButton
@@ -199,7 +200,7 @@ export default React.memo(function MarkDeparted() {
                           }
                           onSuccess={() => {
                             reloadAttendances()
-                            history.goBack()
+                            navigate(-1)
                           }}
                           data-qa="mark-departed-with-absence-btn"
                         />
@@ -218,7 +219,7 @@ export default React.memo(function MarkDeparted() {
                   <FixedSpaceRow fullWidth>
                     <Button
                       text={i18n.common.cancel}
-                      onClick={() => history.goBack()}
+                      onClick={() => navigate(-1)}
                     />
                     <AsyncButton
                       primary

@@ -5,13 +5,14 @@
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useMemo } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { Parentship } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -338,7 +339,7 @@ const ChildInformation = React.memo(function ChildInformation({
 })
 
 export default React.memo(function ChildInformationWrapper() {
-  const { id } = useParams<{ id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
   return (
     <ChildContextProvider id={id}>
       <ChildInformation id={id} />

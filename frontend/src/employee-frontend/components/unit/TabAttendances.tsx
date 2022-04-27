@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
 import { isLoading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useQuery } from 'lib-common/utils/useQuery'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
@@ -56,7 +56,7 @@ const getDefaultGroup = (groupParam: string): AttendanceGroupFilter | null =>
 
 export default React.memo(function TabAttendances() {
   const { i18n } = useTranslation()
-  const { id: unitId } = useParams<{ id: UUID }>()
+  const { id: unitId } = useNonNullableParams<{ id: UUID }>()
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
   const [mode, setMode] = useState<CalendarMode>(

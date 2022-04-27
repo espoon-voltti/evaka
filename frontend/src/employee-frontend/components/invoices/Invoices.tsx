@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { uniqBy } from 'lodash'
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
@@ -283,14 +283,14 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
   invoices: InvoiceSummary[]
 }) {
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   return (
     <Tbody>
       {invoices.map((item: InvoiceSummary) => (
         <Tr
           key={item.id}
-          onClick={() => history.push(`/finance/invoices/${item.id}`)}
+          onClick={() => navigate(`/finance/invoices/${item.id}`)}
           data-qa="table-invoice-row"
         >
           <Td>

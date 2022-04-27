@@ -4,7 +4,6 @@
 
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { History } from 'history'
 import React, {
   Fragment,
   useCallback,
@@ -13,12 +12,12 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useHistory } from 'react-router'
-import { useParams } from 'react-router-dom'
+import { NavigateFunction, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -152,14 +151,14 @@ const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
   'PRESCHOOL_DAYCARE'
 ]
 
-function redirectToMainPage(history: History) {
-  history.push('/applications')
+function redirectToMainPage(navigate: NavigateFunction) {
+  navigate('/applications')
 }
 
 export default React.memo(function Decision() {
-  const { id: applicationId } = useParams<{ id: UUID }>()
+  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
   const { i18n } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<
     Result<DecisionDraftGroup>
   >(Loading.of())
@@ -179,10 +178,10 @@ export default React.memo(function Decision() {
 
       // Application has already changed its status
       if (result.isFailure && result.statusCode === 409) {
-        redirectToMainPage(history)
+        redirectToMainPage(navigate)
       }
     })
-  }, [applicationId, history])
+  }, [applicationId, navigate])
 
   useEffect(() => {
     if (decisionDraftGroup.isSuccess) {
@@ -516,7 +515,7 @@ export default React.memo(function Decision() {
               <FixedSpaceRow>
                 <Button
                   data-qa="cancel-decisions-button"
-                  onClick={() => redirectToMainPage(history)}
+                  onClick={() => redirectToMainPage(navigate)}
                   text={i18n.common.cancel}
                 />
                 <AsyncButton
@@ -535,7 +534,7 @@ export default React.memo(function Decision() {
                     )
                     return updateDecisionDrafts(applicationId, updatedDrafts)
                   }}
-                  onSuccess={() => redirectToMainPage(history)}
+                  onSuccess={() => redirectToMainPage(navigate)}
                   text={i18n.common.save}
                 />
               </FixedSpaceRow>

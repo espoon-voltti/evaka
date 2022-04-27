@@ -4,12 +4,13 @@
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -41,7 +42,7 @@ import AbsenceSelector from '../AbsenceSelector'
 import { Actions, BackButtonInline, CustomTitle } from '../components'
 
 export default React.memo(function MarkAbsentBeforehand() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const { attendanceResponse } = useContext(ChildAttendanceContext)
@@ -56,7 +57,7 @@ export default React.memo(function MarkAbsentBeforehand() {
     undefined
   )
 
-  const { childId, unitId } = useParams<{
+  const { childId, unitId } = useNonNullableParams<{
     unitId: string
     childId: string
   }>()
@@ -98,9 +99,9 @@ export default React.memo(function MarkAbsentBeforehand() {
   const createAbsence = useCallback(async () => {
     if (selectedAbsenceType) {
       await postAbsence(selectedAbsenceType)
-      history.goBack()
+      navigate(-1)
     }
-  }, [history, postAbsence, selectedAbsenceType])
+  }, [navigate, postAbsence, selectedAbsenceType])
 
   const deleteAbsences = useCallback(async () => {
     if (deleteRange) {
@@ -117,8 +118,8 @@ export default React.memo(function MarkAbsentBeforehand() {
   }, [])
 
   const goBack = useCallback(() => {
-    history.goBack()
-  }, [history])
+    navigate(-1)
+  }, [navigate])
 
   return (
     <>

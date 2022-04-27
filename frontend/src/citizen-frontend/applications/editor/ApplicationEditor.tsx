@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import {
@@ -13,6 +13,7 @@ import {
 } from 'lib-common/api-types/application/ApplicationFormData'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import useBetterParams from 'lib-common/useNonNullableParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -71,7 +72,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   apiData
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const user = useUser()
 
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
@@ -156,7 +157,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faExclamation,
           resolve: {
             action: () => {
-              history.push('/applying/applications')
+              navigate('/applying/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.draftPolicyInfo.ok
@@ -194,7 +195,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               icon: faCheck,
               resolve: {
                 action: () => {
-                  history.push('/applying/applications')
+                  navigate('/applying/applications')
                   clearInfoMessage()
                 },
                 label: t.applications.editor.sentInfo.ok
@@ -202,7 +203,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               'data-qa': 'info-message-application-sent'
             })
 
-            history.push('/applying/applications')
+            navigate('/applying/applications')
           }
         })
       }
@@ -228,7 +229,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              history.push('/applying/applications')
+              navigate('/applying/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.updateInfo.ok
@@ -236,7 +237,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           'data-qa': 'info-message-application-sent'
         })
 
-        history.push('/applying/applications')
+        navigate('/applying/applications')
       }
     })
   }
@@ -329,7 +330,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           <Button
             data-qa="cancel-application-button"
             text={t.applications.editor.actions.cancel}
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
             disabled={submitting}
           />
         )}
@@ -407,7 +408,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 })
 
 export default React.memo(function ApplicationEditor() {
-  const { applicationId } = useParams<{ applicationId: UUID }>()
+  const { applicationId } = useBetterParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const [apiData] = useApiState(
     () => getApplication(applicationId),

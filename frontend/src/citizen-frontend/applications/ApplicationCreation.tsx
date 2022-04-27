@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { Redirect, useHistory, useParams } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -32,8 +33,8 @@ import {
 } from './api'
 
 export default React.memo(function ApplicationCreation() {
-  const history = useHistory()
-  const { childId } = useParams<{ childId: string }>()
+  const navigate = useNavigate()
+  const { childId } = useNonNullableParams<{ childId: string }>()
   const t = useTranslation()
   const user = useUser()
   useTitle(t, t.applications.creation.title)
@@ -70,7 +71,7 @@ export default React.memo(function ApplicationCreation() {
       .getOrElse(false)
 
   if (child === undefined) {
-    return <Redirect to="/applications" />
+    return <Navigate replace to="/applications" />
   }
 
   return (
@@ -169,7 +170,7 @@ export default React.memo(function ApplicationCreation() {
                 selectedType !== undefined
                   ? createApplication(childId, selectedType).then((result) => {
                       if (result.isSuccess) {
-                        history.push(`/applications/${result.value}/edit`)
+                        navigate(`/applications/${result.value}/edit`)
                       }
                     })
                   : Promise.resolve()
@@ -179,7 +180,7 @@ export default React.memo(function ApplicationCreation() {
             />
             <Button
               text={t.common.cancel}
-              onClick={() => history.push('/applying/applications')}
+              onClick={() => navigate('/applying/applications')}
             />
           </ButtonContainer>
         </ContentArea>

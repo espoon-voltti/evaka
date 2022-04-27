@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Result } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -36,8 +37,8 @@ interface FormState {
 }
 
 export default function MarkExternalStaffMemberArrivalPage() {
-  const history = useHistory()
-  const { groupId } = useParams<{ groupId: string }>()
+  const navigate = useNavigate()
+  const { groupId } = useNonNullableParams<{ groupId: string }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
   const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
@@ -70,7 +71,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
     >
       <div>
         <BackButtonInline
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
           icon={faArrowLeft}
           text={i18n.attendances.staff.markExternalPerson}
         />
@@ -114,10 +115,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
         <Gap size="xs" />
         <Actions>
           <FixedSpaceRow fullWidth>
-            <Button
-              text={i18n.common.cancel}
-              onClick={() => history.goBack()}
-            />
+            <Button text={i18n.common.cancel} onClick={() => navigate(-1)} />
             <AsyncButton
               primary
               text={i18n.common.confirm}

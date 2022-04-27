@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
 
@@ -21,7 +21,7 @@ export default React.memo(function AttendanceChildDeparted({
   child,
   unitId
 }: Props) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { i18n } = useTranslation()
 
   const { reloadAttendances } = useContext(ChildAttendanceContext)
@@ -36,7 +36,7 @@ export default React.memo(function AttendanceChildDeparted({
       onClick={() => returnToPresentCall()}
       onSuccess={() => {
         reloadAttendances()
-        history.goBack()
+        navigate(-1)
       }}
       data-qa="return-to-present-btn"
     />

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -12,6 +12,7 @@ import {
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
+import useNonNullableParams from 'lib-common/useNonNullableParams'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import {
   receiverAsSelectorNode,
@@ -42,13 +43,13 @@ import TopBar from '../common/TopBar'
 
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
-  const { childId, unitId } = useParams<{
+  const { childId, unitId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID
     childId: UUID
   }>()
 
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const { accounts, selectedAccount, selectedUnit } = useContext(MessageContext)
 
@@ -77,7 +78,7 @@ export default function MessageEditorPage() {
       setSending(true)
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
-          history.goBack()
+          navigate(-1)
         } else {
           // TODO handle eg. expired pin session correctly
           console.error('Failed to send message')
@@ -85,19 +86,19 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    [history]
+    [navigate]
   )
 
   const onDiscard = useCallback(
     (accountId: UUID, draftId: UUID) => {
-      void deleteDraft(accountId, draftId).then(() => history.goBack())
+      void deleteDraft(accountId, draftId).then(() => navigate(-1))
     },
-    [history]
+    [navigate]
   )
 
   const onHide = useCallback(() => {
-    history.goBack()
-  }, [history])
+    navigate(-1)
+  }, [navigate])
 
   return renderResult(accounts, (accounts) =>
     selectedReceivers && selectedAccount && selectedUnit ? (
@@ -142,7 +143,7 @@ export default function MessageEditorPage() {
           <span data-qa="info-no-receivers">{i18n.messages.noReceivers}</span>
         </PaddedContainer>
         <BackButtonInline
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
           icon={faArrowLeft}
           text={i18n.common.back}
         />

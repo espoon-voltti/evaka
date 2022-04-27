@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
@@ -207,7 +207,7 @@ interface UseModalStateResult {
 
 function useModalState(): UseModalStateResult {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const urlModalState = useMemo(
     () => parseQueryString(location.search),
@@ -218,14 +218,14 @@ function useModalState(): UseModalStateResult {
   const openModal = useCallback(
     (modal: URLModalState) => {
       setPickActionOpen(false)
-      history.push(`/calendar?${buildQueryString(modal)}`)
+      navigate(`/calendar?${buildQueryString(modal)}`)
     },
-    [history]
+    [navigate]
   )
   const closeModal = useCallback(() => {
     setPickActionOpen(false)
-    history.push('/calendar')
-  }, [history])
+    navigate('/calendar')
+  }, [navigate])
 
   const openDayModal = useCallback(
     (date: LocalDate) => openModal({ type: 'day', date }),
