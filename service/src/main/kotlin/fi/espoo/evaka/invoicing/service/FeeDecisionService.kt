@@ -85,7 +85,7 @@ class FeeDecisionService(
             )
         }
 
-        val conflicts = decisions
+        val (conflicts, waitingForManualSending) = decisions
             .flatMap {
                 tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
                 tx.findFeeDecisionsForHeadOfFamily(
@@ -96,18 +96,24 @@ class FeeDecisionService(
             }
             .distinctBy { it.id }
             .filter { !ids.contains(it.id) }
+            .partition { it.status != WAITING_FOR_MANUAL_SENDING }
 
-        if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) throw Conflict(
-            "Some heads of family have overlapping fee decisions waiting for manual sending",
-            "WAITING_FOR_MANUAL_SENDING"
-        )
+        if (waitingForManualSending.isNotEmpty()) {
+            logger.info("Warning: when creating fee decisions, skipped ${waitingForManualSending.size} fee decisions because head of family had overlapping fee decisions waiting for manual sending")
+        }
 
         if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some heads of family have overlapping fee decisions still waiting for sending")
 
-        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+        val remainingDecisions = decisions.filter { fd ->
+            waitingForManualSending.none { wfd ->
+                wfd.headOfFamilyId == fd.headOfFamilyId
+            }
+        }
+
+        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, conflicts)
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
-        val (emptyDecisions, validDecisions) = decisions
+        val (emptyDecisions, validDecisions) = remainingDecisions
             .partition { it.children.isEmpty() }
 
         tx.deleteFeeDecisions(emptyDecisions.map { it.id })
