@@ -6,6 +6,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { Success } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -75,10 +76,10 @@ export default React.memo(function ApplicationActionsBar({
           textDone={i18n.common.saved}
           disabled={!editedApplication || errors}
           onClick={() =>
-            updateApplication(editedApplication).then((res) =>
+            updateApplication(editedApplication).then(() =>
               editedApplication.status === 'CREATED'
                 ? sendApplication(editedApplication.id)
-                : res
+                : Success.of()
             )
           }
           onSuccess={() => {

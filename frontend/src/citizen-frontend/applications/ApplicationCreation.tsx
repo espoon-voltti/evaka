@@ -168,14 +168,10 @@ export default React.memo(function ApplicationCreation() {
               disabled={selectedType === undefined || duplicateExists}
               onClick={() =>
                 selectedType !== undefined
-                  ? createApplication(childId, selectedType).then((result) => {
-                      if (result.isSuccess) {
-                        navigate(`/applications/${result.value}/edit`)
-                      }
-                    })
-                  : Promise.resolve()
+                  ? createApplication(childId, selectedType)
+                  : undefined
               }
-              onSuccess={() => undefined}
+              onSuccess={(id) => navigate(`/applications/${id}/edit`)}
               data-qa="submit"
             />
             <Button

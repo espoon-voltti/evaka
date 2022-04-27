@@ -5,7 +5,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
 import usePrompt from 'lib-common/utils/usePrompt'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -26,11 +25,11 @@ export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
-  const [pinLocked, setPinLocked] = useState<Result<boolean>>()
+  const [pinLocked, setPinLocked] = useState<boolean>(false)
   const [dirty, setDirty] = useState<boolean>(false)
 
   useEffect(() => {
-    void isPinCodeLocked().then(setPinLocked)
+    void isPinCodeLocked().then((res) => res.map(setPinLocked))
   }, [setPinLocked])
 
   function isValidNumber(pin: string) {
@@ -64,7 +63,6 @@ export default React.memo(function EmployeePinCodePage() {
     return updatePinCode(pin)
       .then(() => setDirty(false))
       .then(isPinCodeLocked)
-      .then(setPinLocked)
   }
 
   function getInputInfo(): InputInfo | undefined {
@@ -73,7 +71,7 @@ export default React.memo(function EmployeePinCodePage() {
           text: i18n.pinCode.error,
           status: 'warning'
         }
-      : pinLocked && pinLocked.isSuccess && pinLocked.value && !pin
+      : pinLocked && !pin
       ? {
           text: i18n.pinCode.locked,
           status: 'warning'
@@ -98,7 +96,7 @@ export default React.memo(function EmployeePinCodePage() {
         <Title size={2}>{i18n.pinCode.title2}</Title>
         <P>{i18n.pinCode.text5}</P>
 
-        {pinLocked && pinLocked.isSuccess && pinLocked.value && (
+        {pinLocked && (
           <AlertBox
             data-qa="pin-locked-alert-box"
             message={i18n.pinCode.lockedLong}
@@ -124,7 +122,8 @@ export default React.memo(function EmployeePinCodePage() {
             primary
             text={i18n.pinCode.button}
             onClick={savePinCode}
-            onSuccess={() => {
+            onSuccess={(isLocked) => {
+              setPinLocked(isLocked)
               setError(false)
             }}
             data-qa="send-pin-button"

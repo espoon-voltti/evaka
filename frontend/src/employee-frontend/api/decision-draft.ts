@@ -40,8 +40,11 @@ export async function getDecisionDrafts(
 export async function updateDecisionDrafts(
   id: UUID,
   updatedDrafts: DecisionDraftUpdate[]
-): Promise<void> {
-  return client.put(`/v2/applications/${id}/decision-drafts`, updatedDrafts)
+): Promise<Result<void>> {
+  return client
+    .put(`/v2/applications/${id}/decision-drafts`, updatedDrafts)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getDecisionUnits(): Promise<Result<DecisionUnit[]>> {

@@ -6,6 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -79,6 +80,17 @@ export default React.memo(function DecisionResponse({
     }
   }
 
+  const handleAcceptDecision = async () => {
+    if (parsedDate === null) throw new Error('Parsed date was null')
+    setSubmitting(true)
+    return acceptDecision(applicationId, decisionId, parsedDate)
+  }
+
+  const handleRejectDecision = async () => {
+    setSubmitting(true)
+    return rejectDecision(applicationId, decisionId)
+  }
+
   const onSubmit = async () => {
     if (acceptChecked) {
       return handleAcceptDecision()
@@ -87,41 +99,19 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const handleAcceptDecision = async () => {
-    if (parsedDate === null) throw new Error('Parsed date was null')
-    setSubmitting(true)
-    return acceptDecision(applicationId, decisionId, parsedDate)
-      .then((res) => {
-        if (res.isFailure) {
-          setErrorMessage({
-            type: 'error',
-            title: t.decisions.applicationDecisions.errors.submitFailure,
-            resolveLabel: t.common.ok
-          })
-        }
-      })
-      .finally(() => {
-        setSubmitting(false)
-        refreshDecisionList()
-      })
+  const onSuccess = () => {
+    setSubmitting(false)
+    refreshDecisionList()
   }
 
-  const handleRejectDecision = async () => {
-    setSubmitting(true)
-    return rejectDecision(applicationId, decisionId)
-      .then((res) => {
-        if (res.isFailure) {
-          setErrorMessage({
-            type: 'error',
-            title: t.decisions.applicationDecisions.errors.submitFailure,
-            resolveLabel: t.common.ok
-          })
-        }
-      })
-      .finally(() => {
-        setSubmitting(false)
-        refreshDecisionList()
-      })
+  const onFailure = () => {
+    setErrorMessage({
+      type: 'error',
+      title: t.decisions.applicationDecisions.errors.submitFailure,
+      resolveLabel: t.common.ok
+    })
+    setSubmitting(false)
+    refreshDecisionList()
   }
 
   useEffect(() => {
@@ -247,16 +237,19 @@ export default React.memo(function DecisionResponse({
             <Gap size="L" />
           )}
           <ButtonContainer>
-            <Button
+            <AsyncButton
               text={t.decisions.applicationDecisions.response.submit}
               primary
               onClick={() => {
                 if (!acceptChecked && rejectCascade) {
                   setDisplayCascadeWarning(true)
+                  return
                 } else {
-                  void onSubmit()
+                  return onSubmit()
                 }
               }}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
               disabled={
                 blocked ||
                 (dateErrorMessage !== '' && acceptChecked) ||
@@ -290,7 +283,11 @@ export default React.memo(function DecisionResponse({
                 .resolveLabel
             }
             resolveAction={onSubmit}
-            onSuccess={() => setDisplayCascadeWarning(false)}
+            onSuccess={() => {
+              setDisplayCascadeWarning(false)
+              onSuccess()
+            }}
+            onFailure={onFailure}
             rejectLabel={
               t.decisions.applicationDecisions.warnings.doubleRejectWarning
                 .rejectLabel

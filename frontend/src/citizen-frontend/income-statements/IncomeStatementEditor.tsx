@@ -83,7 +83,7 @@ export default React.memo(function IncomeStatementEditor() {
   return renderResult(state, (state) => {
     const { id, formData, startDates } = state
 
-    const save = (cancel: () => Promise<void>) => {
+    const save = () => {
       const validatedData = formData ? fromBody('adult', formData) : undefined
       if (validatedData) {
         if (id) {
@@ -94,7 +94,7 @@ export default React.memo(function IncomeStatementEditor() {
       } else {
         setShowFormErrors(true)
         if (form.current) form.current.scrollToErrors()
-        return cancel()
+        return
       }
     }
 

@@ -77,15 +77,12 @@ export default React.memo(function MessagesPage() {
             {editorVisible && (
               <MessageEditor
                 receiverOptions={receivers}
-                onSend={(message) =>
-                  sendMessage(message).then((result) => {
-                    if (result.isSuccess) {
-                      refreshThreads()
-                    } else {
-                      setDisplaySendError(true)
-                    }
-                  })
-                }
+                onSend={(message) => sendMessage(message)}
+                onSuccess={() => {
+                  refreshThreads()
+                  setEditorVisible(false)
+                }}
+                onFailure={() => setDisplaySendError(true)}
                 onClose={() => setEditorVisible(false)}
                 displaySendError={displaySendError}
               />

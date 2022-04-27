@@ -5,6 +5,7 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
+import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
   IncomeCoefficient,
@@ -146,9 +147,10 @@ interface Props {
   baseIncome?: Income
   incomeTypeOptions: IncomeTypeOptions
   cancel: () => void
-  update: (income: Income) => Promise<void>
-  create: (income: IncomeBody) => Promise<void>
+  update: (income: Income) => Promise<Result<unknown>> | void
+  create: (income: IncomeBody) => Promise<Result<unknown>>
   onSuccess: () => void
+  onFailure: (value: Failure<unknown>) => void
 }
 
 const IncomeItemEditor = React.memo(function IncomeItemEditor({
@@ -157,7 +159,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   cancel,
   update,
   create,
-  onSuccess
+  onSuccess,
+  onFailure
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -311,14 +314,15 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
           disabled={Object.values(validationErrors).some(Boolean)}
-          onClick={() => {
+          onClick={(): Promise<Result<unknown>> | void => {
             const body = formToIncomeBody(editedIncome)
-            if (!body) return Promise.reject()
+            if (!body) return
             return !baseIncome
               ? create(body)
               : update({ ...baseIncome, ...body })
           }}
           onSuccess={onSuccess}
+          onFailure={onFailure}
           data-qa="save-income"
         />
       </ButtonsContainer>

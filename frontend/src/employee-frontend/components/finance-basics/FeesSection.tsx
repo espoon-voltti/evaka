@@ -10,9 +10,7 @@ import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
-import { faQuestion } from 'lib-icons'
 
 import { getFeeThresholds } from '../../api/finance-basics'
 import { useTranslation } from '../../state/i18n'
@@ -29,33 +27,6 @@ export default React.memo(function FeesSection() {
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
   const [data, loadData] = useApiState(() => getFeeThresholds(), [])
-
-  const [modal, setModal] = useState<{
-    type: 'editRetroactive' | 'saveRetroactive'
-    resolve: () => void
-    reject?: () => void
-  }>()
-
-  const toggleEditRetroactiveWarning = useCallback(
-    (resolve: () => void) => {
-      setModal({
-        type: 'editRetroactive',
-        resolve
-      })
-    },
-    [setModal]
-  )
-
-  const toggleSaveRetroactiveWarning = useCallback(
-    ({ resolve, reject }: { resolve: () => void; reject: () => void }) => {
-      setModal({
-        type: 'saveRetroactive',
-        resolve,
-        reject
-      })
-    },
-    [setModal]
-  )
 
   const [editorState, setEditorState] = useState<EditorState>({})
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
@@ -118,7 +89,6 @@ export default React.memo(function FeesSection() {
           initialState={editorState.form}
           close={closeEditor}
           reloadData={loadData}
-          toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
           existingThresholds={data}
         />
       ) : null}
@@ -133,7 +103,6 @@ export default React.memo(function FeesSection() {
                 initialState={editorState.form}
                 close={closeEditor}
                 reloadData={loadData}
-                toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
                 existingThresholds={data}
               />
             ) : (
@@ -145,35 +114,12 @@ export default React.memo(function FeesSection() {
                 copyThresholds={copyThresholds}
                 editThresholds={editThresholds}
                 editing={!!editorState.editing}
-                toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
                 data-qa={`fee-thresholds-item-${index}`}
               />
             )
           )}
         </>
       ))}
-      {modal ? (
-        <InfoModal
-          icon={faQuestion}
-          type="danger"
-          title={i18n.financeBasics.fees.modals[modal.type].title}
-          text={i18n.financeBasics.fees.modals[modal.type].text}
-          reject={{
-            action: () => {
-              setModal(undefined)
-              modal.reject?.()
-            },
-            label: i18n.financeBasics.fees.modals[modal.type].reject
-          }}
-          resolve={{
-            action: () => {
-              setModal(undefined)
-              modal.resolve()
-            },
-            label: i18n.financeBasics.fees.modals[modal.type].resolve
-          }}
-        />
-      ) : null}
     </CollapsibleContentArea>
   )
 })

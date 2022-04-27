@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
   MessageAccount
@@ -34,7 +35,9 @@ const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
 
 interface Props {
   receiverOptions: MessageAccount[]
-  onSend: (messageBody: CitizenMessageBody) => Promise<void>
+  onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
+  onSuccess: () => void
+  onFailure: () => void
   onClose: () => void
   displaySendError: boolean
 }
@@ -42,6 +45,8 @@ interface Props {
 export default React.memo(function MessageEditor({
   receiverOptions,
   onSend,
+  onSuccess,
+  onFailure,
   onClose,
   displaySendError
 }: Props) {
@@ -132,7 +137,8 @@ export default React.memo(function MessageEditor({
             text={i18n.messages.messageEditor.send}
             disabled={!sendEnabled}
             onClick={() => onSend(message)}
-            onSuccess={() => onClose()}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
             data-qa="send-message-btn"
           />
         </BottomRow>

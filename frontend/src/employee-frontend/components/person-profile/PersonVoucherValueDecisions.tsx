@@ -136,13 +136,13 @@ const Modal = React.memo(function Modal({
   const dateIsValid = LocalDate.parseFiOrNull(date)
 
   const resolve = useCallback(() => {
-    if (dateIsValid) {
+    if (!dateIsValid) {
       return createRetroactiveValueDecisions(
         headOfFamily,
         LocalDate.parseFiOrThrow(date)
       )
     }
-    return Promise.resolve()
+    return
   }, [headOfFamily, date, dateIsValid])
 
   const onSuccess = useCallback(() => {

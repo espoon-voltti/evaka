@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { Failure, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
@@ -26,10 +27,11 @@ interface Props {
   setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
   deleting: string | undefined
   setDeleting: React.Dispatch<React.SetStateAction<string | undefined>>
-  createIncome: (income: IncomeBody) => Promise<void>
-  updateIncome: (incomeId: UUID, income: Income) => Promise<void>
-  deleteIncome: (incomeId: UUID) => Promise<void>
+  createIncome: (income: IncomeBody) => Promise<Result<unknown>>
+  updateIncome: (incomeId: UUID, income: Income) => Promise<Result<unknown>>
+  deleteIncome: (incomeId: UUID) => Promise<Result<unknown>>
   onSuccessfulUpdate: () => void
+  onFailedUpdate: (value: Failure<unknown>) => void
 }
 
 const IncomeList = React.memo(function IncomeList({
@@ -44,7 +46,8 @@ const IncomeList = React.memo(function IncomeList({
   createIncome,
   updateIncome,
   deleteIncome,
-  onSuccessfulUpdate
+  onSuccessfulUpdate,
+  onFailedUpdate
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -64,9 +67,14 @@ const IncomeList = React.memo(function IncomeList({
         }}
         resolve={{
           action: () =>
-            deleteIncome(income.id)
-              .then(() => setDeleting(undefined))
-              .then(onSuccessfulUpdate),
+            deleteIncome(income.id).then((value) => {
+              setDeleting(undefined)
+              value.mapAll({
+                loading: () => undefined,
+                success: onSuccessfulUpdate,
+                failure: onFailedUpdate
+              })
+            }),
           label: i18n.common.remove
         }}
       />
@@ -90,8 +98,9 @@ const IncomeList = React.memo(function IncomeList({
             incomeTypeOptions={incomeTypeOptions}
             cancel={() => setEditing(undefined)}
             create={createIncome}
-            update={() => new Promise((res) => res())}
+            update={() => undefined}
             onSuccess={onSuccessfulUpdate}
+            onFailure={onFailedUpdate}
           />
           <Gap size="m" />
         </div>
@@ -121,6 +130,7 @@ const IncomeList = React.memo(function IncomeList({
                   create={createIncome}
                   update={(income) => updateIncome(item.id, income)}
                   onSuccess={onSuccessfulUpdate}
+                  onFailure={onFailedUpdate}
                 />
               ) : (
                 <IncomeItemBody

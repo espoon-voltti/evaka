@@ -94,10 +94,10 @@ export default React.memo(function AbsenceModal({
       <AsyncFormModal
         mobileFullScreen
         title={i18n.calendar.absenceModal.title}
-        resolveAction={(cancel) => {
+        resolveAction={() => {
           if (!request) {
             setShowAllErrors(true)
-            return cancel()
+            return
           }
           return postAbsences(request)
         }}

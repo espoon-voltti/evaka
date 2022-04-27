@@ -112,10 +112,10 @@ export default React.memo(function ReservationModalSingleChild({
     <AsyncFormModal
       mobileFullScreen
       title={i18n.unit.attendanceReservations.reservationModal.title}
-      resolveAction={(cancel) => {
+      resolveAction={() => {
         if (validationResult.errors) {
           setShowAllErrors(true)
-          return cancel()
+          return
         } else {
           return postReservations(validationResult.requestPayload)
         }

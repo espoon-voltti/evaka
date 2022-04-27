@@ -135,10 +135,13 @@ export interface PaperApplicationRequest {
   guardianToBeCreated?: CreatePersonBody
 }
 
-export async function sendApplication(applicationId: UUID): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/send-application`
-  )
+export async function sendApplication(
+  applicationId: UUID
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/applications/${applicationId}/actions/send-application`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function moveToWaitingPlacement(
@@ -254,36 +257,49 @@ export function getPlacementDraft(id: UUID): Promise<Result<PlacementDraft>> {
 export async function createPlacementPlan(
   applicationId: UUID,
   placementPlan: DaycarePlacementPlan
-): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/create-placement-plan`,
-    placementPlan
-  )
+): Promise<Result<void>> {
+  return client
+    .post(
+      `/v2/applications/${applicationId}/actions/create-placement-plan`,
+      placementPlan
+    )
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
-export async function acceptPlacementProposal(unitId: UUID): Promise<void> {
-  return client.post(`/v2/applications/placement-proposals/${unitId}/accept`)
+export async function acceptPlacementProposal(
+  unitId: UUID
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/applications/placement-proposals/${unitId}/accept`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function acceptDecision(
   applicationId: UUID,
   decisionId: UUID,
   requestedStartDate: LocalDate
-): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/accept-decision`,
-    { decisionId, requestedStartDate }
-  )
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/applications/${applicationId}/actions/accept-decision`, {
+      decisionId,
+      requestedStartDate
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function rejectDecision(
   applicationId: UUID,
   decisionId: UUID
-): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/reject-decision`,
-    { decisionId }
-  )
+): Promise<Result<void>> {
+  return client
+    .post(`/v2/applications/${applicationId}/actions/reject-decision`, {
+      decisionId
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function batchMoveToWaitingPlacement(
@@ -382,7 +398,7 @@ export async function deleteNote(id: UUID): Promise<void> {
 export async function updateServiceWorkerNote(
   applicationId: UUID,
   text: string
-): Promise<void> {
+): Promise<Result<void>> {
   return client.put(`/note/service-worker/application/${applicationId}`, {
     text
   })

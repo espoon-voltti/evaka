@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { FeeThresholds } from 'lib-common/api-types/finance'
@@ -15,10 +15,11 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employee'
-import { faCopy, faPen } from 'lib-icons'
+import { faCopy, faPen, faQuestion } from 'lib-icons'
 
 import { familySizes } from '../../types/finance-basics'
 import StatusLabel from '../common/StatusLabel'
@@ -30,8 +31,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   copyThresholds,
   editThresholds,
   editing,
-  toggleEditRetroactiveWarning,
-  ...props
+  'data-qa': dataQa
 }: {
   i18n: Translations
   id: string
@@ -39,13 +39,13 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   copyThresholds: (feeThresholds: FeeThresholds) => void
   editThresholds: (id: string, feeThresholds: FeeThresholds) => void
   editing: boolean
-  toggleEditRetroactiveWarning: (resolve: () => void) => void
-  ['data-qa']: string
+  'data-qa': string
 }) {
+  const [showModal, setShowModal] = useState(false)
   return (
     <>
       <div className="separator large" />
-      <div data-qa={props['data-qa']}>
+      <div data-qa={dataQa}>
         <TitleContainer>
           <H3>
             {i18n.financeBasics.fees.validDuring}{' '}
@@ -68,9 +68,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
                 ) {
                   editThresholds(id, feeThresholds)
                 } else {
-                  toggleEditRetroactiveWarning(() =>
-                    editThresholds(id, feeThresholds)
-                  )
+                  setShowModal(true)
                 }
               }}
               disabled={editing}
@@ -177,6 +175,25 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           </FixedSpaceColumn>
         </RowWithMargin>
       </div>
+      {showModal ? (
+        <InfoModal
+          icon={faQuestion}
+          type="danger"
+          title={i18n.financeBasics.fees.modals.editRetroactive.title}
+          text={i18n.financeBasics.fees.modals.editRetroactive.text}
+          reject={{
+            action: () => setShowModal(false),
+            label: i18n.financeBasics.fees.modals.editRetroactive.reject
+          }}
+          resolve={{
+            action: () => {
+              setShowModal(false)
+              editThresholds(id, feeThresholds)
+            },
+            label: i18n.financeBasics.fees.modals.editRetroactive.resolve
+          }}
+        />
+      ) : null}
     </>
   )
 })

@@ -52,10 +52,10 @@ export default React.memo(function SettingsPage() {
   const loadSettings = useRestApi(getSettings, setSettings)
   useEffect(loadSettings, [loadSettings])
 
-  const submit = useCallback(async () => {
+  const submit = useCallback(() => {
     if (!settings.isSuccess) return
 
-    return await putSettings(
+    return putSettings(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Object.fromEntries(
         Object.entries(settings.value)
