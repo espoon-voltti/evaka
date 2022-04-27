@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -14,12 +14,12 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
+  SortableTh,
   Table,
-  Tr,
+  Tbody,
   Td,
   Thead,
-  Tbody,
-  SortableTh
+  Tr
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
@@ -42,7 +42,6 @@ const TopBar = styled.div`
 `
 
 export default React.memo(function Units() {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const {
@@ -112,7 +111,7 @@ export default React.memo(function Units() {
     units.value.length === 1 &&
     !user?.accessibleFeatures.createUnits
   ) {
-    navigate(`/units/${units.value[0].id}`, { replace: true })
+    return <Navigate to={`/units/${units.value[0].id}`} replace={true} />
   }
 
   return (
