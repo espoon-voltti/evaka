@@ -165,9 +165,14 @@ export default React.memo(function UnitAttendanceReservationsView({
               {featureFlags.experimental?.realtimeStaffAttendance && (
                 <StaffAttendanceTable
                   operationalDays={childData.operationalDays}
-                  staffAttendances={staffData.staff.filter((s) =>
-                    s.groups.includes(groupId)
-                  )}
+                  staffAttendances={staffData.staff
+                    .filter((s) => s.groups.includes(groupId))
+                    .map((employeeAttendance) => ({
+                      ...employeeAttendance,
+                      attendances: employeeAttendance.attendances.filter(
+                        (a) => a.groupId === groupId
+                      )
+                    }))}
                   extraAttendances={staffData.extraAttendances.filter(
                     (ea) => ea.groupId === groupId
                   )}
