@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { TooltipModel } from 'chart.js'
-import React, { useRef } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import colors from 'lib-customizations/common'
@@ -25,14 +25,9 @@ export const ChartTooltip = React.memo(function ChartTooltip({
   data: ChartTooltipData
   visible: boolean
 }) {
-  const bodyRef = useRef<HTMLDivElement>(null)
   if (tooltip === undefined) {
     return null
   }
-
-  const bodyRect = bodyRef.current?.getBoundingClientRect()
-  const tooltipWidth = bodyRect ? bodyRect.width : 265
-  const tooltipHeight = bodyRect ? bodyRect.height : 150
 
   const align =
     tooltip.xAlign !== 'center'
@@ -79,17 +74,20 @@ export const ChartTooltip = React.memo(function ChartTooltip({
     <>
       <Caret pos={caretPos} className={align} opacity={visible ? 1 : 0} />
       <PositionedDiv pos={pos} opacity={visible ? 1 : 0} className={align}>
-        <TooltipBody ref={bodyRef}>{children}</TooltipBody>
+        <TooltipBody>{children}</TooltipBody>
       </PositionedDiv>
     </>
   )
 })
 
+const tooltipWidth = 275
+const tooltipHeight = 150
 const PositionedDiv = styled.div<{ pos: Position; opacity: number }>`
   position: absolute;
   opacity: ${(p) => p.opacity};
   z-index: 9999;
-  min-width: 265px;
+  width: ${tooltipWidth}px;
+  height: ${tooltipHeight}px;
 
   &.top {
     left: ${({ pos }) => pos.x}px;
