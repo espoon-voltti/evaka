@@ -85,7 +85,7 @@ class FeeDecisionService(
             )
         }
 
-        val (conflicts, waitingForManualSending) = decisions
+        val (conflicts, waitingForSending) = decisions
             .flatMap {
                 tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
                 tx.findFeeDecisionsForHeadOfFamily(
@@ -96,21 +96,25 @@ class FeeDecisionService(
             }
             .distinctBy { it.id }
             .filter { !ids.contains(it.id) }
-            .partition { it.status != WAITING_FOR_MANUAL_SENDING }
+            .partition { it.status != WAITING_FOR_SENDING && it.status != WAITING_FOR_MANUAL_SENDING }
 
-        if (waitingForManualSending.isNotEmpty()) {
-            logger.info("Warning: when creating fee decisions, skipped ${waitingForManualSending.size} fee decisions because head of family had overlapping fee decisions waiting for manual sending")
+        if (waitingForSending.isNotEmpty()) {
+            logger.info("Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending")
         }
 
-        if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some heads of family have overlapping fee decisions still waiting for sending")
-
         val remainingDecisions = decisions.filter { fd ->
-            waitingForManualSending.none { wfd ->
+            waitingForSending.none { wfd ->
                 wfd.headOfFamilyId == fd.headOfFamilyId
             }
         }
 
-        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, conflicts)
+        val remainingConflicts = conflicts.filter { conflict ->
+            waitingForSending.none { wfd ->
+                wfd.headOfFamilyId == conflict.headOfFamilyId
+            }
+        }
+
+        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
         val (emptyDecisions, validDecisions) = remainingDecisions

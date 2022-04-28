@@ -1199,6 +1199,33 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `confirmDrafts ignores decisions that have related decision waiting for sending`() {
+        val toBeCreatedDecisions = testDecisions.filter { it.status == FeeDecisionStatus.DRAFT && it.decisionType == FeeDecisionType.NORMAL }
+        db.transaction { tx -> tx.upsertFeeDecisions(toBeCreatedDecisions) }
+        val notToBeCreated = toBeCreatedDecisions.first()
+        val requiresSending = notToBeCreated.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            status = FeeDecisionStatus.WAITING_FOR_SENDING,
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresSending)) }
+
+        http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
+            .response()
+
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
+            .asUser(user)
+            .responseString()
+
+        val draftDecisions = deserializeListResult(result.get()).data
+
+        assertEquals(1, draftDecisions.size)
+        assertEquals(notToBeCreated.id, draftDecisions.first().id)
+    }
+
+    @Test
     fun `date range picker does not return anything with range before first decision`() {
         val now = LocalDate.now()
         val oldDecision = testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
