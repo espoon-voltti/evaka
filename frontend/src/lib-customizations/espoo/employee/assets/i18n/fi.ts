@@ -1443,13 +1443,10 @@ export const fi = {
         children: 'Lasten määrä kertoimella',
         childrenMax: 'Lasten maksimimäärä',
         chartYAxisTitle: 'Lapsia kertoimilla',
-        tooltipFooter(
-          utilization: number,
-          staffPresent: number,
-          staffRequired: number
-        ) {
-          return `Käyttöaste: ${utilization} %, henkilökunta ${staffPresent}, tarve ${staffRequired}`
-        }
+        utilization: 'Käyttöaste',
+        childrenPresent: 'Lasten lkm',
+        staffPresent: 'Työntekijöiden lkm',
+        staffRequired: 'Tarvittavat työntekijät'
       }
     },
     staffOccupancies: {
