@@ -121,7 +121,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): M
     // language=SQL
     val sql = """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
-        ON CONFLICT (employee_id) DO UPDATE SET active = true
+        ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
         RETURNING id
     """.trimIndent()
     return createQuery(sql)
