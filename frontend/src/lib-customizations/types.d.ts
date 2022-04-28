@@ -71,7 +71,7 @@ export interface CitizenCustomizations {
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: ImgProps
-  footerLogo?: ImgProps
+  footerLogo?: JSX.Element
   routeLinkRootUrl: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags

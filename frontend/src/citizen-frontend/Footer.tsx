@@ -31,11 +31,7 @@ export default React.memo(function Footer() {
   return (
     <FooterContainer as="footer">
       <FooterContent />
-      {footerLogo ? (
-        <LogoItem>
-          <img src={footerLogo.src} alt={footerLogo.alt} />
-        </LogoItem>
-      ) : null}
+      {footerLogo ?? null}
     </FooterContainer>
   )
 })
@@ -44,35 +40,37 @@ export const footerHeightDesktop = '62px'
 
 const FooterItem = styled.div`
   display: inline-block;
-  margin: auto;
-`
-
-const LogoItem = styled.div`
-  margin-left: auto;
+  height: 40px;
 `
 
 const FooterContainer = styled(Container)`
-  position: static;
-  display: grid;
-  grid-template-columns: 1fr repeat(4, auto) 1fr;
-  grid-column-gap: 80px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 20px 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  align-items: left;
+  margin: auto;
+  padding: 30px 16px 20px 16px;
   font-weight: ${fontWeights.normal};
-  height: ${footerHeightDesktop};
 
-  ${FooterItem}:nth-child(1) {
-    grid-column-start: 2;
-    @media (max-width: ${desktopMin}) {
-      grid-column-start: 1;
-    }
+  @media (min-width: 600px) {
+    flex-wrap: wrap;
+    max-height: 240px;
   }
 
-  @media (max-width: ${desktopMin}) {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    height: auto;
+  @media (min-width: ${desktopMin}) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 96px;
+    padding-right: 96px;
+    height: ${footerHeightDesktop};
+  }
+
+  @media (min-width: 1408px) {
+    padding-left: 32px;
+    padding-right: 32px;
+    justify-content: space-evenly;
   }
 
   a:hover {
