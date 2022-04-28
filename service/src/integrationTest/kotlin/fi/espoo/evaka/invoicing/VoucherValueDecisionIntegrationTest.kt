@@ -12,6 +12,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
@@ -43,6 +44,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.withMockedTime
@@ -223,6 +225,31 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val sent = decisions.find { it.status == VoucherValueDecisionStatus.SENT }
             assertNotNull(sent)
             assertEquals(testAdult_2.id, sent.headOfFamilyId)
+        }
+    }
+
+    @Test
+    fun `value decision handler is set to approver for relief decision`() {
+        createPlacement(startDate, endDate)
+        db.transaction {
+            it.createUpdate("UPDATE voucher_value_decision d SET decision_type = :decisionType WHERE child_id = :childId")
+                .bind("decisionType", VoucherValueDecisionType.RELIEF_ACCEPTED)
+                .bind("childId", testChild_1.id)
+                .execute()
+
+            it.execute(
+                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
+                testDecisionMaker_2.id,
+                testVoucherDaycare.id
+            )
+        }
+
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING, decisions.first().status)
+            assertEquals(financeWorker.id, decisions.first().decisionHandler)
         }
     }
 

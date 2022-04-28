@@ -56,7 +56,8 @@ data class VoucherValueDecision(
     val approvedById: EmployeeId? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now()
+    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
@@ -76,7 +77,8 @@ data class VoucherValueDecision(
             this.finalCoPayment == decision.finalCoPayment &&
             this.baseValue == decision.baseValue &&
             this.voucherValue == decision.voucherValue &&
-            this.childIncome == decision.childIncome
+            this.childIncome == decision.childIncome &&
+            this.decisionHandler == decision.decisionHandler
     }
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {

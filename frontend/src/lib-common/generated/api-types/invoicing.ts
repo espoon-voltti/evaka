@@ -653,6 +653,7 @@ export interface VoucherValueDecision {
   childIncome: DecisionIncome | null
   coPayment: number
   created: Date
+  decisionHandler: UUID | null
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
   documentKey: string | null
