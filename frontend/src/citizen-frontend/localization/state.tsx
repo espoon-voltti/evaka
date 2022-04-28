@@ -14,13 +14,16 @@ import {
 const getDefaultLanguage: () => Lang = () => {
   const params = new URLSearchParams(window.location.search)
   const lang = params.get('lang')
-  if (lang && ['fi', 'sv', 'en'].includes(lang)) {
+  if (lang && langs.includes(lang as Lang)) {
     return lang as Lang
   } else {
     const language = (
       (window.navigator['userLanguage'] as string) || window.navigator.language
     ).split('-')[0]
-    if (language === 'fi' || language === 'sv') {
+    if (
+      (language === 'fi' || language === 'sv') &&
+      langs.includes(language as Lang)
+    ) {
       return language as Lang
     } else {
       return 'fi' as const
