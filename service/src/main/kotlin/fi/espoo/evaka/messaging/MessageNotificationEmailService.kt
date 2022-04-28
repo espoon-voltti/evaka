@@ -99,7 +99,7 @@ class MessageNotificationEmailService(
                 htmlBody = getHtml(language, threadId),
                 textBody = getText(language, threadId)
             )
-            tx.markNotificationAsSent(messageRecipientId)
+            tx.markNotificationAsSent(messageRecipientId, HelsinkiDateTime.now())
         }
     }
 

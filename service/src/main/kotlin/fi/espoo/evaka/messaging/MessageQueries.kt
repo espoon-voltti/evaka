@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
@@ -681,13 +682,14 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: EmployeeId, accountId
     return numAccounts == accountIds.size
 }
 
-fun Database.Transaction.markNotificationAsSent(messageRecipientId: MessageAccountId) {
+fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestamp: HelsinkiDateTime) {
     val sql = """
         UPDATE message_recipients
-        SET notification_sent_at = now()
+        SET notification_sent_at = :timestamp
         WHERE id = :id
     """.trimIndent()
     this.createUpdate(sql)
-        .bind("id", messageRecipientId)
+        .bind("id", id)
+        .bind("timestamp", timestamp)
         .execute()
 }
