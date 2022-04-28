@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -14,8 +15,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2 } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { fontWeights, H2 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faChevronRight } from 'lib-icons'
 
 import { getMobileUnitStats } from '../api/unit'
 import { useTranslation } from '../state/i18n'
@@ -40,44 +43,86 @@ export default React.memo(function UnitList() {
     <>
       <TopBar title={i18n.units.title} />
       <Gap size="xs" />
-      {renderResult(units, (units) => (
-        <ContentArea opaque>
-          <H1 noMargin centered>
-            {i18n.units.title}
-          </H1>
-          <Gap size="L" />
-          <FixedSpaceColumn spacing="m">
-            {units.map(
-              ({
-                id,
-                name,
-                presentChildren,
-                totalChildren,
-                presentStaff,
-                totalStaff
-              }) => {
-                return (
-                  <UnitContainer key={id} to={`/units/${id}`}>
-                    <H2 noMargin>{name}</H2>
-                    <Gap size="xxs" />
-                    <FixedSpaceRow spacing="m">
-                      <span>{`${i18n.units.children} ${presentChildren}/${totalChildren}`}</span>
-                      <span>{`${i18n.units.staff} ${presentStaff}/${totalStaff}`}</span>
-                    </FixedSpaceRow>
-                  </UnitContainer>
-                )
-              }
-            )}
-          </FixedSpaceColumn>
-          <Gap size="s" />
-        </ContentArea>
-      ))}
+      <FixedSpaceColumn spacing="xs">
+        {renderResult(units, (units) => (
+          <ContentArea paddingVertical="s" opaque>
+            <FixedSpaceColumn spacing="m">
+              {units.map(
+                ({
+                  id,
+                  name,
+                  presentChildren,
+                  totalChildren,
+                  presentStaff,
+                  totalStaff,
+                  utilization
+                }) => {
+                  return (
+                    <UnitContainer key={id} to={`/units/${id}`}>
+                      <FixedSpaceColumn spacing="s" fullWidth>
+                        <H2 noMargin>{name}</H2>
+                        <UnitRow spacing="m">
+                          <div>
+                            <Stat>
+                              {presentChildren}/{totalChildren}
+                            </Stat>
+                            <StatDesc>{i18n.units.children}</StatDesc>
+                          </div>
+                          <div>
+                            <Stat>
+                              {presentStaff}/{totalStaff}
+                            </Stat>
+                            <StatDesc>{i18n.units.staff}</StatDesc>
+                          </div>
+                          <div>
+                            <Stat>{utilization} %</Stat>
+                            <StatDesc>{i18n.units.utilization}</StatDesc>
+                          </div>
+                        </UnitRow>
+                      </FixedSpaceColumn>
+                      <FontAwesomeIcon
+                        icon={faChevronRight}
+                        size="lg"
+                        color={colors.main.m2}
+                      />
+                    </UnitContainer>
+                  )
+                }
+              )}
+            </FixedSpaceColumn>
+          </ContentArea>
+        ))}
+        <Description>
+          <span>{i18n.units.description}</span>
+        </Description>
+      </FixedSpaceColumn>
     </>
   )
 })
 
 const UnitContainer = styled(Link)`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   color: ${(p) => p.theme.colors.grayscale.g100};
+  align-items: center;
+`
+
+const UnitRow = styled(FixedSpaceRow)`
+  flex: 1;
+`
+
+const Stat = styled.div`
+  font-family: Montserrat, sans-serif;
+  font-size: 20px;
+  font-weight: ${fontWeights.semibold};
+  color: ${colors.grayscale.g100};
+`
+
+const StatDesc = styled.div`
+  color: ${colors.grayscale.g70};
+  font-weight: ${fontWeights.semibold};
+`
+
+const Description = styled.div`
+  margin: ${defaultMargins.s};
 `

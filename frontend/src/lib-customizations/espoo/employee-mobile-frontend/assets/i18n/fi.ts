@@ -396,8 +396,10 @@ export const fi = {
   },
   units: {
     title: 'Yksiköt',
-    children: 'Lapsia',
-    staff: 'Henkilökuntaa',
-    occupancy: 'Yksikön käyttöaste nyt'
+    children: 'Lapset',
+    staff: 'Henkilökunta',
+    utilization: 'Käyttöaste',
+    description:
+      'Yksiköidesi henkilökunnan ja lasten määrä sekä käyttöaste tällä hetkellä.'
   }
 }

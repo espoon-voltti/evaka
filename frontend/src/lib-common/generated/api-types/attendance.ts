@@ -325,6 +325,7 @@ export interface UnitStats {
   presentStaff: number
   totalChildren: number
   totalStaff: number
+  utilization: number
 }
 
 /**
