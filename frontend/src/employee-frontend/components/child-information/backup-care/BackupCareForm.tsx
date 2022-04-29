@@ -4,7 +4,7 @@
 
 import _ from 'lodash'
 import React, {
-  FormEvent,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -18,6 +18,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -131,29 +132,31 @@ export default function BackupCareForm({
     validateForm(newState)
   }
 
-  const submitForm = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const submitForm = useCallback((): Promise<Result<unknown>> | undefined => {
+    if (!formState.unit) return
 
-    if (!formState.unit) throw new Error(`No unit selected`)
+    return backupCare == undefined
+      ? createBackupCare(childId, {
+          unitId: formState.unit.id,
+          period: new FiniteDateRange(formState.startDate, formState.endDate)
+        })
+      : updateBackupCare(backupCare.id, {
+          period: new FiniteDateRange(formState.startDate, formState.endDate)
+        })
+  }, [
+    backupCare,
+    childId,
+    formState.endDate,
+    formState.startDate,
+    formState.unit
+  ])
 
-    const apiCall: Promise<Result<unknown>> =
-      backupCare == undefined
-        ? createBackupCare(childId, {
-            unitId: formState.unit.id,
-            period: new FiniteDateRange(formState.startDate, formState.endDate)
-          })
-        : updateBackupCare(backupCare.id, {
-            period: new FiniteDateRange(formState.startDate, formState.endDate)
-          })
-
-    void apiCall
-      .then(() => clearUiMode())
-      .then(() =>
-        getChildBackupCares(childId).then((backupCares) =>
-          setBackupCares(backupCares)
-        )
-      )
-  }
+  const submitSuccess = useCallback(() => {
+    clearUiMode()
+    void getChildBackupCares(childId).then((backupCares) =>
+      setBackupCares(backupCares)
+    )
+  }, [childId, clearUiMode, setBackupCares])
 
   const options = useMemo(
     () =>
@@ -167,7 +170,7 @@ export default function BackupCareForm({
 
   return (
     <div>
-      <form onSubmit={submitForm} data-qa="backup-care-form">
+      <form data-qa="backup-care-form">
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.unit}</FormLabel>
           <Unit>
@@ -209,9 +212,11 @@ export default function BackupCareForm({
         ))}
         <ActionButtons>
           <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
-          <Button
+          <AsyncButton
             primary
             type="submit"
+            onClick={submitForm}
+            onSuccess={submitSuccess}
             disabled={formErrors.length > 0 || !formState.unit}
             data-qa="submit-backup-care-form"
             text={i18n.common.confirm}
