@@ -46,26 +46,18 @@ const Actions = React.memo(function Actions({
         primary
         text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
         disabled={checkedIds.length === 0}
-        onClick={() =>
-          confirmFeeDecisions(checkedIds).then((result) => {
-            if (result.isSuccess) {
-              setError(undefined)
-            }
-
-            if (result.isFailure) {
-              setError(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                i18n.feeDecisions.buttons.errors[result.errorCode ?? ''] ??
-                  i18n.common.error.unknown
-              )
-            }
-
-            return result
-          })
-        }
+        onClick={() => confirmFeeDecisions(checkedIds)}
         onSuccess={() => {
+          setError(undefined)
           clearChecked()
           loadDecisions()
+        }}
+        onFailure={(result) => {
+          setError(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            i18n.feeDecisions.buttons.errors[result.errorCode ?? ''] ??
+              i18n.common.error.unknown
+          )
         }}
         data-qa="confirm-decisions"
       />
