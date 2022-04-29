@@ -47,3 +47,8 @@ Chart.defaults.font = {
 Chart.defaults.color = colors.grayscale.g100
 
 ReactDOM.render(<App />, document.getElementById('app'))
+
+// Let the HTML template inline script know we have loaded successfully
+if (!window.evaka) {
+  window.evaka = {}
+}

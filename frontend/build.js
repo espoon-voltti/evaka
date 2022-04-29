@@ -195,6 +195,7 @@ async function staticFiles(project, outputs) {
   const indexHtml = _.template(
     await fs.readFile(`${srcdir}/index-esbuild.html`)
   )
+  const bodyHtml = await fs.readFile('src/body.html')
   await fs.writeFile(
     `${outdir}/index.html`,
     indexHtml({
@@ -202,7 +203,8 @@ async function staticFiles(project, outputs) {
         favicon(publicPath),
         stylesheet(publicPath, indexCss),
         script(publicPath, indexJs)
-      ].join('\n')
+      ].join('\n'),
+      appBody: bodyHtml
     })
   )
 }
