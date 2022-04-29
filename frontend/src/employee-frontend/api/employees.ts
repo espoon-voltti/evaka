@@ -81,12 +81,12 @@ export function getEmployeeDetails(id: UUID): Promise<Result<EmployeeUser>> {
 export function updateEmployee(
   id: UUID,
   globalRoles: GlobalRole[]
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .put(`/employee/${id}`, {
       globalRoles
     })
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

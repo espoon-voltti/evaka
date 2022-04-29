@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -57,6 +57,7 @@ export default React.memo(function MessageEditor({
 
   const title = message.title || i18n.messages.messageEditor.newMessage
 
+  const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
   return (
@@ -136,7 +137,7 @@ export default React.memo(function MessageEditor({
             primary
             text={i18n.messages.messageEditor.send}
             disabled={!sendEnabled}
-            onClick={() => onSend(message)}
+            onClick={send}
             onSuccess={onSuccess}
             onFailure={onFailure}
             data-qa="send-message-btn"

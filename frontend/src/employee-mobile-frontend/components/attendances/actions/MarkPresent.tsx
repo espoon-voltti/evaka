@@ -105,7 +105,7 @@ export default React.memo(function MarkPresent() {
                   primary
                   text={i18n.common.confirm}
                   disabled={!isValidTime(time)}
-                  onClick={() => childArrives()}
+                  onClick={childArrives}
                   onSuccess={() => {
                     reloadAttendances()
                     navigate(-2)
