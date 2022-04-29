@@ -2882,7 +2882,7 @@ export const fi = {
       type: {
         label: 'Viestin tyyppi',
         message: 'Viesti',
-        bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
+        bulletin: 'Tiedote (ei voi vastata)'
       },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',

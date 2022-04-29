@@ -484,33 +484,42 @@ export default React.memo(function MessageEditor({
           </HeaderButtonContainer>
         </TopBar>
         <ScrollableFormArea>
-          <Bold>{i18n.sender}</Bold>
-          <Gap size="xs" />
-          <Combobox
-            items={senderOptions}
-            onChange={(sender) =>
-              sender ? updateMessage({ sender }) : undefined
-            }
-            selectedItem={message.sender}
-            getItemLabel={(sender) => sender.label}
-            data-qa="select-sender"
-            fullWidth
-          />
-          <div>
-            <Gap size="s" />
+          <HorizontalField>
+            <Bold>{i18n.sender}</Bold>
+            <Combobox
+              items={senderOptions}
+              onChange={(sender) =>
+                sender ? updateMessage({ sender }) : undefined
+              }
+              selectedItem={message.sender}
+              getItemLabel={(sender) => sender.label}
+              data-qa="select-sender"
+              fullWidth
+            />
+          </HorizontalField>
+          <Gap size="s" />
+          <HorizontalField>
             <Bold>{i18n.receivers}</Bold>
-            <Gap size="xs" />
-          </div>
-          <MultiSelect
-            placeholder={i18n.search}
-            value={selectedReceivers}
-            options={receiverOptions}
-            onChange={updateReceiverTree}
-            noOptionsMessage={i18n.noResults}
-            getOptionId={({ value }) => value}
-            getOptionLabel={({ label }) => label}
-            data-qa="select-receiver"
-          />
+            <MultiSelect
+              placeholder={i18n.search}
+              value={selectedReceivers}
+              options={receiverOptions}
+              onChange={updateReceiverTree}
+              noOptionsMessage={i18n.noResults}
+              getOptionId={({ value }) => value}
+              getOptionLabel={({ label }) => label}
+              data-qa="select-receiver"
+            />
+          </HorizontalField>
+          <Gap size="s" />
+          <HorizontalField>
+            <Bold>{i18n.title}</Bold>
+            <InputField
+              value={message.title ?? ''}
+              onChange={(title) => updateMessage({ title })}
+              data-qa="input-title"
+            />
+          </HorizontalField>
           <Gap size="s" />
           <Bold>{i18n.type.label}</Bold>
           <Gap size="xs" />
@@ -526,13 +535,6 @@ export default React.memo(function MessageEditor({
               onChange={() => updateMessage({ type: 'BULLETIN' })}
             />
           </FixedSpaceRow>
-          <Gap size="s" />
-          <Bold>{i18n.title}</Bold>
-          <InputField
-            value={message.title ?? ''}
-            onChange={(title) => updateMessage({ title })}
-            data-qa="input-title"
-          />
           <Gap size="m" />
           <Bold>{i18n.message}</Bold>
           <Gap size="xs" />
@@ -699,4 +701,18 @@ const BottomBarMobile = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
+`
+
+const HorizontalField = styled.div`
+  display: flex;
+  align-items: center;
+
+  & > * {
+    flex: 1 1 auto;
+  }
+
+  & > :nth-child(1) {
+    flex: 0 0 auto;
+    width: 130px;
+  }
 `
