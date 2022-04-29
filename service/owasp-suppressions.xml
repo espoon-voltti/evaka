@@ -48,4 +48,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        ]]></notes>
         <cve>CVE-2022-23181</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+            Workaround for misidentification: sarif4k is not the same as detekt, even though it comes from the detekt developer(s)
+        ]]></notes>
+       <packageUrl regex="true">^pkg:maven/io\.github\.detekt\.sarif4k/sarif4k@.*$</packageUrl>
+       <cpe>cpe:/a:detekt:detekt</cpe>
+    </suppress>
 </suppressions>
