@@ -46,26 +46,18 @@ const Actions = React.memo(function Actions({
         primary
         text={i18n.valueDecisions.buttons.createDecision(checkedIds.length)}
         disabled={checkedIds.length === 0}
-        onClick={() =>
-          sendVoucherValueDecisions(checkedIds).then((result) => {
-            if (result.isSuccess) {
-              setError(undefined)
-            }
-
-            if (result.isFailure) {
-              setError(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                i18n.valueDecisions.buttons.errors[result.errorCode ?? ''] ??
-                  i18n.common.error.unknown
-              )
-            }
-
-            return result
-          })
-        }
+        onClick={() => sendVoucherValueDecisions(checkedIds)}
         onSuccess={() => {
+          setError(undefined)
           clearChecked()
           loadDecisions()
+        }}
+        onFailure={(result) => {
+          setError(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            i18n.valueDecisions.buttons.errors[result.errorCode ?? ''] ??
+              i18n.common.error.unknown
+          )
         }}
         data-qa="send-decisions"
       />
