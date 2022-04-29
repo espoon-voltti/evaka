@@ -68,23 +68,13 @@ const Actions = React.memo(function Actions({
       <AsyncButton
         text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
         disabled={checkedIds.length === 0}
-        onClick={() =>
-          deleteInvoices(checkedIds).then((result) => {
-            if (result.isSuccess) {
-              setError(undefined)
-            }
-
-            if (result.isFailure) {
-              setError(i18n.common.error.unknown)
-            }
-
-            return result
-          })
-        }
+        onClick={() => deleteInvoices(checkedIds)}
         onSuccess={() => {
+          setError(undefined)
           actions.clearChecked()
           reloadInvoices()
         }}
+        onFailure={() => setError(i18n.common.error.unknown)}
         data-qa="delete-invoices"
       />
       <Gap size="s" horizontal />
