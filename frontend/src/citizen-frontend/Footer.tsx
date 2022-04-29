@@ -40,7 +40,6 @@ export const footerHeightDesktop = '62px'
 
 const FooterItem = styled.div`
   display: inline-block;
-  height: 40px;
 `
 
 const FooterContainer = styled(Container)`
@@ -61,7 +60,7 @@ const FooterContainer = styled(Container)`
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     padding-left: 96px;
     padding-right: 96px;
     height: ${footerHeightDesktop};
