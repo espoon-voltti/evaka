@@ -46,6 +46,13 @@ export default toRequestHandler(async (req, res) => {
         })
       }
     } else {
+      const employee = await getEmployeeDetails(req, user.id)
+      if (!employee) {
+        // user id is invalid (e.g. employee has been removed)
+        await logoutExpress(req, res, 'employee')
+        res.status(200).json({ loggedIn: false, apiVersion: appCommit })
+        return
+      }
       const {
         id,
         firstName,
@@ -54,7 +61,7 @@ export default toRequestHandler(async (req, res) => {
         allScopedRoles,
         accessibleFeatures,
         permittedGlobalActions
-      } = await getEmployeeDetails(req, user.id)
+      } = employee
       const name = [firstName, lastName].filter((x) => !!x).join(' ')
 
       // Refresh roles if necessary
