@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -149,7 +150,8 @@ data class UnitStats(
     val presentChildren: Int,
     val totalChildren: Int,
     val presentStaff: Int,
-    val totalStaff: Int
+    val totalStaff: Int,
+    val utilization: Double
 )
 
 fun Database.Read.fetchUnitStats(
@@ -160,8 +162,22 @@ fun Database.Read.fetchUnitStats(
     return createQuery(
         """
 WITH present_children AS (
-    SELECT ca.unit_id, count(*)
+    SELECT
+        ca.unit_id,
+        SUM(COALESCE(an.capacity_factor, 1) * CASE 
+            WHEN dc.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+            WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+            ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
+        END) AS capacity,
+        count(*) as count
     FROM child_attendance ca
+    JOIN daycare dc ON dc.id = ca.unit_id
+    JOIN person ch ON ch.id = ca.child_id
+    LEFT JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+    LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
+    LEFT JOIN service_need_option sno on sn.option_id = sno.id
+    LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+    LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
     WHERE ca.unit_id = ANY(:unitIds) AND ca.end_time IS NULL
     GROUP BY ca.unit_id
 ), total_children AS (
@@ -180,20 +196,20 @@ WITH present_children AS (
     ) p
     GROUP BY p.unit_id
 ), present_staff AS (
-    SELECT g.daycare_id AS unit_id, sum(sa.count) AS count
+    SELECT g.daycare_id AS unit_id, sum(sa.capacity) AS capacity, sum(sa.count) AS count
     FROM daycare_group g
     JOIN (
-        SELECT sa.group_id, sa.count + sa.count_other AS count FROM staff_attendance sa
+        SELECT sa.group_id, 7 * (sa.count + sa.count_other) as capacity, sa.count + sa.count_other AS count FROM staff_attendance sa
         WHERE NOT :useRealtimeStaffAttendance AND sa.date = :date
 
         UNION ALL
 
-        SELECT sa.group_id, 1 AS count FROM staff_attendance_realtime sa
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count FROM staff_attendance_realtime sa
         WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
 
         UNION ALL
 
-        SELECT sa.group_id, 1 AS count FROM staff_attendance_external sa
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count FROM staff_attendance_external sa
         WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
     ) sa ON sa.group_id = g.id
     WHERE g.daycare_id = ANY(:unitIds) AND daterange(g.start_date, g.end_date, '[]') @> :date
@@ -210,7 +226,11 @@ SELECT
     coalesce(pc.count, 0) AS present_children,
     coalesce(tc.count, 0) AS total_children,
     coalesce(ps.count, 0) AS present_staff,
-    coalesce(ts.count, 0) AS total_staff
+    coalesce(ts.count, 0) AS total_staff,
+    CASE
+        WHEN coalesce(pc.capacity, 0) > 0 AND coalesce(ps.capacity, 0) = 0 THEN 'Infinity'::REAL
+        ELSE round(coalesce(pc.capacity, 0) / coalesce(ps.capacity, 0.0001) * 100, 1)
+    END AS utilization
 FROM daycare u
 LEFT JOIN present_children pc ON pc.unit_id = u.id
 LEFT JOIN total_children tc ON tc.unit_id = u.id
