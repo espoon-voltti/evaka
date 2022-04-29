@@ -493,7 +493,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     ) =
         db.transaction { tx ->
             val contentId = tx.insertMessageContent(content, sender)
-            val threadId = tx.insertThread(MessageType.MESSAGE, title)
+            val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false)
             val messageId =
                 tx.insertMessage(
                     contentId = contentId,

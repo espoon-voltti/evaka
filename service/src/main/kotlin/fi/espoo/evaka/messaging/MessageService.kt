@@ -20,6 +20,7 @@ class MessageService(
         title: String,
         content: String,
         type: MessageType,
+        urgent: Boolean,
         sender: MessageAccountId,
         recipientGroups: Set<Set<MessageAccountId>>,
         recipientNames: List<String>,
@@ -30,7 +31,7 @@ class MessageService(
             .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
                 recipientGroups.map {
-                    val threadId = tx.insertThread(type, title)
+                    val threadId = tx.insertThread(type, title, urgent)
                     val messageId =
                         tx.insertMessage(
                             contentId = contentId,

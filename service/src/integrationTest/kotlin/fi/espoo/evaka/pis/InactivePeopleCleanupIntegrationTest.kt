@@ -258,7 +258,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
-            val threadId = tx.insertThread(MessageType.MESSAGE, "title")
+            val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
             val messageId = tx.insertMessage(contentId, threadId, employeeAccount, listOf("recipient name"))
             tx.insertRecipients(setOf(personAccount), messageId)
         }
@@ -277,7 +277,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
 
             val contentId = tx.insertMessageContent("content", personAccount)
-            val threadId = tx.insertThread(MessageType.MESSAGE, "title")
+            val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
             val messageId = tx.insertMessage(contentId, threadId, personAccount, listOf("employee name"))
             tx.insertRecipients(setOf(employeeAccount), messageId)
         }

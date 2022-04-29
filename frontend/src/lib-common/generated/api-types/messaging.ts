@@ -46,6 +46,7 @@ export interface DraftContent {
   recipientNames: string[]
   title: string
   type: MessageType
+  urgent: boolean
 }
 
 /**
@@ -125,6 +126,7 @@ export interface MessageThread {
   messages: Message[]
   title: string
   type: MessageType
+  urgent: boolean
 }
 
 /**
@@ -145,6 +147,7 @@ export interface PostMessageBody {
   recipientNames: string[]
   title: string
   type: MessageType
+  urgent: boolean
 }
 
 /**
@@ -177,6 +180,7 @@ export interface SentMessage {
   sentAt: Date
   threadTitle: string
   type: MessageType
+  urgent: boolean
 }
 
 /**
@@ -213,4 +217,5 @@ export interface UpsertableDraftContent {
   recipientNames: string[]
   title: string
   type: MessageType
+  urgent: boolean
 }

@@ -33,6 +33,7 @@ data class MessageThread(
     val id: MessageThreadId,
     val type: MessageType,
     val title: String,
+    val urgent: Boolean,
     @Json
     val messages: List<Message>,
 )
@@ -43,6 +44,7 @@ data class SentMessage(
     val sentAt: HelsinkiDateTime,
     val threadTitle: String,
     val type: MessageType,
+    val urgent: Boolean,
     @Json
     val recipients: Set<MessageAccount>,
     val recipientNames: List<String>,

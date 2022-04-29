@@ -61,6 +61,7 @@ type Message = UpsertableDraftContent & {
 
 const messageToUpsertableDraftWithAccount = (m: Message): Draft => ({
   content: m.content,
+  urgent: m.urgent,
   recipientIds: m.recipientIds,
   recipientNames: m.recipientNames,
   title: m.title,
@@ -70,6 +71,7 @@ const messageToUpsertableDraftWithAccount = (m: Message): Draft => ({
 
 const emptyMessage = {
   content: '',
+  urgent: false,
   recipientIds: [],
   recipientNames: [],
   recipientAccountIds: [],
