@@ -10,10 +10,8 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
-import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
-import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
@@ -29,15 +27,9 @@ const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
 
 interface Props {
   accountId: UUID
-  setEditorVisible: (value: boolean) => void
-  newMessageButtonEnabled: boolean
 }
 
-export default React.memo(function ThreadList({
-  accountId,
-  setEditorVisible,
-  newMessageButtonEnabled
-}: Props) {
+export default React.memo(function ThreadList({ accountId }: Props) {
   const navigate = useNavigate()
   const params = useParams<{ threadId: UUID | undefined }>()
   const t = useTranslation()
@@ -86,51 +78,32 @@ export default React.memo(function ThreadList({
           />
         </MobileOnly>
       )}
-      <Container className={selectedThread ? 'desktop-only' : undefined}>
-        <Gap size="s" />
-        <HeaderContainer>
-          <H1 noMargin>{t.messages.inboxTitle}</H1>
-        </HeaderContainer>
-        <Gap size="xs" />
-        <DottedLine />
-        <Gap size="s" />
-        <HeaderContainer>
-          <Button
-            text={t.messages.messageEditor.newMessage}
-            onClick={() => setEditorVisible(true)}
-            primary
-            data-qa="new-message-btn"
-            disabled={!newMessageButtonEnabled}
-          />
-        </HeaderContainer>
-        <Gap size="s" />
 
-        {threadLoadingResult.isSuccess && threads.length === 0 && (
-          <>
-            <SolidLine />
-            <ThreadListContainer>
-              <Gap size="s" />
-              <span style={{ color: `${colors.grayscale.g70}` }}>
-                {t.messages.noMessagesInfo}
-              </span>
-            </ThreadListContainer>
-          </>
-        )}
+      {threadLoadingResult.isSuccess && threads.length === 0 && (
+        <>
+          <SolidLine />
+          <ThreadListContainer>
+            <Gap size="s" />
+            <span style={{ color: `${colors.grayscale.g70}` }}>
+              {t.messages.noMessagesInfo}
+            </span>
+          </ThreadListContainer>
+        </>
+      )}
 
-        {threads.map((thread) => (
-          <ThreadListItem
-            key={thread.id}
-            thread={thread}
-            onClick={() => selectThread(thread.id)}
-            active={selectedThread?.id === thread.id}
-            hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-          />
-        ))}
-        {renderResult(threadLoadingResult, () => (
-          <OnEnterView onEnter={loadMoreThreads} />
-        ))}
-      </Container>
+      {threads.map((thread) => (
+        <ThreadListItem
+          key={thread.id}
+          thread={thread}
+          onClick={() => selectThread(thread.id)}
+          active={selectedThread?.id === thread.id}
+          hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+          onAttachmentUnavailable={onAttachmentUnavailable}
+        />
+      ))}
+      {renderResult(threadLoadingResult, () => (
+        <OnEnterView onEnter={loadMoreThreads} />
+      ))}
     </>
   )
 })
@@ -143,12 +116,6 @@ const MobileOnly = styled.div`
   }
 `
 
-const DottedLine = styled.hr`
-  width: 100%;
-  border: 1px dashed ${colors.grayscale.g35};
-  border-top-width: 0px;
-`
-
 const SolidLine = styled.hr`
   width: 100%;
   border: 1px solid ${colors.grayscale.g15};
@@ -157,33 +124,6 @@ const SolidLine = styled.hr`
 
 const Return = styled(IconButton)`
   margin-left: ${defaultMargins.xs};
-`
-
-const Container = styled.div`
-  min-width: 35%;
-  max-width: 400px;
-  min-height: 500px;
-  background-color: ${colors.grayscale.g0};
-  overflow-y: auto;
-
-  @media (max-width: 750px) {
-    min-width: 50%;
-  }
-
-  @media (max-width: ${tabletMin}) {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  &.desktop-only {
-    @media (max-width: ${tabletMin}) {
-      display: none;
-    }
-  }
-`
-
-const HeaderContainer = styled.div`
-  padding-left: 5%;
 `
 
 const ThreadListContainer = styled.div`
