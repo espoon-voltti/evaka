@@ -374,6 +374,20 @@ export default React.memo(function MessageEditor({
         }
       }
     }
+    const messageType = (
+      <FixedSpaceRow>
+        <Radio
+          label={i18n.type.message}
+          checked={message.type === 'MESSAGE'}
+          onChange={() => updateMessage({ type: 'MESSAGE' })}
+        />
+        <Radio
+          label={i18n.type.bulletin}
+          checked={message.type === 'BULLETIN'}
+          onChange={() => updateMessage({ type: 'BULLETIN' })}
+        />
+      </FixedSpaceRow>
+    )
 
     return (
       <FullScreenContainer
@@ -415,33 +429,45 @@ export default React.memo(function MessageEditor({
             </HeaderButtonContainer>
           </TopBar>
           <ScrollableFormArea>
-            <HorizontalField>
-              <Bold>{i18n.sender}</Bold>
-              <Combobox
-                items={senderOptions}
-                onChange={(sender) =>
-                  sender ? updateMessage({ sender }) : undefined
-                }
-                selectedItem={message.sender}
-                getItemLabel={(sender) => sender.label}
-                data-qa="select-sender"
-                fullWidth
-              />
-            </HorizontalField>
-            <Gap size="s" />
-            <HorizontalField>
-              <Bold>{i18n.receivers}</Bold>
-              <MultiSelect
-                placeholder={i18n.search}
-                value={selectedReceivers}
-                options={receiverOptions}
-                onChange={updateReceiverTree}
-                noOptionsMessage={i18n.noResults}
-                getOptionId={({ value }) => value}
-                getOptionLabel={({ label }) => label}
-                data-qa="select-receiver"
-              />
-            </HorizontalField>
+            <ExpandableLayout expandedView={expandedView}>
+              <Dropdowns>
+                <HorizontalField>
+                  <Bold>{i18n.sender}</Bold>
+                  <Combobox
+                    items={senderOptions}
+                    onChange={(sender) =>
+                      sender ? updateMessage({ sender }) : undefined
+                    }
+                    selectedItem={message.sender}
+                    getItemLabel={(sender) => sender.label}
+                    data-qa="select-sender"
+                    fullWidth
+                  />
+                </HorizontalField>
+                <Gap size="s" />
+                <HorizontalField>
+                  <Bold>{i18n.receivers}</Bold>
+                  <MultiSelect
+                    placeholder={i18n.search}
+                    value={selectedReceivers}
+                    options={receiverOptions}
+                    onChange={updateReceiverTree}
+                    noOptionsMessage={i18n.noResults}
+                    getOptionId={({ value }) => value}
+                    getOptionLabel={({ label }) => label}
+                    data-qa="select-receiver"
+                  />
+                </HorizontalField>
+              </Dropdowns>
+              {expandedView && (
+                <ExpandedRightPane>
+                  <HorizontalField>
+                    <Bold>{i18n.type.label}</Bold>
+                    {messageType}
+                  </HorizontalField>
+                </ExpandedRightPane>
+              )}
+            </ExpandableLayout>
             <Gap size="s" />
             <HorizontalField>
               <Bold>{i18n.title}</Bold>
@@ -451,21 +477,14 @@ export default React.memo(function MessageEditor({
                 data-qa="input-title"
               />
             </HorizontalField>
-            <Gap size="s" />
-            <Bold>{i18n.type.label}</Bold>
-            <Gap size="xs" />
-            <FixedSpaceRow>
-              <Radio
-                label={i18n.type.message}
-                checked={message.type === 'MESSAGE'}
-                onChange={() => updateMessage({ type: 'MESSAGE' })}
-              />
-              <Radio
-                label={i18n.type.bulletin}
-                checked={message.type === 'BULLETIN'}
-                onChange={() => updateMessage({ type: 'BULLETIN' })}
-              />
-            </FixedSpaceRow>
+            {!expandedView && (
+              <>
+                <Gap size="s" />
+                <Bold>{i18n.type.label}</Bold>
+                <Gap size="xs" />
+                {messageType}
+              </>
+            )}
             <Gap size="m" />
             <Bold>{i18n.message}</Bold>
             <Gap size="xs" />
@@ -721,4 +740,17 @@ const HorizontalField = styled.div`
     flex: 0 0 auto;
     width: 130px;
   }
+`
+
+const ExpandableLayout = styled.div<{ expandedView: boolean }>`
+  display: ${(props) => (props.expandedView ? 'flex' : 'block')};
+`
+
+const Dropdowns = styled.div`
+  flex: 1 1 auto;
+`
+
+const ExpandedRightPane = styled.div`
+  margin-left: ${defaultMargins.XL};
+  flex: 0 0 auto;
 `
