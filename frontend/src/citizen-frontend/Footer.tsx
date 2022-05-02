@@ -72,6 +72,15 @@ const FooterContainer = styled(Container)`
     justify-content: space-evenly;
   }
 
+  a {
+    display: inline-block;
+    position: relative;
+    padding-top: 8px;
+    padding-bottom: 9px;
+    margin-top: -8px;
+    margin-bottom: -9px;
+  }
+
   a:hover {
     text-decoration: underline;
   }
