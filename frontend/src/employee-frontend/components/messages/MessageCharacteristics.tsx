@@ -7,6 +7,8 @@ import styled from 'styled-components'
 
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { StaticChip } from 'lib-components/atoms/Chip'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { colors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -21,7 +23,20 @@ const chipColors = {
   BULLETIN: colors.main.m1
 }
 
-export function MessageTypeChip({ type }: { type: MessageType }) {
+export function MessageCharacteristics({
+  type,
+  urgent
+}: {
+  type: MessageType
+  urgent: boolean
+}) {
   const { i18n } = useTranslation()
-  return <Chip color={chipColors[type]}>{i18n.messages.types[type]}</Chip>
+  return (
+    <FixedSpaceRow spacing="xs" alignItems="center">
+      {urgent && (
+        <RoundIcon size="m" color={colors.status.danger} content="!" />
+      )}
+      <Chip color={chipColors[type]}>{i18n.messages.types[type]}</Chip>
+    </FixedSpaceRow>
+  )
 }

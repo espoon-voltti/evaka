@@ -37,8 +37,8 @@ import { getAttachmentBlob } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
+import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
-import { MessageTypeChip } from './MessageTypeChip'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
@@ -156,7 +156,7 @@ interface Props {
 export function SingleThreadView({
   accountId,
   goBack,
-  thread: { id: threadId, messages, title, type },
+  thread: { id: threadId, messages, title, type, urgent },
   view
 }: Props) {
   const { i18n } = useTranslation()
@@ -236,7 +236,7 @@ export function SingleThreadView({
       <ScrollContainer>
         <StickyTitleRow ref={stickyTitleRowRef}>
           <H2 noMargin>{title}</H2>
-          <MessageTypeChip type={type} />
+          <MessageCharacteristics type={type} urgent={urgent} />
         </StickyTitleRow>
         {messages.map((message, idx) => (
           <React.Fragment key={`${message.id}-fragment`}>

@@ -2884,6 +2884,10 @@ export const fi = {
         message: 'Viesti',
         bulletin: 'Tiedote (ei voi vastata)'
       },
+      urgent: {
+        heading: 'Merkitse kiireelliseksi',
+        label: 'Kiireellinen'
+      },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
       title: 'Otsikko',

@@ -52,6 +52,7 @@ import {
 } from 'lib-icons'
 
 import Combobox from '../../atoms/dropdowns/Combobox'
+import Checkbox from '../../atoms/form/Checkbox'
 
 type Message = UpsertableDraftContent & {
   sender: ReactSelectOption
@@ -108,6 +109,10 @@ export interface MessageEditorI18n {
     label: string
     message: string
     bulletin: string
+  }
+  urgent: {
+    heading: string
+    label: string
   }
   sender: string
   receivers: string
@@ -391,6 +396,15 @@ export default React.memo(function MessageEditor({
       </FixedSpaceRow>
     )
 
+    const urgent = (
+      <Checkbox
+        data-qa="checkbox-urgent"
+        label={i18n.urgent.label}
+        checked={message.urgent}
+        onChange={(urgent) => updateMessage({ urgent })}
+      />
+    )
+
     return (
       <FullScreenContainer
         data-qa="fullscreen-container"
@@ -463,9 +477,14 @@ export default React.memo(function MessageEditor({
               </Dropdowns>
               {expandedView && (
                 <ExpandedRightPane>
-                  <HorizontalField>
+                  <HorizontalField long={true}>
                     <Bold>{i18n.type.label}</Bold>
                     {messageType}
+                  </HorizontalField>
+                  <Gap size="s" />
+                  <HorizontalField long={true}>
+                    <Bold>{i18n.urgent.heading}</Bold>
+                    {urgent}
                   </HorizontalField>
                 </ExpandedRightPane>
               )}
@@ -482,9 +501,18 @@ export default React.memo(function MessageEditor({
             {!expandedView && (
               <>
                 <Gap size="s" />
-                <Bold>{i18n.type.label}</Bold>
-                <Gap size="xs" />
-                {messageType}
+                <FixedSpaceRow justifyContent="space-between">
+                  <div>
+                    <Bold>{i18n.type.label}</Bold>
+                    <Gap size="xs" />
+                    {messageType}
+                  </div>
+                  <div>
+                    <Bold>{i18n.urgent.heading}</Bold>
+                    <Gap size="xs" />
+                    {urgent}
+                  </div>
+                </FixedSpaceRow>
               </>
             )}
             <Gap size="m" />
@@ -730,7 +758,7 @@ const BottomBarMobile = styled.div`
   padding: ${defaultMargins.m};
 `
 
-const HorizontalField = styled.div`
+const HorizontalField = styled.div<{ long?: boolean }>`
   display: flex;
   align-items: center;
 
@@ -740,7 +768,7 @@ const HorizontalField = styled.div`
 
   & > :nth-child(1) {
     flex: 0 0 auto;
-    width: 130px;
+    width: ${(props) => (props.long ? '200px' : '130px')};
   }
 `
 

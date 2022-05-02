@@ -7,6 +7,8 @@ import styled from 'styled-components'
 
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { StaticChip } from 'lib-components/atoms/Chip'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { colors } from 'lib-customizations/common'
 
 // TODO is the 20px line-height in StaticChip unintentional?
@@ -21,9 +23,22 @@ const chipColors: Record<MessageType, string> = {
 
 interface Props {
   type: MessageType
+  urgent: boolean
   labels: Record<MessageType, string>
 }
 
-export function MessageTypeChip({ type, labels }: Props) {
-  return <Chip color={chipColors[type]}>{labels[type]}</Chip>
+export function MessageCharacteristics({ type, urgent, labels }: Props) {
+  return (
+    <FixedSpaceRow spacing="xs" alignItems="center">
+      {urgent && (
+        <RoundIcon
+          data-qa="urgent"
+          size="m"
+          color={colors.status.danger}
+          content="!"
+        />
+      )}
+      <Chip color={chipColors[type]}>{labels[type]}</Chip>
+    </FixedSpaceRow>
+  )
 }

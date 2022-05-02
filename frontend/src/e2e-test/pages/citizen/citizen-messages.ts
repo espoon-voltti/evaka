@@ -17,6 +17,7 @@ export default class CitizenMessagesPage {
   #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
   #inboxEmpty = this.page.find('[data-qa="inbox-empty"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
+  #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
   #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
   #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
   #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
@@ -35,10 +36,22 @@ export default class CitizenMessagesPage {
     await this.#inboxEmpty.waitUntilVisible()
   }
 
-  async assertThreadContent(title: string, content: string) {
+  async assertThreadContent(message: {
+    title: string
+    content: string
+    urgent?: boolean
+  }) {
     await this.#threadListItem.click()
-    await waitUntilEqual(() => this.#threadTitle.innerText, title)
-    await waitUntilEqual(() => this.#threadContent.elem().innerText, content)
+    await waitUntilEqual(() => this.#threadTitle.innerText, message.title)
+    await waitUntilEqual(
+      () => this.#threadContent.elem().innerText,
+      message.content
+    )
+    if (message.urgent ?? false) {
+      await this.#threadUrgent.waitUntilVisible()
+    } else {
+      await this.#threadUrgent.waitUntilHidden()
+    }
   }
 
   getThreadAttachmentCount(): Promise<number> {

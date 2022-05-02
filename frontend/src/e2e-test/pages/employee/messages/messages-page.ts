@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { FileInput, TextInput, Page } from '../../../utils/page'
+import { FileInput, TextInput, Page, Checkbox } from '../../../utils/page'
 
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
@@ -37,6 +37,7 @@ export default class MessagesPage {
   #messageReplyContent = new TextInput(
     this.page.find('[data-qa="message-reply-content"]')
   )
+  #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -75,13 +76,24 @@ export default class MessagesPage {
     return waitUntilEqual(() => this.#messageReplyContent.textContent, '')
   }
 
-  async sendNewMessage(title: string, content: string, attachmentCount = 0) {
+  async sendNewMessage(message: {
+    title: string
+    content: string
+    urgent?: boolean
+    attachmentCount?: number
+  }) {
+    const attachmentCount = message.attachmentCount ?? 0
+
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())
-    await this.#inputTitle.fill(title)
-    await this.#inputContent.fill(content)
+    await this.#inputTitle.fill(message.title)
+    await this.#inputContent.fill(message.content)
     await this.#receiverSelection.click()
     await this.page.keyboard.press('Enter')
+    if (message.urgent ?? false) {
+      await this.#urgent.check()
+    }
+
     if (attachmentCount > 0) {
       for (let i = 1; i <= attachmentCount; i++) {
         await this.addAttachment()
