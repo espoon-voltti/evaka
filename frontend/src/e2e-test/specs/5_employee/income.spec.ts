@@ -213,4 +213,19 @@ describe('Income', () => {
 
     await waitUntilEqual(() => incomesSection.incomeListItemCount(), 0)
   })
+
+  it('Attachment can be deleted while editing income without dead links', async () => {
+    await incomesSection.openNewIncomeForm()
+
+    await incomesSection.addAttachment()
+    await incomesSection.save()
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+
+    await incomesSection.edit()
+
+    await incomesSection.deleteIncomeAttachment(0)
+    await incomesSection.cancelEdit()
+
+    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
+  })
 })

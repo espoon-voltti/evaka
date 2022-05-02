@@ -300,7 +300,11 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         }}
       />
       <ButtonsContainer>
-        <Button onClick={cancel} text={i18n.common.cancel} />
+        <Button
+          onClick={cancel}
+          text={i18n.common.cancel}
+          data-qa="cancel-income-edit"
+        />
         <AsyncButton
           primary
           text={i18n.common.save}

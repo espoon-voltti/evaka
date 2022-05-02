@@ -306,6 +306,7 @@ export class IncomeSection extends Section {
   }
 
   #saveIncomeButton = this.page.find('[data-qa="save-income"]')
+  #cancelIncomeButton = this.page.find('[data-qa="cancel-income-edit"]')
 
   async save() {
     await this.#saveIncomeButton.click()
@@ -318,6 +319,10 @@ export class IncomeSection extends Section {
 
   async saveIsDisabled() {
     return await this.#saveIncomeButton.disabled
+  }
+
+  async cancelEdit() {
+    await this.#cancelIncomeButton.click()
   }
 
   #incomeListItems = this.page.findAll('[data-qa="income-list-item"]')
@@ -376,6 +381,10 @@ export class IncomeSection extends Section {
     ).setInputFiles(testFilePath)
 
     await waitUntilEqual(() => this.uploadedCount(), initiallyUploadedCount + 1)
+  }
+
+  async deleteIncomeAttachment(n: number) {
+    return this.findAll('[data-qa^="file-delete-button"]').nth(n).click()
   }
 
   async getAttachmentCount() {
