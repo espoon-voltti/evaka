@@ -155,6 +155,7 @@ describe('Invoices', () => {
     await financePage.selectInvoicesTab()
 
     await invoicesPage.toggleAllInvoices(true)
+    await invoicesPage.assertInvoiceCount(2)
     await invoicesPage.sendInvoices()
     await invoicesPage.assertInvoiceCount(0)
     await invoicesPage.showSentInvoices()

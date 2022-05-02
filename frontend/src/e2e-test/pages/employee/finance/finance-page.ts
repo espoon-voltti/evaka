@@ -303,6 +303,7 @@ export class InvoicesPage {
   async sendInvoices() {
     await this.#openSendInvoicesDialogButton.click()
     await this.#sendInvoicesDialog.waitUntilVisible()
+    await this.#sendInvoicesDialog.find('[data-qa="title"]').click()
     await this.#sendInvoicesButton.click()
     await this.#sendInvoicesButton.waitUntilHidden()
   }
