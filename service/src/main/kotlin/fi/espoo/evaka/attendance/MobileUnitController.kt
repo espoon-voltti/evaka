@@ -228,7 +228,8 @@ SELECT
     coalesce(ps.count, 0) AS present_staff,
     coalesce(ts.count, 0) AS total_staff,
     CASE
-        WHEN coalesce(pc.capacity, 0) > 0 AND coalesce(ps.capacity, 0) = 0 THEN 'Infinity'::REAL
+        WHEN coalesce(pc.capacity, 0) = 0 THEN 0.0
+        WHEN coalesce(ps.capacity, 0) = 0 THEN 'Infinity'::REAL
         ELSE round(coalesce(pc.capacity, 0) / coalesce(ps.capacity, 0.0001) * 100, 1)
     END AS utilization
 FROM daycare u
