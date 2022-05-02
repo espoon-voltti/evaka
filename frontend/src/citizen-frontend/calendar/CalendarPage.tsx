@@ -98,21 +98,23 @@ const CalendarPage = React.memo(function CalendarPage() {
     [activeFixedPeriodQuestionnaire]
   )
 
-  const calculateFirstReservableDate: () => LocalDate = useCallback(() => {
+  const firstReservableDate: LocalDate = useMemo(() => {
     if (data.isSuccess) {
-      const earliesReservableDate =
+      const earliestReservableDate =
+        data.value.reservableDays &&
+        data.value.reservableDays.length > 0 &&
         data.value.reservableDays[0].start.isEqualOrAfter(LocalDate.today())
           ? data.value.reservableDays[0].start
           : LocalDate.today()
       // First reservable day that has no reservations
       const firstReservableEmptyDate = data.value.dailyData.find(
         (day) =>
-          day.date.isEqualOrAfter(earliesReservableDate) &&
+          day.date.isEqualOrAfter(earliestReservableDate) &&
           day.children.length == 0
       )
       return firstReservableEmptyDate
         ? firstReservableEmptyDate.date
-        : earliesReservableDate
+        : earliestReservableDate
     } else {
       return LocalDate.today()
     }
@@ -175,7 +177,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           availableChildren={response.children}
           onReload={loadDefaultRange}
           reservableDays={response.reservableDays}
-          firstReservableDate={calculateFirstReservableDate}
+          firstReservableDate={firstReservableDate}
         />
       )}
       {modalState?.type === 'absences' && (
