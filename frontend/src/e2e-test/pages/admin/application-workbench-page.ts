@@ -74,7 +74,7 @@ export class ApplicationWorkbenchPage {
   #otherGuardianTel = this.page.find('[data-qa="second-guardian-phone"]')
   #otherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
 
-  #withdraPlacementProposalsButton = this.page.find(
+  #withdrawPlacementProposalsButton = this.page.find(
     `[data-qa="action-bar-withdrawPlacementProposal"]`
   )
 
@@ -137,11 +137,11 @@ export class ApplicationWorkbenchPage {
 
   async withdrawPlacementProposal(applicationId: string) {
     await this.clickApplicationCheckbox(applicationId)
-    await this.#withdraPlacementProposalsButton.click()
+    await this.#withdrawPlacementProposalsButton.click()
   }
 
   async assertWithdrawPlacementProposalsButtonDisabled() {
-    await waitUntilTrue(() => this.#withdraPlacementProposalsButton.disabled)
+    await waitUntilTrue(() => this.#withdrawPlacementProposalsButton.disabled)
   }
 
   getApplicationById(id: string) {

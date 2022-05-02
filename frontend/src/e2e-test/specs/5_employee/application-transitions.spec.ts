@@ -360,6 +360,7 @@ describe('Application transitions', () => {
     placementProposals = applicationProcessPage.placementProposals
     await placementProposals.assertAcceptButtonEnabled()
     await placementProposals.clickAcceptButton()
+    await placementProposals.assertPlacementProposalRowCount(0)
     await applicationProcessPage.waitUntilLoaded()
 
     await execSimpleApplicationActions(applicationId, [
