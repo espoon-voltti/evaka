@@ -53,6 +53,7 @@ import {
 
 import Combobox from '../../atoms/dropdowns/Combobox'
 import Checkbox from '../../atoms/form/Checkbox'
+import { InfoBox } from '../../molecules/MessageBoxes'
 
 type Message = UpsertableDraftContent & {
   sender: ReactSelectOption
@@ -112,6 +113,7 @@ export interface MessageEditorI18n {
   }
   urgent: {
     heading: string
+    info: string
     label: string
   }
   sender: string
@@ -486,6 +488,12 @@ export default React.memo(function MessageEditor({
                     <Bold>{i18n.urgent.heading}</Bold>
                     {urgent}
                   </HorizontalField>
+                  {message.urgent && (
+                    <>
+                      <Gap size="s" />
+                      <InfoBox message={i18n.urgent.info} noMargin={true} />
+                    </>
+                  )}
                 </ExpandedRightPane>
               )}
             </ExpandableLayout>
@@ -513,6 +521,12 @@ export default React.memo(function MessageEditor({
                     {urgent}
                   </div>
                 </FixedSpaceRow>
+                {message.urgent && (
+                  <>
+                    <Gap size="s" />
+                    <InfoBox message={i18n.urgent.info} noMargin={true} />
+                  </>
+                )}
               </>
             )}
             <Gap size="m" />

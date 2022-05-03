@@ -307,6 +307,7 @@ export const fi = {
       },
       urgent: {
         heading: 'Merkitse kiireelliseksi',
+        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
         label: 'Kiireellinen'
       },
       sender: 'Lähettäjä',
