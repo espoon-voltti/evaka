@@ -70,7 +70,7 @@ const Graph = React.memo(function Graph({ occupancy }: Props) {
       occupancy.childAttendances.filter(
         (a) =>
           compareAsc(a.arrived, time) <= 0 &&
-          compareAsc(time, a.departed || time) < 0
+          (a.departed === null || compareAsc(time, a.departed) < 0)
       ).length,
     [occupancy]
   )
