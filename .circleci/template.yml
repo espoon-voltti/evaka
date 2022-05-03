@@ -621,9 +621,11 @@ commands:
   load_base_image:
     steps:
       - run:
-          name: Load base image
+          name: Load base images
           working_directory: << pipeline.parameters.workspace_root >>
-          command: docker load -i evaka-base.tar
+          command: |
+            docker load -i evaka-base.tar
+            docker load -i evaka-yarn.tar
 
   push_docker_image:
     parameters:
@@ -840,7 +842,7 @@ jobs:
       - run:
           name: Lint shell scripts
           command: |
-            ./bin/run-shellcheck.sh
+            git ls-files "*.sh" "*.bash" | xargs shellcheck --external-sources
       - notify_slack
 
   check_licenses:
@@ -891,10 +893,15 @@ jobs:
           name: Save base image
           working_directory: << pipeline.parameters.workspace_root >>
           command: docker save evaka-base > evaka-base.tar
+      - run:
+          name: Save base image
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: docker save evaka-yarn > evaka-yarn.tar
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
             - evaka-base.tar
+            - evaka-yarn.tar
       - notify_slack
 
   apigw_build_and_test:
@@ -909,10 +916,6 @@ jobs:
       - run:
           working_directory: *workspace_apigw
           command: yarn build
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - apigw/dist
       - run:
           working_directory: *workspace_apigw
           command: yarn lint
