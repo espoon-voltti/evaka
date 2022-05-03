@@ -143,6 +143,7 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
           value={replyContent}
           onChange={(value) => onUpdateContent(value)}
           data-qa="message-reply-content"
+          autoFocus
         />
       </EditorRow>
       <EditorRow>
