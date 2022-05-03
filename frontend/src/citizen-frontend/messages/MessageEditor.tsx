@@ -73,48 +73,56 @@ export default React.memo(function MessageEditor({
             <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
           </>
         )}
-        <div>
+        <label>
           <Bold>{i18n.messages.messageEditor.recipients}</Bold>
           <Gap size="xs" />
-        </div>
-        <MultiSelect
-          placeholder={i18n.messages.messageEditor.search}
-          value={message.recipients}
-          options={receiverOptions}
-          onChange={(change) =>
-            setMessage((message) => ({
-              ...message,
-              recipients: change
-            }))
-          }
-          noOptionsMessage={i18n.messages.messageEditor.noResults}
-          getOptionId={({ id }) => id}
-          getOptionLabel={({ name }) => name}
-          data-qa="select-receiver"
-        />
-        <Gap size="s" />
-        <Bold>{i18n.messages.messageEditor.subject}</Bold>
-        <InputField
-          value={message.title ?? ''}
-          onChange={(updated) =>
-            setMessage((message) => ({ ...message, title: updated }))
-          }
-          data-qa="input-title"
-        />
+          <MultiSelect
+            placeholder={i18n.messages.messageEditor.search}
+            value={message.recipients}
+            options={receiverOptions}
+            onChange={(change) =>
+              setMessage((message) => ({
+                ...message,
+                recipients: change
+              }))
+            }
+            noOptionsMessage={i18n.messages.messageEditor.noResults}
+            getOptionId={({ id }) => id}
+            getOptionLabel={({ name }) => name}
+            data-qa="select-receiver"
+          />
+        </label>
+
         <Gap size="s" />
 
-        <Bold>{i18n.messages.messageEditor.message}</Bold>
+        <label>
+          <Bold>{i18n.messages.messageEditor.subject}</Bold>
+          <InputField
+            value={message.title ?? ''}
+            onChange={(updated) =>
+              setMessage((message) => ({ ...message, title: updated }))
+            }
+            data-qa="input-title"
+          />
+        </label>
+
         <Gap size="s" />
-        <StyledTextArea
-          value={message.content}
-          onChange={(updated) =>
-            setMessage((message) => ({
-              ...message,
-              content: updated.target.value
-            }))
-          }
-          data-qa="input-content"
-        />
+
+        <label>
+          <Bold>{i18n.messages.messageEditor.message}</Bold>
+          <Gap size="s" />
+          <StyledTextArea
+            value={message.content}
+            onChange={(updated) =>
+              setMessage((message) => ({
+                ...message,
+                content: updated.target.value
+              }))
+            }
+            data-qa="input-content"
+          />
+        </label>
+
         <Gap size="s" />
         {displaySendError && (
           <ErrorMessage>
