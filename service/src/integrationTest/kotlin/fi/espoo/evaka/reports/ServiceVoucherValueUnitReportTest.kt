@@ -63,6 +63,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
     private val janFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0))
     private val febFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 2, 21, 22, 0))
+    private val marFreeze = HelsinkiDateTime.of(LocalDateTime.of(2020, 3, 21, 22, 0))
 
     @Test
     fun `unfrozen service voucher report includes value decisions that begin in the beginning of reports month`() {
@@ -414,11 +415,36 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
         db.transaction { it.annulVoucherValueDecisions(listOf(decision.id), janFreeze.plusSeconds(3600)) }
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
-        assertEquals(4, febReport.size)
+        assertEquals(2, febReport.size)
         febReport.assertContainsRow(REFUND, janFirst, middleOfMonth.minusDays(1), 87000, 0, -33143)
-        febReport.assertContainsRow(REFUND, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, -47667)
-        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 47667)
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
+    }
+
+    @Test
+    fun `when a continued decision is ended and new one created retroactively, the refund and correction are correct`() {
+        val decision = createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze) }
+
+        val endedDecision = decision.copy(validTo = janFirst.toEndOfMonth())
+        db.transaction { it.updateVoucherValueDecisionEndDates(listOf(endedDecision), febFreeze.plusDays(1)) }
+
+        createVoucherDecision(febFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800)
+        db.transaction { freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze) }
+
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        janReport.assertContainsRow(ORIGINAL, janFirst, janFirst.toEndOfMonth(), 87000, 0, 87000)
+
+        val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReport.size)
+        febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 0, 87000)
+
+        val marReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
+        assertEquals(3, marReport.size)
+        marReport.assertContainsRow(REFUND, febFirst, febFirst.toEndOfMonth(), 87000, 0, -87000)
+        marReport.assertContainsRow(CORRECTION, febFirst, febFirst.toEndOfMonth(), 87000, 28800, 58200)
+        marReport.assertContainsRow(ORIGINAL, marFirst, marFirst.toEndOfMonth(), 87000, 28800, 58200)
     }
 
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
