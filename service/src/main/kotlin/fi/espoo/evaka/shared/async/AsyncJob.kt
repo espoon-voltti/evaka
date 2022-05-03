@@ -87,7 +87,13 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     // threadId is nullable for backwards compatibility
-    data class SendMessageNotificationEmail(val threadId: MessageThreadId?, val messageRecipientId: MessageRecipientId, val personEmail: String, val language: Language) : AsyncJob {
+    data class SendMessageNotificationEmail(
+        val threadId: MessageThreadId?,
+        val messageRecipientId: MessageRecipientId,
+        val personEmail: String,
+        val language: Language,
+        val urgent: Boolean = false
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
