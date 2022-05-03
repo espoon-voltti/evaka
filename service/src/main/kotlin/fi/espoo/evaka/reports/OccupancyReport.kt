@@ -35,7 +35,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestParam type: OccupancyType,
-        @RequestParam careAreaId: AreaId,
+        @RequestParam(required = false) careAreaId: AreaId?,
         @RequestParam(required = false) providerType: ProviderType?,
         @RequestParam year: Int,
         @RequestParam month: Int
@@ -66,7 +66,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @RequestParam type: OccupancyType,
-        @RequestParam careAreaId: AreaId,
+        @RequestParam(required = false) careAreaId: AreaId?,
         @RequestParam(required = false) providerType: ProviderType?,
         @RequestParam year: Int,
         @RequestParam month: Int
@@ -92,12 +92,16 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
 }
 
 data class OccupancyUnitReportResultRow(
+    val areaId: AreaId,
+    val areaName: String,
     val unitId: DaycareId,
     val unitName: String,
     val occupancies: Map<LocalDate, OccupancyValues>
 )
 
 data class OccupancyGroupReportResultRow(
+    val areaId: AreaId,
+    val areaName: String,
     val unitId: DaycareId,
     val unitName: String,
     val groupId: GroupId,
@@ -107,7 +111,7 @@ data class OccupancyGroupReportResultRow(
 
 private fun Database.Read.calculateUnitOccupancyReport(
     today: LocalDate,
-    areaId: AreaId,
+    areaId: AreaId?,
     providerType: ProviderType?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
@@ -116,17 +120,19 @@ private fun Database.Read.calculateUnitOccupancyReport(
     return calculateDailyUnitOccupancyValues(today, queryPeriod, type, aclAuth, areaId = areaId, providerType = providerType)
         .map { (key, occupancies) ->
             OccupancyUnitReportResultRow(
+                areaId = key.areaId,
+                areaName = key.areaName,
                 unitId = key.unitId,
                 unitName = key.unitName,
                 occupancies = occupancies
             )
         }
-        .sortedBy { it.unitName }
+        .sortedWith(compareBy({ it.areaName }, { it.unitName }))
 }
 
 private fun Database.Read.calculateGroupOccupancyReport(
     today: LocalDate,
-    areaId: AreaId,
+    areaId: AreaId?,
     providerType: ProviderType?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
@@ -137,6 +143,8 @@ private fun Database.Read.calculateGroupOccupancyReport(
     return calculateDailyGroupOccupancyValues(today, queryPeriod, type, aclAuth, areaId = areaId, providerType = providerType)
         .map { (key, occupancies) ->
             OccupancyGroupReportResultRow(
+                areaId = key.areaId,
+                areaName = key.areaName,
                 unitId = key.unitId,
                 unitName = key.unitName,
                 groupId = key.groupId,
@@ -144,5 +152,5 @@ private fun Database.Read.calculateGroupOccupancyReport(
                 occupancies = occupancies
             )
         }
-        .sortedBy { it.unitName }
+        .sortedWith(compareBy({ it.areaName }, { it.unitName }))
 }

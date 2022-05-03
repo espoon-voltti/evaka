@@ -256,6 +256,8 @@ export interface MissingServiceNeedReportRow {
 * Generated from fi.espoo.evaka.reports.OccupancyGroupReportResultRow
 */
 export interface OccupancyGroupReportResultRow {
+  areaId: UUID
+  areaName: string
   groupId: UUID
   groupName: string
   occupancies: Record<string, OccupancyValues>
@@ -267,6 +269,8 @@ export interface OccupancyGroupReportResultRow {
 * Generated from fi.espoo.evaka.reports.OccupancyUnitReportResultRow
 */
 export interface OccupancyUnitReportResultRow {
+  areaId: UUID
+  areaName: string
   occupancies: Record<string, OccupancyValues>
   unitId: UUID
   unitName: string

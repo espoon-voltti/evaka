@@ -260,7 +260,7 @@ export type OccupancyReportType =
 export interface OccupancyReportFilters {
   year: number
   month: number
-  careAreaId: UUID
+  careAreaId?: UUID | null // null = unselected, undefined = select all
   type: OccupancyReportType
   providerType?: ProviderType
 }

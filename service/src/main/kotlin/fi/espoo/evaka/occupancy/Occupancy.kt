@@ -40,6 +40,8 @@ interface OccupancyGroupingKey {
 }
 
 data class UnitKey(
+    val areaId: AreaId,
+    val areaName: String,
     override val unitId: DaycareId,
     val unitName: String
 ) : OccupancyGroupingKey {
@@ -47,6 +49,8 @@ data class UnitKey(
 }
 
 data class UnitGroupKey(
+    val areaId: AreaId,
+    val areaName: String,
     override val unitId: DaycareId,
     val unitName: String,
     val groupId: GroupId,
@@ -98,13 +102,14 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     unitId: DaycareId? = null,
     speculatedPlacements: List<Placement> = listOf()
 ): List<DailyOccupancyValues<UnitKey>> {
-    if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitId) { row ->
         Caretakers(
             UnitKey(
+                areaId = row.mapColumn("area_id"),
+                areaName = row.mapColumn("area_name"),
                 unitId = row.mapColumn("unit_id"),
                 unitName = row.mapColumn("unit_name")
             ),
@@ -133,13 +138,14 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     providerType: ProviderType? = null,
     unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
-    if (areaId == null && unitId == null) error("Must provide areaId or unitId")
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitId) { row ->
         Caretakers(
             UnitGroupKey(
+                areaId = row.mapColumn("area_id"),
+                areaName = row.mapColumn("area_name"),
                 unitId = row.mapColumn("unit_id"),
                 unitName = row.mapColumn("unit_name"),
                 groupId = row.mapColumn("group_id"),
@@ -220,8 +226,8 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 
     // language=sql
     val (keyColumns, groupBy) = when (K::class) {
-        UnitKey::class -> "u.id AS unit_id, u.name AS unit_name" to "u.id"
-        UnitGroupKey::class -> "g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to "g.id, u.id"
+        UnitKey::class -> "a.id AS area_id, a.name AS area_name, u.id AS unit_id, u.name AS unit_name" to "a.id, u.id"
+        UnitGroupKey::class -> "a.id AS area_id, a.name AS area_name, g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to "a.id, g.id, u.id"
         else -> error("Unsupported caretakers query class parameter (${K::class})")
     }
 
@@ -231,6 +237,7 @@ SELECT $keyColumns, t::date AS date, coalesce($caretakersSum, 0.0) AS caretaker_
 FROM generate_series(:start, :end, '1 day') t
 CROSS JOIN daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
+JOIN care_area a ON a.id = u.care_area_id
 LEFT JOIN $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
