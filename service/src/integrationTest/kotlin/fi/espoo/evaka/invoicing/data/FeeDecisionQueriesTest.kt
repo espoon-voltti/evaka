@@ -107,7 +107,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
             tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now())
+            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), false, false)
 
             val result = tx.getFeeDecision(testDecisions[0].id)!!
             assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
@@ -129,7 +129,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.upsertFeeDecisions(decisions)
 
-            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now())
+            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now(), false, false)
 
             val result = tx.getFeeDecisionsByIds(decisions.map { it.id }).sortedBy { it.decisionNumber }
             with(result[0]) {

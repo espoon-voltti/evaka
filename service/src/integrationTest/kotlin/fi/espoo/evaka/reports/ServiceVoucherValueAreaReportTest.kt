@@ -176,7 +176,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 user = financeUser,
                 evakaEnv = evakaEnv,
                 now = approvedAt,
-                ids = listOf(decision.id)
+                ids = listOf(decision.id),
+                false
             )
 
             decision

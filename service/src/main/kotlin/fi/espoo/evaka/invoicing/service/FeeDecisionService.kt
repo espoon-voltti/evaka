@@ -63,7 +63,8 @@ class FeeDecisionService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ids: List<FeeDecisionId>,
-        confirmDateTime: HelsinkiDateTime
+        confirmDateTime: HelsinkiDateTime,
+        alwaysUseDaycareFinanceDecisionHandler: Boolean
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
@@ -130,9 +131,10 @@ class FeeDecisionService(
             retroactiveDecisions.map { it.id },
             approvedBy = EmployeeId(user.id),
             isRetroactive = true,
-            approvedAt = approvedAt
+            approvedAt = approvedAt,
+            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
         )
-        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = EmployeeId(user.id), approvedAt = approvedAt)
+        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = EmployeeId(user.id), approvedAt = approvedAt, alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler)
 
         return validDecisions.map { it.id }
     }

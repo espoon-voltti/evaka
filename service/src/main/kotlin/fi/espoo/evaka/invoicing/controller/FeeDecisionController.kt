@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -112,7 +113,8 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>
+        @RequestBody feeDecisionIds: List<FeeDecisionId>,
+        featureConfig: FeatureConfig
     ) {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
@@ -122,7 +124,8 @@ class FeeDecisionController(
                     tx,
                     user,
                     feeDecisionIds,
-                    evakaClock.now()
+                    evakaClock.now(),
+                    featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
             }
