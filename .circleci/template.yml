@@ -634,6 +634,7 @@ commands:
           command: |
             docker load -i evaka-base.tar
             docker load -i evaka-yarn.tar
+            docker load -i evaka-java.tar
 
   push_docker_image:
     parameters:
@@ -908,14 +909,19 @@ jobs:
           working_directory: << pipeline.parameters.workspace_root >>
           command: docker save evaka-base > evaka-base.tar
       - run:
-          name: Save base image
+          name: Save yarn image
           working_directory: << pipeline.parameters.workspace_root >>
           command: docker save evaka-yarn > evaka-yarn.tar
+      - run:
+          name: Save java image
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: docker save evaka-java > evaka-java.tar
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
             - evaka-base.tar
             - evaka-yarn.tar
+            - evaka-java.tar
       - notify_slack
 
   apigw_build_and_test:
@@ -1121,7 +1127,10 @@ jobs:
       - load_base_image
       - build_docker_image:
           image: evaka/service
-          dir: << pipeline.parameters.workspace_root >>/service
+          dir: << pipeline.parameters.workspace_root >>
+          dockerfile: service/Dockerfile
+      - run:
+          command: mv image.tar service/image.tar
       - store_docker_image:
           dir: service
       - notify_slack
