@@ -19,7 +19,7 @@ if [ "${DEBUG:-false}" = "true" ]; then
   set -x
 fi
 
-export HOST_IP=$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
+export HOST_IP="$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')"
 
 if [ "${STATIC_FILES_ENDPOINT_URL:-X}" = 'X' ]; then
   echo 'ERROR: STATIC_FILES_ENDPOINT_URL must be a non-empty string!'

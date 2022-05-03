@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # SPDX-FileCopyrightText: 2017-2021 City of Espoo
 #
@@ -6,16 +6,14 @@
 
 # Run shellcheck for scripts
 #
-# Usage: ./run-shellcheck.sh [path_to_shellcheck_binary]
+# Usage: ./run-shellcheck.sh
 
 set -eu
 
-DEBUG=${DEBUG:-false}
-if [ "$DEBUG" = "true" ]; then
+if [ "${DEBUG:-false}" = "true" ]; then
   set -x
 fi
 
-# In CI, the bin can be in a different location
-SHELLCHECK_BIN="${1:-shellcheck}"
+cd "$( dirname "${BASH_SOURCE[0]}")"
 
-git ls-files "*.sh" "*.bash" | xargs "$SHELLCHECK_BIN" --external-sources
+git ls-files "*.sh" "*.bash" | xargs docker run --rm -v "$(pwd):/mnt" koalaman/shellcheck:stable --external-sources

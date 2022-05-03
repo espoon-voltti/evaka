@@ -6,4 +6,7 @@
 
 set -euo pipefail
 
+cd "$( dirname "${BASH_SOURCE[0]}")"
+
 docker build -t evaka-base .
+docker build -t evaka-yarn -f yarn.Dockerfile .
