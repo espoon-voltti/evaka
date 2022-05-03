@@ -68,7 +68,8 @@ class VoucherValueDecisionController(
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
     fun search(
@@ -131,8 +132,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestBody decisionIds: List<VoucherValueDecisionId>,
-        featureConfig: FeatureConfig
+        @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, decisionIds)

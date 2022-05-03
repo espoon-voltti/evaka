@@ -661,10 +661,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -691,10 +692,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -721,10 +723,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -751,10 +754,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_REJECTED }!!
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -789,10 +793,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -826,10 +831,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -866,10 +872,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(oldDecision.id)))
             .responseString()
+        assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -898,10 +905,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        http.post("/decisions/confirm")
+        val (_, res) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-            .response()
+            .responseString()
+
+        assertEquals(200, res.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)
 
@@ -993,10 +1002,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
             .asUser(user)
@@ -1018,10 +1028,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
             .asUser(user)
@@ -1049,10 +1060,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result_1) = http.get("/decisions/${conflict1.id}")
             .asUser(user)
@@ -1085,10 +1097,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
             .asUser(user)
@@ -1120,10 +1133,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
             .asUser(user)
@@ -1155,10 +1169,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.get("/decisions/${conflict.id}")
             .asUser(user)
@@ -1182,10 +1197,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresManualSending)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.post("/decisions/search")
             .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
@@ -1209,10 +1225,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresSending)) }
 
-        http.post("/decisions/confirm")
+        val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
             .response()
+        assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.post("/decisions/search")
             .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
@@ -1233,10 +1250,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.post("/decisions/search")
+        val (_, response, result) = http.post("/decisions/search")
             .jsonBody("""{"page": "0", "pageSize": "50", "startDate": "1900-01-01", "endDate": "1901-01-01"}""")
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             listOf(),
@@ -1252,7 +1270,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.post("/decisions/search")
+        val (_, response, result) = http.post("/decisions/search")
             .jsonBody(
                 """{"page": "0", "pageSize": "50",
                           "startDate": "${now.minusMonths(3)}",
@@ -1260,6 +1278,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             listOf(oldDecision.let(::toSummary)),
@@ -1275,7 +1294,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.post("/decisions/search")
+        val (_, response, result) = http.post("/decisions/search")
             .jsonBody(
                 """{"page": "0", "pageSize": "50",
                           "startDate": "${now.plusDays(1)}",
@@ -1283,6 +1302,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             listOf(futureDecision.let(::toSummary)),
@@ -1336,13 +1356,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.post("/decisions/search")
+        val (_, response, result) = http.post("/decisions/search")
             .jsonBody(
                 """{"page": "0", "pageSize": "50",
                           "endDate": "${now.plusYears(8)}"}"""
             )
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             listOf(oldDecision.let(::toSummary), futureDecision.let(::toSummary)),
@@ -1358,13 +1379,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) = http.post("/decisions/search")
+        val (_, response, result) = http.post("/decisions/search")
             .jsonBody(
                 """{"page": "0", "pageSize": "50",
                           "startDate": "${now.minusYears(8)}"}"""
             )
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             listOf(oldDecision.let(::toSummary), futureDecision.let(::toSummary)),
@@ -1378,10 +1400,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val draft = testDecisions.find { it.decisionType == FeeDecisionType.NORMAL }!!
         val requestBody = FeeDecisionTypeRequest(type = FeeDecisionType.RELIEF_ACCEPTED)
 
-        http.post("/decisions/set-type/${draft.id}")
+        val (_, response) = http.post("/decisions/set-type/${draft.id}")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(requestBody))
             .response()
+        assertEquals(200, response.statusCode)
 
         val modified = draft.copy(
             decisionType = FeeDecisionType.RELIEF_ACCEPTED
@@ -1401,10 +1424,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `sorting works with different params`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, statusAsc) = http.post("/decisions/search")
+        val (_, response, statusAsc) = http.post("/decisions/search")
             .jsonBody("""{"page": "0", "pageSize": "50", "sortBy": "STATUS", "sortDirection": "ASC"}""")
             .asUser(user)
             .responseString()
+        assertEquals(200, response.statusCode)
 
         assertEqualEnough(
             testDecisions.map(::toSummary).sortedBy { it.id.toString() }.sortedBy { it.status.name },
@@ -1489,7 +1513,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
             .responseString()
-
         assertEquals(200, response.statusCode)
 
         asyncJobRunner.runPendingJobsSync(2)

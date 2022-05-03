@@ -73,7 +73,8 @@ class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
     fun search(
@@ -113,8 +114,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>,
-        featureConfig: FeatureConfig
+        @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
