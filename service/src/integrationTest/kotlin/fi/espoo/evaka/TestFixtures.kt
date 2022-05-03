@@ -83,6 +83,24 @@ val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
 
 val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
 
+val testDecisionMaker_1 = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
+    firstName = "Decision",
+    lastName = "Maker"
+)
+
+val testDecisionMaker_2 = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
+    firstName = "Decision2",
+    lastName = "Maker2"
+)
+
+val unitSupervisorOfTestDaycare = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
+    firstName = "Sammy",
+    lastName = "Supervisor"
+)
+
 val testDaycare = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
     name = "Test Daycare",
@@ -95,7 +113,8 @@ val testDaycare2 = DevDaycare(
     id = DaycareId(UUID.randomUUID()),
     name = "Test Daycare 2",
     areaId = testArea2.id,
-    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+    financeDecisionHandler = testDecisionMaker_2.id
 )
 
 val testDaycareNotInvoiced = DevDaycare(
@@ -180,24 +199,6 @@ val testRoundTheClockDaycare = DevDaycare(
     type = setOf(CareType.CENTRE),
     roundTheClock = true,
     operationDays = setOf(1, 2, 3, 4, 5, 6, 7)
-)
-
-val testDecisionMaker_1 = DevEmployee(
-    id = EmployeeId(UUID.randomUUID()),
-    firstName = "Decision",
-    lastName = "Maker"
-)
-
-val testDecisionMaker_2 = DevEmployee(
-    id = EmployeeId(UUID.randomUUID()),
-    firstName = "Decision",
-    lastName = "Maker 2"
-)
-
-val unitSupervisorOfTestDaycare = DevEmployee(
-    id = EmployeeId(UUID.randomUUID()),
-    firstName = "Sammy",
-    lastName = "Supervisor"
 )
 
 val testAdult_1 = DevPerson(
@@ -418,18 +419,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertTestCareArea(testArea)
     insertTestCareArea(testArea2)
     insertTestCareArea(testAreaSvebi)
-    insertTestDaycare(testSvebiDaycare)
-    insertTestDaycare(testDaycare)
-    insertTestDaycare(testDaycare2)
-    insertTestDaycare(testDaycareNotInvoiced)
-    insertTestDaycare(testPurchasedDaycare)
-    insertTestDaycare(testExternalPurchasedDaycare)
-    insertTestDaycare(testVoucherDaycare)
-    insertTestDaycare(testVoucherDaycare2)
-
-    insertTestDaycare(testClub)
-    insertTestDaycare(testGhostUnitDaycare)
-    insertTestDaycare(testRoundTheClockDaycare)
 
     testDecisionMaker_1.let {
         insertTestEmployee(
@@ -451,6 +440,19 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             )
         )
     }
+
+    insertTestDaycare(testSvebiDaycare)
+    insertTestDaycare(testDaycare)
+    insertTestDaycare(testDaycare2)
+    insertTestDaycare(testDaycareNotInvoiced)
+    insertTestDaycare(testPurchasedDaycare)
+    insertTestDaycare(testExternalPurchasedDaycare)
+    insertTestDaycare(testVoucherDaycare)
+    insertTestDaycare(testVoucherDaycare2)
+
+    insertTestDaycare(testClub)
+    insertTestDaycare(testGhostUnitDaycare)
+    insertTestDaycare(testRoundTheClockDaycare)
 
     unitSupervisorOfTestDaycare.let {
         insertTestEmployee(
