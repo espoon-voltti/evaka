@@ -2,44 +2,50 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM evaka-base:latest
+ARG BASE_IMAGE=evaka-java:latest
+FROM "${BASE_IMAGE}" as builder
 
-USER root
+COPY ./service/gradle/ ./service/gradle/
+COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
+COPY ./service/buildSrc ./service/buildSrc
+COPY ./service/gradlew ./service/build.gradle.kts ./service/gradle.properties ./service/settings.gradle.kts ./service/
+COPY ./service/vtjclient/build.gradle.kts ./service/vtjclient/build.gradle.kts
+COPY ./service-lib/*.kts ./service-lib/
+COPY ./evaka-bom/*.kts ./evaka-bom/
+COPY ./service/sficlient/*.kts ./service/sficlient/
 
-ARG CACHE_BUST=2022-04-26
+WORKDIR /evaka/service
 
-RUN apt-get update \
- && apt-get -y --no-install-recommends install \
-       curl \
-       openjdk-17-jre-headless \
- && rm -rf /var/lib/apt/lists/*
+RUN ./gradlew --no-daemon dependencies :service-lib:dependencies :evaka-bom:dependencies :vtjclient:dependencies :sficlient:dependencies
 
-ARG DD_JAVA_AGENT_VERSION="0.100.0"
-ARG DD_JAVA_AGENT_SHA256="2b7d1266ea7ac8fb164eaba6bc59c36d5c9fdb3358128acd52d1947cac13e667"
+COPY ./service/sficlient/ ./sficlient/
+COPY ./service/vtjclient/ ./vtjclient/
+RUN ./gradlew --no-daemon :sficlient:wsdl2java :vtjclient:wsdl2java
 
-RUN curl -sSfo /opt/dd-java-agent.jar "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_JAVA_AGENT_VERSION}/dd-java-agent-${DD_JAVA_AGENT_VERSION}.jar" \
- && echo "${DD_JAVA_AGENT_SHA256}  /opt/dd-java-agent.jar" | sha256sum -c -
+RUN cd custom-ktlint-rules && ./gradlew dependencies
+COPY . /evaka
 
-ADD ./dd-jmxfetch/ /etc/jmxfetch/
+# --offline is used to be sure that all dependencies are installed in previous steps
+RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
+ && unzip -oq build/libs/evaka-service-boot.jar -d target
+
+RUN cd custom-ktlint-rules \
+ && ./gradlew --no-daemon assemble
+
+FROM "${BASE_IMAGE}"
+
+WORKDIR /evaka/service
+
+COPY ./service/entrypoint.sh entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
+
+COPY --from=builder /evaka/service/target/ .
 
 USER evaka
-WORKDIR /home/evaka
 
-COPY --chown=evaka:evaka "entrypoint.sh" "entrypoint.sh"
-COPY --chown=evaka:evaka "target/org/" "org/"
-COPY --chown=evaka:evaka "target/META-INF" "META-INF/"
-COPY --chown=evaka:evaka "target/BOOT-INF/lib" "BOOT-INF/lib/"
-COPY --chown=evaka:evaka "target/BOOT-INF/classes" "BOOT-INF/classes/"
-
-# Add build and commit environment variables and labels
-# for tracing the image to the commit and build from which the image has been built.
 ARG build=none
 ARG commit=none
 ENV APP_BUILD "$build"
 ENV APP_COMMIT "$commit"
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
-
-EXPOSE 8888
-
-ENTRYPOINT ["./entrypoint.sh"]
