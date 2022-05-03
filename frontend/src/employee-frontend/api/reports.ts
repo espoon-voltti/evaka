@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ApplicationsReportRow,
@@ -261,6 +262,7 @@ export interface OccupancyReportFilters {
   month: number
   careAreaId: UUID
   type: OccupancyReportType
+  providerType?: ProviderType
 }
 
 export type OccupancyReportRow =

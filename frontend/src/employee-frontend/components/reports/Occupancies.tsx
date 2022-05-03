@@ -20,6 +20,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+import { unitProviderTypes } from 'lib-customizations/employee'
 
 import { getAreas } from '../../api/daycare'
 import {
@@ -304,6 +305,38 @@ export default React.memo(function Occupancies() {
               }
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
               getItemLabel={(item) => item.name}
+            />
+          </Wrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[
+                {
+                  value: undefined,
+                  label: i18n.common.all
+                },
+                ...unitProviderTypes.map((providerType) => ({
+                  value: providerType,
+                  label: i18n.reports.common.unitProviderTypes[providerType]
+                }))
+              ]}
+              selectedItem={{
+                value: filters.providerType,
+                label: filters.providerType
+                  ? i18n.reports.common.unitProviderTypes[filters.providerType]
+                  : i18n.common.all
+              }}
+              onChange={(value) => {
+                if (value) {
+                  setFilters({
+                    ...filters,
+                    providerType: value.value
+                  })
+                }
+              }}
+              getItemLabel={(item) => item.label}
             />
           </Wrapper>
         </FilterRow>

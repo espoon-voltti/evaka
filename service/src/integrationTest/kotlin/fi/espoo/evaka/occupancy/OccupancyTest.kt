@@ -7,6 +7,7 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultPartDayDaycare
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -73,6 +75,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevDaycare(
                     id = daycareInArea1,
                     areaId = careArea1,
+                    providerType = ProviderType.MUNICIPAL,
                     type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
             )
@@ -85,6 +88,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevDaycare(
                     id = familyUnitInArea2,
                     areaId = careArea2,
+                    providerType = ProviderType.PURCHASED,
                     type = setOf(CareType.FAMILY)
                 )
             )
@@ -678,6 +682,49 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     percentage = 1.3
                 )
             )
+        }
+    }
+
+    @Test
+    fun `calculateDailyUnitOccupancyValues should filter with provider type`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).fromDay(-1).toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(familyGroup1).save()
+                        }
+                }
+        }
+
+        db.read {
+            val calculateDailyUnitOccupancyValuesByProviderType: (ProviderType?) -> List<DailyOccupancyValues<UnitKey>> =
+                { providerType ->
+                    it.calculateDailyUnitOccupancyValues(
+                        today,
+                        FiniteDateRange(today.minusDays(1), today),
+                        OccupancyType.CONFIRMED,
+                        AclAuthorization.All,
+                        providerType = providerType
+                    )
+                }
+
+            assertThat(calculateDailyUnitOccupancyValuesByProviderType(null))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(daycareInArea1, familyUnitInArea2)
+            assertThat(calculateDailyUnitOccupancyValuesByProviderType(ProviderType.MUNICIPAL))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(daycareInArea1)
+            assertThat(calculateDailyUnitOccupancyValuesByProviderType(ProviderType.PURCHASED))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(familyUnitInArea2)
+            assertThat(calculateDailyUnitOccupancyValuesByProviderType(ProviderType.PRIVATE_SERVICE_VOUCHER))
+                .isEmpty()
         }
     }
 
