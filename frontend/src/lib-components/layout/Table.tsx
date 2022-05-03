@@ -27,7 +27,7 @@ interface ThProps {
   sticky?: boolean
   top?: string
   hidden?: boolean
-  align?: 'left' | 'right'
+  align?: 'left' | 'right' | 'center'
 }
 
 export const Th = styled.th<ThProps>`

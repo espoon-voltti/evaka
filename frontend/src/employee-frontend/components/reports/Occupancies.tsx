@@ -6,7 +6,7 @@ import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import { range } from 'lodash'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { Loading, Result, Success } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
@@ -35,8 +35,19 @@ import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
-const StyledTd = styled(Td)`
+const StyledTd = styled(Td)<{ borderEdge?: 'left' | 'right' }>`
   white-space: nowrap;
+
+  ${(props) =>
+    props.borderEdge === 'left' &&
+    css`
+      border-left: 1px solid ${(props) => props.theme.colors.grayscale.g15};
+    `}
+  ${(props) =>
+    props.borderEdge === 'right' &&
+    css`
+      border-right: 1px solid ${(props) => props.theme.colors.grayscale.g15};
+    `}
 `
 
 const Wrapper = styled.div`
@@ -420,8 +431,12 @@ export default React.memo(function Occupancies() {
                   {usedValues !== 'raw' && (
                     <Th>{i18n.reports.occupancies.average}</Th>
                   )}
-                  {dateCols.map((date, i) => (
-                    <Th key={`${date.toDateString()}:${i}`}>
+                  {dates.map((date) => (
+                    <Th
+                      align="center"
+                      key={date.toDateString()}
+                      colSpan={usedValues === 'raw' ? 2 : undefined}
+                    >
                       {formatDate(date, 'dd.MM.')}
                     </Th>
                   ))}
@@ -435,7 +450,18 @@ export default React.memo(function Occupancies() {
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </StyledTd>
                     {displayCells[rowNum].slice(2).map((cell, colNum) => (
-                      <StyledTd key={colNum}>{cell}</StyledTd>
+                      <StyledTd
+                        key={colNum}
+                        borderEdge={
+                          usedValues === 'raw'
+                            ? colNum % 2 === (includeGroups ? 1 : 0)
+                              ? 'left'
+                              : 'right'
+                            : undefined
+                        }
+                      >
+                        {cell}
+                      </StyledTd>
                     ))}
                   </Tr>
                 ))}
