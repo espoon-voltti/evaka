@@ -253,48 +253,6 @@ export default React.memo(function Occupancies() {
           </FlexRow>
         </FilterRow>
         <FilterRow>
-          <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={[
-                {
-                  value: 'UNIT_CONFIRMED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
-                },
-                {
-                  value: 'UNIT_PLANNED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_PLANNED
-                },
-                {
-                  value: 'UNIT_REALIZED',
-                  label: i18n.reports.occupancies.filters.types.UNIT_REALIZED
-                },
-                {
-                  value: 'GROUP_CONFIRMED',
-                  label: i18n.reports.occupancies.filters.types.GROUP_CONFIRMED
-                },
-                {
-                  value: 'GROUP_REALIZED',
-                  label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
-                }
-              ]}
-              selectedItem={{
-                value: filters.type,
-                label: i18n.reports.occupancies.filters.types[filters.type]
-              }}
-              onChange={(value) => {
-                if (value) {
-                  setFilters({
-                    ...filters,
-                    type: value.value as OccupancyReportType
-                  })
-                }
-              }}
-              getItemLabel={(item) => item.label}
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
             <Combobox
@@ -339,6 +297,48 @@ export default React.memo(function Occupancies() {
                   setFilters({
                     ...filters,
                     providerType: value.value
+                  })
+                }
+              }}
+              getItemLabel={(item) => item.label}
+            />
+          </Wrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[
+                {
+                  value: 'UNIT_CONFIRMED',
+                  label: i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
+                },
+                {
+                  value: 'UNIT_PLANNED',
+                  label: i18n.reports.occupancies.filters.types.UNIT_PLANNED
+                },
+                {
+                  value: 'UNIT_REALIZED',
+                  label: i18n.reports.occupancies.filters.types.UNIT_REALIZED
+                },
+                {
+                  value: 'GROUP_CONFIRMED',
+                  label: i18n.reports.occupancies.filters.types.GROUP_CONFIRMED
+                },
+                {
+                  value: 'GROUP_REALIZED',
+                  label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
+                }
+              ]}
+              selectedItem={{
+                value: filters.type,
+                label: i18n.reports.occupancies.filters.types[filters.type]
+              }}
+              onChange={(value) => {
+                if (value) {
+                  setFilters({
+                    ...filters,
+                    type: value.value as OccupancyReportType
                   })
                 }
               }}
