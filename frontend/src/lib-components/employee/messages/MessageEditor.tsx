@@ -791,10 +791,12 @@ const ExpandableLayout = styled.div<{ expandedView: boolean }>`
 `
 
 const Dropdowns = styled.div`
+  width: 66%;
   flex: 1 1 auto;
 `
 
 const ExpandedRightPane = styled.div`
   margin-left: ${defaultMargins.XL};
-  flex: 0 0 auto;
+  width: 33%;
+  flex: 1 1 auto;
 `
