@@ -91,6 +91,7 @@ export default React.memo(function ThreadListContainer({
     id: thread.id,
     title: thread.title,
     content: thread.messages[thread.messages.length - 1].content,
+    urgent: thread.urgent,
     participants:
       view === 'SENT'
         ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
@@ -110,6 +111,7 @@ export default React.memo(function ThreadListContainer({
         id: message.contentId,
         type: message.type,
         title: message.threadTitle,
+        urgent: message.urgent,
         participants: message.recipientNames,
         messages: [
           {
@@ -139,6 +141,7 @@ export default React.memo(function ThreadListContainer({
         id: draft.id,
         title: draft.title,
         content: draft.content,
+        urgent: draft.urgent,
         participants: draft.recipientNames,
         unread: false,
         onClick: () => setSelectedDraft(draft),

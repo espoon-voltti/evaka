@@ -18,7 +18,7 @@ import {
 import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 
-import { MessageTypeChip } from './MessageTypeChip'
+import { MessageCharacteristics } from './MessageCharacteristics'
 
 interface Props {
   thread: MessageThread
@@ -50,7 +50,11 @@ export default React.memo(function ThreadListItem({
           <Truncated data-qa="message-participants">
             {participants.join(', ')}
           </Truncated>
-          <MessageTypeChip type={thread.type} labels={i18n.messages.types} />
+          <MessageCharacteristics
+            type={thread.type}
+            urgent={thread.urgent}
+            labels={i18n.messages.types}
+          />
         </Header>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>

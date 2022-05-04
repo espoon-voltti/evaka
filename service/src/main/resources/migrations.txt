@@ -229,3 +229,4 @@ V228__evaka_user_lastname_firstname.sql
 V229__voucher_value_base_value_age_under_three.sql
 V230__invoice_row_idx.sql
 V231__message_account_indexes.sql
+V232__urgent_message_thread.sql

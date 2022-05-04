@@ -48,13 +48,14 @@ fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId 
 fun Database.Transaction.upsertDraft(accountId: MessageAccountId, id: MessageDraftId, draft: UpsertableDraftContent) {
     this.createUpdate(
         """
-        INSERT INTO message_draft (id, account_id, title, content, type, recipient_ids, recipient_names)
-        VALUES (:id, :accountId, :title, :content, :type, :recipientIds, :recipientNames)
+        INSERT INTO message_draft (id, account_id, title, content, urgent, type, recipient_ids, recipient_names)
+        VALUES (:id, :accountId, :title, :content, :urgent, :type, :recipientIds, :recipientNames)
         ON CONFLICT (id)
         DO UPDATE SET
              account_id = excluded.account_id,
              title = excluded.title,
              content = excluded.content,
+             urgent = excluded.urgent,
              type = excluded.type,
              recipient_ids = excluded.recipient_ids,
              recipient_names = excluded.recipient_names

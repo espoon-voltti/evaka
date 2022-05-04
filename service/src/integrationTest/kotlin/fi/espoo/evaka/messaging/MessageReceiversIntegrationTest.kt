@@ -267,7 +267,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     "Juhannus tulee pian",
                     MessageType.MESSAGE,
                     recipientAccountIds = recipients,
-                    recipientNames = listOf()
+                    recipientNames = listOf(),
+                    urgent = false
                 )
             )
         )

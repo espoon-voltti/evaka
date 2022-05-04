@@ -36,8 +36,8 @@ import { getAttachmentBlob } from '../attachments'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 
+import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContainer } from './MessageComponents'
-import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -147,7 +147,7 @@ interface Props {
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id: threadId, messages, title, type }
+  thread: { id: threadId, messages, title, type, urgent }
 }: Props) {
   const i18n = useTranslation()
   const { sendReply, replyState, setReplyContent, getReplyContent } =
@@ -203,9 +203,13 @@ export default React.memo(function ThreadView({
     [i18n]
   )
   return (
-    <ThreadContainer>
+    <ThreadContainer data-qa="thread-reader">
       <StickyTitleRow ref={stickyTitleRowRef}>
-        <MessageTypeChip type={type} labels={i18n.messages.types} />
+        <MessageCharacteristics
+          type={type}
+          urgent={urgent}
+          labels={i18n.messages.types}
+        />
         <H2 noMargin data-qa="thread-reader-title">
           {title}
         </H2>

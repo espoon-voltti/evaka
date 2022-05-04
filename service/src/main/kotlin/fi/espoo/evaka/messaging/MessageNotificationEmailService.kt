@@ -39,7 +39,10 @@ class MessageNotificationEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun getMessageNotifications(tx: Database.Transaction, messageId: MessageId): List<AsyncJob.SendMessageNotificationEmail> {
+    fun getMessageNotifications(
+        tx: Database.Transaction,
+        messageId: MessageId
+    ): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
             """
             SELECT DISTINCT
@@ -47,11 +50,13 @@ class MessageNotificationEmailService(
                 mr.id as message_recipient_id,
                 p.id as person_id,
                 p.email as person_email,
-                coalesce(lower(p.language), 'fi') as language
+                coalesce(lower(p.language), 'fi') as language,
+                t.urgent
             FROM message m
             JOIN message_recipients mr ON mr.message_id = m.id
             JOIN message_account ma ON ma.id = mr.recipient_id 
             JOIN person p ON p.id = ma.person_id
+            JOIN message_thread t ON m.thread_id = t.id
             WHERE m.id = :messageId
               AND mr.read_at IS NULL
               AND mr.notification_sent_at IS NULL
@@ -64,7 +69,8 @@ class MessageNotificationEmailService(
                     threadId = row.mapColumn("thread_id"),
                     messageRecipientId = row.mapColumn("message_recipient_id"),
                     personEmail = row.mapColumn("person_email"),
-                    language = getLanguage(row.mapColumn("language"))
+                    language = getLanguage(row.mapColumn("language")),
+                    urgent = row.mapColumn("urgent")
                 )
             }
             .toList()
@@ -88,7 +94,7 @@ class MessageNotificationEmailService(
     }
 
     fun sendMessageNotification(db: Database.Connection, msg: AsyncJob.SendMessageNotificationEmail) {
-        val (threadId, messageRecipientId, personEmail, language) = msg
+        val (threadId, messageRecipientId, personEmail, language, urgent) = msg
 
         db.transaction { tx ->
             emailClient.sendEmail(
@@ -96,10 +102,10 @@ class MessageNotificationEmailService(
                 toAddress = personEmail,
                 fromAddress = getFromAddress(language),
                 subject = getSubject(),
-                htmlBody = getHtml(language, threadId),
-                textBody = getText(language, threadId)
+                htmlBody = getHtml(language, threadId, urgent),
+                textBody = getText(language, threadId, urgent)
             )
-            tx.markNotificationAsSent(messageRecipientId)
+            tx.markNotificationAsSent(messageRecipientId, HelsinkiDateTime.now())
         }
     }
 
@@ -117,40 +123,40 @@ class MessageNotificationEmailService(
         return "$base/messages${if (threadId == null) "" else "/$threadId"}"
     }
 
-    private fun getHtml(language: Language, threadId: MessageThreadId?): String {
+    private fun getHtml(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
         val messagesUrl = getCitizenMessageUrl(language, threadId)
         return """
-                <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Sinulle on saapunut uusi ${"kiireellinen ".takeIf { urgent }}tiedote/viesti eVakaan. Lue viesti ${"mahdollisimman pian ".takeIf { urgent }}täältä: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
             
                 <hr>
                 
-                <p>Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet ${"så snart som möjligt ".takeIf { urgent }}här: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
                 
                 <hr>
                 
-                <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>You have received a new ${"urgent ".takeIf { urgent }}eVaka bulletin/message. Read the message ${"as soon as possible ".takeIf { urgent }}here: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
         """.trimIndent()
     }
 
-    private fun getText(language: Language, threadId: MessageThreadId?): String {
+    private fun getText(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
         val messageUrl = getCitizenMessageUrl(language, threadId)
         return """
-                Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messageUrl
+                Sinulle on saapunut uusi ${"kiireellinen ".takeIf { urgent }}tiedote/viesti eVakaan. Lue viesti ${"mahdollisimman pian ".takeIf { urgent }}täältä: $messageUrl
                 
                 Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
                 
                 -----
        
-                Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messageUrl
+                Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet ${"så snart som möjligt ".takeIf { urgent }}här: $messageUrl
                 
                 Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
                 
                 -----
                 
-                You have received a new eVaka bulletin/message. Read the message here: $messageUrl
+                You have received a new ${"urgent ".takeIf { urgent }}eVaka bulletin/message. Read the message ${"as soon as possible ".takeIf { urgent }}here: $messageUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
         """.trimIndent()

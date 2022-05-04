@@ -305,6 +305,11 @@ export const fi = {
         message: 'Viesti',
         bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
       },
+      urgent: {
+        heading: 'Merkitse kiireelliseksi',
+        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+        label: 'Kiireellinen'
+      },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
       title: 'Otsikko',

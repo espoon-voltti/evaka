@@ -2882,7 +2882,12 @@ export const fi = {
       type: {
         label: 'Viestin tyyppi',
         message: 'Viesti',
-        bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
+        bulletin: 'Tiedote (ei voi vastata)'
+      },
+      urgent: {
+        heading: 'Merkitse kiireelliseksi',
+        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+        label: 'Kiireellinen'
       },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',

@@ -715,7 +715,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     recipientNames = recipientNames,
                     recipientAccountIds = recipients.toSet(),
                     attachmentIds = attachmentIds,
-                    draftId = draftId
+                    draftId = draftId,
+                    urgent = false
                 )
             )
         )

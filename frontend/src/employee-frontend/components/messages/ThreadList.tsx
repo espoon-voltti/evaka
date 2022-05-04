@@ -10,6 +10,7 @@ import { UUID } from 'lib-common/types'
 
 import { renderResult } from '../async-rendering'
 
+import { MessageCharacteristics } from './MessageCharacteristics'
 import {
   Hyphen,
   MessageRow,
@@ -20,12 +21,12 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
-import { MessageTypeChip } from './MessageTypeChip'
 
 export type ThreadListItem = {
   id: UUID
   title: string
   content: string
+  urgent: boolean
   participants: string[]
   unread: boolean
   onClick: () => void
@@ -65,7 +66,7 @@ export function ThreadList({ items: messages }: Props) {
             </Truncated>
           </ParticipantsAndPreview>
           <TypeAndDate>
-            <MessageTypeChip type={item.type} />
+            <MessageCharacteristics type={item.type} urgent={item.urgent} />
             {item.timestamp && <Timestamp date={item.timestamp} />}
           </TypeAndDate>
         </MessageRow>

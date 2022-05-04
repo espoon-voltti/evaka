@@ -16,6 +16,7 @@ data class DraftContent(
     val type: MessageType,
     val title: String,
     val content: String,
+    val urgent: Boolean,
     val recipientIds: Set<MessageAccountId>,
     val recipientNames: List<String>,
     @Json
@@ -26,6 +27,7 @@ data class UpsertableDraftContent(
     val type: MessageType,
     val title: String,
     val content: String,
+    val urgent: Boolean,
     val recipientIds: Set<MessageAccountId>,
     val recipientNames: List<String>,
 )

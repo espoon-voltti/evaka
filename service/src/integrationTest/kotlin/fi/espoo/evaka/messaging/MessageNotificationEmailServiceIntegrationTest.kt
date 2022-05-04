@@ -138,7 +138,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
                         content = "Juhannus tulee pian",
                         type = MessageType.MESSAGE,
                         recipientAccountIds = recipients.toSet(),
-                        recipientNames = listOf()
+                        recipientNames = listOf(),
+                        urgent = false
                     )
                 )
             )

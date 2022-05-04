@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
@@ -133,12 +134,14 @@ fun Database.Transaction.insertRecipients(
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
+    urgent: Boolean
 ): MessageThreadId {
     // language=SQL
-    val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
+    val insertThreadSql = "INSERT INTO message_thread (message_type, title, urgent) VALUES (:messageType, :title, :urgent) RETURNING id"
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
+        .bind("urgent", urgent)
         .mapTo<MessageThreadId>()
         .one()
 }
@@ -164,6 +167,7 @@ data class ReceivedMessageResultItem(
     val id: MessageThreadId,
     val title: String,
     val type: MessageType,
+    val urgent: Boolean,
     val messageId: MessageId,
     val sentAt: HelsinkiDateTime,
     val content: String,
@@ -215,7 +219,7 @@ participated_messages AS (
     )
 ),
 threads AS (
-    SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
+    SELECT id, message_type AS type, title, urgent, last_message, COUNT(*) OVER () AS count
     FROM message_thread t
     JOIN LATERAL (
         SELECT MAX(sent_at) last_message FROM message WHERE thread_id = t.id
@@ -235,6 +239,7 @@ SELECT
     t.id,
     t.title,
     t.type,
+    t.urgent,
     msg.message_id,
     msg.sent_at,
     msg.content,
@@ -269,6 +274,7 @@ SELECT
                     id = threadId,
                     type = threads[0].type,
                     title = threads[0].title,
+                    urgent = threads[0].urgent,
                     messages = threads
                         .groupBy { it.messageId }
                         .map { (messageId, messages) ->
@@ -485,11 +491,12 @@ WITH pageable_messages AS (
         m.recipient_names,
         t.title,
         t.message_type,
+        t.urgent,
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
     WHERE sender_id = :accountId
-    GROUP BY content_id, sent_at, recipient_names, title, message_type
+    GROUP BY content_id, sent_at, recipient_names, title, message_type, urgent
     ORDER BY sent_at DESC
     LIMIT :pageSize OFFSET :offset
 ),
@@ -512,6 +519,7 @@ SELECT
     msg.recipient_names,
     msg.title AS thread_title,
     msg.message_type AS type,
+    msg.urgent,
     mc.content,
     (SELECT jsonb_agg(json_build_object(
            'id', rec.recipient_id,
@@ -528,7 +536,7 @@ SELECT
 FROM pageable_messages msg
 JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
-GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.title
+GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.title
 ORDER BY msg.sent_at DESC
     """.trimIndent()
 
@@ -681,13 +689,14 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: EmployeeId, accountId
     return numAccounts == accountIds.size
 }
 
-fun Database.Transaction.markNotificationAsSent(messageRecipientId: MessageAccountId) {
+fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestamp: HelsinkiDateTime) {
     val sql = """
         UPDATE message_recipients
-        SET notification_sent_at = now()
+        SET notification_sent_at = :timestamp
         WHERE id = :id
     """.trimIndent()
     this.createUpdate(sql)
-        .bind("id", messageRecipientId)
+        .bind("id", id)
+        .bind("timestamp", timestamp)
         .execute()
 }
