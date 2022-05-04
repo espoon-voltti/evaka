@@ -40,8 +40,11 @@ export interface Props<T> {
   text: string
   textInProgress?: string
   textDone?: string
+  /** Return a promise to start an async action, or `undefined` to do a sync action (or nothing at all) */
   onClick: () => Promise<Result<T>> | void
+  /** Called when the promise has resolved with a Success value and the success animation has finished */
   onSuccess: (value: T) => void
+  /** Called immediately when the promis has resolved with a Failure value */
   onFailure?: (failure: Failure<T>) => void
   type?: 'button' | 'submit'
   preventDefault?: boolean
