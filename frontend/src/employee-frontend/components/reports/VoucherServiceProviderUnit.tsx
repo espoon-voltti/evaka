@@ -133,7 +133,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
   const sortedReport = report.map((rs) =>
     sort === 'group'
       ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') }
-      : { ...rs, rows: sortBy(rs.rows, ['childFirstName', 'childLastName']) }
+      : { ...rs, rows: sortBy(rs.rows, ['childLastName', 'childFirstName']) }
   )
 
   const [unitName, setUnitName] = useState<string>('')
@@ -285,13 +285,13 @@ export default React.memo(function VoucherServiceProviderUnit() {
                 headers={[
                   {
                     label:
-                      i18n.reports.voucherServiceProviderUnit.childFirstName,
-                    key: 'childFirstName'
+                      i18n.reports.voucherServiceProviderUnit.childLastName,
+                    key: 'childLastName'
                   },
                   {
                     label:
-                      i18n.reports.voucherServiceProviderUnit.childLastName,
-                    key: 'childLastName'
+                      i18n.reports.voucherServiceProviderUnit.childFirstName,
+                    key: 'childFirstName'
                   },
                   {
                     label: i18n.reports.common.groupName,
@@ -430,7 +430,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                             {formatName(
                               row.childFirstName,
                               row.childLastName,
-                              i18n
+                              i18n,
+                              true
                             )}
                           </Link>
                           <FixedSpaceRow spacing="xs">
