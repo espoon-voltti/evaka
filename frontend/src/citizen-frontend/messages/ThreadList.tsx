@@ -142,6 +142,7 @@ const MobileOnly = styled.div`
 
   @media (max-width: ${tabletMin}) {
     display: block;
+    margin: 0;
   }
 `
 

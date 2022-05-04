@@ -62,7 +62,7 @@ const StickyTitleRow = styled(TitleRow)`
   justify-content: space-between;
   align-items: flex-start;
   gap: ${defaultMargins.xs};
-  padding: ${defaultMargins.m};
+  padding: ${defaultMargins.s};
 
   @media screen and (min-width: ${desktopMin}) {
     flex-direction: row-reverse;
