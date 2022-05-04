@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import * as Sentry from '@sentry/browser'
 import classNames from 'classnames'
 import React, {
   FormEvent,
@@ -81,10 +82,10 @@ function AsyncButton<T>({
   }, [])
 
   const handleFailure = useCallback(
-    (value: Failure<T>) => {
+    (value: Failure<T> | undefined) => {
       if (!mountedRef.current) return
       setButtonState(failure)
-      onFailure && onFailure(value)
+      onFailure && value !== undefined && onFailure(value)
     },
     [onFailure]
   )
@@ -112,8 +113,10 @@ function AsyncButton<T>({
               handleSuccess(result.value)
             }
             if (result.isLoading) {
-              throw new Error(
-                'BUG: AsyncButton callback resolved to a Loading value'
+              handleFailure(undefined)
+              Sentry.captureMessage(
+                'BUG: AsyncButton promise resolved to a Loading value',
+                Sentry.Severity.Error
               )
             } else if (result.isFailure) {
               handleFailure(result)
@@ -121,10 +124,17 @@ function AsyncButton<T>({
               handleSuccess(result.value)
             }
           })
-          .catch(() => {
-            throw new Error(
-              "BUG: AsyncButton's promise rejected instead of resolving to a Failure"
-            )
+          .catch((originalErr: Error) => {
+            handleFailure(undefined)
+            if ('message' in originalErr && 'stack' in originalErr) {
+              const err = new Error(
+                `AsyncButton promise was rejected: ${originalErr.message}`
+              )
+              err.stack = originalErr.stack
+              Sentry.captureException(err)
+            } else {
+              Sentry.captureException(originalErr)
+            }
           })
       }
     },
