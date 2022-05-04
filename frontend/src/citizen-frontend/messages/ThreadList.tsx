@@ -117,16 +117,18 @@ export default React.memo(function ThreadList({
           </>
         )}
 
-        {threads.map((thread) => (
-          <ThreadListItem
-            key={thread.id}
-            thread={thread}
-            onClick={() => selectThread(thread.id)}
-            active={selectedThread?.id === thread.id}
-            hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-          />
-        ))}
+        <ThreadListItems>
+          {threads.map((thread) => (
+            <li><ThreadListItem
+              key={thread.id}
+              thread={thread}
+              onClick={() => selectThread(thread.id)}
+              active={selectedThread?.id === thread.id}
+              hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+              onAttachmentUnavailable={onAttachmentUnavailable}
+            /></li>
+          ))}
+        </ThreadListItems>
         {renderResult(threadLoadingResult, () => (
           <OnEnterView onEnter={loadMoreThreads} />
         ))}
@@ -188,6 +190,12 @@ const HeaderContainer = styled.div`
 
 const ThreadListContainer = styled.div`
   padding-left: 5%;
+`
+
+const ThreadListItems = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
 `
 
 const OnEnterView = React.memo(function IsInView({
