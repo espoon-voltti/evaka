@@ -41,7 +41,6 @@ function createJwtToken(user: SamlUser): string {
   }
 
   const common = {
-    kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'AD',
     sub: user.id
   } as const
 

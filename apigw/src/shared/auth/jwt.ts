@@ -9,7 +9,6 @@ import { jwtKid, jwtPrivateKey } from '../config'
 const privateKey = readFileSync(jwtPrivateKey)
 
 export function createJwt(payload: {
-  kind: 'SuomiFI' | 'AD' | 'AdDummy'
   sub: string
   scope?: string
   evaka_employee_id?: string
