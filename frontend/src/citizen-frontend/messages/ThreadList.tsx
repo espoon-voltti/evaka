@@ -11,12 +11,11 @@ import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
@@ -79,10 +78,10 @@ export default React.memo(function ThreadList({
     <>
       {selectedThread && (
         <MobileOnly>
-          <Return
-            icon={faArrowLeft}
+          <ReturnButton
+            label={t.common.return}
             onClick={() => selectThread(undefined)}
-            altText={t.common.return}
+            margin={defaultMargins.s}
           />
         </MobileOnly>
       )}
@@ -156,10 +155,6 @@ const SolidLine = styled.hr`
   width: 100%;
   border: 1px solid ${colors.grayscale.g15};
   border-top-width: 0px;
-`
-
-const Return = styled(IconButton)`
-  margin-left: ${defaultMargins.xs};
 `
 
 const Container = styled.div`
