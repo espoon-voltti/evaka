@@ -26,6 +26,8 @@ echo 'INFO: Waiting for compose stack to be up ...'
 
 echo "Running tests ..."
 
+yarn install --immutable
+
 if test -f playwright-filenames.txt; then
     mapfile -t FILENAMES < playwright-filenames.txt
     yarn e2e-ci "${FILENAMES[@]}"

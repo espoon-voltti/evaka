@@ -1,0 +1,33 @@
+name: Build playwright
+on:
+  push:
+    tags:
+    - '*'
+
+env:
+  ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build playwright image
+        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-push@master
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          AWS_PROFILE: ""
+          registry: ${{ env.ECR_PUBLIC_REGISTRY }}
+          name: evaka/e2e-playwright
+          path: ./compose/e2e
+          dockerfile: compose/e2e/playwright.Dockerfile
+          suffix: "-github"
+          ecr_type: 'ecr-public'
+    outputs:
+      image: ${{ steps.build.outputs.image }}
