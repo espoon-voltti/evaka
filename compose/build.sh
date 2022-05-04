@@ -11,4 +11,5 @@ set -euo pipefail
 (cd ../evaka-base && ./build.sh)
 (cd ../apigw && ./build-docker.sh)
 (cd ../service && ./build-docker.sh)
-(cd ../frontend && export GIT_SHA="$(git rev-parse HEAD)" && yarn install --immutable && yarn build:dev)
+(cd ../keycloak && ./build-docker.sh)
+(cd ../frontend && ./build-docker.sh)

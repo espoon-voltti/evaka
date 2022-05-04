@@ -33,7 +33,9 @@ ENV NODE_ENV production
 RUN yarn workspaces focus --production \
  && yarn cache clean --all
 
+ARG build=none
 ARG commit=none
+
 ENV APP_BUILD "$build"
 ENV APP_COMMIT "$commit"
 

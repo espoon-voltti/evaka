@@ -1325,7 +1325,7 @@ workflows:
               only: master
           matrix:
             parameters:
-              target_env: [dev, test]
+              target_env: [dev]
 
       - frontend_install:
           <<: *aws_contexts

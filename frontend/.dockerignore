@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+*
+!src
+!packages
+!vendor
+!*.json
+!*.lock
+!*.js
+!*.sh
+
+!.yarn/releases
+!.yarn/plugins
+!.yarnrc.yml
+
+!eslint-plugin/*.js
+!eslint-plugin/*.json
+!eslint-plugin/rules
+
+!espoo-customizations
