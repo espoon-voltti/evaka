@@ -42,6 +42,7 @@ import {
   DaycarePlacement,
   DecisionFixture,
   DevIncome,
+  DevStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
   EmployeeDetail,
@@ -83,7 +84,8 @@ import {
   insertServiceNeeds,
   insertVtjPersonFixture,
   setAclForDaycareGroups,
-  setAclForDaycares
+  setAclForDaycares,
+  upsertOccupancyCoefficient
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1396,6 +1398,14 @@ export class Fixture {
       endDate: LocalDate.of(2020, 12, 31)
     })
   }
+
+  static staffOccupancyCoefficient(unitId: string, employeeId: string) {
+    return new StaffOccupancyCoefficientBuilder({
+      coefficient: 7,
+      employeeId,
+      unitId
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1816,5 +1826,16 @@ export class FridgeChildBuilder extends FixtureBuilder<FridgeChild> {
 
   copy() {
     return new FridgeChildBuilder({ ...this.data })
+  }
+}
+
+export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevStaffOccupancyCoefficient> {
+  async save() {
+    await upsertOccupancyCoefficient(this.data)
+    return this
+  }
+
+  copy() {
+    return new StaffOccupancyCoefficientBuilder({ ...this.data })
   }
 }
