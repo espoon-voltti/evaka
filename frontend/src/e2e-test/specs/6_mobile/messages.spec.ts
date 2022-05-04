@@ -178,9 +178,23 @@ describe('Message editor in child page', () => {
     await listPage.selectChild(child.id)
     await childPage.openMessageEditor()
     await pinLoginPage.login(employeeName, pin)
-    await messageEditorPage.draftNewMessage('Foo', 'Bar')
+    await messageEditorPage.draftNewMessage({ title: 'Foo', content: 'Bar' })
     await messageEditorPage.sendEditedMessage()
     await childPage.waitUntilLoaded()
+  })
+  test('Employee can open editor and send an urgent message', async () => {
+    const message = { title: 'Foo', content: 'Bar', urgent: true }
+    await listPage.selectChild(child.id)
+    await childPage.openMessageEditor()
+    await pinLoginPage.login(employeeName, pin)
+    await messageEditorPage.draftNewMessage(message)
+    await messageEditorPage.sendEditedMessage()
+    await childPage.waitUntilLoaded()
+
+    await initCitizenPage()
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent(message)
   })
 })
 

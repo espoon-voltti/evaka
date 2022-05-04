@@ -372,6 +372,15 @@ export default React.memo(function MessageEditor({
   const sendEnabled =
     !sending && draftState === 'clean' && areRequiredFieldsFilled(message)
 
+  const urgent = (
+    <Checkbox
+      data-qa="checkbox-urgent"
+      label={i18n.urgent.label}
+      checked={message.urgent}
+      onChange={(urgent) => updateMessage({ urgent })}
+    />
+  )
+
   function desktopEditor() {
     const i18nWithReplacedTitle = {
       ...i18n,
@@ -396,15 +405,6 @@ export default React.memo(function MessageEditor({
           onChange={() => updateMessage({ type: 'BULLETIN' })}
         />
       </FixedSpaceRow>
-    )
-
-    const urgent = (
-      <Checkbox
-        data-qa="checkbox-urgent"
-        label={i18n.urgent.label}
-        checked={message.urgent}
-        onChange={(urgent) => updateMessage({ urgent })}
-      />
     )
 
     return (
@@ -607,6 +607,15 @@ export default React.memo(function MessageEditor({
           />
         ) : (
           message.recipientNames.join(', ')
+        )}
+        <Gap size="s" />
+        <Bold>{i18n.urgent.heading}</Bold>
+        {urgent}
+        {message.urgent && (
+          <>
+            <Gap size="s" />
+            <InfoBox message={i18n.urgent.info} noMargin={true} />
+          </>
         )}
         <Gap size="s" />
         <Bold>{i18n.title}</Bold>
