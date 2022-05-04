@@ -87,7 +87,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
 
   // Only create a Sentry release when Sentry is enabled (i.e. production builds).
   // SentryWebpackPlugin automatically publishes source maps and creates a release.
-  if (process.env.SENTRY_PUBLISH_ENABLED) {
+  if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
       new SentryWebpackPlugin({
         project: `evaka-${name}`,
