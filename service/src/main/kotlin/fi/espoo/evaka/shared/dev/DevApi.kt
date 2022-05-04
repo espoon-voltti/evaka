@@ -1288,7 +1288,8 @@ data class DevDaycare(
     val ophOrganizerOid: String? = "1.2.3.4.5",
     val roundTheClock: Boolean? = false,
     val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5),
-    val enabledPilotFeatures: Set<PilotFeature> = setOf()
+    val enabledPilotFeatures: Set<PilotFeature> = setOf(),
+    val financeDecisionHandler: EmployeeId? = null
 )
 
 data class DevDaycareGroup(

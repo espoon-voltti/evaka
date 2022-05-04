@@ -487,7 +487,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         unitId: DaycareId,
         value: Int,
         coPayment: Int,
-        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0))
+        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
+        alwaysUseDaycareFinanceDecisionHandler: Boolean = false
     ): VoucherValueDecision {
         val id = db.transaction {
             val decision = createVoucherValueDecisionFixture(
@@ -518,7 +519,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 user = financeUser,
                 evakaEnv = evakaEnv,
                 now = approvedAt,
-                ids = listOf(decision.id)
+                ids = listOf(decision.id),
+                alwaysUseDaycareFinanceDecisionHandler
             )
             decision.id
         }

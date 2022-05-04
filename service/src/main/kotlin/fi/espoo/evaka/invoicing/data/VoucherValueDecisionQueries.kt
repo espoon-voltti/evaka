@@ -448,7 +448,8 @@ WHERE decision.head_of_family_id = :headOfFamilyId
 fun Database.Transaction.approveValueDecisionDraftsForSending(
     ids: List<VoucherValueDecisionId>,
     approvedBy: EmployeeId,
-    approvedAt: HelsinkiDateTime
+    approvedAt: HelsinkiDateTime,
+    alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
     // language=sql
     val sql =
@@ -458,6 +459,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = (CASE
+                WHEN daycare.finance_decision_handler IS NOT NULL AND :alwaysUseDaycareFinanceDecisionHandler = true THEN daycare.finance_decision_handler
                 WHEN daycare.finance_decision_handler IS NOT NULL AND vd.decision_type = 'NORMAL' THEN daycare.finance_decision_handler
                 ELSE :approvedBy
             END),
@@ -474,6 +476,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
             .bind("approvedBy", approvedBy)
             .bind("approvedAt", approvedAt)
             .bind("id", id)
+            .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
             .add()
     }
     batch.execute()

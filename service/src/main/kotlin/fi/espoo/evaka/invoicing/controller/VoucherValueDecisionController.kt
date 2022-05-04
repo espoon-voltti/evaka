@@ -32,6 +32,7 @@ import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -67,7 +68,8 @@ class VoucherValueDecisionController(
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
     fun search(
@@ -142,7 +144,8 @@ class VoucherValueDecisionController(
                     user = user,
                     evakaEnv = evakaEnv,
                     now = evakaClock.now(),
-                    ids = decisionIds
+                    ids = decisionIds,
+                    featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
             }
         }
@@ -229,7 +232,8 @@ fun sendVoucherValueDecisions(
     user: AuthenticatedUser,
     evakaEnv: EvakaEnv,
     now: HelsinkiDateTime,
-    ids: List<VoucherValueDecisionId>
+    ids: List<VoucherValueDecisionId>,
+    alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
     tx.lockValueDecisions(ids)
     val decisions = tx.getValueDecisionsByIds(ids)
@@ -273,7 +277,7 @@ fun sendVoucherValueDecisions(
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
     val validIds = decisions.map { it.id }
-    tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now)
+    tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now, alwaysUseDaycareFinanceDecisionHandler)
     asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }
 

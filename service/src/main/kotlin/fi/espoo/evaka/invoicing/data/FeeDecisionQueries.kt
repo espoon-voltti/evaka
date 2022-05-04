@@ -471,7 +471,13 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
         .merge()
 }
 
-fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisionId>, approvedBy: EmployeeId, approvedAt: Instant, isRetroactive: Boolean = false) {
+fun Database.Transaction.approveFeeDecisionDraftsForSending(
+    ids: List<FeeDecisionId>,
+    approvedBy: EmployeeId,
+    approvedAt: Instant,
+    isRetroactive: Boolean = false,
+    alwaysUseDaycareFinanceDecisionHandler: Boolean
+) {
     val sql =
         """
         WITH youngest_child AS (
@@ -488,6 +494,8 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisio
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by_id = :approvedBy,
             decision_handler_id = CASE
+                WHEN :alwaysUseDaycareFinanceDecisionHandler = true AND youngest_child.finance_decision_handler_id IS NOT NULL 
+                    THEN youngest_child.finance_decision_handler_id
                 WHEN :isRetroactive = true THEN :approvedBy
                 WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
                     THEN youngest_child.finance_decision_handler_id
@@ -507,6 +515,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<FeeDecisio
             .bind("approvedBy", approvedBy)
             .bind("isRetroactive", isRetroactive)
             .bind("approvedAt", approvedAt)
+            .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
             .add()
     }
     batch.execute()

@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -72,7 +73,8 @@ class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
     fun search(
@@ -122,7 +124,8 @@ class FeeDecisionController(
                     tx,
                     user,
                     feeDecisionIds,
-                    evakaClock.now()
+                    evakaClock.now(),
+                    featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
             }

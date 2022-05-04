@@ -99,6 +99,7 @@ class EspooConfig {
         citizenReservationThresholdHours = 150,
         dailyFeeDivisorOperationalDaysOverride = null,
         freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
+        alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
     )
 
     @Bean

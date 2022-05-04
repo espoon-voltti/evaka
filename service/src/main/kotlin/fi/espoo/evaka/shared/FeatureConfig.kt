@@ -41,4 +41,12 @@ data class FeatureConfig(
      * and all the operating days are marked either sick leaves or planned absences.
      */
     val freeSickLeaveOnContractDays: Boolean,
+
+    /** Whether to always use the marked daycare finance decision handler
+     *
+     *  If true, regardless of situation use the handler marked in the daycare settings
+     *  as the handler of a decision.
+     *  If false, use the current user as the handler as speficied in the code
+     */
+    val alwaysUseDaycareFinanceDecisionHandler: Boolean,
 )
