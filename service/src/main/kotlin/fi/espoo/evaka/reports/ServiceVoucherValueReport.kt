@@ -235,53 +235,57 @@ WITH min_voucher_decision_date AS (
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) AND lower(p.period) = :reportDate
 ), correction_targets AS (
-    SELECT DISTINCT
+    -- Validity updated after last freeze to be different in this period, or to not intersect with this period at all
+    SELECT
+        decision.id AS decision_id,
         decision.child_id,
         p.period,
         p.operational_days,
         p.operational_days_count
     FROM month_periods p
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
-    WHERE lower(p.period) < :reportDate
-        AND decision.status = ANY(:effective::voucher_value_decision_status[])
-        AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
-
-    UNION
-
-    SELECT DISTINCT
-        decision.child_id,
-        p.period,
-        p.operational_days,
-        p.operational_days_count
-    FROM month_periods p
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
+    JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
     WHERE lower(p.period) < :reportDate
         AND decision.status = ANY(:effective::voucher_value_decision_status[])
         AND decision.validity_updated_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
-        AND coalesce(least(decision.valid_to, :reportDate - 1) != (
-            SELECT max(upper(sn_decision.realized_period) - 1) FROM voucher_value_report_decision sn_decision
-            WHERE sn_decision.decision_id = decision.id
-        ), TRUE)
+        AND (daterange(decision.valid_from, decision.valid_to, '[]') * p.period) <> sn_decision.realized_period
 
     UNION
 
-    SELECT DISTINCT
+    -- Annulled after last freeze
+    SELECT
+        decision.id AS decision_id,
         decision.child_id,
         p.period,
         p.operational_days,
         p.operational_days_count
     FROM month_periods p
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
+    JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id
     WHERE lower(p.period) < :reportDate
         AND decision.status = 'ANNULLED'::voucher_value_decision_status
         AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
-        AND NOT EXISTS (
-            SELECT 1 FROM voucher_value_decision decision2
-            WHERE decision.child_id = decision2.child_id
-                AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(decision2.valid_from, decision2.valid_to, '[]')
-                AND decision2.status = ANY(:effective::voucher_value_decision_status[])
-        )
 ), corrections AS (
+    -- New decision created for the past
+    SELECT
+        decision.id AS decision_id,
+        p.period,
+        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
+        p.operational_days,
+        p.operational_days_count
+    FROM month_periods p
+    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
+    WHERE lower(p.period) < :reportDate
+        AND decision.status = ANY(:effective::voucher_value_decision_status[])
+        AND NOT EXISTS (
+            SELECT 1 FROM voucher_value_report_decision sn_decision
+            WHERE sn_decision.decision_id = decision.id
+                AND sn_decision.realized_period && p.period
+        )
+
+    UNION
+
+    -- Replaced with another decision
     SELECT
         decision.id AS decision_id,
         p.period,
@@ -290,22 +294,22 @@ WITH min_voucher_decision_date AS (
         p.operational_days_count
     FROM correction_targets ct
     JOIN month_periods p ON ct.period && p.period
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period AND decision.child_id = ct.child_id
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
+    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && sn_decision.realized_period AND decision.child_id = ct.child_id
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
 ), refunds AS (
     SELECT
         p.period,
         p.operational_days,
         p.operational_days_count,
-        decision.id AS decision_id,
+        ct.decision_id,
         sn_decision.realized_amount,
         sn_decision.realized_period,
         sn_decision.type,
-        rank() OVER (PARTITION BY decision.child_id, p.period ORDER BY sn.year DESC, sn.month DESC) AS rank
+        rank() OVER (PARTITION BY ct.child_id, p.period ORDER BY sn.year DESC, sn.month DESC) AS rank
     FROM correction_targets ct
     JOIN month_periods p ON ct.period && p.period
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period AND decision.child_id = ct.child_id
-    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = decision.id AND sn_decision.realized_period && p.period
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
     JOIN voucher_value_report_snapshot sn ON sn.id = sn_decision.voucher_value_report_snapshot_id
 ), report_rows AS (
     SELECT
