@@ -65,6 +65,7 @@ services:
       retries: 5
 
   keycloak:
+    image: "${EVAKA_KEYCLOAK_IMAGE:-evaka/keycloak}"
     build:
       context: ../keycloak
     ports:

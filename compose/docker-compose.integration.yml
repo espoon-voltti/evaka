@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Docker Compose file that can be used for development builds and that links
+# against the development Docker files. Do not mistaken these with production
+# docker files that the other compose files deal with.
+#
+# Tips and Tricks
+# ===============
+#
+# If you need to target a local service instead you can use
+# a pseudo address docker.for.mac.localhost when running on OXS.
+# E.g. to target local application service set APPLICATION_API_URL: http://docker.for.mac.localhost:8080
+version: '3.5'
+
+services:
+  integration-test:
+    image: evaka-service-builder
+    build:
+      context: ..
+      target: builder
+      dockerfile: service/Dockerfile
+      args:
+        BASE_IMAGE: "${JAVA_BASE_IMAGE:-evaka-java}"
+    volumes:
+      - ./test-results/:/evaka/service/build/test-results/
+    depends_on:
+      - db_it
+      - redis
+      - s3.mock.evaka
+    ipc: host
+    network_mode: host
+    command: sh -c "./gradlew compileIntegrationTestKotlin && ./gradlew integrationTest"

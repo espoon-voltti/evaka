@@ -8,12 +8,11 @@ version: '3.5'
 
 services:
   evaka-proxy:
-    image: nginx:1.21.3-alpine
+    image: ${EVAKA_FRONTEND_IMAGE:-evaka/frontend}
     ports:
       - "9099:8080"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/conf.d/evaka-nginx.conf
-      - ./s3-mount:/static
     # Enable for debug logging
     # command: [nginx-debug, '-g', 'daemon off;']
     depends_on:

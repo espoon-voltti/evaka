@@ -8,7 +8,7 @@ version: "3.5"
 
 services:
   playwright:
-    image: public.ecr.aws/p6g0g5e1/evaka/e2e-playwright:${COMPOSE_TAG:-v0.1.0}
+    image: public.ecr.aws/p6g0g5e1/evaka/e2e-playwright:${PLAYWRIGHT_TAG:-v0.2.0-test-2-github}
     build:
       context: ./e2e
       dockerfile: ./playwright.Dockerfile

@@ -4,17 +4,8 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-if [ "$1" = "up" ] || [ "$1" = "run" ]; then
-    S3_DIR=s3-mount/
-    mkdir -p "$S3_DIR"
-    LOCAL_DIR=../frontend
-
-    rm -rf "$S3_DIR/employee"
-    rm -rf "$S3_DIR/employee/mobile"
-    rm -rf "$S3_DIR/citizen"
-    cp -r "$LOCAL_DIR/dist/bundle/employee-frontend" "$S3_DIR/employee"
-    cp -r "$LOCAL_DIR/dist/bundle/employee-mobile-frontend" "$S3_DIR/employee/mobile"
-    cp -r "$LOCAL_DIR/dist/bundle/citizen-frontend" "$S3_DIR/citizen"
+if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
+    ./build.sh
 fi
 
 export UID="${UID:-$(id -u)}"
