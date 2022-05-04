@@ -69,10 +69,12 @@ export function StaffOccupancyCoefficients({ allowEditing }: Props) {
           return (
             <Table>
               <Thead>
-                <Th>{i18n.common.form.name}</Th>
-                <Th>
-                  {i18n.unit.staffOccupancies.occupancyCoefficientEnabled}
-                </Th>
+                <Tr>
+                  <Th>{i18n.common.form.name}</Th>
+                  <Th>
+                    {i18n.unit.staffOccupancies.occupancyCoefficientEnabled}
+                  </Th>
+                </Tr>
               </Thead>
               <Tbody>
                 {rows.map((r) => (
