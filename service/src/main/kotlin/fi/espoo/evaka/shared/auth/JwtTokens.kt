@@ -26,6 +26,7 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
         AuthenticatedUserType.employee -> AuthenticatedUser.Employee(id, roles)
         AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(id, employeeId)
         AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
+        AuthenticatedUserType.integration -> AuthenticatedUser.Integration
         null -> null
     }
 }

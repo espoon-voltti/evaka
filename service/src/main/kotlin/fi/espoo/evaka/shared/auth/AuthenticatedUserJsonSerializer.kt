@@ -27,6 +27,7 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
                 gen.writeObjectField("id", value.id.toString())
                 value.employeeId?.let { gen.writeObjectField("employeeId", value.employeeId.toString()) }
             }
+            is AuthenticatedUser.Integration -> {}
             is AuthenticatedUser.SystemInternalUser -> {}
         }.exhaust()
         gen.writeEndObject()

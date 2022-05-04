@@ -20,6 +20,7 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
             AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(user.id!!, CitizenAuthLevel.WEAK)
             AuthenticatedUserType.employee -> AuthenticatedUser.Employee(user.id!!, user.globalRoles + user.allScopedRoles)
             AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(user.id!!, user.employeeId)
+            AuthenticatedUserType.integration -> AuthenticatedUser.Integration
             AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
         }
     }

@@ -13,7 +13,13 @@ export function createJwt(payload: {
   sub: string
   scope?: string
   evaka_employee_id?: string
-  evaka_type: 'citizen' | 'citizen_weak' | 'employee' | 'mobile' | 'system'
+  evaka_type:
+    | 'citizen'
+    | 'citizen_weak'
+    | 'employee'
+    | 'mobile'
+    | 'system'
+    | 'integration'
 }): string {
   return jwt.sign(payload, privateKey, {
     algorithm: 'RS256',
