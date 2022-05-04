@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import Container from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { footerLogo } from 'lib-customizations/citizen'
@@ -40,6 +40,11 @@ export const footerHeightDesktop = '72px'
 
 const FooterItem = styled.div`
   display: inline-block;
+  height: 40px;
+
+  @media (min-width: ${desktopMin}) {
+    height: auto;
+  }
 `
 
 const FooterContainer = styled(Container)`
@@ -51,7 +56,7 @@ const FooterContainer = styled(Container)`
   padding: 30px 16px 20px 16px;
   font-weight: ${fontWeights.normal};
 
-  @media (min-width: 600px) {
+  @media (min-width: ${tabletMin}) {
     flex-wrap: wrap;
     max-height: 240px;
   }
