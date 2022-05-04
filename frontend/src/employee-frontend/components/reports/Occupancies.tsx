@@ -15,6 +15,7 @@ import LocalDate from 'lib-common/local-date'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -460,7 +461,20 @@ export default React.memo(function Occupancies() {
                             : undefined
                         }
                       >
-                        {cell}
+                        {usedValues === 'raw' &&
+                        (!includeGroups || colNum > 0) ? (
+                          <Tooltip
+                            tooltip={
+                              colNum % 2 === (includeGroups ? 1 : 0)
+                                ? i18n.reports.occupancies.sum
+                                : i18n.reports.occupancies.caretakers
+                            }
+                          >
+                            {cell}
+                          </Tooltip>
+                        ) : (
+                          <>{cell}</>
+                        )}
                       </StyledTd>
                     ))}
                   </Tr>

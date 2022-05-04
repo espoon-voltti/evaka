@@ -2558,6 +2558,8 @@ export const fi = {
         }
       },
       average: 'Keskiarvo',
+      sum: 'Summa',
+      caretakers: 'Kasvattajia',
       missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
     },
     invoices: {
