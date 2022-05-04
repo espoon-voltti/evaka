@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
+import { combine, Failure, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -178,22 +178,18 @@ export const Incomes = React.memo(function Incomes({
     return res
   }
 
-  const handleErrors = (res: Result<unknown>) => {
-    if (res.isFailure) {
-      const text =
-        res.statusCode === 409
-          ? i18n.personProfile.income.details.conflictErrorText
-          : undefined
+  const handleErrors = (res: Failure<unknown>) => {
+    const text =
+      res.statusCode === 409
+        ? i18n.personProfile.income.details.conflictErrorText
+        : undefined
 
-      setErrorMessage({
-        type: 'error',
-        title: i18n.personProfile.income.details.updateError,
-        text,
-        resolveLabel: i18n.common.ok
-      })
-
-      throw res.message
-    }
+    setErrorMessage({
+      type: 'error',
+      title: i18n.personProfile.income.details.updateError,
+      text,
+      resolveLabel: i18n.common.ok
+    })
   }
 
   return (
@@ -222,20 +218,17 @@ export const Incomes = React.memo(function Incomes({
               deleting={deleting}
               setDeleting={setDeleting}
               createIncome={(income: IncomeBody) =>
-                createIncome(personId, income)
-                  .then(toggleCreated)
-                  .then(handleErrors)
+                createIncome(personId, income).then(toggleCreated)
               }
               updateIncome={(incomeId: UUID, income: Income) =>
-                updateIncome(incomeId, income).then(handleErrors)
+                updateIncome(incomeId, income)
               }
-              deleteIncome={(incomeId: UUID) =>
-                deleteIncome(incomeId).then(handleErrors)
-              }
+              deleteIncome={(incomeId: UUID) => deleteIncome(incomeId)}
               onSuccessfulUpdate={() => {
                 setEditing(undefined)
                 reloadIncomes()
               }}
+              onFailedUpdate={handleErrors}
             />
           </>
         )

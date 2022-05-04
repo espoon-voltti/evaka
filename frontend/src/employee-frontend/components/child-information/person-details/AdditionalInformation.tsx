@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -60,7 +61,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
 
   const editing = uiMode == 'child-additional-details-editing'
 
-  const startEdit = () => {
+  const startEdit = useCallback(() => {
     if (additionalInformation.isSuccess) {
       setForm({
         additionalInfo: additionalInformation.value.additionalInfo,
@@ -71,16 +72,16 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
       })
       toggleUiMode('child-additional-details-editing')
     }
-  }
+  }, [additionalInformation, toggleUiMode])
 
-  const onSubmit = () => {
-    void updateAdditionalInformation(id, form).then((res) => {
-      if (res.isSuccess) {
-        clearUiMode()
-        loadData()
-      }
-    })
-  }
+  const onSubmit = useCallback(
+    () => updateAdditionalInformation(id, form),
+    [id, form]
+  )
+  const onSuccess = useCallback(() => {
+    clearUiMode()
+    loadData()
+  }, [clearUiMode, loadData])
 
   const valueWidth = '600px'
 
@@ -88,23 +89,25 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
     <div data-qa="additional-information-section">
       <FlexRow justifyContent="space-between">
         <H4>{i18n.childInformation.additionalInformation.title}</H4>
-        <RequireRole
-          oneOf={[
-            'SERVICE_WORKER',
-            'FINANCE_ADMIN',
-            'UNIT_SUPERVISOR',
-            'ADMIN',
-            'STAFF',
-            'SPECIAL_EDUCATION_TEACHER'
-          ]}
-        >
-          <InlineButton
-            icon={faPen}
-            onClick={() => startEdit()}
-            data-qa="edit-child-settings-button"
-            text={i18n.common.edit}
-          />
-        </RequireRole>
+        {!editing && (
+          <RequireRole
+            oneOf={[
+              'SERVICE_WORKER',
+              'FINANCE_ADMIN',
+              'UNIT_SUPERVISOR',
+              'ADMIN',
+              'STAFF',
+              'SPECIAL_EDUCATION_TEACHER'
+            ]}
+          >
+            <InlineButton
+              icon={faPen}
+              onClick={startEdit}
+              data-qa="edit-child-settings-button"
+              text={i18n.common.edit}
+            />
+          </RequireRole>
+        )}
       </FlexRow>
       {renderResult(additionalInformation, (data) => (
         <>
@@ -196,10 +199,11 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                   onClick={() => clearUiMode()}
                   text={i18n.common.cancel}
                 />
-                <Button
+                <AsyncButton
                   primary
                   disabled={false}
-                  onClick={() => onSubmit()}
+                  onClick={onSubmit}
+                  onSuccess={onSuccess}
                   data-qa="confirm-edited-child-button"
                   text={i18n.common.confirm}
                 />

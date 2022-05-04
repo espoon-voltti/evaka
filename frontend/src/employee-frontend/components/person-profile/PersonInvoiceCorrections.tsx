@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'
-import { combine, Result } from 'lib-common/api'
+import { combine, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -139,10 +139,10 @@ export default React.memo(function PersonInvoiceCorrections({
   )
 
   const saveNote = useCallback(() => {
-    if (!noteModalState) return Promise.resolve()
+    if (!noteModalState) return
     if (noteModalState.id === 'new') {
       updateState({ note: noteModalState.note })
-      return Promise.resolve()
+      return
     } else {
       return updateInvoiceCorrectionNote(noteModalState.id, noteModalState.note)
     }
@@ -330,7 +330,7 @@ const ChildSection = React.memo(function ChildSection({
             <InlineButton text={i18n.common.cancel} onClick={cancelEditing} />
             <InlineAsyncButton
               text={i18n.common.save}
-              onClick={save ?? (() => Promise.resolve())}
+              onClick={save ?? (() => Promise.resolve(Success.of()))}
               onSuccess={onSaveSuccess}
               disabled={!save}
             />

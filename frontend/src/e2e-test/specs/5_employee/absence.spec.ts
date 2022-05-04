@@ -21,7 +21,6 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycarePlacement } from '../../dev-api/types'
-// import AbsencesPage from '../../pages/employee/absences/absences-page'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

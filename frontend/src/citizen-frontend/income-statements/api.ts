@@ -95,30 +95,42 @@ export const getChildIncomeStatementStartDates = (
 
 export async function createIncomeStatement(
   body: IncomeStatementBody
-): Promise<void> {
-  return client.post('/citizen/income-statements', body)
+): Promise<Result<void>> {
+  return client
+    .post('/citizen/income-statements', body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createChildIncomeStatement(
   childId: string,
   body: IncomeStatementBody
-): Promise<void> {
-  return client.post(`/citizen/income-statements/child/${childId}`, body)
+): Promise<Result<void>> {
+  return client
+    .post(`/citizen/income-statements/child/${childId}`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateIncomeStatement(
   id: UUID,
   body: IncomeStatementBody
-): Promise<void> {
-  return client.put(`/citizen/income-statements/${id}`, body)
+): Promise<Result<void>> {
+  return client
+    .put(`/citizen/income-statements/${id}`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateChildIncomeStatement(
   childId: UUID,
   id: UUID,
   body: IncomeStatementBody
-): Promise<void> {
-  return client.put(`/citizen/income-statements/child/${childId}/${id}`, body)
+): Promise<Result<void>> {
+  return client
+    .put(`/citizen/income-statements/child/${childId}/${id}`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteIncomeStatement(id: UUID): Promise<Result<void>> {

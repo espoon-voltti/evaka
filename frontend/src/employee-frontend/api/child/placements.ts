@@ -94,14 +94,14 @@ export async function getPlacements(
 export async function updatePlacement(
   placementId: UUID,
   body: PlacementUpdate
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .put(`/placements/${placementId}`, {
       ...body,
       startDate: body.startDate,
       endDate: body.endDate
     })
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

@@ -9,7 +9,7 @@ import { client } from './client'
 export async function uploadChildImage(
   childId: string,
   file: File
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   const formData = new FormData()
   formData.append('file', file)
 
@@ -19,7 +19,7 @@ export async function uploadChildImage(
         'Content-Type': 'multipart/form-data'
       }
     })
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

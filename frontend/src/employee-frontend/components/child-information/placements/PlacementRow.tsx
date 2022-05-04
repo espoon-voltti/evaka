@@ -125,9 +125,9 @@ export default React.memo(function PlacementRow({
   }, [onRefreshNeeded])
 
   const onFailure = useCallback(
-    (res: Failure<unknown> | undefined) => {
+    (res: Failure<unknown>) => {
       const message =
-        res?.statusCode === 403
+        res.statusCode === 403
           ? i18n.common.error.forbidden
           : res?.statusCode === 409
           ? i18n.childInformation.placements.error.conflict.title

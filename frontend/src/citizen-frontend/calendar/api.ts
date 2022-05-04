@@ -47,10 +47,10 @@ export async function getReservations(
 
 export async function postReservations(
   reservations: DailyReservationRequest[]
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .post('/citizen/reservations', reservations)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 

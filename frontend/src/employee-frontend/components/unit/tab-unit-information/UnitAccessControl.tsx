@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading } from 'lib-common/api'
+import { combine, isLoading, Result } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
@@ -20,7 +20,7 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -390,10 +390,12 @@ function getAclItemDataQa(item: AclOption): string {
 
 const AddAcl = React.memo(function AddAcl({
   employees,
-  onAddAclRow
+  onSave,
+  onSuccess
 }: {
   employees: Employee[]
-  onAddAclRow: (employeeId: UUID) => void
+  onSave: (employeeId: UUID) => Promise<Result<unknown>>
+  onSuccess: () => void
 }) {
   const { i18n } = useTranslation()
   const [selectedEmployee, setSelectedEmployee] = useState<{
@@ -421,6 +423,11 @@ const AddAcl = React.memo(function AddAcl({
     [i18n, employees]
   )
 
+  const onClick = useCallback(
+    () => (selectedEmployee ? onSave(selectedEmployee.value) : undefined),
+    [onSave, selectedEmployee]
+  )
+
   return (
     <>
       <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
@@ -435,14 +442,11 @@ const AddAcl = React.memo(function AddAcl({
           getItemLabel={getAclItemLabel}
           getItemDataQa={getAclItemDataQa}
         />
-        <Button
+        <AsyncButton
           data-qa="acl-add-button"
           disabled={!selectedEmployee}
-          onClick={() => {
-            if (selectedEmployee) {
-              onAddAclRow(selectedEmployee.value)
-            }
-          }}
+          onClick={onClick}
+          onSuccess={onSuccess}
           text={i18n.common.add}
         />
       </AddAclSelectContainer>
@@ -598,25 +602,19 @@ export default React.memo(function UnitAccessControl({
   )
 
   const addUnitSupervisor = useCallback(
-    (employeeId: UUID) =>
-      addDaycareAclSupervisor(unitId, employeeId).then(() =>
-        reloadDaycareAclRows()
-      ),
-    [reloadDaycareAclRows, unitId]
+    (employeeId: UUID) => addDaycareAclSupervisor(unitId, employeeId),
+    [unitId]
   )
 
   const addSpecialEducationTeacher = useCallback(
     (employeeId: UUID) =>
-      addDaycareAclSpecialEducationTeacher(unitId, employeeId).then(() =>
-        reloadDaycareAclRows()
-      ),
-    [reloadDaycareAclRows, unitId]
+      addDaycareAclSpecialEducationTeacher(unitId, employeeId),
+    [unitId]
   )
 
   const addStaff = useCallback(
-    (employeeId: UUID) =>
-      addDaycareAclStaff(unitId, employeeId).then(() => reloadDaycareAclRows()),
-    [reloadDaycareAclRows, unitId]
+    (employeeId: UUID) => addDaycareAclStaff(unitId, employeeId),
+    [unitId]
   )
 
   const updateStaffGroupAcls = useCallback(
@@ -736,7 +734,8 @@ export default React.memo(function UnitAccessControl({
               {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
                 <AddAcl
                   employees={candidateEmployees}
-                  onAddAclRow={addUnitSupervisor}
+                  onSave={addUnitSupervisor}
+                  onSuccess={reloadDaycareAclRows}
                 />
               )}
             </>
@@ -767,7 +766,8 @@ export default React.memo(function UnitAccessControl({
               {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
                 <AddAcl
                   employees={candidateEmployees}
-                  onAddAclRow={addSpecialEducationTeacher}
+                  onSave={addSpecialEducationTeacher}
+                  onSuccess={reloadDaycareAclRows}
                 />
               )}
             </>
@@ -794,7 +794,11 @@ export default React.memo(function UnitAccessControl({
                 deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
               />
               {permittedActions.has('INSERT_ACL_STAFF') && (
-                <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
+                <AddAcl
+                  employees={candidateEmployees}
+                  onSave={addStaff}
+                  onSuccess={reloadDaycareAclRows}
+                />
               )}
             </>
           )

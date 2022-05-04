@@ -227,7 +227,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                               }
                               return res
                             })
-                          : Promise.reject()
+                          : undefined
                       }
                       onSuccess={() => {
                         reloadStaffAttendance()

@@ -108,9 +108,8 @@ export default React.memo(function HolidayPeriodForm({
 
   const onSubmit = useCallback(() => {
     const validForm = isValid && formToHolidayPeriodBody(form)
-    if (!validForm) {
-      return Promise.reject()
-    }
+    if (!validForm) return
+
     const apiCall = holidayPeriod
       ? (params: HolidayPeriodBody) =>
           updateHolidayPeriod(holidayPeriod.id, params)

@@ -43,7 +43,7 @@ export class Loading<T> {
 
   mapAll<A>(fs: {
     loading: () => A
-    failure: () => A
+    failure: (v: Failure<T>) => A
     success: (v: T, isReloading: boolean) => A
   }): A {
     return fs.loading()
@@ -108,10 +108,10 @@ export class Failure<T> {
 
   mapAll<A>(fs: {
     loading: () => A
-    failure: () => A
+    failure: (v: Failure<T>) => A
     success: (v: T, isReloading: boolean) => A
   }): A {
-    return fs.failure()
+    return fs.failure(this)
   }
 
   getOrElse<A>(other: A): A | T {
@@ -155,7 +155,7 @@ export class Success<T> {
 
   mapAll<A>(fs: {
     loading: () => A
-    failure: () => A
+    failure: (v: Failure<T>) => A
     success: (v: T, isReloading: boolean) => A
   }): A {
     return fs.success(this.value, this.isReloading)

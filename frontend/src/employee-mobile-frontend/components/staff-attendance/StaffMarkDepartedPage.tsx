@@ -26,10 +26,9 @@ import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import { Actions } from '../attendances/components'
+import { TimeWrapper } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
-
-import { TimeWrapper } from './components/staff-components'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
@@ -186,19 +185,17 @@ export default React.memo(function StaffMarkDepartedPage() {
                         postStaffDeparture(attendanceId, {
                           time,
                           pinCode: pinCode.join('')
-                        }).then((res) => {
-                          if (res.isFailure) {
-                            setErrorCode(res.errorCode)
-                            if (res.errorCode === 'WRONG_PIN') {
-                              setPinCode(EMPTY_PIN)
-                            }
-                          }
-                          return res
                         })
                       }
                       onSuccess={() => {
                         reloadStaffAttendance()
                         history.go(-1)
+                      }}
+                      onFailure={(res) => {
+                        setErrorCode(res.errorCode)
+                        if (res.errorCode === 'WRONG_PIN') {
+                          setPinCode(EMPTY_PIN)
+                        }
                       }}
                       data-qa="mark-departed-btn"
                     />

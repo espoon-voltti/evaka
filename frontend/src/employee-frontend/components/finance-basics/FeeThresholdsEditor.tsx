@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
@@ -19,9 +19,11 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faQuestion } from 'lib-icons'
 
 import {
   createFeeThresholds,
@@ -43,7 +45,6 @@ export default React.memo(function FeeThresholdsEditor({
   initialState,
   close,
   reloadData,
-  toggleSaveRetroactiveWarning,
   existingThresholds
 }: {
   i18n: Translations
@@ -51,10 +52,6 @@ export default React.memo(function FeeThresholdsEditor({
   initialState: FormState
   close: () => void
   reloadData: () => void
-  toggleSaveRetroactiveWarning: (cbs: {
-    resolve: () => void
-    reject: () => void
-  }) => void
   existingThresholds: Result<FeeThresholdsWithId[]>
 }) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
@@ -64,22 +61,10 @@ export default React.memo(function FeeThresholdsEditor({
     existingThresholds.map((ts) => ts.filter((t) => t.id !== id))
   )
   const [saveError, setSaveError] = useState<string>()
+  const [showModal, setShowModal] = useState(false)
 
-  const handleSaveErrors = async (promise: Promise<Result<unknown>>) => {
-    let result
-    try {
-      result = await promise
-    } catch (e) {
-      setSaveError('unknown')
-      throw e
-    }
-
-    if (result.isFailure) {
-      setSaveError(result.errorCode)
-      throw Error(result.message)
-    } else {
-      setSaveError(undefined)
-    }
+  const handleSaveErrors = (result: Failure<unknown>) => {
+    setSaveError(result.errorCode)
   }
 
   const validationErrorInfo = (
@@ -428,7 +413,7 @@ export default React.memo(function FeeThresholdsEditor({
         <AsyncButton
           primary
           text={i18n.common.save}
-          onClick={async (cancel) => {
+          onClick={() => {
             if (!('payload' in validationResult)) {
               return
             }
@@ -438,30 +423,50 @@ export default React.memo(function FeeThresholdsEditor({
                 LocalDate.today()
               )
             ) {
-              const resolved = await new Promise((resolve) =>
-                toggleSaveRetroactiveWarning({
-                  resolve: () => resolve(true),
-                  reject: () => resolve(false)
-                })
-              )
-
-              if (!resolved) return cancel()
+              setShowModal(true)
+              return
             }
 
-            return await handleSaveErrors(
-              id === undefined
-                ? createFeeThresholds(validationResult.payload)
-                : updateFeeThresholds(id, validationResult.payload)
-            )
+            return id === undefined
+              ? createFeeThresholds(validationResult.payload)
+              : updateFeeThresholds(id, validationResult.payload)
           }}
           onSuccess={() => {
             close()
             reloadData()
           }}
+          onFailure={handleSaveErrors}
           disabled={'errors' in validationResult}
           data-qa="save"
         />
       </ButtonRow>
+      {showModal ? (
+        <InfoModal
+          icon={faQuestion}
+          type="danger"
+          title={i18n.financeBasics.fees.modals.saveRetroactive.title}
+          text={i18n.financeBasics.fees.modals.saveRetroactive.text}
+          reject={{
+            action: () => {
+              setShowModal(false)
+            },
+            label: i18n.financeBasics.fees.modals.saveRetroactive.reject
+          }}
+          resolve={{
+            action: async () => {
+              if (!('payload' in validationResult)) {
+                return
+              }
+              await (id === undefined
+                ? createFeeThresholds(validationResult.payload)
+                : updateFeeThresholds(id, validationResult.payload))
+              close()
+              reloadData()
+            },
+            label: i18n.financeBasics.fees.modals.saveRetroactive.resolve
+          }}
+        />
+      ) : null}
     </>
   )
 })

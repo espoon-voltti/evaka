@@ -57,12 +57,8 @@ export default React.memo(function VardaErrors() {
   }
 
   const markChildForResetAndReload = async (childId: string) => {
-    await markChildForVardaReset(childId)
     setDirty(true)
-  }
-
-  const startResetVardaChildren = async () => {
-    await runResetVardaChildren()
+    return markChildForVardaReset(childId)
   }
 
   return (
@@ -72,7 +68,7 @@ export default React.memo(function VardaErrors() {
         <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
         <AsyncButton
           text={i18n.reports.vardaErrors.vardaResetButton}
-          onClick={startResetVardaChildren}
+          onClick={runResetVardaChildren}
           onSuccess={() => null}
         />
         {rows.isLoading && <Loader />}

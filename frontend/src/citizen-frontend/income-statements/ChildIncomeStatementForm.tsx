@@ -5,14 +5,13 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { validateIf, validDate } from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import AsyncButton, {
-  AsyncClickCallback
-} from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -46,7 +45,7 @@ interface Props {
   showFormErrors: boolean
   otherStartDates: LocalDate[]
   onChange: SetStateCallback<Form.IncomeStatementForm>
-  onSave: AsyncClickCallback
+  onSave: () => Promise<Result<unknown>> | undefined
   onSuccess: () => void
   onCancel: () => void
 }

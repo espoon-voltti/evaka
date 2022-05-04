@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Result } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -51,14 +50,17 @@ export default function MarkExternalStaffMemberArrivalPage() {
     name: ''
   })
 
-  const onSubmit = (): Promise<Result<void>> =>
-    form.group
-      ? postExternalStaffArrival({
-          arrived: form.arrived,
-          groupId: form.group.id,
-          name: form.name
-        })
-      : Promise.reject()
+  const onSubmit = useCallback(
+    () =>
+      form.group
+        ? postExternalStaffArrival({
+            arrived: form.arrived,
+            groupId: form.group.id,
+            name: form.name
+          })
+        : undefined,
+    [form.arrived, form.group, form.name]
+  )
 
   const formIsValid = () =>
     !!(isValidTime(form.arrived) && form.name.trim() && form.group)

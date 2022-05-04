@@ -535,7 +535,7 @@ const ApplicationsList = React.memo(function Applications({
       {editedNote && (
         <AsyncFormModal
           title={i18n.applications.list.serviceWorkerNote}
-          resolveAction={async () =>
+          resolveAction={() =>
             updateServiceWorkerNote(editedNote, editedNoteText)
           }
           resolveLabel={i18n.common.save}

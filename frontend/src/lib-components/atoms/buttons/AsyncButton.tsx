@@ -3,8 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import * as Sentry from '@sentry/browser'
 import classNames from 'classnames'
-import React, { useEffect, useRef, useState } from 'react'
+import React, {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
@@ -14,109 +21,169 @@ import { faCheck, faTimes } from 'lib-icons'
 
 import { StyledButton } from './Button'
 
-export type AsyncClickCallback = (
-  cancel: () => Promise<void>
-) => Promise<void | Result<unknown>>
+const onSuccessTimeout = isAutomatedTest ? 10 : 500
+const clearStateTimeout = isAutomatedTest ? 25 : 2000
 
-type Props = {
+type ButtonState<T> =
+  | { state: 'idle' | 'in-progress' | 'failure' }
+  | { state: 'success'; value: T }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+const idle: ButtonState<any> = { state: 'idle' }
+const inProgress: ButtonState<any> = { state: 'in-progress' }
+const failure: ButtonState<any> = { state: 'failure' }
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export interface Props<T> {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: AsyncClickCallback
-  onSuccess: () => void
-  onFailure?: (result?: Failure<unknown> | undefined) => void
+  /** Return a promise to start an async action, or `undefined` to do a sync action (or nothing at all) */
+  onClick: () => Promise<Result<T>> | void
+  /** Called when the promise has resolved with a Success value and the success animation has finished */
+  onSuccess: (value: T) => void
+  /** Called immediately when the promis has resolved with a Failure value */
+  onFailure?: (failure: Failure<T>) => void
   type?: 'button' | 'submit'
+  preventDefault?: boolean
   primary?: boolean
   disabled?: boolean
   className?: string
   'data-qa'?: string
 }
 
-export default React.memo(function AsyncButton({
+function AsyncButton<T>({
   className,
   text,
   textInProgress = text,
   textDone = text,
   type = 'button',
+  preventDefault = type === 'submit',
   primary,
   disabled,
   onClick,
   onSuccess,
   onFailure,
   ...props
-}: Props) {
+}: Props<T>) {
   const { colors } = useTheme()
-  const [inProgress, setInProgress] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [showFailure, setShowFailure] = useState(false)
+  const [buttonState, setButtonState] = useState<ButtonState<T>>(idle)
   const onSuccessRef = useRef(onSuccess)
-  const canceledRef = useRef(false)
 
-  const handleFailure = (result: Failure<unknown> | undefined) => {
-    setShowFailure(true)
-    onFailure && onFailure(result)
-  }
+  const mountedRef = useRef(true)
+  useEffect(
+    () => () => {
+      mountedRef.current = false
+    },
+    []
+  )
 
-  const callback = () => {
-    setInProgress(true)
-    onClick(() => {
-      canceledRef.current = true
-      return Promise.resolve()
-    })
-      .then((result) => {
-        if (canceledRef.current) {
-          canceledRef.current = false
-          return
-        }
+  const handleSuccess = useCallback((value: T) => {
+    setButtonState({ state: 'success', value })
+  }, [])
 
-        if (result && result.isFailure) {
-          handleFailure(result)
-        } else {
-          setShowSuccess(true)
-        }
-      })
-      .catch(() => handleFailure(undefined))
-      .finally(() => setInProgress(false))
-  }
+  const handleFailure = useCallback(
+    (value: Failure<T> | undefined) => {
+      if (!mountedRef.current) return
+      setButtonState(failure)
+      onFailure && value !== undefined && onFailure(value)
+    },
+    [onFailure]
+  )
+
+  const isInProgress = buttonState.state === 'in-progress'
+  const isSuccess = buttonState.state === 'success'
+  const isFailure = buttonState.state === 'failure'
+
+  const handleClick = useCallback(
+    (e: FormEvent) => {
+      if (preventDefault) e.preventDefault()
+
+      if (!mountedRef.current) return
+      if (isInProgress) return
+
+      const maybePromise = onClick()
+      if (maybePromise === undefined) {
+        // The click handler didn't do an async call, nothing to do here
+      } else {
+        setButtonState(inProgress)
+        maybePromise
+          .then((result) => {
+            if (!mountedRef.current) return
+            if (result.isSuccess) {
+              handleSuccess(result.value)
+            }
+            if (result.isLoading) {
+              handleFailure(undefined)
+              Sentry.captureMessage(
+                'BUG: AsyncButton promise resolved to a Loading value',
+                Sentry.Severity.Error
+              )
+            } else if (result.isFailure) {
+              handleFailure(result)
+            } else {
+              handleSuccess(result.value)
+            }
+          })
+          .catch((originalErr: Error) => {
+            handleFailure(undefined)
+            if ('message' in originalErr && 'stack' in originalErr) {
+              const err = new Error(
+                `AsyncButton promise was rejected: ${originalErr.message}`
+              )
+              err.stack = originalErr.stack
+              Sentry.captureException(err)
+            } else {
+              Sentry.captureException(originalErr)
+            }
+          })
+      }
+    },
+    [preventDefault, isInProgress, onClick, handleSuccess, handleFailure]
+  )
 
   useEffect(() => {
-    onSuccessRef.current = onSuccess
+    onSuccessRef.current = (value: T) => onSuccess(value)
   }, [onSuccess])
 
   useEffect(() => {
-    const runOnSuccess = showSuccess
-      ? setTimeout(() => onSuccessRef.current(), isAutomatedTest ? 10 : 500)
-      : undefined
-    const clearShowSuccess = showSuccess
-      ? setTimeout(() => setShowSuccess(false), isAutomatedTest ? 25 : 2000)
-      : undefined
-
-    return () => {
-      if (runOnSuccess) clearTimeout(runOnSuccess)
-      if (clearShowSuccess) clearTimeout(clearShowSuccess)
+    if (buttonState.state === 'success') {
+      const runOnSuccess = setTimeout(
+        () => onSuccessRef.current(buttonState.value),
+        onSuccessTimeout
+      )
+      const clearState = setTimeout(
+        () => mountedRef.current && setButtonState(idle),
+        clearStateTimeout
+      )
+      return () => {
+        clearTimeout(runOnSuccess)
+        clearTimeout(clearState)
+      }
+    } else if (buttonState.state === 'failure') {
+      const clearState = setTimeout(
+        () => mountedRef.current && setButtonState(idle),
+        clearStateTimeout
+      )
+      return () => clearTimeout(clearState)
     }
-  }, [showSuccess])
+    return undefined
+  }, [buttonState])
 
-  useEffect(() => {
-    const clearShowFailure = showFailure
-      ? setTimeout(() => setShowFailure(false), isAutomatedTest ? 25 : 2000)
-      : undefined
-
-    return () => {
-      if (clearShowFailure) clearTimeout(clearShowFailure)
-    }
-  }, [showFailure])
-
-  const showIcon = inProgress || showSuccess || showFailure
+  const showIcon = buttonState.state !== 'idle'
 
   const container = useSpring<{ x: number }>({ x: showIcon ? 1 : 0 })
   const spinner = useSpring<{ opacity: number }>({
-    opacity: inProgress ? 1 : 0
+    opacity: isInProgress ? 1 : 0
   })
   const checkmark = useSpring<{ opacity: number }>({
-    opacity: showSuccess ? 1 : 0
+    opacity: isSuccess ? 1 : 0
   })
-  const cross = useSpring<{ opacity: number }>({ opacity: showFailure ? 1 : 0 })
+  const cross = useSpring<{ opacity: number }>({
+    opacity: isFailure ? 1 : 0
+  })
 
   return (
     <StyledButton
@@ -126,17 +193,9 @@ export default React.memo(function AsyncButton({
         disabled
       })}
       disabled={disabled || showIcon}
-      onClick={callback}
+      onClick={handleClick}
       {...props}
-      data-status={
-        inProgress
-          ? 'in-progress'
-          : showSuccess
-          ? 'success'
-          : showFailure
-          ? 'failure'
-          : ''
-      }
+      data-status={buttonState.state === 'idle' ? '' : buttonState.state}
     >
       <Content>
         <IconContainer
@@ -164,12 +223,14 @@ export default React.memo(function AsyncButton({
           </IconWrapper>
         </IconContainer>
         <span>
-          {inProgress ? textInProgress : showSuccess ? textDone : text}
+          {isInProgress ? textInProgress : isSuccess ? textDone : text}
         </span>
       </Content>
     </StyledButton>
   )
-})
+}
+
+export default React.memo(AsyncButton) as typeof AsyncButton
 
 const Content = styled.div`
   display: flex;

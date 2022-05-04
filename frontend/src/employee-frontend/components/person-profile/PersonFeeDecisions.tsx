@@ -134,7 +134,7 @@ const Modal = React.memo(function Modal({
         LocalDate.parseFiOrThrow(date)
       )
     }
-    return Promise.resolve()
+    return
   }, [headOfFamily, date, dateIsValid])
 
   const onSuccess = useCallback(() => {

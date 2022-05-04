@@ -286,9 +286,8 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
 
   const onSubmit = useCallback(() => {
     const body = isValid && formToQuestionnaireBody(form)
-    if (!body) {
-      return Promise.reject()
-    }
+    if (!body) return
+
     return questionnaire
       ? updateFixedPeriodQuestionnaire(questionnaire.id, body)
       : createFixedPeriodQuestionnaire(body)
@@ -607,8 +606,8 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           primary
           disabled={!isValid}
           text={i18n.common.save}
-          onSuccess={onSuccess}
           onClick={onSubmit}
+          onSuccess={onSuccess}
           data-qa="save-btn"
         />
         <Button onClick={onCancel} text={i18n.common.goBack} />

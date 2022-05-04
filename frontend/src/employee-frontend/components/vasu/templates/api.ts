@@ -83,16 +83,16 @@ export async function getVasuTemplate(id: UUID): Promise<Result<VasuTemplate>> {
 export async function updateVasuTemplateContents(
   id: UUID,
   content: VasuContent
-): Promise<Result<null>> {
+): Promise<Result<void>> {
   return client
     .put(`/vasu/templates/${id}/content`, content)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
-export async function deleteVasuTemplate(id: UUID): Promise<Result<null>> {
+export async function deleteVasuTemplate(id: UUID): Promise<Result<void>> {
   return client
     .delete(`/vasu/templates/${id}`)
-    .then(() => Success.of(null))
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

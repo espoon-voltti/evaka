@@ -119,16 +119,17 @@ export default React.memo(function ChildDailyNoteForm({
   const submit = useCallback(() => {
     setSubmitting(true)
     const body = formDataToRequestBody(form)
-    const promise = note
+    return note
       ? putChildDailyNote(note.id, body)
       : postChildDailyNote(childId, body)
-    return promise.then((res) => {
-      setSubmitting(false)
-      if (res.isSuccess) {
-        onSuccess()
-      }
-    })
-  }, [childId, form, note, onSuccess])
+  }, [childId, form, note])
+  const submitSuccess = useCallback(() => {
+    setSubmitting(false)
+    onSuccess()
+  }, [onSuccess])
+  const submitFailure = useCallback(() => {
+    setSubmitting(false)
+  }, [])
 
   const [deleting, setDeleting] = useState(false)
   const clearNote = useCallback(() => {
@@ -288,7 +289,8 @@ export default React.memo(function ChildDailyNoteForm({
             primary
             onClick={submit}
             text={i18n.common.save}
-            onSuccess={onSuccess}
+            onSuccess={submitSuccess}
+            onFailure={submitFailure}
             data-qa="btn-submit"
           />
         </FixedSpaceRow>

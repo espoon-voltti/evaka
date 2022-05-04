@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
   MessageAccount
@@ -34,7 +35,9 @@ const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
 
 interface Props {
   receiverOptions: MessageAccount[]
-  onSend: (messageBody: CitizenMessageBody) => Promise<void>
+  onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
+  onSuccess: () => void
+  onFailure: () => void
   onClose: () => void
   displaySendError: boolean
 }
@@ -42,6 +45,8 @@ interface Props {
 export default React.memo(function MessageEditor({
   receiverOptions,
   onSend,
+  onSuccess,
+  onFailure,
   onClose,
   displaySendError
 }: Props) {
@@ -52,6 +57,7 @@ export default React.memo(function MessageEditor({
 
   const title = message.title || i18n.messages.messageEditor.newMessage
 
+  const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
   return (
@@ -131,8 +137,9 @@ export default React.memo(function MessageEditor({
             primary
             text={i18n.messages.messageEditor.send}
             disabled={!sendEnabled}
-            onClick={() => onSend(message)}
-            onSuccess={() => onClose()}
+            onClick={send}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
             data-qa="send-message-btn"
           />
         </BottomRow>

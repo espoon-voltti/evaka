@@ -4,7 +4,7 @@
 
 import React, { FormEvent, useCallback } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Failure, Result } from 'lib-common/api'
 
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import Button from '../../atoms/buttons/Button'
@@ -60,27 +60,27 @@ export default React.memo(function FormModal({
   )
 })
 
-type AsyncModalProps = ModalBaseProps & {
-  resolveAction: (
-    cancel: () => Promise<void>
-  ) => Promise<void | Result<unknown>>
+type AsyncModalProps<T> = ModalBaseProps & {
+  resolveAction: () => Promise<Result<T>> | void
   resolveLabel: string
   resolveDisabled?: boolean
-  onSuccess: () => void
+  onSuccess: (value: T) => void
+  onFailure?: (value: Failure<T>) => void
   rejectAction: () => void
   rejectLabel: string
 }
 
-export const AsyncFormModal = React.memo(function AsyncFormModal({
+function AsyncFormModal_<T>({
   children,
   resolveAction,
   resolveLabel,
   resolveDisabled,
   onSuccess,
+  onFailure,
   rejectAction,
   rejectLabel,
   ...props
-}: AsyncModalProps) {
+}: AsyncModalProps<T>) {
   return (
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}
@@ -91,6 +91,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
           disabled={resolveDisabled}
           onClick={resolveAction}
           onSuccess={onSuccess}
+          onFailure={onFailure}
           data-qa="modal-okBtn"
         />
         <Gap horizontal size="xs" />
@@ -102,4 +103,8 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
       </ModalButtons>
     </BaseModal>
   )
-})
+}
+
+export const AsyncFormModal = React.memo(
+  AsyncFormModal_
+) as typeof AsyncFormModal_
