@@ -35,20 +35,22 @@ export const ReturnButtonWrapper = styled.div`
 type Props = {
   label: string
   'data-qa'?: string
+  onClick?: () => void
 }
 
 export default React.memo(function ReturnButton({
   label,
-  'data-qa': dataQa
-}: Props) {
+  'data-qa': dataQa,
+  onClick
   const { colors } = useTheme()
   const navigate = useNavigate()
+  const defaultBehaviour = () => navigate(-1)
   return (
-    <ReturnButtonWrapper>
+    <ReturnButtonWrapper display={display}>
       <InlineButton
         icon={faAngleLeft}
         text={label}
-        onClick={() => navigate(-1)}
+        onClick={onClick ?? defaultBehaviour}
         data-qa={dataQa}
         disabled={history.length <= 1}
         color={colors.main.m1}
