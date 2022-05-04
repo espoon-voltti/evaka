@@ -155,7 +155,8 @@ val testVoucherDaycare = DevDaycare(
     areaId = testArea.id,
     providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
     ophOrganizerOid = defaultPurchasedOrganizerOid,
-    invoicedByMunicipality = false
+    invoicedByMunicipality = false,
+    financeDecisionHandler = testDecisionMaker_2.id
 )
 
 val testVoucherDaycare2 = DevDaycare(

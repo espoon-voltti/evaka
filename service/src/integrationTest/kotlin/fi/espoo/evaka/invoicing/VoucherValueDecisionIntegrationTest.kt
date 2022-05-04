@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
@@ -446,6 +447,40 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decisionIds = sendAllValueDecisions()
 
         assertEquals(200, getPdfStatus(decisionIds[0], adminUser))
+    }
+
+    @Test
+    fun `VoucherValueDecision handler is set to the user when decision is not normal`() {
+        val approvedDecision = createReliefDecision(false)
+        assertEquals(testDecisionMaker_1.id.raw, approvedDecision.decisionHandler)
+    }
+
+    @Test
+    fun `VoucherValueDecision handler is set to the daycare handler when forced when decision is not normal`() {
+        val approvedDecision = createReliefDecision(true)
+        assertEquals(testVoucherDaycare.financeDecisionHandler?.raw, approvedDecision.decisionHandler)
+    }
+
+    fun createReliefDecision(forceDaycareHandler: Boolean): VoucherValueDecision {
+        createPlacement(startDate, endDate)
+        val decision = getAllValueDecisions().getOrNull(0)!!
+
+        db.transaction {
+            it.createUpdate("UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = :id")
+                .bind("id", decision.id)
+                .execute()
+        }
+
+        db.transaction {
+            it.approveValueDecisionDraftsForSending(
+                listOf(decision.id),
+                testDecisionMaker_1.id,
+                HelsinkiDateTime.now(),
+                forceDaycareHandler
+            )
+        }
+
+        return getAllValueDecisions().getOrNull(0)!!
     }
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
