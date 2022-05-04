@@ -150,7 +150,7 @@ class MessageNotificationEmailService(
                 
                 -----
        
-                Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messageUrl
+                Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet ${"så snart som möjligt ".takeIf { urgent }}här: $messageUrl
                 
                 Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
                 
