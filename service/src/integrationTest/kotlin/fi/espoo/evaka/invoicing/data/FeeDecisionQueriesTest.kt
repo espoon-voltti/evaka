@@ -10,11 +10,13 @@ import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultJsonMapper
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
@@ -121,42 +123,29 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `activateDrafts sets current user as approver for retroactive decision`() {
-        db.transaction { tx ->
-            val draft =
-                createFeeDecisionFixture(
-                    status = FeeDecisionStatus.DRAFT,
-                    decisionType = FeeDecisionType.NORMAL,
-                    headOfFamilyId = testAdult_1.id,
-                    period = testPeriod,
-                    children = listOf(
-                        createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
-                            placementType = PlacementType.DAYCARE,
-                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-                        )
-                    )
-                )
-
-            tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), true, false)
-
-            val result = tx.getFeeDecision(draft.id)!!
-            assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
-            assertEquals(1L, result.decisionNumber)
-            assertEquals(testDecisionMaker_1.id, result.approvedBy?.id)
-            assertNotNull(result.approvedAt)
-            assertEquals(
-                "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}",
-                "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}"
-            )
-        }
+        val result = createAndApproveFeeDecisionForSending(false, testDaycare)
+        assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
+        assertEquals(1L, result.decisionNumber)
+        assertEquals(testDecisionMaker_1.id, result.approvedBy?.id)
+        assertNotNull(result.approvedAt)
+        assertEquals(
+            "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}",
+            "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}"
+        )
     }
 
     @Test
     fun `activateDrafts sets daycare handler as approver for retroactive decision if forced`() {
-        db.transaction { tx ->
+        val result = createAndApproveFeeDecisionForSending(true, testDaycare2)
+        assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
+        assertEquals(1L, result.decisionNumber)
+        assertEquals(testDecisionMaker_1.id, result.approvedBy?.id)
+        assertNotNull(result.approvedAt)
+        assertEquals("${testDecisionMaker_2.lastName} ${testDecisionMaker_2.firstName}", "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}")
+    }
+
+    private fun createAndApproveFeeDecisionForSending(forceUseDaycareHandler: Boolean, childDaycare: DevDaycare): FeeDecisionDetailed {
+        return db.transaction { tx ->
             val draft =
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.DRAFT,
@@ -167,7 +156,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = childDaycare.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -175,14 +164,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
 
             tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), true, true)
+            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), true, forceUseDaycareHandler)
 
-            val result = tx.getFeeDecision(draft.id)!!
-            assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
-            assertEquals(1L, result.decisionNumber)
-            assertEquals(testDecisionMaker_1.id, result.approvedBy?.id)
-            assertNotNull(result.approvedAt)
-            assertEquals("${testDecisionMaker_2.lastName} ${testDecisionMaker_2.firstName}", "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}")
+            tx.getFeeDecision(draft.id)!!
         }
     }
 

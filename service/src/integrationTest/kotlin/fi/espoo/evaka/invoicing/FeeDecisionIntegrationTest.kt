@@ -616,7 +616,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `getDecision returns not found with non-existent decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, response, _) = http.get("/decisions/00000000-0000-0000-0000-000000000000")
+        val (_, response) = http.get("/decisions/00000000-0000-0000-0000-000000000000")
             .asUser(user)
             .responseString()
         assertEquals(404, response.statusCode)
@@ -649,7 +649,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
@@ -661,7 +661,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
@@ -692,7 +692,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -723,7 +723,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -754,7 +754,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_REJECTED }!!
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -793,7 +793,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
@@ -831,7 +831,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .responseString()
@@ -872,7 +872,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(oldDecision.id)))
             .responseString()
@@ -936,7 +936,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `confirmDrafts returns bad request when some decisions are not drafts`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(testDecisions.map { it.id }))
             .response()
@@ -949,7 +949,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .copy(validDuring = DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .response()
@@ -967,7 +967,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .copy(validDuring = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusYears(1)))
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
             .withMockedTime(now)
@@ -1002,7 +1002,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -1028,7 +1028,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -1060,7 +1060,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -1097,7 +1097,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
             .response()
@@ -1133,7 +1133,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
@@ -1169,7 +1169,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
             .response()
@@ -1197,7 +1197,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresManualSending)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
             .response()
@@ -1225,7 +1225,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresSending)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
             .response()
@@ -1509,7 +1509,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .execute()
         }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
             .responseString()
@@ -1662,7 +1662,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getPdfStatus(id: FeeDecisionId, user: AuthenticatedUser.Employee): Int {
-        val (_, response, _) = http.get("/decisions/pdf/$id")
+        val (_, response) = http.get("/decisions/pdf/$id")
             .asUser(user)
             .response()
         return response.statusCode
@@ -1676,7 +1676,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val decision = createFeeDecisionsForFamily(headOfFamily, partner, familyChildren)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, response, _) = http.post("/decisions/confirm")
+        val (_, response) = http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
             .responseString()
