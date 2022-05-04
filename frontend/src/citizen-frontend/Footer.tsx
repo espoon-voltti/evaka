@@ -36,7 +36,7 @@ export default React.memo(function Footer() {
   )
 })
 
-export const footerHeightDesktop = '62px'
+export const footerHeightDesktop = '72px'
 
 const FooterItem = styled.div`
   display: inline-block;
