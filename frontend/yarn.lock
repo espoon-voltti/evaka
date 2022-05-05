@@ -4768,6 +4768,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"date-fns-tz@npm:^1.3.4":
+  version: 1.3.4
+  resolution: "date-fns-tz@npm:1.3.4"
+  peerDependencies:
+    date-fns: ">=2.0.0"
+  checksum: d9b929f2d65b2c4ed96bb09a8bc38f3884b2c44525d58f9329bd374556bb0445bd13308747d209afda513c9b1fac33dfee91d0633b1e9c579d376715a1ac01c5
+  languageName: node
+  linkType: hard
+
 "date-fns@npm:^2.0.1, date-fns@npm:^2.16.1, date-fns@npm:^2.24.0, date-fns@npm:^2.28.0":
   version: 2.28.0
   resolution: "date-fns@npm:2.28.0"
@@ -5767,6 +5776,7 @@ __metadata:
     css-loader: ^6.7.1
     csstype: ^3.0.11
     date-fns: ^2.28.0
+    date-fns-tz: ^1.3.4
     downshift: ^6.1.7
     esbuild: ^0.14.36
     eslint: ^8.13.0
