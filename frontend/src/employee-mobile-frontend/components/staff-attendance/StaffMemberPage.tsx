@@ -54,16 +54,20 @@ export default React.memo(function StaffMemberPage() {
                   <>
                     <TimeInfo>
                       <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                      {formatTime(
-                        staffMember.latestCurrentDayAttendance.arrived
-                      )}
+                      <span data-qa="arrival-time">
+                        {formatTime(
+                          staffMember.latestCurrentDayAttendance.arrived
+                        )}
+                      </span>
                     </TimeInfo>
                     {staffMember.latestCurrentDayAttendance.departed && (
                       <TimeInfo>
                         <Label>{i18n.attendances.departureTime}</Label>{' '}
-                        {formatTime(
-                          staffMember.latestCurrentDayAttendance.departed
-                        )}
+                        <span data-qa="departure-time">
+                          {formatTime(
+                            staffMember.latestCurrentDayAttendance.departed
+                          )}
+                        </span>
                       </TimeInfo>
                     )}
                   </>

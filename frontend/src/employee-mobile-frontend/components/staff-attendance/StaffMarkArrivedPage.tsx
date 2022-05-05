@@ -158,7 +158,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                   <TimeInput
                     onChange={setTime}
                     value={time}
-                    data-qa="set-time"
+                    data-qa="input-arrived"
                     info={
                       timeInFuture
                         ? {
@@ -176,6 +176,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                         <Gap />
                         <Label>{i18n.common.group}</Label>
                         <Select
+                          data-qa="group-select"
                           selectedItem={attendanceGroup}
                           items={groupOptions}
                           getItemLabel={(item) =>

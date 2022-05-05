@@ -4,7 +4,7 @@
 
 import { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Combobox, Element, Page, TextInput } from '../../utils/page'
+import { Combobox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
@@ -96,23 +96,42 @@ export class StaffAttendancePage {
   #addNewExternalMemberButton = this.page.findByDataQa(
     'add-external-member-btn'
   )
-  #externalArrivalPage = {
+  #pinInput = this.page.findByDataQa('pin-input')
+
+  #anyArrivalPage = {
     arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
-    nameInput: new TextInput(this.page.findByDataQa('input-name')),
-    groupSelect: new Combobox(this.page.findByDataQa('input-group')),
     markArrivedBtn: this.page.findByDataQa('mark-arrived-btn')
   }
-  #externalMemberPage = {
+  #externalArrivalPage = {
+    nameInput: new TextInput(this.page.findByDataQa('input-name')),
+    groupSelect: new Combobox(this.page.findByDataQa('input-group'))
+  }
+  #staffArrivalPage = {
+    groupSelect: new Select(this.page.findByDataQa('group-select'))
+  }
+  #staffDeparturePage = {
+    departureTime: new TextInput(this.page.findByDataQa('set-time')),
+    markDepartedBtn: this.page.findByDataQa('mark-departed-btn')
+  }
+
+  #anyMemberPage = {
+    back: this.page.findByDataQa('back-btn'),
+    status: this.page.findByDataQa('employee-status'),
     arrivalTime: this.page.findByDataQa('arrival-time'),
+    markDepartedLink: this.page.findByDataQa('mark-departed-link')
+  }
+  #staffMemberPage = {
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-link'),
+    departureTime: this.page.findByDataQa('departure-time')
+  }
+  #externalMemberPage = {
     departureTimeInput: new TextInput(
       this.page.findByDataQa('departure-time-input')
-    ),
-    markDepartedBtn: this.page.findByDataQa('mark-departed-link')
+    )
   }
 
   #staffLink = (name: string) =>
     this.page.find(`[data-qa="staff-link"]`, { hasText: name })
-  #status = this.page.find('[data-qa="employee-status"]')
 
   async markNewExternalStaffArrived(
     time: string,
@@ -121,14 +140,14 @@ export class StaffAttendancePage {
   ) {
     await this.#addNewExternalMemberButton.click()
 
-    await this.#externalArrivalPage.arrivedInput.fill(time)
+    await this.#anyArrivalPage.arrivedInput.fill(time)
     await this.#externalArrivalPage.nameInput.type(name)
     await this.#externalArrivalPage.groupSelect.fillAndSelectItem(
       group.name,
       group.id
     )
 
-    await this.#externalArrivalPage.markArrivedBtn.click()
+    await this.#anyArrivalPage.markArrivedBtn.click()
   }
 
   async assertPresentStaffCount(expected: number) {
@@ -143,24 +162,56 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await waitUntilEqual(() => this.#status.textContent, expected)
+    await waitUntilEqual(() => this.#anyMemberPage.status.textContent, expected)
   }
 
   async selectTab(tab: 'present' | 'absent') {
     await this.#tabs[tab].click()
   }
 
+  async goBackFromMemberPage() {
+    await this.#anyMemberPage.back.click()
+  }
+
   async assertEmployeeArrivalTime(expected: string) {
     await waitUntilEqual(
-      () => this.#externalMemberPage.arrivalTime.textContent,
+      () => this.#anyMemberPage.arrivalTime.textContent,
       expected
     )
+  }
+
+  async assertEmployeeDepartureTime(expected: string) {
+    await waitUntilEqual(
+      () => this.#staffMemberPage.departureTime.textContent,
+      expected
+    )
+  }
+
+  async markStaffArrived(args: {
+    pin: string
+    time: string
+    group: DaycareGroup
+  }) {
+    await this.#staffMemberPage.markArrivedBtn.click()
+    await this.#pinInput.locator.type(args.pin)
+    await this.#anyArrivalPage.arrivedInput.fill(args.time)
+    await this.#staffArrivalPage.groupSelect.selectOption(args.group.id)
+    await this.#anyArrivalPage.markArrivedBtn.click()
+  }
+
+  async markStaffDeparted(args: { pin: string; time?: string }) {
+    await this.#anyMemberPage.markDepartedLink.click()
+    await this.#pinInput.locator.type(args.pin)
+    if (args.time) {
+      await this.#staffDeparturePage.departureTime.fill(args.time)
+    }
+    await this.#staffDeparturePage.markDepartedBtn.click()
   }
 
   async markExternalStaffDeparted(time?: string) {
     if (time) {
       await this.#externalMemberPage.departureTimeInput.fill(time)
     }
-    await this.#externalMemberPage.markDepartedBtn.click()
+    await this.#anyMemberPage.markDepartedLink.click()
   }
 }
