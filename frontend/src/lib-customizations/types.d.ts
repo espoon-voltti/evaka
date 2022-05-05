@@ -152,6 +152,7 @@ export interface EmployeeCustomizations {
 
 export interface EmployeeMobileCustomizations {
   appConfig: BaseAppConfig
+  featureFlags: FeatureFlags
   translations: Record<
     LangEmployeeMobile,
     DeepPartial<TranslationsEmployeeMobile>

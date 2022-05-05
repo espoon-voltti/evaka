@@ -5,7 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { client } from '../api/client'
 

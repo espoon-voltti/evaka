@@ -32,8 +32,8 @@ const customizations: EmployeeMobileCustomizations = overrides
   : defaults
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { appConfig }: EmployeeMobileCustomizations = customizations
-export { appConfig }
+const { appConfig, featureFlags }: EmployeeMobileCustomizations = customizations
+export { appConfig, featureFlags }
 
 export type Lang = 'fi'
 export type Translations = typeof fi

@@ -5,9 +5,11 @@
 import type { EmployeeMobileCustomizations } from 'lib-customizations/types'
 
 import { employeeMobileConfig } from './appConfigs'
+import featureFlags from './featureFlags'
 
 const customizations: EmployeeMobileCustomizations = {
   appConfig: employeeMobileConfig,
+  featureFlags,
   translations: {
     fi: {}
   }
