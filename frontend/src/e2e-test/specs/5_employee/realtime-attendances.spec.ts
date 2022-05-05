@@ -96,17 +96,6 @@ beforeEach(async () => {
     mockedTime: mockedToday.toSystemTzDate(),
     employeeCustomizations: {
       featureFlags: {
-        citizenShiftCareAbsenceEnabled: true,
-        assistanceActionOtherEnabled: true,
-        daycareApplication: {
-          dailyTimesEnabled: true
-        },
-        groupsTableServiceNeedsEnabled: false,
-        evakaLogin: true,
-        financeBasicsPage: true,
-        preschoolEnabled: true,
-        urgencyAttachmentsEnabled: true,
-        adminSettingsEnabled: false,
         experimental: {
           realtimeStaffAttendance: true
         }
