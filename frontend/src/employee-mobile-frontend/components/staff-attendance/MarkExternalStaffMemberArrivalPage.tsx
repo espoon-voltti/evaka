@@ -109,6 +109,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
               items={unit.groups}
               selectedItem={form.group}
               getItemLabel={({ name }) => name}
+              getItemDataQa={(group) => group.id}
               onChange={(group) => setForm((old) => ({ ...old, group }))}
               data-qa="input-group"
             />

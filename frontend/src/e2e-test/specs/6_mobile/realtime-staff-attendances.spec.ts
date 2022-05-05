@@ -52,22 +52,24 @@ beforeEach(async () => {
 })
 
 describe('Realtime staff attendance page', () => {
-  test('New staff member can be added and marked as departed', async () => {
+  test('New external staff member can be added and marked as departed', async () => {
+    const name = 'Nomen Estomen'
+    const arrivalTime = '03:20'
+
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.clickAddNewExternalMemberButton()
 
-    await staffAttendancePage.setArrivedInfo(
-      '03:20',
-      'Nomen Estomen',
-      daycareGroupFixture.name
+    await staffAttendancePage.markNewExternalStaffArrived(
+      arrivalTime,
+      name,
+      daycareGroupFixture
     )
-
     await staffAttendancePage.assertPresentStaffCount(1)
 
-    await staffAttendancePage.clickPresentTab()
-    await staffAttendancePage.clickStaff(0)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
-    await staffAttendancePage.clickMarkDepartedButton()
+    await staffAttendancePage.assertEmployeeArrivalTime(arrivalTime)
+    await staffAttendancePage.markExternalStaffDeparted('11:09')
     await staffAttendancePage.assertPresentStaffCount(0)
   })
 })

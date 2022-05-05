@@ -67,6 +67,7 @@ export default React.memo(function ExternalStaffMemberPage() {
                   </Label>
                   <TimeInput
                     id="time-input"
+                    data-qa="departure-time-input"
                     value={time}
                     onChange={(val) => setTime(val)}
                   />

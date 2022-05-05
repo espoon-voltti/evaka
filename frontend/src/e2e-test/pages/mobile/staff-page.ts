@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Element, Page, TextInput } from '../../utils/page'
+import { Combobox, Element, Page, TextInput } from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
@@ -87,69 +88,79 @@ export default class StaffPage {
 export class StaffAttendancePage {
   constructor(private readonly page: Page) {}
 
-  #presentTab = this.page.find('[data-qa="present-tab"]')
-  #notPresentTab = this.page.find('[data-qa="not-present-tab"]')
-
-  #addNewExternalMemberButton = this.page.find(
-    '[data-qa="add-external-member-btn"]'
-  )
-  #arrivedInput = new TextInput(this.page.find('[data-qa="input-arrived"]'))
-  #nameInput = new TextInput(this.page.find('[data-qa="input-name"]'))
-  #groupSelector = new TextInput(this.page.find('[data-qa="input-group"]'))
-
-  #markArrivedBtn = this.page.find('[data-qa="mark-arrived-btn"]')
-
-  #staffLink = (nth: number) =>
-    this.page.findAll('[data-qa="staff-link"]').nth(nth)
-  #status = this.page.find('[data-qa="employee-status"]')
-  #arrivalTime = this.page.find('[data-qa="arrival-time"]')
-  #markDepartedBtn = this.page.find('[data-qa="mark-departed-link"]')
-
-  async clickAddNewExternalMemberButton() {
-    await this.#addNewExternalMemberButton.click()
-    await this.#arrivedInput.waitUntilVisible()
+  #tabs = {
+    present: this.page.findByDataQa('present-tab'),
+    absent: this.page.findByDataQa('absent-tab')
   }
 
-  async setArrivedInfo(time: string, name: string, groupName: string) {
-    await this.#arrivedInput.fill(time)
+  #addNewExternalMemberButton = this.page.findByDataQa(
+    'add-external-member-btn'
+  )
+  #externalArrivalPage = {
+    arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
+    nameInput: new TextInput(this.page.findByDataQa('input-name')),
+    groupSelect: new Combobox(this.page.findByDataQa('input-group')),
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-btn')
+  }
+  #externalMemberPage = {
+    arrivalTime: this.page.findByDataQa('arrival-time'),
+    departureTimeInput: new TextInput(
+      this.page.findByDataQa('departure-time-input')
+    ),
+    markDepartedBtn: this.page.findByDataQa('mark-departed-link')
+  }
 
-    await this.#nameInput.type(name)
+  #staffLink = (name: string) =>
+    this.page.find(`[data-qa="staff-link"]`, { hasText: name })
+  #status = this.page.find('[data-qa="employee-status"]')
 
-    await this.#groupSelector.click()
-    await this.#groupSelector.type(groupName)
-    await this.page.find('[data-qa="item"]').click()
+  async markNewExternalStaffArrived(
+    time: string,
+    name: string,
+    group: DaycareGroup
+  ) {
+    await this.#addNewExternalMemberButton.click()
 
-    await this.#markArrivedBtn.click()
+    await this.#externalArrivalPage.arrivedInput.fill(time)
+    await this.#externalArrivalPage.nameInput.type(name)
+    await this.#externalArrivalPage.groupSelect.fillAndSelectItem(
+      group.name,
+      group.id
+    )
+
+    await this.#externalArrivalPage.markArrivedBtn.click()
   }
 
   async assertPresentStaffCount(expected: number) {
     await waitUntilEqual(
-      () => this.#presentTab.textContent,
+      () => this.#tabs.present.textContent,
       `Läsnä(${expected})`
     )
   }
 
-  async clickStaff(nth: number) {
-    await this.#staffLink(nth).click()
+  async openStaffPage(name: string) {
+    await this.#staffLink(name).click()
   }
 
   async assertEmployeeStatus(expected: string) {
     await waitUntilEqual(() => this.#status.textContent, expected)
   }
 
-  async clickPresentTab() {
-    await this.#presentTab.click()
+  async selectTab(tab: 'present' | 'absent') {
+    await this.#tabs[tab].click()
   }
 
-  async clickNotPresentTab() {
-    await this.#notPresentTab.click()
+  async assertEmployeeArrivalTime(expected: string) {
+    await waitUntilEqual(
+      () => this.#externalMemberPage.arrivalTime.textContent,
+      expected
+    )
   }
 
-  async assertArrivalTime(expected: string) {
-    await waitUntilEqual(() => this.#arrivalTime.textContent, expected)
-  }
-
-  async clickMarkDepartedButton() {
-    await this.#markDepartedBtn.click()
+  async markExternalStaffDeparted(time?: string) {
+    if (time) {
+      await this.#externalMemberPage.departureTimeInput.fill(time)
+    }
+    await this.#externalMemberPage.markDepartedBtn.click()
   }
 }

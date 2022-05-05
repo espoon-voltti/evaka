@@ -62,8 +62,8 @@ export class Page {
     return popup
   }
 
-  find(selector: string) {
-    return new Element(this.page.locator(selector))
+  find(selector: string, options?: { hasText?: string | RegExp }) {
+    return new Element(this.page.locator(selector, options))
   }
 
   findText(text: string | RegExp) {

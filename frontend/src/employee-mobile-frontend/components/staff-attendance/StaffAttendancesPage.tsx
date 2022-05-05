@@ -77,7 +77,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   const tabs = useMemo(
     () => [
       {
-        id: 'not-present',
+        id: 'absent',
         link: `/units/${unitId}/groups/${groupId}/staff-attendance/absent`,
         label: i18n.attendances.types.ABSENT
       },
