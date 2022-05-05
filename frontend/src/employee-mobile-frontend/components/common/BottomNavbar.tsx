@@ -17,7 +17,7 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import {
   faChild,
   fasChild,

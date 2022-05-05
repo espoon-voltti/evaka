@@ -20,7 +20,7 @@ import {
 } from 'lib-components/employee/messages/SelectorNode'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faArrowLeft } from 'lib-icons'
 
 import {
