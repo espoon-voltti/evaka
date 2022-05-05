@@ -171,7 +171,6 @@ export interface EmployeeDetail {
   externalId: string
   email?: string
   roles: UserRole[]
-  pin?: string
 }
 
 export interface Application {
