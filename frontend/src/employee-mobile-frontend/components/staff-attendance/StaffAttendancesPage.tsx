@@ -31,12 +31,15 @@ const StaticIconContainer = styled.div`
 
 type StatusTab = 'present' | 'absent'
 
-export default React.memo(function StaffAttendancesPage() {
+interface Props {
+  tab: StatusTab
+}
+
+export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   const navigate = useNavigate()
-  const { unitId, groupId, tab } = useNonNullableParams<{
+  const { unitId, groupId } = useNonNullableParams<{
     unitId: string
     groupId: string
-    tab: StatusTab
   }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
