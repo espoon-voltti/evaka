@@ -162,7 +162,11 @@ function StaffAttendanceRouter() {
   return (
     <StaffAttendanceContextProvider>
       <Routes>
-        <Route path=":tab" element={<StaffAttendancesPage />} />
+        <Route path="absent" element={<StaffAttendancesPage tab="absent" />} />
+        <Route
+          path="present"
+          element={<StaffAttendancesPage tab="present" />}
+        />
         <Route
           path="external"
           element={<MarkExternalStaffMemberArrivalPage />}
