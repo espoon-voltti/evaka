@@ -8,6 +8,11 @@ const config: Config.InitialOptions = {
   displayName: 'e2e-test',
   preset: 'ts-jest',
   testEnvironment: './jest-environment',
-  testRunner: 'jest-circus/runner'
+  testRunner: 'jest-circus/runner',
+  moduleNameMapper: {
+    '@evaka/customizations/(.*)': '<rootDir>/../lib-customizations/espoo/$1',
+    Icons: '<rootDir>/../lib-icons/free-icons.ts',
+    '\\.(jpg|jpeg|png|svg)$': '<rootDir>/../../assetsTransformer.js'
+  }
 }
 export default config

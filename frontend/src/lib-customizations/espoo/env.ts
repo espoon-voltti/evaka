@@ -5,6 +5,10 @@
 export type Env = 'staging' | 'prod'
 
 export const env = (): Env | 'default' => {
+  if (typeof window === 'undefined') {
+    return 'default'
+  }
+
   if (window.location.host === 'espoonvarhaiskasvatus.fi') {
     return 'prod'
   }
