@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -43,7 +44,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
   const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
 
   const [form, setForm] = useState<FormState>({
-    arrived: formatTime(new Date()),
+    arrived: formatTime(mockNow() ?? new Date()),
     group: unitInfoResponse
       .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
       .getOrElse(null),
@@ -109,6 +110,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
               items={unit.groups}
               selectedItem={form.group}
               getItemLabel={({ name }) => name}
+              getItemDataQa={(group) => group.id}
               onChange={(group) => setForm((old) => ({ ...old, group }))}
               data-qa="input-group"
             />

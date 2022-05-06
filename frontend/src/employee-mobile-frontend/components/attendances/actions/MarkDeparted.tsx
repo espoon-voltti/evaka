@@ -11,6 +11,7 @@ import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -57,7 +58,7 @@ function validateTime(
   }
 
   try {
-    const parsedTime = parse(time, 'HH:mm', new Date())
+    const parsedTime = parse(time, 'HH:mm', mockNow() ?? new Date())
 
     if (!isAfter(parsedTime, attendance.arrived)) {
       return `${i18n.attendances.arrived} ${formatTime(attendance.arrived)}`
@@ -83,7 +84,7 @@ export default React.memo(function MarkDeparted() {
     groupId: string
   }>()
 
-  const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
   const [childDepartureInfo] = useApiState(
     () => getChildDeparture(unitId, childId),
     [childId, unitId]

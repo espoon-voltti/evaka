@@ -12,6 +12,7 @@ import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
+import { mockNow } from 'lib-common/utils/helpers'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
@@ -81,12 +82,12 @@ export default React.memo(function MarkAbsentBeforehand() {
     [childId, endDate, startDate, unitId]
   )
 
-  const canSave = useMemo(
-    () =>
-      isAfter(new Date(startDate), subDays(new Date(), 1)) &&
-      isBefore(new Date(startDate), addDays(new Date(endDate), 1)),
-    [endDate, startDate]
-  )
+  const canSave = useMemo(() => {
+    return (
+      isAfter(new Date(startDate), subDays(mockNow() ?? new Date(), 1)) &&
+      isBefore(new Date(startDate), addDays(new Date(endDate), 1))
+    )
+  }, [endDate, startDate])
 
   const child = useMemo(
     () =>
@@ -168,7 +169,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                       onChange={setStartDate}
                       width="s"
                       info={
-                        isBefore(new Date(startDate), new Date())
+                        isBefore(new Date(startDate), mockNow() ?? new Date())
                           ? {
                               text: i18n.absences.chooseStartDate,
                               status: 'warning'

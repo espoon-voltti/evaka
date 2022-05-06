@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format } from 'date-fns'
-
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -68,10 +67,7 @@ describe('Child Information - Pedagogical documents', () => {
 
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
-    await waitUntilEqual(
-      () => section.startDate,
-      format(new Date(), 'dd.MM.yyyy')
-    )
+    await waitUntilEqual(() => section.startDate, LocalDate.today().format())
     await section.setDescription('Test description')
     await section.save()
     await waitUntilEqual(() => section.description, 'Test description')

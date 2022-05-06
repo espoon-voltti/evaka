@@ -78,7 +78,11 @@ const initScript = (options: EvakaBrowserContextOptions) => {
   return `
 window.evaka = window.evaka ?? {}
 window.evaka.automatedTest = true
-${mockedTime ? `window.evaka.mockedTime = '${mockedTime.toISOString()}'` : ''}
+${
+  mockedTime
+    ? `window.evaka.mockedTime = new Date('${mockedTime.toISOString()}')`
+    : ''
+}
 ${override('citizenCustomizations')}
 ${override('commonCustomizations')}
 ${override('employeeCustomizations')}

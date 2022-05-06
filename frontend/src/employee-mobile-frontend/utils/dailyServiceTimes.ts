@@ -9,6 +9,7 @@ import {
   isVariableTime,
   TimeRange
 } from 'lib-common/api-types/child/common'
+import { mockNow } from 'lib-common/utils/helpers'
 
 const dayNames = [
   'monday',
@@ -22,7 +23,7 @@ type DayName = typeof dayNames[number]
 
 function getToday(): DayName | undefined {
   // Sunday is 0
-  const dayIndex = (new Date().getDay() + 6) % 7
+  const dayIndex = ((mockNow() ?? new Date()).getDay() + 6) % 7
   return dayNames[dayIndex]
 }
 

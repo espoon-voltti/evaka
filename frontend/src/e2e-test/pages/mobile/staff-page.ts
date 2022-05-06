@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Element, Page, TextInput } from '../../utils/page'
+import { Combobox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
@@ -87,69 +88,130 @@ export default class StaffPage {
 export class StaffAttendancePage {
   constructor(private readonly page: Page) {}
 
-  #presentTab = this.page.find('[data-qa="present-tab"]')
-  #notPresentTab = this.page.find('[data-qa="not-present-tab"]')
-
-  #addNewExternalMemberButton = this.page.find(
-    '[data-qa="add-external-member-btn"]'
-  )
-  #arrivedInput = new TextInput(this.page.find('[data-qa="input-arrived"]'))
-  #nameInput = new TextInput(this.page.find('[data-qa="input-name"]'))
-  #groupSelector = new TextInput(this.page.find('[data-qa="input-group"]'))
-
-  #markArrivedBtn = this.page.find('[data-qa="mark-arrived-btn"]')
-
-  #staffLink = (nth: number) =>
-    this.page.findAll('[data-qa="staff-link"]').nth(nth)
-  #status = this.page.find('[data-qa="employee-status"]')
-  #arrivalTime = this.page.find('[data-qa="arrival-time"]')
-  #markDepartedBtn = this.page.find('[data-qa="mark-departed-link"]')
-
-  async clickAddNewExternalMemberButton() {
-    await this.#addNewExternalMemberButton.click()
-    await this.#arrivedInput.waitUntilVisible()
+  #tabs = {
+    present: this.page.findByDataQa('present-tab'),
+    absent: this.page.findByDataQa('absent-tab')
   }
 
-  async setArrivedInfo(time: string, name: string, groupName: string) {
-    await this.#arrivedInput.fill(time)
+  #addNewExternalMemberButton = this.page.findByDataQa(
+    'add-external-member-btn'
+  )
+  #pinInput = this.page.findByDataQa('pin-input')
 
-    await this.#nameInput.type(name)
+  #anyArrivalPage = {
+    arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-btn')
+  }
+  #externalArrivalPage = {
+    nameInput: new TextInput(this.page.findByDataQa('input-name')),
+    groupSelect: new Combobox(this.page.findByDataQa('input-group'))
+  }
+  #staffArrivalPage = {
+    groupSelect: new Select(this.page.findByDataQa('group-select'))
+  }
+  #staffDeparturePage = {
+    departureTime: new TextInput(this.page.findByDataQa('set-time')),
+    markDepartedBtn: this.page.findByDataQa('mark-departed-btn')
+  }
 
-    await this.#groupSelector.click()
-    await this.#groupSelector.type(groupName)
-    await this.page.find('[data-qa="item"]').click()
+  #anyMemberPage = {
+    back: this.page.findByDataQa('back-btn'),
+    status: this.page.findByDataQa('employee-status'),
+    arrivalTime: this.page.findByDataQa('arrival-time'),
+    markDepartedLink: this.page.findByDataQa('mark-departed-link')
+  }
+  #staffMemberPage = {
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-link'),
+    departureTime: this.page.findByDataQa('departure-time')
+  }
+  #externalMemberPage = {
+    departureTimeInput: new TextInput(
+      this.page.findByDataQa('departure-time-input')
+    )
+  }
 
-    await this.#markArrivedBtn.click()
+  #staffLink = (name: string) =>
+    this.page.find(`[data-qa="staff-link"]`, { hasText: name })
+
+  async markNewExternalStaffArrived(
+    time: string,
+    name: string,
+    group: DaycareGroup
+  ) {
+    await this.#addNewExternalMemberButton.click()
+
+    await this.#anyArrivalPage.arrivedInput.fill(time)
+    await this.#externalArrivalPage.nameInput.type(name)
+    await this.#externalArrivalPage.groupSelect.fillAndSelectItem(
+      group.name,
+      group.id
+    )
+
+    await this.#anyArrivalPage.markArrivedBtn.click()
   }
 
   async assertPresentStaffCount(expected: number) {
     await waitUntilEqual(
-      () => this.#presentTab.textContent,
+      () => this.#tabs.present.textContent,
       `Läsnä(${expected})`
     )
   }
 
-  async clickStaff(nth: number) {
-    await this.#staffLink(nth).click()
+  async openStaffPage(name: string) {
+    await this.#staffLink(name).click()
   }
 
   async assertEmployeeStatus(expected: string) {
-    await waitUntilEqual(() => this.#status.textContent, expected)
+    await waitUntilEqual(() => this.#anyMemberPage.status.textContent, expected)
   }
 
-  async clickPresentTab() {
-    await this.#presentTab.click()
+  async selectTab(tab: 'present' | 'absent') {
+    await this.#tabs[tab].click()
   }
 
-  async clickNotPresentTab() {
-    await this.#notPresentTab.click()
+  async goBackFromMemberPage() {
+    await this.#anyMemberPage.back.click()
   }
 
-  async assertArrivalTime(expected: string) {
-    await waitUntilEqual(() => this.#arrivalTime.textContent, expected)
+  async assertEmployeeArrivalTime(expected: string) {
+    await waitUntilEqual(
+      () => this.#anyMemberPage.arrivalTime.textContent,
+      expected
+    )
   }
 
-  async clickMarkDepartedButton() {
-    await this.#markDepartedBtn.click()
+  async assertEmployeeDepartureTime(expected: string) {
+    await waitUntilEqual(
+      () => this.#staffMemberPage.departureTime.textContent,
+      expected
+    )
+  }
+
+  async markStaffArrived(args: {
+    pin: string
+    time: string
+    group: DaycareGroup
+  }) {
+    await this.#staffMemberPage.markArrivedBtn.click()
+    await this.#pinInput.locator.type(args.pin)
+    await this.#anyArrivalPage.arrivedInput.fill(args.time)
+    await this.#staffArrivalPage.groupSelect.selectOption(args.group.id)
+    await this.#anyArrivalPage.markArrivedBtn.click()
+  }
+
+  async markStaffDeparted(args: { pin: string; time?: string }) {
+    await this.#anyMemberPage.markDepartedLink.click()
+    await this.#pinInput.locator.type(args.pin)
+    if (args.time) {
+      await this.#staffDeparturePage.departureTime.fill(args.time)
+    }
+    await this.#staffDeparturePage.markDepartedBtn.click()
+  }
+
+  async markExternalStaffDeparted(time?: string) {
+    if (time) {
+      await this.#externalMemberPage.departureTimeInput.fill(time)
+    }
+    await this.#anyMemberPage.markDepartedLink.click()
   }
 }

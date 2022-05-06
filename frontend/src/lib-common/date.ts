@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format, isToday, Locale } from 'date-fns'
+import { isToday, Locale } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { fi, sv, enGB } from 'date-fns/locale'
 
 export const locales: { fi: Locale; sv: Locale; en: Locale } = {
@@ -39,8 +40,9 @@ export function formatDate<T extends AllowedDateFormat>(
     : [FormatWithoutWeekday?]
 ): string {
   return date
-    ? format(
+    ? formatInTimeZone(
         date,
+        'Europe/Helsinki',
         dateFormat ?? 'dd.MM.yyyy',
         locale ? { locale: locales[locale] } : undefined
       )
@@ -48,7 +50,9 @@ export function formatDate<T extends AllowedDateFormat>(
 }
 
 export function formatTime(date: Date | null | undefined): string {
-  return date ? format(date, DATE_FORMAT_TIME_ONLY) : ''
+  return date
+    ? formatInTimeZone(date, 'Europe/Helsinki', DATE_FORMAT_TIME_ONLY)
+    : ''
 }
 
 // matches 24h format with mandatory leading zeros "23:59" and "00:09"

@@ -45,9 +45,9 @@ declare global {
   }
   interface EvakaWindowConfig {
     automatedTest?: boolean
-    mockedTime?: string | undefined
+    mockedTime?: Date | undefined
   }
 }
 
-export const mockNow = (): string | undefined =>
+export const mockNow = (): Date | undefined =>
   typeof window !== 'undefined' ? window.evaka?.mockedTime : undefined

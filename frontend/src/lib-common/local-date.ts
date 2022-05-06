@@ -181,7 +181,7 @@ export default class LocalDate {
   static today(): LocalDate {
     if (isAutomatedTest) {
       const now = mockNow()
-      return LocalDate.fromSystemTzDate(now ? new Date(now) : startOfToday())
+      return LocalDate.fromSystemTzDate(now ?? startOfToday())
     }
     return LocalDate.fromSystemTzDate(startOfToday())
   }

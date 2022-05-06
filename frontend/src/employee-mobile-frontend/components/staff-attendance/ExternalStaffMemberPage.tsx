@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { formatTime } from 'lib-common/date'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -42,7 +43,7 @@ export default React.memo(function ExternalStaffMemberPage() {
     [attendanceId, staffAttendanceResponse]
   )
 
-  const [time, setTime] = useState(formatTime(new Date()))
+  const [time, setTime] = useState(formatTime(mockNow() ?? new Date()))
 
   return (
     <StaffMemberPageContainer>
@@ -67,6 +68,7 @@ export default React.memo(function ExternalStaffMemberPage() {
                   </Label>
                   <TimeInput
                     id="time-input"
+                    data-qa="departure-time-input"
                     value={time}
                     onChange={(val) => setTime(val)}
                   />

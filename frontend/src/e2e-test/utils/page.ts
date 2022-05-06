@@ -62,8 +62,8 @@ export class Page {
     return popup
   }
 
-  find(selector: string) {
-    return new Element(this.page.locator(selector))
+  find(selector: string, options?: { hasText?: string | RegExp }) {
+    return new Element(this.page.locator(selector, options))
   }
 
   findText(text: string | RegExp) {
@@ -337,7 +337,7 @@ export class Combobox extends Element {
 
   async fillAndSelectItem(text: string, value: string) {
     await this.#input.fill(text)
-    await this.find(`[data-qa="value-${value}"]`).click()
+    await this.find(`[data-qa="item"]`).find(`[data-qa="${value}"]`).click()
   }
 }
 

@@ -15,7 +15,7 @@ export const client = axios.create({
 
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
-    const evakaMockedTime = mockNow()
+    const evakaMockedTime = mockNow()?.toISOString()
     if (evakaMockedTime) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       config.params = { ...config.params, evakaMockedTime }
