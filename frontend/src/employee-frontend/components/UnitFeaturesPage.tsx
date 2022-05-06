@@ -88,10 +88,12 @@ export default React.memo(function UnitFeaturesPage() {
         {renderResult(units, (units) => (
           <Table>
             <Thead>
-              <Td>Yksikkö</Td>
-              {pilotFeatures.map((f) => (
-                <Td key={f}>{f}</Td>
-              ))}
+              <Tr>
+                <Td>Yksikkö</Td>
+                {pilotFeatures.map((f) => (
+                  <Td key={f}>{f}</Td>
+                ))}
+              </Tr>
             </Thead>
             <Tbody>
               {units.map((unit) => (

@@ -96,7 +96,7 @@ export default React.memo(function StaffAttendanceTable({
   )
 
   return (
-    <Table>
+    <Table data-qa="staff-attendances-table">
       <AttendanceTableHeader
         operationalDays={operationalDays}
         startTimeHeader={i18n.unit.staffAttendance.startTime}
@@ -411,9 +411,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
               active={isPositiveOccupancyCoefficient}
               color={colors.accents.a3emerald}
               size="s"
+              data-qa={
+                isPositiveOccupancyCoefficient
+                  ? 'icon-occupancy-coefficient-pos'
+                  : 'icon-occupancy-coefficient'
+              }
             />
           </Tooltip>
-          <NameWrapper>{name}</NameWrapper>
+          <NameWrapper data-qa="staff-attendance-name">{name}</NameWrapper>
         </FixedSpaceRow>
       </NameTd>
       {values.map(({ date, timeRanges }) => (

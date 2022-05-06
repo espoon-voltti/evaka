@@ -117,6 +117,31 @@ export class UnitAttendancesPage {
       .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
       .click()
   }
+
+  async selectGroup(groupId: string): Promise<void> {
+    const select = new Select(
+      this.page.findByDataQa('attendances-group-select')
+    )
+    await select.selectOption(groupId)
+  }
+
+  async assertStaffInAttendanceTable(names: string[]): Promise<void> {
+    const staffNames = this.page.findAllByDataQa('staff-attendance-name')
+    await waitUntilEqual(() => staffNames.allInnerTexts(), names)
+  }
+
+  async assertPositiveOccupancyCoefficientCount(
+    expectedCount: number
+  ): Promise<void> {
+    const icons = this.page.findAllByDataQa('icon-occupancy-coefficient-pos')
+    await waitUntilEqual(() => icons.count(), expectedCount)
+  }
+  async assertZeroOccupancyCoefficientCount(
+    expectedCount: number
+  ): Promise<void> {
+    const icons = this.page.findAllByDataQa('icon-occupancy-coefficient')
+    await waitUntilEqual(() => icons.count(), expectedCount)
+  }
 }
 
 export class ReservationModal extends Modal {

@@ -465,3 +465,9 @@ export interface DevVardaServiceNeed {
   updateFailed: boolean
   errors: string[]
 }
+
+export interface DevStaffOccupancyCoefficient {
+  coefficient: number
+  employeeId: UUID
+  unitId: UUID
+}

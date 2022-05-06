@@ -16,6 +16,7 @@ import { JsonOf } from 'lib-common/json'
 import {
   CitizenCustomizations,
   CommonCustomizations,
+  DeepPartial,
   EmployeeCustomizations,
   EmployeeMobileCustomizations
 } from 'lib-customizations/types'
@@ -163,10 +164,12 @@ function configurePage(page: Page) {
 
 export interface EvakaBrowserContextOptions {
   mockedTime?: Date
-  citizenCustomizations?: Partial<JsonOf<CitizenCustomizations>>
-  employeeCustomizations?: Partial<JsonOf<EmployeeCustomizations>>
-  employeeMobileCustomizations?: Partial<JsonOf<EmployeeMobileCustomizations>>
-  commonCustomizations?: Partial<JsonOf<CommonCustomizations>>
+  citizenCustomizations?: DeepPartial<JsonOf<CitizenCustomizations>>
+  employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
+  employeeMobileCustomizations?: DeepPartial<
+    JsonOf<EmployeeMobileCustomizations>
+  >
+  commonCustomizations?: DeepPartial<JsonOf<CommonCustomizations>>
 }
 
 export async function newBrowserContext(

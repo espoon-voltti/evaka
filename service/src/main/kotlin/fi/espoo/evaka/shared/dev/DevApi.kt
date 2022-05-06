@@ -152,6 +152,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -1105,6 +1106,23 @@ RETURNING id
             }
         }
     }
+
+    @PostMapping("/occupancy-coefficient")
+    fun upsertStaffOccupancyCoefficient(db: Database, @RequestBody body: DevUpsertStaffOccupancyCoefficient) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    """
+                    INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
+                    VALUES (:unitId, :employeeId, :coefficient)
+                    ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
+                    """.trimIndent()
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1488,3 +1506,9 @@ data class PostVasuDocBody(
 )
 
 data class DevGuardianBlocklistEntry(val guardianId: PersonId, val childId: ChildId)
+
+data class DevUpsertStaffOccupancyCoefficient(
+    val unitId: DaycareId,
+    val employeeId: EmployeeId,
+    val coefficient: BigDecimal
+)

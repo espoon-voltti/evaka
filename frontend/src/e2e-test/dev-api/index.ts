@@ -996,3 +996,15 @@ export async function addVardaServiceNeed(
     throw new DevApiError(e)
   }
 }
+
+export async function upsertOccupancyCoefficient(body: {
+  coefficient: number
+  employeeId: UUID
+  unitId: UUID
+}): Promise<void> {
+  try {
+    await devClient.post('/occupancy-coefficient', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

@@ -35,8 +35,8 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChild,
   faExclamationTriangle,

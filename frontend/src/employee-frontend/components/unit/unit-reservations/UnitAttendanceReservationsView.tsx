@@ -22,8 +22,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import {
