@@ -14,7 +14,7 @@ export const client = axios.create({
 
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
-    const mockedTime = mockNow()
+    const mockedTime = mockNow()?.toISOString()
     if (mockedTime) {
       return {
         ...config,

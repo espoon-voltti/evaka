@@ -15,7 +15,7 @@ export const client = axios.create({
 
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
-    const evakaMockedTime = mockNow()
+    const evakaMockedTime = mockNow()?.toISOString()
     if (evakaMockedTime) {
       config.headers = { ...config.headers, EvakaMockedTime: evakaMockedTime }
     }
