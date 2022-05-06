@@ -1255,6 +1255,50 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `50 percent discount for sick leaves is applied after reducing force majeure absences`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 1 force majeure absence
+        val forceMajeure =
+            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
+
+        // 11 sick leaves
+        val sickLeave =
+            datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31))
+                .map { it to AbsenceType.SICKLEAVE }
+
+        initDataForAbsences(listOf(period), forceMajeure + sickLeave)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(13793, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1314, invoiceRow.unitPrice) // 28900 / 22
+                assertEquals(-1314, invoiceRow.price)
+            }
+            // Total price minus one day refund: 28900 - 1314 = 27585
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.partMonthSickLeave, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-13793, invoiceRow.unitPrice) // 27585 / 2
+                assertEquals(-13793, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with some unknown absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
