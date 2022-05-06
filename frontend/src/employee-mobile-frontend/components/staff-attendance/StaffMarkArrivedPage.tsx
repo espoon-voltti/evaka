@@ -10,6 +10,7 @@ import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -59,7 +60,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
-  const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined
   )
@@ -90,7 +91,8 @@ export default React.memo(function StaffMarkArrivedPage() {
     }
   }, [attendanceGroup, groupOptions])
 
-  const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
+  const now = mockNow() ?? new Date()
+  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
 
   const backButtonText = useMemo(
     () =>
@@ -164,7 +166,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateLte(
-                              formatTime(new Date())
+                              formatTime(mockNow() ?? new Date())
                             )
                           }
                         : undefined

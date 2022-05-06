@@ -9,6 +9,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -48,7 +49,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   )
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
-  const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
   const staffInfo = useMemo(
@@ -88,7 +89,8 @@ export default React.memo(function StaffMarkDepartedPage() {
     [memberAttendance, i18n.common.back]
   )
 
-  const timeInFuture = isAfter(parse(time, 'HH:mm', new Date()), new Date())
+  const now = mockNow() ?? new Date()
+  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
 
   return (
     <TallContentArea
@@ -156,7 +158,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateLte(
-                              formatTime(new Date())
+                              formatTime(mockNow() ?? new Date())
                             )
                           }
                         : undefined

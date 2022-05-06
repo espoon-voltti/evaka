@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -36,7 +37,7 @@ export default React.memo(function MarkPresent() {
     ChildAttendanceContext
   )
 
-  const [time, setTime] = useState<string>(formatTime(new Date()))
+  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
