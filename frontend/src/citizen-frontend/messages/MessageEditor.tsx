@@ -95,6 +95,7 @@ export default React.memo(function MessageEditor({
             noOptionsMessage={i18n.messages.messageEditor.noResults}
             getOptionId={({ id }) => id}
             getOptionLabel={({ name }) => name}
+            autoFocus={true}
             data-qa="select-receiver"
           />
         </label>
