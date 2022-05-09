@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -40,6 +40,7 @@ class MobileRealtimeStaffAttendanceController(
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
@@ -51,7 +52,7 @@ class MobileRealtimeStaffAttendanceController(
         return db.connect { dbc ->
             dbc.read {
                 CurrentDayStaffAttendanceResponse(
-                    staff = it.getStaffAttendances(unitId, HelsinkiDateTime.now()),
+                    staff = it.getStaffAttendances(unitId, evakaClock.now()),
                     extraAttendances = it.getExternalStaffAttendances(unitId)
                 )
             }
@@ -68,6 +69,7 @@ class MobileRealtimeStaffAttendanceController(
     fun markArrival(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: StaffArrivalRequest
     ) {
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
@@ -76,8 +78,8 @@ class MobileRealtimeStaffAttendanceController(
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
-        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
-        val nowHDT = HelsinkiDateTime.now()
+        val arrivedTimeHDT = evakaClock.now().withTime(body.time)
+        val nowHDT = evakaClock.now()
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
         try {
@@ -105,13 +107,14 @@ class MobileRealtimeStaffAttendanceController(
     fun markDeparture(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable attendanceId: StaffAttendanceId,
         @RequestBody body: StaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureCreate.log()
 
-        val departedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
-        val nowHDT = HelsinkiDateTime.now()
+        val departedTimeHDT = evakaClock.now().withTime(body.time)
+        val nowHDT = evakaClock.now()
         val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
         db.connect { dbc ->
@@ -138,13 +141,14 @@ class MobileRealtimeStaffAttendanceController(
     fun markExternalArrival(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
         Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
         ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
 
-        val arrivedTimeHDT = HelsinkiDateTime.now().withTime(body.arrived)
-        val nowHDT = HelsinkiDateTime.now()
+        val arrivedTimeHDT = evakaClock.now().withTime(body.arrived)
+        val nowHDT = evakaClock.now()
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
         return db.connect { dbc ->
@@ -169,6 +173,7 @@ class MobileRealtimeStaffAttendanceController(
     fun markExternalDeparture(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
@@ -179,8 +184,8 @@ class MobileRealtimeStaffAttendanceController(
                 ?: throw NotFound("attendance not found")
             ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_DEPARTURE, attendance.groupId)
 
-            val departedTimeHDT = HelsinkiDateTime.now().withTime(body.time)
-            val nowHDT = HelsinkiDateTime.now()
+            val departedTimeHDT = evakaClock.now().withTime(body.time)
+            val nowHDT = evakaClock.now()
             val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
             dbc.transaction {

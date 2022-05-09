@@ -53,7 +53,7 @@ beforeEach(async () => {
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
 
   page = await Page.open({
-    mockedTime: new Date(2022, 5, 5, 13, 0),
+    mockedTime: new Date('2022-05-05T13:00Z'),
     employeeMobileCustomizations: {
       featureFlags: {
         experimental: {
