@@ -114,28 +114,48 @@ class VoucherValueDecisionService(
         return true
     }
 
-    fun endDecisionsWithEndedPlacements(tx: Database.Transaction, now: HelsinkiDateTime) {
+    fun endOutdatedDecisions(tx: Database.Transaction, now: HelsinkiDateTime) {
         val decisionIds = tx.createQuery(
             """
-SELECT id FROM voucher_value_decision decision
-LEFT JOIN LATERAL (
-    SELECT range_merge(daterange(p.start_date, p.end_date, '[]') * daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')) combined_range
-    FROM placement p
-    JOIN daycare ON daycare.id = p.unit_id
-    LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-    LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-    LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
-    WHERE p.child_id = decision.child_id
-    AND daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type
-    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(p.start_date, p.end_date, '[]')
-    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(coalesce(sn.start_date, p.start_date), coalesce(sn.end_date, p.end_date), '[]')
-    AND coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficient) > 0
-) placements ON true
-WHERE decision.status = 'SENT'::voucher_value_decision_status
-AND (placements.combined_range IS NULL OR (
-    daterange(decision.valid_from, decision.valid_to, '[]') != placements.combined_range
-    AND placements.combined_range << daterange(:now, null)
-))
+SELECT DISTINCT d.id
+FROM voucher_value_decision d
+
+-- The current placement that this decision covers
+LEFT JOIN placement p ON (
+    :now BETWEEN p.start_date AND p.end_date AND
+    d.child_id = p.child_id AND 
+    daterange(d.valid_from, d.valid_to, '[]') && daterange(p.start_date, p.end_date, '[]')
+)
+LEFT JOIN daycare unit ON unit.id = p.unit_id
+LEFT JOIN service_need sn ON sn.placement_id = p.id
+LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
+
+WHERE
+    d.status = 'SENT' AND
+
+    -- This decision covers the current date
+    :now BETWEEN d.valid_from AND d.valid_to AND
+
+    -- This is the latest voucher value decision for this child
+    NOT EXISTS (
+        SELECT 1
+        FROM voucher_value_decision d_later
+        WHERE
+            d_later.id <> d.id AND
+            d_later.status IN ('DRAFT', 'WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING', 'SENT') AND
+            d_later.child_id = d.child_id AND
+            d_later.valid_from > d.valid_from
+    ) AND
+    
+    (
+        -- No valid placement exists for this decision currently
+        p.id IS NULL OR
+        -- The current placement is not to a voucher unit
+        unit.provider_type <> 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type OR
+        -- Service need is not eligible for voucher
+        coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficient) = 0
+    )
 """
         ).bind("now", now.toLocalDate()).mapTo<VoucherValueDecisionId>().toList()
 

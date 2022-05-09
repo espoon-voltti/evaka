@@ -185,7 +185,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun endOutdatedVoucherValueDecisions(db: Database.Connection) {
-        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, HelsinkiDateTime.now()) }
+        db.transaction { voucherValueDecisionService.endOutdatedDecisions(it, HelsinkiDateTime.now()) }
     }
 
     fun removeExpiredNotes(db: Database.Connection) {

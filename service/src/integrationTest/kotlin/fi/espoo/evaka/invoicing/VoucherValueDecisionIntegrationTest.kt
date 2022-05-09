@@ -199,7 +199,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(endDate, decisions.first().validTo)
         }
 
-        endDecisions(now = newEndDate.plusDays(1))
+        endOutdatedDecisions(now = newEndDate.plusDays(1))
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
@@ -270,7 +270,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testVoucherDaycare2.id)
-        endDecisions(now = newStartDate.plusDays(1))
+        endOutdatedDecisions(now = newStartDate.plusDays(1))
 
         getAllValueDecisions().let { decisions ->
             assertEquals(2, decisions.size)
@@ -309,7 +309,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testDaycare.id)
-        endDecisions(now = newStartDate.plusDays(1))
+        endOutdatedDecisions(now = newStartDate.plusDays(1))
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -330,7 +330,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         deletePlacement(placementId)
-        endDecisions(now = startDate)
+        endOutdatedDecisions(now = startDate)
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -352,7 +352,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, type = PlacementType.PRESCHOOL)
-        endDecisions(now = newStartDate.plusDays(1))
+        endOutdatedDecisions(now = newStartDate.plusDays(1))
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -377,7 +377,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(endDate, decisions.last().validTo)
         }
 
-        endDecisions(now = endDate)
+        endOutdatedDecisions(now = endDate)
 
         getAllValueDecisions().sortedBy { it.validFrom }.let { decisions ->
             assertEquals(2, decisions.size)
@@ -668,9 +668,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }.shuffled() // randomize order to expose assumptions
     }
 
-    private fun endDecisions(now: LocalDate) {
+    private fun endOutdatedDecisions(now: LocalDate) {
         db.transaction {
-            voucherValueDecisionService.endDecisionsWithEndedPlacements(
+            voucherValueDecisionService.endOutdatedDecisions(
                 it,
                 HelsinkiDateTime.of(now, LocalTime.of(12, 0))
             )
