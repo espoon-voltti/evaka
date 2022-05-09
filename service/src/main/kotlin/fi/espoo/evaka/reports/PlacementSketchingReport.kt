@@ -98,7 +98,7 @@ WHERE
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
     AND application.type = 'PRESCHOOL'
 ORDER BY
-    area_name, requested_unit_name
+    area_name, requested_unit_name, application.childlastname, application.childfirstname
         """.trimIndent()
     return createQuery(sql)
         .bind("placementStartDate", placementStartDate)
