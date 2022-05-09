@@ -584,6 +584,7 @@ data class MessageReceiversResult(
     val receiverLastName: String
 )
 
+// TODO
 fun Database.Read.getReceiversForNewMessage(
     employeeId: EmployeeId,
     unitId: DaycareId
@@ -599,6 +600,18 @@ fun Database.Read.getReceiversForNewMessage(
             WHERE pl.unit_id = :unitId AND EXISTS (
                 SELECT 1 FROM child_acl_view a
                 WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
+            )
+            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+            
+            UNION ALL 
+            
+            SELECT bc.child_id, dg.id group_id, dg.name group_name
+            FROM daycare_group dg
+            JOIN backup_care bc ON dg.id = bc.group_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+            JOIN daycare d ON bc.unit_id = d.id
+            WHERE d.id = :unitId AND EXISTS (
+                SELECT 1 FROM child_acl_view a
+                WHERE a.employee_id = :employeeId AND a.child_id = bc.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
