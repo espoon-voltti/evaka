@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -166,10 +165,10 @@ class MessageControllerCitizen(
 
     private fun requireMessageAccountAccess(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): MessageAccountId {
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
-        return db.read { it.getCitizenMessageAccount(PersonId(user.id)) }
+        return db.read { it.getCitizenMessageAccount(user.id) }
     }
 }

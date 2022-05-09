@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -19,7 +20,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser = AuthenticatedUser.Employee(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(UserRole.ADMIN))
 
     @Test
     fun `two people with identical names and dates of birth are matched`() {

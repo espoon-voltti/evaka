@@ -44,7 +44,7 @@ class PersonService(
         val person = tx.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN) {
             val personDetails =
-                personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, person.identity))
+                personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user.evakaUserId, person.identity))
             upsertVtjPerson(tx, personDetails.mapToDto())
         } else {
             person
@@ -139,7 +139,7 @@ class PersonService(
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
         return if (person?.updatedFromVtj == null) {
-            val personDetails = personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
+            val personDetails = personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
             if (readonly) return toPersonDTO(personDetails.mapToDto())
 
             upsertVtjPerson(tx, personDetails.mapToDto())
@@ -177,7 +177,7 @@ class PersonService(
                 }
 
                 val personDetails =
-                    personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user, ssn))
+                    personDetailsService.getBasicDetailsFor(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
 
                 val updatedPerson = getPersonWithUpdatedProperties(
                     personDetails.mapToDto(),
@@ -202,12 +202,12 @@ class PersonService(
 
     // Does a request to VTJ
     private fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO {
-        return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn)).mapToDto()
+        return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)).mapToDto()
     }
 
     // Does a request to VTJ
     private fun getPersonWithGuardians(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO {
-        return personDetailsService.getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user, ssn)).mapToDto()
+        return personDetailsService.getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn)).mapToDto()
     }
 
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =

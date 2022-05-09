@@ -67,7 +67,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         notes = ""
     )
 
-    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
     private val financeUserName = "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}"
 
     @Test

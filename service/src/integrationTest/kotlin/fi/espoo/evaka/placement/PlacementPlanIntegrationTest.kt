@@ -42,7 +42,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -254,7 +254,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/placement-draft")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }
@@ -265,7 +265,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
                 .jsonBody(jsonMapper.writeValueAsString(proposal))
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }

@@ -46,7 +46,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
         accessControl.requirePermissionFor(user, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
-        return db.connect { dbc -> dbc.read { it.listPersonalDevices(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
     }
 
     @GetMapping("/system/mobile-devices/{id}")

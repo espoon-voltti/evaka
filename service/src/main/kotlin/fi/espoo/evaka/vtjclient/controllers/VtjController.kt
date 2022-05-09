@@ -31,14 +31,14 @@ class VtjController(private val personService: PersonService, private val access
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable(value = "personId") personId: PersonId
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         val notFound = { throw NotFound("Person not found") }
-        if (user.id != personId.raw) {
+        if (user.id != personId) {
             notFound()
         }
 

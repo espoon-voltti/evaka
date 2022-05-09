@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vtjclient.service.persondetails
 
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 
 interface IPersonDetailsService {
@@ -15,5 +15,5 @@ interface IPersonDetailsService {
 
     fun getBasicDetailsFor(query: DetailsQuery): VtjPerson
 
-    data class DetailsQuery(val requestingUser: AuthenticatedUser, val targetIdentifier: ExternalIdentifier.SSN)
+    data class DetailsQuery(val requestingUser: EvakaUserId, val targetIdentifier: ExternalIdentifier.SSN)
 }

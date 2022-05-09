@@ -28,9 +28,9 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
-            is AuthenticatedUser.Citizen -> user.authLevel
+            is AuthenticatedUser.Citizen -> Pair(user.authLevel, user.id)
             else -> null
-        }?.let { authLevel -> filter(tx, PersonId(user.id), targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+        }?.let { (authLevel, id) -> filter(tx, id, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
 
         override fun classifier(): Any = filter.javaClass
     }
@@ -52,7 +52,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     fun self() = object : TargetActionRule<PersonId> {
         override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
-            is AuthenticatedUser.Citizen -> if (user.id == target.raw && isPermittedAuthLevel(user.authLevel)) {
+            is AuthenticatedUser.Citizen -> if (user.id == target && isPermittedAuthLevel(user.authLevel)) {
                 AccessControlDecision.Permitted(this@IsCitizen)
             } else AccessControlDecision.None
             else -> AccessControlDecision.None

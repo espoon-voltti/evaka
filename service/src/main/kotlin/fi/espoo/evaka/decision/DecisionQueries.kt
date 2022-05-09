@@ -276,7 +276,7 @@ AND status = 'PENDING'
         """.trimIndent()
     )
         .bind("id", decisionId)
-        .bind("userId", user.id)
+        .bind("userId", user.evakaUserId)
         .bind("requestedStartDate", requestedStartDate)
         .execute()
 }
@@ -298,6 +298,6 @@ AND status = 'PENDING'
         """.trimIndent()
     )
         .bind("id", decisionId)
-        .bind("userId", user.id)
+        .bind("userId", user.evakaUserId)
         .execute()
 }

@@ -42,11 +42,11 @@ class IncomeStatementControllerCitizen(
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, PersonId(user.id))
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(PersonId(user.id), includeEmployeeContent = false, page = page, pageSize = pageSize)
+                tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
         }
     }
@@ -87,8 +87,8 @@ class IncomeStatementControllerCitizen(
         user: AuthenticatedUser.Citizen
     ): List<LocalDate> {
         Audit.IncomeStatementStartDates.log()
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, PersonId(user.id))
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(user.id)) } }
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }
     }
 
     @GetMapping("/{incomeStatementId}")
@@ -102,7 +102,7 @@ class IncomeStatementControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.readIncomeStatementForPerson(PersonId(user.id), incomeStatementId, includeEmployeeContent = false)
+                tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
                     ?: throw NotFound("No such income statement")
             }
         }
@@ -133,8 +133,8 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         Audit.IncomeStatementCreate.log(user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.CREATE_INCOME_STATEMENT, PersonId(user.id))
-        db.connect { createIncomeStatement(it, PersonId(user.id), PersonId(user.id), body) }
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.CREATE_INCOME_STATEMENT, user.id)
+        db.connect { createIncomeStatement(it, user.id, user.id, body) }
     }
 
     @PostMapping("/child/{childId}")
@@ -146,7 +146,7 @@ class IncomeStatementControllerCitizen(
     ) {
         Audit.IncomeStatementCreateForChild.log(user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_INCOME_STATEMENT, childId)
-        db.connect { createIncomeStatement(it, PersonId(childId.raw), PersonId(user.id), body) }
+        db.connect { createIncomeStatement(it, PersonId(childId.raw), user.id, body) }
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -162,13 +162,13 @@ class IncomeStatementControllerCitizen(
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                verifyIncomeStatementModificationsAllowed(tx, PersonId(user.id), incomeStatementId)
+                verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                 tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                     if (success) {
-                        tx.dissociateAllPersonsAttachments(PersonId(user.id), incomeStatementId)
+                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
                         when (body) {
                             is IncomeStatementBody.Income ->
-                                tx.associateAttachments(PersonId(user.id), incomeStatementId, body.attachmentIds)
+                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
                             else ->
                                 Unit
                         }
@@ -196,10 +196,10 @@ class IncomeStatementControllerCitizen(
                 verifyIncomeStatementModificationsAllowed(tx, PersonId(childId.raw), incomeStatementId)
                 tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                     if (success) {
-                        tx.dissociateAllPersonsAttachments(PersonId(user.id), incomeStatementId)
+                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
                         when (body) {
                             is IncomeStatementBody.ChildIncome ->
-                                tx.associateAttachments(PersonId(user.id), incomeStatementId, body.attachmentIds)
+                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
                             else ->
                                 Unit
                         }
@@ -219,7 +219,7 @@ class IncomeStatementControllerCitizen(
         accessControl.requirePermissionFor(user, Action.Citizen.IncomeStatement.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                verifyIncomeStatementModificationsAllowed(tx, PersonId(user.id), id)
+                verifyIncomeStatementModificationsAllowed(tx, user.id, id)
                 tx.removeIncomeStatement(id)
             }
         }
@@ -246,7 +246,7 @@ class IncomeStatementControllerCitizen(
     @GetMapping("/children")
     fun getIncomeStatementChildren(db: Database, user: AuthenticatedUser.Citizen): List<ChildBasicInfo> {
         Audit.CitizenChildrenRead.log()
-        val personId = PersonId(user.id)
+        val personId = user.id
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILDREN, personId)
         return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }
     }

@@ -78,7 +78,7 @@ AND id = ANY(:ids)
         this,
         Query<VasuDocumentFollowupEntryId> { tx, user, ids ->
             // TODO: replace naive loop with a batch operation
-            ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id }
+            ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id.raw }
         }
     )
 

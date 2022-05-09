@@ -13,7 +13,6 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AclAuthorization
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -69,7 +68,6 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `fetchApplicationSummaries returns service need information from applications correctly`() {
         val applications = db.read {
             it.fetchApplicationSummaries(
-                user = AuthenticatedUser.SystemInternalUser,
                 today = LocalDate.of(2022, 1, 1),
                 page = 1,
                 pageSize = 10,

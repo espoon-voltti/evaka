@@ -106,7 +106,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
     @Suppress("DEPRECATION")
     fun testGlobalRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId.raw, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val aclAuth = AclAuthorization.All
         val aclRoles = AclAppliedRoles(setOf(role))
 
@@ -122,7 +122,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
     @Suppress("DEPRECATION")
     fun testAclRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser.Employee(employeeId.raw, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val negativeAclAuth = AclAuthorization.Subset(emptySet())
         val negativeAclRoles = AclAppliedRoles(emptySet())
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
@@ -146,7 +146,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     @Suppress("DEPRECATION")
     fun testMobileAclRoleAuthorization() {
-        val user = AuthenticatedUser.MobileDevice(mobileId.raw)
+        val user = AuthenticatedUser.MobileDevice(mobileId)
 
         val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
         val expectedAclRoles = AclAppliedRoles(setOf(UserRole.MOBILE))

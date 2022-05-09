@@ -70,8 +70,8 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             val spanId = MdcKey.SPAN_ID.get()
             assertNotNull(traceId)
             assertEquals(traceId, spanId)
-            assertEquals(AuthenticatedUser.SystemInternalUser.id.toString(), MdcKey.USER_ID.get())
-            assertEquals(AuthenticatedUser.SystemInternalUser.idHash.toString(), MdcKey.USER_ID_HASH.get())
+            assertEquals(AuthenticatedUser.SystemInternalUser.rawId().toString(), MdcKey.USER_ID.get())
+            assertEquals(AuthenticatedUser.SystemInternalUser.rawIdHash.toString(), MdcKey.USER_ID_HASH.get())
         }
         db.transaction { asyncJobRunner.plan(it, listOf(job)) }
         asyncJobRunner.runPendingJobsSync(1)

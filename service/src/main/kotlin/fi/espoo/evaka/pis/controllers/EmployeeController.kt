@@ -55,9 +55,9 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): Employee {
+    fun getEmployee(db: Database, user: AuthenticatedUser.Employee, @PathVariable(value = "id") id: EmployeeId): Employee {
         Audit.EmployeeRead.log(targetId = id)
-        if (user.id != id.raw) {
+        if (user.id != id) {
             @Suppress("DEPRECATION")
             user.requireOneOfRoles(
                 UserRole.ADMIN,
@@ -129,20 +129,20 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PostMapping("/pin-code")
     fun upsertPinCode(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody body: PinCode
     ) {
         Audit.PinCodeUpdate.log(targetId = user.id)
-        db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(EmployeeId(user.id), body) } }
+        db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(user.id, body) } }
     }
 
     @GetMapping("/pin-code/is-pin-locked")
     fun isPinLocked(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
-        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }
     }
 
     @PostMapping("/search")

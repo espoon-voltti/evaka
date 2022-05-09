@@ -44,7 +44,7 @@ class DecisionDraftService {
         val batch = tx.prepareBatch(sql)
         drafts.forEach { draft ->
             batch
-                .bind("createdBy", user.id)
+                .bind("createdBy", user.evakaUserId)
                 .bind("unitId", draft.unitId)
                 .bind("applicationId", application.id)
                 .bind("type", draft.type.toString())

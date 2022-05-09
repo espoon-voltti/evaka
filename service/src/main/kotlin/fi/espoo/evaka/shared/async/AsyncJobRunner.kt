@@ -158,8 +158,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
                 val registration = handlers[job.jobType] ?: throw IllegalStateException("No handler found for ${job.jobType}")
                 tx.startJob(job)?.let { msg ->
                     msg.user?.let {
-                        MdcKey.USER_ID.set(it.id.toString())
-                        MdcKey.USER_ID_HASH.set(it.idHash.toString())
+                        MdcKey.USER_ID.set(it.rawId().toString())
+                        MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                     }
                     registration.run(Database(jdbi), msg)
                     tx.completeJob(job)

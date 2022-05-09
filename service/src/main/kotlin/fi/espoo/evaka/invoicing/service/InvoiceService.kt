@@ -110,7 +110,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
         .bind("status_sent", InvoiceStatus.SENT.toString())
         .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .bind("sent_at", Instant.now())
-        .bind("sent_by", user.id)
+        .bind("sent_by", user.evakaUserId)
         .bind("ids", invoiceIds.toTypedArray())
         .mapTo<InvoiceId>()
         .list()

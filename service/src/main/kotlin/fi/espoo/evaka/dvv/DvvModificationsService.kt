@@ -98,7 +98,7 @@ class DvvModificationsService(
                     personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
                 }?.let {
                     logger.info("Refreshing all VTJ information for person ${it.id}")
-                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.evakaUserId))
+                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id))
                 }
             }
 

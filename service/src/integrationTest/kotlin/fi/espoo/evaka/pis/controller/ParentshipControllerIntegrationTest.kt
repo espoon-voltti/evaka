@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -60,20 +61,20 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `service worker can create and fetch parentships`() {
         `can create and fetch parentships`(
-            AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         )
     }
 
     @Test
     fun `can add a sibling parentship and fetch parentships`() {
         `can add a sibling parentship and fetch parentships`(
-            AuthenticatedUser.Employee(unitSupervisorId.raw, setOf())
+            AuthenticatedUser.Employee(unitSupervisorId, setOf())
         )
     }
 
     @Test
     fun `finance admin can create and fetch parentships`() {
-        `can create and fetch parentships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can create and fetch parentships`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can create and fetch parentships`(user: AuthenticatedUser) {
@@ -125,17 +126,17 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `service worker can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `can update parentship duration`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf()))
+        `can update parentship duration`(AuthenticatedUser.Employee(unitSupervisorId, setOf()))
     }
 
     @Test
     fun `finance admin can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can update parentship duration`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can update parentship duration`(user: AuthenticatedUser) {
@@ -156,17 +157,17 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `service worker cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `cannot delete parentship`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf()))
+        `cannot delete parentship`(AuthenticatedUser.Employee(unitSupervisorId, setOf()))
     }
 
     @Test
     fun `finance admin can delete parentships`() {
-        `can delete parentship`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can delete parentship`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can delete parentship`(user: AuthenticatedUser) {
@@ -205,7 +206,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `error is thrown if enduser tries to get parentships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
@@ -214,7 +215,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `error is thrown if enduser tries to update parentship`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
@@ -226,7 +227,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `error is thrown if enduser tries to delete parentship`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
@@ -235,7 +236,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a start date before child's date of birth`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val request = ParentshipController.ParentshipRequest(
             parent.id,
             child.id,
@@ -247,7 +248,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a end date after child's 18th birthday`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val request = ParentshipController.ParentshipRequest(
             parent.id,
             child.id,

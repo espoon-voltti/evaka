@@ -288,7 +288,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
     private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
         val (_, res, _) = http.post("/citizen/reservations")
             .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
             .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
             .response()
 
@@ -298,7 +298,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
     private fun postAbsences(request: AbsenceRequest) {
         val (_, res, _) = http.post("/citizen/absences")
             .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
             .withMockedTime(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0)))
             .response()
 
@@ -313,7 +313,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             )
             }"
         )
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG))
+            .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
             .responseObject<ReservationsResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)

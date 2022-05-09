@@ -15,6 +15,7 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -138,7 +139,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(contactInfo.invoicingPostOffice, actual?.invoicingPostOffice)
     }
 
-    private val adminUser = AuthenticatedUser.Employee(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(UserRole.ADMIN))
 
     @Test
     fun `person can be found by ssn`() {
@@ -190,7 +191,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `unit supervisor cannot find a child without acl access`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)), "Matti", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.UNIT_SUPERVISOR)), "Matti", "last_name", "ASC") }
 
         assertEquals(0, persons.size)
     }
@@ -198,7 +199,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `special education teacher cannot find a child without acl access`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SPECIAL_EDUCATION_TEACHER)), "Matti", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SPECIAL_EDUCATION_TEACHER)), "Matti", "last_name", "ASC") }
 
         assertEquals(0, persons.size)
     }

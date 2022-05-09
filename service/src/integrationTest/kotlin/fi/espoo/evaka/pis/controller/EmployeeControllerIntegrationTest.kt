@@ -26,14 +26,14 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `no employees return empty list`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val employees = employeeController.getEmployees(Database(jdbi), user)
         assertEquals(listOf(), employees)
     }
 
     @Test
     fun `admin can add employee`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val emp = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
         assertEquals(employee1.firstName, emp.firstName)
         assertEquals(employee1.lastName, emp.lastName)
@@ -43,7 +43,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `admin gets all employees`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
         employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee2))
         val employees = employeeController.getEmployees(Database(jdbi), user)
@@ -54,7 +54,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `admin can first create, then get employee`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         assertEquals(0, employeeController.getEmployees(Database(jdbi), user).size)
 
         val responseCreate = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
@@ -67,7 +67,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `admin can delete employee`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
 
         employeeController.deleteEmployee(Database(jdbi), user, body.id)

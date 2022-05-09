@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
@@ -158,7 +157,7 @@ class VasuController(
     @PostMapping("/vasu/{id}/edit-followup/{entryId}")
     fun editFollowupEntry(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable id: VasuDocumentId,
         @PathVariable entryId: UUID,
         @RequestBody body: EditFollowupEntryRequest
@@ -169,7 +168,7 @@ class VasuController(
             dbc.transaction { tx ->
                 val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
 
-                val editedBy = tx.getEmployee(EmployeeId(user.id))
+                val editedBy = tx.getEmployee(user.id)
 
                 tx.updateVasuDocumentMaster(
                     id,
@@ -183,7 +182,7 @@ class VasuController(
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
@@ -224,7 +223,7 @@ class VasuController(
                     tx.insertVasuDocumentEvent(
                         documentId = id,
                         eventType = eventType,
-                        employeeId = EmployeeId(user.id)
+                        employeeId = user.id
                     )
                 }
             }

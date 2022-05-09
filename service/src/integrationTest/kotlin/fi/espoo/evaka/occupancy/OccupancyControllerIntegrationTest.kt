@@ -333,7 +333,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange?
     ): OccupancyResponseSpeculated {
-        val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
         val (_, _, body) = http.get(
             "/occupancy/by-unit/$unitId/speculated/$applicationId",
             listOf(

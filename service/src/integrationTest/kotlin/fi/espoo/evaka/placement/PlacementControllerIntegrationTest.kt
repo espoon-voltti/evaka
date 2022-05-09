@@ -42,9 +42,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     final val placementEnd = placementStart.plusDays(200)
     lateinit var testPlacement: DaycarePlacementDetails
 
-    private val unitSupervisor = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, emptySet())
-    private val staff = AuthenticatedUser.Employee(testDecisionMaker_2.id.raw, emptySet())
-    private val serviceWorker = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+    private val unitSupervisor = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
+    private val staff = AuthenticatedUser.Employee(testDecisionMaker_2.id, emptySet())
+    private val serviceWorker = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun setUp() {
@@ -58,7 +58,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
             tx.insertTestDaycareGroup(testDaycareGroup)
             testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
-            tx.updateDaycareAclWithEmployee(daycareId, EmployeeId(unitSupervisor.id), UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -493,7 +493,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
             ).also {
-                tx.updateDaycareAclWithEmployee(testDaycare2.id, EmployeeId(unitSupervisor.id), UserRole.UNIT_SUPERVISOR)
+                tx.updateDaycareAclWithEmployee(testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
             }
         }
 
@@ -521,7 +521,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `staff can't modify placements`() {
         db.transaction { tx ->
-            tx.updateDaycareAclWithEmployee(daycareId, EmployeeId(staff.id), UserRole.STAFF)
+            tx.updateDaycareAclWithEmployee(daycareId, staff.id, UserRole.STAFF)
         }
         val newStart = placementStart.plusDays(1)
         val newEnd = placementEnd.minusDays(2)

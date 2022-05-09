@@ -250,7 +250,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING, decisions.first().status)
-            assertEquals(financeWorker.id, decisions.first().decisionHandler)
+            assertEquals(financeWorker.id.raw, decisions.first().decisionHandler)
         }
     }
 
@@ -483,9 +483,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         return getAllValueDecisions().getOrNull(0)!!
     }
 
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
-    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     private fun createPlacement(
         startDate: LocalDate,

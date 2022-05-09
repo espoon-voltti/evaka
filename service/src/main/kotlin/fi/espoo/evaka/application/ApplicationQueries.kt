@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
@@ -154,7 +153,6 @@ fun Database.Read.activePlacementExists(
 }
 
 fun Database.Read.fetchApplicationSummaries(
-    user: AuthenticatedUser,
     today: LocalDate,
     page: Int,
     pageSize: Int,
@@ -191,7 +189,6 @@ fun Database.Read.fetchApplicationSummaries(
         "dateType" to dateType.map { it.toString() }.toTypedArray(),
         "periodStart" to periodStart,
         "periodEnd" to periodEnd,
-        "userId" to user.id
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("child"), searchTerms)

@@ -6,7 +6,6 @@ package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -25,8 +24,8 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getChildren(db: Database, user: AuthenticatedUser.Citizen): ChildrenResponse {
         Audit.CitizenChildrenRead.log()
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILDREN, PersonId(user.id))
-        return ChildrenResponse(db.connect { dbc -> dbc.read { it.getChildrenByGuardian(PersonId(user.id)) } })
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILDREN, user.id)
+        return ChildrenResponse(db.connect { dbc -> dbc.read { it.getChildrenByGuardian(user.id) } })
     }
 
     @GetMapping("/{id}")

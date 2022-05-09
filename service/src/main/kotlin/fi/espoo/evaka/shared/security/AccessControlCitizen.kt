@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class AccessControlCitizen {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser): CitizenFeatures {
+    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Citizen): CitizenFeatures {
         return CitizenFeatures(
-            messages = tx.citizenHasAccessToMessaging(PersonId(user.id)),
-            reservations = tx.citizenHasAccessToReservations(PersonId(user.id)),
-            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(PersonId(user.id))
+            messages = tx.citizenHasAccessToMessaging(user.id),
+            reservations = tx.citizenHasAccessToReservations(user.id),
+            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(user.id)
         )
     }
 

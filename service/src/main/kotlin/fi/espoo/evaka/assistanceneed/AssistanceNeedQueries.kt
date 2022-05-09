@@ -37,7 +37,7 @@ fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: 
         .bind("childId", childId)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .bind("capacityFactor", data.capacityFactor)
         .mapTo<AssistanceNeedId>()
         .first()
@@ -124,7 +124,7 @@ fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: Assis
         .bind("id", id)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .bind("capacityFactor", data.capacityFactor)
         .mapTo<AssistanceNeedId>()
         .firstOrNull() ?: throw NotFound("Assistance need $id not found")
@@ -149,7 +149,7 @@ fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUse
         .bind("childId", childId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .execute()
 }
 

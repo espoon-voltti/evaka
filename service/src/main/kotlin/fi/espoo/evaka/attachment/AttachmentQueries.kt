@@ -59,7 +59,7 @@ fun Database.Transaction.insertAttachment(
                 is AttachmentParent.PedagogicalDocument -> AttachmentParentColumn(pedagogicalDocumentId = attachTo.pedagogicalDocumentId)
             }
         )
-        .bind("userId", user.id)
+        .bind("userId", user.evakaUserId)
         .bind("type", type ?: "")
         .execute()
 }

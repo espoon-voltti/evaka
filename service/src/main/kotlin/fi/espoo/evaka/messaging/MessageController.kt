@@ -49,10 +49,10 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
+    fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) } }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -106,7 +106,7 @@ class MessageController(
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!)) } }
     }
 
     @GetMapping("/unread/{unitId}")
@@ -257,7 +257,7 @@ class MessageController(
     @GetMapping("/receivers")
     fun getReceiversForNewMessage(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
@@ -270,7 +270,7 @@ class MessageController(
             UserRole.MOBILE
         )
 
-        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.id), unitId) } }
+        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(user.id, unitId) } }
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
@@ -288,7 +288,7 @@ class MessageController(
         accountId: MessageAccountId
     ) {
         requireAuthorizedMessagingRole(user)
-        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)) }.find { it == accountId }
+        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)!!) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
@@ -299,14 +299,15 @@ class MessageController(
     ) {
         db.read {
             it.isEmployeeAuthorizedToSendTo(
-                getEmployeeId(user),
+                getEmployeeId(user)!!,
                 recipientAccountIds
             )
         } || throw Forbidden("Not authorized to send to the given recipients")
     }
 
-    fun getEmployeeId(user: AuthenticatedUser): EmployeeId = when (user) {
+    fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {
         is AuthenticatedUser.MobileDevice -> user.employeeId
-        else -> EmployeeId(user.id)
-    } ?: EmployeeId(user.id)
+        is AuthenticatedUser.Employee -> user.id
+        else -> null
+    }
 }

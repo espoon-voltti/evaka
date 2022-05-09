@@ -112,7 +112,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(sum, row.monthlyPaymentSum)
     }
 
-    private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
     private fun getAreaReport(areaId: AreaId, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
         val (_, response, data) = http.get(
@@ -136,7 +136,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         }
     }
 
-    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
 
     private fun createVoucherDecision(
         validFrom: LocalDate,

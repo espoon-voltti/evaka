@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -78,14 +79,14 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `service worker can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         )
     }
 
     @Test
     fun `unit supervisor can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR))
+            AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR))
         )
     }
 
@@ -93,7 +94,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun `finance admin can create and fetch partnerships`() {
         `can create and fetch partnerships`(
             AuthenticatedUser.Employee(
-                UUID.randomUUID(),
+                EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.FINANCE_ADMIN)
             )
         )
@@ -118,17 +119,17 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `service worker can delete partnerships`() {
-        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        canDeletePartnership(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can delete partnerships`() {
-        canDeletePartnership(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR)))
+        canDeletePartnership(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can delete partnerships`() {
-        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        canDeletePartnership(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     private fun canDeletePartnership(user: AuthenticatedUser) {
@@ -152,17 +153,17 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `service worker can update partnerships`() {
-        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can update partnerships`() {
-        canUpdatePartnershipDuration(AuthenticatedUser.Employee(unitSupervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(unitSupervisorId, setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can update partnerships`() {
-        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     private fun canUpdatePartnershipDuration(user: AuthenticatedUser) {
@@ -190,7 +191,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `can updating partnership duration to overlap throws conflict`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val partnership1 = db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
                 tx.createPartnership(
@@ -212,7 +213,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `error is thrown if enduser tries to get partnerships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
@@ -224,7 +225,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `error is thrown if enduser tries to create a partnership`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody =
@@ -237,7 +238,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `error is thrown if enduser tries to update partnerships`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         val partnership = db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
@@ -251,7 +252,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `error is thrown if enduser tries to delete a partnership`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         val partnership = db.transaction { tx ->
             tx.createPartnership(person.id, partner.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }

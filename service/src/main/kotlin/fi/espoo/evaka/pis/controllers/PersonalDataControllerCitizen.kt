@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -30,7 +29,7 @@ class PersonalDataControllerCitizen {
 
         db.connect { dbc ->
             dbc.transaction {
-                val person = it.getPersonById(PersonId(user.id)) ?: error("User not found")
+                val person = it.getPersonById(user.id) ?: error("User not found")
 
                 val validationErrors = listOfNotNull(
                     "invalid preferredName".takeUnless { person.firstName.split(" ").contains(body.preferredName) },

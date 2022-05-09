@@ -31,7 +31,7 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
 
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
-            is AuthenticatedUser.MobileDevice -> filter(tx, MobileDeviceId(user.id), targets).associateWith { Deferred(user.authLevel) }
+            is AuthenticatedUser.MobileDevice -> filter(tx, user.id, targets).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
 

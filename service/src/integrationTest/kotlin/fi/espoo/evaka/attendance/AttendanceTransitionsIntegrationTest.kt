@@ -40,7 +40,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val mobileUser = AuthenticatedUser.MobileDevice(UUID.randomUUID())
+    private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
     private val daycarePlacementId = PlacementId(UUID.randomUUID())
@@ -52,7 +52,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser.id), testDaycare.id)
+            tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
         }
     }
 

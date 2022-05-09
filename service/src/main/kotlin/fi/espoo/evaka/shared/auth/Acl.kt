@@ -55,7 +55,7 @@ SELECT role
 FROM daycare_acl_view
 WHERE employee_id = :userId AND daycare_id = :daycareId
                     """.trimIndent()
-                ).bind("userId", user.id).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
+                ).bind("userId", user.rawId()).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
             }
         }
     )
@@ -74,7 +74,7 @@ ON d.id = acl.daycare_id
 WHERE :pilotFeature = ANY(d.enabled_pilot_features)
 AND employee_id = :userId
                     """.trimIndent()
-                ).bind("userId", user.id).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
+                ).bind("userId", user.rawId()).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
             }
         }
     )
@@ -86,7 +86,7 @@ private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, role
     return createQuery(
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
-        .bind("userId", user.id)
+        .bind("userId", user.rawId())
         .bindNullable("roles", roles?.toTypedArray())
         .mapTo<DaycareId>()
         .toSet()

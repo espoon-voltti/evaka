@@ -7,7 +7,6 @@ package fi.espoo.evaka.incomestatement
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -96,7 +95,7 @@ class IncomeStatementController(
     @PostMapping("/{incomeStatementId}/handled")
     fun setHandled(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
@@ -107,7 +106,7 @@ class IncomeStatementController(
                 tx.updateIncomeStatementHandled(
                     incomeStatementId,
                     body.handlerNote,
-                    if (body.handled) EmployeeId(user.id) else null,
+                    if (body.handled) user.id else null,
                 )
             }
         }

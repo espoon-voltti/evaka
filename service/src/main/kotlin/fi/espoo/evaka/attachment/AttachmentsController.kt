@@ -178,7 +178,7 @@ class AttachmentsController(
         }
     }
 
-    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
+    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser.Citizen) {
         val count = db.read {
             when (attachTo) {
                 AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)

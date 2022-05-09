@@ -43,7 +43,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         }
     }
 
-    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = testChild_1.id
 
     private val testFeeAlteration = FeeAlteration(

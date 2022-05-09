@@ -116,7 +116,7 @@ data class PersonSummary(
     val restrictedDetailsEnabled: Boolean
 )
 
-fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonSummary> {
+fun Database.Read.searchPeople(user: AuthenticatedUser.Employee, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonSummary> {
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
@@ -372,20 +372,6 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
         .bind("id", id)
         .bind("ssn", ssn)
         .execute()
-}
-
-fun Database.Read.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
-
-    return createQuery(
-        """
-SELECT
-$commaSeparatedPersonDTOColumns
-FROM person WHERE date_of_death >= :since
-        """.trimIndent()
-    )
-        .bind("since", since)
-        .map(toPersonDTO)
-        .toList()
 }
 
 private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx ->

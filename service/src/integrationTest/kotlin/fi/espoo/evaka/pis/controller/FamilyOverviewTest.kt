@@ -138,7 +138,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(null, result.headOfFamily.income)
     }
 
-    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     private fun fetchAndParseFamilyDetails(personId: PersonId, user: AuthenticatedUser = financeUser): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")
@@ -190,7 +190,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
             it.insertTestEmployee(unitSupervisor)
             it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)
         }
-        return AuthenticatedUser.Employee(unitSupervisor.id.raw, setOf())
+        return AuthenticatedUser.Employee(unitSupervisor.id, setOf())
     }
 
     private fun addIncome(personId: PersonId): Int {

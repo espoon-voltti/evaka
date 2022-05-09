@@ -36,7 +36,7 @@ class PedagogicalDocumentControllerCitizen(
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
         return db.connect { dbc ->
             dbc.read {
-                it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type).filter { pd ->
+                it.findPedagogicalDocumentsByGuardian(user.id, user.type).filter { pd ->
                     pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
             }
@@ -52,7 +52,7 @@ class PedagogicalDocumentControllerCitizen(
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.PedagogicalDocument.READ, documentId)
         return db.connect { dbc ->
-            dbc.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
+            dbc.transaction { it.markDocumentReadByGuardian(documentId, user.id) }
         }
     }
 
@@ -63,7 +63,7 @@ class PedagogicalDocumentControllerCitizen(
     ): Number {
         Audit.PedagogicalDocumentCountUnread.log(user.id)
         return db.connect { dbc ->
-            dbc.transaction { it.countUnreadDocumentsByGuardian(PersonId(user.id)) }
+            dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
         }
     }
 }

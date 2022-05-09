@@ -57,11 +57,11 @@ class ReservationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getReservationChildren(PersonId(user.id), range)
+                val children = tx.getReservationChildren(user.id, range)
                 val includeWeekends = children.any {
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
-                val reservations = tx.getReservationsCitizen(PersonId(user.id), range, includeWeekends)
+                val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val placementRange = FiniteDateRange(children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
@@ -90,7 +90,7 @@ class ReservationControllerCitizen(
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservations(tx, user.id, body.validate(reservableDays))
+                createReservations(tx, user.evakaUserId, body.validate(reservableDays))
             }
         }
     }
@@ -119,7 +119,7 @@ class ReservationControllerCitizen(
                     }
                 )
                 tx.insertAbsences(
-                    PersonId(user.id),
+                    user.id,
                     body.childIds.map { AbsenceInsert(it, body.dateRange, body.absenceType) }
                 )
             }

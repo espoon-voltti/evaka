@@ -18,7 +18,6 @@ import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -60,12 +59,12 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(PersonId(user.id))
+                val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
                     .groupBy { it.childId }
                     .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
                 // Some children might not have applications, so add 0 application children
-                tx.getCitizenChildren(PersonId(user.id)).map { citizenChild ->
+                tx.getCitizenChildren(user.id).map { citizenChild ->
                     val childApplications =
                         existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
                             ?: emptyList()
@@ -95,7 +94,7 @@ class ApplicationControllerCitizen(
             }
         }
 
-        return if (application?.guardianId?.raw == user.id && !application.hideFromGuardian)
+        return if (application?.guardianId == user.id && !application.hideFromGuardian)
             application
         else
             throw NotFound("Application not found")
@@ -116,15 +115,15 @@ class ApplicationControllerCitizen(
             dbc.transaction { tx ->
                 if (
                     body.type != ApplicationType.CLUB &&
-                    tx.duplicateApplicationExists(guardianId = PersonId(user.id), childId = body.childId, type = body.type)
+                    tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
                 ) {
                     throw BadRequest("Duplicate application")
                 }
 
-                val guardian = tx.getPersonById(PersonId(user.id))
+                val guardian = tx.getPersonById(user.id)
                     ?: throw IllegalStateException("Guardian not found")
 
-                if (tx.getGuardianChildIds(PersonId(user.id)).none { it == body.childId }) {
+                if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
                     throw IllegalStateException("User is not child's guardian")
                 }
 
@@ -133,7 +132,7 @@ class ApplicationControllerCitizen(
 
                 tx.insertApplication(
                     type = body.type,
-                    guardianId = PersonId(user.id),
+                    guardianId = user.id,
                     childId = body.childId,
                     origin = ApplicationOrigin.ELECTRONIC
                 ).also {
@@ -159,7 +158,7 @@ class ApplicationControllerCitizen(
                     .map { type ->
                         type to (
                             type != ApplicationType.CLUB &&
-                                tx.duplicateApplicationExists(guardianId = PersonId(user.id), childId = childId, type = type)
+                                tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
                             )
                     }
                     .toMap()
@@ -253,7 +252,7 @@ class ApplicationControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val application = tx.fetchApplicationDetails(applicationId)
-                    ?.takeIf { it.guardianId.raw == user.id }
+                    ?.takeIf { it.guardianId == user.id }
                     ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
                 if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
@@ -271,7 +270,7 @@ class ApplicationControllerCitizen(
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today(), isEnduser = true) } }
+        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today()) } }
     }
 
     @GetMapping("/decisions")
@@ -279,7 +278,7 @@ class ApplicationControllerCitizen(
         Audit.DecisionRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.connect { dbc -> dbc.read { it.getOwnDecisions(PersonId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -295,7 +294,7 @@ class ApplicationControllerCitizen(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationDetails(applicationId)
-                    ?.let { if (it.guardianId.raw != user.id) throw Forbidden("Application not owned") }
+                    ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
                     ?: throw NotFound("Application not found")
 
                 tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -319,7 +318,6 @@ class ApplicationControllerCitizen(
                     applicationId,
                     body.decisionId,
                     body.requestedStartDate,
-                    isEnduser = true
                 )
             }
         }
@@ -335,7 +333,7 @@ class ApplicationControllerCitizen(
         // note: applicationStateService handles logging and authorization
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
+                applicationStateService.rejectDecision(it, user, applicationId, body.decisionId)
             }
         }
     }
@@ -352,7 +350,7 @@ class ApplicationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                if (!tx.getDecisionsByGuardian(PersonId(user.id), AclAuthorization.All).any { it.id == id }) {
+                if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
                     logger.warn { "Citizen ${user.id} tried to download decision $id" }
                     throw NotFound("Decision not found")
                 }

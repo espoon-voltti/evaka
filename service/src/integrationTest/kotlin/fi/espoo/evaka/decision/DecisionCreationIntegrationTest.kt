@@ -53,7 +53,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -396,7 +396,7 @@ WHERE id = :unitId
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/decision-drafts")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }

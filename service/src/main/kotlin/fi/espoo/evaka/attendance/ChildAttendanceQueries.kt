@@ -67,7 +67,7 @@ fun Database.Transaction.insertAbsence(
         .bind("date", date)
         .bind("category", category)
         .bind("absenceType", absenceType)
-        .bind("userId", user.id)
+        .bind("userId", user.evakaUserId)
         .mapTo<Absence>()
         .first()
 }

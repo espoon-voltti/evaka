@@ -57,8 +57,8 @@ import kotlin.test.assertTrue
 data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
@@ -336,7 +336,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(DecisionStatus.ACCEPTED, it.status)
                 assertNotNull(it.resolved)
                 assertEquals(requestedStartDate, it.requestedStartDate)
-                assertEquals(user.id, it.resolvedBy)
+                assertEquals(user.evakaUserId, it.resolvedBy)
             }
         }
     }
@@ -355,7 +355,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(DecisionStatus.REJECTED, it.status)
                 assertNotNull(it.resolved)
                 assertNull(it.requestedStartDate)
-                assertEquals(user.id, it.resolvedBy)
+                assertEquals(user.evakaUserId, it.resolvedBy)
             }
         }
     }

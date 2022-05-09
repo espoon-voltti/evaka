@@ -10,7 +10,6 @@ import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
-import fi.espoo.evaka.pis.getDeceasedPeople
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
@@ -32,7 +31,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -41,7 +39,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
@@ -131,7 +128,7 @@ class PersonController(
     @PostMapping("/search")
     fun findBySearchTerms(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody body: SearchPersonBody
     ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
@@ -278,18 +275,6 @@ class PersonController(
             ?: throw NotFound()
     }
 
-    @GetMapping("/get-deceased/")
-    fun getDeceased(
-        db: Database,
-        user: AuthenticatedUser,
-        @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
-    ): List<PersonJSON> {
-        Audit.PersonDetailsRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        return db.connect { dbc -> dbc.read { it.getDeceasedPeople(sinceDate) } }.map { personDTO -> PersonJSON.from(personDTO) }
-    }
-
     @PostMapping("/merge")
     fun mergePeople(
         db: Database,
@@ -326,7 +311,7 @@ class PersonController(
     ) {
         Audit.PersonVtjFamilyUpdate.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.UPDATE_FROM_VTJ, personId)
-        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user.id, personId) }
+        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, personId) }
     }
 
     data class PersonResponse(

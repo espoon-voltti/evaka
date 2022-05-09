@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.async
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
@@ -13,7 +14,6 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -130,7 +130,8 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class InitializeFamilyFromApplication(val applicationId: ApplicationId, override val user: AuthenticatedUser) :
         AsyncJob
 
-    data class VTJRefresh(val personId: PersonId, val requestingUserId: EvakaUserId) : AsyncJob {
+    @JsonIgnoreProperties("requestingUser") // only present in old jobs
+    data class VTJRefresh(val personId: PersonId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -14,9 +15,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class IsCitizenTest : AccessControlTest() {
-    private val strongCitizen = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
-    private val weakCitizen = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.WEAK)
-    private val employee = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
+    private val strongCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
+    private val weakCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.WEAK)
+    private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
     @Test
     fun `permits only strongly authenticated citizen if allowWeakLogin = false`() {
@@ -40,8 +41,8 @@ class IsCitizenTest : AccessControlTest() {
     fun `self() permits only if the target is the same citizen user doing the action`() {
         val action = Action.Person.READ
         rules.add(action, IsCitizen(allowWeakLogin = false).self())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, action, PersonId(strongCitizen.id)))
-        assertFalse(accessControl.hasPermissionFor(strongCitizen, action, PersonId(weakCitizen.id)))
-        assertFalse(accessControl.hasPermissionFor(weakCitizen, action, PersonId(weakCitizen.id)))
+        assertTrue(accessControl.hasPermissionFor(strongCitizen, action, strongCitizen.id))
+        assertFalse(accessControl.hasPermissionFor(strongCitizen, action, weakCitizen.id))
+        assertFalse(accessControl.hasPermissionFor(weakCitizen, action, weakCitizen.id))
     }
 }

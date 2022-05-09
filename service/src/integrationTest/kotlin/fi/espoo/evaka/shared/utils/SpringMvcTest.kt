@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.utils
 
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import org.junit.jupiter.api.Test
@@ -14,7 +15,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
-    private val employee = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
+    private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
     @Test
     fun `AuthenticatedUser as a parameter requires authentication`() {

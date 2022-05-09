@@ -54,9 +54,9 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val secondUnitId = testDaycare2.id
 
     private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor1 = AuthenticatedUser.Employee(supervisorId.raw, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor1 = AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
     private val supervisor2Id = EmployeeId(UUID.randomUUID())
-    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id.raw, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
     private val guardianPerson = testAdult_6
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -275,7 +275,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         .asUser(user)
         .response()
 
-    private fun getEmployeeOwnMessageAccount(user: AuthenticatedUser): MessageAccountId {
+    private fun getEmployeeOwnMessageAccount(user: AuthenticatedUser.Employee): MessageAccountId {
         // language=SQL
         val sql = """
 SELECT acc.id FROM message_account acc

@@ -39,7 +39,7 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
         .bind("childId", childId)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
         .bind("measures", data.measures.map { it.toString() }.toTypedArray())
         .mapTo<AssistanceActionId>()
@@ -113,7 +113,7 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
         .bind("id", id)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
         .bind("measures", data.measures.map { it.toString() }.toTypedArray())
         .mapTo<AssistanceActionId>()
@@ -139,7 +139,7 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedU
         .bind("childId", childId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .bind("updatedBy", user.id)
+        .bind("updatedBy", user.evakaUserId)
         .execute()
 }
 
