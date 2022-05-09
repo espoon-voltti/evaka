@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import { isSameDay } from 'date-fns'
+import { compareAsc, isSameDay } from 'date-fns'
 import { groupBy, initial, last, sortBy } from 'lodash'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
@@ -159,6 +159,24 @@ const emptyTimeRangeAt = (date: LocalDate): TimeRangeWithErrorsAndMetadata => ({
   arrived: date,
   departed: date
 })
+const overnightTimeRangeAt = (
+  date: LocalDate
+): TimeRangeWithErrorsAndMetadata => ({
+  startTime: '00:00',
+  endTime: '23:59',
+  errors: {
+    startTime: undefined,
+    endTime: undefined
+  },
+  lastSavedState: {
+    startTime: '',
+    endTime: ''
+  },
+  id: undefined,
+  groupId: undefined,
+  arrived: date,
+  departed: date
+})
 
 const OvernightAwareTimeRangeEditor = React.memo(
   function OvernightAwareTimeRangeEditor({
@@ -272,6 +290,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
     })
 
     const daysAndRanges = operationalDays.map((day) => {
+      const nextEntryIsOvernight = (day: LocalDate) => {
+        const date = day.toSystemTzDate()
+        const laterAttendances = dailyAttendances
+          .filter((a) => compareAsc(a.arrived, date) > 0)
+          .sort((a, b) => compareAsc(a.arrived, b.arrived))
+        return (
+          laterAttendances.length > 0 &&
+          formatTime(laterAttendances[0].arrived) === '00:00'
+        )
+      }
       const attendancesOnDay = dailyAttendances.filter((a) =>
         isSameDay(a.arrived, day.date.toSystemTzDate())
       )
@@ -301,6 +329,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   }
                 }
               })
+            : nextEntryIsOvernight(day.date)
+            ? [overnightTimeRangeAt(day.date)]
             : [emptyTimeRangeAt(day.date)]
       }
     })
