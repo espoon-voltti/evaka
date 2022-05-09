@@ -381,11 +381,20 @@ const AttendanceRow = React.memo(function AttendanceRow({
     name
   ])
 
-  const renderTime = useCallback((time: string) => {
+  const renderArrivalTime = useCallback((time: string) => {
     switch (time) {
       case '':
         return '-'
       case '00:00':
+        return '→'
+      default:
+        return time
+    }
+  }, [])
+  const renderDepartureTime = useCallback((time: string) => {
+    switch (time) {
+      case '':
+        return '-'
       case '23:59':
         return '→'
       default:
@@ -430,7 +439,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
         >
           {timeRanges.map((range, rangeIx) => (
             <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
-              {editing && (range.id || enableNewEntries) ? (
+              {editing && (range.groupId || enableNewEntries) ? (
                 <OvernightAwareTimeRangeEditor
                   timeRange={range}
                   update={(updatedValue) =>
@@ -442,8 +451,12 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 />
               ) : (
                 <>
-                  <AttendanceTime>{renderTime(range.startTime)}</AttendanceTime>
-                  <AttendanceTime>{renderTime(range.endTime)}</AttendanceTime>
+                  <AttendanceTime>
+                    {renderArrivalTime(range.startTime)}
+                  </AttendanceTime>
+                  <AttendanceTime>
+                    {renderDepartureTime(range.endTime)}
+                  </AttendanceTime>
                 </>
               )}
             </AttendanceCell>
