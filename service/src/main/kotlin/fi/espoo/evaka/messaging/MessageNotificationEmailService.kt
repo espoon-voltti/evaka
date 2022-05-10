@@ -101,7 +101,7 @@ class MessageNotificationEmailService(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
                 fromAddress = getFromAddress(language),
-                subject = getSubject(),
+                subject = getSubject(urgent),
                 htmlBody = getHtml(language, threadId, urgent),
                 textBody = getText(language, threadId, urgent)
             )
@@ -109,10 +109,14 @@ class MessageNotificationEmailService(
         }
     }
 
-    private fun getSubject(): String {
+    private fun getSubject(urgent: Boolean): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
-        return "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
+        return if (urgent) {
+            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka$postfix"
+        } else {
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
+        }
     }
 
     private fun getCitizenMessageUrl(lang: Language, threadId: MessageThreadId?): String {
