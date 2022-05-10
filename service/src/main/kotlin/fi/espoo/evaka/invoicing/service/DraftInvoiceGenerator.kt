@@ -331,7 +331,7 @@ class DraftInvoiceGenerator(
                 }
             }
 
-        // If this is a full month for a contract day child (not int partialMonthChildren), make sure that there's
+        // If this is a full month for a contract day child (not in partialMonthChildren), make sure that there's
         // no less than `contractDaysPerMonth` days even if they have more planned absences than they should
         return if (contractDaysPerMonth != null && !partialMonthChildren.contains(child.id) && attendanceDates.size < contractDaysPerMonth) {
             (
