@@ -584,7 +584,6 @@ data class MessageReceiversResult(
     val receiverLastName: String
 )
 
-// TODO
 fun Database.Read.getReceiversForNewMessage(
     employeeId: EmployeeId,
     unitId: DaycareId

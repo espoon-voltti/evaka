@@ -51,6 +51,17 @@ export default class MessagesPage {
     return (await this.page.findAll('[data-qa="sent-message-row"]').count()) > 0
   }
 
+  async assertMessageIsSentForParticipants(nth: number, participants: string) {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findAll('[data-qa="sent-message-row"]')
+          .nth(nth)
+          .find('[data-qa="participants"]').textContent,
+      participants
+    )
+  }
+
   async openInbox(index: number) {
     await this.page.findAll(':text("Saapuneet")').nth(index).click()
   }
@@ -81,6 +92,7 @@ export default class MessagesPage {
     content: string
     urgent?: boolean
     attachmentCount?: number
+    receiver?: number
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -89,7 +101,15 @@ export default class MessagesPage {
     await this.#inputTitle.fill(message.title)
     await this.#inputContent.fill(message.content)
     await this.#receiverSelection.click()
-    await this.page.keyboard.press('Enter')
+
+    if (message.receiver) {
+      await this.#receiverSelection
+        .findAll('[data-qa="option"]')
+        .nth(message.receiver)
+        .click()
+    } else {
+      await this.page.keyboard.press('Enter')
+    }
     if (message.urgent ?? false) {
       await this.#urgent.check()
     }

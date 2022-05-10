@@ -51,7 +51,7 @@ export function ThreadList({ items: messages }: Props) {
           data-qa={item.dataQa}
         >
           <ParticipantsAndPreview>
-            <Participants unread={item.unread}>
+            <Participants unread={item.unread} data-qa="participants">
               {item.participants.length > 0
                 ? item.participants.join(', ')
                 : '-'}{' '}
