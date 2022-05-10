@@ -4022,7 +4022,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
-        r.createQuery(invoiceQueryBase)
+        r.createQuery(
+            """
+            $invoiceQueryBase
+            ORDER BY invoice.id, row.idx
+            """.trimIndent()
+        )
             .map(toInvoice)
             .list()
             .let(::flatten)
