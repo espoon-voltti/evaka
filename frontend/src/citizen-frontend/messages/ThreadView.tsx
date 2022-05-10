@@ -169,6 +169,11 @@ export default React.memo(function ThreadView({
     scrollRefIntoView(autoScrollRef)
   }, [messages, replyEditorVisible])
 
+  const autoFocusRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    autoFocusRef.current?.focus()
+  }, [messages, replyEditorVisible])
+
   const onUpdateContent = useCallback(
     (content: string) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
@@ -250,6 +255,7 @@ export default React.memo(function ThreadView({
               onClick={() => setReplyEditorVisible(true)}
               data-qa="message-reply-editor-btn"
               text={i18n.messages.replyToThread}
+              ref={autoFocusRef}
             />
             <Gap size="m" />
           </>
