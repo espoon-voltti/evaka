@@ -194,6 +194,7 @@ class DraftInvoiceGenerator(
                             rowStub,
                             rowStub.placement.unit,
                             dailyFeeDivisor,
+                            minOf(contractDaysPerMonth ?: operationalDays.generalCase.size, dailyFeeDivisor),
                             attendanceDates,
                             relevantAbsences,
                             childrenFullMonthAbsences[childId] ?: FullMonthAbsenceType.NOTHING,
@@ -374,6 +375,7 @@ class DraftInvoiceGenerator(
         invoiceRowStub: InvoiceRowStub,
         unitId: DaycareId,
         dailyFeeDivisor: Int,
+        numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
@@ -398,6 +400,7 @@ class DraftInvoiceGenerator(
                 unitId,
                 dailyFeeDivisor,
                 invoiceRowStub.contractDaysPerMonth,
+                numRelevantOperationalDays,
                 attendanceDates,
                 invoiceRowStub.feeAlterations,
                 absences,
@@ -449,6 +452,7 @@ class DraftInvoiceGenerator(
         unitId: DaycareId,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
+        numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         absences: List<AbsenceStub>,
@@ -464,7 +468,7 @@ class DraftInvoiceGenerator(
         if (periodAttendanceDates.isEmpty()) return listOf()
 
         val product = productProvider.mapToProduct(placement.type)
-        val (amount, unitPrice) = if (periodAttendanceDates.size == dailyFeeDivisor) Pair(
+        val (amount, unitPrice) = if (periodAttendanceDates.size == numRelevantOperationalDays) Pair(
             1,
             { p: Int -> p }
         ) else Pair(
