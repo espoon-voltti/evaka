@@ -126,17 +126,17 @@ class MessageNotificationEmailService(
     private fun getHtml(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
         val messagesUrl = getCitizenMessageUrl(language, threadId)
         return """
-                <p>Sinulle on saapunut uusi ${"kiireellinen ".takeIf { urgent }}tiedote/viesti eVakaan. Lue viesti ${"mahdollisimman pian ".takeIf { urgent }}täältä: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
             
                 <hr>
                 
-                <p>Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet ${"så snart som möjligt ".takeIf { urgent }}här: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
                 
                 <hr>
                 
-                <p>You have received a new ${"urgent ".takeIf { urgent }}eVaka bulletin/message. Read the message ${"as soon as possible ".takeIf { urgent }}here: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
         """.trimIndent()
     }
@@ -144,19 +144,19 @@ class MessageNotificationEmailService(
     private fun getText(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
         val messageUrl = getCitizenMessageUrl(language, threadId)
         return """
-                Sinulle on saapunut uusi ${"kiireellinen ".takeIf { urgent }}tiedote/viesti eVakaan. Lue viesti ${"mahdollisimman pian ".takeIf { urgent }}täältä: $messageUrl
+                Sinulle on saapunut uusi ${if (urgent) "kiireellinen " else ""}tiedote/viesti eVakaan. Lue viesti ${if (urgent) "mahdollisimman pian " else ""}täältä: $messageUrl
                 
                 Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
                 
                 -----
        
-                Du har fått ett nytt ${"brådskande ".takeIf { urgent }}allmänt/personligt meddelande i eVaka. Läs meddelandet ${"så snart som möjligt ".takeIf { urgent }}här: $messageUrl
+                Du har fått ett nytt ${if (urgent) "brådskande " else ""}allmänt/personligt meddelande i eVaka. Läs meddelandet ${if (urgent) "så snart som möjligt " else ""}här: $messageUrl
                 
                 Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
                 
                 -----
                 
-                You have received a new ${"urgent ".takeIf { urgent }}eVaka bulletin/message. Read the message ${"as soon as possible ".takeIf { urgent }}here: $messageUrl
+                You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: $messageUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
         """.trimIndent()
