@@ -62,6 +62,15 @@ sealed class AuthenticatedUser : RoleContainer {
         override val type = AuthenticatedUserType.mobile
     }
 
+    object Integration : AuthenticatedUser() {
+        override val id: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+        override val evakaUserId: EvakaUserId
+            get() = EvakaUserId(id)
+        override val roles: Set<UserRole> = emptySet()
+        override val type = AuthenticatedUserType.integration
+        override fun toString(): String = "Integration"
+    }
+
     object SystemInternalUser : AuthenticatedUser() {
         override val id: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
         override val evakaUserId: EvakaUserId
@@ -80,5 +89,5 @@ enum class MobileAuthLevel { DEFAULT, PIN_LOGIN }
  */
 @Suppress("EnumEntryName")
 enum class AuthenticatedUserType {
-    citizen, citizen_weak, employee, mobile, system
+    citizen, citizen_weak, employee, mobile, system, integration
 }

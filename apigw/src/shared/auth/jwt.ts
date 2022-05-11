@@ -9,11 +9,16 @@ import { jwtKid, jwtPrivateKey } from '../config'
 const privateKey = readFileSync(jwtPrivateKey)
 
 export function createJwt(payload: {
-  kind: 'SuomiFI' | 'AD' | 'AdDummy'
   sub: string
   scope?: string
   evaka_employee_id?: string
-  evaka_type: 'citizen' | 'citizen_weak' | 'employee' | 'mobile' | 'system'
+  evaka_type:
+    | 'citizen'
+    | 'citizen_weak'
+    | 'employee'
+    | 'mobile'
+    | 'system'
+    | 'integration'
 }): string {
   return jwt.sign(payload, privateKey, {
     algorithm: 'RS256',

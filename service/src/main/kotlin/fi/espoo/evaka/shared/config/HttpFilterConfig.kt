@@ -76,6 +76,7 @@ class HttpFilterConfig {
         private fun HttpServletRequest.isAuthorized(user: AuthenticatedUser): Boolean = when {
             requestURI.startsWith("/system/") -> user is AuthenticatedUser.SystemInternalUser
             requestURI.startsWith("/citizen/") -> user is AuthenticatedUser.Citizen
+            requestURI.startsWith("/integration/") -> user is AuthenticatedUser.Integration
             else -> true
         }
     }
