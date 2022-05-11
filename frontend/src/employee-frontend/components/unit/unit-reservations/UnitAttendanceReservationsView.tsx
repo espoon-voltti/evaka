@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { combine } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
@@ -27,6 +27,8 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import {
+  deleteExternalStaffAttendance,
+  deleteStaffAttendance,
   getStaffAttendances,
   postStaffAndExternalAttendances
 } from '../../../api/staff-attendance'
@@ -121,6 +123,22 @@ export default React.memo(function UnitAttendanceReservationsView({
     [groupId, unitId]
   )
 
+  const deleteAttendances = useCallback(
+    (
+      staffAttendanceIds: UUID[],
+      externalStaffAttendanceIds: UUID[]
+    ): Promise<Result<void>[]> => {
+      const staffDeletes = staffAttendanceIds.map((id) =>
+        deleteStaffAttendance(unitId, id)
+      )
+      const externalDeletes = externalStaffAttendanceIds.map((id) =>
+        deleteExternalStaffAttendance(unitId, id)
+      )
+      return Promise.all([...staffDeletes, ...externalDeletes])
+    },
+    [unitId]
+  )
+
   return renderResult(
     combine(childReservations, staffAttendances),
     ([childData, staffData]) => (
@@ -158,6 +176,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               staffAttendances={staffData.staff}
               extraAttendances={staffData.extraAttendances}
               saveAttendances={saveAttendances}
+              deleteAttendances={deleteAttendances}
               reloadStaffAttendances={reloadStaffAttendances}
             />
           ) : (
@@ -177,6 +196,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                     (ea) => ea.groupId === groupId
                   )}
                   saveAttendances={saveAttendances}
+                  deleteAttendances={deleteAttendances}
                   reloadStaffAttendances={reloadStaffAttendances}
                   enableNewEntries
                 />

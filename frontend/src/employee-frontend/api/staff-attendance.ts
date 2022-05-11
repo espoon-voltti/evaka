@@ -66,3 +66,23 @@ export function postStaffAndExternalAttendances(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
+
+export function deleteStaffAttendance(
+  unitId: UUID,
+  attendanceId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/staff-attendances/realtime/${unitId}/${attendanceId}`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deleteExternalStaffAttendance(
+  unitId: UUID,
+  attendanceId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/staff-attendances/realtime/${unitId}/external/${attendanceId}`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

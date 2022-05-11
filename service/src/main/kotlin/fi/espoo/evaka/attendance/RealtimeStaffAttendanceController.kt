@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -139,6 +140,42 @@ class RealtimeStaffAttendanceController(
                         occupancyCoefficientSeven
                     )
                 }
+            }
+        }
+    }
+
+    @DeleteMapping("/{unitId}/{attendanceId}")
+    fun deleteStaffAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @PathVariable attendanceId: StaffAttendanceId
+    ) {
+        Audit.StaffAttendanceDelete.log(targetId = attendanceId)
+
+        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteStaffAttendance(attendanceId)
+            }
+        }
+    }
+
+    @DeleteMapping("/{unitId}/external/{attendanceId}")
+    fun deleteExternalStaffAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @PathVariable attendanceId: StaffAttendanceExternalId
+    ) {
+        Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
+
+        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteExternalStaffAttendance(attendanceId)
             }
         }
     }
