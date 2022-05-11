@@ -323,7 +323,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
-        val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
+        val path = "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
             .jsonBody(jsonMapper.writeValueAsString(AcceptDecisionRequest(decisionId, requestedStartDate)))
@@ -342,7 +342,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId) {
-        val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
+        val path = "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
             .jsonBody(jsonMapper.writeValueAsString(RejectDecisionRequest(decisionId)))

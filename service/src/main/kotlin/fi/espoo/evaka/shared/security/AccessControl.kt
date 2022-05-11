@@ -81,10 +81,10 @@ class AccessControl(
             )
         )
 
-    private fun isMessagingEnabled(user: AuthenticatedUser): Boolean {
+    private fun isMessagingEnabled(user: AuthenticatedUser.Employee): Boolean {
         @Suppress("DEPRECATION")
         return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
-            .hasOneOfRoles(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+            .intersect(setOf(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)).isNotEmpty()
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.StaticAction) = checkPermissionFor(user, action).assert()

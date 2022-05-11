@@ -136,7 +136,8 @@ class PersonController(
                     user,
                     body.searchTerm,
                     body.orderBy,
-                    body.sortDirection
+                    body.sortDirection,
+                    restricted = !accessControl.hasPermissionFor(user, Action.Global.SEARCH_PEOPLE_UNRESTRICTED)
                 )
             }
         }

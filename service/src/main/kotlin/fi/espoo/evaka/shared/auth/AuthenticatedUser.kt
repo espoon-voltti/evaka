@@ -17,7 +17,7 @@ import java.util.UUID
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
 @JsonDeserialize(using = AuthenticatedUserJsonDeserializer::class)
-sealed class AuthenticatedUser : RoleContainer {
+sealed class AuthenticatedUser {
     open val isAdmin = false
 
     abstract val type: AuthenticatedUserType
@@ -30,10 +30,6 @@ sealed class AuthenticatedUser : RoleContainer {
 
     data class Citizen(val id: PersonId, val authLevel: CitizenAuthLevel) : AuthenticatedUser() {
         override fun rawId(): UUID = id.raw
-        override val roles: Set<UserRole> = when (authLevel) {
-            CitizenAuthLevel.STRONG -> setOf(UserRole.END_USER)
-            CitizenAuthLevel.WEAK -> setOf(UserRole.CITIZEN_WEAK)
-        }
         override val type = when (authLevel) {
             CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen
             CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_weak
@@ -44,29 +40,27 @@ sealed class AuthenticatedUser : RoleContainer {
         constructor(id: EmployeeId, roles: Set<UserRole>) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
         constructor(employeeUser: EmployeeUser) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)
         override fun rawId(): UUID = id.raw
-        override val roles: Set<UserRole> = globalRoles + allScopedRoles
-        override val isAdmin = roles.contains(UserRole.ADMIN)
+        override val isAdmin = globalRoles.contains(UserRole.ADMIN)
         override val type = AuthenticatedUserType.employee
+
+        fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { globalRoles.contains(it) || allScopedRoles.contains(it) }
     }
 
     data class MobileDevice(val id: MobileDeviceId, val employeeId: EmployeeId? = null) : AuthenticatedUser() {
         val authLevel: MobileAuthLevel
             get() = if (employeeId != null) MobileAuthLevel.PIN_LOGIN else MobileAuthLevel.DEFAULT
         override fun rawId(): UUID = id.raw
-        override val roles: Set<UserRole> = emptySet()
         override val type = AuthenticatedUserType.mobile
     }
 
     object Integration : AuthenticatedUser() {
         override fun rawId(): UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-        override val roles: Set<UserRole> = emptySet()
         override val type = AuthenticatedUserType.integration
         override fun toString(): String = "Integration"
     }
 
     object SystemInternalUser : AuthenticatedUser() {
         override fun rawId(): UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-        override val roles: Set<UserRole> = emptySet()
         override val type = AuthenticatedUserType.system
         override fun toString(): String = "SystemInternalUser"
     }

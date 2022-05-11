@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 
-data class AclAppliedRoles(override val roles: Set<UserRole>) : RoleContainer
 sealed class AclAuthorization {
     abstract fun isAuthorized(id: DaycareId): Boolean
     abstract val ids: Set<DaycareId>?
@@ -37,16 +36,22 @@ class AccessControlList(private val jdbi: Jdbi) {
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization = getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
     fun getAuthorizedUnits(user: AuthenticatedUser, roles: Set<UserRole>): AclAuthorization =
-        @Suppress("DEPRECATION")
-        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.REPORT_VIEWER)) {
+        if (user is AuthenticatedUser.Employee && setOf(
+                UserRole.ADMIN,
+                UserRole.FINANCE_ADMIN,
+                UserRole.SERVICE_WORKER,
+                UserRole.DIRECTOR,
+                UserRole.REPORT_VIEWER
+            ).any { user.globalRoles.contains(it) }
+        ) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(Database(jdbi).connect { db -> db.read { it.selectAuthorizedDaycares(user, roles) } })
         }
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPilotFeature(user: AuthenticatedUser, feature: PilotFeature): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
+    fun getRolesForPilotFeature(user: AuthenticatedUser.Employee, feature: PilotFeature): Set<UserRole> =
+        user.globalRoles + Database(jdbi).connect { db ->
             db.read {
                 it.createQuery(
                     // language=SQL
@@ -58,10 +63,9 @@ ON d.id = acl.daycare_id
 WHERE :pilotFeature = ANY(d.enabled_pilot_features)
 AND employee_id = :userId
                     """.trimIndent()
-                ).bind("userId", user.rawId()).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
+                ).bind("userId", user.id).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
             }
         }
-    )
 }
 
 private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> {

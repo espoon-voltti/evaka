@@ -38,7 +38,7 @@ fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = 
     .withClaim("evaka_type", this.type.toString())
     .also {
         if (this is AuthenticatedUser.Employee) {
-            it.withClaim("scope", roles.joinToString(" "))
+            it.withClaim("scope", (globalRoles + allScopedRoles).joinToString(" "))
         }
     }
     .also {

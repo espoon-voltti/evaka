@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
@@ -116,7 +115,13 @@ data class PersonSummary(
     val restrictedDetailsEnabled: Boolean
 )
 
-fun Database.Read.searchPeople(user: AuthenticatedUser.Employee, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonSummary> {
+fun Database.Read.searchPeople(
+    user: AuthenticatedUser.Employee,
+    searchTerms: String,
+    sortColumns: String,
+    sortDirection: String,
+    restricted: Boolean
+): List<PersonSummary> {
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
@@ -129,8 +134,6 @@ fun Database.Read.searchPeople(user: AuthenticatedUser.Employee, searchTerms: St
     }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("person"), searchTerms)
-    @Suppress("DEPRECATION")
-    val scopedRole = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
 
     // language=SQL
     val sql = """
@@ -145,14 +148,14 @@ fun Database.Read.searchPeople(user: AuthenticatedUser.Employee, searchTerms: St
             restricted_details_enabled
         FROM person
         WHERE $freeTextQuery
-        ${if (scopedRole) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
+        ${if (restricted) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
         ORDER BY $orderBy
         LIMIT 100
     """.trimIndent()
 
     return createQuery(sql)
         .bindMap(freeTextParams)
-        .applyIf(scopedRole) { bind("userId", user.id) }
+        .applyIf(restricted) { bind("userId", user.id) }
         .mapTo<PersonSummary>()
         .toList()
 }

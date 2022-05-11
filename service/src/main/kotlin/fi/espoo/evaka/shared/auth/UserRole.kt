@@ -44,10 +44,3 @@ enum class UserRole {
         val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE, GROUP_STAFF)
     }
 }
-
-interface RoleContainer {
-    val roles: Set<UserRole>
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { roles.contains(it) }
-}
