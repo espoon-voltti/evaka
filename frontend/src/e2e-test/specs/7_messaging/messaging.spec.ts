@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
+  insertBackupCareFixtures,
   insertDaycareGroupFixtures,
   insertGuardianFixtures,
   resetDatabase,
@@ -15,7 +17,12 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  daycareGroupFixture,
+  enduserChildFixtureKaarina,
+  Fixture,
+  uuidv4
+} from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -54,10 +61,27 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
+  await insertBackupCareFixtures([
+    {
+      id: uuidv4(),
+      childId: enduserChildFixtureKaarina.id,
+      unitId: fixtures.daycareFixture.id,
+      groupId: daycareGroupFixture.id,
+      period: {
+        start: LocalDate.today().formatIso(),
+        end: LocalDate.today().formatIso()
+      }
+    }
+  ])
+
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {
       childId: childId,
+      guardianId: fixtures.enduserGuardianFixture.id
+    },
+    {
+      childId: enduserChildFixtureKaarina.id,
       guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
@@ -103,6 +127,31 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
+
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+        await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.assertMessageContent(1, defaultReply)
+      })
+
+      test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+
+        await messagesPage.sendNewMessage({
+          ...defaultMessage,
+          receiver: 3
+        })
+
+        await messagesPage.assertMessageIsSentForParticipants(
+          0,
+          `${enduserChildFixtureKaarina.firstName} ${enduserChildFixtureKaarina.lastName} `
+        )
 
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)

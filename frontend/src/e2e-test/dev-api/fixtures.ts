@@ -948,12 +948,14 @@ export function createPreschoolDaycarePlacementFixture(
 
 export function createBackupCareFixture(
   childId: string,
-  unitId: string
+  unitId: string,
+  groupId?: string
 ): BackupCare {
   return {
     id: 'b501d5e7-efcd-49e9-9371-23262b5cd51f',
     childId,
     unitId: unitId,
+    groupId,
     period: {
       start: '2023-02-01',
       end: '2023-02-03'

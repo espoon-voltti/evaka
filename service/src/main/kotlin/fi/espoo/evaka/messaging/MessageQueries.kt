@@ -601,6 +601,18 @@ fun Database.Read.getReceiversForNewMessage(
                 WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+            
+            UNION ALL 
+            
+            SELECT bc.child_id, dg.id group_id, dg.name group_name
+            FROM daycare_group dg
+            JOIN backup_care bc ON dg.id = bc.group_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+            JOIN daycare d ON bc.unit_id = d.id
+            WHERE d.id = :unitId AND EXISTS (
+                SELECT 1 FROM child_acl_view a
+                WHERE a.employee_id = :employeeId AND a.child_id = bc.child_id
+            )
+            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
             SELECT DISTINCT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c
