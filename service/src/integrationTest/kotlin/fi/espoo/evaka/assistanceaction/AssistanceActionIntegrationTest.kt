@@ -273,28 +273,43 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `if child is in preschool, only show preschool assistance actions if employee is not an admin`() {
-        val today = LocalDate.now().withMonth(8).withDayOfMonth(1)
-        givenAssistanceAction(today.withMonth(1), today.withMonth(7), testChild_1.id)
-        val assistanceActionDuringPreschool = givenAssistanceAction(today.withMonth(8), today.withMonth(12), testChild_1.id)
+        val today = LocalDate.now()
+        givenAssistanceAction(today.minusDays(1), today.minusDays(1), testChild_1.id)
+        val assistanceActionNow = givenAssistanceAction(today, today, testChild_1.id)
 
         // No preschool placement, so expect both
         assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
 
         // With a non preschool placement expect seeing both
-        givenPlacement(today.withMonth(1), today.withMonth(7), PlacementType.DAYCARE)
+        val placement = givenPlacement(today, today, PlacementType.DAYCARE)
         assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
+        db.transaction {
+            it.createUpdate("delete from placement where id = :id")
+                .bind("id", placement.raw)
+                .execute()
+        }
 
         // With a preschool placement, expect only seeing the assistance need starting after the placement
-        givenPlacement(today.withMonth(8), today.withMonth(12), PlacementType.PRESCHOOL)
+        givenPlacement(today, today, PlacementType.PRESCHOOL)
         val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
         assertEquals(1, assistanceActions.size)
 
         with(assistanceActions[0]) {
-            assertEquals(assistanceActionDuringPreschool, id)
+            assertEquals(assistanceActionNow, id)
         }
 
         // Admin sees all
         assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, admin).size)
+    }
+
+    @Test
+    fun `if child will be in preschool, show pre preschool assistance actions if employee is not an admin`() {
+        val today = LocalDate.now()
+        givenAssistanceAction(today, today, testChild_1.id)
+
+        givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
+        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        assertEquals(1, assistanceActions.size)
     }
 
     private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
