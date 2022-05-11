@@ -254,12 +254,12 @@ class MessageController(
     @GetMapping("/receivers")
     fun getReceiversForNewMessage(
         db: Database,
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
-        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(user.id, unitId) } }
+        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }
     }
 
     private fun requireMessageAccountAccess(
@@ -277,12 +277,16 @@ class MessageController(
         user: AuthenticatedUser,
         recipientAccountIds: Set<MessageAccountId>
     ) {
-        db.read {
-            it.isEmployeeAuthorizedToSendTo(
-                getEmployeeId(user)!!,
-                recipientAccountIds
-            )
-        } || throw Forbidden("Not authorized to send to the given recipients")
+        val employeeOrMobileId = when (user) {
+            is AuthenticatedUser.MobileDevice -> user.employeeId ?: user.id
+            is AuthenticatedUser.Employee -> user.id
+            else -> null
+        }
+        (
+            employeeOrMobileId != null && db.read {
+                it.isEmployeeAuthorizedToSendTo(employeeOrMobileId, recipientAccountIds)
+            }
+            ) || throw Forbidden("Not authorized to send to the given recipients")
     }
 
     fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {
