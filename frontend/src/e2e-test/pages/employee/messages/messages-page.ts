@@ -92,7 +92,7 @@ export default class MessagesPage {
     content: string
     urgent?: boolean
     attachmentCount?: number
-    receiver?: number
+    receiver?: string
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -103,10 +103,7 @@ export default class MessagesPage {
     await this.#receiverSelection.click()
 
     if (message.receiver) {
-      await this.#receiverSelection
-        .findAll('[data-qa="option"]')
-        .nth(message.receiver)
-        .click()
+      await this.page.findText(message.receiver).click()
     } else {
       await this.page.keyboard.press('Enter')
     }
