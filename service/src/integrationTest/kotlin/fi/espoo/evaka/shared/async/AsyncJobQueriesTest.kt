@@ -105,7 +105,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun testRemoveOldAsyncJobs() {
         val now = HelsinkiDateTime.of(LocalDate.of(2020, 9, 1), LocalTime.of(12, 0))
         val ancient = LocalDate.of(2019, 1, 1)
-        val recent = LocalDate.of(2020, 7, 1)
+        val recent = LocalDate.of(2020, 3, 1)
         val future = LocalDate.of(2020, 9, 2)
         db.transaction { tx ->
             listOf(ancient, recent)
@@ -126,6 +126,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 TestJobParams(recent, completed = false),
+                TestJobParams(recent, completed = true),
                 TestJobParams(future, completed = false),
             ),
             remainingJobs
