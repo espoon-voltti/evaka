@@ -115,16 +115,18 @@ class VoucherValueDecisionService(
     }
 
     fun endOutdatedDecisions(tx: Database.Transaction, now: HelsinkiDateTime) {
-        val decisionIds = tx.createQuery(
+        // Find decisions that _may_ need to be updated
+        val decisionUpdateCandidateIds = tx.createQuery(
             """
 SELECT DISTINCT d.id
 FROM voucher_value_decision d
 
--- The current placement that this decision covers
+-- The placement that this decision covers
 LEFT JOIN placement p ON (
-    :now BETWEEN p.start_date AND p.end_date AND
-    d.child_id = p.child_id AND 
-    daterange(d.valid_from, d.valid_to, '[]') && daterange(p.start_date, p.end_date, '[]')
+    p.child_id = d.child_id AND
+    p.type = d.placement_type AND
+    p.unit_id = d.placement_unit_id AND
+    daterange(p.start_date, p.end_date, '[]') && daterange(d.valid_from, d.valid_to, '[]') 
 )
 LEFT JOIN daycare unit ON unit.id = p.unit_id
 LEFT JOIN service_need sn ON sn.placement_id = p.id
@@ -133,25 +135,25 @@ LEFT JOIN service_need_option default_sno ON default_sno.default_option AND defa
 
 WHERE
     d.status = 'SENT' AND
-
-    -- This decision covers the current date
-    :now BETWEEN d.valid_from AND d.valid_to AND
-
-    -- This is the latest voucher value decision for this child
+    d.valid_from <= :now AND
+    
+    -- No overlapping draft exists
     NOT EXISTS (
-        SELECT 1
-        FROM voucher_value_decision d_later
+        SELECT 1 FROM voucher_value_decision overlapping
         WHERE
-            d_later.id <> d.id AND
-            d_later.status IN ('DRAFT', 'WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING', 'SENT') AND
-            d_later.child_id = d.child_id AND
-            d_later.valid_from > d.valid_from
+            overlapping.id <> d.id AND 
+            overlapping.status = 'DRAFT' AND
+            daterange(overlapping.valid_from, overlapping.valid_to, '[]') && daterange(d.valid_from, d.valid_to, '[]')
     ) AND
     
     (
-        -- No valid placement exists for this decision currently
+        -- Placement has been deleted
         p.id IS NULL OR
-        -- The current placement is not to a voucher unit
+        -- Placement has been updated
+        p.updated > coalesce(d.validity_updated_at, d.created) OR
+        -- Service need has been updated
+        sn.updated > coalesce(d.validity_updated_at, d.created) OR
+        -- The placement is not to a voucher unit
         unit.provider_type <> 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type OR
         -- Service need is not eligible for voucher
         coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficient) = 0
@@ -159,10 +161,10 @@ WHERE
 """
         ).bind("now", now.toLocalDate()).mapTo<VoucherValueDecisionId>().toList()
 
-        tx.lockValueDecisions(decisionIds)
+        tx.lockValueDecisions(decisionUpdateCandidateIds)
 
         tx
-            .getValueDecisionsByIds(decisionIds)
+            .getValueDecisionsByIds(decisionUpdateCandidateIds)
             .forEach { decision ->
                 val mergedPlacementPeriods = tx
                     .createQuery(

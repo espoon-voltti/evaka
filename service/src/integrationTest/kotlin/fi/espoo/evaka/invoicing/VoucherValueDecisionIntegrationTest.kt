@@ -61,6 +61,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
@@ -391,6 +392,62 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `value decision cleanup changes decision end date if placement end date is changed after decision has already ended`() {
+        val placementId = createPlacement(startDate, endDate)
+        addServiceNeed(placementId, startDate, endDate, snDaycareFullDay25to35.id)
+        sendAllValueDecisions()
+
+        val endDate2 = now.toLocalDate().minusDays(1)
+        val endDate3 = now.toLocalDate().minusDays(2)
+
+        updatePlacement(placementId, startDate, endDate2)
+        endOutdatedDecisions(now = now.toLocalDate())
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(startDate, decisions.first().validFrom)
+            assertEquals(endDate2, decisions.first().validTo)
+        }
+
+        updatePlacement(placementId, startDate, endDate3)
+        endOutdatedDecisions(now = now.toLocalDate())
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(1, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
+            assertEquals(startDate, decisions.first().validFrom)
+            assertEquals(endDate3, decisions.first().validTo)
+        }
+    }
+
+    @Test
+    fun `value decision cleanup annuls multiple decisions if needed`() {
+        createPlacement(startDate, startDate.plusDays(10), testVoucherDaycare.id)
+        createPlacement(startDate.plusDays(11), startDate.plusDays(20), testVoucherDaycare2.id)
+        createPlacement(startDate.plusDays(21), endDate, testVoucherDaycare.id)
+        sendAllValueDecisions()
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(3, decisions.size)
+            assertTrue(decisions.all { it.status == VoucherValueDecisionStatus.SENT })
+        }
+
+        val (_, placementId2, placementId3) = getPlacements().map { it.id }
+        deletePlacement(placementId2)
+        deletePlacement(placementId3)
+
+        endOutdatedDecisions(now = startDate.plusDays(22))
+
+        getAllValueDecisions().let { decisions ->
+            assertEquals(3, decisions.size)
+            assertEquals(VoucherValueDecisionStatus.SENT, decisions[0].status)
+            assertEquals(VoucherValueDecisionStatus.ANNULLED, decisions[1].status)
+            assertEquals(VoucherValueDecisionStatus.ANNULLED, decisions[2].status)
+        }
+    }
+
+    @Test
     fun `value decision search`() {
         createPlacement(startDate, endDate)
 
@@ -576,6 +633,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         asyncJobRunner.runPendingJobsSync()
     }
 
+    private fun getPlacements(childId: ChildId = testChild_1.id): List<DaycarePlacementWithDetails> {
+        val (_, _, data) = http.get("/placements", listOf("childId" to childId))
+            .asUser(serviceWorker)
+            .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
+
+        return data.get().sortedBy { it.startDate }
+    }
+
     private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
         val body = PlacementUpdateRequestBody(
             startDate = startDate,
@@ -631,7 +696,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         return data.get()
     }
 
-    private fun sendAllValueDecisions(expectedStatusCode: Int = 200, expectedErrorCode: String? = null): List<VoucherValueDecisionId> {
+    private fun sendAllValueDecisions(
+        expectedStatusCode: Int = 200,
+        expectedErrorCode: String? = null
+    ): List<VoucherValueDecisionId> {
         val (_, _, data) = http.post("/value-decisions/search")
             .jsonBody("""{"page": 0, "pageSize": 100, "status": "DRAFT"}""")
             .withMockedTime(now)
@@ -662,10 +730,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
         return db.read {
-            it.createQuery("SELECT * FROM voucher_value_decision")
+            it.createQuery("SELECT * FROM voucher_value_decision ORDER BY valid_from")
                 .mapTo<VoucherValueDecision>()
                 .toList()
-        }.shuffled() // randomize order to expose assumptions
+        }
     }
 
     private fun endOutdatedDecisions(now: LocalDate) {
