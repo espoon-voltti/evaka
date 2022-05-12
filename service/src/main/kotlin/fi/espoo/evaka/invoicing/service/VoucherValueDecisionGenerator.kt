@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDatesIfNeeded
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -100,7 +100,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
     deleteValueDecisions(existingDrafts.map { it.id })
     upsertValueDecisions(updatedDecisions.updatedDrafts)
-    updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, HelsinkiDateTime.now())
+    updateVoucherValueDecisionEndDatesIfNeeded(updatedDecisions.updatedActiveDecisions, HelsinkiDateTime.now())
 }
 
 private fun generateNewValueDecisions(

@@ -11,7 +11,7 @@ import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDatesIfNeeded
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
@@ -351,7 +351,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         val decision = createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         val endedDecision = decision.copy(validTo = janFirst.plusDays(13))
-        db.transaction { it.updateVoucherValueDecisionEndDates(listOf(endedDecision), janFreeze.plusSeconds(3600)) }
+        db.transaction { it.updateVoucherValueDecisionEndDatesIfNeeded(listOf(endedDecision), janFreeze.plusSeconds(3600)) }
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(2, febReport.size)
@@ -368,7 +368,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     fun `continued value decisions are corrected after original end`() {
         val decision = createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
         db.transaction {
-            it.updateVoucherValueDecisionEndDates(
+            it.updateVoucherValueDecisionEndDatesIfNeeded(
                 listOf(decision.copy(validTo = janFirst.plusDays(13))),
                 janFreeze.plusSeconds(3600)
             )
@@ -381,7 +381,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
         // move decision end date to end of february
         db.transaction {
-            it.updateVoucherValueDecisionEndDates(
+            it.updateVoucherValueDecisionEndDatesIfNeeded(
                 listOf(decision.copy(validTo = marFirst.toEndOfMonth())),
                 janFreeze.plusSeconds(3600)
             )
@@ -427,7 +427,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze) }
 
         val endedDecision = decision.copy(validTo = janFirst.toEndOfMonth())
-        db.transaction { it.updateVoucherValueDecisionEndDates(listOf(endedDecision), febFreeze.plusDays(1)) }
+        db.transaction { it.updateVoucherValueDecisionEndDatesIfNeeded(listOf(endedDecision), febFreeze.plusDays(1)) }
 
         createVoucherDecision(febFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800)
         db.transaction { freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze) }

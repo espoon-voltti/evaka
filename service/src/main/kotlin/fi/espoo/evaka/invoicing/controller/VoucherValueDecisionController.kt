@@ -16,7 +16,7 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDatesIfNeeded
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.ANNULLED
@@ -274,7 +274,7 @@ fun sendVoucherValueDecisions(
     val (annulled, updatedDates) = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
         .partition { it.status == ANNULLED }
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
-    tx.updateVoucherValueDecisionEndDates(updatedDates, now)
+    tx.updateVoucherValueDecisionEndDatesIfNeeded(updatedDates, now)
 
     val validIds = decisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now, alwaysUseDaycareFinanceDecisionHandler)

@@ -15,7 +15,7 @@ import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDatesIfNeeded
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -196,7 +196,7 @@ AND coalesce(sno.voucher_value_coefficient, default_sno.voucher_value_coefficien
                     mergedPlacementPeriods.isEmpty() -> tx.annulVoucherValueDecisions(listOf(decision.id), now)
                     mergedPlacementPeriods.first().end < decision.validTo -> {
                         val withUpdatedEndDate = decision.copy(validTo = mergedPlacementPeriods.first().end)
-                        tx.updateVoucherValueDecisionEndDates(listOf(withUpdatedEndDate), now)
+                        tx.updateVoucherValueDecisionEndDatesIfNeeded(listOf(withUpdatedEndDate), now)
                     }
                 }
             }

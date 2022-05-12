@@ -540,11 +540,17 @@ fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDec
         .execute()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionEndDates(
+fun Database.Transaction.updateVoucherValueDecisionEndDatesIfNeeded(
     updatedDecisions: List<VoucherValueDecision>,
     now: HelsinkiDateTime
 ) {
-    prepareBatch("UPDATE voucher_value_decision SET valid_to = :validTo, validity_updated_at = :now WHERE id = :id")
+    prepareBatch(
+        """
+UPDATE voucher_value_decision
+SET valid_to = :validTo, validity_updated_at = :now
+WHERE id = :id AND (valid_to IS NULL OR valid_to <> :validTo)
+"""
+    )
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
