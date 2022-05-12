@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -49,19 +50,21 @@ class AssistanceNeedController(
     fun getAssistanceNeeds(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedResponse> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
-            val preschoolPlacements = dbc.read { tx ->
+            val relevantPreschoolPlacements = dbc.read { tx ->
                 tx.getPlacementsForChild(childId).filter {
-                    (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE)
+                    (it.type == PlacementType.PRESCHOOL || it.type == PlacementType.PRESCHOOL_DAYCARE) &&
+                        it.startDate <= clock.today()
                 }
             }
             val assistanceNeeds = assistanceNeedService.getAssistanceNeedsByChildId(dbc, childId).let { allAssistanceNeeds ->
                 val prePreschool = allAssistanceNeeds.filterNot {
-                    preschoolPlacements.isEmpty() || preschoolPlacements.any { placement ->
+                    relevantPreschoolPlacements.isEmpty() || relevantPreschoolPlacements.any { placement ->
                         placement.startDate.isBefore(it.startDate) || placement.startDate == it.startDate
                     }
                 }
