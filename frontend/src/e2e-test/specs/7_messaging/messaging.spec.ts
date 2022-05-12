@@ -145,7 +145,7 @@ describe('Sending and receiving messages', () => {
 
         await messagesPage.sendNewMessage({
           ...defaultMessage,
-          receiver: 3
+          receiver: `${enduserChildFixtureKaarina.firstName} ${enduserChildFixtureKaarina.lastName}`
         })
 
         await messagesPage.assertMessageIsSentForParticipants(
