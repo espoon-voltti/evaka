@@ -130,6 +130,17 @@ fun Database.Transaction.upsertStaffAttendance(attendanceId: StaffAttendanceId?,
     }
 }
 
+fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceId) {
+    createUpdate(
+        """
+           DELETE FROM staff_attendance_realtime
+           WHERE id = :
+        """.trimIndent()
+    )
+        .bind("id", attendanceId)
+        .updateExactlyOne()
+}
+
 fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, departureTime: HelsinkiDateTime) = createUpdate(
     """
     UPDATE staff_attendance_realtime 
@@ -203,6 +214,17 @@ fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttend
             .bind("departed", departureTime)
             .updateExactlyOne()
     }
+}
+
+fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttendanceExternalId) {
+    createUpdate(
+        """
+        DELETE FROM staff_attendance_external
+        WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", attendanceId)
+        .updateExactlyOne()
 }
 
 @ExcludeCodeGen
