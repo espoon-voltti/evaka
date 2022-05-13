@@ -8,10 +8,8 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import {
-  ClubTerm,
   deserializeClubTerm,
-  deserializePreschoolTerm,
-  PreschoolTerm
+  deserializePreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -19,6 +17,7 @@ import {
   ApplicationSummary,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
+import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import {
   PlacementPlanConfirmationStatus,

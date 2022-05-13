@@ -11,6 +11,7 @@ import {
   ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useBetterParams from 'lib-common/useNonNullableParams'
@@ -49,7 +50,6 @@ import {
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
-  Term,
   validateApplication
 } from './validations'
 
@@ -65,7 +65,7 @@ export type ApplicationFormProps = {
   ) => void
   errors: ApplicationFormDataErrors
   verificationRequested: boolean
-  terms?: Term[]
+  terms?: FiniteDateRange[]
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
@@ -78,7 +78,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
 
-  const [terms, setTerms] = useState<Term[]>()
+  const [terms, setTerms] = useState<FiniteDateRange[]>()
   useEffect(() => {
     switch (apiData.type) {
       case 'PRESCHOOL':

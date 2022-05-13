@@ -10,16 +10,18 @@ import {
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import {
-  ClubTerm,
   deserializeClubTerm,
-  deserializePreschoolTerm,
-  PreschoolTerm
+  deserializePreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import {
   ApplicationsOfChild,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import {
+  ClubTerm,
+  PreschoolTerm,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { JsonOf } from 'lib-common/json'
