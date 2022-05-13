@@ -42,23 +42,12 @@ interface Group {
   name: string
 }
 
-export interface ChildReservations {
-  child: Child
-  dailyData: Record<JsonOf<LocalDate>, DailyChildData>
-}
-
 export interface Child {
   id: string
   firstName: string
   lastName: string
   dateOfBirth: LocalDate
   dailyServiceTimes: DailyServiceTimes | null
-}
-
-export interface DailyChildData {
-  reservations: TimeRange[]
-  attendance: AttendanceTimes | null
-  absence: { type: AbsenceType } | null
 }
 
 export interface AttendanceTimes {

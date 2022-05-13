@@ -39,8 +39,6 @@ export const scopedRoles = [
 
 export type ScopedRole = typeof scopedRoles[number]
 
-export const adRoles = [...globalRoles, ...scopedRoles] as const
-
 export type AdRole = GlobalRole | ScopedRole
 
 export interface AuthStatus<U extends User | MobileUser> {
