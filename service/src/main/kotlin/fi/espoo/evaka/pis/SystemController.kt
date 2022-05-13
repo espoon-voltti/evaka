@@ -78,7 +78,7 @@ class SystemController(private val personService: PersonService, private val acc
                 employee
             }
         }.also {
-            Audit.EmployeeLogin.log(targetId = listOf(request.externalId, request.lastName, request.firstName, request.email), objectId = it.id)
+            Audit.EmployeeLogin.log(targetId = listOf(request.externalId, request.lastName, request.firstName, request.email, it.globalRoles), objectId = it.id)
         }
     }
 
