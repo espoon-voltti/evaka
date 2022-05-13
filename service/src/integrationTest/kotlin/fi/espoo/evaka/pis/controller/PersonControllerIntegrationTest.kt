@@ -9,21 +9,16 @@ import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.PersonController
 import fi.espoo.evaka.pis.controllers.SearchPersonBody
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -33,40 +28,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Autowired
     lateinit var controller: PersonController
-
-    private val contactInfo = ContactInfo(
-        email = "test@hii",
-        phone = "+358401234567",
-        backupPhone = "",
-        invoiceRecipientName = "Laskun saaja",
-        invoicingStreetAddress = "Laskutusosoite",
-        invoicingPostalCode = "02123",
-        invoicingPostOffice = "Espoo",
-        forceManualFeeDecisions = true
-    )
-
-    @Test
-    fun `Finance admin can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
-    }
-
-    @Test
-    fun `Service worker can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
-    }
-
-    @Test
-    fun `Unit supervisor can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.UNIT_SUPERVISOR)))
-    }
-
-    @Test
-    fun `End user cannot end update end user's contact info`() {
-        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        assertThrows<Forbidden> {
-            controller.updateContactInfo(Database(jdbi), user, PersonId(UUID.randomUUID()), contactInfo)
-        }
-    }
 
     @Test
     fun `Search finds person by first and last name`() {
@@ -190,18 +151,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         }
 
         assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, childId).size)
-    }
-
-    private fun updateContactInfo(user: AuthenticatedUser) {
-        val person = createPerson()
-        controller.updateContactInfo(Database(jdbi), user, person.id, contactInfo)
-
-        val updated = db.read { it.getPersonById(person.id) }
-        assertEquals(contactInfo.email, updated?.email)
-        assertEquals(contactInfo.invoicingStreetAddress, updated?.invoicingStreetAddress)
-        assertEquals(contactInfo.invoicingPostalCode, updated?.invoicingPostalCode)
-        assertEquals(contactInfo.invoicingPostOffice, updated?.invoicingPostOffice)
-        assertEquals(contactInfo.forceManualFeeDecisions, updated?.forceManualFeeDecisions)
     }
 
     private fun createPerson(): PersonDTO {

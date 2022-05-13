@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
-import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -21,7 +20,6 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
-import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -140,22 +138,6 @@ class PersonController(
                     restricted = !accessControl.hasPermissionFor(user, Action.Global.SEARCH_PEOPLE_UNRESTRICTED)
                 )
             }
-        }
-    }
-
-    @PutMapping(value = ["/{personId}/contact-info"])
-    fun updateContactInfo(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: PersonId,
-        @RequestBody contactInfo: ContactInfo
-    ): ContactInfo {
-        Audit.PersonContactInfoUpdate.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.UPDATE_CONTACT_INFO, personId)
-        return if (db.connect { dbc -> dbc.transaction { it.updatePersonContactInfo(personId, contactInfo) } }) {
-            contactInfo
-        } else {
-            throw NotFound()
         }
     }
 

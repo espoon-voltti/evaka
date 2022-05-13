@@ -350,14 +350,6 @@ export async function batchWithdrawPlacementProposal(
   )
 }
 
-export async function batchConfirmDecisionMailed(
-  applicationIds: UUID[]
-): Promise<void> {
-  return client.post('/v2/applications/batch/actions/confirm-decision-mailed', {
-    applicationIds
-  })
-}
-
 export async function getApplicationNotes(
   applicationId: UUID
 ): Promise<Result<ApplicationNoteResponse[]>> {

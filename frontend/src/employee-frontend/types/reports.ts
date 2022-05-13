@@ -119,16 +119,6 @@ export interface MissingServiceNeedReportRow {
   daysWithoutServiceNeed: number
 }
 
-export interface InvalidServiceNeedReportRow {
-  currentUnitId: UUID | null
-  currentUnitName: string | null
-  childId: UUID
-  firstName: string | null
-  lastName: string | null
-  startDate: LocalDate
-  endDate: LocalDate
-}
-
 export interface PartnersInDifferentAddressReportRow {
   careAreaName: string
   unitId: UUID

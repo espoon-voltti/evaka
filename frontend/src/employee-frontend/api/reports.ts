@@ -27,7 +27,6 @@ import {
   EndedPlacementsReportRow,
   FamilyConflictReportRow,
   FamilyContactsReportRow,
-  InvalidServiceNeedReportRow,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
   OccupancyReportRow,
@@ -157,22 +156,6 @@ export async function getMissingServiceNeedReport(
       }
     )
     .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function getInvalidServiceNeedReport(): Promise<
-  Result<InvalidServiceNeedReportRow[]>
-> {
-  return client
-    .get<JsonOf<InvalidServiceNeedReportRow[]>>('/reports/invalid-service-need')
-    .then((res) =>
-      res.data.map((row) => ({
-        ...row,
-        startDate: LocalDate.parseIso(row.startDate),
-        endDate: LocalDate.parseIso(row.endDate)
-      }))
-    )
-    .then((rows) => Success.of(rows))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -502,20 +485,6 @@ export async function markChildForVardaReset(
 export async function runResetVardaChildren(): Promise<Result<void>> {
   return client
     .post<void>(`/varda/reset-children`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-interface InvoiceGeneratorDiffFilters {
-  year: number
-  month: number
-}
-
-export async function getInvoiceGeneratorDiffReport(
-  filters: InvoiceGeneratorDiffFilters
-): Promise<Result<string>> {
-  return client
-    .post<JsonOf<string>>('/invoice-diff/debug-diff', filters)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

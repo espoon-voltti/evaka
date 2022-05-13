@@ -436,17 +436,6 @@ data class PersonJSON(
     }
 }
 
-data class ContactInfo(
-    val email: String,
-    val phone: String,
-    val backupPhone: String,
-    val invoiceRecipientName: String?,
-    val invoicingStreetAddress: String?,
-    val invoicingPostalCode: String?,
-    val invoicingPostOffice: String?,
-    val forceManualFeeDecisions: Boolean = false
-)
-
 data class PersonPatch(
     val firstName: String? = null,
     val lastName: String? = null,

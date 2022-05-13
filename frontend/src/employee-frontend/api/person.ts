@@ -10,7 +10,6 @@ import {
   Recipient
 } from 'lib-common/generated/api-types/messaging'
 import {
-  ContactInfo,
   CreatePersonBody,
   PersonJSON,
   PersonResponse,
@@ -60,16 +59,6 @@ export async function getChildDetails(
       person: deserializePersonJSON(data.person)
     }))
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function fridgeHeadPerson(
-  id: UUID,
-  fridgeHeadPerson: ContactInfo
-): Promise<Result<ContactInfo>> {
-  return client
-    .put<JsonOf<ContactInfo>>(`/person/${id}/contact-info`, fridgeHeadPerson)
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
