@@ -104,7 +104,7 @@ export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
 ) {
-  const { data } = await client.get<EmployeeUserResponse>(
+  const { data } = await client.get<EmployeeUserResponse | undefined>(
     `/system/employee/${employeeId}`,
     {
       headers: createServiceRequestHeaders(req, machineUser)
