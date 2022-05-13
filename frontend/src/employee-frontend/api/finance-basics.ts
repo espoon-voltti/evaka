@@ -4,9 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 
-import { FeeThresholdsWithId, FeeThresholds } from '../types/finance-basics'
+import { FeeThresholdsWithId } from '../types/finance-basics'
 
 import { client } from './client'
 

@@ -6,6 +6,7 @@ import _ from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -14,7 +15,6 @@ import { faChild } from 'lib-icons'
 
 import { getGuardianDecisions } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
-import { Decision } from '../../types/decision'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 

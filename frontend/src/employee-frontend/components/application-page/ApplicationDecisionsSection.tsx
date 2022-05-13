@@ -7,6 +7,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -19,7 +20,6 @@ import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { useTranslation } from '../../state/i18n'
-import { Decision } from '../../types/decision'
 
 const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'

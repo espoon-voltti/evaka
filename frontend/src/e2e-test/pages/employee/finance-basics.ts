@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FeeThresholds } from 'lib-common/api-types/finance'
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
 import { waitUntilTrue } from '../../utils'
 import { AsyncButton, Page, TextInput } from '../../utils/page'

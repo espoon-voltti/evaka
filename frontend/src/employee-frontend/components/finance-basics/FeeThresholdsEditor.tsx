@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -34,7 +35,6 @@ import { Translations } from '../../state/i18n'
 import {
   familySizes,
   FamilySize,
-  FeeThresholds,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
 

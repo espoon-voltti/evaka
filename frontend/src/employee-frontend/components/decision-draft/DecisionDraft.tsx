@@ -15,8 +15,14 @@ import React, {
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { DecisionDraftGroup } from 'employee-frontend/types/decision'
 import { Loading, Result } from 'lib-common/api'
-import { DecisionType } from 'lib-common/generated/api-types/decision'
+import {
+  DecisionDraft,
+  DecisionDraftUpdate,
+  DecisionType,
+  DecisionUnit
+} from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
@@ -41,12 +47,6 @@ import {
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import {
-  DecisionDraft,
-  DecisionDraftGroup,
-  DecisionDraftUpdate,
-  DecisionUnit
-} from '../../types/decision'
 import { formatName } from '../../utils'
 
 const ColumnTitle = styled.div`

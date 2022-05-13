@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { FeeThresholds } from 'lib-common/api-types/finance'
-
-export type { FeeThresholds }
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
 export const familySizes = ['2', '3', '4', '5', '6'] as const
 export type FamilySize = typeof familySizes[number]
