@@ -91,7 +91,7 @@ export default React.memo(function Raw() {
                   data={rows.value.map((row) => ({
                     ...row,
                     day: row.day.format(),
-                    childLink: `https://espoonvarhaiskasvatus.fi/employee/child-information/${row.childId}`,
+                    childLink: `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`,
                     dateOfBirth: row.dateOfBirth?.format(),
                     placementType: i18n.placement.type[row.placementType],
                     unitType:
