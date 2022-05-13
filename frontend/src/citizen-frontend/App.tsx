@@ -45,6 +45,7 @@ import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
 import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
 import PersonalDetails from './personal-details/PersonalDetails'
+import VasuPage from './vasu/VasuPage'
 
 export default function App() {
   const i18n = useTranslation()
@@ -229,6 +230,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <PedagogicalDocuments />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/vasu/:id"
+            element={
+              <RequireAuth>
+                <VasuPage />
               </RequireAuth>
             }
           />

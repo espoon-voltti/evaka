@@ -1817,6 +1817,32 @@ const sv: Translations = {
     },
     toggleExpandText: 'Visa eller göm texten'
   },
+  vasu: {
+    lastModified: 'Viimeisin muokkauspäivämäärä',
+    lastPublished: 'Viimeksi julkaistu huoltajalle',
+    leavePage: 'Poistu',
+    edited: 'muokattu',
+    eventTypes: {
+      PUBLISHED: 'Julkaistu huoltajalle',
+      MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
+      RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
+      MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
+      RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
+      MOVED_TO_CLOSED: 'Päättynyt'
+    },
+    states: {
+      DRAFT: 'Luonnos',
+      READY: 'Laadittu',
+      REVIEWED: 'Arvioitu',
+      CLOSED: 'Päättynyt'
+    },
+    state: 'Suunnitelman tila',
+    events: {
+      DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
+      PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
+    },
+    noRecord: 'Ei merkintää'
+  },
   placement: {
     type: {
       CLUB: 'Klubb',

@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
@@ -168,6 +169,24 @@ AND g.guardian_id = :guardianId
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
+    )
+
+    fun guardianOfChildOfVasu() = DatabaseActionRule(
+            this,
+            Query<VasuDocumentId> { tx, citizenId, ids ->
+                tx.createQuery(
+                        """
+SELECT id
+FROM curriculum_document cd
+JOIN guardian g ON cd.child_id = g.child_id
+WHERE cd.id = ANY(:ids)
+AND g.guardian_id = :userId
+                """.trimIndent()
+                )
+                        .bind("ids", ids.toTypedArray())
+                        .bind("userId", citizenId)
+                        .mapTo()
+            }
     )
 
     fun guardianOfChildOfPlacement() = DatabaseActionRule(

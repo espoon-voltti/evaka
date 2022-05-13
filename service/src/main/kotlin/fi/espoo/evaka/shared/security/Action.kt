@@ -187,7 +187,8 @@ sealed interface Action {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_VASU_DOCUMENT(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -223,6 +224,11 @@ sealed interface Action {
         }
         enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
             TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+        enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

@@ -1860,6 +1860,32 @@ const en: Translations = {
     },
     toggleExpandText: 'Show or hide the text'
   },
+  vasu: {
+    lastModified: 'Last modified',
+    lastPublished: 'Last published',
+    leavePage: 'Leave page',
+    edited: 'Edited',
+    eventTypes: {
+      PUBLISHED: 'Published',
+      MOVED_TO_READY: 'Move to ready',
+      RETURNED_TO_READY: 'Returned to ready',
+      MOVED_TO_REVIEWED: 'Moved to reviewed',
+      RETURNED_TO_REVIEWED: 'Returned to reviewed',
+      MOVED_TO_CLOSED: 'Moved to closed'
+    },
+    states: {
+      DRAFT: 'Draft',
+      READY: 'Ready',
+      REVIEWED: 'Reviewed',
+      CLOSED: 'Closed'
+    },
+    state: 'State',
+    events: {
+      DAYCARE: 'Early childhood plan events',
+      PRESCHOOL: 'Preschool plan events'
+    },
+    noRecord: 'Ei merkintää'
+  },
   placement: {
     // TODO i18n
     type: {
