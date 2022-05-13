@@ -610,7 +610,7 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN daycare d ON bc.unit_id = d.id
             WHERE d.id = :unitId AND EXISTS (
                 SELECT 1 FROM child_acl_view a
-                WHERE a.employee_id = :employeeId AND a.child_id = bc.child_id
+                WHERE a.employee_id = :employeeOrMobileId AND a.child_id = bc.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
         ), receivers AS (
