@@ -509,8 +509,8 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
                 .bind("childId", testChild_1.id)
                 .execute()
 
-            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id IN ( <ids> )")
-                .bindList("ids", listOf(testAdult_1.id, testAdult_2.id))
+            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
+                .bind("ids", listOf(testAdult_1.id, testAdult_2.id).toTypedArray())
                 .execute()
 
             it.insertVardaChild(testChild_1.id)
@@ -565,8 +565,8 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
                 .bind("childId", testChild_1.id)
                 .execute()
 
-            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id IN ( <ids> )")
-                .bindList("ids", listOf(testAdult_1.id))
+            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
+                .bind("ids", listOf(testAdult_1.id).toTypedArray())
                 .execute()
 
             it.insertVardaChild(testChild_1.id)

@@ -493,8 +493,8 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
 private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) {
     if (invoiceIds.isEmpty()) return
 
-    createUpdate("DELETE FROM invoice_row WHERE invoice_id in (<invoiceIds>)")
-        .bindList("invoiceIds", invoiceIds)
+    createUpdate("DELETE FROM invoice_row WHERE invoice_id = ANY(:invoiceIds)")
+        .bind("invoiceIds", invoiceIds.toTypedArray())
         .execute()
 }
 
