@@ -13,9 +13,9 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -49,14 +49,14 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
             ca.name AS care_area_name,
             u.id AS unit_id,
             u.name AS unit_name,
-            p.id AS person_id_parent,
+            p.id AS parent_id,
             p.first_name AS first_name_parent,
             p.last_name AS last_name_parent,
-            p.street_address AS street_address_parent,
-            ch.id AS person_id_child,
+            p.street_address AS address_parent,
+            ch.id AS child_id,
             ch.first_name AS first_name_child,
             ch.last_name AS last_name_child,
-            ch.street_address AS street_address_child
+            ch.street_address AS address_child
         FROM fridge_child fc
         JOIN person p ON p.id = fc.head_of_child
         JOIN person ch ON ch.id = fc.child_id
@@ -84,21 +84,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
         """.trimIndent()
     return createQuery(sql)
         .bindNullable("units", units?.toTypedArray())
-        .map { rs, _ ->
-            ChildrenInDifferentAddressReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                parentId = PersonId(rs.getUUID("person_id_parent")),
-                firstNameParent = rs.getString("first_name_parent"),
-                lastNameParent = rs.getString("last_name_parent"),
-                addressParent = rs.getString("street_address_parent"),
-                childId = ChildId(rs.getUUID("person_id_child")),
-                firstNameChild = rs.getString("first_name_child"),
-                lastNameChild = rs.getString("last_name_child"),
-                addressChild = rs.getString("street_address_child")
-            )
-        }
+        .mapTo<ChildrenInDifferentAddressReportRow>()
         .toList()
 }
 

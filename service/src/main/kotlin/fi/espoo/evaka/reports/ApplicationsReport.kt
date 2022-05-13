@@ -5,16 +5,17 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -56,7 +57,7 @@ private fun Database.Read.getApplicationsRows(
                 ca.name AS care_area_name,
                 u.id AS unit_id,
                 u.name AS unit_name,
-                u.provider_type AS provider_type,
+                u.provider_type AS unit_provider_type,
                 a.type AS application_type,
                 ch.id AS child_id,
                 date_part('year', age(:to, date_of_birth)) AS age
@@ -74,33 +75,21 @@ private fun Database.Read.getApplicationsRows(
             care_area_name,
             unit_id,
             unit_name,
-            provider_type,
-            count(DISTINCT child_id) FILTER ( WHERE age < 3 AND application_type = 'DAYCARE' ) AS under_3_years_count,
-            count(DISTINCT child_id) FILTER ( WHERE age >= 3 AND application_type = 'DAYCARE' ) AS over_3_years_count,
-            count(DISTINCT child_id) FILTER ( WHERE application_type = 'PRESCHOOL' ) AS preschool_count,
-            count(DISTINCT child_id) FILTER ( WHERE application_type = 'CLUB' ) AS club_count,
-            count(DISTINCT child_id) AS total_count
+            unit_provider_type,
+            count(DISTINCT child_id) FILTER ( WHERE age < 3 AND application_type = 'DAYCARE' ) AS under_3_years,
+            count(DISTINCT child_id) FILTER ( WHERE age >= 3 AND application_type = 'DAYCARE' ) AS over_3_years,
+            count(DISTINCT child_id) FILTER ( WHERE application_type = 'PRESCHOOL' ) AS preschool,
+            count(DISTINCT child_id) FILTER ( WHERE application_type = 'CLUB' ) AS club,
+            count(DISTINCT child_id) AS total
         FROM data
-        GROUP BY care_area_name, unit_id, unit_name, provider_type
+        GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
         """.trimIndent()
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
         .bindNullable("unitIds", aclAuth.ids?.toTypedArray())
-        .map { rs, _ ->
-            ApplicationsReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                unitProviderType = rs.getString("provider_type"),
-                under3Years = rs.getInt("under_3_years_count"),
-                over3Years = rs.getInt("over_3_years_count"),
-                preschool = rs.getInt("preschool_count"),
-                club = rs.getInt("club_count"),
-                total = rs.getInt("total_count")
-            )
-        }
+        .mapTo<ApplicationsReportRow>()
         .toList()
 }
 
@@ -108,7 +97,7 @@ data class ApplicationsReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val unitProviderType: String,
+    val unitProviderType: ProviderType,
     val under3Years: Int,
     val over3Years: Int,
     val preschool: Int,

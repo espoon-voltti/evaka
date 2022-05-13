@@ -25,11 +25,11 @@ import { getAreas } from '../../api/daycare'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
+  OccupancyReportRow,
   OccupancyReportType
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { Translations, useTranslation } from '../../state/i18n'
-import { OccupancyReportRow } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -122,9 +122,10 @@ function getDisplayCells(
 ): string[][] {
   return reportRows.map((row) => {
     if (usedValues === 'raw') {
-      const cells = [row.unitName, row.groupName].filter(
-        (cell) => cell !== undefined
-      ) as string[]
+      const cells = [
+        row.unitName,
+        'groupName' in row ? row.groupName : undefined
+      ].filter((cell): cell is string => cell !== undefined)
       for (const date of dates) {
         const occupancy = row.occupancies[toOccupancyKey(date)]
         cells.push(
@@ -150,7 +151,7 @@ function getDisplayCells(
 
       return [
         row.unitName,
-        row.groupName,
+        'groupName' in row ? row.groupName : undefined,
 
         // average
         (usedValues === 'percentage'
@@ -175,7 +176,7 @@ function getDisplayCells(
             return occupancy?.[usedValues] ?? ''
           }
         })
-      ].filter((cell) => cell !== undefined) as string[]
+      ].filter((cell): cell is string => cell !== undefined)
     }
   })
 }

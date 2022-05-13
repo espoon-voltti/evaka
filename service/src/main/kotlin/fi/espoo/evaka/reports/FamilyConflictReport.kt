@@ -12,9 +12,9 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -68,8 +68,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
             co.last_name,
             co.social_security_number,
             co.child_conflict_count,
-            co.partner_conflict_count,
-            pu.unit_id
+            co.partner_conflict_count
         FROM conflicts co
         JOIN primary_units_view pu ON co.id = pu.head_of_child
         JOIN daycare u ON u.id = pu.unit_id
@@ -79,19 +78,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
         """.trimIndent()
     return createQuery(sql)
         .bindNullable("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
-        .map { rs, _ ->
-            FamilyConflictReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                id = PersonId(rs.getUUID("id")),
-                firstName = rs.getString("first_name"),
-                lastName = rs.getString("last_name"),
-                socialSecurityNumber = rs.getString("social_security_number"),
-                partnerConflictCount = rs.getInt("partner_conflict_count"),
-                childConflictCount = rs.getInt("child_conflict_count")
-            )
-        }
+        .mapTo<FamilyConflictReportRow>()
         .toList()
 }
 

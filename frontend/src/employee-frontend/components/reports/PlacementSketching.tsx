@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -24,7 +25,6 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { PlacementSketchingRow } from '../../types/reports'
 import { distinct } from '../../utils'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
@@ -43,7 +43,7 @@ const Wrapper = styled.div`
 
 export default React.memo(function PlacementSketching() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<PlacementSketchingRow[]>>(
+  const [rows, setRows] = useState<Result<PlacementSketchingReportRow[]>>(
     Loading.of()
   )
   const [filters, setFilters] = useState<PlacementSketchingReportFilters>({
@@ -53,7 +53,7 @@ export default React.memo(function PlacementSketching() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: PlacementSketchingRow): boolean => {
+  const displayFilter = (row: PlacementSketchingReportRow): boolean => {
     return !(
       displayFilters.careArea && row.areaName !== displayFilters.careArea
     )
@@ -65,7 +65,7 @@ export default React.memo(function PlacementSketching() {
     void getPlacementSketchingReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows: PlacementSketchingRow[] = useMemo(
+  const filteredRows: PlacementSketchingReportRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
@@ -75,7 +75,7 @@ export default React.memo(function PlacementSketching() {
   const formatOtherPreferredUnits = ({
     otherPreferredUnits,
     requestedUnitName
-  }: PlacementSketchingRow) =>
+  }: PlacementSketchingReportRow) =>
     otherPreferredUnits
       ? otherPreferredUnits
           .filter((unit) => unit !== requestedUnitName)
@@ -213,7 +213,7 @@ export default React.memo(function PlacementSketching() {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredRows.map((row: PlacementSketchingRow) => (
+                {filteredRows.map((row: PlacementSketchingReportRow) => (
                   <Tr
                     key={`${row.applicationId}`}
                     data-qa={`${row.applicationId}`}
@@ -240,10 +240,10 @@ export default React.memo(function PlacementSketching() {
                     <Td>
                       {row.guardianPhoneNumber} / {row.guardianEmail}
                     </Td>
-                    <Td>{yesNo(row.assistanceNeeded)}</Td>
-                    <Td>{yesNo(row.preparatoryEducation)}</Td>
-                    <Td>{yesNo(row.siblingBasis)}</Td>
-                    <Td>{yesNo(row.connectedDaycare)}</Td>
+                    <Td>{yesNo(row.assistanceNeeded ?? false)}</Td>
+                    <Td>{yesNo(row.preparatoryEducation ?? false)}</Td>
+                    <Td>{yesNo(row.siblingBasis ?? false)}</Td>
+                    <Td>{yesNo(row.connectedDaycare ?? false)}</Td>
                     <Td>{row.sentDate.format()}</Td>
                     <Td data-qa="application">
                       <Link to={`/applications/${row.applicationId}`}>

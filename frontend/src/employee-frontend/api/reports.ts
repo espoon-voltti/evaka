@@ -6,18 +6,6 @@ import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
-  InvoiceReport,
-  RawReportRow,
-  ServiceVoucherReport,
-  ServiceVoucherUnitReport,
-  SextetReportRow,
-  VardaErrorReportRow
-} from 'lib-common/generated/api-types/reports'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-
-import {
   ApplicationsReportRow,
   AssistanceNeedsAndActionsReport,
   ChildAgeLanguageReportRow,
@@ -26,16 +14,26 @@ import {
   DuplicatePeopleReportRow,
   EndedPlacementsReportRow,
   FamilyConflictReportRow,
-  FamilyContactsReportRow,
+  FamilyContactReportRow,
+  InvoiceReport,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
-  OccupancyReportRow,
+  OccupancyGroupReportResultRow,
+  OccupancyUnitReportResultRow,
   PartnersInDifferentAddressReportRow,
-  PlacementSketchingRow,
+  PlacementSketchingReportRow,
   PresenceReportRow,
+  RawReportRow,
   ServiceNeedReportRow,
-  StartingPlacementsRow
-} from '../types/reports'
+  ServiceVoucherReport,
+  ServiceVoucherUnitReport,
+  SextetReportRow,
+  StartingPlacementsRow,
+  VardaErrorReportRow
+} from 'lib-common/generated/api-types/reports'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 import { client } from './client'
 
@@ -170,9 +168,9 @@ export async function getFamilyConflictsReport(): Promise<
 
 export async function getFamilyContactsReport(
   unitId: UUID
-): Promise<Result<FamilyContactsReportRow[]>> {
+): Promise<Result<FamilyContactReportRow[]>> {
   return client
-    .get<JsonOf<FamilyContactsReportRow[]>>('/reports/family-contacts', {
+    .get<JsonOf<FamilyContactReportRow[]>>('/reports/family-contacts', {
       params: { unitId }
     })
     .then((res) => Success.of(res.data))
@@ -264,6 +262,10 @@ export interface OccupancyReportFilters {
   careAreaId: UUID
   type: OccupancyReportType
 }
+
+export type OccupancyReportRow =
+  | OccupancyUnitReportResultRow
+  | OccupancyGroupReportResultRow
 
 export async function getOccupanciesReport(
   filters: OccupancyReportFilters
@@ -433,15 +435,18 @@ export interface PlacementSketchingReportFilters {
 
 export async function getPlacementSketchingReport(
   filters: PlacementSketchingReportFilters
-): Promise<Result<PlacementSketchingRow[]>> {
+): Promise<Result<PlacementSketchingReportRow[]>> {
   return client
-    .get<JsonOf<PlacementSketchingRow[]>>(`/reports/placement-sketching`, {
-      params: {
-        earliestPreferredStartDate:
-          filters.earliestPreferredStartDate.formatIso(),
-        placementStartDate: filters.placementStartDate.formatIso()
+    .get<JsonOf<PlacementSketchingReportRow[]>>(
+      `/reports/placement-sketching`,
+      {
+        params: {
+          earliestPreferredStartDate:
+            filters.earliestPreferredStartDate.formatIso(),
+          placementStartDate: filters.placementStartDate.formatIso()
+        }
       }
-    })
+    )
     .then((res) =>
       Success.of(
         res.data.map((row) => ({

@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
+import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -16,7 +17,6 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { DateFilters, getServiceNeedReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { ServiceNeedReportRow } from '../../types/reports'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 

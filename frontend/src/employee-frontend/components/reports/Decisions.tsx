@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
@@ -22,7 +23,6 @@ import { Gap } from 'lib-components/white-space'
 import { getDecisionsReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { DecisionsReportRow } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
@@ -142,8 +142,8 @@ export default React.memo(function Decisions() {
             <ReportDownload
               data={filteredRows.map((row) => ({
                 ...row,
-                unitProviderType:
-                  i18n.reports.common.unitProviderTypes[row.unitProviderType]
+                providerType:
+                  i18n.reports.common.unitProviderTypes[row.providerType]
               }))}
               headers={[
                 {
@@ -153,7 +153,7 @@ export default React.memo(function Decisions() {
                 { label: i18n.reports.common.unitName, key: 'unitName' },
                 {
                   label: i18n.reports.common.unitProviderType,
-                  key: 'unitProviderType'
+                  key: 'providerType'
                 },
                 {
                   label: i18n.reports.decisions.daycareUnder3,
@@ -227,11 +227,7 @@ export default React.memo(function Decisions() {
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
                     <Td data-qa="unit-provider-type">
-                      {
-                        i18n.reports.common.unitProviderTypes[
-                          row.unitProviderType
-                        ]
-                      }
+                      {i18n.reports.common.unitProviderTypes[row.providerType]}
                     </Td>
                     <Td>{row.daycareUnder3}</Td>
                     <Td>{row.daycareOver3}</Td>

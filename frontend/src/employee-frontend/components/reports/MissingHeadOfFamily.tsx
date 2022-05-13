@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -25,7 +26,6 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { MissingHeadOfFamilyReportRow } from '../../types/reports'
 import { distinct } from '../../utils'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'

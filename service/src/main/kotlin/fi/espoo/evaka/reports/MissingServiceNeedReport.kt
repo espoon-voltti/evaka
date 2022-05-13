@@ -11,10 +11,10 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -52,9 +52,12 @@ private fun Database.Read.getMissingServiceNeedRows(
     val sql =
         """
         SELECT 
-            ca.name AS care_area_name, daycare.name AS unit_name, unit_id,
-            child_id, first_name, last_name, unit_id, sum(days_without_sn) AS days_without_sn,
-            daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' AS is_private_service_voucher_daycare        
+            (CASE
+                WHEN daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'palvelusetelialue'
+                ELSE ca.name
+            END) AS care_area_name,
+            daycare.name AS unit_name, unit_id,
+            child_id, first_name, last_name, sum(days_without_sn) AS days_without_service_need
         FROM (
           SELECT DISTINCT
             child_id,
@@ -89,24 +92,15 @@ private fun Database.Read.getMissingServiceNeedRows(
             AND (daycare.invoiced_by_municipality OR daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER')
         JOIN care_area ca ON ca.id = daycare.care_area_id
         ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
-        GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id, is_private_service_voucher_daycare
-        ORDER BY ca.name, daycare.name, last_name, first_name
+        GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id
+        ORDER BY 1, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
         .bind("units", authorizedUnits.ids?.toTypedArray())
         .bind("from", from)
         .bind("to", to)
-        .map { rs, _ ->
-            MissingServiceNeedReportRow(
-                careAreaName = if (rs.getBoolean("is_private_service_voucher_daycare")) "palvelusetelialue" else rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                childId = ChildId(rs.getUUID("child_id")),
-                firstName = rs.getString("first_name"),
-                lastName = rs.getString("last_name"),
-                daysWithoutServiceNeed = rs.getInt("days_without_sn")
-            )
-        }.toList()
+        .mapTo<MissingServiceNeedReportRow>()
+        .toList()
 }
 
 data class MissingServiceNeedReportRow(

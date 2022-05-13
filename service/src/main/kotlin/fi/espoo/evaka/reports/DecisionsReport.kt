@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -98,7 +99,7 @@ data class DecisionsReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val providerType: String,
+    val providerType: ProviderType,
     val daycareUnder3: Int,
     val daycareOver3: Int,
     val preschool: Int,

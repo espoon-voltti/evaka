@@ -7,13 +7,13 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapNullableColumn
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -57,7 +57,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
                 ch.id,
                 ch.first_name,
                 ch.last_name,
-                ch.social_security_number,
+                ch.social_security_number AS ssn,
                 ch.street_address,
                 ch.postal_code,
                 ch.post_office,
@@ -94,43 +94,8 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .map { rs, ctx ->
-            FamilyContactReportRow(
-                id = ctx.mapColumn(rs, "id"),
-                firstName = rs.getString("first_name") ?: "",
-                lastName = rs.getString("last_name") ?: "",
-                ssn = rs.getString("social_security_number"),
-                streetAddress = rs.getString("street_address"),
-                postalCode = rs.getString("postal_code"),
-                postOffice = rs.getString("post_office"),
-                group = rs.getString("group_name"),
-                headOfChild = ctx.mapNullableColumn<PersonId>(rs, "hoc_id")?.let {
-                    Contact(
-                        firstName = rs.getString("hoc_first_name") ?: "",
-                        lastName = rs.getString("hoc_last_name") ?: "",
-                        phone = rs.getString("hoc_phone") ?: "",
-                        email = rs.getString("hoc_email") ?: ""
-                    )
-                },
-                guardian1 = ctx.mapNullableColumn<PersonId>(rs, "gu1_id")?.let {
-                    Contact(
-                        firstName = rs.getString("gu1_first_name") ?: "",
-                        lastName = rs.getString("gu1_last_name") ?: "",
-                        phone = rs.getString("gu1_phone") ?: "",
-                        email = rs.getString("gu1_email") ?: ""
-                    )
-                },
-                guardian2 = ctx.mapNullableColumn<PersonId>(rs, "gu2_id")?.let {
-                    Contact(
-                        firstName = rs.getString("gu2_first_name") ?: "",
-                        lastName = rs.getString("gu2_last_name") ?: "",
-                        phone = rs.getString("gu2_phone") ?: "",
-                        email = rs.getString("gu2_email") ?: ""
-                    )
-                }
-            )
-        }
-        .list()
+        .mapTo<FamilyContactReportRow>()
+        .toList()
 }
 
 data class FamilyContactReportRow(
@@ -138,18 +103,22 @@ data class FamilyContactReportRow(
     val firstName: String,
     val lastName: String,
     val ssn: String?,
-    val group: String?,
+    val groupName: String?,
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
+    @Nested("hoc_")
     val headOfChild: Contact?,
+    @Nested("gu1_")
     val guardian1: Contact?,
+    @Nested("gu2_")
     val guardian2: Contact?
 )
 
+@PropagateNull("id")
 data class Contact(
     val firstName: String,
     val lastName: String,
     val phone: String,
-    val email: String
+    val email: String?
 )
