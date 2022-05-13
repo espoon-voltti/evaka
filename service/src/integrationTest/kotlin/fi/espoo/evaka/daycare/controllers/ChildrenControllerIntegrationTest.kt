@@ -7,6 +7,8 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -47,12 +49,12 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `get additional info returns correct reply with service worker`() {
-        getAdditionalInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        getAdditionalInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `get additional info throws forbidden with enduser`() {
-        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)) }
+        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)) }
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {

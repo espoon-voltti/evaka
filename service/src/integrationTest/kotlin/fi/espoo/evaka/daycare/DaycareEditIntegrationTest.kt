@@ -30,7 +30,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val fields = DaycareFields(
         name = "Uusi päiväkoti",
         openingDate = LocalDate.of(2020, 1, 1),

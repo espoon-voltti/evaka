@@ -55,7 +55,7 @@ class PairingsController(
                 accessControl.requirePermissionFor(user, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
             is PostPairingReq.Employee -> {
                 accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
-                if (EmployeeId(user.id) != body.employeeId) throw Forbidden()
+                if (user.id != body.employeeId) throw Forbidden()
             }
         }
 
@@ -109,7 +109,7 @@ class PairingsController(
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
@@ -120,7 +120,7 @@ class PairingsController(
                 when {
                     unitId != null -> accessControl.requirePermissionFor(user, Action.Pairing.POST_RESPONSE, id)
                     employeeId != null ->
-                        if (EmployeeId(user.id) != employeeId) throw Forbidden()
+                        if (user.id != employeeId) throw Forbidden()
                     else -> error("Pairing unitId and employeeId were null")
                 }
             } catch (e: Forbidden) {

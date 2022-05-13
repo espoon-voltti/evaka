@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -78,7 +78,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
         }
 
         if (attachment) {
-            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id.raw, CitizenAuthLevel.STRONG))
+            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG))
         }
     }
 }

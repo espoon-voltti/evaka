@@ -9,9 +9,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,20 +37,22 @@ class MessageControllerCitizen(
     @GetMapping("/my-account")
     fun getMyAccount(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
-        return db.connect { dbc -> requireMessageAccountAccess(dbc, user) }
+        return db.connect { dbc ->
+            dbc.read { it.getCitizenMessageAccount(user.id) }
+        }
     }
 
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
         }
     }
@@ -60,12 +60,12 @@ class MessageControllerCitizen(
     @PutMapping("/threads/{threadId}/read")
     fun markThreadRead(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.transaction { it.markThreadRead(accountId, threadId) }
         }
     }
@@ -73,13 +73,13 @@ class MessageControllerCitizen(
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
         }
     }
@@ -87,13 +87,13 @@ class MessageControllerCitizen(
     @GetMapping("/sent")
     fun getSentMessages(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log()
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
         }
     }
@@ -101,11 +101,11 @@ class MessageControllerCitizen(
     @GetMapping("/receivers")
     fun getReceivers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getCitizenReceivers(accountId) }
         }
     }
@@ -113,13 +113,13 @@ class MessageControllerCitizen(
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
 
             messageService.replyToThread(
                 db = dbc,
@@ -134,12 +134,12 @@ class MessageControllerCitizen(
     @PostMapping
     fun newMessage(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
         return db.connect { dbc ->
-            val accountId = requireMessageAccountAccess(dbc, user)
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             val validReceivers = dbc.read { it.getCitizenReceivers(accountId) }
             val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
@@ -162,14 +162,5 @@ class MessageControllerCitizen(
                 throw Forbidden("Permission denied.")
             }
         }
-    }
-
-    private fun requireMessageAccountAccess(
-        db: Database.Connection,
-        user: AuthenticatedUser
-    ): MessageAccountId {
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
-        return db.read { it.getCitizenMessageAccount(PersonId(user.id)) }
     }
 }

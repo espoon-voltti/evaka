@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vtjclient.service
 
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN.Companion.getInstance
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -151,6 +151,6 @@ class MockDataServiceTest {
 
     private fun mapToQuery(ssn: String) = DetailsQuery(
         targetIdentifier = getInstance(ssn),
-        requestingUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
+        requestingUser = EvakaUserId(UUID.randomUUID())
     )
 }

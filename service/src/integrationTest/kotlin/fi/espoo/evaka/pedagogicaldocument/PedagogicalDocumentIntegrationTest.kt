@@ -43,18 +43,18 @@ import kotlin.test.assertNotNull
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.ADMIN))
+    private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
 
     private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor = AuthenticatedUser.Employee(supervisorId.raw, setOf())
+    private val supervisor = AuthenticatedUser.Employee(supervisorId, setOf())
 
     private val staffId = EmployeeId(UUID.randomUUID())
-    private val staff = AuthenticatedUser.Employee(staffId.raw, setOf())
+    private val staff = AuthenticatedUser.Employee(staffId, setOf())
 
     private val groupStaffId = EmployeeId(UUID.randomUUID())
-    private val groupStaff = AuthenticatedUser.Employee(groupStaffId.raw, setOf())
+    private val groupStaff = AuthenticatedUser.Employee(groupStaffId, setOf())
 
-    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
+    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
     val groupId = GroupId(UUID.randomUUID())
 
@@ -260,7 +260,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `staff from another daycare can't read pedagogical document or attachment`() {
         val staff2Id = EmployeeId(UUID.randomUUID())
-        val staff2 = AuthenticatedUser.Employee(staff2Id.raw, setOf())
+        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
             it.updateDaycareAclWithEmployee(testDaycare2.id, staff2Id, UserRole.STAFF)
@@ -280,7 +280,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `staff from another group can't read pedagogical document or attachment`() {
         val staff2Id = EmployeeId(UUID.randomUUID())
-        val staff2 = AuthenticatedUser.Employee(staff2Id.raw, setOf())
+        val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
 

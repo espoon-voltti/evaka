@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import com.github.kittinunf.fuel.core.Request
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -18,7 +19,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
-    private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     @BeforeAll
     override fun beforeAll() {

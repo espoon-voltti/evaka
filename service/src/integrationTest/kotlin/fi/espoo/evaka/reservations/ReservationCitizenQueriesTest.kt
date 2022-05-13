@@ -50,7 +50,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -83,7 +83,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -117,7 +117,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -150,7 +150,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -185,7 +185,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -221,7 +221,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -265,7 +265,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -305,7 +305,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, startDate = monday, endDate = monday.plusDays(1))
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,
@@ -324,7 +324,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when
         db.transaction {
             createReservations(
-                it, testAdult_1.id.raw,
+                it, EvakaUserId(testAdult_1.id.raw),
                 listOf(
                     DailyReservationRequest(
                         childId = testChild_1.id,

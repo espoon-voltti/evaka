@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
@@ -78,7 +79,10 @@ sealed interface Action {
         READ_SERVICE_WORKER_APPLICATION_NOTES(HasGlobalRole(SERVICE_WORKER)),
         WRITE_SERVICE_WORKER_APPLICATION_NOTES(HasGlobalRole(SERVICE_WORKER)),
 
+        CREATE_PERSON(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER)),
+        CREATE_PERSON_FROM_VTJ(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER)),
         SEARCH_PEOPLE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inAnyUnit()),
+        SEARCH_PEOPLE_UNRESTRICTED(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER)),
 
         READ_FEE_THRESHOLDS(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_FEE_THRESHOLDS(HasGlobalRole(FINANCE_ADMIN)),
@@ -149,19 +153,31 @@ sealed interface Action {
         CREATE_HOLIDAY_QUESTIONNAIRE,
         DELETE_HOLIDAY_QUESTIONNAIRE,
         UPDATE_HOLIDAY_QUESTIONNAIRE,
-        SEND_PATU_REPORT;
+        SEND_PATU_REPORT,
+
+        ACCESS_MESSAGING(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = true).any()),
+
+        CREATE_EMPLOYEE,
+        READ_EMPLOYEES(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
+        SEARCH_EMPLOYEES;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
 
     sealed interface Citizen : Action {
         enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {
+            READ(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+            READ_DECISIONS(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+            DELETE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+            UPDATE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfApplication());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
             CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
@@ -170,9 +186,15 @@ sealed interface Action {
             READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
+        }
+
+        enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
+            DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision());
         }
         enum class IncomeStatement(override vararg val defaultRules: ScopedActionRule<in IncomeStatementId>) : ScopedAction<IncomeStatementId> {
             READ(IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(), IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()),
@@ -190,8 +212,13 @@ sealed interface Action {
         }
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
+            READ_APPLICATIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
-            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self());
+            READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
+            UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -207,7 +234,7 @@ sealed interface Action {
         READ_IF_HAS_ASSISTANCE_NEED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication(), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication()),
         UPDATE(HasGlobalRole(SERVICE_WORKER)),
 
-        SEND(HasGlobalRole(SERVICE_WORKER)),
+        SEND(HasGlobalRole(SERVICE_WORKER), IsCitizen(allowWeakLogin = false).ownerOfApplication()),
         CANCEL(HasGlobalRole(SERVICE_WORKER)),
 
         MOVE_TO_WAITING_PLACEMENT(HasGlobalRole(SERVICE_WORKER)),
@@ -225,9 +252,10 @@ sealed interface Action {
         WITHDRAW_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER)),
         RESPOND_TO_PLACEMENT_PROPOSAL(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
 
+        READ_DECISIONS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
         CONFIRM_DECISIONS_MAILED(HasGlobalRole(SERVICE_WORKER)),
-        ACCEPT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
-        REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()),
+        ACCEPT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(), IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+        REJECT_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(), IsCitizen(allowWeakLogin = false).ownerOfApplication()),
 
         READ_NOTES(HasGlobalRole(SERVICE_WORKER)),
         CREATE_NOTE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(), HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()),
@@ -308,6 +336,8 @@ sealed interface Action {
         READ_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         UPDATE_ADDITIONAL_INFO(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
 
+        READ_DECISIONS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
+
         READ_APPLICATION(HasGlobalRole(SERVICE_WORKER)),
 
         CREATE_ASSISTANCE_ACTION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
@@ -383,6 +413,13 @@ sealed interface Action {
     enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
         DOWNLOAD_PDF(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDecision());
 
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class Employee(override vararg val defaultRules: ScopedActionRule<in EmployeeId>) : ScopedAction<EmployeeId> {
+        READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, REPORT_VIEWER), IsEmployee.self(), HasUnitRole(UNIT_SUPERVISOR, STAFF).inAnyUnit()),
+        READ_DETAILS,
+        DELETE,
+        UPDATE;
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class FeeAlteration(override vararg val defaultRules: ScopedActionRule<in FeeAlterationId>) : ScopedAction<FeeAlterationId> {
@@ -523,11 +560,14 @@ sealed interface Action {
         CREATE_INVOICE_CORRECTION(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         CREATE_PARTNERSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
+        DELETE,
         DISABLE_SSN_ADDING(HasGlobalRole(SERVICE_WORKER)),
         ENABLE_SSN_ADDING,
         GENERATE_RETROACTIVE_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        MERGE,
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_DECISIONS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
         READ_FAMILY_OVERVIEW(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INCOME(HasGlobalRole(FINANCE_ADMIN)),
@@ -539,8 +579,10 @@ sealed interface Action {
         READ_PARENTSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_PARTNERSHIPS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPerson()),
+        READ_DEPENDANTS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
         READ_VOUCHER_VALUE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
-        UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
+        UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfPerson()),
+        UPDATE_CONTACT_INFO(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF).inAnyUnit()),
         UPDATE_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE_OPH_OID,
         UPDATE_FROM_VTJ(HasGlobalRole(SERVICE_WORKER));
@@ -571,9 +613,14 @@ sealed interface Action {
         READ_CHILD_CAPACITY_FACTORS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit()),
         UPDATE,
 
+        READ_CHILD_ATTENDANCES(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
+        UPDATE_CHILD_ATTENDANCES(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
+
         READ_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit(), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
         UPDATE_STAFF_ATTENDANCES(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
         DELETE_STAFF_ATTENDANCES(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
+
+        READ_REALTIME_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit()),
 
         READ_STAFF_OCCUPANCY_COEFFICIENTS(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
         UPSERT_STAFF_OCCUPANCY_COEFFICIENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
@@ -612,6 +659,10 @@ sealed interface Action {
         READ_SERVICE_VOUCHER_VALUES_REPORT(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
 
         UPDATE_FEATURES,
+
+        READ_RECEIVERS_FOR_NEW_MESSAGE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnit(), IsMobile(requirePinLogin = false).inUnit()),
+        READ_MESSAGING_ACCOUNTS(IsMobile(requirePinLogin = false).inUnit()),
+        READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
 
         READ_TERMINATED_PLACEMENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_MISSING_GROUP_PLACEMENTS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnit());

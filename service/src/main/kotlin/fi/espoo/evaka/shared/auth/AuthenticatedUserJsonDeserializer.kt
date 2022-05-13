@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
 
 class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
@@ -16,10 +18,10 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
         return when (user.type) {
-            AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(user.id!!, CitizenAuthLevel.STRONG)
-            AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(user.id!!, CitizenAuthLevel.WEAK)
-            AuthenticatedUserType.employee -> AuthenticatedUser.Employee(user.id!!, user.globalRoles + user.allScopedRoles)
-            AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(user.id!!, user.employeeId)
+            AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.STRONG)
+            AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.WEAK)
+            AuthenticatedUserType.employee -> AuthenticatedUser.Employee(EmployeeId(user.id!!), user.globalRoles + user.allScopedRoles)
+            AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(MobileDeviceId(user.id!!), user.employeeId)
             AuthenticatedUserType.integration -> AuthenticatedUser.Integration
             AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
         }

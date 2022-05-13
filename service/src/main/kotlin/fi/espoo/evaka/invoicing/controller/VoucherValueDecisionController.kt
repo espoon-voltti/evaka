@@ -130,7 +130,7 @@ class VoucherValueDecisionController(
     @PostMapping("/send")
     fun sendDrafts(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         evakaClock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
@@ -229,7 +229,7 @@ class VoucherValueDecisionController(
 fun sendVoucherValueDecisions(
     tx: Database.Transaction,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    user: AuthenticatedUser,
+    user: AuthenticatedUser.Employee,
     evakaEnv: EvakaEnv,
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
@@ -277,7 +277,7 @@ fun sendVoucherValueDecisions(
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
     val validIds = decisions.map { it.id }
-    tx.approveValueDecisionDraftsForSending(validIds, EmployeeId(user.id), now, alwaysUseDaycareFinanceDecisionHandler)
+    tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
     asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }
 

@@ -42,7 +42,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     lateinit var service: VTJBatchRefreshService
 
     val lastDayBefore18YearsOld = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
-    private val user = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
+    private val user = AuthenticatedUser.SystemInternalUser
 
     @BeforeEach
     internal fun setUp() {
@@ -87,7 +87,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.evakaUserId))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -110,7 +110,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.evakaUserId))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
         verifyNoInteractions(parentshipService)
     }
 
@@ -146,7 +146,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.evakaUserId))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -190,7 +190,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id, user.evakaUserId))
+        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
         verifyNoInteractions(parentshipService)
     }
 }

@@ -162,7 +162,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 private val fakeAdmin = AuthenticatedUser.Employee(
-    id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
+    id = EmployeeId(UUID.fromString("00000000-0000-0000-0000-000000000001")),
     roles = setOf(UserRole.ADMIN)
 )
 
@@ -379,10 +379,9 @@ class DevApi(
                     tx.fetchApplicationDetails(decision.applicationId) ?: throw NotFound("application not found")
                 applicationStateService.rejectDecision(
                     tx,
-                    AuthenticatedUser.Citizen(application.guardianId.raw, CitizenAuthLevel.STRONG),
+                    AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
                     application.id,
                     id,
-                    isEnduser = true
                 )
             }
         }
@@ -834,7 +833,7 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservations(tx, fakeAdmin.id, body)
+                createReservations(tx, fakeAdmin.evakaUserId, body)
             }
         }
     }
@@ -952,7 +951,7 @@ RETURNING id
             dbc.transaction { tx ->
                 val id = UUID.randomUUID()
                 tx.insertAttachment(
-                    AuthenticatedUser.Employee(employeeId.raw, emptySet()),
+                    AuthenticatedUser.Employee(employeeId, emptySet()),
                     AttachmentId(id),
                     file.name,
                     file.contentType ?: "image/jpeg",
@@ -1182,7 +1181,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
         """.trimIndent()
 
     createUpdate(sql).bind("id", fakeAdmin.id).execute()
-    upsertEmployeeUser(EmployeeId(fakeAdmin.id))
+    upsertEmployeeUser(fakeAdmin.id)
 }
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {

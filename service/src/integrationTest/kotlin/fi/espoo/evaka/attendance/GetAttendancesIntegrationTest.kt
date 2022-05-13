@@ -43,8 +43,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val mobileUser = AuthenticatedUser.MobileDevice(UUID.randomUUID())
-    private val mobileUser2 = AuthenticatedUser.MobileDevice(UUID.randomUUID())
+    private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
+    private val mobileUser2 = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val groupId = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -72,8 +72,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser.id), testDaycare.id)
-            tx.createMobileDeviceToUnit(MobileDeviceId(mobileUser2.id), testDaycare2.id)
+            tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
+            tx.createMobileDeviceToUnit(mobileUser2.id, testDaycare2.id)
         }
     }
 

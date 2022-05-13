@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -113,7 +114,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart, "palvelusetelialue")))
     }
 
-    private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
         val (_, response, result) = http.get(

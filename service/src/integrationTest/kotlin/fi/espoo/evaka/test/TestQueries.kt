@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus = createQuery(
     // language=SQL
@@ -49,7 +48,7 @@ data class DecisionTableRow(
     val documentKey: String?,
     val requestedStartDate: LocalDate?,
     val resolved: Instant?,
-    val resolvedBy: UUID?
+    val resolvedBy: EvakaUserId?
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 }

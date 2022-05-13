@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -62,14 +61,6 @@ class ChildAttendanceController(
     private val accessControl: AccessControl,
     private val acl: AccessControlList
 ) {
-    val authorizedRoles = arrayOf(
-        UserRole.ADMIN,
-        UserRole.SERVICE_WORKER,
-        UserRole.UNIT_SUPERVISOR,
-        UserRole.STAFF,
-        UserRole.MOBILE
-    )
-
     @GetMapping("/units/{unitId}")
     fun getAttendances(
         db: Database,
@@ -77,8 +68,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
         Audit.ChildAttendancesRead.log(targetId = unitId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
         return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) } }
     }
@@ -103,8 +93,7 @@ class ChildAttendanceController(
         @RequestBody body: AttendancesRequest
     ) {
         Audit.ChildAttendancesUpsert.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -141,8 +130,7 @@ class ChildAttendanceController(
         @RequestBody body: ArrivalRequest
     ) {
         Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -172,8 +160,7 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId
     ) {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -195,8 +182,7 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId
     ): List<AbsenceThreshold> {
         Audit.ChildAttendancesDepartureRead.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -224,8 +210,7 @@ class ChildAttendanceController(
         @RequestBody body: DepartureRequest
     ) {
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -292,8 +277,7 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId
     ) {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -321,8 +305,7 @@ class ChildAttendanceController(
         @RequestBody body: FullDayAbsenceRequest
     ) {
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -360,8 +343,7 @@ class ChildAttendanceController(
         @RequestBody body: AbsenceRangeRequest
     ) {
         Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

@@ -7,13 +7,13 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
-import java.util.UUID
 
 @ExcludeCodeGen
 data class AbsenceInsert(
@@ -103,7 +103,7 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, L
     batch.execute()
 }
 
-fun Database.Transaction.insertValidReservations(userId: UUID, requests: List<DailyReservationRequest>) {
+fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: List<DailyReservationRequest>) {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)

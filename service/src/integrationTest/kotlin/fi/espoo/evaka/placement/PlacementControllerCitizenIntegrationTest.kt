@@ -45,7 +45,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     private final val child = testChild_1
     private final val child2 = testChild_2
     private final val parent = testAdult_1
-    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw, CitizenAuthLevel.STRONG)
+    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
 
     private final val daycareId = testDaycare.id
     private final val daycare2Id = testDaycare2.id

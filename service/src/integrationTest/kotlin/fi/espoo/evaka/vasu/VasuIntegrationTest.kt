@@ -32,7 +32,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     lateinit var daycareTemplate: VasuTemplate
     lateinit var preschoolTemplate: VasuTemplate

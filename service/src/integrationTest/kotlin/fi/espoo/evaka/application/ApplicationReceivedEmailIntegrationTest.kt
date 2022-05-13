@@ -16,6 +16,7 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -52,8 +53,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
     private val validClubForm = ClubFormV0.fromForm2(validClubApplication.form, false, false)
 
-    private val serviceWorker = AuthenticatedUser.Employee(testAdult_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
+    private val serviceWorker = AuthenticatedUser.Employee(EmployeeId(testAdult_1.id.raw), setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
     private val guardianAsDaycareAdult = Adult(
         firstName = guardian.firstName,

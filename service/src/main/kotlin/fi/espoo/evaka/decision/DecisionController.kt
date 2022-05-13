@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
@@ -41,8 +40,7 @@ class DecisionController(
         @RequestParam("id") guardianId: PersonId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = guardianId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Person.READ_DECISIONS, guardianId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
         return DecisionListResponse(decisions)
     }
@@ -54,8 +52,7 @@ class DecisionController(
         @RequestParam("id") childId: ChildId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = childId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Child.READ_DECISIONS, childId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
         return DecisionListResponse(decisions)
     }
@@ -67,8 +64,7 @@ class DecisionController(
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Application.READ_DECISIONS, applicationId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
 
         return DecisionListResponse(decisions)

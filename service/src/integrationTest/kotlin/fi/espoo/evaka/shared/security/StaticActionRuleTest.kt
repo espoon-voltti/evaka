@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -15,9 +17,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class StaticActionRuleTest : AccessControlTest() {
-    private val strongCitizen = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
-    private val weakCitizen = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.WEAK)
-    private val employee = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
+    private val strongCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
+    private val weakCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.WEAK)
+    private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
     @Test
     fun `IsCitizen permits only strongly authenticated citizen if allowWeakLogin = false`() {
@@ -41,8 +43,8 @@ class StaticActionRuleTest : AccessControlTest() {
     fun `HasGlobalRole permits if user has the right global role`() {
         val action = Action.Global.CREATE_UNIT
         rules.add(action, HasGlobalRole(UserRole.REPORT_VIEWER, UserRole.FINANCE_ADMIN))
-        val permittedEmployee = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN))
-        val deniedEmployee = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
+        val permittedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN))
+        val deniedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))
 
         assertTrue(accessControl.hasPermissionFor(permittedEmployee, action))
         assertFalse(accessControl.hasPermissionFor(deniedEmployee, action))

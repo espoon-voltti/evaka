@@ -82,7 +82,7 @@ class VTJPersonDetailsService(
 
 fun DetailsQuery.mapToVtjQuery(type: RequestType) =
     VTJQuery(
-        requestingUserId = requestingUser.id,
+        requestingUserId = requestingUser.raw,
         ssn = targetIdentifier.ssn,
         type = type
     )

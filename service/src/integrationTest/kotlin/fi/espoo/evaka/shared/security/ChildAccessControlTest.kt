@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -44,7 +43,7 @@ class ChildAccessControlTest : AccessControlTest() {
         rules.add(action, IsCitizen(allowWeakLogin = false).guardianOfChild())
         val guardianCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
-            tx.insertGuardian(PersonId(guardianCitizen.id), childId)
+            tx.insertGuardian(guardianCitizen.id, childId)
         }
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 

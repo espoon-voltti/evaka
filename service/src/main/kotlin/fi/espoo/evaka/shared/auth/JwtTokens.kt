@@ -7,6 +7,8 @@ package fi.espoo.evaka.shared.auth
 import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.interfaces.DecodedJWT
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
 
 fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { subject ->
@@ -21,10 +23,10 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
         .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }
         .toSet()
     return when (type) {
-        AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(id, CitizenAuthLevel.STRONG)
-        AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(id, CitizenAuthLevel.WEAK)
-        AuthenticatedUserType.employee -> AuthenticatedUser.Employee(id, roles)
-        AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(id, employeeId)
+        AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.STRONG)
+        AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.WEAK)
+        AuthenticatedUserType.employee -> AuthenticatedUser.Employee(EmployeeId(id), roles)
+        AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(MobileDeviceId(id), employeeId)
         AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
         AuthenticatedUserType.integration -> AuthenticatedUser.Integration
         null -> null
@@ -32,11 +34,11 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
 }
 
 fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = jwt
-    .withSubject(id.toString())
+    .withSubject(rawId().toString())
     .withClaim("evaka_type", this.type.toString())
     .also {
         if (this is AuthenticatedUser.Employee) {
-            it.withClaim("scope", roles.joinToString(" "))
+            it.withClaim("scope", (globalRoles + allScopedRoles).joinToString(" "))
         }
     }
     .also {

@@ -47,9 +47,9 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private val childId = testChild_1.id
     private val daycareId = testDaycare.id
     private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor = AuthenticatedUser.Employee(supervisorId.raw, emptySet())
+    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
     private val staffId = EmployeeId(UUID.randomUUID())
-    private val staffMember = AuthenticatedUser.Employee(staffId.raw, emptySet())
+    private val staffMember = AuthenticatedUser.Employee(staffId, emptySet())
 
     @BeforeEach
     fun beforeEach() {

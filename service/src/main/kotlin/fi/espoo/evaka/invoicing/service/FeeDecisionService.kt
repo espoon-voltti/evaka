@@ -32,7 +32,6 @@ import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
@@ -61,7 +60,7 @@ class FeeDecisionService(
 ) {
     fun confirmDrafts(
         tx: Database.Transaction,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         ids: List<FeeDecisionId>,
         confirmDateTime: HelsinkiDateTime,
         alwaysUseDaycareFinanceDecisionHandler: Boolean
@@ -129,12 +128,12 @@ class FeeDecisionService(
 
         tx.approveFeeDecisionDraftsForSending(
             retroactiveDecisions.map { it.id },
-            approvedBy = EmployeeId(user.id),
+            approvedBy = user.id,
             isRetroactive = true,
             approvedAt = approvedAt,
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
         )
-        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = EmployeeId(user.id), approvedAt = approvedAt, alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler)
+        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = approvedAt, alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler)
 
         return validDecisions.map { it.id }
     }

@@ -13,7 +13,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -51,10 +50,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @Autowired
     lateinit var scheduledJobs: ScheduledJobs
 
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val testSpecialEducationTeacherId = EmployeeId(UUID.randomUUID())
-    private val testSpecialEducationTeacher = AuthenticatedUser.Employee(testSpecialEducationTeacherId.raw, setOf())
+    private val testSpecialEducationTeacher = AuthenticatedUser.Employee(testSpecialEducationTeacherId, setOf())
 
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
 
@@ -283,7 +282,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val applicationId = db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,
-                guardianId = PersonId(endUser.id),
+                guardianId = endUser.id,
                 status = ApplicationStatus.CREATED,
                 type = ApplicationType.DAYCARE
             )

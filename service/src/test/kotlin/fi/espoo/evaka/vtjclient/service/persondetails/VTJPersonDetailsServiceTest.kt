@@ -6,8 +6,8 @@ package fi.espoo.evaka.vtjclient.service.persondetails
 
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
@@ -123,9 +123,9 @@ class VTJPersonDetailsServiceTest {
     private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
         vtjPerson
             .toPersonDTO()
-            .let { DetailsQuery(requestingUser = AuthenticatedUser.Employee(it.id.raw, setOf()), targetIdentifier = it.identity as SSN) }
+            .let { DetailsQuery(requestingUser = EvakaUserId(it.id.raw), targetIdentifier = it.identity as SSN) }
 
-    private fun DetailsQuery.asMinimalVtjResponse(): Henkilo = minimalVtjResponse("${requestingUser.id}")
+    private fun DetailsQuery.asMinimalVtjResponse(): Henkilo = minimalVtjResponse("$requestingUser")
 
     private fun minimalVtjResponse(ssn: String) = Henkilo()
         .also {

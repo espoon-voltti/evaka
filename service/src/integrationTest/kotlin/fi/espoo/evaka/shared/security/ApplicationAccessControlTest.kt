@@ -12,7 +12,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,7 +33,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ApplicationAccessControlTest : AccessControlTest() {
-    private lateinit var creatorCitizen: AuthenticatedUser
+    private lateinit var creatorCitizen: AuthenticatedUser.Citizen
     private lateinit var childId: ChildId
     private lateinit var applicationId: ApplicationId
     private lateinit var daycareId: DaycareId
@@ -44,7 +43,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             childId = tx.insertTestPerson(DevPerson())
-            applicationId = tx.insertTestApplication(guardianId = PersonId(creatorCitizen.id), childId = childId, type = ApplicationType.DAYCARE)
+            applicationId = tx.insertTestApplication(guardianId = creatorCitizen.id, childId = childId, type = ApplicationType.DAYCARE)
             val areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             tx.insertTestApplicationForm(

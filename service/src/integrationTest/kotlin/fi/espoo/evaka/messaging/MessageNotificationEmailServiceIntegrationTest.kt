@@ -52,7 +52,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
     private val testAddresses = testPersons.mapNotNull { it.email }
 
     private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employee = AuthenticatedUser.Employee(id = employeeId.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee = AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
     @BeforeEach
     fun beforeEach() {

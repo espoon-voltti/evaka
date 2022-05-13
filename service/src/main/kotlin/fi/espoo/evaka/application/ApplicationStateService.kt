@@ -73,7 +73,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -198,21 +197,13 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         applicationId: ApplicationId,
         currentDate: LocalDate,
-        isEnduser: Boolean = false,
     ) {
         Audit.ApplicationSend.log(targetId = applicationId)
+        accessControl.requirePermissionFor(user, Action.Application.SEND, applicationId)
 
         val application = getApplication(tx, applicationId)
-        if (isEnduser) {
-            if (application.guardianId.raw != user.id) {
-                throw Forbidden("User does not own this application")
-            }
-        } else {
-            accessControl.requirePermissionFor(user, Action.Application.SEND, applicationId)
-        }
-
         verifyStatus(application, CREATED)
-        validateApplication(tx, application.type, application.form, currentDate, strict = isEnduser)
+        validateApplication(tx, application.type, application.form, currentDate, strict = user is AuthenticatedUser.Citizen)
 
         val applicationFlags = tx.applicationFlags(application)
         tx.updateApplicationFlags(application.id, applicationFlags)
@@ -447,17 +438,11 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
     }
 
-    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
+    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
         Audit.DecisionAccept.log(targetId = decisionId)
-        val application = getApplication(tx, applicationId)
-        if (isEnduser) {
-            if (application.guardianId.raw != user.id) {
-                throw Forbidden("User does not own this application")
-            }
-        } else {
-            accessControl.requirePermissionFor(user, Action.Application.ACCEPT_DECISION, applicationId)
-        }
+        accessControl.requirePermissionFor(user, Action.Application.ACCEPT_DECISION, applicationId)
 
+        val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
 
         val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -518,17 +503,11 @@ class ApplicationStateService(
         }
     }
 
-    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, isEnduser: Boolean = false) {
+    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId) {
         Audit.DecisionReject.log(targetId = decisionId)
-        val application = getApplication(tx, applicationId)
-        if (isEnduser) {
-            if (application.guardianId.raw != user.id) {
-                throw Forbidden("User does not own this application")
-            }
-        } else {
-            accessControl.requirePermissionFor(user, Action.Application.REJECT_DECISION, applicationId)
-        }
+        accessControl.requirePermissionFor(user, Action.Application.REJECT_DECISION, applicationId)
 
+        val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))
 
         val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -557,14 +536,14 @@ class ApplicationStateService(
 
     fun updateOwnApplicationContentsCitizen(
         tx: Database.Transaction,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         applicationId: ApplicationId,
         update: ApplicationFormUpdate,
         currentDate: LocalDate,
         asDraft: Boolean = false
     ): ApplicationDetails {
         val original = tx.fetchApplicationDetails(applicationId)
-            ?.takeIf { it.guardianId.raw == user.id }
+            ?.takeIf { it.guardianId == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
         val updatedForm = original.form.update(update)

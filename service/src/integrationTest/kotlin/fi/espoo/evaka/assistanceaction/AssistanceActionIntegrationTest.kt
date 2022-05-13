@@ -31,8 +31,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.SERVICE_WORKER))
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.ADMIN))
+    private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val testDaycareId = testDaycare.id
 
     @BeforeEach

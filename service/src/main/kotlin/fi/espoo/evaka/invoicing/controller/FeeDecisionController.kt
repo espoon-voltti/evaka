@@ -112,7 +112,7 @@ class FeeDecisionController(
     @PostMapping("/confirm")
     fun confirmDrafts(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         evakaClock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {

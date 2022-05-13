@@ -53,7 +53,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
 
     private final val child1 = testChild_1
     private final val parent = testAdult_1
-    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id.raw, CitizenAuthLevel.STRONG)
+    private final val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun setUp() {

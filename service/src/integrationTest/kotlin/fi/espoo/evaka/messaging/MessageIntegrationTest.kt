@@ -73,12 +73,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val fridgeHeadId = person4Id
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
-    private val employee1 = AuthenticatedUser.Employee(id = employee1Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val employee2 = AuthenticatedUser.Employee(id = employee2Id.raw, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val person1 = AuthenticatedUser.Citizen(id = person1Id.raw, CitizenAuthLevel.STRONG)
-    private val person2 = AuthenticatedUser.Citizen(id = person2Id.raw, CitizenAuthLevel.STRONG)
-    private val person3 = AuthenticatedUser.Citizen(id = person3Id.raw, CitizenAuthLevel.STRONG)
-    private val person4 = AuthenticatedUser.Citizen(id = person4Id.raw, CitizenAuthLevel.STRONG)
+    private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee2 = AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val person1 = AuthenticatedUser.Citizen(id = person1Id, CitizenAuthLevel.STRONG)
+    private val person2 = AuthenticatedUser.Citizen(id = person2Id, CitizenAuthLevel.STRONG)
+    private val person3 = AuthenticatedUser.Citizen(id = person3Id, CitizenAuthLevel.STRONG)
+    private val person4 = AuthenticatedUser.Citizen(id = person4Id, CitizenAuthLevel.STRONG)
     private val groupId = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
@@ -771,20 +771,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         threadId: MessageThreadId
     ) =
         http.put(
-            if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
+            if (user is AuthenticatedUser.Citizen) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
         )
             .asUser(user)
             .response()
 
     private fun getMessageThreads(accountId: MessageAccountId, user: AuthenticatedUser): List<MessageThread> = http.get(
-        if (user.isEndUser) "/citizen/messages/received" else "/messages/$accountId/received",
+        if (user is AuthenticatedUser.Citizen) "/citizen/messages/received" else "/messages/$accountId/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(jsonMapper).third.get().data
 
     private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
-        if (user.isEndUser) "/citizen/messages/sent" else "/messages/$accountId/sent",
+        if (user is AuthenticatedUser.Citizen) "/citizen/messages/sent" else "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)

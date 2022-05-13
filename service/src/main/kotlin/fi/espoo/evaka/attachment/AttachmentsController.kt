@@ -135,7 +135,7 @@ class AttachmentsController(
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
@@ -178,7 +178,7 @@ class AttachmentsController(
         }
     }
 
-    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser) {
+    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser.Citizen) {
         val count = db.read {
             when (attachTo) {
                 AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)

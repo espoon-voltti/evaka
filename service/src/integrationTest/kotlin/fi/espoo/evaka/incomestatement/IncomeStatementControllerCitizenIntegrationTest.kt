@@ -38,7 +38,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id.raw, CitizenAuthLevel.STRONG)
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun beforeEach() {
@@ -460,7 +460,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
 
     @Test
     fun `create an income statement with someone else's attachment`() {
-        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id.raw, CitizenAuthLevel.STRONG)
+        val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
         val attachmentId = uploadAttachment(someoneElse)
 
         createIncomeStatement(
@@ -709,7 +709,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         val attachment1 = uploadAttachment()
 
         val employeeId = EmployeeId(UUID.randomUUID())
-        val employee = AuthenticatedUser.Employee(employeeId.raw, setOf(UserRole.FINANCE_ADMIN))
+        val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
         db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
         }

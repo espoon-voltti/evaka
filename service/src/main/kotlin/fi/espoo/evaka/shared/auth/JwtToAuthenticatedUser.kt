@@ -22,8 +22,8 @@ class JwtToAuthenticatedUser : HttpFilter() {
 
         if (user != null) {
             request.setAuthenticatedUser(user)
-            MdcKey.USER_ID.set(user.id.toString())
-            MdcKey.USER_ID_HASH.set(user.idHash.toString())
+            MdcKey.USER_ID.set(user.rawId().toString())
+            MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
         }
         try {
             chain.doFilter(request, response)

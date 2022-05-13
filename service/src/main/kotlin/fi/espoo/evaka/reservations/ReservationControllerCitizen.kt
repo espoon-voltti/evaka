@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -40,14 +39,13 @@ class ReservationControllerCitizen(
     @GetMapping("/citizen/reservations")
     fun getReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
         val range = try {
             FiniteDateRange(from, to)
@@ -57,11 +55,11 @@ class ReservationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getReservationChildren(PersonId(user.id), range)
+                val children = tx.getReservationChildren(user.id, range)
                 val includeWeekends = children.any {
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
-                val reservations = tx.getReservationsCitizen(PersonId(user.id), range, includeWeekends)
+                val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val placementRange = FiniteDateRange(children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
@@ -79,7 +77,7 @@ class ReservationControllerCitizen(
     @PostMapping("/citizen/reservations")
     fun postReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
@@ -90,7 +88,7 @@ class ReservationControllerCitizen(
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservations(tx, user.id, body.validate(reservableDays))
+                createReservations(tx, user.evakaUserId, body.validate(reservableDays))
             }
         }
     }
@@ -98,7 +96,7 @@ class ReservationControllerCitizen(
     @PostMapping("/citizen/absences")
     fun postAbsences(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
@@ -119,7 +117,7 @@ class ReservationControllerCitizen(
                     }
                 )
                 tx.insertAbsences(
-                    PersonId(user.id),
+                    user.id,
                     body.childIds.map { AbsenceInsert(it, body.dateRange, body.absenceType) }
                 )
             }

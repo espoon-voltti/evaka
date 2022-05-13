@@ -61,7 +61,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var applicationStateService: ApplicationStateService
 
-    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id.raw, roles = setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -74,7 +74,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `Draft application and attachments older than 30 days is cleaned up`() {
         val id_to_be_deleted = ApplicationId(UUID.randomUUID())
         val id_not_to_be_deleted = ApplicationId(UUID.randomUUID())
-        val user = AuthenticatedUser.Citizen(testAdult_5.id.raw, CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
         db.transaction { tx ->
             tx.insertApplication(guardian = testAdult_5, applicationId = id_to_be_deleted)

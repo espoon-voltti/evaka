@@ -31,12 +31,12 @@ class PedagogicalDocumentControllerCitizen(
     @GetMapping
     fun getPedagogicalDocumentsByGuardian(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): List<PedagogicalDocumentCitizen> {
         Audit.PedagogicalDocumentReadByGuardian.log(user.id)
         return db.connect { dbc ->
             dbc.read {
-                it.findPedagogicalDocumentsByGuardian(PersonId(user.id), user.type).filter { pd ->
+                it.findPedagogicalDocumentsByGuardian(user.id, user.type).filter { pd ->
                     pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
             }
@@ -46,24 +46,24 @@ class PedagogicalDocumentControllerCitizen(
     @PostMapping("/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.PedagogicalDocument.READ, documentId)
         return db.connect { dbc ->
-            dbc.transaction { it.markDocumentReadByGuardian(documentId, PersonId(user.id)) }
+            dbc.transaction { it.markDocumentReadByGuardian(documentId, user.id) }
         }
     }
 
     @GetMapping("/unread-count")
     fun getUnreadPedagogicalDocumentCount(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): Number {
         Audit.PedagogicalDocumentCountUnread.log(user.id)
         return db.connect { dbc ->
-            dbc.transaction { it.countUnreadDocumentsByGuardian(PersonId(user.id)) }
+            dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
         }
     }
 }

@@ -67,11 +67,11 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertDaycareAclRow(daycareId, id, role)
         }
         val globalAndUnitRoles = unitRoles.values.fold(globalRoles) { acc, roles -> acc + roles }
-        AuthenticatedUser.Employee(id.raw, globalAndUnitRoles)
+        AuthenticatedUser.Employee(id, globalAndUnitRoles)
     }
 
     protected fun createTestMobile(daycareId: DaycareId) = db.transaction { tx ->
         val mobileId = tx.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
-        AuthenticatedUser.MobileDevice(mobileId.raw)
+        AuthenticatedUser.MobileDevice(mobileId)
     }
 }

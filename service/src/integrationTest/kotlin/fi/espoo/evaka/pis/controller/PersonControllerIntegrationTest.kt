@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.controllers.SearchPersonBody
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -28,7 +29,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val admin = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val admin = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     @Autowired
     lateinit var controller: PersonController
@@ -46,22 +47,22 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Finance admin can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     @Test
     fun `Service worker can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `Unit supervisor can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        updateContactInfo(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `End user cannot end update end user's contact info`() {
-        val user = AuthenticatedUser.Citizen(UUID.randomUUID(), CitizenAuthLevel.STRONG)
+        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         assertThrows<Forbidden> {
             controller.updateContactInfo(Database(jdbi), user, PersonId(UUID.randomUUID()), contactInfo)
         }
@@ -69,7 +70,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search finds person by first and last name`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -87,7 +88,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats tabs as spaces in search terms`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -105,7 +106,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats non-breaking spaces as spaces in search terms`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -123,7 +124,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `Search treats obscure unicode spaces as spaces in search terms`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         // IDEOGRAPHIC SPACE, not supported by default in regexes

@@ -9,12 +9,12 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 fun convertMidnightEndTime(timeRange: TimeRange) =
     if (timeRange.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0))
@@ -75,7 +75,7 @@ class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
     }
 }
 
-fun createReservations(tx: Database.Transaction, userId: UUID, reservations: List<DailyReservationRequest>) {
+fun createReservations(tx: Database.Transaction, userId: EvakaUserId, reservations: List<DailyReservationRequest>) {
     tx.clearOldCitizenEditableAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations)

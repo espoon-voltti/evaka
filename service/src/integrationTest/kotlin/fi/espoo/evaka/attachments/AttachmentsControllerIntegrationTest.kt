@@ -28,7 +28,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val user = AuthenticatedUser.Citizen(testAdult_5.id.raw, CitizenAuthLevel.STRONG)
+    private val user = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     private fun beforeEach() {

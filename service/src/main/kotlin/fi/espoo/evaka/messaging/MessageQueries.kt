@@ -8,8 +8,8 @@ import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -585,7 +585,7 @@ data class MessageReceiversResult(
 )
 
 fun Database.Read.getReceiversForNewMessage(
-    employeeId: EmployeeId,
+    employeeOrMobileId: Id<*>,
     unitId: DaycareId
 ): List<MessageReceiversResponse> {
     // language=sql
@@ -598,7 +598,7 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN daycare d ON pl.unit_id = d.id
             WHERE pl.unit_id = :unitId AND EXISTS (
                 SELECT 1 FROM child_acl_view a
-                WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
+                WHERE a.employee_id = :employeeOrMobileId AND a.child_id = pl.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
             
@@ -640,7 +640,7 @@ fun Database.Read.getReceiversForNewMessage(
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("employeeId", employeeId)
+        .bind("employeeOrMobileId", employeeOrMobileId)
         .bind("date", HelsinkiDateTime.now().toLocalDate())
         .bind("unitId", unitId)
         .mapTo<MessageReceiversResult>()
@@ -670,13 +670,13 @@ fun Database.Read.getReceiversForNewMessage(
         }
 }
 
-fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: EmployeeId, accountIds: Set<MessageAccountId>): Boolean {
+fun Database.Read.isEmployeeAuthorizedToSendTo(employeeOrMobileId: Id<*>, accountIds: Set<MessageAccountId>): Boolean {
     // language=SQL
     val sql = """
         WITH children AS (
             SELECT child_id
             FROM child_acl_view
-            WHERE employee_id = :employeeId
+            WHERE employee_id = :employeeOrMobileId
         ), receivers AS (
             SELECT DISTINCT g.guardian_id AS receiver_id
             FROM children c
@@ -693,7 +693,7 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: EmployeeId, accountId
     """.trimIndent()
 
     val numAccounts = createQuery(sql)
-        .bind("employeeId", employeeId)
+        .bind("employeeOrMobileId", employeeOrMobileId)
         .bind("accountIds", accountIds.toTypedArray())
         .mapTo<Int>()
         .one()

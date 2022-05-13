@@ -464,7 +464,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     ) {
         db.transaction { tx ->
             tx.insertAssistanceNeed(
-                AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, roles = setOf()),
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, roles = setOf()),
                 childId,
                 AssistanceNeedRequest(period.start, period.end, capacityFactor)
             )

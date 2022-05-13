@@ -13,7 +13,6 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,15 +23,15 @@ class FridgeFamilyService(
 ) {
 
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
-        updatePersonAndFamilyFromVtj(db, msg.requestingUserId.raw, msg.personId)
+        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, msg.personId)
     }
 
-    fun updatePersonAndFamilyFromVtj(db: Database.Connection, requestingUserId: UUID, personId: PersonId) {
+    fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, personId: PersonId) {
         logger.info("Refreshing $personId from VTJ")
         val head = db.transaction {
             personService.getPersonWithChildren(
                 it,
-                user = AuthenticatedUser.Employee(requestingUserId, setOf()),
+                user = user,
                 id = personId,
                 forceRefresh = true
             )
@@ -46,7 +45,7 @@ class FridgeFamilyService(
                     db.transaction {
                         personService.getPersonWithChildren(
                             it,
-                            user = AuthenticatedUser.Employee(requestingUserId, setOf()),
+                            user = user,
                             id = partnerId,
                             forceRefresh = true
                         )

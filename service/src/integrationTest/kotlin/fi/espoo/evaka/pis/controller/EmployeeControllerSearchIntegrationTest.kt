@@ -9,6 +9,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -36,7 +37,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `admin searches employees`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 3, searchTerm = null))
 
         assertEquals(3, body.total)
@@ -56,7 +57,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `admin searches employees with free text`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"))
         assertEquals(1, body.data.size)
         assertEquals("Sammy", body.data[0].firstName)

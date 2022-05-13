@@ -42,8 +42,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @GetMapping
     fun getEmployees(db: Database, user: AuthenticatedUser): List<Employee> {
         Audit.EmployeesRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        accessControl.requirePermissionFor(user, Action.Global.READ_EMPLOYEES)
         return db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email }
     }
 
@@ -55,20 +54,9 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId): Employee {
+    fun getEmployee(db: Database, user: AuthenticatedUser.Employee, @PathVariable(value = "id") id: EmployeeId): Employee {
         Audit.EmployeeRead.log(targetId = id)
-        if (user.id != id.raw) {
-            @Suppress("DEPRECATION")
-            user.requireOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.SERVICE_WORKER,
-                UserRole.FINANCE_ADMIN,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.STAFF,
-                UserRole.DIRECTOR,
-                UserRole.REPORT_VIEWER,
-            )
-        }
+        accessControl.requirePermissionFor(user, Action.Employee.READ, id)
         return db.connect { dbc -> dbc.read { it.getEmployee(id) } } ?: throw NotFound()
     }
 
@@ -83,8 +71,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         @RequestBody body: EmployeeUpdate
     ) {
         Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Employee.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -103,8 +90,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable(value = "id") id: EmployeeId
     ): EmployeeWithDaycareRoles {
         Audit.EmployeeRead.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Employee.READ_DETAILS, id)
 
         return db.connect { dbc -> dbc.read { it.getEmployeeWithRoles(id) } }
             ?: throw NotFound("employee $id not found")
@@ -113,36 +99,34 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PostMapping("")
     fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): Employee {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_EMPLOYEE)
         return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
     }
 
     @DeleteMapping("/{id}")
     fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId) {
         Audit.EmployeeDelete.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Employee.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
     }
 
     @PostMapping("/pin-code")
     fun upsertPinCode(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody body: PinCode
     ) {
         Audit.PinCodeUpdate.log(targetId = user.id)
-        db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(EmployeeId(user.id), body) } }
+        db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(user.id, body) } }
     }
 
     @GetMapping("/pin-code/is-pin-locked")
     fun isPinLocked(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
-        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }
     }
 
     @PostMapping("/search")
@@ -152,8 +136,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         @RequestBody body: SearchEmployeeRequest
     ): Paged<EmployeeWithDaycareRoles> {
         Audit.EmployeesRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.SEARCH_EMPLOYEES)
         return db.connect { dbc ->
             dbc.read { tx ->
                 getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")

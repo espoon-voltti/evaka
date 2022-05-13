@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -28,9 +29,9 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
-            is AuthenticatedUser.Citizen -> user.authLevel
+            is AuthenticatedUser.Citizen -> Pair(user.authLevel, user.id)
             else -> null
-        }?.let { authLevel -> filter(tx, PersonId(user.id), targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+        }?.let { (authLevel, id) -> filter(tx, id, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
 
         override fun classifier(): Any = filter.javaClass
     }
@@ -52,7 +53,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     fun self() = object : TargetActionRule<PersonId> {
         override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
-            is AuthenticatedUser.Citizen -> if (user.id == target.raw && isPermittedAuthLevel(user.authLevel)) {
+            is AuthenticatedUser.Citizen -> if (user.id == target && isPermittedAuthLevel(user.authLevel)) {
                 AccessControlDecision.Permitted(this@IsCitizen)
             } else AccessControlDecision.None
             else -> AccessControlDecision.None
@@ -199,6 +200,25 @@ SELECT id
 FROM application
 WHERE guardian_id = :userId
 AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
+    fun ownerOfApplicationOfSentDecision() = DatabaseActionRule(
+        this,
+        Query<DecisionId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT decision.id
+FROM decision
+JOIN application ON decision.application_id = application.id
+WHERE guardian_id = :userId
+AND decision.id = ANY(:ids)
+AND decision.sent_date IS NOT NULL
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())

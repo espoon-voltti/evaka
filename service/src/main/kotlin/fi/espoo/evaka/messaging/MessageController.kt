@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
@@ -49,22 +48,21 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
+    fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(EmployeeId(user.id)) } }
+        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) } }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
     fun getAccountsByDevice(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         @PathVariable unitId: DaycareId
     ): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
-        return if (user is AuthenticatedUser.MobileDevice && user.employeeId != null) {
+        accessControl.requirePermissionFor(user, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
+        return if (user.employeeId != null) {
             db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
         } else setOf()
     }
@@ -105,8 +103,8 @@ class MessageController(
         user: AuthenticatedUser,
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
-        requireAuthorizedMessagingRole(user)
-        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user))) } }
+        accessControl.requirePermissionFor(user, Action.Global.ACCESS_MESSAGING)
+        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!)) } }
     }
 
     @GetMapping("/unread/{unitId}")
@@ -116,8 +114,7 @@ class MessageController(
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
         Audit.MessagingUnreadMessagesRead.log()
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_UNREAD_MESSAGES, unitId)
         return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }
     }
 
@@ -261,25 +258,8 @@ class MessageController(
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(
-            UserRole.ADMIN,
-            UserRole.UNIT_SUPERVISOR,
-            UserRole.STAFF,
-            UserRole.SPECIAL_EDUCATION_TEACHER,
-            UserRole.MOBILE
-        )
-
-        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.id), unitId) } }
-    }
-
-    private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
-        when (user) {
-            is AuthenticatedUser.MobileDevice -> if (user.employeeId == null) throw Forbidden()
-            else ->
-                @Suppress("DEPRECATION")
-                user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        }
+        accessControl.requirePermissionFor(user, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
+        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }
     }
 
     private fun requireMessageAccountAccess(
@@ -287,8 +267,8 @@ class MessageController(
         user: AuthenticatedUser,
         accountId: MessageAccountId
     ) {
-        requireAuthorizedMessagingRole(user)
-        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)) }.find { it == accountId }
+        accessControl.requirePermissionFor(user, Action.Global.ACCESS_MESSAGING)
+        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)!!) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
@@ -297,16 +277,21 @@ class MessageController(
         user: AuthenticatedUser,
         recipientAccountIds: Set<MessageAccountId>
     ) {
-        db.read {
-            it.isEmployeeAuthorizedToSendTo(
-                getEmployeeId(user),
-                recipientAccountIds
-            )
-        } || throw Forbidden("Not authorized to send to the given recipients")
+        val employeeOrMobileId = when (user) {
+            is AuthenticatedUser.MobileDevice -> user.employeeId ?: user.id
+            is AuthenticatedUser.Employee -> user.id
+            else -> null
+        }
+        (
+            employeeOrMobileId != null && db.read {
+                it.isEmployeeAuthorizedToSendTo(employeeOrMobileId, recipientAccountIds)
+            }
+            ) || throw Forbidden("Not authorized to send to the given recipients")
     }
 
-    fun getEmployeeId(user: AuthenticatedUser): EmployeeId = when (user) {
+    fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {
         is AuthenticatedUser.MobileDevice -> user.employeeId
-        else -> EmployeeId(user.id)
-    } ?: EmployeeId(user.id)
+        is AuthenticatedUser.Employee -> user.id
+        else -> null
+    }
 }

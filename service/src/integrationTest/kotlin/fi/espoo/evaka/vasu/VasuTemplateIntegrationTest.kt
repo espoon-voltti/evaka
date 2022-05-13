@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -21,7 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     @BeforeEach
     private fun beforeEach() {

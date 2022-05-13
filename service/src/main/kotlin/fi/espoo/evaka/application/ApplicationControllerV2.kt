@@ -216,7 +216,6 @@ class ApplicationControllerV2(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationSummaries(
-                    user = user,
                     today = evakaClock.today(),
                     page = body.page ?: 1,
                     pageSize = body.pageSize ?: 100,

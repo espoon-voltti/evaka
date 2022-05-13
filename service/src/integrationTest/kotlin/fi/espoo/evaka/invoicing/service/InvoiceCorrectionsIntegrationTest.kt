@@ -295,7 +295,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             it.upsertInvoices(invoices)
             invoiceService.sendInvoices(
                 it,
-                AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN)),
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
                 invoices.map { it.id },
                 null,
                 null
@@ -323,7 +323,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             it.upsertInvoices(invoices)
             invoiceService.sendInvoices(
                 it,
-                AuthenticatedUser.Employee(testDecisionMaker_1.id.raw, setOf(UserRole.FINANCE_ADMIN)),
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
                 invoices.map { it.id },
                 null,
                 null

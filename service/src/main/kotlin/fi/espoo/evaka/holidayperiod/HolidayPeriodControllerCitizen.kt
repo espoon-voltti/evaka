@@ -13,7 +13,6 @@ import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -40,7 +39,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
     ): List<HolidayPeriod> {
         Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
@@ -50,7 +49,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/questionnaire")
     fun getActiveQuestionnaires(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
     ): List<ActiveQuestionnaire> {
         Audit.HolidayPeriodsList.log()
@@ -62,11 +61,11 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
                 val eligibleChildren = if (continuousPlacementPeriod != null) {
                     tx.getChildrenWithContinuousPlacement(
-                        PersonId(user.id),
+                        user.id,
                         continuousPlacementPeriod,
                     )
                 } else {
-                    tx.getGuardianChildIds(PersonId(user.id))
+                    tx.getGuardianChildIds(user.id)
                 }
                 if (eligibleChildren.isEmpty()) {
                     listOf()
@@ -86,7 +85,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @PostMapping("/questionnaire/fixed-period/{id}")
     fun answerFixedPeriodQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodsBody
@@ -102,7 +101,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren = tx.getChildrenWithContinuousPlacement(
-                        PersonId(user.id),
+                        user.id,
                         questionnaire.conditions.continuousPlacement
                     )
                     if (childIds.any { body.fixedPeriods[it] != null && !eligibleChildren.contains(it) }) {
@@ -129,9 +128,9 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     tx.clearOldCitizenEditableAbsences(it)
                 }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.insertAbsences(PersonId(user.id), absences)
+                tx.insertAbsences(user.id, absences)
                 tx.insertQuestionnaireAnswers(
-                    PersonId(user.id),
+                    user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->
                         HolidayQuestionnaireAnswer(questionnaire.id, childId, period)
                     }
