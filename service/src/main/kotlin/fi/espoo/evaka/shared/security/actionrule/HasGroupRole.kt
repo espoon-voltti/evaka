@@ -27,10 +27,6 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
-    override fun merge(other: HasGroupRole): HasGroupRole = HasGroupRole(
-        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
-    )
-
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
             is AuthenticatedUser.Employee -> getGroupRoles(tx, user, targets)

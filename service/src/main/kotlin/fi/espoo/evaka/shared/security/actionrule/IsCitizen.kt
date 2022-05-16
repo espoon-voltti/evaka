@@ -23,8 +23,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, targets: Set<T>) -> Iterable<T>
 
 data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> {
-    override fun merge(other: IsCitizen): IsCitizen = IsCitizen(this.allowWeakLogin || other.allowWeakLogin)
-
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {

@@ -47,10 +47,6 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
-    override fun merge(other: HasUnitRole): HasUnitRole = HasUnitRole(
-        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
-    )
-
     private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles<T>) :
         DatabaseActionRule.Query<T, HasUnitRole> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {

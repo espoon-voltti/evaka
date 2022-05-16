@@ -23,8 +23,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<T>
 
 object IsEmployee : ActionRuleParams<IsEmployee> {
-    override fun merge(other: IsEmployee): IsEmployee = IsEmployee
-
     private data class Query<I>(private val filter: FilterByEmployee<I>) : DatabaseActionRule.Query<I, IsEmployee> {
         override fun execute(
             tx: Database.Read,

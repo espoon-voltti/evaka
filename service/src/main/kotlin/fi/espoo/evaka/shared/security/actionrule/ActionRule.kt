@@ -77,8 +77,6 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
     }
 }
 
-interface ActionRuleParams<This> {
-    fun merge(other: This): This
-}
+interface ActionRuleParams<This>
 
 internal data class IdAndRole(val id: Id<*>, val role: UserRole)

@@ -24,10 +24,6 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
     override fun isPermitted(user: AuthenticatedUser): Boolean =
         user is AuthenticatedUser.Employee && user.globalRoles.any { this.oneOf.contains(it) }
 
-    override fun merge(other: HasGlobalRole): HasGlobalRole = HasGlobalRole(
-        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
-    )
-
     private class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
         override fun execute(
             tx: Database.Read,

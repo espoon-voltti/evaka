@@ -21,9 +21,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
 
 data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
-    override fun merge(other: IsMobile): IsMobile =
-        IsMobile(this.requirePinLogin && other.requirePinLogin)
-
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
         MobileAuthLevel.PIN_LOGIN -> true
         MobileAuthLevel.DEFAULT -> !requirePinLogin
