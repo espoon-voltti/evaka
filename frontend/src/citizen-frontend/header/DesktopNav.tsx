@@ -201,7 +201,7 @@ const LanguageMenu = React.memo(function LanguageMenu({
   )
 
   return (
-    <div ref={dropDownRef}>
+    <nav ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa="button-select-language">
         {lang.toUpperCase()}
         <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
@@ -224,7 +224,7 @@ const LanguageMenu = React.memo(function LanguageMenu({
           ))}
         </DropDown>
       ) : null}
-    </div>
+    </nav>
   )
 })
 
@@ -243,7 +243,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
   )
 
   return (
-    <div ref={dropDownRef}>
+    <nav ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa="user-menu-title-desktop">
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
@@ -298,7 +298,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
           </DropDownItem>
         </DropDown>
       ) : null}
-    </div>
+    </nav>
   )
 })
 
