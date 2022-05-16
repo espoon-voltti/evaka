@@ -26,8 +26,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -35,9 +33,7 @@ import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
-import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
@@ -447,13 +443,15 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): Li
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.type,
+            a.id AS applicationId,
+            a.preferredUnit AS preferredUnitId,
+            a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
             a.preparatoryeducation,
-            d.name AS daycareName,
-            a.status AS application_status
+            d.name AS preferredUnitName,
+            a.status
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
         LEFT JOIN person p ON a.guardianId = p.id
@@ -464,7 +462,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): Li
 
     return createQuery(sql)
         .bind("guardianId", guardianId)
-        .map(toPersonApplicationSummary)
+        .mapTo<PersonApplicationSummary>()
         .toList()
 }
 
@@ -473,13 +471,15 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: ChildId): List<Pers
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.type,
+            a.id AS applicationId,
+            a.preferredUnit AS preferredUnitId,
+            a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
             a.connecteddaycare,
             a.preparatoryeducation,
-            d.name AS daycareName,
-            a.status AS application_status
+            d.name AS preferredUnitName,
+            a.status
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
         LEFT JOIN person p ON a.guardianId = p.id
@@ -490,7 +490,7 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: ChildId): List<Pers
 
     return createQuery(sql)
         .bind("childId", childId)
-        .map(toPersonApplicationSummary)
+        .mapTo<PersonApplicationSummary>()
         .toList()
 }
 
@@ -538,25 +538,6 @@ fun Database.Read.getCitizenChildren(citizenId: PersonId): List<CitizenChildren>
         .bind("guardianId", citizenId)
         .mapTo<CitizenChildren>()
         .list()
-}
-
-private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
-    PersonApplicationSummary(
-        applicationId = ApplicationId(rs.getUUID("id")),
-        childId = ChildId(rs.getUUID("childId")),
-        guardianId = PersonId(rs.getUUID("guardianId")),
-        preferredUnitId = DaycareId(rs.getUUID("preferredUnit")),
-        preferredUnitName = rs.getString("daycareName"),
-        childName = rs.getString("childName"),
-        childSsn = rs.getString("childSsn"),
-        guardianName = rs.getString("guardianName"),
-        preferredStartDate = rs.getDate("preferredStartDate")?.toLocalDate(),
-        sentDate = rs.getDate("sentDate")?.toLocalDate(),
-        type = rs.getString("type"),
-        status = rs.getEnum("application_status"),
-        connectedDaycare = rs.getBoolean("connecteddaycare"),
-        preparatoryEducation = rs.getBoolean("preparatoryeducation")
-    )
 }
 
 fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {

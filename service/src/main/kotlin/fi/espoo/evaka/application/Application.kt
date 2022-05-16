@@ -79,7 +79,7 @@ data class PersonApplicationSummary(
     val guardianName: String,
     val preferredStartDate: LocalDate?,
     val sentDate: LocalDate?,
-    val type: String,
+    val type: ApplicationType,
     val status: ApplicationStatus,
     val connectedDaycare: Boolean = false,
     val preparatoryEducation: Boolean = false
@@ -195,7 +195,7 @@ data class ApplicationUnitSummary(
 
 data class CitizenApplicationSummary(
     val applicationId: ApplicationId,
-    val type: String,
+    val type: ApplicationType,
     val childId: ChildId,
     val childName: String?,
     val preferredUnitName: String?,

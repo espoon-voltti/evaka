@@ -8,10 +8,6 @@ import {
   ApplicationFormUpdate,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import {
-  ApplicationsOfChild,
-  deserializeApplicationsOfChild
-} from 'lib-common/api-types/application/ApplicationsOfChild'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import {
   ClubTerm,
@@ -19,7 +15,10 @@ import {
   deserializePreschoolTerm,
   PreschoolTerm
 } from 'lib-common/api-types/units/terms'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationsOfChild,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -123,6 +122,19 @@ export const getGuardianApplications = async (): Promise<
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
+
+const deserializeApplicationsOfChild = (
+  json: JsonOf<ApplicationsOfChild>
+): ApplicationsOfChild => ({
+  ...json,
+  applicationSummaries: json.applicationSummaries.map((json2) => ({
+    ...json2,
+    sentDate: LocalDate.parseNullableIso(json2.sentDate),
+    startDate: LocalDate.parseNullableIso(json2.startDate),
+    createdDate: new Date(json2.createdDate),
+    modifiedDate: new Date(json2.modifiedDate)
+  }))
+})
 
 export async function createApplication(
   childId: string,
