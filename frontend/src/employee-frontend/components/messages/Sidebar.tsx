@@ -8,8 +8,8 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import {
-  MessageReceiversResponse,
-  AuthorizedMessageAccount
+  AuthorizedMessageAccount,
+  MessageReceiversResponse
 } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -80,21 +80,14 @@ const UnitSelection = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
-const Receivers = styled.div<{ active: boolean }>`
-  cursor: pointer;
-  padding: 12px ${defaultMargins.m};
-  font-weight: ${(p) => (p.active ? fontWeights.semibold : 'unset')};
-  background-color: ${(p) => (p.active ? colors.main.m4 : 'unset')};
-`
-
-interface AccountsParams {
+interface AccountsProps {
   accounts: AuthorizedMessageAccount[]
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
 }
 
-function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
+function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
   const { i18n } = useTranslation()
   const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
     useContext(MessageContext)
@@ -193,19 +186,18 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
 }
 
 interface Props {
+  showEditor: () => void
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
-  showEditor: () => void
 }
 
 export default React.memo(function Sidebar({
-  setSelectedReceivers,
-  showEditor
+  showEditor,
+  setSelectedReceivers
 }: Props) {
   const { i18n } = useTranslation()
-  const { accounts, selectedAccount, setSelectedAccount } =
-    useContext(MessageContext)
+  const { accounts } = useContext(MessageContext)
 
   const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (
@@ -232,16 +224,6 @@ export default React.memo(function Sidebar({
             setSelectedReceivers={setSelectedReceivers}
           />
         ))}
-        <Receivers
-          active={selectedAccount?.view === 'RECEIVERS'}
-          onClick={() =>
-            selectedAccount &&
-            setSelectedAccount({ ...selectedAccount, view: 'RECEIVERS' })
-          }
-          style={{ display: 'none' }}
-        >
-          {i18n.messages.receiverSelection.title}
-        </Receivers>
       </AccountContainer>
     </Container>
   )

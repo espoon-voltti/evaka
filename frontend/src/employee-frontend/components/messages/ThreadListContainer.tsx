@@ -6,7 +6,10 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageAccount,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
 import Pagination from 'lib-components/Pagination'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -18,7 +21,7 @@ import { useTranslation } from '../../state/i18n'
 import { MessageContext } from './MessageContext'
 import { SingleThreadView } from './SingleThreadView'
 import { ThreadList, ThreadListItem } from './ThreadList'
-import { AccountView } from './types-view'
+import { View } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
@@ -33,13 +36,18 @@ const getUniqueParticipants: (t: MessageThread) => string[] = (
       acc[msg.sender.id] = msg.sender.name
       msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
       return acc
-    }, {})
+    }, {} as Record<string, string>)
   )
+
+export interface Props {
+  account: MessageAccount
+  view: Exclude<View, 'RECEIVERS'>
+}
 
 export default React.memo(function ThreadListContainer({
   account,
   view
-}: AccountView) {
+}: Props) {
   const { i18n } = useTranslation()
   const {
     receivedMessages,
