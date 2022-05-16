@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.annotation.JsonInclude
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
@@ -67,14 +68,14 @@ fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunici
                 daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
                 daycare.oph_unit_oid IS NULL
             )
-            AND daycare.provider_type IN (<providerTypes>)
+            AND daycare.provider_type = ANY(:providerTypes)
         """.trimIndent()
 
     return tx.createQuery(sql)
         .bind("ophMunicipalityCode", ophMunicipalityCode)
         .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
         .bind("sourceSystem", sourceSystem)
-        .bindList("providerTypes", unitTypesToUpload)
+        .bind("providerTypes", unitTypesToUpload.toTypedArray())
         .mapTo<VardaUnit>()
         .toList()
 }
@@ -103,13 +104,15 @@ fun setUnitUploaded(tx: Database.Transaction, vardaUnit: VardaUnit) {
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardajarjestamismuoto/koodi
-enum class VardaUnitProviderType(val vardaCode: String) {
+enum class VardaUnitProviderType(val vardaCode: String) : DatabaseEnum {
     MUNICIPAL("jm01"),
     MUNICIPAL_SCHOOL("jm01"),
     PURCHASED("jm02"),
     EXTERNAL_PURCHASED("jm02"),
     PRIVATE_SERVICE_VOUCHER("jm03"),
-    PRIVATE("jm04")
+    PRIVATE("jm04");
+
+    override val sqlType: String = "unit_provider_type"
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardatoimintamuoto/koodi

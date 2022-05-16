@@ -83,27 +83,27 @@ fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
 
 fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
-    val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
+    val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", childId)
-    units?.let { query.bindList("units", units) }
+    units?.let { query.bind("units", units.toTypedArray()) }
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
 fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
-        "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
+        "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", applicationId)
-    units?.let { query.bindList("units", units) }
+    units?.let { query.bind("units", units.toTypedArray()) }
 
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
 fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
-    val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
+    val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", guardianId)
-    units?.let { query.bindList("units", units) }
+    units?.let { query.bind("units", units.toTypedArray()) }
 
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
