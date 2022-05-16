@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.integration
 
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -150,6 +151,7 @@ class EspooInvoiceIntegrationClientTest {
         periodEnd = LocalDate.of(2020, 1, 31),
         product = EspooInvoiceProducts.Product.DAYCARE.key,
         unitId = DaycareId(UUID.randomUUID()),
+        daycareType = setOf(CareType.CENTRE),
         costCenter = "12345",
         subCostCenter = "01",
         savedCostCenter = "12345",
