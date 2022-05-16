@@ -133,7 +133,7 @@ WHERE run_at < :runBefore
     .execute()
 
 fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
-    val completedBefore = now.minusMonths(1)
+    val completedBefore = now.minusMonths(6)
     val completedCount = transaction { it.removeCompletedJobs(completedBefore) }
     logger.info { "Removed $completedCount async jobs completed before $completedBefore" }
 
