@@ -156,6 +156,10 @@ export class Element {
     return new Element(this.locator.locator(`[data-qa="${dataQa}"]`))
   }
 
+  findAllByDataQa(dataQa: string): ElementCollection {
+    return new ElementCollection(this.locator.locator(`[data-qa="${dataQa}"]`))
+  }
+
   findText(text: string | RegExp): Element {
     return new Element(this.locator.locator(`text=${text.toString()}`))
   }
