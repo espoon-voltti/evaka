@@ -608,7 +608,9 @@ const Absence = React.memo(function Absence({
   if (!markedByEmployee) {
     return (
       <span data-qa="absence">
-        {i18n.calendar.absences[absence] ?? i18n.calendar.absent}
+        {absence === 'SICKLEAVE'
+          ? i18n.calendar.absences.SICKLEAVE
+          : i18n.calendar.absent}
       </span>
     )
   }

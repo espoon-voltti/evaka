@@ -4,8 +4,7 @@
     "rootDir": ".",
     "composite": true,
     "jsx": "react",
-    "outDir": "../../dist/employee-mobile-frontend",
-    "suppressImplicitAnyIndexErrors": true
+    "outDir": "../../dist/employee-mobile-frontend"
   },
   "references": [
     { "path": "../lib-common" },

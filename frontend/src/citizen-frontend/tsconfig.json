@@ -5,8 +5,7 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/citizen-frontend",
-    "types": ["jest"],
-    "suppressImplicitAnyIndexErrors": true
+    "types": ["jest"]
   },
   "references": [
     { "path": "../lib-common" },

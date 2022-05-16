@@ -162,12 +162,13 @@ function getArrayErrorCount<T extends unknown[]>(
   return arrayErrors + itemErrors
 }
 
-export function getErrorCount<T>(errors: ErrorsOf<T>): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getErrorCount<E extends ErrorsOf<any>>(errors: E): number {
   if (typeof errors !== 'object') {
     return 0
   }
 
-  return (Object.keys(errors) as Array<keyof ErrorsOf<T>>).reduce<number>(
+  return (Object.keys(errors) as Array<keyof ErrorsOf<E>>).reduce<number>(
     (acc, key) => {
       const entry = errors[key]
       const isArr = isArrayErrors(entry)

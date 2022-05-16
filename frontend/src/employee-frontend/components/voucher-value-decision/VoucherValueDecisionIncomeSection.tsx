@@ -38,15 +38,14 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
   const { incomeTypes } = incomeTypeOptions.value
 
   const personIncome = (income: DecisionIncome | null) => {
-    if (!income || income.effect !== 'INCOME') {
+    if (!income) {
       return (
-        <span>
-          {
-            i18n.valueDecision.summary.income.details[
-              income ? income.effect : 'NOT_AVAILABLE'
-            ]
-          }
-        </span>
+        <span>{i18n.valueDecision.summary.income.details.NOT_AVAILABLE}</span>
+      )
+    }
+    if (income.effect !== 'INCOME') {
+      return (
+        <span>{i18n.valueDecision.summary.income.details[income.effect]}</span>
       )
     }
 

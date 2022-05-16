@@ -95,7 +95,9 @@ export default React.memo(function DuplicatePeople() {
                         .map(({ table, column }) => `${table}.${column}`)
                         .map((key) => (
                           <Th key={key}>
-                            {i18n.reports.duplicatePeople.columns[key] ?? key}
+                            {i18n.reports.duplicatePeople.columns[
+                              key as keyof typeof i18n.reports.duplicatePeople.columns
+                            ] ?? key}
                           </Th>
                         ))
                     : null}

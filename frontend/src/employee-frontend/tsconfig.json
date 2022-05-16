@@ -6,8 +6,7 @@
     "jsx": "react",
     "outDir": "../../dist/employee-frontend",
     "types": ["jest"],
-    "skipLibCheck": true,
-    "suppressImplicitAnyIndexErrors": true
+    "skipLibCheck": true
   },
   "references": [
     { "path": "../lib-common" },

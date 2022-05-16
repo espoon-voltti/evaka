@@ -536,7 +536,7 @@ export default function UnitEditor(props: Props): JSX.Element {
   const canApplyTypes = [
     {
       type: 'daycare',
-      checkboxI18n: 'canApplyDaycare',
+      checkboxI18n: 'canApplyDaycare' as const,
       field: 'daycareApplyPeriod',
       period: form.daycareApplyPeriod
     },
@@ -544,7 +544,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       ? [
           {
             type: 'preschool',
-            checkboxI18n: 'canApplyPreschool',
+            checkboxI18n: 'canApplyPreschool' as const,
             field: 'preschoolApplyPeriod',
             period: form.preschoolApplyPeriod
           }
@@ -552,7 +552,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       : []),
     {
       type: 'club',
-      checkboxI18n: 'canApplyClub',
+      checkboxI18n: 'canApplyClub' as const,
       field: 'clubApplyPeriod',
       period: form.clubApplyPeriod
     }
@@ -783,7 +783,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               <div key={type}>
                 <Checkbox
                   disabled={!props.editable}
-                  label={i18n.unitEditor.field[checkboxI18n] as string}
+                  label={i18n.unitEditor.field[checkboxI18n]}
                   checked={period !== null}
                   onChange={(canApply) => {
                     updateForm({
@@ -883,7 +883,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
         <OperationDaysContainer>
-          {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+          {([1, 2, 3, 4, 5, 6, 7] as const).map((day) => (
             <FixedSpaceColumn
               key={`"weekday-${day}"`}
               spacing="xs"

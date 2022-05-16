@@ -6,7 +6,10 @@ import * as _ from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationType,
+  PersonApplicationSummary
+} from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -111,8 +114,16 @@ export default React.memo(function PersonApplications({ id, open }: Props) {
   )
 })
 
-export function inferApplicationType(application: PersonApplicationSummary) {
-  const baseType = application.type.toUpperCase()
+export type InferredApplicationType =
+  | ApplicationType
+  | 'PRESCHOOL_WITH_DAYCARE'
+  | 'PREPARATORY_WITH_DAYCARE'
+  | 'PREPARATORY_EDUCATION'
+
+export function inferApplicationType(
+  application: PersonApplicationSummary
+): InferredApplicationType {
+  const baseType = application.type
   if (baseType !== 'PRESCHOOL') return baseType
   else if (application.connectedDaycare && !application.preparatoryEducation) {
     return 'PRESCHOOL_WITH_DAYCARE'

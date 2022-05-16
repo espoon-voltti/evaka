@@ -249,7 +249,7 @@ function validateApplication(
   terms: Term[] | undefined,
   i18n: Translations
 ): Record<string, string> {
-  const errors = {}
+  const errors: Record<string, string> = {}
 
   const {
     form: { child, preferences, otherPartner, otherChildren }

@@ -56,8 +56,7 @@ export default React.memo(function Heading({
                 <Gap size="s" />
                 <FixedSpaceColumn spacing="xxs">
                   {errors &&
-                    Object.keys(errors)
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    (Object.keys(errors) as (keyof ApplicationFormDataErrors)[])
                       .filter((section) => getErrorCount(errors[section]) > 0)
                       .map((section) => (
                         <React.Fragment key={section}>

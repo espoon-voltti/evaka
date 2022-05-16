@@ -28,6 +28,7 @@ import {
   createVasuTemplate,
   curriculumTypes,
   editVasuTemplate,
+  VasuErrorCode,
   vasuLanguages
 } from './api'
 
@@ -88,7 +89,10 @@ export default React.memo(function CreateOrEditTemplateModal({
             setErrorMessage({
               resolveLabel: i18n.common.ok,
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              text: (res?.errorCode && t.errorCodes[res.errorCode]) || '',
+              text:
+                (res?.errorCode &&
+                  t.errorCodes[res.errorCode as VasuErrorCode]) ||
+                '',
               title: i18n.common.error.saveFailed,
               type: 'error'
             })

@@ -4,8 +4,7 @@
     "rootDir": ".",
     "composite": true,
     "jsx": "react",
-    "outDir": "../../dist/lib-components",
-    "suppressImplicitAnyIndexErrors": true
+    "outDir": "../../dist/lib-components"
   },
   "references": [{ "path": "../lib-common" }, { "path": "../lib-icons" }]
 }
