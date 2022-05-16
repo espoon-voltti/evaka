@@ -75,6 +75,7 @@ export interface Daycare {
   language?: Language
   location?: Coordinate | null
   enabledPilotFeatures: PilotFeature[]
+  invoicedByMunicipality?: boolean | null
 }
 
 export interface ChildAttendance {
