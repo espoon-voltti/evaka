@@ -65,6 +65,7 @@ export default React.memo(function PersonVoucherValueDecisions({
         />
       ) : null}
       <AddButtonRow
+        data-qa="create-retroactive-value-decisions"
         text={i18n.personProfile.voucherValueDecisions.createRetroactive}
         onClick={openRetroactiveDecisionsModal}
         disabled={!!uiMode}
@@ -165,6 +166,7 @@ const Modal = React.memo(function Modal({
       <FixedSpaceRow justifyContent="center">
         <StyledLabel>{i18n.common.form.startDate}</StyledLabel>
         <DatePicker
+          data-qa="retroactive-value-decisions-from-date"
           locale={lang}
           date={date}
           onChange={setDate}
