@@ -62,6 +62,7 @@ dependencies {
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220328"))
+    api(platform("io.netty:netty-bom:4.1.77.Final"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.28.0"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.20"))
