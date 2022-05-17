@@ -140,9 +140,9 @@ INSERT INTO voucher_value_decision (
             .bind("serviceNeedFeeCoefficient", decision.serviceNeed.feeCoefficient)
             .bind("serviceNeedVoucherValueCoefficient", decision.serviceNeed.voucherValueCoefficient)
             .bind("serviceNeedFeeDescriptionFi", decision.serviceNeed.feeDescriptionFi)
-            .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed.feeDescriptionFi)
+            .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed.feeDescriptionSv)
             .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed.voucherValueDescriptionFi)
-            .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed.voucherValueDescriptionFi)
+            .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed.voucherValueDescriptionSv)
             .bind("sentAt", decision.sentAt)
             .execute()
     }
