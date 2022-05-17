@@ -13,23 +13,24 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdAndRole>
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGroupRole> {
     init {
-        oneOf.forEach { check(it.isGroupScopedRole()) { "Expected a group-scoped role, got $it" } }
+        oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, targets)
+            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, HelsinkiDateTime.now(), targets)
                 .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
                     acc[target]?.plusAssign(role)
                     acc
@@ -50,15 +51,16 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
 
     fun inPlacementGroupOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, ids ->
+        Query<ChildId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-    SELECT child_id AS id, role
-    FROM child_acl_view
-    WHERE employee_id = :userId
-    AND child_id = ANY(:ids)
+SELECT child_id AS id, role
+FROM employee_child_group_acl(:today)
+WHERE employee_id = :userId
+AND child_id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -67,16 +69,17 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
 
     fun inPlacementGroupOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, user, ids ->
+        Query<PedagogicalDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT pd.id, role
 FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+JOIN employee_group_child_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -85,17 +88,18 @@ AND pd.id = ANY(:ids)
 
     fun inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, ids ->
+        Query<AttachmentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT attachment.id, role
 FROM attachment
 JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+JOIN employee_group_child_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -104,16 +108,17 @@ AND attachment.id = ANY(:ids)
 
     fun inPlacementGroupOfChildOfVasuDocument() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, user, ids ->
+        Query<VasuDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT curriculum_document.id AS id, role
 FROM curriculum_document
-JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+JOIN employee_child_group_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()

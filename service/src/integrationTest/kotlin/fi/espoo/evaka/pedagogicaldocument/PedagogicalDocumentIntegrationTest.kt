@@ -75,9 +75,9 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
             tx.updateDaycareAclWithEmployee(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.updateDaycareAclWithEmployee(testDaycare.id, staffId, UserRole.STAFF)
+            tx.updateDaycareAclWithEmployee(testDaycare.id, groupStaffId, UserRole.STAFF)
 
             tx.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
-            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
             tx.insertEmployeeToDaycareGroupAcl(groupId, groupStaffId)
 
             val placementId = tx.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, endDate = LocalDate.MAX)

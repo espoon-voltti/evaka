@@ -77,7 +77,6 @@ class AccessControl(
                 UserRole.UNIT_SUPERVISOR,
                 UserRole.STAFF,
                 UserRole.SPECIAL_EDUCATION_TEACHER,
-                UserRole.GROUP_STAFF,
             )
         )
 
