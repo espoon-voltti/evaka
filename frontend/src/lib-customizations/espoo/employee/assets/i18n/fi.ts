@@ -1835,7 +1835,8 @@ export const fi = {
       number: 'Numero',
       status: 'Tila',
       createdAt: 'Luotu',
-      sentAt: 'Lähetetty'
+      sentAt: 'Lähetetty',
+      annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
     },
     buttons: {
       checked: (count: number) =>
@@ -1864,7 +1865,8 @@ export const fi = {
       number: 'Numero',
       status: 'Tila',
       createdAt: 'Luotu',
-      sentAt: 'Lähetetty'
+      sentAt: 'Lähetetty',
+      annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
     },
     buttons: {
       checked: (count: number) =>

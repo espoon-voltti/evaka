@@ -232,3 +232,4 @@ V231__message_account_indexes.sql
 V232__urgent_message_thread.sql
 V233__fix_voucher_value_decision_swedish_service_need_descriptions.sql
 V234__unauthorized_absence.sql
+V235__valueless_voucher_value_decisions.sql

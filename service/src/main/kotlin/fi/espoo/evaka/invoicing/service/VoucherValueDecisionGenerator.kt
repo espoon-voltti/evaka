@@ -177,68 +177,82 @@ private fun generateNewValueDecisions(
 
             val voucherChildPlacement = validPlacements.find { (child, _) -> child == voucherChild }?.second
 
-            voucherChildPlacement
-                // Skip the placement if it's not into a service voucher unit
-                ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unitId } }
-                ?.let { placement ->
-                    val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
+            voucherChildPlacement.let { placement ->
+                val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+                val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
+                val baseValue = getBaseValue(period, voucherChild.dateOfBirth, voucherValue)
+                val value =
+                    if (placement == null || serviceVoucherUnits.none { unit -> unit == placement.unitId }) 0
+                    else calculateVoucherValue(baseValue, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
 
-                    val siblingIndex = validPlacements
-                        .sortedByDescending { (child, _) -> child.dateOfBirth }
-                        .indexOfFirst { (child, _) -> child == voucherChild }
+                if (value == 0 || placement == null) return@let period to VoucherValueDecision.empty(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    decisionType = VoucherValueDecisionType.NORMAL,
+                    headOfFamilyId = family.headOfFamily,
+                    partnerId = family.partner,
+                    headOfFamilyIncome = income,
+                    partnerIncome = partnerIncome,
+                    childIncome = childIncome,
+                    familySize = family.getSize(),
+                    feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
+                    validFrom = period.start,
+                    validTo = period.end,
+                    child = voucherChild,
+                    baseCoPayment = baseCoPayment,
+                    siblingDiscount = price.siblingDiscountPercent(1),
+                    baseValue = baseValue,
+                )
 
-                    val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
-                    val coPaymentBeforeAlterations =
-                        calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
-                    val relevantFeeAlterations = feeAlterations.filter {
-                        DateRange(it.validFrom, it.validTo).contains(period)
-                    }
-                    val feeAlterationsWithEffects =
-                        toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
-                    val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
+                val siblingIndex = validPlacements
+                    .sortedByDescending { (child, _) -> child.dateOfBirth }
+                    .indexOfFirst { (child, _) -> child == voucherChild }
 
-                    val baseValue = getBaseValue(period, voucherChild.dateOfBirth, voucherValue)
-                    val value = calculateVoucherValue(baseValue, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
-
-                    // Do not generate a decision if the value towards the voucher unit is zero
-                    if (value == 0) null
-                    else period to VoucherValueDecision(
-                        id = VoucherValueDecisionId(UUID.randomUUID()),
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        decisionType = VoucherValueDecisionType.NORMAL,
-                        headOfFamilyId = family.headOfFamily,
-                        partnerId = family.partner,
-                        headOfFamilyIncome = income,
-                        partnerIncome = partnerIncome,
-                        childIncome = childIncome,
-                        familySize = family.getSize(),
-                        feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
-                        validFrom = period.start,
-                        validTo = period.end,
-                        child = voucherChild,
-                        placement = VoucherValueDecisionPlacement(placement.unitId, placement.type),
-                        serviceNeed = VoucherValueDecisionServiceNeed(
-                            placement.serviceNeed.feeCoefficient,
-                            placement.serviceNeed.voucherValueCoefficient,
-                            placement.serviceNeed.feeDescriptionFi,
-                            placement.serviceNeed.feeDescriptionSv,
-                            placement.serviceNeed.voucherValueDescriptionFi,
-                            placement.serviceNeed.voucherValueDescriptionSv
-                        ),
-                        baseCoPayment = baseCoPayment,
-                        siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
-                        coPayment = coPaymentBeforeAlterations,
-                        feeAlterations = toFeeAlterationsWithEffects(
-                            coPaymentBeforeAlterations,
-                            relevantFeeAlterations
-                        ),
-                        finalCoPayment = finalCoPayment,
-                        baseValue = baseValue,
-                        capacityFactor = capacityFactor,
-                        voucherValue = value
-                    )
+                val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
+                val coPaymentBeforeAlterations =
+                    calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
+                val relevantFeeAlterations = feeAlterations.filter {
+                    DateRange(it.validFrom, it.validTo).contains(period)
                 }
+                val feeAlterationsWithEffects =
+                    toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
+                val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
+
+                period to VoucherValueDecision(
+                    id = VoucherValueDecisionId(UUID.randomUUID()),
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    decisionType = VoucherValueDecisionType.NORMAL,
+                    headOfFamilyId = family.headOfFamily,
+                    partnerId = family.partner,
+                    headOfFamilyIncome = income,
+                    partnerIncome = partnerIncome,
+                    childIncome = childIncome,
+                    familySize = family.getSize(),
+                    feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
+                    validFrom = period.start,
+                    validTo = period.end,
+                    child = voucherChild,
+                    placement = VoucherValueDecisionPlacement(placement.unitId, placement.type),
+                    serviceNeed = VoucherValueDecisionServiceNeed(
+                        placement.serviceNeed.feeCoefficient,
+                        placement.serviceNeed.voucherValueCoefficient,
+                        placement.serviceNeed.feeDescriptionFi,
+                        placement.serviceNeed.feeDescriptionSv,
+                        placement.serviceNeed.voucherValueDescriptionFi,
+                        placement.serviceNeed.voucherValueDescriptionSv
+                    ),
+                    baseCoPayment = baseCoPayment,
+                    siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
+                    coPayment = coPaymentBeforeAlterations,
+                    feeAlterations = toFeeAlterationsWithEffects(
+                        coPaymentBeforeAlterations,
+                        relevantFeeAlterations
+                    ),
+                    finalCoPayment = finalCoPayment,
+                    baseValue = baseValue,
+                    capacityFactor = capacityFactor,
+                    voucherValue = value
+                )
+            }
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
         .map { (period, decision) -> decision.withValidity(period) }

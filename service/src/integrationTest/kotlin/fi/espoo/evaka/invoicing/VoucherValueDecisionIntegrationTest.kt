@@ -21,11 +21,13 @@ import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
+import fi.espoo.evaka.serviceneed.ServiceNeedController
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -189,14 +191,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newEndDate = now.toLocalDate().minusDays(1)
         updatePlacement(placementId, startDate, newEndDate)
+        sendAllValueDecisions()
 
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(endDate, decisions.first().validTo)
-        }
-
-        endDecisions(now = newEndDate.plusDays(1))
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
             assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
@@ -255,7 +251,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `value decision cleanup does nothing when child is placed into another voucher unit`() {
+    fun `value decision is replaced when child is placed into another voucher unit`() {
         createPlacement(startDate, endDate)
         sendAllValueDecisions()
 
@@ -267,17 +263,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testVoucherDaycare2.id)
-        endDecisions(now = newStartDate.plusDays(1))
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(2, decisions.size)
-            decisions
-                .find { it.status == VoucherValueDecisionStatus.SENT }!!
-                .let {
-                    assertEquals(startDate, it.validFrom)
-                    assertEquals(endDate, it.validTo)
-                }
-        }
 
         sendAllValueDecisions()
         getAllValueDecisions().sortedBy { it.validFrom }.let { decisions ->
@@ -306,7 +291,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, testDaycare.id)
-        endDecisions(now = newStartDate.plusDays(1))
+        sendAllValueDecisions()
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -327,7 +312,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         deletePlacement(placementId)
-        endDecisions(now = startDate)
+        sendAllValueDecisions()
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -349,7 +334,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val newStartDate = now.toLocalDate().minusDays(1)
         createPlacement(newStartDate, endDate, type = PlacementType.PRESCHOOL)
-        endDecisions(now = newStartDate.plusDays(1))
+        sendAllValueDecisions()
 
         getAllValueDecisions().let { decisions ->
             assertEquals(1, decisions.size)
@@ -519,6 +504,31 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         return data.get().first().id
     }
 
+    private fun addServiceNeed(
+        placementId: PlacementId,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        optionId: ServiceNeedOptionId
+    ) {
+        val body = ServiceNeedController.ServiceNeedCreateRequest(
+            placementId,
+            startDate,
+            endDate,
+            optionId,
+            false
+        )
+
+        http.post("/service-needs")
+            .asUser(adminUser)
+            .objectBody(body, mapper = jsonMapper)
+            .response()
+            .also { (_, res, _) ->
+                assertEquals(200, res.statusCode)
+            }
+
+        asyncJobRunner.runPendingJobsSync()
+    }
+
     private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
         val body = PlacementUpdateRequestBody(
             startDate = startDate,
@@ -609,15 +619,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .mapTo<VoucherValueDecision>()
                 .toList()
         }.shuffled() // randomize order to expose assumptions
-    }
-
-    private fun endDecisions(now: LocalDate) {
-        db.transaction {
-            voucherValueDecisionService.endDecisionsWithEndedPlacements(
-                it,
-                HelsinkiDateTime.of(now, LocalTime.of(12, 0))
-            )
-        }
     }
 
     private fun getPdfStatus(decisionId: VoucherValueDecisionId, user: AuthenticatedUser.Employee): Int {

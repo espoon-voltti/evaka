@@ -289,7 +289,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(28900, decision.baseCoPayment)
             // testChild_2 is older than testChild_1
             assertEquals(50, decision.siblingDiscount)
-            assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement.type)
+            assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement?.type)
             assertEquals(11600, decision.coPayment)
         }
     }
@@ -385,7 +385,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(4200, decision.baseCoPayment)
             // testChild_2 is older than testChild_1
             assertEquals(50, decision.siblingDiscount)
-            assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement.type)
+            assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, decision.placement?.type)
             assertEquals(0, decision.coPayment)
         }
     }

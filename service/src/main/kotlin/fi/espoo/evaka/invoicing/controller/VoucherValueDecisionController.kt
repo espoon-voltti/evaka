@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
+import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
@@ -276,7 +277,9 @@ fun sendVoucherValueDecisions(
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
-    val validIds = decisions.map { it.id }
+    val (emptyDecisions, validDecisions) = decisions.partition { it.isEmpty() }
+    tx.deleteValueDecisions(emptyDecisions.map { it.id })
+    val validIds = validDecisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
     asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
 }

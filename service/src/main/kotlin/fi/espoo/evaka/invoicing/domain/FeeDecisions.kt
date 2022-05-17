@@ -226,6 +226,9 @@ data class FeeDecisionSummary(
     val created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) : Mergeable<PersonBasic, FeeDecisionSummary> {
     override fun withChildren(children: List<PersonBasic>) = this.copy(children = children)
+
+    val annullingDecision
+        get() = this.children.isEmpty()
 }
 
 private interface Mergeable<Child, Decision : Mergeable<Child, Decision>> {

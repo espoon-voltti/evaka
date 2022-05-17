@@ -207,6 +207,7 @@ export type FeeDecisionStatus =
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 */
 export interface FeeDecisionSummary {
+  annullingDecision: boolean
   approvedAt: Date | null
   children: PersonBasic[]
   created: Date
@@ -666,9 +667,9 @@ export interface VoucherValueDecision {
   id: UUID
   partnerId: UUID | null
   partnerIncome: DecisionIncome | null
-  placement: VoucherValueDecisionPlacement
+  placement: VoucherValueDecisionPlacement | null
   sentAt: Date | null
-  serviceNeed: VoucherValueDecisionServiceNeed
+  serviceNeed: VoucherValueDecisionServiceNeed | null
   siblingDiscount: number
   status: VoucherValueDecisionStatus
   validFrom: LocalDate
@@ -768,6 +769,7 @@ export type VoucherValueDecisionStatus =
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 */
 export interface VoucherValueDecisionSummary {
+  annullingDecision: boolean
   approvedAt: Date | null
   child: PersonBasic
   created: Date
