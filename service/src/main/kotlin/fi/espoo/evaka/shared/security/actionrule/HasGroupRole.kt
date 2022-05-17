@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -58,45 +56,6 @@ SELECT child_id AS id, role
 FROM employee_child_group_acl(:today)
 WHERE employee_id = :userId
 AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
-
-    fun inPlacementGroupOfChildOfPedagogicalDocument() = DatabaseActionRule(
-        this,
-        Query<PedagogicalDocumentId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
-SELECT pd.id, role
-FROM pedagogical_document pd
-JOIN employee_group_child_acl(:today) USING (child_id)
-WHERE employee_id = :userId
-AND pd.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
-
-    fun inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
-SELECT attachment.id, role
-FROM attachment
-JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN employee_group_child_acl(:today) USING (child_id)
-WHERE employee_id = :userId
-AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
