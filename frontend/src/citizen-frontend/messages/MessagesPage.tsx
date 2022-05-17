@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
@@ -42,6 +43,8 @@ const StyledFlex = styled(AdaptiveFlex)`
 `
 
 export default React.memo(function MessagesPage() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { accountId, loadAccount, selectedThread, refreshThreads, threads } =
     useContext(MessageContext)
   useEffect(() => {
@@ -57,6 +60,21 @@ export default React.memo(function MessagesPage() {
     [t.messages.staffAnnotation]
   )
 
+  useEffect(() => {
+    setEditorVisible(searchParams.get('editorVisible') === 'true')
+  }, [setEditorVisible, searchParams])
+
+  const showEditor = useCallback(
+    (setEditorVisible: boolean) => {
+      if (!setEditorVisible) {
+        navigate('/messages')
+      } else {
+        navigate(`/messages?editorVisible=true`)
+      }
+    },
+    [navigate]
+  )
+
   return (
     <FullHeightContainer>
       <UnwrapResult result={combine(accountId, receivers)}>
@@ -65,7 +83,7 @@ export default React.memo(function MessagesPage() {
             <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
               <ThreadList
                 accountId={id}
-                setEditorVisible={setEditorVisible}
+                setEditorVisible={showEditor}
                 newMessageButtonEnabled={!editorVisible}
               />
               {selectedThread ? (
