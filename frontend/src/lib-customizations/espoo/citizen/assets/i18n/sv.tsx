@@ -106,7 +106,9 @@ const sv: Translations = {
       messages: 'Meddelanden',
       calendar: 'Kalender',
       pedagogicalDocuments: 'Tillväxt och inlärning',
-      children: 'Barn'
+      children: 'Barn',
+      messageCount: (n: number) =>
+        n > 1 ? `${n} nya meddelanden` : `${n} nytt meddelande`
     },
     lang: {
       fi: 'Suomeksi',

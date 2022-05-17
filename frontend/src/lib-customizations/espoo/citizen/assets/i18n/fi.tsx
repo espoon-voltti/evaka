@@ -105,7 +105,9 @@ export default {
       messages: 'Viestit',
       calendar: 'Kalenteri',
       pedagogicalDocuments: 'Kasvu ja oppiminen',
-      children: 'Lapset'
+      children: 'Lapset',
+      messageCount: (n: number) =>
+        n > 1 ? `${n} uutta viestiä` : `${n} uusi viesti`
     },
     lang: {
       fi: 'Suomeksi',

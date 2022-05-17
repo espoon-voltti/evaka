@@ -106,7 +106,9 @@ const en: Translations = {
       messages: 'Messages',
       calendar: 'Calendar',
       pedagogicalDocuments: 'Growth and learning',
-      children: 'Children'
+      children: 'Children',
+      messageCount: (n: number) =>
+        n > 1 ? `${n} new messages` : `${n} new message`
     },
     lang: {
       fi: 'Suomeksi',

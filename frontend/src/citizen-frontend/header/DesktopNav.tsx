@@ -66,7 +66,13 @@ export default React.memo(function DesktopNav({
                     <StyledNavLink to="/messages" data-qa="nav-messages">
                       {t.header.nav.messages}{' '}
                       {unreadMessagesCount > 0 ? (
-                        <CircledChar>{unreadMessagesCount}</CircledChar>
+                        <CircledChar
+                          aria-label={`${t.header.nav.messageCount(
+                            unreadMessagesCount
+                          )}`}
+                        >
+                          {unreadMessagesCount}
+                        </CircledChar>
                       ) : (
                         ''
                       )}
