@@ -66,6 +66,14 @@ export interface EditFollowupEntryRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.GetVasuDocumentResponse
+*/
+export interface GetVasuDocumentResponse {
+  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
+  vasu: VasuDocument
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
 */
 export interface GetVasuDocumentResponse {
@@ -169,6 +177,7 @@ export interface VasuDocumentSummary {
 */
 export interface VasuGuardian {
   firstName: string
+  hasGivenPermissionToShare: boolean
   id: UUID
   lastName: string
 }

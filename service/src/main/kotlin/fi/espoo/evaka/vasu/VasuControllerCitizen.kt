@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -65,6 +67,20 @@ class VasuControllerCitizen(
                     permittedActions.mapKeys { it.key.second }
                 )
             }
+        }
+    }
+
+    @PostMapping("/{id}/give-permission-to-share")
+    fun givePermissionToShare(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: VasuDocumentId
+    ) {
+        Audit.VasuDocumentGivePermissionToShareByGuardian.log(id, user.rawId())
+        accessControl.requirePermissionFor(user, Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE, id)
+
+        return db.connect { dbc ->
+            dbc.transaction { it.setVasuGuardianHasGivenPermissionToShare(id, PersonId(user.rawId())) }
         }
     }
 }

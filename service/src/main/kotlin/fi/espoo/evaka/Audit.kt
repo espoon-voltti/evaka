@@ -305,6 +305,7 @@ enum class Audit(
     VasuDocumentCreate("evaka.vasu-document.create"),
     VasuDocumentRead("evaka.vasu-document.read"),
     VasuDocumentReadByGuardian("evaka.vasu-document.read-by-guardian"),
+    VasuDocumentGivePermissionToShareByGuardian("evaka.vasu-document.give-permission-to-share-by-guardian"),
     VasuDocumentUpdate("evaka.vasu-document.update"),
     VasuDocumentEventCreate("evaka.vasu-document-event.create"),
     VasuDocumentEditFollowupEntry("evaka.vasu-document.edit-followup"),

@@ -172,21 +172,21 @@ AND g.guardian_id = :guardianId
     )
 
     fun guardianOfChildOfVasu() = DatabaseActionRule(
-            this,
-            Query<VasuDocumentId> { tx, citizenId, ids ->
-                tx.createQuery(
-                        """
+        this,
+        Query<VasuDocumentId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
 SELECT id
 FROM curriculum_document cd
 JOIN guardian g ON cd.child_id = g.child_id
 WHERE cd.id = ANY(:ids)
 AND g.guardian_id = :userId
                 """.trimIndent()
-                )
-                        .bind("ids", ids.toTypedArray())
-                        .bind("userId", citizenId)
-                        .mapTo()
-            }
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
     )
 
     fun guardianOfChildOfPlacement() = DatabaseActionRule(

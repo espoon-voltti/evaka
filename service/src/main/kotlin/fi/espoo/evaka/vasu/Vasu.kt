@@ -114,7 +114,8 @@ data class VasuChild(
 data class VasuGuardian(
     val id: PersonId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val hasGivenPermissionToShare: Boolean = false
 )
 
 @Json

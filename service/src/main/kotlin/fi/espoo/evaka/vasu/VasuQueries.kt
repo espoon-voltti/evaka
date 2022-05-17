@@ -6,12 +6,14 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -327,4 +329,33 @@ fun Database.Read.getVasuFollowupEntry(id: VasuDocumentFollowupEntryId): Followu
         .bind("entryId", entryId.toString())
         .map { row -> row.mapJsonColumn<FollowupEntry>("entry") }
         .one()
+}
+
+fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId, guardianId: PersonId) {
+    val currentBasics = getVasuDocumentMaster(docId)?.basics
+        ?: throw NotFound("Vasu document not found!")
+
+    val (guardian, otherGuardians) = currentBasics.guardians.partition {
+            g ->
+        g.id == guardianId
+    }
+
+    if (guardian.size != 1) throw NotFound("Document guardians do not contain the person giving permission")
+    createUpdate(
+        """
+UPDATE curriculum_document
+SET basics = :basics
+WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", docId)
+        .bind(
+            "basics",
+            currentBasics.copy(
+                guardians = otherGuardians + guardian[0].copy(
+                    hasGivenPermissionToShare = true
+                )
+            )
+        )
+        .execute()
 }
