@@ -27,8 +27,13 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
 
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, HelsinkiDateTime.now(), targets)
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, now, targets)
                 .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
                     acc[target]?.plusAssign(role)
                     acc
@@ -90,10 +95,11 @@ AND curriculum_document.id = ANY(:ids)
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
+                now: HelsinkiDateTime,
                 targets: Set<VasuDocumentFollowupEntryId>
             ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasGroupRole>> {
                 val vasuDocuments =
-                    inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
+                    inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
 

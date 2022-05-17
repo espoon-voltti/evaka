@@ -16,20 +16,22 @@ import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<T>
+private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
 object IsEmployee : ActionRuleParams<IsEmployee> {
     private data class Query<I>(private val filter: FilterByEmployee<I>) : DatabaseActionRule.Query<I, IsEmployee> {
         override fun execute(
             tx: Database.Read,
             user: AuthenticatedUser,
+            now: HelsinkiDateTime,
             targets: Set<I>
         ): Map<I, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
-            is AuthenticatedUser.Employee -> filter(tx, user, targets).associateWith { Deferred }
+            is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred }
             else -> emptyMap()
         }
 
@@ -50,7 +52,7 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
 
     fun ownerOfMobileDevice() = DatabaseActionRule(
         this,
-        Query<MobileDeviceId> { tx, user, ids ->
+        Query<MobileDeviceId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -67,7 +69,7 @@ AND id = ANY(:ids)
 
     fun ownerOfPairing() = DatabaseActionRule(
         this,
-        Query<PairingId> { tx, user, ids ->
+        Query<PairingId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -84,7 +86,7 @@ AND id = ANY(:ids)
 
     fun authorOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
-        Query<VasuDocumentFollowupEntryId> { tx, user, ids ->
+        Query<VasuDocumentFollowupEntryId> { tx, user, _, ids ->
             // TODO: replace naive loop with a batch operation
             ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id.raw }
         }
@@ -92,7 +94,7 @@ AND id = ANY(:ids)
 
     fun authorOfApplicationNote() = DatabaseActionRule(
         this,
-        Query<ApplicationNoteId> { tx, user, ids ->
+        Query<ApplicationNoteId> { tx, user, _, ids ->
             tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
@@ -102,16 +104,16 @@ AND id = ANY(:ids)
 
     fun hasPermissionForMessageDraft() = DatabaseActionRule(
         this,
-        Query<MessageDraftId> { tx, employee, ids -> tx.filterPermittedMessageDrafts(employee, ids) }
+        Query<MessageDraftId> { tx, employee, _, ids -> tx.filterPermittedMessageDrafts(employee, ids) }
     )
 
     fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, employee, ids -> tx.filterPermittedAttachmentsThroughMessageContent(employee, ids) }
+        Query<AttachmentId> { tx, employee, _, ids -> tx.filterPermittedAttachmentsThroughMessageContent(employee, ids) }
     )
 
     fun hasPermissionForAttachmentThroughMessageDraft() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, employee, ids -> tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids) }
+        Query<AttachmentId> { tx, employee, _, ids -> tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids) }
     )
 }

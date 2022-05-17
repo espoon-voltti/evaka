@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
 /**
@@ -70,7 +71,7 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
 
     interface Query<T, P> {
         fun classifier(): Any
-        fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, Deferred<P>>
+        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
     }
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision

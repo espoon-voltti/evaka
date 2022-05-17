@@ -15,10 +15,11 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
+private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
 data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
@@ -27,8 +28,18 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     }
 
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
-            is AuthenticatedUser.MobileDevice -> filter(tx, user.id, targets).associateWith { Deferred(user.authLevel) }
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
+            is AuthenticatedUser.MobileDevice -> filter(
+                tx,
+                user.id,
+                now,
+                targets
+            ).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
 
@@ -52,7 +63,7 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, mobileId, ids ->
+        Query<ChildId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT child_id
@@ -70,7 +81,7 @@ AND child_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, mobileId, ids ->
+        Query<ChildDailyNoteId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT cdn.id
@@ -89,7 +100,7 @@ AND cdn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, mobileId, ids ->
+        Query<ChildStickyNoteId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT csn.id
@@ -108,7 +119,7 @@ AND csn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, mobileId, ids ->
+        Query<ChildImageId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT img.id
@@ -127,7 +138,7 @@ AND img.id = ANY(:ids)
 
     fun inUnitOfGroup() = DatabaseActionRule(
         this,
-        Query<GroupId> { tx, mobileId, ids ->
+        Query<GroupId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT g.id
@@ -145,7 +156,7 @@ AND g.id = ANY(:ids)
 
     fun inUnitOfGroupNote() = DatabaseActionRule(
         this,
-        Query<GroupNoteId> { tx, mobileId, ids ->
+        Query<GroupNoteId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT gn.id
@@ -164,7 +175,7 @@ AND gn.id = ANY(:ids)
 
     fun inUnit() = DatabaseActionRule(
         this,
-        Query<DaycareId> { tx, mobileId, ids ->
+        Query<DaycareId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT daycare_id AS id

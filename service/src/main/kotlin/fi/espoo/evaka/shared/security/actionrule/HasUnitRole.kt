@@ -33,13 +33,14 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetUnitRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetUnitRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdAndRole>
 
 data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitRole> {
     init {
@@ -49,8 +50,13 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
 
     private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles<T>) :
         DatabaseActionRule.Query<T, HasUnitRole> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getUnitRoles(tx, user, targets)
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {
+            is AuthenticatedUser.Employee -> getUnitRoles(tx, user, now, targets)
                 .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
                     acc[target]?.plusAssign(role)
                     acc
@@ -76,7 +82,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
 
     fun inPlacementPlanUnitOfApplication() = DatabaseActionRule(
         this,
-        Query<ApplicationId> { tx, user, ids ->
+        Query<ApplicationId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT av.id, role
@@ -95,7 +101,7 @@ AND av.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfAssistanceAction() = DatabaseActionRule(
         this,
-        Query<AssistanceActionId> { tx, user, ids ->
+        Query<AssistanceActionId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT ac.id, role
@@ -113,7 +119,7 @@ AND ac.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfAssistanceNeed() = DatabaseActionRule(
         this,
-        Query<AssistanceNeedId> { tx, user, ids ->
+        Query<AssistanceNeedId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT an.id, role
@@ -131,7 +137,7 @@ AND an.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfBackupCare() = DatabaseActionRule(
         this,
-        Query<BackupCareId> { tx, user, ids ->
+        Query<BackupCareId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT bc.id, role
@@ -149,7 +155,7 @@ AND bc.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfBackupPickup() = DatabaseActionRule(
         this,
-        Query<BackupPickupId> { tx, user, ids ->
+        Query<BackupPickupId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT bp.id, role
@@ -167,7 +173,7 @@ AND bp.id = ANY(:ids)
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, ids ->
+        Query<ChildId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT child_id AS id, role
@@ -184,7 +190,7 @@ AND child_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, user, ids ->
+        Query<ChildDailyNoteId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT cdn.id, role
@@ -202,7 +208,7 @@ AND cdn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, user, ids ->
+        Query<ChildStickyNoteId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT csn.id, role
@@ -220,7 +226,7 @@ AND csn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, user, ids ->
+        Query<ChildImageId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT img.id, role
@@ -238,7 +244,7 @@ AND img.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfDecision() = DatabaseActionRule(
         this,
-        Query<DecisionId> { tx, user, ids ->
+        Query<DecisionId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT decision.id, role
@@ -256,7 +262,7 @@ AND decision.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfParentship() = DatabaseActionRule(
         this,
-        Query<ParentshipId> { tx, user, ids ->
+        Query<ParentshipId> { tx, user, _, ids ->
             tx.createQuery(
 
                 """
@@ -275,7 +281,7 @@ AND fridge_child.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPartnership() = DatabaseActionRule(
         this,
-        Query<PartnershipId> { tx, user, ids ->
+        Query<PartnershipId> { tx, user, _, ids ->
             tx.createQuery(
 
                 """
@@ -294,7 +300,7 @@ AND partnership_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, user, ids ->
+        Query<PedagogicalDocumentId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT pd.id, role
@@ -312,7 +318,7 @@ AND pd.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, ids ->
+        Query<AttachmentId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT attachment.id, role
@@ -331,7 +337,7 @@ AND attachment.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPerson() = DatabaseActionRule(
         this,
-        Query<PersonId> { tx, user, ids ->
+        Query<PersonId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT person_id AS id, role
@@ -348,7 +354,7 @@ AND person_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPlacement() = DatabaseActionRule(
         this,
-        Query<PlacementId> { tx, user, ids ->
+        Query<PlacementId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT placement.id, role
@@ -366,7 +372,7 @@ AND placement.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfServiceNeed() = DatabaseActionRule(
         this,
-        Query<ServiceNeedId> { tx, user, ids ->
+        Query<ServiceNeedId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT service_need.id, role
@@ -384,7 +390,7 @@ AND service_need.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfVasuDocument() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, user, ids ->
+        Query<VasuDocumentId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT curriculum_document.id AS id, role
@@ -406,10 +412,11 @@ AND curriculum_document.id = ANY(:ids)
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
+                now: HelsinkiDateTime,
                 targets: Set<VasuDocumentFollowupEntryId>
             ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasUnitRole>> {
                 val vasuDocuments =
-                    inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
+                    inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
 
@@ -419,7 +426,7 @@ AND curriculum_document.id = ANY(:ids)
 
     fun inPreferredUnitOfApplication() = DatabaseActionRule(
         this,
-        Query<ApplicationId> { tx, user, ids ->
+        Query<ApplicationId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT av.id, role
@@ -437,7 +444,7 @@ AND av.id = ANY(:ids)
 
     fun inUnitOfGroup() = DatabaseActionRule(
         this,
-        Query<GroupId> { tx, user, ids ->
+        Query<GroupId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT g.id, role
@@ -455,7 +462,7 @@ AND g.id = ANY(:ids)
 
     fun inUnitOfGroupNote() = DatabaseActionRule(
         this,
-        Query<GroupNoteId> { tx, user, ids ->
+        Query<GroupNoteId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT gn.id, role
@@ -474,7 +481,7 @@ AND gn.id = ANY(:ids)
 
     fun inUnitOfGroupPlacement() = DatabaseActionRule(
         this,
-        Query<GroupPlacementId> { tx, user, ids ->
+        Query<GroupPlacementId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT daycare_group_placement.id, role
@@ -493,7 +500,7 @@ AND daycare_group_placement.id = ANY(:ids)
 
     fun inUnitOfMobileDevice() = DatabaseActionRule(
         this,
-        Query<MobileDeviceId> { tx, user, ids ->
+        Query<MobileDeviceId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT d.id, role
@@ -511,7 +518,7 @@ AND d.id = ANY(:ids)
 
     fun inUnitOfPairing() = DatabaseActionRule(
         this,
-        Query<PairingId> { tx, user, ids ->
+        Query<PairingId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT p.id, role
@@ -529,7 +536,7 @@ AND p.id = ANY(:ids)
 
     fun inUnit() = DatabaseActionRule(
         this,
-        Query<DaycareId> { tx, user, ids ->
+        Query<DaycareId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT daycare_id AS id, role
@@ -546,7 +553,7 @@ AND daycare_id = ANY(:ids)
 
     fun inUnitOfApplicationAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, ids ->
+        Query<AttachmentId> { tx, user, _, ids ->
             tx.createQuery(
                 """
 SELECT attachment.id, role

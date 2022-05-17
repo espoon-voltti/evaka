@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
@@ -137,6 +138,7 @@ class AccessControl(
         if (user.isAdmin) {
             return targets.associateWith { AccessControlDecision.PermittedToAdmin }
         }
+        val now = HelsinkiDateTime.now()
         val decisions = Decisions(targets.toSet())
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
         while (rules.hasNext() && decisions.undecided.isNotEmpty()) {
@@ -152,7 +154,7 @@ class AccessControl(
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as DatabaseActionRule.Query<T, Any?>
-                    dbc.read { tx -> query.execute(tx, user, decisions.undecided) }
+                    dbc.read { tx -> query.execute(tx, user, now, decisions.undecided) }
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
             }
@@ -181,6 +183,7 @@ class AccessControl(
         if (user.isAdmin) {
             return targets.associateWith { allActions }
         }
+        val now = HelsinkiDateTime.now()
         val undecidedActions = EnumSet.allOf(actionClass)
         val permittedActions = EnumSet.noneOf(actionClass)
         for (action in allActions) {
@@ -214,7 +217,7 @@ class AccessControl(
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
             @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(tx, user, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
+            val deferred = ruleType.query.execute(tx, user, now, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
