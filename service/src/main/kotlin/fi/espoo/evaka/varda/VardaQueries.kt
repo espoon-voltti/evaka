@@ -275,7 +275,7 @@ WITH child_fees AS (
         JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id
             AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
     WHERE d.upload_children_to_varda = true
-        AND d.invoiced_by_municipality = true
+        AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
         AND vvd.status = :voucherValueDecisionStatus
     GROUP BY service_need_id, p.child_id
 )
