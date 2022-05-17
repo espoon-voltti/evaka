@@ -72,11 +72,12 @@ export interface AbsenceGroup {
 export type AbsenceType = 
   | 'OTHER_ABSENCE'
   | 'SICKLEAVE'
-  | 'UNKNOWN_ABSENCE'
   | 'PLANNED_ABSENCE'
-  | 'PARENTLEAVE'
+  | 'UNKNOWN_ABSENCE'
   | 'FORCE_MAJEURE'
+  | 'PARENTLEAVE'
   | 'FREE_ABSENCE'
+  | 'UNAUTHORIZED_ABSENCE'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceUpsert
