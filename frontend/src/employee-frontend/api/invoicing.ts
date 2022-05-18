@@ -4,7 +4,6 @@
 
 import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
-import { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Absence } from 'lib-common/generated/api-types/daycare'
@@ -152,18 +151,9 @@ export async function getFeeDecision(
         validDuring: DateRange.parseJson(json.validDuring),
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
         partner: json.partner ? deserializePersonDetailed(json.partner) : null,
-        headOfFamilyIncome: json.headOfFamilyIncome
-          ? deserializeIncome(json.headOfFamilyIncome)
-          : null,
-        partnerIncome: json.partnerIncome
-          ? deserializeIncome(json.partnerIncome)
-          : null,
         children: json.children.map((childJson) => ({
           ...childJson,
-          child: deserializePersonDetailed(childJson.child),
-          childIncome: childJson.childIncome
-            ? deserializeIncome(childJson.childIncome)
-            : null
+          child: deserializePersonDetailed(childJson.child)
         })),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         financeDecisionHandlerFirstName: json.financeDecisionHandlerFirstName
@@ -193,15 +183,6 @@ export async function getVoucherValueDecision(
         validTo: LocalDate.parseNullableIso(json.validTo),
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
         partner: json.partner ? deserializePersonDetailed(json.partner) : null,
-        headOfFamilyIncome: json.headOfFamilyIncome
-          ? deserializeIncome(json.headOfFamilyIncome)
-          : null,
-        partnerIncome: json.partnerIncome
-          ? deserializeIncome(json.partnerIncome)
-          : null,
-        childIncome: json.childIncome
-          ? deserializeIncome(json.childIncome)
-          : null,
         child: deserializePersonDetailed(json.child),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
@@ -289,21 +270,12 @@ export async function getPersonFeeDecisions(
           sentAt: json.sentAt ? new Date(json.sentAt) : null,
           approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
           created: new Date(json.created),
-          headOfFamilyIncome: json.headOfFamilyIncome
-            ? deserializeIncome(json.headOfFamilyIncome)
-            : null,
-          partnerIncome: json.partnerIncome
-            ? deserializeIncome(json.partnerIncome)
-            : null,
           children: json.children.map((childJson) => ({
             ...childJson,
             child: {
               ...childJson.child,
               dateOfBirth: LocalDate.parseIso(childJson.child.dateOfBirth)
-            },
-            childIncome: childJson.childIncome
-              ? deserializeIncome(childJson.childIncome)
-              : null
+            }
           }))
         }))
       )
@@ -634,10 +606,4 @@ const deserializePersonDetailed = (
   ...json,
   dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
   dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
-})
-
-const deserializeIncome = (json: JsonOf<DecisionIncome>): DecisionIncome => ({
-  ...json,
-  validFrom: LocalDate.parseNullableIso(json.validFrom),
-  validTo: LocalDate.parseNullableIso(json.validTo)
 })
