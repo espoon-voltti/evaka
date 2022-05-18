@@ -442,8 +442,16 @@ class FeeDecisionsSection extends Section {
 }
 
 class VoucherValueDecisionsSection extends Section {
-  #voucherValueDecisionSentAt = this.findAll(
-    `[data-qa="voucher-value-decision-sent-at"]`
+  #voucherValueDecisionSentAt = this.findAllByDataQa(
+    'voucher-value-decision-sent-at'
+  )
+
+  #createRetroactiveDecisionsBtn = this.findByDataQa(
+    'create-retroactive-value-decisions'
+  )
+
+  #voucherValueDecisions = this.findAllByDataQa(
+    'table-voucher-value-decision-row'
   )
 
   async checkVoucherValueDecisionSentAt(
@@ -454,6 +462,21 @@ class VoucherValueDecisionsSection extends Section {
       () => this.#voucherValueDecisionSentAt.nth(nth).innerText,
       expectedSentAt.format('dd.MM.yyyy')
     )
+  }
+
+  async checkVoucherValueDecisionCount(expectedCount: number) {
+    await waitUntilEqual(
+      () => this.#voucherValueDecisions.count(),
+      expectedCount
+    )
+  }
+
+  async createRetroactiveDecisions(from: LocalDate) {
+    await this.#createRetroactiveDecisionsBtn.click()
+    await new TextInput(
+      this.findByDataQa('retroactive-value-decisions-from-date')
+    ).type(from.format())
+    await this.findByDataQa('modal-okBtn').click()
   }
 }
 

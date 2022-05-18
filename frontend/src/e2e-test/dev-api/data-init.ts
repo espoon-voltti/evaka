@@ -20,7 +20,8 @@ import {
   enduserChildFixturePorriHatterRestricted,
   familyWithDeadGuardian,
   enduserDeceasedChildFixture,
-  enduserNonSsnChildFixture
+  enduserNonSsnChildFixture,
+  daycareFixturePrivateVoucher
 } from './fixtures'
 
 import * as devApi from '.'
@@ -29,6 +30,7 @@ const areaAndPersonFixtures = {
   careAreaFixture,
   clubFixture,
   daycareFixture,
+  daycareFixturePrivateVoucher,
   preschoolFixture,
   enduserGuardianFixture,
   enduserChildFixtureJari,
@@ -59,6 +61,10 @@ export const initializeAreaAndPersonData = async (): Promise<
     .save()
   await Fixture.daycare()
     .with(areaAndPersonFixtures.daycareFixture)
+    .careArea(careArea)
+    .save()
+  await Fixture.daycare()
+    .with(areaAndPersonFixtures.daycareFixturePrivateVoucher)
     .careArea(careArea)
     .save()
   await Fixture.daycare()

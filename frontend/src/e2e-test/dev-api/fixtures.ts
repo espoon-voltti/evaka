@@ -181,6 +181,37 @@ export const daycare2Fixture: Daycare = {
   enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
 }
 
+export const daycareFixturePrivateVoucher: Daycare = {
+  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
+  careAreaId: careAreaFixture.id,
+  name: 'PS-yksikkö',
+  type: ['CENTRE'],
+  costCenter: '31500',
+  streetAddress: 'Kamreerintie 1',
+  postalCode: '02210',
+  postOffice: 'Espoo',
+  decisionDaycareName: 'Päiväkoti päätöksellä',
+  decisionPreschoolName: 'Päiväkoti päätöksellä',
+  decisionHandler: 'Käsittelijä',
+  decisionHandlerAddress: 'Käsittelijän osoite',
+  providerType: 'PRIVATE_SERVICE_VOUCHER',
+  operationDays: [1, 2, 3, 4, 5],
+  roundTheClock: true,
+  location: {
+    lat: 60.20377343765089,
+    lon: 24.655715743526994
+  },
+  enabledPilotFeatures: [
+    'MESSAGING',
+    'MOBILE',
+    'RESERVATIONS',
+    'VASU_AND_PEDADOC',
+    'MOBILE_MESSAGING',
+    'PLACEMENT_TERMINATION'
+  ],
+  invoicedByMunicipality: false
+}
+
 export const preschoolFixture: Daycare = {
   id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
   careAreaId: careAreaFixture.id,

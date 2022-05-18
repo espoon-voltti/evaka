@@ -7,12 +7,19 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
+  insertDaycarePlacementFixtures,
+  insertDefaultServiceNeedOptions,
   insertFeeDecisionFixtures,
+  insertFeeThresholds,
+  insertParentshipFixtures,
   insertVoucherValueDecisionFixtures,
+  insertVoucherValues,
   resetDatabase
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
+  createDaycarePlacementFixture,
+  daycareFixturePrivateVoucher,
   daycareFixture,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
@@ -30,6 +37,7 @@ let guardianPage: GuardianInformationPage
 
 beforeEach(async () => {
   await resetDatabase()
+  await insertDefaultServiceNeedOptions()
   await initializeAreaAndPersonData()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
@@ -106,5 +114,46 @@ describe('Person finance decisions', () => {
     await voucherValueDecisions.checkVoucherValueDecisionSentAt(0, sentAtThird)
     await voucherValueDecisions.checkVoucherValueDecisionSentAt(1, sentAtSecond)
     await voucherValueDecisions.checkVoucherValueDecisionSentAt(2, sentAtFirst)
+  })
+
+  test('Retroactive voucher value decisions can be generated on demand', async () => {
+    const from = LocalDate.today().subMonths(2)
+
+    await insertFeeThresholds(Fixture.feeThresholds().data)
+    await insertVoucherValues()
+
+    await insertParentshipFixtures([
+      {
+        childId: enduserChildFixtureKaarina.id,
+        headOfChildId: enduserGuardianFixture.id,
+        startDate: enduserChildFixtureKaarina.dateOfBirth,
+        endDate: '2099-01-01'
+      }
+    ])
+
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        enduserChildFixtureKaarina.id,
+        daycareFixturePrivateVoucher.id,
+        from.formatIso(),
+        LocalDate.today().formatIso()
+      )
+    ])
+
+    const adminUser = await Fixture.employeeAdmin().save()
+    page = await Page.open({ acceptDownloads: true })
+    await employeeLogin(page, adminUser.data)
+    await page.goto(config.employeeUrl)
+    guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+
+    const voucherValueDecisions = await guardianPage.openCollapsible(
+      'voucherValueDecisions'
+    )
+
+    await voucherValueDecisions.checkVoucherValueDecisionCount(0)
+    await voucherValueDecisions.createRetroactiveDecisions(from)
+    await voucherValueDecisions.checkVoucherValueDecisionCount(1)
   })
 })
