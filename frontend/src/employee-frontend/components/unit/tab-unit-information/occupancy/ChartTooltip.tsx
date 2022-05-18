@@ -62,9 +62,6 @@ export const ChartTooltip = React.memo(function ChartTooltip({
   if (pos.x + tooltipWidth > rect.right) {
     pos.x = pos.x - (tooltipWidth - (rect.right - pos.x)) - 16
   }
-  if (pos.x < rect.left) {
-    pos.x = rect.left + 16
-  }
 
   const caretPos = {
     x: tooltip.caretX - caretSize,
