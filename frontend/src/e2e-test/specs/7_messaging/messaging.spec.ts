@@ -61,27 +61,10 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
-  await insertBackupCareFixtures([
-    {
-      id: uuidv4(),
-      childId: enduserChildFixtureKaarina.id,
-      unitId: fixtures.daycareFixture.id,
-      groupId: daycareGroupFixture.id,
-      period: {
-        start: LocalDate.today().formatIso(),
-        end: LocalDate.today().formatIso()
-      }
-    }
-  ])
-
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {
       childId: childId,
-      guardianId: fixtures.enduserGuardianFixture.id
-    },
-    {
-      childId: enduserChildFixtureKaarina.id,
       guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
@@ -140,6 +123,26 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
+        await insertBackupCareFixtures([
+          {
+            id: uuidv4(),
+            childId: enduserChildFixtureKaarina.id,
+            unitId: fixtures.daycareFixture.id,
+            groupId: daycareGroupFixture.id,
+            period: {
+              start: LocalDate.today().formatIso(),
+              end: LocalDate.today().formatIso()
+            }
+          }
+        ])
+
+        await insertGuardianFixtures([
+          {
+            childId: enduserChildFixtureKaarina.id,
+            guardianId: fixtures.enduserGuardianFixture.id
+          }
+        ])
+
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
 
