@@ -70,7 +70,8 @@ export default function MessagesPage() {
         selectedAccount?.daycareGroup
           ? {
               id: selectedAccount.daycareGroup.id,
-              name: selectedAccount.daycareGroup.name
+              name: selectedAccount.daycareGroup.name,
+              utilization: 0
             }
           : undefined
       }

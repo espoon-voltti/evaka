@@ -74,7 +74,12 @@ export function authMobile(
 
 export function getMobileUnitInfo(unitId: string): Promise<Result<UnitInfo>> {
   return client
-    .get<JsonOf<UnitInfo>>(`/mobile/units/${unitId}`)
+    .get<JsonOf<UnitInfo>>(`/mobile/units/${unitId}`, {
+      params: {
+        useRealtimeStaffAttendance:
+          featureFlags.experimental?.realtimeStaffAttendance ?? false
+      }
+    })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
