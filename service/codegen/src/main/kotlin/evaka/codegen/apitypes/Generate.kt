@@ -25,19 +25,18 @@ import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
 fun generateApiTypes() {
-    val path = locateRoot() / "api-types"
-    path.toFile().deleteRecursively()
-    path.createDirectory()
+    val root = locateRoot()
+    root.toFile().deleteRecursively()
+    root.createDirectory()
 
-    getApiTypesInTypeScript().entries.forEach { (path, content) ->
+    getApiTypesInTypeScript(root).entries.forEach { (path, content) ->
         path.writeText(content)
     }
 }
 
-fun getApiTypesInTypeScript(): Map<Path, String> {
-    val root = locateRoot()
-    return analyzeClasses().entries.associate { (mainPackage, classes) ->
-        val path = root / "api-types" / "$mainPackage.ts"
+fun getApiTypesInTypeScript(root: Path): Map<Path, String> {
+    return analyzeClasses().entries.sortedBy { (name, _) -> name }.associate { (mainPackage, classes) ->
+        val path = root / "$mainPackage.ts"
         val content = """$fileHeader
 ${getImports(classes).sorted().joinToString("\n")}
 
@@ -94,7 +93,7 @@ fun locateRoot(): Path {
     if (!path.exists()) {
         exitProcess(1)
     }
-    return path
+    return path / "api-types"
 }
 
 private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
