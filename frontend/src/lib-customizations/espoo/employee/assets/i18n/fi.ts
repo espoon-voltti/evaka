@@ -460,6 +460,7 @@ export const fi = {
       noDecisions: 'Hakemukseen ei vielä liity päätöksiä.',
       type: 'Päätöksen tyyppi',
       types: {
+        CLUB: 'Kerhopäätös',
         DAYCARE: 'Varhaiskasvatuspäätös',
         DAYCARE_PART_TIME: 'Varhaiskasvatuspäätös (osapäiväinen)',
         PRESCHOOL: 'Esiopetuspäätös',

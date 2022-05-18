@@ -54,9 +54,9 @@ const Actions = React.memo(function Actions({
         }}
         onFailure={(result) => {
           setError(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            i18n.feeDecisions.buttons.errors[result.errorCode ?? ''] ??
-              i18n.common.error.unknown
+            result.errorCode === 'WAITING_FOR_MANUAL_SENDING'
+              ? i18n.feeDecisions.buttons.errors.WAITING_FOR_MANUAL_SENDING
+              : i18n.common.error.unknown
           )
         }}
         data-qa="confirm-decisions"

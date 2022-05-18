@@ -16,6 +16,7 @@ import { NavigateFunction, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { DecisionType } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
@@ -44,7 +45,6 @@ import {
   DecisionDraft,
   DecisionDraftGroup,
   DecisionDraftUpdate,
-  DecisionType,
   DecisionUnit
 } from '../../types/decision'
 import { formatName } from '../../utils'

@@ -312,7 +312,7 @@ export interface CitizenApplicationSummary {
   sentDate: LocalDate | null
   startDate: LocalDate | null
   transferApplication: boolean
-  type: string
+  type: ApplicationType
 }
 
 /**
@@ -450,7 +450,7 @@ export interface PersonApplicationSummary {
   preparatoryEducation: boolean
   sentDate: LocalDate | null
   status: ApplicationStatus
-  type: string
+  type: ApplicationType
 }
 
 /**

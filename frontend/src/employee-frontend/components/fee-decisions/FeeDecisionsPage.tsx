@@ -22,7 +22,6 @@ import { SearchOrder } from '../../types'
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import FeeDecisions from './FeeDecisions'
-import GeneratorButton from './generation/GeneratorButton'
 
 const pageSize = 200
 
@@ -106,7 +105,6 @@ export default React.memo(function FeeDecisionsPage() {
 
   return (
     <Container data-qa="fee-decisions-page">
-      {window['secretButton'] && <GeneratorButton reload={loadDecisions} />}
       <ContentArea opaque>
         <FeeDecisionFilters />
       </ContentArea>

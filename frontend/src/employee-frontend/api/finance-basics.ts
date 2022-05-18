@@ -29,6 +29,8 @@ export async function getFeeThresholds(): Promise<
     .catch((e) => Failure.fromError(e))
 }
 
+export type FeeThresholdsSaveError = 'date-overlap'
+
 export async function createFeeThresholds(
   thresholds: FeeThresholds
 ): Promise<Result<void>> {

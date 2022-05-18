@@ -6,12 +6,6 @@ import React from 'react'
 
 import { useTranslation } from '../../../state/i18n'
 
-type LoginErrorCode = 'NO_ROLE'
-
-export function assertErrorCode(s?: string): s is LoginErrorCode {
-  return s === 'NO_ROLE'
-}
-
 interface Props {
   error?: string
 }
@@ -23,8 +17,8 @@ function ErrorMessage({ error }: Props) {
     return null
   }
 
-  if (assertErrorCode(error)) {
-    return <div>{i18n.login.error[error]}</div>
+  if (error === 'NO_ROLE') {
+    return <div>{i18n.login.error.noRole}</div>
   }
 
   return <div>{i18n.login.error.default}</div>

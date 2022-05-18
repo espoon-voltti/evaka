@@ -29,8 +29,9 @@ export type ApplicationFormDataErrors = {
 }
 
 export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
-  const totalErrors = Object.keys(errors).reduce((acc, section) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const totalErrors = (
+    Object.keys(errors) as (keyof ApplicationFormData)[]
+  ).reduce((acc, section) => {
     return acc + getErrorCount(errors[section])
   }, 0)
   return totalErrors > 0

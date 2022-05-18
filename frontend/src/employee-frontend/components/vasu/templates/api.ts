@@ -19,6 +19,15 @@ import { mapVasuContent } from '../vasu-content'
 export const curriculumTypes = ['DAYCARE', 'PRESCHOOL'] as const
 export const vasuLanguages = ['FI', 'SV'] as const
 
+export type VasuErrorCode =
+  | 'EXPIRED_START'
+  | 'EXPIRED_END'
+  | 'FUTURE_START'
+  | 'CURRENT_START'
+  | 'CURRENT_END'
+  | 'TEMPLATE_NAME'
+  | 'TEMPLATE_LANGUAGE'
+
 export async function createVasuTemplate(
   params: CreateTemplateRequest
 ): Promise<Result<UUID>> {

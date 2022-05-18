@@ -2,16 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DecisionType } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-
-export type DecisionType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY_EDUCATION'
 
 export interface DecisionDraft {
   id: UUID

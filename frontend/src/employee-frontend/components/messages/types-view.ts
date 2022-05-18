@@ -4,7 +4,7 @@
 
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 
-export type View = 'RECEIVED' | 'SENT' | 'RECEIVERS' | 'DRAFTS'
+export type View = 'RECEIVED' | 'SENT' | 'DRAFTS'
 
 export interface AccountView {
   account: MessageAccount

@@ -59,9 +59,9 @@ export default React.memo(function Placements({ placements }: Props) {
           {i18n.placementDraft.noCurrentPlacements}
         </InformationText>
       )}
-      {placements.map((placement: PlacementDraftPlacement) => (
+      {placements.map((placement) => (
         <PlacementRow key={placement.id}>
-          <Type>{i18n.common.types[placement.type]}</Type>
+          <Type>{i18n.placement.type[placement.type]}</Type>
           <Name>{placement.unit.name}</Name>
           <Dates>
             {placement.startDate.format()}-{placement.endDate.format()}

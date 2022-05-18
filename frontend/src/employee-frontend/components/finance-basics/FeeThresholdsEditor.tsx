@@ -27,6 +27,7 @@ import { faQuestion } from 'lib-icons'
 
 import {
   createFeeThresholds,
+  FeeThresholdsSaveError,
   updateFeeThresholds
 } from '../../api/finance-basics'
 import { Translations } from '../../state/i18n'
@@ -60,11 +61,11 @@ export default React.memo(function FeeThresholdsEditor({
     editorState,
     existingThresholds.map((ts) => ts.filter((t) => t.id !== id))
   )
-  const [saveError, setSaveError] = useState<string>()
+  const [saveError, setSaveError] = useState<FeeThresholdsSaveError>()
   const [showModal, setShowModal] = useState(false)
 
   const handleSaveErrors = (result: Failure<unknown>) => {
-    setSaveError(result.errorCode)
+    setSaveError(result.errorCode as FeeThresholdsSaveError)
   }
 
   const validationErrorInfo = (

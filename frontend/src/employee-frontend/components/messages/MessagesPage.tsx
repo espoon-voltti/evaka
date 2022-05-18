@@ -27,7 +27,6 @@ import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
 
 import { MessageContext } from './MessageContext'
-import ReceiverSelection from './ReceiverSelection'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
@@ -128,19 +127,13 @@ export default React.memo(function MessagesPage() {
     <Container>
       <PanelContainer>
         <Sidebar
-          setSelectedReceivers={setSelectedReceivers}
           showEditor={() => setShowEditor(true)}
+          setSelectedReceivers={setSelectedReceivers}
         />
         {(selectedAccount?.view === 'RECEIVED' ||
           selectedAccount?.view === 'SENT' ||
           selectedAccount?.view === 'DRAFTS') && (
           <MessageList {...selectedAccount} />
-        )}
-        {selectedAccount?.view === 'RECEIVERS' && selectedReceivers && (
-          <ReceiverSelection
-            selectedReceivers={selectedReceivers}
-            setSelectedReceivers={setSelectedReceivers}
-          />
         )}
         {showEditor &&
           accounts.isSuccess &&

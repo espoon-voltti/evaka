@@ -9,9 +9,11 @@ import React, { useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
 import { formatDate } from 'lib-common/date'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationStatus,
+  CitizenApplicationSummary
+} from 'lib-common/generated/api-types/application'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

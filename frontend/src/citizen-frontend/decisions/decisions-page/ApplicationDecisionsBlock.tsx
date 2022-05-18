@@ -103,7 +103,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
       <P width="800px">
         {
           t.decisions.applicationDecisions.confirmationInfo[
-            preschoolInfoTypes.includes(type) ? 'PRESCHOOL' : 'default'
+            preschoolInfoTypes.includes(type) ? 'preschool' : 'default'
           ]
         }
       </P>

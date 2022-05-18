@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
+import { IncomeEffect } from 'lib-common/api-types/income'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -83,7 +84,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
 
   function getIncomeString(
     incomeTotal: number | undefined,
-    incomeEffect: string | undefined
+    incomeEffect: IncomeEffect | undefined
   ): string {
     if (incomeEffect === 'INCOME') {
       const formattedTotal = formatCents(incomeTotal)
@@ -93,9 +94,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
     }
 
     if (incomeEffect !== undefined) {
-      return String(
-        i18n.personProfile.income.details.effectOptions[incomeEffect]
-      )
+      return i18n.personProfile.income.details.effectOptions[incomeEffect]
     }
 
     return i18n.personProfile.familyOverview.incomeMissingCompletely
