@@ -147,6 +147,10 @@ const StyledNavLink = styled(NavLink)`
     padding: 0 ${defaultMargins.m};
   }
 
+  &:hover {
+    font-weight: ${fontWeights.bold};
+  }
+
   &.active {
     border-bottom-color: ${colors.grayscale.g0};
     font-weight: ${fontWeights.bold};
