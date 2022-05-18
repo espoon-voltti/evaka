@@ -1902,10 +1902,6 @@ export default {
       </P>
       <ul>
         <li>
-          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
-          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
-        </li>
-        <li>
           Palvelun yksikkökartassa ei pysty liikkumaan
           näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
           näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen
