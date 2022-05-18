@@ -121,11 +121,10 @@ function getDisplayCells(
   usedValues: ValueOnReport
 ): string[][] {
   return reportRows.map((row) => {
+    const nameCells =
+      'groupName' in row ? [row.unitName, row.groupName] : [row.unitName]
     if (usedValues === 'raw') {
-      const cells = [
-        row.unitName,
-        'groupName' in row ? row.groupName : undefined
-      ].filter((cell): cell is string => cell !== undefined)
+      const cells = [...nameCells]
       for (const date of dates) {
         const occupancy = row.occupancies[toOccupancyKey(date)]
         cells.push(
@@ -150,8 +149,7 @@ function getDisplayCells(
         average !== null ? Math.round(10 * average) / 10 : undefined
 
       return [
-        row.unitName,
-        'groupName' in row ? row.groupName : undefined,
+        ...nameCells,
 
         // average
         (usedValues === 'percentage'
@@ -171,12 +169,12 @@ function getDisplayCells(
               return caretakersMissingSymbol
             }
 
-            return formatPercentage(occupancy.percentage ?? undefined)
+            return formatPercentage(occupancy.percentage ?? undefined) ?? ''
           } else {
-            return occupancy?.[usedValues] ?? ''
+            return occupancy?.[usedValues]?.toString() ?? ''
           }
         })
-      ].filter((cell): cell is string => cell !== undefined)
+      ]
     }
   })
 }
