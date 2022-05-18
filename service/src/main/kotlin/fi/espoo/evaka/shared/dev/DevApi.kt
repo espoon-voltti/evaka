@@ -68,7 +68,6 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
@@ -554,7 +553,13 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction {
                 guardians.forEach { guardian ->
-                    it.insertGuardian(guardian.guardianId, guardian.childId)
+                    it.createUpdate(
+                        """
+INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON CONFLICT (guardian_id, child_id) DO NOTHING
+                        """.trimIndent()
+                    )
+                        .bindKotlin(guardian)
+                        .execute()
                 }
             }
         }
