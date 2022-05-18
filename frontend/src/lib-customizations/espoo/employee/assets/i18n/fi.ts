@@ -382,7 +382,7 @@ export const fi = {
       startDate: 'Toivottu aloituspäivä',
       connectedLabel: 'Liittyvä varhaiskasvatus',
       connectedValue: 'Haen myös liittyvää varhaiskasvatusta',
-      dailyTime: 'Päivittäinen hoitoaika',
+      dailyTime: 'Päivittäinen läsnäoloaika',
       startTimePlaceholder: '08:00',
       endTimePlaceholder: '16:00',
       shiftCareLabel: 'Ilta- ja vuorohoito',
