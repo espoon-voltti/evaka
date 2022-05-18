@@ -217,6 +217,12 @@ export class VasuPreviewPage extends VasuPageCommon {
   readonly #multiselectAnswer = (questionNumber: string) =>
     this.page.find(`[data-qa="value-or-no-record-${questionNumber}"]`)
 
+  readonly #titleChildName = this.page.findByDataQa('title-child-name')
+
+  async assertTitleChildName(expectedName: string) {
+    await waitUntilEqual(() => this.#titleChildName.textContent, expectedName)
+  }
+
   async assertMultiSelectContains(
     questionNumber: string,
     expectedText: string

@@ -72,5 +72,4 @@ export default React.memo(function FollowupQuestion({
   )
 })
 
-const FollowupQuestionContainer = styled.div`
-`
+const FollowupQuestionContainer = styled.div``
