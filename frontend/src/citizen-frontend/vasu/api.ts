@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { GetVasuDocumentResponse } from 'lib-common/api-types/vasu'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  UpdateDocumentRequest,
+  CitizenGetVasuDocumentResponse,
   VasuDocument,
   VasuDocumentEvent,
-  VasuDocumentEventType,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
 import { JsonOf } from 'lib-common/json'
@@ -51,16 +49,6 @@ const mapVasuDocumentResponse = ({
   }
 })
 
-export async function createVasuDocument(
-  childId: UUID,
-  templateId: UUID
-): Promise<Result<UUID>> {
-  return client
-    .post<UUID>(`/children/${childId}/vasu`, { templateId })
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function getVasuDocumentSummaries(
   childId: UUID
 ): Promise<Result<VasuDocumentSummary[]>> {
@@ -82,9 +70,9 @@ export async function getVasuDocumentSummaries(
 
 export async function getVasuDocument(
   id: UUID
-): Promise<Result<GetVasuDocumentResponse>> {
+): Promise<Result<CitizenGetVasuDocumentResponse>> {
   return client
-    .get<JsonOf<GetVasuDocumentResponse>>(`/citizen/vasu/${id}`)
+    .get<JsonOf<CitizenGetVasuDocumentResponse>>(`/citizen/vasu/${id}`)
     .then((res) =>
       Success.of({
         vasu: mapVasuDocumentResponse(res.data.vasu),
@@ -92,56 +80,4 @@ export async function getVasuDocument(
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export interface PutVasuDocumentParams extends UpdateDocumentRequest {
-  documentId: UUID
-}
-
-export async function putVasuDocument({
-  documentId,
-  content,
-  childLanguage
-}: PutVasuDocumentParams): Promise<Result<null>> {
-  return client
-    .put<UpdateDocumentRequest>(`/vasu/${documentId}`, {
-      content,
-      childLanguage
-    })
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
-}
-
-interface UpdateDocumentStateParams {
-  documentId: UUID
-  eventType: VasuDocumentEventType
-}
-export async function updateDocumentState({
-  documentId,
-  eventType
-}: UpdateDocumentStateParams): Promise<Result<null>> {
-  return client
-    .post(`/vasu/${documentId}/update-state`, { eventType })
-    .then(() => Success.of(null))
-    .catch((e) => Failure.fromError(e))
-}
-
-export interface EditFollowupEntryParams {
-  documentId: UUID
-  entryId?: UUID
-  text: string
-}
-export async function editFollowupEntry({
-  documentId,
-  entryId,
-  text
-}: EditFollowupEntryParams): Promise<Result<null>> {
-  return entryId
-    ? client
-        .post(`/vasu/${documentId}/edit-followup/${entryId}`, {
-          text
-        })
-        .then(() => Success.of(null))
-        .catch((e) => Failure.fromError(e))
-    : Failure.of({ message: 'cannot edit without entry ID' })
 }

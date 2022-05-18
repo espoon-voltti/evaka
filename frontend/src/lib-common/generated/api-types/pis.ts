@@ -146,7 +146,7 @@ export interface FamilyContactPriorityUpdate {
 /**
 * Generated from fi.espoo.evaka.pis.FamilyContactRole
 */
-export type FamilyContactRole = 
+export type FamilyContactRole =
   | 'LOCAL_GUARDIAN'
   | 'LOCAL_ADULT'
   | 'LOCAL_SIBLING'
@@ -227,7 +227,7 @@ export interface NewEmployee {
 /**
 * Generated from fi.espoo.evaka.pis.service.PersonAddressDTO.Origin
 */
-export type Origin = 
+export type Origin =
   | 'VTJ'
   | 'MUNICIPAL'
   | 'EVAKA'

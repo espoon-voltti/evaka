@@ -159,7 +159,7 @@ export interface PlacementPlanChild {
 /**
 * Generated from fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 */
-export type PlacementPlanConfirmationStatus = 
+export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'
   | 'REJECTED'
@@ -198,7 +198,7 @@ export interface PlacementPlanDraft {
 /**
 * Generated from fi.espoo.evaka.placement.PlacementPlanRejectReason
 */
-export type PlacementPlanRejectReason = 
+export type PlacementPlanRejectReason =
   | 'OTHER'
   | 'REASON_1'
   | 'REASON_2'
@@ -217,7 +217,7 @@ export interface PlacementTerminationRequestBody {
 /**
 * Generated from fi.espoo.evaka.placement.PlacementType
 */
-export type PlacementType = 
+export type PlacementType =
   | 'CLUB'
   | 'DAYCARE'
   | 'DAYCARE_PART_TIME'
@@ -256,7 +256,7 @@ export interface TerminatablePlacementGroup {
 /**
 * Generated from fi.espoo.evaka.placement.TerminatablePlacementType
 */
-export type TerminatablePlacementType = 
+export type TerminatablePlacementType =
   | 'CLUB'
   | 'PREPARATORY'
   | 'DAYCARE'

@@ -64,7 +64,7 @@ export interface DecisionListResponse {
 /**
 * Generated from fi.espoo.evaka.decision.DecisionStatus
 */
-export type DecisionStatus = 
+export type DecisionStatus =
   | 'PENDING'
   | 'ACCEPTED'
   | 'REJECTED'
@@ -72,7 +72,7 @@ export type DecisionStatus =
 /**
 * Generated from fi.espoo.evaka.decision.DecisionType
 */
-export type DecisionType = 
+export type DecisionType =
   | 'CLUB'
   | 'DAYCARE'
   | 'DAYCARE_PART_TIME'

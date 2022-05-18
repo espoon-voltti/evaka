@@ -34,7 +34,7 @@ export interface IncomeStatementAwaitingHandler {
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
 */
-export type IncomeStatementType = 
+export type IncomeStatementType =
   | 'HIGHEST_FEE'
   | 'INCOME'
   | 'CHILD_INCOME'

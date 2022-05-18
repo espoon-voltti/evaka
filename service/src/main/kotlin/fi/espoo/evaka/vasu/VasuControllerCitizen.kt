@@ -38,7 +38,7 @@ class VasuControllerCitizen(
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuDocumentSummaries(childId) } }
     }
 
-    data class GetVasuDocumentResponse(
+    data class CitizenGetVasuDocumentResponse(
         val vasu: VasuDocument,
         val permittedFollowupActions: Map<UUID, Set<Action.VasuDocumentFollowup>>
     )
@@ -48,7 +48,7 @@ class VasuControllerCitizen(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId
-    ): GetVasuDocumentResponse {
+    ): CitizenGetVasuDocumentResponse {
         Audit.VasuDocumentReadByGuardian.log(id, user.rawId())
         accessControl.requirePermissionFor(user, Action.Citizen.VasuDocument.READ, id)
 
@@ -62,7 +62,7 @@ class VasuControllerCitizen(
                         user,
                         entryIds
                     )
-                GetVasuDocumentResponse(
+                CitizenGetVasuDocumentResponse(
                     doc,
                     permittedActions.mapKeys { it.key.second }
                 )

@@ -27,6 +27,14 @@ export interface ChildLanguage {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.CitizenGetVasuDocumentResponse
+*/
+export interface CitizenGetVasuDocumentResponse {
+  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
+  vasu: VasuDocument
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuTemplateController.CopyTemplateRequest
 */
 export interface CopyTemplateRequest {
@@ -54,7 +62,7 @@ export interface CreateTemplateRequest {
 /**
 * Generated from fi.espoo.evaka.vasu.CurriculumType
 */
-export type CurriculumType = 
+export type CurriculumType =
   | 'DAYCARE'
   | 'PRESCHOOL'
 
@@ -63,14 +71,6 @@ export type CurriculumType =
 */
 export interface EditFollowupEntryRequest {
   text: string
-}
-
-/**
-* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.GetVasuDocumentResponse
-*/
-export interface GetVasuDocumentResponse {
-  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
-  vasu: VasuDocument
 }
 
 /**
@@ -144,7 +144,7 @@ export interface VasuDocumentEvent {
 /**
 * Generated from fi.espoo.evaka.vasu.VasuDocumentEventType
 */
-export type VasuDocumentEventType = 
+export type VasuDocumentEventType =
   | 'PUBLISHED'
   | 'MOVED_TO_READY'
   | 'RETURNED_TO_READY'
@@ -155,7 +155,7 @@ export type VasuDocumentEventType =
 /**
 * Generated from fi.espoo.evaka.vasu.VasuDocumentState
 */
-export type VasuDocumentState = 
+export type VasuDocumentState =
   | 'DRAFT'
   | 'READY'
   | 'REVIEWED'
@@ -185,7 +185,7 @@ export interface VasuGuardian {
 /**
 * Generated from fi.espoo.evaka.vasu.VasuLanguage
 */
-export type VasuLanguage = 
+export type VasuLanguage =
   | 'FI'
   | 'SV'
 

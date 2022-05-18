@@ -484,7 +484,7 @@ export interface UnitData {
 /**
 * Generated from fi.espoo.evaka.reports.UnitType
 */
-export type UnitType = 
+export type UnitType =
   | 'DAYCARE'
   | 'FAMILY'
   | 'GROUP_FAMILY'
@@ -508,7 +508,7 @@ export interface VardaErrorReportRow {
 /**
 * Generated from fi.espoo.evaka.reports.VoucherReportRowType
 */
-export type VoucherReportRowType = 
+export type VoucherReportRowType =
   | 'ORIGINAL'
   | 'REFUND'
   | 'CORRECTION'

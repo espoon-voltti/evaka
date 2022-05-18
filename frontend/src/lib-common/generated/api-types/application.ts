@@ -145,7 +145,7 @@ export interface ApplicationNoteResponse {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationOrigin
 */
-export type ApplicationOrigin = 
+export type ApplicationOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
 
@@ -163,7 +163,7 @@ export interface ApplicationResponse {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationSortColumn
 */
-export type ApplicationSortColumn = 
+export type ApplicationSortColumn =
   | 'APPLICATION_TYPE'
   | 'CHILD_NAME'
   | 'DUE_DATE'
@@ -173,14 +173,14 @@ export type ApplicationSortColumn =
 /**
 * Generated from fi.espoo.evaka.application.ApplicationSortDirection
 */
-export type ApplicationSortDirection = 
+export type ApplicationSortDirection =
   | 'ASC'
   | 'DESC'
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationStatus
 */
-export type ApplicationStatus = 
+export type ApplicationStatus =
   | 'CREATED'
   | 'SENT'
   | 'WAITING_PLACEMENT'
@@ -230,7 +230,7 @@ export interface ApplicationSummary {
 /**
 * Generated from fi.espoo.evaka.application.ApplicationType
 */
-export type ApplicationType = 
+export type ApplicationType =
   | 'CLUB'
   | 'DAYCARE'
   | 'PRESCHOOL'
@@ -238,7 +238,7 @@ export type ApplicationType =
 /**
 * Generated from fi.espoo.evaka.application.ApplicationTypeToggle
 */
-export type ApplicationTypeToggle = 
+export type ApplicationTypeToggle =
   | 'CLUB'
   | 'DAYCARE'
   | 'PRESCHOOL'
@@ -414,7 +414,7 @@ export interface NoteRequest {
 /**
 * Generated from fi.espoo.evaka.application.OtherGuardianAgreementStatus
 */
-export type OtherGuardianAgreementStatus = 
+export type OtherGuardianAgreementStatus =
   | 'AGREED'
   | 'NOT_AGREED'
   | 'RIGHT_TO_GET_NOTIFIED'
@@ -578,7 +578,7 @@ export interface SimpleBatchRequest {
 /**
 * Generated from fi.espoo.evaka.application.TransferApplicationFilter
 */
-export type TransferApplicationFilter = 
+export type TransferApplicationFilter =
   | 'TRANSFER_ONLY'
   | 'NO_TRANSFER'
   | 'ALL'
@@ -586,7 +586,7 @@ export type TransferApplicationFilter =
 /**
 * Generated from fi.espoo.evaka.application.VoucherApplicationFilter
 */
-export type VoucherApplicationFilter = 
+export type VoucherApplicationFilter =
   | 'VOUCHER_FIRST_CHOICE'
   | 'VOUCHER_ONLY'
   | 'NO_VOUCHER'

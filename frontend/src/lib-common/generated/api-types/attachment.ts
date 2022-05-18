@@ -10,7 +10,7 @@ import { UUID } from '../../types'
 /**
 * Generated from fi.espoo.evaka.attachment.AttachmentType
 */
-export type AttachmentType = 
+export type AttachmentType =
   | 'URGENCY'
   | 'EXTENDED_CARE'
 
