@@ -19,7 +19,7 @@ export const fontWeights = {
 
 export const fontSizesMobile = {
   h1: '24px',
-  h2: '22px',
+  h2: '20px',
   h3: '18px',
   h4: '16px'
 }
