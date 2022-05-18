@@ -77,8 +77,7 @@ data class VoucherValueDecision(
             this.finalCoPayment == decision.finalCoPayment &&
             this.baseValue == decision.baseValue &&
             this.voucherValue == decision.voucherValue &&
-            this.childIncome == decision.childIncome &&
-            this.decisionHandler == decision.decisionHandler
+            this.childIncome == decision.childIncome
     }
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
