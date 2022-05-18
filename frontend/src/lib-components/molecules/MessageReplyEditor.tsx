@@ -32,12 +32,13 @@ const EditorRow = styled.div`
   }
 `
 
-const Recipient = styled.span<{ selected: boolean; toggleable: boolean }>`
+const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
   cursor: ${(p) => (p.toggleable ? 'pointer' : 'default')};;
   padding: 0 ${(p) => (p.selected ? '12px' : defaultMargins.xs)};
   background-color: ${(p) =>
     p.selected ? p.theme.colors.grayscale.g15 : 'unset'};
   border-radius: 1000px;
+  border-width: 0;
   font-weight: ${fontWeights.semibold};
   color: ${(p) => (p.selected ? 'unset' : p.theme.colors.main.m2)};
 
@@ -74,7 +75,13 @@ function ToggleableRecipient({
     : undefined
 
   return (
-    <Recipient onClick={onClick} selected={selected} toggleable={toggleable}>
+    <Recipient
+      onClick={onClick}
+      selected={selected}
+      toggleable={toggleable}
+      aria-disabled={!toggleable}
+      disabled={!toggleable}
+    >
       {selected ? (
         <>
           {name}
