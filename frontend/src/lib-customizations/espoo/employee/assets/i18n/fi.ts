@@ -2147,6 +2147,7 @@ export const fi = {
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
       FREE_ABSENCE: 'Maksuton poissaolo',
+      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
     absenceTypesShort: {
@@ -2158,6 +2159,7 @@ export const fi = {
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton',
       FREE_ABSENCE: 'Maksuton',
+      UNAUTHORIZED_ABSENCE: 'Sakko',
       NO_ABSENCE: 'Ei poissa'
     },
     absenceTypeInfo: {
@@ -2176,6 +2178,7 @@ export const fi = {
       FORCE_MAJEURE:
         'Käytetään vain erikoistilanteissa hallinnon ohjeiden mukaan.',
       FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
+      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Jos lapsi on paikalla, älä merkitse mitään.'
     },
     careTypes: {
@@ -2212,6 +2215,7 @@ export const fi = {
         PARENTLEAVE: 'Isyysvapaa',
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
         FREE_ABSENCE: 'Maksuton poissaolo',
+        UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
         NO_ABSENCE: 'Ei poissaoloa'
       },
       free: 'Maksuton',

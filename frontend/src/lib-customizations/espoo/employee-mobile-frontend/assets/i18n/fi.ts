@@ -98,6 +98,7 @@ export const fi = {
       PARENTLEAVE: 'Isyysvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
       FREE_ABSENCE: 'Maksuton poissaolo',
+      UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
     careTypes: {
