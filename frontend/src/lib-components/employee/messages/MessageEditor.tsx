@@ -448,7 +448,7 @@ export default React.memo(function MessageEditor({
           </TopBar>
           <ScrollableFormArea>
             <ExpandableLayout expandedView={expandedView}>
-              <Dropdowns>
+              <Dropdowns expandedView={expandedView}>
                 <HorizontalField>
                   <Bold>{i18n.sender}</Bold>
                   <Combobox
@@ -799,8 +799,8 @@ const ExpandableLayout = styled.div<{ expandedView: boolean }>`
   display: ${(props) => (props.expandedView ? 'flex' : 'block')};
 `
 
-const Dropdowns = styled.div`
-  width: 66%;
+const Dropdowns = styled.div<{ expandedView: boolean }>`
+  ${(props) => (props.expandedView ? 'width: 66%' : '')}
   flex: 1 1 auto;
 `
 
