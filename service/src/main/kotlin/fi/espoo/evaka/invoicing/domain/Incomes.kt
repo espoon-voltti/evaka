@@ -56,9 +56,7 @@ data class Income(
         totalIncome = totalIncome(),
         totalExpenses = totalExpenses(),
         total = total(),
-        worksAtECHA = worksAtECHA,
-        validFrom = validFrom,
-        validTo = validTo
+        worksAtECHA = worksAtECHA
     )
 }
 
@@ -70,9 +68,7 @@ data class DecisionIncome(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int,
-    val worksAtECHA: Boolean = false,
-    val validFrom: LocalDate?,
-    val validTo: LocalDate?
+    val worksAtECHA: Boolean
 )
 
 fun incomeTotal(data: Map<String, IncomeValue>) = data.entries

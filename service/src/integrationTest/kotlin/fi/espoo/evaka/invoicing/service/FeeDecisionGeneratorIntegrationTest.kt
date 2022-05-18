@@ -1959,8 +1959,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 totalIncome = 0,
                 totalExpenses = 0,
                 total = 0,
-                validFrom = period.start,
-                validTo = period.end
+                worksAtECHA = false
             ),
             children = listOf(
                 createFeeDecisionChildFixture(

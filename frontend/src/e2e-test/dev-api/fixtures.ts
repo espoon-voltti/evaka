@@ -994,18 +994,12 @@ export function createBackupCareFixture(
   }
 }
 
-export const DecisionIncomeFixture = (
-  total: number,
-  validFrom: LocalDate = LocalDate.today(),
-  validTo: LocalDate = LocalDate.today()
-): DecisionIncome => ({
+export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
   data: { MAIN_INCOME: total },
   effect: 'INCOME',
   total: total,
   totalExpenses: 0,
   totalIncome: total,
-  validFrom,
-  validTo,
   worksAtECHA: false
 })
 
