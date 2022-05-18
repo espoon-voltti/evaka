@@ -36,9 +36,9 @@ export const Container = styled.button<{ isRead: boolean; active: boolean }>`
   width: 100%;
 
   background-color: ${(p) => p.theme.colors.grayscale.g0};
+  color: ${(p) => p.theme.colors.grayscale.g100};
   padding: ${defaultMargins.s} ${defaultMargins.m};
   cursor: pointer;
-
   border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
 
   &:focus {
