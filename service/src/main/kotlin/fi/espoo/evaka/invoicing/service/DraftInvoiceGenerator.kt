@@ -467,8 +467,10 @@ class DraftInvoiceGenerator(
         val periodAttendanceDates = attendanceDates.take(dailyFeeDivisor).filter { period.includes(it) }
         if (periodAttendanceDates.isEmpty()) return listOf()
 
+        val isFullMonth = periodAttendanceDates.size == numRelevantOperationalDays
+
         val product = productProvider.mapToProduct(placement.type)
-        val (amount, unitPrice) = if (periodAttendanceDates.size == numRelevantOperationalDays) Pair(
+        val (amount, unitPrice) = if (isFullMonth) Pair(
             1,
             { p: Int -> p }
         ) else Pair(
@@ -519,6 +521,7 @@ class DraftInvoiceGenerator(
             child,
             absences,
             periodAttendanceDates,
+            isFullMonth,
             dailyFeeDivisor,
         ) { refundProduct, refundAmount, refundUnitPrice ->
             InvoiceRow(
@@ -611,6 +614,7 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
         periodAttendanceDates: List<LocalDate>,
+        isFullMonth: Boolean,
         dailyFeeDivisor: Int,
         toInvoiceRow: (ProductKey, Int, Int) -> InvoiceRow
     ): List<InvoiceRow> {
@@ -624,7 +628,7 @@ class DraftInvoiceGenerator(
 
         val (amount, unitPrice) =
             if (refundedDayCount >= dailyFeeDivisor) 1 to -total
-            else refundedDayCount to -calculateDailyPriceForInvoiceRow(total, periodAttendanceDates.size)
+            else refundedDayCount to -calculateDailyPriceForInvoiceRow(total, if (isFullMonth) dailyFeeDivisor else periodAttendanceDates.size)
 
         return listOf(toInvoiceRow(productProvider.dailyRefund, amount, unitPrice))
     }

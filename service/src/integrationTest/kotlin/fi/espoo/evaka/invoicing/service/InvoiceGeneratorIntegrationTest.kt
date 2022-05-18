@@ -3623,6 +3623,54 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `invoice generation with daily fee divisor 20 and only 19 operational days with a force majeure absences`() {
+        // Easter
+        db.transaction { tx ->
+            tx.execute(
+                "INSERT INTO holiday (date) VALUES (?), (?)",
+                LocalDate.of(2022, 4, 15),
+                LocalDate.of(2022, 4, 18),
+            )
+        }
+
+        // 19 operational days
+        val period = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+
+        val absenceDays = listOf(
+            LocalDate.of(2022, 4, 1) to AbsenceType.FORCE_MAJEURE
+        )
+
+        initDataForAbsences(listOf(period), absenceDays)
+
+        // Override to use 20 as the daily fee divisor
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(27455, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(-1445, invoiceRow.unitPrice) // 28900 / 20
+                assertEquals(-1445, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice corrections are applied to invoices when generation is done multiple times`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
