@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
+import {
+  AuthStatus,
+  MobileUser,
+  User
+} from 'lib-common/api-types/employee-auth'
 import { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
@@ -21,14 +25,19 @@ export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
 
 export async function getAuthStatus(): Promise<AuthStatus<User>> {
   return client
-    .get<JsonOf<AuthStatus<User>>>('/auth/status')
-    .then(({ data }) => ({
-      ...data,
-      user: data.user
+    .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
+    .then(({ data: { user, ...status } }) =>
+      user?.userType === 'EMPLOYEE'
         ? {
-            ...data.user,
-            permittedGlobalActions: new Set(data.user.permittedGlobalActions)
+            user: {
+              ...user,
+              permittedGlobalActions: new Set(user.permittedGlobalActions)
+            },
+            ...status
           }
-        : data.user
-    }))
+        : {
+            ...status,
+            loggedIn: false
+          }
+    )
 }
