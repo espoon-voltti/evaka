@@ -3937,6 +3937,42 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `Force majeure and free absence types are free`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 1 force majeure absence
+        val forceMajeure =
+            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
+
+        // 1 free absence
+        val free =
+            listOf(LocalDate.of(2019, 1, 17) to AbsenceType.FREE_ABSENCE)
+
+        initDataForAbsences(listOf(period), forceMajeure + free)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(26272, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(-1314, invoiceRow.unitPrice) // 28900 / 22
+                assertEquals(-2628, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with Free logic`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
