@@ -4,11 +4,15 @@
 
 package fi.espoo.evaka.daycare.domain
 
-enum class ProviderType {
+import fi.espoo.evaka.shared.db.DatabaseEnum
+
+enum class ProviderType : DatabaseEnum {
     MUNICIPAL,
     PURCHASED,
     PRIVATE,
     MUNICIPAL_SCHOOL,
     PRIVATE_SERVICE_VOUCHER,
     EXTERNAL_PURCHASED;
+
+    override val sqlType: String = "unit_provider_type"
 }

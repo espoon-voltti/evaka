@@ -11,9 +11,9 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -90,17 +90,8 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
         .bind("units", authorizedUnits.ids?.toTypedArray())
         .bind("from", from)
         .bind("to", to)
-        .map { rs, _ ->
-            MissingHeadOfFamilyReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                childId = ChildId(rs.getUUID("child_id")),
-                firstName = rs.getString("first_name"),
-                lastName = rs.getString("last_name"),
-                daysWithoutHead = rs.getInt("days_without_head")
-            )
-        }.toList()
+        .mapTo<MissingHeadOfFamilyReportRow>()
+        .toList()
 }
 
 data class MissingHeadOfFamilyReportRow(

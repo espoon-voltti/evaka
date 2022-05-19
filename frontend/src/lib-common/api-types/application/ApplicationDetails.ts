@@ -17,26 +17,6 @@ import { AttachmentType } from '../../generated/api-types/attachment'
 import { JsonOf } from '../../json'
 import { Attachment } from '../attachment'
 
-export interface GuardianApplications {
-  childId: string
-  childName: string
-  applicationSummaries: ApplicationSummary[]
-}
-
-export interface ApplicationSummary {
-  applicationId: string
-  type: string
-  childId: string
-  childName: string | null
-  preferredUnitName: string | null
-  allPreferredUnitNames: string[]
-  applicationStatus: ApplicationStatus
-  startDate: LocalDate | null
-  sentDate: LocalDate | null
-  createdDate: Date
-  modifiedDate: Date
-}
-
 export interface ApplicationDetails {
   id: string
   type: ApplicationType

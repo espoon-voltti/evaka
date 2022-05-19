@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result, Success } from 'lib-common/api'
+import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -21,7 +22,6 @@ import {
   PlacementsReportFilters
 } from '../../api/reports'
 import { Translations, useTranslation } from '../../state/i18n'
-import { EndedPlacementsReportRow } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 

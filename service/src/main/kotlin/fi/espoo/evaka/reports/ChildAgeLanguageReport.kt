@@ -5,14 +5,15 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -95,42 +96,8 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUni
     return createQuery(sql)
         .bind("target_date", date)
         .bind("authorizedUnitIds", authorizedUnits.ids?.toTypedArray())
-        .map { rs, _ ->
-            ChildAgeLanguageReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-                unitProviderType = rs.getString("unit_provider_type"),
-
-                fi_0y = rs.getInt("fi_0y"),
-                fi_1y = rs.getInt("fi_1y"),
-                fi_2y = rs.getInt("fi_2y"),
-                fi_3y = rs.getInt("fi_3y"),
-                fi_4y = rs.getInt("fi_4y"),
-                fi_5y = rs.getInt("fi_5y"),
-                fi_6y = rs.getInt("fi_6y"),
-                fi_7y = rs.getInt("fi_7y"),
-
-                sv_0y = rs.getInt("sv_0y"),
-                sv_1y = rs.getInt("sv_1y"),
-                sv_2y = rs.getInt("sv_2y"),
-                sv_3y = rs.getInt("sv_3y"),
-                sv_4y = rs.getInt("sv_4y"),
-                sv_5y = rs.getInt("sv_5y"),
-                sv_6y = rs.getInt("sv_6y"),
-                sv_7y = rs.getInt("sv_7y"),
-
-                other_0y = rs.getInt("other_0y"),
-                other_1y = rs.getInt("other_1y"),
-                other_2y = rs.getInt("other_2y"),
-                other_3y = rs.getInt("other_3y"),
-                other_4y = rs.getInt("other_4y"),
-                other_5y = rs.getInt("other_5y"),
-                other_6y = rs.getInt("other_6y"),
-                other_7y = rs.getInt("other_7y")
-            )
-        }
+        .registerColumnMapper(UnitType::class.java, UnitType.JDBI_COLUMN_MAPPER)
+        .mapTo<ChildAgeLanguageReportRow>()
         .toList()
 }
 
@@ -138,8 +105,8 @@ data class ChildAgeLanguageReportRow(
     val careAreaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val unitType: UnitType?,
-    val unitProviderType: String,
+    val unitType: UnitType,
+    val unitProviderType: ProviderType,
     val fi_0y: Int,
     val fi_1y: Int,
     val fi_2y: Int,

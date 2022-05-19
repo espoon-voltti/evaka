@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,7 +25,6 @@ import { getDuplicatePeopleReport } from '../../api/reports'
 import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { DuplicatePeopleReportRow } from '../../types/reports'
 
 import { TableScrollable } from './common'
 

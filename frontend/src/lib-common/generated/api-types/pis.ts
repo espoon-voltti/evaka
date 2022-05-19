@@ -30,20 +30,6 @@ export interface CitizenUser {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.ContactInfo
-*/
-export interface ContactInfo {
-  backupPhone: string
-  email: string
-  forceManualFeeDecisions: boolean
-  invoiceRecipientName: string | null
-  invoicingPostOffice: string | null
-  invoicingPostalCode: string | null
-  invoicingStreetAddress: string | null
-  phone: string
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.CreatePersonBody
 */
 export interface CreatePersonBody {

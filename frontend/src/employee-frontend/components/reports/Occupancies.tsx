@@ -25,11 +25,11 @@ import { getAreas } from '../../api/daycare'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
+  OccupancyReportRow,
   OccupancyReportType
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { Translations, useTranslation } from '../../state/i18n'
-import { OccupancyReportRow } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
@@ -121,10 +121,10 @@ function getDisplayCells(
   usedValues: ValueOnReport
 ): string[][] {
   return reportRows.map((row) => {
+    const nameCells =
+      'groupName' in row ? [row.unitName, row.groupName] : [row.unitName]
     if (usedValues === 'raw') {
-      const cells = [row.unitName, row.groupName].filter(
-        (cell) => cell !== undefined
-      ) as string[]
+      const cells = [...nameCells]
       for (const date of dates) {
         const occupancy = row.occupancies[toOccupancyKey(date)]
         cells.push(
@@ -149,8 +149,7 @@ function getDisplayCells(
         average !== null ? Math.round(10 * average) / 10 : undefined
 
       return [
-        row.unitName,
-        row.groupName,
+        ...nameCells,
 
         // average
         (usedValues === 'percentage'
@@ -170,12 +169,12 @@ function getDisplayCells(
               return caretakersMissingSymbol
             }
 
-            return formatPercentage(occupancy.percentage ?? undefined)
+            return formatPercentage(occupancy.percentage ?? undefined) ?? ''
           } else {
-            return occupancy?.[usedValues] ?? ''
+            return occupancy?.[usedValues]?.toString() ?? ''
           }
         })
-      ].filter((cell) => cell !== undefined) as string[]
+      ]
     }
   })
 }

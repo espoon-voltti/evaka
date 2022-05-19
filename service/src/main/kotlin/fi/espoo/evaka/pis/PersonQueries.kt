@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
-import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.shared.ChildId
@@ -282,30 +281,6 @@ fun Database.Transaction.updatePersonBasicContactInfo(id: PersonId, email: Strin
         .bind("id", id)
         .bind("email", email)
         .bind("phone", phone)
-        .mapTo<PersonId>()
-        .firstOrNull() != null
-}
-
-fun Database.Transaction.updatePersonContactInfo(id: PersonId, contactInfo: ContactInfo): Boolean {
-    // language=SQL
-    val sql =
-        """
-        UPDATE person SET
-            email = :email,
-            phone = :phone,
-            backup_phone = :backupPhone,
-            invoice_recipient_name = :invoiceRecipientName,
-            invoicing_street_address = :invoicingStreetAddress,
-            invoicing_postal_code = :invoicingPostalCode,
-            invoicing_post_office = :invoicingPostOffice,
-            force_manual_fee_decisions = :forceManualFeeDecisions
-        WHERE id = :id
-        RETURNING id
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("id", id)
-        .bindKotlin(contactInfo)
         .mapTo<PersonId>()
         .firstOrNull() != null
 }

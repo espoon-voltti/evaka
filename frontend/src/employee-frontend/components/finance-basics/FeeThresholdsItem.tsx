@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { FeeThresholds } from 'lib-common/api-types/finance'
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

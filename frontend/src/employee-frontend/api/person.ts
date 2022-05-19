@@ -5,12 +5,12 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import { Decision } from 'lib-common/generated/api-types/decision'
 import {
   EditRecipientRequest,
   Recipient
 } from 'lib-common/generated/api-types/messaging'
 import {
-  ContactInfo,
   CreatePersonBody,
   PersonJSON,
   PersonResponse,
@@ -22,7 +22,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { SearchOrder } from '../types'
-import { Decision } from '../types/decision'
 import { deserializePersonJSON, SearchColumn } from '../types/person'
 
 import { client } from './client'
@@ -60,16 +59,6 @@ export async function getChildDetails(
       person: deserializePersonJSON(data.person)
     }))
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function fridgeHeadPerson(
-  id: UUID,
-  fridgeHeadPerson: ContactInfo
-): Promise<Result<ContactInfo>> {
-  return client
-    .put<JsonOf<ContactInfo>>(`/person/${id}/contact-info`, fridgeHeadPerson)
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -244,7 +233,9 @@ export async function getGuardianDecisions(
         ...data,
         startDate: LocalDate.parseIso(data.startDate),
         endDate: LocalDate.parseIso(data.endDate),
-        sentDate: LocalDate.parseIso(data.sentDate)
+        sentDate: LocalDate.parseIso(data.sentDate),
+        requestedStartDate: LocalDate.parseNullableIso(data.requestedStartDate),
+        resolved: LocalDate.parseNullableIso(data.resolved)
       }))
     )
     .then((v) => Success.of(v))

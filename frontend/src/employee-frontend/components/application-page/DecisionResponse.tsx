@@ -4,6 +4,7 @@
 
 import React, { useCallback, useState } from 'react'
 
+import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -15,7 +16,6 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 
 import { acceptDecision, rejectDecision } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
-import { Decision } from '../../types/decision'
 
 interface Props {
   applicationId: UUID

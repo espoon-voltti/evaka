@@ -7,11 +7,10 @@ import {
   ApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { Action } from 'lib-common/generated/action'
+import { Decision } from 'lib-common/generated/api-types/decision'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 
 import { VoucherApplicationFilter } from '../state/application-ui'
-
-import { Decision } from './decision'
 
 export interface ApplicationResponse {
   application: ApplicationDetails

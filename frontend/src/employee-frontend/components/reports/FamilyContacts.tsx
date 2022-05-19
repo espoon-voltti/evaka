@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Loading, Result } from 'lib-common/api'
+import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
@@ -18,14 +19,13 @@ import { getFamilyContactsReport } from '../../api/reports'
 import { getDaycare, UnitResponse } from '../../api/unit'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { FamilyContactsReportRow } from '../../types/reports'
 
 import { TableScrollable } from './common'
 
 export default React.memo(function FamilyContacts() {
   const { unitId } = useNonNullableParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<FamilyContactsReportRow[]>>(
+  const [rows, setRows] = useState<Result<FamilyContactReportRow[]>>(
     Loading.of()
   )
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
@@ -51,7 +51,7 @@ export default React.memo(function FamilyContacts() {
               data={rows.value.map((row) => ({
                 name: `${row.lastName} ${row.firstName}`,
                 ssn: row.ssn,
-                group: row.group,
+                groupName: row.groupName,
                 address: `${row.streetAddress}, ${row.postalCode} ${row.postOffice}`,
                 headOfChildName: row.headOfChild
                   ? `${row.headOfChild.lastName} ${row.headOfChild.firstName}`
@@ -74,7 +74,7 @@ export default React.memo(function FamilyContacts() {
               headers={[
                 { label: i18n.reports.familyContacts.name, key: 'name' },
                 { label: i18n.reports.familyContacts.ssn, key: 'ssn' },
-                { label: i18n.reports.familyContacts.group, key: 'group' },
+                { label: i18n.reports.familyContacts.group, key: 'groupName' },
                 { label: i18n.reports.familyContacts.address, key: 'address' },
                 {
                   label: i18n.reports.familyContacts.headOfChild,
@@ -136,7 +136,7 @@ export default React.memo(function FamilyContacts() {
                       >{`${row.lastName} ${row.firstName}`}</Link>
                     </Td>
                     <Td>{row.ssn}</Td>
-                    <Td>{row.group}</Td>
+                    <Td>{row.groupName}</Td>
                     <Td>
                       {`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}
                     </Td>

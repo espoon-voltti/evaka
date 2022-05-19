@@ -12,9 +12,9 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -50,11 +50,11 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
             p1.id AS person_id_1,
             p1.first_name AS first_name_1,
             p1.last_name AS last_name_1,
-            p1.street_address AS street_address_1,
+            p1.street_address AS address_1,
             p2.id AS person_id_2,
             p2.first_name AS first_name_2,
             p2.last_name AS last_name_2,
-            p2.street_address AS street_address_2
+            p2.street_address AS address_2
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.person_id < fp2.person_id
         JOIN person p1 ON p1.id = fp1.person_id
@@ -82,21 +82,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         """.trimIndent()
     return createQuery(sql)
         .bindNullable("units", authorizedUnits.ids?.toTypedArray())
-        .map { rs, _ ->
-            PartnersInDifferentAddressReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitId = DaycareId(rs.getUUID("unit_id")),
-                unitName = rs.getString("unit_name"),
-                personId1 = PersonId(rs.getUUID("person_id_1")),
-                firstName1 = rs.getString("first_name_1"),
-                lastName1 = rs.getString("last_name_1"),
-                address1 = rs.getString("street_address_1"),
-                personId2 = PersonId(rs.getUUID("person_id_2")),
-                firstName2 = rs.getString("first_name_2"),
-                lastName2 = rs.getString("last_name_2"),
-                address2 = rs.getString("street_address_2")
-            )
-        }
+        .mapTo<PartnersInDifferentAddressReportRow>()
         .toList()
 }
 

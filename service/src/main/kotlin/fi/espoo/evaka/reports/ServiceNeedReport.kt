@@ -5,12 +5,14 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -71,30 +73,16 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: A
     return createQuery(sql)
         .bind("target_date", date)
         .bind("units", authorizedUnits.ids?.toTypedArray())
-        .map { rs, _ ->
-            ServiceNeedReportRow(
-                careAreaName = rs.getString("care_area_name"),
-                unitName = rs.getString("unit_name"),
-                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-                unitProviderType = rs.getString("unit_provider_type"),
-                age = rs.getInt("age"),
-                fullDay = rs.getInt("full_day"),
-                partDay = rs.getInt("part_day"),
-                fullWeek = rs.getInt("full_week"),
-                partWeek = rs.getInt("part_week"),
-                shiftCare = rs.getInt("shift_care"),
-                missingServiceNeed = rs.getInt("missing_service_need"),
-                total = rs.getInt("total")
-            )
-        }
+        .registerColumnMapper(UnitType::class.java, UnitType.JDBI_COLUMN_MAPPER)
+        .mapTo<ServiceNeedReportRow>()
         .toList()
 }
 
 data class ServiceNeedReportRow(
     val careAreaName: String,
     val unitName: String,
-    val unitType: UnitType?,
-    val unitProviderType: String,
+    val unitType: UnitType,
+    val unitProviderType: ProviderType,
     val age: Int,
     val fullDay: Int,
     val partDay: Int,

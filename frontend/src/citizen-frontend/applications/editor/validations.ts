@@ -4,6 +4,7 @@
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   email,
   emailVerificationCheck,
@@ -56,16 +57,11 @@ const maxDecisionStartDate = (
     : startDate.addDays(14)
 }
 
-export interface Term {
-  start: LocalDate
-  end: LocalDate
-}
-
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
   type: ApplicationType,
-  terms?: Term[]
+  terms?: FiniteDateRange[]
 ): boolean => {
   if (date.isBefore(minPreferredStartDate(originalPreferredStartDate)))
     return false
@@ -73,7 +69,7 @@ export const isValidPreferredStartDate = (
   if (date.isAfter(maxPreferredStartDate())) return false
 
   if (terms !== undefined) {
-    return terms.some(({ start, end }) => date.isBetween(start, end))
+    return terms.some((term) => term.includes(date))
   }
 
   return true
@@ -104,7 +100,7 @@ const preferredStartDateValidator =
   (
     originalPreferredStartDate: LocalDate | null,
     type: ApplicationType,
-    terms?: Term[]
+    terms?: FiniteDateRange[]
   ) =>
   (val: string, err: ErrorKey = 'preferredStartDate'): ErrorKey | undefined => {
     const date = LocalDate.parseFiOrNull(val)
@@ -117,7 +113,7 @@ const preferredStartDateValidator =
 export const validateApplication = (
   apiData: ApplicationDetails,
   form: ApplicationFormData,
-  terms?: Term[]
+  terms?: FiniteDateRange[]
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
     apiData.type === 'DAYCARE' ||

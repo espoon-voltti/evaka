@@ -3,30 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 
 import { JsonOf } from '../../json'
-import LocalDate from '../../local-date'
-
-export interface ClubTerm {
-  term: {
-    start: LocalDate
-    end: LocalDate
-  }
-}
 
 export const deserializeClubTerm = (clubTerm: JsonOf<ClubTerm>): ClubTerm => ({
-  term: {
-    start: LocalDate.parseIso(clubTerm.term.start),
-    end: LocalDate.parseIso(clubTerm.term.end)
-  }
+  applicationPeriod: FiniteDateRange.parseJson(clubTerm.applicationPeriod),
+  term: FiniteDateRange.parseJson(clubTerm.term)
 })
-
-export interface PreschoolTerm {
-  finnishPreschool: FiniteDateRange
-  swedishPreschool: FiniteDateRange
-  extendedTerm: FiniteDateRange
-  applicationPeriod: FiniteDateRange
-}
 
 export const deserializePreschoolTerm = (
   preschoolTerm: JsonOf<PreschoolTerm>

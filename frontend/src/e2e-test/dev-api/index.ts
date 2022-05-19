@@ -13,9 +13,9 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import { FeeThresholds } from 'lib-common/api-types/finance'
 import {
   FeeDecision,
+  FeeThresholds,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'

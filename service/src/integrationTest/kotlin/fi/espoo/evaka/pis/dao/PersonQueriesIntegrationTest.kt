@@ -9,11 +9,8 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.searchPeople
-import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
@@ -26,7 +23,6 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 
 class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
@@ -112,31 +108,6 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.postOffice, actual.postOffice)
 
         assertEquals(updated.restrictedDetailsEndDate, actual.restrictedDetailsEndDate)
-    }
-
-    @Test
-    fun `end user's contact info can be updated`() {
-        val validSSN = "230493-332S"
-        val originalPerson = db.transaction { it.createPersonFromVtj(testPerson(validSSN)) }
-
-        val contactInfo = ContactInfo(
-            email = "test@emai.l",
-            phone = "+3584012345678",
-            backupPhone = "",
-            invoiceRecipientName = "Laskun saaja",
-            invoicingStreetAddress = "Laskutusosoite",
-            invoicingPostalCode = "02123",
-            invoicingPostOffice = "Espoo"
-        )
-
-        assertTrue(db.transaction { it.updatePersonContactInfo(originalPerson.id, contactInfo) })
-
-        val actual = db.read { it.getPersonById(originalPerson.id) }
-        assertEquals(contactInfo.email, actual?.email)
-        assertEquals(contactInfo.phone, actual?.phone)
-        assertEquals(contactInfo.invoicingStreetAddress, actual?.invoicingStreetAddress)
-        assertEquals(contactInfo.invoicingPostalCode, actual?.invoicingPostalCode)
-        assertEquals(contactInfo.invoicingPostOffice, actual?.invoicingPostOffice)
     }
 
     private val adminUser = AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(UserRole.ADMIN))

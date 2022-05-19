@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
+import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -14,7 +15,6 @@ import { H2 } from 'lib-components/typography'
 
 import { getFeeThresholds } from '../../api/finance-basics'
 import { useTranslation } from '../../state/i18n'
-import { FeeThresholds } from '../../types/finance-basics'
 import { renderResult } from '../async-rendering'
 
 import FeeThresholdsEditor from './FeeThresholdsEditor'

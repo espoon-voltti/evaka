@@ -11,6 +11,7 @@ import { AbsenceType } from './daycare'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
 import { AssistanceMeasure } from './assistanceaction'
+import { OccupancyValues } from './occupancy'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
 import { UUID } from '../../types'
@@ -27,7 +28,7 @@ export interface ApplicationsReportRow {
   under3Years: number
   unitId: UUID
   unitName: string
-  unitProviderType: string
+  unitProviderType: ProviderType
 }
 
 /**
@@ -89,8 +90,8 @@ export interface ChildAgeLanguageReportRow {
   sv_7y: number
   unitId: UUID
   unitName: string
-  unitProviderType: string
-  unitType: UnitType | null
+  unitProviderType: ProviderType
+  unitType: UnitType
 }
 
 /**
@@ -114,7 +115,7 @@ export interface ChildrenInDifferentAddressReportRow {
 * Generated from fi.espoo.evaka.reports.Contact
 */
 export interface Contact {
-  email: string
+  email: string | null
   firstName: string
   lastName: string
   phone: string
@@ -136,7 +137,7 @@ export interface DecisionsReportRow {
   preparatoryDaycare: number
   preschool: number
   preschoolDaycare: number
-  providerType: string
+  providerType: ProviderType
   total: number
   unitId: UUID
   unitName: string
@@ -189,7 +190,7 @@ export interface FamilyConflictReportRow {
 */
 export interface FamilyContactReportRow {
   firstName: string
-  group: string | null
+  groupName: string | null
   guardian1: Contact | null
   guardian2: Contact | null
   headOfChild: Contact | null
@@ -252,6 +253,26 @@ export interface MissingServiceNeedReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.OccupancyGroupReportResultRow
+*/
+export interface OccupancyGroupReportResultRow {
+  groupId: UUID
+  groupName: string
+  occupancies: Record<string, OccupancyValues>
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.OccupancyUnitReportResultRow
+*/
+export interface OccupancyUnitReportResultRow {
+  occupancies: Record<string, OccupancyValues>
+  unitId: UUID
+  unitName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.PartnersInDifferentAddressReportRow
 */
 export interface PartnersInDifferentAddressReportRow {
@@ -272,13 +293,13 @@ export interface PartnersInDifferentAddressReportRow {
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
-  applicationId: UUID | null
+  applicationId: UUID
   areaName: string
   assistanceNeeded: boolean | null
-  childDob: string | null
-  childFirstName: string | null
+  childDob: LocalDate
+  childFirstName: string
   childId: UUID
-  childLastName: string | null
+  childLastName: string
   childStreetAddr: string | null
   connectedDaycare: boolean | null
   currentUnitId: UUID | null
@@ -365,8 +386,8 @@ export interface ServiceNeedReportRow {
   shiftCare: number
   total: number
   unitName: string
-  unitProviderType: string
-  unitType: UnitType | null
+  unitProviderType: ProviderType
+  unitType: UnitType
 }
 
 /**

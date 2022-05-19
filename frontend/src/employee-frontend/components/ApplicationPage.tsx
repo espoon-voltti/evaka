@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
@@ -81,7 +82,7 @@ export default React.memo(function ApplicationPage() {
     }
   }, [editing, editedApplication?.type, editedApplication?.form.preferences.preferredStartDate, editedApplication?.form.preferences.preparatory])
 
-  const [terms, setTerms] = useState<Term[]>()
+  const [terms, setTerms] = useState<FiniteDateRange[]>()
   useEffect(() => {
     switch (
       application.map(({ application: { type } }) => type).getOrElse(undefined)
@@ -238,15 +239,10 @@ export default React.memo(function ApplicationPage() {
   )
 })
 
-interface Term {
-  start: LocalDate
-  end: LocalDate
-}
-
 function validateApplication(
   application: ApplicationDetails,
   units: PublicUnit[],
-  terms: Term[] | undefined,
+  terms: FiniteDateRange[] | undefined,
   i18n: Translations
 ): Record<string, string> {
   const errors: Record<string, string> = {}
@@ -264,7 +260,7 @@ function validateApplication(
   if (
     terms &&
     preferredStartDate &&
-    !terms.some((term) => preferredStartDate.isBetween(term.start, term.end))
+    !terms.some((term) => term.includes(preferredStartDate))
   ) {
     errors['form.preferences.preferredStartDate'] =
       i18n.validationError.startDateNotOnTerm

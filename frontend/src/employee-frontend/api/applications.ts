@@ -8,10 +8,8 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import {
-  ClubTerm,
   deserializeClubTerm,
-  deserializePreschoolTerm,
-  PreschoolTerm
+  deserializePreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -19,6 +17,7 @@ import {
   ApplicationSummary,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
+import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import {
   PlacementPlanConfirmationStatus,
@@ -51,7 +50,11 @@ export async function getApplication(
         ...decision,
         startDate: LocalDate.parseIso(decision.startDate),
         endDate: LocalDate.parseIso(decision.endDate),
-        sentDate: LocalDate.parseIso(decision.sentDate)
+        sentDate: LocalDate.parseIso(decision.sentDate),
+        requestedStartDate: LocalDate.parseNullableIso(
+          decision.requestedStartDate
+        ),
+        resolved: LocalDate.parseNullableIso(decision.resolved)
       })),
       guardians: data.guardians.map((guardian) => ({
         ...guardian,
@@ -349,14 +352,6 @@ export async function batchWithdrawPlacementProposal(
     '/v2/applications/batch/actions/withdraw-placement-proposal',
     { applicationIds }
   )
-}
-
-export async function batchConfirmDecisionMailed(
-  applicationIds: UUID[]
-): Promise<void> {
-  return client.post('/v2/applications/batch/actions/confirm-decision-mailed', {
-    applicationIds
-  })
 }
 
 export async function getApplicationNotes(

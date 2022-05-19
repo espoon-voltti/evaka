@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -20,7 +21,6 @@ import { Gap } from 'lib-components/white-space'
 
 import { getApplicationsReport, PeriodFilters } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
-import { ApplicationsReportRow } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
