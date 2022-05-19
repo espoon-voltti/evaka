@@ -60,7 +60,7 @@ describe('Citizen Vasu document page', () => {
     return new VasuPreviewPage(page)
   }
 
-  test('View child vasu document', async () => {
+  test('View child vasu document and give permission to share', async () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,
@@ -70,5 +70,10 @@ describe('Citizen Vasu document page', () => {
 
     const vasuPage = await openDocument()
     await vasuPage.assertTitleChildName('Antero Onni Leevi Aatu Högfors')
+    await vasuPage.givePermissionToShare()
+
+    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await page.reload()
+    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
   })
 })

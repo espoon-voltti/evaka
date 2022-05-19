@@ -37,7 +37,8 @@ class VasuControllerCitizen(
     }
 
     data class CitizenGetVasuDocumentResponse(
-        val vasu: VasuDocument
+        val vasu: VasuDocument,
+        val guardianHasGivenPermissionToShare: Boolean
     )
 
     @GetMapping("/{id}")
@@ -51,8 +52,13 @@ class VasuControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
+                val doc = tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
                 CitizenGetVasuDocumentResponse(
-                    tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
+                    vasu = doc,
+                    guardianHasGivenPermissionToShare = doc.basics.guardians.find {
+                            g ->
+                        g.id.raw == user.rawId()
+                    }?.let { it.hasGivenPermissionToShare } ?: false
                 )
             }
         }

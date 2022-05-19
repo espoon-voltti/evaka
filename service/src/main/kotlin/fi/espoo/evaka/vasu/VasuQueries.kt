@@ -335,12 +335,24 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDoc
     val currentBasics = getVasuDocumentMaster(docId)?.basics
         ?: throw NotFound("Vasu document not found!")
 
-    val (guardian, otherGuardians) = currentBasics.guardians.partition {
+    val (guardianFromDocument, otherGuardiansFromDocument) = currentBasics.guardians.partition {
             g ->
         g.id == guardianId
     }
 
-    if (guardian.size != 1) throw NotFound("Document guardians do not contain the person giving permission")
+    val guardian = if (guardianFromDocument.size == 1) guardianFromDocument[0] else {
+        createQuery(
+            """
+        SELECT p.id, p.first_name, p.last_name
+        FROM person p
+        WHERE p.id = :id
+            """.trimIndent()
+        )
+            .bind("id", guardianId)
+            .mapTo<VasuGuardian>()
+            .first()
+    }
+
     createUpdate(
         """
 UPDATE curriculum_document
@@ -352,7 +364,7 @@ WHERE id = :id
         .bind(
             "basics",
             currentBasics.copy(
-                guardians = otherGuardians + guardian[0].copy(
+                guardians = otherGuardiansFromDocument + guardian.copy(
                     hasGivenPermissionToShare = true
                 )
             )

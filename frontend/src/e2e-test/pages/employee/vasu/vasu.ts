@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { Page, TextInput, Element } from '../../../utils/page'
+import { Page, TextInput, Element, Checkbox } from '../../../utils/page'
 
 import {
   AdditionalInfoSection,
@@ -218,9 +218,22 @@ export class VasuPreviewPage extends VasuPageCommon {
     this.page.find(`[data-qa="value-or-no-record-${questionNumber}"]`)
 
   readonly #titleChildName = this.page.findByDataQa('title-child-name')
+  readonly #confirmCheckBox = new Checkbox(
+    this.page.findByDataQa('confirm-checkbox')
+  )
+  readonly #confirmButton = this.page.findByDataQa('confirm-button')
 
   async assertTitleChildName(expectedName: string) {
     await waitUntilEqual(() => this.#titleChildName.textContent, expectedName)
+  }
+
+  async assertGivePermissionToShareSectionIsNotVisible() {
+    await this.#confirmButton.waitUntilHidden()
+  }
+
+  async givePermissionToShare() {
+    await this.#confirmCheckBox.check()
+    await this.#confirmButton.click()
   }
 
   async assertMultiSelectContains(

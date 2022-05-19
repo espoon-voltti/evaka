@@ -20,7 +20,7 @@ import {
 } from 'lib-common/generated/api-types/vasu'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
-import { getVasuDocument } from './api'
+import { getCitizenVasuDocument } from './api'
 
 type State = 'loading' | 'loading-dirty' | 'loading-error' | 'clean' | 'dirty'
 
@@ -44,6 +44,8 @@ interface Vasu {
   childLanguage: ChildLanguage | null
   status: VasuStatus
   translations: VasuTranslations
+  guardianHasGivenPermissionToShare: boolean
+  setGuardianHasGivenPermissionToShare: Dispatch<SetStateAction<boolean>>
 }
 
 export function useVasu(id: string): Vasu {
@@ -51,15 +53,25 @@ export function useVasu(id: string): Vasu {
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
+  const [
+    guardianHasGivenPermissionToShare,
+    setGuardianHasGivenPermissionToShare
+  ] = useState<boolean>(false)
 
   const handleVasuDocLoaded = useCallback(
     (res: Result<CitizenGetVasuDocumentResponse>) => {
       res.mapAll({
         loading: () => null,
         failure: () => setStatus({ state: 'loading-error' }),
-        success: ({ vasu: { content, ...meta } }) => {
+        success: ({
+          vasu: { content, ...meta },
+          guardianHasGivenPermissionToShare
+        }) => {
           setVasu(meta)
           setContent(content)
+          setGuardianHasGivenPermissionToShare(
+            guardianHasGivenPermissionToShare
+          )
           setChildLanguage(meta.basics.childLanguage)
           setStatus((prev) =>
             prev.state === 'loading-dirty'
@@ -75,7 +87,7 @@ export function useVasu(id: string): Vasu {
   useEffect(
     function loadVasuDocument() {
       setStatus({ state: 'loading' })
-      void getVasuDocument(id).then(handleVasuDocLoaded)
+      void getCitizenVasuDocument(id).then(handleVasuDocLoaded)
     },
     [id, handleVasuDocLoaded]
   )
@@ -94,6 +106,8 @@ export function useVasu(id: string): Vasu {
     setContent,
     childLanguage,
     status,
-    translations
+    translations,
+    guardianHasGivenPermissionToShare,
+    setGuardianHasGivenPermissionToShare
   }
 }

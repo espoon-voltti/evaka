@@ -68,15 +68,28 @@ export async function getVasuDocumentSummaries(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuDocument(
+export async function getCitizenVasuDocument(
   id: UUID
 ): Promise<Result<CitizenGetVasuDocumentResponse>> {
   return client
     .get<JsonOf<CitizenGetVasuDocumentResponse>>(`/citizen/vasu/${id}`)
     .then((res) =>
       Success.of({
-        vasu: mapVasuDocumentResponse(res.data.vasu)
+        vasu: mapVasuDocumentResponse(res.data.vasu),
+        guardianHasGivenPermissionToShare:
+          res.data.guardianHasGivenPermissionToShare
       })
     )
     .catch((e) => Failure.fromError(e))
+}
+
+export async function givePermissionToShareVasu(
+  documentId: UUID
+): Promise<Result<void>> {
+  try {
+    await client.post(`/citizen/vasu/${documentId}/give-permission-to-share`)
+    return Success.of()
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }

@@ -30,6 +30,7 @@ export interface ChildLanguage {
 * Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.CitizenGetVasuDocumentResponse
 */
 export interface CitizenGetVasuDocumentResponse {
+  guardianHasGivenPermissionToShare: boolean
   vasu: VasuDocument
 }
 
