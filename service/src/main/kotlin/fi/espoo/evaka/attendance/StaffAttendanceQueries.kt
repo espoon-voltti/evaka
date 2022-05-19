@@ -134,7 +134,7 @@ fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceId) 
     createUpdate(
         """
            DELETE FROM staff_attendance_realtime
-           WHERE id = :
+           WHERE id = :id
         """.trimIndent()
     )
         .bind("id", attendanceId)
