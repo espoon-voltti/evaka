@@ -30,7 +30,6 @@ export interface ChildLanguage {
 * Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.CitizenGetVasuDocumentResponse
 */
 export interface CitizenGetVasuDocumentResponse {
-  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
   vasu: VasuDocument
 }
 

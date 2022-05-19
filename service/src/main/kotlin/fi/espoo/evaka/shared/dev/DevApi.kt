@@ -134,6 +134,7 @@ import fi.espoo.evaka.vasu.getDefaultTemplateContent
 import fi.espoo.evaka.vasu.getVasuTemplate
 import fi.espoo.evaka.vasu.insertVasuDocument
 import fi.espoo.evaka.vasu.insertVasuTemplate
+import fi.espoo.evaka.vasu.publishVasuDocument
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import mu.KotlinLogging
@@ -1001,6 +1002,15 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
                 tx.insertVasuDocument(body.childId, template)
+            }
+        }
+    }
+
+    @PostMapping("/vasu/doc/publish/{documentId}")
+    fun publishVasuDocument(db: Database, @PathVariable documentId: VasuDocumentId) {
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.publishVasuDocument(documentId)
             }
         }
     }

@@ -75,8 +75,7 @@ export async function getVasuDocument(
     .get<JsonOf<CitizenGetVasuDocumentResponse>>(`/citizen/vasu/${id}`)
     .then((res) =>
       Success.of({
-        vasu: mapVasuDocumentResponse(res.data.vasu),
-        permittedFollowupActions: res.data.permittedFollowupActions
+        vasu: mapVasuDocumentResponse(res.data.vasu)
       })
     )
     .catch((e) => Failure.fromError(e))

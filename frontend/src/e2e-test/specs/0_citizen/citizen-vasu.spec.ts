@@ -11,6 +11,7 @@ import {
   insertGuardianFixtures,
   insertVasuDocument,
   insertVasuTemplateFixture,
+  publishVasuDocument,
   resetDatabase
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -47,6 +48,7 @@ beforeAll(async () => {
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
   templateId = await insertVasuTemplateFixture()
   vasuDocId = await insertVasuDocument(childId, templateId)
+  await publishVasuDocument(vasuDocId)
 
   page = await Page.open()
   await enduserLogin(page)

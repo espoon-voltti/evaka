@@ -7,7 +7,6 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/citizen/vasu")
@@ -39,8 +37,7 @@ class VasuControllerCitizen(
     }
 
     data class CitizenGetVasuDocumentResponse(
-        val vasu: VasuDocument,
-        val permittedFollowupActions: Map<UUID, Set<Action.VasuDocumentFollowup>>
+        val vasu: VasuDocument
     )
 
     @GetMapping("/{id}")
@@ -54,17 +51,8 @@ class VasuControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val doc = tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
-                val entryIds = doc.content.followupEntries().map { doc.id to it.id }.toList()
-                val permittedActions =
-                    accessControl.getPermittedActions<VasuDocumentFollowupEntryId, Action.VasuDocumentFollowup>(
-                        tx,
-                        user,
-                        entryIds
-                    )
                 CitizenGetVasuDocumentResponse(
-                    doc,
-                    permittedActions.mapKeys { it.key.second }
+                    tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
                 )
             }
         }

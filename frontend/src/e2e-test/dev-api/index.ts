@@ -962,6 +962,17 @@ export async function insertVasuDocument(
   }
 }
 
+export async function publishVasuDocument(documentId: UUID): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>(
+      `/vasu/doc/publish/${documentId}`
+    )
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function terminatePlacement(
   placementId: string,
   endDate: LocalDate,
