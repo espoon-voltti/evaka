@@ -742,8 +742,14 @@ commands:
           command: |
             . replace-credentials
 
+            if [ "<< parameters.env >>" = "dev" ]; then
+              cluster_name="voltti-ecs-cluster-<< parameters.env >>-evaka"
+            else
+              cluster_name="voltti-ecs-cluster-<< parameters.env >>"
+            fi
+
             aws ecs wait services-stable \
-              --cluster voltti-ecs-cluster-<< parameters.env >> \
+              --cluster "$cluster_name" \
               --services \
                   evaka-enduser-gw \
                   evaka-internal-gw \
