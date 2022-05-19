@@ -39,7 +39,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
     private val featureConfig: FeatureConfig = testFeatureConfig
     private val draftInvoiceGenerator: DraftInvoiceGenerator =
-        DraftInvoiceGenerator(productProvider, featureConfig)
+        DraftInvoiceGenerator(productProvider, featureConfig, DefaultInvoiceGenerationLogic)
     private val generator: InvoiceGenerator = InvoiceGenerator(draftInvoiceGenerator)
     private val invoiceService =
         InvoiceService(InvoiceIntegrationClient.MockClient(defaultJsonMapper()), TestInvoiceProductProvider())

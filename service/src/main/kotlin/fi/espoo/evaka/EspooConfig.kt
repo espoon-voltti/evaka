@@ -9,6 +9,7 @@ import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
@@ -61,6 +62,9 @@ class EspooConfig {
     @Bean
     @Lazy
     fun espooInvoiceIntegrationEnv(env: Environment) = EspooInvoiceIntegrationEnv.fromEnvironment(env)
+
+    @Bean
+    fun espooInvoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
     @Lazy

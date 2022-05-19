@@ -30,13 +30,30 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Month
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+
+enum class InvoiceGenerationLogic {
+    Default,
+    Free,
+    IgnoreAbsences,
+}
+
+interface InvoiceGenerationLogicChooser {
+    fun logicForMonth(year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic
+}
+
+object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
+    override fun logicForMonth(year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic =
+        InvoiceGenerationLogic.Default
+}
 
 @Component
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
+    private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
 ) {
     fun generateDraftInvoices(
         decisions: Map<PersonId, List<FeeDecision>>,
@@ -161,6 +178,14 @@ class DraftInvoiceGenerator(
             .groupBy { (_, stub) -> stub.child }
             .flatMap { (child, childStubs) ->
                 val separatePeriods = mergePeriods(childStubs)
+
+                val logic = invoiceGenerationLogicChooser.logicForMonth(
+                    invoicePeriod.start.year,
+                    invoicePeriod.start.month,
+                    child.id
+                )
+                if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
+
                 val contractDaysPerMonth = separatePeriods.first().second.contractDaysPerMonth
                 val childPlannedAbsences = plannedAbsences[child.id] ?: setOf()
 
@@ -177,18 +202,27 @@ class DraftInvoiceGenerator(
                     childrenPartialMonth
                 )
 
-                val relevantAbsences = (absences[child.id] ?: listOf()).filter { absence ->
-                    isUnitOperationalDay(
-                        operationalDays,
-                        separatePeriods,
-                        absence.date
-                    )
+                val relevantAbsences = if (logic == InvoiceGenerationLogic.IgnoreAbsences) {
+                    listOf()
+                } else {
+                    (absences[child.id] ?: listOf()).filter { absence ->
+                        isUnitOperationalDay(
+                            operationalDays,
+                            separatePeriods,
+                            absence.date
+                        )
+                    }
+                }
+
+                val fullMonthAbsenceType = if (logic === InvoiceGenerationLogic.IgnoreAbsences) {
+                    FullMonthAbsenceType.NOTHING
+                } else {
+                    childrenFullMonthAbsences[child.id] ?: FullMonthAbsenceType.NOTHING
                 }
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
                     .flatMap { (period, rowStub) ->
-                        val childId = rowStub.child.id
                         toInvoiceRows(
                             period,
                             rowStub,
@@ -197,7 +231,7 @@ class DraftInvoiceGenerator(
                             minOf(contractDaysPerMonth ?: operationalDays.generalCase.size, dailyFeeDivisor),
                             attendanceDates,
                             relevantAbsences,
-                            childrenFullMonthAbsences[childId] ?: FullMonthAbsenceType.NOTHING,
+                            fullMonthAbsenceType,
                         )
                     }
             }

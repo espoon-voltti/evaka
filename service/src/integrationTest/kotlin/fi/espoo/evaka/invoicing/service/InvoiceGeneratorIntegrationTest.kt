@@ -60,6 +60,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -69,7 +70,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
     private val featureConfig: FeatureConfig = testFeatureConfig
     private val draftInvoiceGenerator: DraftInvoiceGenerator =
-        DraftInvoiceGenerator(productProvider, featureConfig)
+        DraftInvoiceGenerator(productProvider, featureConfig, DefaultInvoiceGenerationLogic)
     private val generator: InvoiceGenerator = InvoiceGenerator(draftInvoiceGenerator)
 
     @BeforeEach
@@ -3196,7 +3197,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                DefaultInvoiceGenerationLogic
             )
         )
 
@@ -3455,7 +3457,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(freeSickLeaveOnContractDays = true)
+                featureConfig.copy(freeSickLeaveOnContractDays = true),
+                DefaultInvoiceGenerationLogic
             )
         )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3488,7 +3491,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                DefaultInvoiceGenerationLogic
             )
         )
 
@@ -3540,7 +3544,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                DefaultInvoiceGenerationLogic
             )
         )
 
@@ -3604,7 +3609,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                DefaultInvoiceGenerationLogic
             )
         )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3646,7 +3652,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20)
+                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                DefaultInvoiceGenerationLogic
             )
         )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3833,7 +3840,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator = InvoiceGenerator(
             DraftInvoiceGenerator(
                 productProvider,
-                featureConfig.copy(freeSickLeaveOnContractDays = true)
+                featureConfig.copy(freeSickLeaveOnContractDays = true),
+                DefaultInvoiceGenerationLogic
             )
         )
 
@@ -3924,6 +3932,72 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-17340, invoiceRow.unitPrice)
                 assertEquals(-17340, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with Free logic`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        initDataForAbsences(listOf(period), listOf())
+
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig,
+                object : InvoiceGenerationLogicChooser {
+                    override fun logicForMonth(year: Int, month: Month, childId: ChildId) =
+                        InvoiceGenerationLogic.Free
+                }
+            )
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `invoice generation with IgnoreAbsences logic`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // Add some absences that would normally affect invoicing
+
+        // 1 force majeure absence
+        val forceMajeure =
+            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
+
+        // 11 sick leaves
+        val sickLeave =
+            datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31))
+                .map { it to AbsenceType.SICKLEAVE }
+
+        initDataForAbsences(listOf(period), forceMajeure + sickLeave)
+
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig,
+                object : InvoiceGenerationLogicChooser {
+                    override fun logicForMonth(year: Int, month: Month, childId: ChildId) =
+                        InvoiceGenerationLogic.IgnoreAbsences
+                }
+            )
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
             }
         }
     }
