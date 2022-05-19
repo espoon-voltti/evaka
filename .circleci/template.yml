@@ -742,7 +742,7 @@ commands:
           command: |
             . replace-credentials
 
-            if [ "<< parameters.env >>" = "dev" ]; then
+            if [ "<< parameters.env >>" = "dev" ] || [ "<< parameters.env >>" = "test" ]; then
               cluster_name="voltti-ecs-cluster-<< parameters.env >>-evaka"
             else
               cluster_name="voltti-ecs-cluster-<< parameters.env >>"
