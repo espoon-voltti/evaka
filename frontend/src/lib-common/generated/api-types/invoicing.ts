@@ -8,6 +8,7 @@
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import { CareType } from './daycare'
 import { DecisionIncome } from '../../api-types/income'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
@@ -431,6 +432,7 @@ export interface InvoiceRowDetailed {
   child: PersonDetailed
   correctionId: UUID | null
   costCenter: string
+  daycareType: CareType[]
   description: string
   id: UUID
   note: string | null

@@ -88,6 +88,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
     codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
     rows = invoice.rows.map { row ->
         val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
+        val daycareType = allDaycares.find { it.id == row.unitId }?.type!!
         InvoiceRowDetailed(
             id = row.id!!,
             child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
@@ -97,6 +98,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
             periodEnd = row.periodEnd,
             product = row.product,
             unitId = row.unitId,
+            daycareType = daycareType,
             costCenter = costCenter,
             subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
             savedCostCenter = if (invoice.status == InvoiceStatus.SENT || invoice.status == InvoiceStatus.WAITING_FOR_SENDING) costCenter else null,
