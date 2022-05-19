@@ -10,11 +10,11 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
-fun Database.Read.applicationFlags(application: ApplicationDetails): ApplicationFlags {
+fun Database.Read.applicationFlags(application: ApplicationDetails, today: LocalDate): ApplicationFlags {
     return applicationFlags(
         childId = application.childId,
         formType = application.type,
-        startDate = application.form.preferences.preferredStartDate ?: LocalDate.now(),
+        startDate = application.form.preferences.preferredStartDate ?: today,
         connectedDaycare = application.form.preferences.serviceNeed != null
     )
 }

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
 import fi.espoo.evaka.decision.DecisionDraftService
@@ -319,6 +318,7 @@ class ApplicationControllerV2(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ) {
@@ -333,7 +333,7 @@ class ApplicationControllerV2(
                     applicationId,
                     application,
                     user.evakaUserId,
-                    currentDateInFinland()
+                    evakaClock.today()
                 )
             }
         }
@@ -343,6 +343,7 @@ class ApplicationControllerV2(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
         db.connect { dbc ->
@@ -351,7 +352,7 @@ class ApplicationControllerV2(
                     it,
                     user,
                     applicationId,
-                    currentDateInFinland()
+                    evakaClock.today()
                 )
             }
         }

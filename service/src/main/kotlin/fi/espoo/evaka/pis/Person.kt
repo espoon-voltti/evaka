@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 
 fun createPerson(tx: Database.Transaction, person: CreatePersonBody): PersonId {
     val personId = tx.createPerson(person)
@@ -16,8 +17,8 @@ fun createPerson(tx: Database.Transaction, person: CreatePersonBody): PersonId {
     return personId
 }
 
-fun createEmptyPerson(tx: Database.Transaction): PersonDTO {
-    val result = tx.createEmptyPerson()
+fun createEmptyPerson(tx: Database.Transaction, evakaClock: EvakaClock): PersonDTO {
+    val result = tx.createEmptyPerson(evakaClock)
     tx.createPersonMessageAccount(result.id)
     return result
 }

@@ -65,12 +65,13 @@ class ChildAttendanceController(
     fun getAttendances(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
         Audit.ChildAttendancesRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
-        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, HelsinkiDateTime.now()) } }
+        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, evakaClock.now()) } }
     }
 
     data class AttendancesRequest(
@@ -437,8 +438,8 @@ private fun Database.Read.fetchChildPlacementTypeDates(
 
 private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: HelsinkiDateTime): AttendanceResponse {
     val childrenBasics = fetchChildrenBasics(unitId, instant)
-    val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId)
-    val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId)
+    val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId, instant.toLocalDate())
+    val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId, instant.toLocalDate())
     val attendanceReservations = fetchAttendanceReservations(unitId, instant)
 
     val children = childrenBasics.map { child ->

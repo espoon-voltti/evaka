@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapNullableColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -174,7 +175,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         .first()
 }
 
-fun Database.Transaction.createEmptyPerson(): PersonDTO {
+fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
     // language=SQL
     val sql =
         """
@@ -186,7 +187,7 @@ fun Database.Transaction.createEmptyPerson(): PersonDTO {
     return createQuery(sql)
         .bind("firstName", "Etunimi")
         .bind("lastName", "Sukunimi")
-        .bind("dateOfBirth", LocalDate.now())
+        .bind("dateOfBirth", evakaClock.today())
         .bind("email", "")
         .map(toPersonDTO)
         .first()

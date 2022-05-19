@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -158,6 +159,7 @@ class VasuController(
     fun editFollowupEntry(
         db: Database,
         user: AuthenticatedUser.Employee,
+        evakaClock: EvakaClock,
         @PathVariable id: VasuDocumentId,
         @PathVariable entryId: UUID,
         @RequestBody body: EditFollowupEntryRequest
@@ -172,7 +174,7 @@ class VasuController(
 
                 tx.updateVasuDocumentMaster(
                     id,
-                    vasu.content.editFollowupEntry(entryId, editedBy, body.text),
+                    vasu.content.editFollowupEntry(entryId, evakaClock, editedBy, body.text),
                     vasu.basics.childLanguage
                 )
             }

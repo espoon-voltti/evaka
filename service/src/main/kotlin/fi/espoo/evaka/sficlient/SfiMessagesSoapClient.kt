@@ -18,6 +18,7 @@ import fi.espoo.evaka.sficlient.soap.Osoite
 import fi.espoo.evaka.sficlient.soap.Tiedosto
 import fi.espoo.evaka.sficlient.soap.Viranomainen
 import fi.espoo.evaka.sficlient.soap.Yhteyshenkilo
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.apache.commons.text.StringEscapeUtils
@@ -148,7 +149,7 @@ class SfiMessagesSoapClient(
                         viranomaisTunniste = msg.documentId
                         nimeke = msg.messageHeader
                         kuvausTeksti = StringEscapeUtils.unescapeJava(msg.messageContent)
-                        lahetysPvm = LocalDate.now().toXmlGregorian()
+                        lahetysPvm = LocalDate.now(europeHelsinki).toXmlGregorian()
                         lahettajaNimi = ""
                         tiedostot = ArrayOfTiedosto().apply {
                             tiedosto += Tiedosto().apply {

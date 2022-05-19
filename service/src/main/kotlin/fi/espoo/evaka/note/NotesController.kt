@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,6 +38,7 @@ class NotesController(
     fun getNotesByChild(
         user: AuthenticatedUser,
         db: Database,
+        evakaClock: EvakaClock,
         @PathVariable childId: ChildId
     ): NotesByChildResponse {
         Audit.NotesByChildRead.log(childId)
@@ -47,7 +49,7 @@ class NotesController(
                 NotesByChildResponse(
                     childDailyNote = it.getChildDailyNote(childId),
                     childStickyNotes = it.getChildStickyNotesForChild(childId),
-                    groupNotes = it.getGroupNotesForChild(childId)
+                    groupNotes = it.getGroupNotesForChild(childId, evakaClock.today())
                 )
             }
         }
@@ -62,6 +64,7 @@ class NotesController(
     fun getNotesByGroup(
         user: AuthenticatedUser,
         db: Database,
+        evakaClock: EvakaClock,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
         Audit.NotesByGroupRead.log(groupId)
@@ -70,8 +73,8 @@ class NotesController(
         return db.connect { dbc ->
             dbc.read {
                 NotesByGroupResponse(
-                    childDailyNotes = it.getChildDailyNotesInGroup(groupId),
-                    childStickyNotes = it.getChildStickyNotesForGroup(groupId),
+                    childDailyNotes = it.getChildDailyNotesInGroup(groupId, evakaClock.today()),
+                    childStickyNotes = it.getChildStickyNotesForGroup(groupId, evakaClock.today()),
                     groupNotes = it.getGroupNotesForGroup(groupId)
                 )
             }

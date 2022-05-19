@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/staff-attendances")
@@ -36,11 +36,12 @@ class StaffAttendanceController(
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): UnitStaffAttendance {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
-        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, LocalDate.now()) }
+        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, evakaClock.today()) }
     }
 
     @GetMapping("/group/{groupId}")

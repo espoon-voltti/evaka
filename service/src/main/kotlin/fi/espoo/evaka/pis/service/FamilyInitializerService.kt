@@ -18,11 +18,12 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class FamilyInitializerService(
@@ -41,18 +42,18 @@ class FamilyInitializerService(
             ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
         val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
-        db.transaction { initFamilyFromApplication(it, members) }
+        db.transaction { initFamilyFromApplication(it, RealEvakaClock(), members) }
     }
 
-    private fun initFamilyFromApplication(tx: Database.Transaction, members: FridgeFamilyMembers) {
-        tx.subTransaction { createParentship(tx, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
+    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, members: FridgeFamilyMembers) {
+        tx.subTransaction { createParentship(tx, evakaClock, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
 
         if (members.fridgePartner != null) {
-            tx.subTransaction { createPartnership(tx, members.headOfFamily.id, members.fridgePartner.id) }
+            tx.subTransaction { createPartnership(tx, evakaClock, members.headOfFamily.id, members.fridgePartner.id) }
         }
 
         members.fridgeSiblings.forEach { sibling ->
-            tx.subTransaction { createParentship(tx, child = sibling, headOfChildId = members.headOfFamily.id) }
+            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = members.headOfFamily.id) }
         }
     }
 
@@ -100,8 +101,8 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(tx: Database.Transaction, child: PersonDTO, headOfChildId: PersonId) {
-        val startDate = LocalDate.now()
+    private fun createParentship(tx: Database.Transaction, evakaClock: EvakaClock, child: PersonDTO, headOfChildId: PersonId) {
+        val startDate = evakaClock.today()
         val alreadyExists = tx.getParentships(
             headOfChildId = headOfChildId,
             childId = child.id,
@@ -148,8 +149,8 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createPartnership(tx: Database.Transaction, personId1: PersonId, personId2: PersonId) {
-        val startDate = LocalDate.now()
+    private fun createPartnership(tx: Database.Transaction, evakaClock: EvakaClock, personId1: PersonId, personId2: PersonId) {
+        val startDate = evakaClock.today()
         val alreadyExists =
             tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
                 .any { partnership ->

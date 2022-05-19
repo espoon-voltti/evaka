@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -144,10 +145,10 @@ class InvoiceController(
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<InvoiceId>) {
+    fun markInvoicesSent(db: Database, user: AuthenticatedUser, evakaClock: EvakaClock, @RequestBody invoiceIds: List<InvoiceId>) {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, invoiceIds)
-        db.connect { dbc -> dbc.transaction { it.markManuallySent(user, invoiceIds) } }
+        db.connect { dbc -> dbc.transaction { it.markManuallySent(user, evakaClock.now(), invoiceIds) } }
     }
 
     @GetMapping("/{id}")

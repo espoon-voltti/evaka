@@ -120,6 +120,7 @@ import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -156,7 +157,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -342,14 +342,14 @@ class DevApi(
     )
 
     @PostMapping("/decisions")
-    fun createDecisions(db: Database, @RequestBody decisions: List<DecisionRequest>) {
+    fun createDecisions(db: Database, evakaClock: EvakaClock, @RequestBody decisions: List<DecisionRequest>) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 decisions.forEach { decision ->
                     tx.insertDecision(
                         decision.id,
                         EvakaUserId(decision.employeeId.raw),
-                        LocalDate.now(ZoneId.of("Europe/Helsinki")),
+                        evakaClock.today(),
                         decision.applicationId,
                         decision.unitId,
                         decision.type.toString(),

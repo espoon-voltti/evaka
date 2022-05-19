@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import org.springframework.stereotype.Component
@@ -417,7 +418,7 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
         }.firstOrNull { draft -> decision.contentEquals(draft) }
 
         firstOverlappingSimilarDraft?.let { similarDraft ->
-            val now = LocalDate.now()
+            val now = LocalDate.now(europeHelsinki)
             if (orMax(decision.validTo) >= now && orMax(similarDraft.validTo) >= now) {
                 Pair(
                     updatedActives + decision.withValidity(DateRange(decision.validFrom, similarDraft.validTo)),

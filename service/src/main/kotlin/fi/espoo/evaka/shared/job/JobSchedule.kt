@@ -8,15 +8,15 @@ import com.github.kagkarlsson.scheduler.task.schedule.CronSchedule
 import com.github.kagkarlsson.scheduler.task.schedule.Daily
 import com.github.kagkarlsson.scheduler.task.schedule.Schedule
 import fi.espoo.evaka.ScheduledJobsEnv
-import fi.espoo.evaka.application.utils.helsinkiZone
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalTime
 
 interface JobSchedule {
     fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings?
 
     companion object {
-        fun daily(at: LocalTime): Schedule = Daily(helsinkiZone, at)
-        fun cron(expression: String): Schedule = CronSchedule(expression, helsinkiZone)
+        fun daily(at: LocalTime): Schedule = Daily(europeHelsinki, at)
+        fun cron(expression: String): Schedule = CronSchedule(expression, europeHelsinki)
     }
 }
 

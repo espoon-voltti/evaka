@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -31,6 +32,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
     fun getOccupancyUnitReport(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
@@ -45,7 +47,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.calculateUnitOccupancyReport(
-                    LocalDate.now(),
+                    evakaClock.today(),
                     careAreaId,
                     FiniteDateRange(from, to),
                     type,
@@ -59,6 +61,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
     fun getOccupancyGroupReport(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId,
         @RequestParam year: Int,
@@ -72,7 +75,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.calculateGroupOccupancyReport(
-                    LocalDate.now(),
+                    evakaClock.today(),
                     careAreaId,
                     FiniteDateRange(from, to),
                     type,

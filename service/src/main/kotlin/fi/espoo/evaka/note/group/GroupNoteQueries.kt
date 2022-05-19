@@ -13,7 +13,7 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
-fun Database.Read.getGroupNotesForChild(childId: ChildId): List<GroupNote> = createQuery(
+fun Database.Read.getGroupNotesForChild(childId: ChildId, today: LocalDate): List<GroupNote> = createQuery(
     """
     SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
     FROM group_note gn
@@ -34,7 +34,7 @@ fun Database.Read.getGroupNotesForChild(childId: ChildId): List<GroupNote> = cre
     """.trimIndent()
 )
     .bind("childId", childId)
-    .bind("today", LocalDate.now())
+    .bind("today", today)
     .mapTo<GroupNote>()
     .list()
 

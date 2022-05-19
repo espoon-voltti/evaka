@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -29,13 +30,14 @@ class ChildStickyNoteController(
     fun createChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
         Audit.ChildStickyNoteCreate.log(childId)
         ac.requirePermissionFor(user, Action.Child.CREATE_STICKY_NOTE, childId)
 
-        validateExpiration(body.expires)
+        validateExpiration(evakaClock, body.expires)
 
         return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }
     }
@@ -44,13 +46,14 @@ class ChildStickyNoteController(
     fun updateChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNote {
         Audit.ChildStickyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, Action.ChildStickyNote.UPDATE, noteId)
 
-        validateExpiration(body.expires)
+        validateExpiration(evakaClock, body.expires)
 
         return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(noteId, body) } }
     }
@@ -67,10 +70,10 @@ class ChildStickyNoteController(
         return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }
     }
 
-    private fun validateExpiration(expires: LocalDate) {
+    private fun validateExpiration(evakaClock: EvakaClock, expires: LocalDate) {
         val validRange = FiniteDateRange(
-            LocalDate.now(),
-            LocalDate.now().plusDays(7)
+            evakaClock.today(),
+            evakaClock.today().plusDays(7)
         )
         if (!validRange.includes(expires)) {
             throw BadRequest("Expiration date was invalid")

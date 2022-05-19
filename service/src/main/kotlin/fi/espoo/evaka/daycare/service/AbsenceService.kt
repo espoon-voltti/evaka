@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -86,8 +87,8 @@ class AbsenceService {
         return tx.getAbsencesByChildByRange(childId, range)
     }
 
-    fun getFutureAbsencesByChild(tx: Database.Read, childId: ChildId): List<Absence> {
-        val period = DateRange(LocalDate.now().plusDays(1), null)
+    fun getFutureAbsencesByChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
+        val period = DateRange(evakaClock.today().plusDays(1), null)
         return tx.getAbsencesByChildByRange(childId, period)
     }
 }

@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.ProductKey
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import java.time.LocalDate
@@ -76,7 +77,7 @@ class EspooInvoiceIntegrationClient(
                 .let { invoices ->
                     EspooInvoiceBatch(
                         agreementType = agType,
-                        batchDate = LocalDate.now(),
+                        batchDate = LocalDate.now(europeHelsinki),
                         batchNumber = agType,
                         invoices = invoices.map { invoice ->
                             val lang =

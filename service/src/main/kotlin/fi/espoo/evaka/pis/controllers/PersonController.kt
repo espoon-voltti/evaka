@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -48,10 +49,10 @@ class PersonController(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
     @PostMapping
-    fun createEmpty(db: Database, user: AuthenticatedUser): PersonIdentityResponseJSON {
+    fun createEmpty(db: Database, user: AuthenticatedUser, evakaClock: EvakaClock): PersonIdentityResponseJSON {
         Audit.PersonCreate.log()
         accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON)
-        return db.connect { dbc -> dbc.transaction { createEmptyPerson(it) } }
+        return db.connect { dbc -> dbc.transaction { createEmptyPerson(it, evakaClock) } }
             .let { PersonIdentityResponseJSON.from(it) }
     }
 
@@ -282,11 +283,12 @@ class PersonController(
     fun updatePersonAndFamilyFromVtj(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @PathVariable personId: PersonId
     ) {
         Audit.PersonVtjFamilyUpdate.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Person.UPDATE_FROM_VTJ, personId)
-        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, personId) }
+        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, evakaClock, personId) }
     }
 
     data class PersonResponse(

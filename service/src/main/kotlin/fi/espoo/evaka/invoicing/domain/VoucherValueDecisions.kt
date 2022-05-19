@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
@@ -183,7 +184,7 @@ data class VoucherValueDecisionDetailed(
         }
 
     val isRetroactive
-        get() = isRetroactive(this.validFrom, sentAt?.toLocalDate() ?: LocalDate.now())
+        get() = isRetroactive(this.validFrom, sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki))
 }
 
 data class VoucherValueDecisionSummary(

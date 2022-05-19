@@ -29,19 +29,19 @@ fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
         .firstOrNull()
 }
 
-fun Database.Read.getChildDailyNotesInGroup(groupId: GroupId): List<ChildDailyNote> {
-    return getChildDailyNotesInGroups(listOf(groupId))
+fun Database.Read.getChildDailyNotesInGroup(groupId: GroupId, today: LocalDate): List<ChildDailyNote> {
+    return getChildDailyNotesInGroups(listOf(groupId), today)
 }
 
-fun Database.Read.getChildDailyNotesInUnit(unitId: DaycareId): List<ChildDailyNote> {
+fun Database.Read.getChildDailyNotesInUnit(unitId: DaycareId, today: LocalDate): List<ChildDailyNote> {
     return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<GroupId>()
         .list()
-        .let { groupIds -> getChildDailyNotesInGroups(groupIds) }
+        .let { groupIds -> getChildDailyNotesInGroups(groupIds, today) }
 }
 
-private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>): List<ChildDailyNote> {
+private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, today: LocalDate): List<ChildDailyNote> {
     return createQuery(
         """
         SELECT 
@@ -63,7 +63,7 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>): L
         """.trimIndent()
     )
         .bind("groupIds", groupIds.toTypedArray())
-        .bind("today", LocalDate.now())
+        .bind("today", today)
         .mapTo<ChildDailyNote>()
         .list()
 }

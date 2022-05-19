@@ -205,7 +205,7 @@ class ApplicationStateService(
         verifyStatus(application, CREATED)
         validateApplication(tx, application.type, application.form, currentDate, strict = user is AuthenticatedUser.Citizen)
 
-        val applicationFlags = tx.applicationFlags(application)
+        val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags)
 
         val sentDate = application.sentDate ?: currentDate

@@ -31,9 +31,11 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.withMockedTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -49,8 +51,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private val groupId2 = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
     private val daycarePlacementId = PlacementId(UUID.randomUUID())
-    private val placementStart = LocalDate.now().minusDays(30)
-    private val placementEnd = LocalDate.now().plusDays(30)
+    private val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 3), LocalTime.of(12, 5, 1))
+    private val placementStart = now.toLocalDate().minusDays(30)
+    private val placementEnd = now.toLocalDate().plusDays(30)
 
     @BeforeEach
     fun beforeEach() {
@@ -94,8 +97,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(8),
-                departed = HelsinkiDateTime.now().minusDays(1)
+                arrived = now.minusDays(1).minusHours(8),
+                departed = now.minusDays(1)
             )
         }
         val child = expectOneChild()
@@ -112,8 +115,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 groupId = groupId2,
-                startDate = HelsinkiDateTime.now().toLocalDate(),
-                endDate = HelsinkiDateTime.now().toLocalDate(),
+                startDate = now.toLocalDate(),
+                endDate = now.toLocalDate(),
             )
         }
         val response = fetchAttendances()
@@ -127,8 +130,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 groupId = groupId,
-                startDate = HelsinkiDateTime.now().toLocalDate(),
-                endDate = HelsinkiDateTime.now().toLocalDate(),
+                startDate = now.toLocalDate(),
+                endDate = now.toLocalDate(),
             )
         }
         val child = expectOneChild()
@@ -140,7 +143,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child is present`() {
-        val arrived = HelsinkiDateTime.now().minusHours(3)
+        val arrived = now.minusHours(3)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -159,8 +162,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has departed`() {
-        val arrived = HelsinkiDateTime.now().minusHours(3)
-        val departed = HelsinkiDateTime.now().minusMinutes(1)
+        val arrived = now.minusHours(3)
+        val departed = now.minusMinutes(1)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -183,13 +186,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             it.insertTestAbsence(
                 childId = testChild_1.id,
                 category = AbsenceCategory.NONBILLABLE,
-                date = LocalDate.now(),
+                date = now.toLocalDate(),
                 absenceType = AbsenceType.SICKLEAVE
             )
             it.insertTestAbsence(
                 childId = testChild_1.id,
                 category = AbsenceCategory.BILLABLE,
-                date = LocalDate.now(),
+                date = now.toLocalDate(),
                 absenceType = AbsenceType.SICKLEAVE
             )
         }
@@ -241,7 +244,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `yesterday's arrival is present if no departure has been set`() {
-        val arrived = HelsinkiDateTime.now().minusDays(1)
+        val arrived = now.minusDays(1)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -260,8 +263,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `yesterday's arrival is departed if departure time is within last 30 minutes`() {
-        val arrived = HelsinkiDateTime.now().minusDays(1)
-        val departed = HelsinkiDateTime.now().minusMinutes(25)
+        val arrived = now.minusDays(1)
+        val departed = now.minusMinutes(25)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -280,8 +283,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `yesterday's arrival is coming if departure time is over 30 minutes ago`() {
-        val arrived = HelsinkiDateTime.now().minusDays(1)
-        val departed = HelsinkiDateTime.now().minusMinutes(35)
+        val arrived = now.minusDays(1)
+        val departed = now.minusMinutes(35)
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -298,15 +301,15 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `yesterday's presence is presence in backup care but not in placement unit`() {
-        val arrived = HelsinkiDateTime.now().minusDays(1)
+        val arrived = now.minusDays(1)
         val backupUnitId = testDaycare2.id
         db.transaction {
             it.insertTestBackUpCare(
                 childId = testChild_1.id,
                 unitId = backupUnitId,
                 groupId = groupId2,
-                startDate = HelsinkiDateTime.now().minusDays(1).toLocalDate(),
-                endDate = HelsinkiDateTime.now().toLocalDate()
+                startDate = now.minusDays(1).toLocalDate(),
+                endDate = now.toLocalDate()
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -332,13 +335,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 childId = testChild_1.id,
                 unitId = backupUnitId,
                 groupId = groupId2,
-                startDate = HelsinkiDateTime.now().minusDays(2).toLocalDate(),
-                endDate = HelsinkiDateTime.now().minusDays(1).toLocalDate()
+                startDate = now.minusDays(2).toLocalDate(),
+                endDate = now.minusDays(1).toLocalDate()
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = backupUnitId,
-                arrived = HelsinkiDateTime.now().minusDays(2),
+                arrived = now.minusDays(2),
                 departed = null
             )
         }
@@ -354,6 +357,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun fetchUnitInfo(): UnitInfo {
         val (_, res, result) = http.get("/mobile/units/${testDaycare.id}")
             .asUser(mobileUser)
+            .withMockedTime(now)
             .responseObject<UnitInfo>(jsonMapper)
 
         assertEquals(200, res.statusCode)
@@ -363,6 +367,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun fetchAttendances(unitId: DaycareId = testDaycare.id, user: AuthenticatedUser = mobileUser): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/$unitId")
             .asUser(user)
+            .withMockedTime(now)
             .responseObject<AttendanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
