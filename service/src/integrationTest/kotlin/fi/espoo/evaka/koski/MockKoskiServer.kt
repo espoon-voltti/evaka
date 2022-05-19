@@ -15,6 +15,7 @@ import io.javalin.http.Context
 import mu.KotlinLogging
 import java.util.concurrent.locks.ReentrantLock
 import javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST
+import javax.servlet.http.HttpServletResponse.SC_NOT_FOUND
 import kotlin.concurrent.withLock
 import kotlin.random.Random
 
@@ -64,8 +65,17 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                 return
             }
             "PUT" -> if (oppija.opiskeluoikeudet.mapNotNull { it.oid }.any { !studyRights.containsKey(it) }) {
-                ctx.contentType("text/plain").status(SC_BAD_REQUEST)
-                    .result("Can't update a study right that doesn't exist")
+                ctx.contentType("application/json").status(SC_NOT_FOUND)
+                    .result(
+                        jsonMapper.writeValueAsString(
+                            listOf(
+                                KoskiClient.Error(
+                                    key = "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia",
+                                    message = "Not found"
+                                )
+                            )
+                        )
+                    )
                 return
             }
         }

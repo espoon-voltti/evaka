@@ -36,6 +36,7 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -112,6 +113,28 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
         assertSingleStudyRight()
+    }
+
+    @Test
+    fun `voiding considers status 404 as success`() {
+        val placementId = insertPlacement()
+
+        fun countActiveStudyRights() = db.read {
+            it.createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
+                .mapTo<Long>()
+                .one()
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+        assertEquals(1, koskiServer.getStudyRights().values.size)
+        assertEquals(1, countActiveStudyRights())
+
+        koskiServer.clearData()
+
+        db.transaction { it.execute("DELETE FROM placement WHERE id = ?", placementId) }
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
+        assertEquals(0, koskiServer.getStudyRights().values.size)
+        assertEquals(0, countActiveStudyRights())
     }
 
     @Test
