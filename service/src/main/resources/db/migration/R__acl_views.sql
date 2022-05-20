@@ -5,6 +5,7 @@ DROP VIEW IF EXISTS daycare_acl_view;
 DROP VIEW IF EXISTS mobile_device_daycare_acl_view;
 
 DROP FUNCTION IF EXISTS employee_child_group_acl(today date);
+DROP FUNCTION IF EXISTS employee_child_daycare_acl(today date);
 DROP FUNCTION IF EXISTS child_daycare_acl(today date);
 
 -- Mapping between mobile devices and daycares
@@ -61,24 +62,36 @@ $$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION child_daycare_acl(today date) RETURNS
 TABLE (
-    child_id uuid, daycare_id uuid
+    child_id uuid, daycare_id uuid, is_backup_care bool
 ) AS $$
-    SELECT pl.child_id, pl.unit_id AS daycare_id
+    SELECT pl.child_id, pl.unit_id AS daycare_id, FALSE AS is_backup_care
     FROM placement pl
     WHERE pl.end_date > today - interval '1 month'
 
     UNION ALL
 
-    SELECT a.child_id, pp.unit_id AS daycare_id
+    SELECT a.child_id, pp.unit_id AS daycare_id, FALSE AS is_backup_care
     FROM placement_plan pp
     JOIN application a ON pp.application_id = a.id
     WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
 
     UNION ALL
 
-    SELECT child_id, bc.unit_id AS daycare_id
+    SELECT child_id, bc.unit_id AS daycare_id, TRUE AS is_backup_care
     FROM backup_care bc
     WHERE bc.end_date > today - INTERVAL '1 month'
+$$ LANGUAGE SQL STABLE;
+
+CREATE FUNCTION employee_child_daycare_acl(today date) RETURNS
+TABLE (
+    employee_id uuid, child_id uuid, daycare_id uuid, role user_role
+) AS $$
+    SELECT employee_id, child_id, daycare_id, (CASE
+        WHEN is_backup_care AND role != 'UNIT_SUPERVISOR' THEN 'STAFF'
+        ELSE role
+    END)
+    FROM child_daycare_acl(today)
+    JOIN daycare_acl USING (daycare_id)
 $$ LANGUAGE SQL STABLE;
 
 CREATE VIEW child_acl_view(employee_id, child_id, role) AS (

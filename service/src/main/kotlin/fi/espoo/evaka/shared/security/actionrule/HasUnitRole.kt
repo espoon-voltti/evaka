@@ -87,7 +87,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
                 """
 SELECT av.id, role
 FROM application_view av
-LEFT JOIN placement_plan pp ON pp.application_id = av.id
+JOIN placement_plan pp ON pp.application_id = av.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 AND av.id = ANY(:ids)
@@ -101,16 +101,17 @@ AND av.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfAssistanceAction() = DatabaseActionRule(
         this,
-        Query<AssistanceActionId> { tx, user, _, ids ->
+        Query<AssistanceActionId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-SELECT ac.id, role
-FROM child_acl_view acl
-JOIN assistance_action ac ON acl.child_id = ac.child_id
-WHERE acl.employee_id = :userId
-AND ac.id = ANY(:ids)
+SELECT aa.id, role
+FROM assistance_action aa
+JOIN employee_child_daycare_acl(:today) USING (child_id)
+WHERE employee_id = :userId
+AND aa.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -119,16 +120,17 @@ AND ac.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfAssistanceNeed() = DatabaseActionRule(
         this,
-        Query<AssistanceNeedId> { tx, user, _, ids ->
+        Query<AssistanceNeedId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT an.id, role
-FROM child_acl_view acl
-JOIN assistance_need an ON acl.child_id = an.child_id
-WHERE acl.employee_id = :userId
+FROM assistance_need an
+JOIN employee_child_daycare_acl(:today) USING (child_id)
+WHERE employee_id = :userId
 AND an.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -137,16 +139,17 @@ AND an.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfBackupCare() = DatabaseActionRule(
         this,
-        Query<BackupCareId> { tx, user, _, ids ->
+        Query<BackupCareId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT bc.id, role
-FROM child_acl_view acl
-JOIN backup_care bc ON acl.child_id = bc.child_id
-WHERE acl.employee_id = :userId
+FROM backup_care bc
+JOIN employee_child_daycare_acl(:today) USING (child_id)
+WHERE employee_id = :userId
 AND bc.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -155,16 +158,17 @@ AND bc.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfBackupPickup() = DatabaseActionRule(
         this,
-        Query<BackupPickupId> { tx, user, _, ids ->
+        Query<BackupPickupId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT bp.id, role
-FROM child_acl_view acl
-JOIN backup_pickup bp ON acl.child_id = bp.child_id
-WHERE acl.employee_id = :userId
+FROM backup_pickup bp
+JOIN employee_child_daycare_acl(:today) USING (child_id)
+WHERE employee_id = :userId
 AND bp.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -173,15 +177,16 @@ AND bp.id = ANY(:ids)
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, _, ids ->
+        Query<ChildId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT child_id AS id, role
-FROM child_acl_view
+FROM employee_child_daycare_acl(:today)
 WHERE employee_id = :userId
 AND child_id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -190,16 +195,17 @@ AND child_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, user, _, ids ->
+        Query<ChildDailyNoteId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT cdn.id, role
-FROM child_acl_view
-JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
+FROM child_daily_note cdn
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -208,16 +214,17 @@ AND cdn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, user, _, ids ->
+        Query<ChildStickyNoteId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT csn.id, role
-FROM child_acl_view
-JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
+FROM child_sticky_note csn
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -226,16 +233,17 @@ AND csn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, user, _, ids ->
+        Query<ChildImageId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT img.id, role
-FROM child_acl_view
-JOIN child_images img ON child_acl_view.child_id = img.child_id
+FROM child_images img
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND img.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -300,16 +308,17 @@ AND partnership_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, user, _, ids ->
+        Query<PedagogicalDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT pd.id, role
 FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -318,17 +327,18 @@ AND pd.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, _, ids ->
+        Query<AttachmentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT attachment.id, role
 FROM attachment
 JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -390,16 +400,17 @@ AND service_need.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfVasuDocument() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, user, _, ids ->
+        Query<VasuDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
 SELECT curriculum_document.id AS id, role
 FROM curriculum_document
-JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+JOIN employee_child_daycare_acl(:today) USING (child_id)
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
