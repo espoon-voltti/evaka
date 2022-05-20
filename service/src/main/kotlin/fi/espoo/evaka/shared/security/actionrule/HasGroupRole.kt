@@ -41,8 +41,6 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
                 .mapValues { (_, rolesInGroup) -> Deferred(rolesInGroup) }
             else -> emptyMap()
         }
-
-        override fun classifier(): Any = getGroupRoles.javaClass
     }
     private data class Deferred(private val rolesInGroup: Set<UserRole>) : DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision = if (rolesInGroup.any { params.oneOf.contains(it) }) {
@@ -92,6 +90,7 @@ AND curriculum_document.id = ANY(:ids)
     fun inPlacementGroupOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasGroupRole> {
+            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
@@ -102,8 +101,6 @@ AND curriculum_document.id = ANY(:ids)
                     inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
-
-            override fun classifier(): Any = this.javaClass
         }
     )
 }

@@ -42,8 +42,6 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
             ).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
-
-        override fun classifier(): Any = filter.javaClass
     }
     private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =

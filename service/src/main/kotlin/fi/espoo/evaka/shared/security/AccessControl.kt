@@ -211,7 +211,7 @@ class AccessControl(
             .flatMap { action ->
                 actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
             }
-            .distinctBy { it.classifier }
+            .distinct()
             .iterator()
 
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
@@ -222,7 +222,7 @@ class AccessControl(
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
                     .mapNotNull { it as? DatabaseActionRule<in T, *> }
-                    .filter { it.classifier == ruleType.classifier }
+                    .filter { it == ruleType }
                 for (rule in compatibleRules) {
                     for (target in targets) {
                         if (deferred[target]?.evaluate(rule.params)?.isPermitted() == true) {
