@@ -11,12 +11,11 @@ import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faArrowLeft } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
@@ -79,10 +78,10 @@ export default React.memo(function ThreadList({
     <>
       {selectedThread && (
         <MobileOnly>
-          <Return
-            icon={faArrowLeft}
+          <ReturnButton
+            label={t.common.return}
             onClick={() => selectThread(undefined)}
-            altText={t.common.return}
+            margin={defaultMargins.s}
           />
         </MobileOnly>
       )}
@@ -117,16 +116,19 @@ export default React.memo(function ThreadList({
           </>
         )}
 
-        {threads.map((thread) => (
-          <ThreadListItem
-            key={thread.id}
-            thread={thread}
-            onClick={() => selectThread(thread.id)}
-            active={selectedThread?.id === thread.id}
-            hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-          />
-        ))}
+        <ThreadListItems>
+          {threads.map((thread) => (
+            <li key={thread.id}>
+              <ThreadListItem
+                thread={thread}
+                onClick={() => selectThread(thread.id)}
+                active={selectedThread?.id === thread.id}
+                hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+                onAttachmentUnavailable={onAttachmentUnavailable}
+              />
+            </li>
+          ))}
+        </ThreadListItems>
         {renderResult(threadLoadingResult, () => (
           <OnEnterView onEnter={loadMoreThreads} />
         ))}
@@ -140,6 +142,7 @@ const MobileOnly = styled.div`
 
   @media (max-width: ${tabletMin}) {
     display: block;
+    margin: 0;
   }
 `
 
@@ -153,10 +156,6 @@ const SolidLine = styled.hr`
   width: 100%;
   border: 1px solid ${colors.grayscale.g15};
   border-top-width: 0px;
-`
-
-const Return = styled(IconButton)`
-  margin-left: ${defaultMargins.xs};
 `
 
 const Container = styled.div`
@@ -188,6 +187,12 @@ const HeaderContainer = styled.div`
 
 const ThreadListContainer = styled.div`
   padding-left: 5%;
+`
+
+const ThreadListItems = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
 `
 
 const OnEnterView = React.memo(function IsInView({

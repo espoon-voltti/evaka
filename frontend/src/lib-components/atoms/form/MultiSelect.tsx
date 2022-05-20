@@ -28,6 +28,7 @@ interface MultiSelectProps<T> {
   isClearable?: Props<T>['isClearable']
   inputId?: Props<T>['inputId']
   'data-qa'?: string
+  autoFocus?: boolean
 }
 
 function MultiSelect<T>({
@@ -41,11 +42,13 @@ function MultiSelect<T>({
   noOptionsMessage,
   maxSelected,
   showValuesInInput: showSelectedValues,
+  autoFocus,
   ...props
 }: MultiSelectProps<T>) {
   return (
     <div data-qa={props['data-qa']}>
       <ReactSelect
+        autoFocus={autoFocus}
         isMulti
         isSearchable={true}
         hideSelectedOptions={false}

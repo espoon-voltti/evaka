@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useState } from 'react'
+import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -21,6 +22,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
@@ -61,90 +63,103 @@ export default React.memo(function MessageEditor({
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
   return (
-    <Container>
-      <TopBar>
-        <Title>{title}</Title>
-        <IconButton
-          icon={faTimes}
-          onClick={() => onClose()}
-          white
-          data-qa="close-message-editor-btn"
-        />
-      </TopBar>
-      <FormArea>
-        {user && (
-          <>
-            <Bold>{i18n.messages.sender}</Bold>
-            <Gap size="xs" />
-            <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
-          </>
-        )}
-        <div>
-          <Bold>{i18n.messages.messageEditor.recipients}</Bold>
-          <Gap size="xs" />
-        </div>
-        <MultiSelect
-          placeholder={i18n.messages.messageEditor.search}
-          value={message.recipients}
-          options={receiverOptions}
-          onChange={(change) =>
-            setMessage((message) => ({
-              ...message,
-              recipients: change
-            }))
-          }
-          noOptionsMessage={i18n.messages.messageEditor.noResults}
-          getOptionId={({ id }) => id}
-          getOptionLabel={({ name }) => name}
-          data-qa="select-receiver"
-        />
-        <Gap size="s" />
-        <Bold>{i18n.messages.messageEditor.subject}</Bold>
-        <InputField
-          value={message.title ?? ''}
-          onChange={(updated) =>
-            setMessage((message) => ({ ...message, title: updated }))
-          }
-          data-qa="input-title"
-        />
-        <Gap size="s" />
+    <ModalAccessibilityWrapper>
+      <FocusLock>
+        <Container>
+          <TopBar>
+            <Title>{title}</Title>
+            <IconButton
+              icon={faTimes}
+              onClick={() => onClose()}
+              white
+              data-qa="close-message-editor-btn"
+            />
+          </TopBar>
+          <FormArea>
+            {user && (
+              <>
+                <Bold>{i18n.messages.sender}</Bold>
+                <Gap size="xs" />
+                <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
+              </>
+            )}
+            <label>
+              <Bold>{i18n.messages.messageEditor.recipients}</Bold>
+              <Gap size="xs" />
+              <MultiSelect
+                placeholder={i18n.messages.messageEditor.search}
+                value={message.recipients}
+                options={receiverOptions}
+                onChange={(change) =>
+                  setMessage((message) => ({
+                    ...message,
+                    recipients: change
+                  }))
+                }
+                noOptionsMessage={i18n.messages.messageEditor.noResults}
+                getOptionId={({ id }) => id}
+                getOptionLabel={({ name }) => name}
+                autoFocus={true}
+                data-qa="select-receiver"
+              />
+            </label>
 
-        <Bold>{i18n.messages.messageEditor.message}</Bold>
-        <Gap size="s" />
-        <StyledTextArea
-          value={message.content}
-          onChange={(updated) =>
-            setMessage((message) => ({
-              ...message,
-              content: updated.target.value
-            }))
-          }
-          data-qa="input-content"
-        />
-        <Gap size="s" />
-        {displaySendError && (
-          <ErrorMessage>
-            {i18n.messages.messageEditor.messageSendError}
-          </ErrorMessage>
-        )}
-        <BottomRow>
-          <Button
-            text={i18n.messages.messageEditor.discard}
-            onClick={onClose}
-          />
-          <span />
-          <AsyncButton
-            primary
-            text={i18n.messages.messageEditor.send}
-            disabled={!sendEnabled}
-            onClick={send}
-            onSuccess={onSuccess}
-            onFailure={onFailure}
-            data-qa="send-message-btn"
-          />
-        </BottomRow>
-      </FormArea>
-    </Container>
+            <Gap size="s" />
+
+            <label>
+              <Bold>{i18n.messages.messageEditor.subject}</Bold>
+              <InputField
+                value={message.title ?? ''}
+                onChange={(updated) =>
+                  setMessage((message) => ({ ...message, title: updated }))
+                }
+                data-qa="input-title"
+              />
+            </label>
+
+            <Gap size="s" />
+
+            <label>
+              <Bold>{i18n.messages.messageEditor.message}</Bold>
+              <Gap size="s" />
+              <StyledTextArea
+                value={message.content}
+                onChange={(updated) =>
+                  setMessage((message) => ({
+                    ...message,
+                    content: updated.target.value
+                  }))
+                }
+                data-qa="input-content"
+              />
+            </label>
+
+            <Gap size="s" />
+            {displaySendError && (
+              <ErrorMessage>
+                {i18n.messages.messageEditor.messageSendError}
+              </ErrorMessage>
+            )}
+            <BottomRow>
+              <Button
+                text={i18n.messages.messageEditor.discard}
+                onClick={onClose}
+              />
+              <span />
+              <AsyncButton
+                primary
+                text={i18n.messages.messageEditor.send}
+                disabled={!sendEnabled}
+                onClick={send}
+                onSuccess={onSuccess}
+                onFailure={onFailure}
+                data-qa="send-message-btn"
+              />
+            </BottomRow>
+          </FormArea>
+        </Container>
+      </FocusLock>
+    </ModalAccessibilityWrapper>
   )
 })
 

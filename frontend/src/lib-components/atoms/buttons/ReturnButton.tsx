@@ -13,9 +13,11 @@ import { defaultMargins } from '../../white-space'
 
 import InlineButton from './InlineButton'
 
-export const ReturnButtonWrapper = styled.div`
-  margin: 8px 0;
-  display: inline-block;
+interface WrapperProps {
+  margin?: string
+}
+export const ReturnButtonWrapper = styled.div<WrapperProps>`
+  margin: ${(p) => p.margin ?? defaultMargins.xs} 0;
 
   button {
     padding-left: 0;
@@ -35,20 +37,24 @@ export const ReturnButtonWrapper = styled.div`
 type Props = {
   label: string
   'data-qa'?: string
+  onClick?: () => void
 }
 
 export default React.memo(function ReturnButton({
   label,
-  'data-qa': dataQa
-}: Props) {
+  'data-qa': dataQa,
+  onClick,
+  margin
+}: Props & WrapperProps) {
   const { colors } = useTheme()
   const navigate = useNavigate()
+  const defaultBehaviour = () => navigate(-1)
   return (
-    <ReturnButtonWrapper>
+    <ReturnButtonWrapper margin={margin}>
       <InlineButton
         icon={faAngleLeft}
         text={label}
-        onClick={() => navigate(-1)}
+        onClick={onClick ?? defaultBehaviour}
         data-qa={dataQa}
         disabled={history.length <= 1}
         color={colors.main.m1}

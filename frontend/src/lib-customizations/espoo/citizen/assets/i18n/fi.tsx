@@ -105,7 +105,9 @@ export default {
       messages: 'Viestit',
       calendar: 'Kalenteri',
       pedagogicalDocuments: 'Kasvu ja oppiminen',
-      children: 'Lapset'
+      children: 'Lapset',
+      messageCount: (n: number) =>
+        n > 1 ? `${n} uutta viestiä` : `${n} uusi viesti`
     },
     lang: {
       fi: 'Suomeksi',
@@ -1899,10 +1901,6 @@ export default {
         sivustolla ongelman, joka ei ole luettelossa, otathan meihin yhteyttä.
       </P>
       <ul>
-        <li>
-          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
-          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
-        </li>
         <li>
           Palvelun yksikkökartassa ei pysty liikkumaan
           näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa

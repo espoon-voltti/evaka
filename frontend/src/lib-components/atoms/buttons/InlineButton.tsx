@@ -69,18 +69,21 @@ export interface InlineButtonProps extends BaseProps {
   iconRight?: boolean
 }
 
-export default React.memo(function InlineButton({
-  className,
-  'data-qa': dataQa,
-  onClick,
-  text,
-  altText,
-  icon,
-  disabled = false,
-  darker = false,
-  color,
-  iconRight
-}: InlineButtonProps) {
+const InlineButton = React.forwardRef(function InlineButton(
+  {
+    className,
+    'data-qa': dataQa,
+    onClick,
+    text,
+    altText,
+    icon,
+    disabled = false,
+    darker = false,
+    color,
+    iconRight
+  }: InlineButtonProps,
+  ref: React.ForwardedRef<HTMLButtonElement>
+) {
   return (
     <StyledButton
       className={classNames(className, { disabled, darker })}
@@ -91,6 +94,7 @@ export default React.memo(function InlineButton({
       color={color}
       type="button"
       iconRight={iconRight}
+      ref={ref}
     >
       {icon && !iconRight && <FontAwesomeIcon icon={icon} />}
       {typeof text === 'string' || typeof text === 'number' ? (
@@ -102,3 +106,7 @@ export default React.memo(function InlineButton({
     </StyledButton>
   )
 })
+
+InlineButton.displayName = 'ForwardedRef(InlineButton)'
+
+export default InlineButton

@@ -123,7 +123,7 @@ export default React.memo(function MobileNav({
   )
 })
 
-const Container = styled.div`
+const Container = styled.nav`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;

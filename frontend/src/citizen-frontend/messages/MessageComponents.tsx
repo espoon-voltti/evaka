@@ -16,7 +16,7 @@ export const MessageContainer = styled.div`
     padding: ${defaultMargins.L};
   }
 
-  margin-top: ${defaultMargins.s};
+  margin-bottom: ${defaultMargins.s};
 
   h2 {
     margin: 0;
