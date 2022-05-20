@@ -101,7 +101,11 @@ export default React.memo(function VoucherValueDecisions({
         return (
           <Tr
             key={item.id}
-            onClick={() => navigate(`/finance/value-decisions/${item.id}`)}
+            onClick={
+              item.annullingDecision
+                ? undefined
+                : () => navigate(`/finance/value-decisions/${item.id}`)
+            }
             data-qa="table-value-decision-row"
           >
             <Td>
@@ -110,9 +114,12 @@ export default React.memo(function VoucherValueDecisions({
             <Td>
               <ChildrenCell people={[item.child]} />
             </Td>
-            <Td>{`${item.validFrom.format()} - ${
-              item.validTo?.format() ?? ''
-            }`}</Td>
+            <Td>
+              {item.annullingDecision
+                ? `${i18n.valueDecisions.table.annullingDecision} `
+                : ''}
+              {`${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
+            </Td>
             <Td>{formatCents(item.voucherValue)}</Td>
             <Td>{formatCents(item.finalCoPayment)}</Td>
             <Td>{item.decisionNumber}</Td>

@@ -37,7 +37,6 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
     EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
     EndOfDayStaffAttendanceUpkeep(ScheduledJobs::endOfDayStaffAttendanceUpkeep),
     EndOfDayReservationUpkeep(ScheduledJobs::endOfDayReservationUpkeep),
-    EndOutdatedVoucherValueDecisions(ScheduledJobs::endOutdatedVoucherValueDecisions),
     FreezeVoucherValueReports(ScheduledJobs::freezeVoucherValueReports),
     KoskiUpdate(ScheduledJobs::koskiUpdate),
     RemoveOldAsyncJobs(ScheduledJobs::removeOldAsyncJobs),
@@ -182,10 +181,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
                 HelsinkiDateTime.now()
             )
         }
-    }
-
-    fun endOutdatedVoucherValueDecisions(db: Database.Connection) {
-        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, HelsinkiDateTime.now()) }
     }
 
     fun removeExpiredNotes(db: Database.Connection) {

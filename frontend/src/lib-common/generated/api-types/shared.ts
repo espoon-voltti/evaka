@@ -87,7 +87,6 @@ export type ScheduledJob =
   | 'EndOfDayAttendanceUpkeep'
   | 'EndOfDayStaffAttendanceUpkeep'
   | 'EndOfDayReservationUpkeep'
-  | 'EndOutdatedVoucherValueDecisions'
   | 'FreezeVoucherValueReports'
   | 'KoskiUpdate'
   | 'RemoveOldAsyncJobs'

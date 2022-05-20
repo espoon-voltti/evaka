@@ -105,7 +105,11 @@ const FeeDecisions = React.memo(function FeeDecisions({
         return (
           <Tr
             key={item.id}
-            onClick={() => navigate(`/finance/fee-decisions/${item.id}`)}
+            onClick={
+              item.annullingDecision
+                ? undefined
+                : () => navigate(`/finance/fee-decisions/${item.id}`)
+            }
             data-qa="table-fee-decision-row"
           >
             <Td>
@@ -114,7 +118,12 @@ const FeeDecisions = React.memo(function FeeDecisions({
             <Td>
               <ChildrenCell people={item.children} />
             </Td>
-            <Td>{item.validDuring.format()}</Td>
+            <Td>
+              {item.annullingDecision
+                ? `${i18n.feeDecisions.table.annullingDecision} `
+                : ''}
+              {item.validDuring.format()}
+            </Td>
             <Td>{formatCents(item.finalPrice)}</Td>
             <Td>{item.decisionNumber}</Td>
             <Td>{formatDate(item.created)}</Td>

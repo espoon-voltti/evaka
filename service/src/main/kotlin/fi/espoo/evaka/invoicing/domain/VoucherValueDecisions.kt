@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -41,9 +42,9 @@ data class VoucherValueDecision(
     @Nested("child")
     val child: ChildWithDateOfBirth,
     @Nested("placement")
-    val placement: VoucherValueDecisionPlacement,
+    val placement: VoucherValueDecisionPlacement?,
     @Nested("service_need")
-    val serviceNeed: VoucherValueDecisionServiceNeed,
+    val serviceNeed: VoucherValueDecisionServiceNeed?,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
@@ -89,8 +90,58 @@ data class VoucherValueDecision(
     }
 
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
-    override fun isEmpty(): Boolean = false
+    override fun isEmpty(): Boolean = this.voucherValue == 0
     override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
+
+    companion object {
+        fun empty(
+            validFrom: LocalDate,
+            validTo: LocalDate?,
+            headOfFamilyId: PersonId,
+            status: VoucherValueDecisionStatus,
+            decisionNumber: Long? = null,
+            decisionType: VoucherValueDecisionType,
+            partnerId: PersonId?,
+            headOfFamilyIncome: DecisionIncome?,
+            partnerIncome: DecisionIncome?,
+            childIncome: DecisionIncome?,
+            familySize: Int,
+            feeThresholds: FeeDecisionThresholds,
+            child: ChildWithDateOfBirth,
+            baseCoPayment: Int,
+            siblingDiscount: Int,
+            baseValue: Int,
+        ): VoucherValueDecision {
+            val decision = VoucherValueDecision(
+                id = VoucherValueDecisionId(UUID.randomUUID()),
+                validFrom = validFrom,
+                validTo = validTo,
+                headOfFamilyId = headOfFamilyId,
+                status = status,
+                decisionNumber = decisionNumber,
+                decisionType = decisionType,
+                partnerId = partnerId,
+                headOfFamilyIncome = headOfFamilyIncome,
+                partnerIncome = partnerIncome,
+                childIncome = childIncome,
+                familySize = familySize,
+                feeThresholds = feeThresholds,
+                child = child,
+                placement = null,
+                serviceNeed = null,
+                baseCoPayment = baseCoPayment,
+                siblingDiscount = siblingDiscount,
+                coPayment = 0,
+                feeAlterations = listOf(),
+                finalCoPayment = 0,
+                baseValue = baseValue,
+                capacityFactor = BigDecimal.ZERO,
+                voucherValue = 0,
+            )
+            check(decision.isEmpty())
+            return decision
+        }
+    }
 }
 
 enum class VoucherValueDecisionType {
@@ -202,9 +253,13 @@ data class VoucherValueDecisionSummary(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-)
+) {
+    val annullingDecision
+        get() = this.voucherValue == 0
+}
 
 data class VoucherValueDecisionPlacement(
+    @PropagateNull
     val unitId: DaycareId,
     val type: PlacementType
 )
@@ -216,6 +271,7 @@ data class VoucherValueDecisionPlacementDetailed(
 )
 
 data class VoucherValueDecisionServiceNeed(
+    @PropagateNull
     val feeCoefficient: BigDecimal,
     val voucherValueCoefficient: BigDecimal,
     val feeDescriptionFi: String,

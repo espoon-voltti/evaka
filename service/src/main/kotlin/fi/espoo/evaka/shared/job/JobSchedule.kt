@@ -62,10 +62,6 @@ data class ScheduledJobSettings(
                 enabled = false,
                 schedule = JobSchedule.daily(LocalTime.of(0, 35))
             )
-            ScheduledJob.EndOutdatedVoucherValueDecisions -> ScheduledJobSettings(
-                enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(1, 0))
-            )
             ScheduledJob.RemoveOldAsyncJobs -> ScheduledJobSettings(
                 enabled = true,
                 schedule = JobSchedule.daily(LocalTime.of(3, 0))
