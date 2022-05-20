@@ -55,4 +55,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        <packageUrl regex="true">^pkg:maven/io\.github\.detekt\.sarif4k/sarif4k@.*$</packageUrl>
        <cpe>cpe:/a:detekt:detekt</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Not a vulnerability: https://github.com/spring-projects/spring-framework/issues/24434
+        ]]></notes>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
 </suppressions>
