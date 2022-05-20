@@ -1489,7 +1489,7 @@ export default {
       estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
       otherIncomeDescription:
-        'Jos sinulla on muita tuloja, on niistä toimitettavana tositteet liitteinä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
+        'Mikäli sinulla on muita tuloja, tulee niistä toimittaa tositteet liitteenä. Listan tarvittavista liitteistä löydät lomakkeen alaosasta kohdasta: Tuloihin ja varhaiskasvatusmaksuihin liittyvät liitteet.',
       choosePlaceholder: 'Valitse',
       otherIncomeTypes: {
         PENSION: 'Eläke',
