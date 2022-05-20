@@ -118,14 +118,15 @@ export default React.memo(function ThreadList({
 
         <ThreadListItems>
           {threads.map((thread) => (
-            <li><ThreadListItem
-              key={thread.id}
-              thread={thread}
-              onClick={() => selectThread(thread.id)}
-              active={selectedThread?.id === thread.id}
-              hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-              onAttachmentUnavailable={onAttachmentUnavailable}
-            /></li>
+            <li key={thread.id}>
+              <ThreadListItem
+                thread={thread}
+                onClick={() => selectThread(thread.id)}
+                active={selectedThread?.id === thread.id}
+                hasUnreadMessages={hasUnreadMessages(thread, accountId)}
+                onAttachmentUnavailable={onAttachmentUnavailable}
+              />
+            </li>
           ))}
         </ThreadListItems>
         {renderResult(threadLoadingResult, () => (
