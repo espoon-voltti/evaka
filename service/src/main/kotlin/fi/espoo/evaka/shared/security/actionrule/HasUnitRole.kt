@@ -73,10 +73,32 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasUnitR
         }
     }
 
-    fun inAnyUnit() = object : StaticActionRule {
-        override fun isPermitted(user: AuthenticatedUser): Boolean =
-            user is AuthenticatedUser.Employee && user.allScopedRoles.any { oneOf.contains(it) }
-    }
+    fun inAnyUnit() = UnscopedDatabaseActionRule(
+        this,
+        object : UnscopedDatabaseActionRule.Query<HasUnitRole> {
+            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            override fun execute(
+                tx: Database.Read,
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime
+            ): DatabaseActionRule.Deferred<HasUnitRole> = Deferred(
+                when (user) {
+                    is AuthenticatedUser.Employee ->
+                        tx.createQuery(
+                            """
+SELECT DISTINCT role
+FROM daycare_acl
+WHERE employee_id = :userId
+                            """.trimIndent()
+                        )
+                            .bind("userId", user.id)
+                            .mapTo<UserRole>()
+                            .toSet()
+                    else -> emptySet()
+                }
+            )
+        }
+    )
 
     fun inPlacementPlanUnitOfApplication() = DatabaseActionRule(
         this,

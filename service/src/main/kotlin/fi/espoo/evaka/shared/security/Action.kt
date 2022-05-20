@@ -56,18 +56,18 @@ import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsEmployee
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
-import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
+import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 
 @ExcludeCodeGen
 sealed interface Action {
-    sealed interface StaticAction : Action {
-        val defaultRules: Array<out StaticActionRule>
+    sealed interface UnscopedAction : Action {
+        val defaultRules: Array<out UnscopedActionRule>
     }
     sealed interface ScopedAction<T> : Action {
         val defaultRules: Array<out ScopedActionRule<in T>>
     }
 
-    enum class Global(override vararg val defaultRules: StaticActionRule) : StaticAction {
+    enum class Global(override vararg val defaultRules: UnscopedActionRule) : UnscopedAction {
         CREATE_VASU_TEMPLATE,
         READ_VASU_TEMPLATE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()),
 

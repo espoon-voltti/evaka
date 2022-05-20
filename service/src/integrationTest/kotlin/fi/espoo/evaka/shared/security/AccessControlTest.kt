@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.dev.insertTestMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
-import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
+import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import org.junit.jupiter.api.BeforeEach
 
 abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -33,19 +33,19 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     class TestActionRuleMapping : ActionRuleMapping {
-        private var staticRules: Map<Action.StaticAction, List<StaticActionRule>> = emptyMap()
+        private var unscopedRules: Map<Action.UnscopedAction, List<UnscopedActionRule>> = emptyMap()
         private var scopedRules: Map<Action.ScopedAction<*>, List<ScopedActionRule<*>>> = emptyMap()
 
-        fun add(action: Action.StaticAction, rule: StaticActionRule) {
-            staticRules = staticRules + (action to ((staticRules[action] ?: emptyList()) + rule))
+        fun add(action: Action.UnscopedAction, rule: UnscopedActionRule) {
+            unscopedRules = unscopedRules + (action to ((unscopedRules[action] ?: emptyList()) + rule))
         }
 
         fun <T> add(action: Action.ScopedAction<T>, rule: ScopedActionRule<T>) {
             scopedRules = scopedRules + (action to ((scopedRules[action] ?: emptyList()) + rule))
         }
 
-        override fun rulesOf(action: Action.StaticAction): Sequence<StaticActionRule> =
-            staticRules[action]?.asSequence() ?: emptySequence()
+        override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
+            unscopedRules[action]?.asSequence() ?: emptySequence()
 
         @Suppress("UNCHECKED_CAST")
         override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =

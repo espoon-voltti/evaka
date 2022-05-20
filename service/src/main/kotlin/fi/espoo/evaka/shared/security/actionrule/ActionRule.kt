@@ -14,9 +14,14 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 /**
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional information
  */
-interface StaticActionRule : ScopedActionRule<Any> {
+interface StaticActionRule : ScopedActionRule<Any>, UnscopedActionRule {
     fun isPermitted(user: AuthenticatedUser): Boolean
 }
+
+/**
+ * A rule that grants permission based on an `AuthenticatedUser`, and possibly some data from the database.
+ */
+sealed interface UnscopedActionRule
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser` and a "target", which is some data that can be
@@ -70,6 +75,15 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
     }
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
+    }
+}
+
+/**
+ * Like DatabaseActionRule, but is not tied to any targets.
+ */
+data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
+    interface Query<P> {
+        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime): DatabaseActionRule.Deferred<P>
     }
 }
 
