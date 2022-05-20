@@ -10,19 +10,15 @@ This project has Evaka [KeyCloak](https://www.keycloak.org/). Theme is based to 
 
 ## docker-compose
 
-### Usage
-
-```bash
-./compose-keycloak up
-```
-
 #### Usage with Evaka docker-compose
 
-Evaka has Keycloak service in docker-compose and port is the same. To use this instead it
+Evaka docker-compose already has KeyCloak. To develop KeyCloak theme replace it with compose found here.
 
 ```bash
 cd ../compose
-docker-compose up
+docker-compose up -d
+
+docker-compose stop keycloak smtp
 
 cd ../keycloak
 ./compose-keycloak up
