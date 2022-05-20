@@ -94,48 +94,21 @@ TABLE (
     JOIN daycare_acl USING (daycare_id)
 $$ LANGUAGE SQL STABLE;
 
-CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
-    SELECT employee_id, pl.child_id, role
-    FROM placement pl
-    JOIN daycare_acl acl ON pl.unit_id = acl.daycare_id
-    WHERE pl.end_date > current_date - interval '1 month'
-
-    UNION ALL
-
-    SELECT employee_id, a.child_id, role
-    FROM placement_plan pp
-    JOIN application a ON pp.application_id = a.id
-    JOIN daycare_acl acl ON pp.unit_id = acl.daycare_id
-    WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
-
-    UNION ALL
-
-    SELECT
-        employee_id, child_id,
-        (CASE
-            WHEN role = 'UNIT_SUPERVISOR' THEN 'UNIT_SUPERVISOR'
-            ELSE 'STAFF'
-        END)::user_role
-    FROM backup_care bc
-    JOIN daycare_acl acl ON acl.daycare_id = bc.unit_id
-    WHERE bc.end_date > current_date - INTERVAL '1 month'
-);
-
-CREATE VIEW person_acl_view(employee_id, person_id, role) AS (
+CREATE VIEW person_acl_view(employee_id, person_id, daycare_id, role) AS (
     SELECT *
-    FROM child_acl_view
+    FROM employee_child_daycare_acl(current_date)
 
     UNION ALL
 
-    SELECT acl.employee_id, guardian_id AS person_id, acl.role
-    FROM child_acl_view acl
+    SELECT acl.employee_id, guardian_id AS person_id, daycare_id, acl.role
+    FROM employee_child_daycare_acl(current_date) acl
     JOIN guardian
     USING (child_id)
 
     UNION ALL
 
-    SELECT acl.employee_id, head_of_child AS person_id, acl.role
-    FROM child_acl_view acl
+    SELECT acl.employee_id, head_of_child AS person_id, daycare_id, acl.role
+    FROM employee_child_daycare_acl(current_date) acl
     JOIN fridge_child
     USING (child_id)
 );

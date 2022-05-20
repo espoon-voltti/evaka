@@ -13,18 +13,21 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
 
-data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGroupRole> {
+data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) : ActionRuleParams<HasGroupRole> {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
-    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
+    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet())
+
+    fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun execute(
@@ -34,20 +37,21 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
             is AuthenticatedUser.Employee -> getGroupRoles(tx, user, now, targets)
-                .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
-                    acc[target]?.plusAssign(role)
+                .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
+                    acc[target]?.plusAssign(result)
                     acc
                 }
-                .mapValues { (_, rolesInGroup) -> Deferred(rolesInGroup) }
+                .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
         }
     }
-    private data class Deferred(private val rolesInGroup: Set<UserRole>) : DatabaseActionRule.Deferred<HasGroupRole> {
-        override fun evaluate(params: HasGroupRole): AccessControlDecision = if (rolesInGroup.any { params.oneOf.contains(it) }) {
-            AccessControlDecision.Permitted(params)
-        } else {
-            AccessControlDecision.None
-        }
+    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
+        override fun evaluate(params: HasGroupRole): AccessControlDecision =
+            if (queryResult.any { params.oneOf.contains(it.role) && it.unitFeatures.containsAll(params.unitFeatures) }) {
+                AccessControlDecision.Permitted(params)
+            } else {
+                AccessControlDecision.None
+            }
     }
 
     fun inPlacementGroupOfChild() = DatabaseActionRule(
@@ -55,8 +59,9 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGrou
         Query<ChildId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-SELECT child_id AS id, role
-FROM employee_child_group_acl(:today)
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+FROM employee_child_group_acl(:today) acl
+JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND child_id = ANY(:ids)
                 """.trimIndent()
@@ -73,9 +78,10 @@ AND child_id = ANY(:ids)
         Query<VasuDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-SELECT curriculum_document.id AS id, role
+SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
-JOIN employee_child_group_acl(:today) USING (child_id)
+JOIN employee_child_group_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()

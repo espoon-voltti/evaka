@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.PilotFeature
+import org.jdbi.v3.core.mapper.Nested
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional information
@@ -77,7 +79,6 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
         fun evaluate(params: P): AccessControlDecision
     }
 }
-
 /**
  * Like DatabaseActionRule, but is not tied to any targets.
  */
@@ -89,4 +90,5 @@ data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P
 
 interface ActionRuleParams<This>
 
-internal data class IdAndRole(val id: Id<*>, val role: UserRole)
+internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
+internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
