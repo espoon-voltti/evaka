@@ -13,6 +13,7 @@ import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
@@ -136,6 +137,9 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient = PatuIntegrationClient.MockPatuClient(jsonMapper)
+
+    @Bean
+    fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
