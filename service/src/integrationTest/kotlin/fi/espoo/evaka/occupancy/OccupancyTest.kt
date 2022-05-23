@@ -728,6 +728,49 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `calculateDailyGroupOccupancyValues should filter with provider type`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).fromDay(-1).toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(familyGroup1).save()
+                        }
+                }
+        }
+
+        db.read {
+            val calculateDailyGroupOccupancyValuesByProviderType: (ProviderType?) -> List<DailyOccupancyValues<UnitGroupKey>> =
+                { providerType ->
+                    it.calculateDailyGroupOccupancyValues(
+                        today,
+                        FiniteDateRange(today.minusDays(1), today),
+                        OccupancyType.CONFIRMED,
+                        AclAuthorization.All,
+                        providerType = providerType
+                    )
+                }
+
+            assertThat(calculateDailyGroupOccupancyValuesByProviderType(null))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2, familyGroup1, familyGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByProviderType(ProviderType.MUNICIPAL))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByProviderType(ProviderType.PURCHASED))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByProviderType(ProviderType.PRIVATE_SERVICE_VOUCHER))
+                .isEmpty()
+        }
+    }
+
     private fun getAndAssertOccupancyInUnit(
         tx: Database.Read,
         unitId: DaycareId,
