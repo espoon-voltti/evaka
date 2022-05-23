@@ -379,7 +379,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
 
-        if (status == PlacementPlanConfirmationStatus.REJECTED) {
+        if (status == PlacementPlanConfirmationStatus.REJECTED || status == PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED) {
             if (rejectReason == null)
                 throw BadRequest("Must give reason for rejecting")
             if (rejectReason == PlacementPlanRejectReason.OTHER && rejectOtherReason.isNullOrBlank())
