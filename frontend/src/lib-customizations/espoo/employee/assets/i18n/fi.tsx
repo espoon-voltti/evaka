@@ -2893,6 +2893,7 @@ export const fi = {
           raw: 'Summa ja kasvattajamäärä erikseen'
         }
       },
+      unitsGroupedByArea: 'Toimintayksiköt alueittain',
       average: 'Keskiarvo',
       sum: 'Summa',
       caretakers: 'Kasvattajia',

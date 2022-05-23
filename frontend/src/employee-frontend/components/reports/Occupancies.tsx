@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
+import mapValues from 'lodash/mapValues'
 import range from 'lodash/range'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -19,9 +21,10 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getAreas } from '../../api/daycare'
 import {
@@ -36,6 +39,10 @@ import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
+const StyledTfoot = styled(Tfoot)`
+  background-color: ${(props) => props.theme.colors.grayscale.g4};
+`
+
 const StyledTd = styled(Td)<{ borderEdge?: 'left' | 'right' }>`
   white-space: nowrap;
 
@@ -49,6 +56,12 @@ const StyledTd = styled(Td)<{ borderEdge?: 'left' | 'right' }>`
     css`
       border-right: 1px solid ${(props) => props.theme.colors.grayscale.g15};
     `}
+`
+
+const AccordionIcon = styled(FontAwesomeIcon)`
+  cursor: pointer;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  padding-right: 1em;
 `
 
 const Wrapper = styled.div`
@@ -160,16 +173,11 @@ function getDisplayCells(
           ? getHeadCountAverage(row, dates)
           : getOccupancyAverage(row, dates)
 
-      const roundedAverage =
-        average !== null ? Math.round(10 * average) / 10 : undefined
-
       return [
         ...nameCells,
 
         // average
-        (usedValues === 'percentage'
-          ? formatPercentage(roundedAverage)
-          : formatDecimal(roundedAverage)) ?? '',
+        formatAverage(average, usedValues),
 
         // daily values
         ...dates.map((date) => {
@@ -194,6 +202,104 @@ function getDisplayCells(
   })
 }
 
+type Averages = {
+  average: number | null
+  byArea: Record<
+    string,
+    { average: number | null; byDate: Record<string, number | null> }
+  >
+}
+interface Division {
+  dividend: number
+  divider: number
+}
+
+function calculateAverages(
+  reportRows: OccupancyReportRow[],
+  dates: Date[],
+  usedValues: ValueOnReport
+): Averages | null {
+  if (usedValues === 'raw') {
+    return null
+  }
+  const dateData: Record<string, Record<string, Division>> = {}
+  const areaData = reportRows.reduce<Record<string, Division>>((data, row) => {
+    const areaKey = row.areaName
+    data[areaKey] = data[areaKey] ?? { dividend: 0, divider: 0 }
+
+    const division = dates.reduce<Division>(
+      (prev, date) => {
+        const dateKey = toOccupancyKey(date)
+        const dividend =
+          usedValues === 'headcount'
+            ? row.occupancies[dateKey]?.headcount ?? 0
+            : 100 * (row.occupancies[dateKey]?.sum ?? 0)
+        const divider =
+          usedValues === 'headcount'
+            ? 1
+            : resolveCaretakers(row.occupancies[dateKey]?.caretakers)
+
+        dateData[areaKey] = dateData[areaKey] ?? {}
+        dateData[areaKey][dateKey] = dateData[areaKey][dateKey] ?? {
+          dividend: 0,
+          divider: 0
+        }
+        dateData[areaKey][dateKey].dividend += dividend
+        dateData[areaKey][dateKey].divider += divider
+
+        return {
+          dividend: prev.dividend + dividend,
+          divider: prev.divider + divider
+        }
+      },
+      { dividend: 0, divider: 0 }
+    )
+    data[areaKey].dividend += division.dividend
+    data[areaKey].divider += division.divider
+
+    return data
+  }, {})
+
+  const byAreaAndDate = mapValues(dateData, (dates) =>
+    mapValues(dates, (data) =>
+      data.divider !== 0 ? data.dividend / data.divider : null
+    )
+  )
+  const byArea = mapValues(areaData, (data, areaKey) => ({
+    average: data.divider !== 0 ? data.dividend / data.divider : null,
+    byDate: byAreaAndDate[areaKey]
+  }))
+  const averageData = Object.values(byArea)
+    .map((data) => data.average)
+    .filter((average): average is number => average !== null)
+  const average =
+    averageData.length > 0
+      ? averageData.reduce((a, b) => a + b, 0) / averageData.length
+      : null
+
+  return { average, byArea }
+}
+
+function resolveCaretakers(caretakers: number | null | undefined): number {
+  if (caretakers === null || caretakers === undefined) {
+    return 0
+  }
+  return 7 * caretakers
+}
+
+function formatAverage(
+  average: number | null,
+  usedValues: ValueOnReport
+): string {
+  const roundedAverage =
+    average !== null ? Math.round(10 * average) / 10 : undefined
+  return (
+    (usedValues === 'percentage'
+      ? formatPercentage(roundedAverage)
+      : formatDecimal(roundedAverage)) ?? ''
+  )
+}
+
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
@@ -205,6 +311,7 @@ export default React.memo(function Occupancies() {
     type: 'UNIT_CONFIRMED'
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
+  const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
@@ -221,6 +328,12 @@ export default React.memo(function Occupancies() {
   const displayCells: string[][] = rows
     .map((rs) => getDisplayCells(rs, dates, usedValues))
     .getOrElse([])
+  const displayAreas = displayCells
+    .map((cell) => cell[0])
+    .filter((value, index, self) => self.indexOf(value) === index)
+  const averages = rows
+    .map((rs) => calculateAverages(rs, dates, usedValues))
+    .getOrElse<Averages>({ average: null, byArea: {} })
   const dateCols = dates.reduce((cols, date) => {
     cols.push(date)
     if (usedValues === 'raw') cols.push(date)
@@ -426,8 +539,11 @@ export default React.memo(function Occupancies() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>
+                    {filters.careAreaId === undefined
+                      ? i18n.reports.occupancies.unitsGroupedByArea
+                      : i18n.reports.common.unitName}
+                  </Th>
                   {includeGroups && <Th>{i18n.reports.common.groupName}</Th>}
                   {usedValues !== 'raw' && (
                     <Th>{i18n.reports.occupancies.average}</Th>
@@ -444,42 +560,117 @@ export default React.memo(function Occupancies() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row, rowNum) => (
-                  <Tr key={row.unitId}>
-                    <StyledTd>{row.areaName}</StyledTd>
-                    <StyledTd>
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </StyledTd>
-                    {displayCells[rowNum].slice(2).map((cell, colNum) => (
-                      <StyledTd
-                        key={colNum}
-                        borderEdge={
-                          usedValues === 'raw'
-                            ? colNum % 2 === (includeGroups ? 1 : 0)
-                              ? 'left'
-                              : 'right'
-                            : undefined
-                        }
-                      >
-                        {usedValues === 'raw' &&
-                        (!includeGroups || colNum > 0) ? (
-                          <Tooltip
-                            tooltip={
-                              colNum % 2 === (includeGroups ? 1 : 0)
-                                ? i18n.reports.occupancies.sum
-                                : i18n.reports.occupancies.caretakers
+                {displayAreas.map((areaName) => (
+                  <React.Fragment key={areaName}>
+                    {filters.careAreaId === undefined && (
+                      <Tr>
+                        <StyledTd
+                          colSpan={
+                            usedValues === 'raw'
+                              ? 2 + dateCols.length
+                              : undefined
+                          }
+                        >
+                          <div
+                            onClick={() =>
+                              setAreasOpen({
+                                ...areasOpen,
+                                [areaName]: !(areasOpen[areaName] ?? false)
+                              })
                             }
                           >
-                            {cell}
-                          </Tooltip>
-                        ) : (
-                          <>{cell}</>
+                            <span>
+                              <AccordionIcon
+                                icon={
+                                  areasOpen[areaName]
+                                    ? faChevronUp
+                                    : faChevronDown
+                                }
+                              ></AccordionIcon>
+                            </span>
+                            <span>{areaName}</span>
+                          </div>
+                        </StyledTd>
+                        {usedValues !== 'raw' && (
+                          <>
+                            <StyledTd>
+                              {formatAverage(
+                                averages?.byArea[areaName]?.average ?? null,
+                                usedValues
+                              )}
+                            </StyledTd>
+                            {dateCols.map((dateCol) => (
+                              <StyledTd key={dateCol.toDateString()}>
+                                {formatAverage(
+                                  averages?.byArea[areaName]?.byDate[
+                                    toOccupancyKey(dateCol)
+                                  ] ?? null,
+                                  usedValues
+                                )}
+                              </StyledTd>
+                            ))}
+                          </>
                         )}
-                      </StyledTd>
-                    ))}
-                  </Tr>
+                      </Tr>
+                    )}
+                    {rows.value.map(
+                      (row, rowNum) =>
+                        row.areaName === areaName &&
+                        (filters.careAreaId !== undefined ||
+                          areasOpen[areaName]) && (
+                          <Tr key={row.unitId}>
+                            <StyledTd>
+                              <Link to={`/units/${row.unitId}`}>
+                                {row.unitName}
+                              </Link>
+                            </StyledTd>
+                            {displayCells[rowNum]
+                              .slice(2)
+                              .map((cell, colNum) => (
+                                <StyledTd
+                                  key={colNum}
+                                  borderEdge={
+                                    usedValues === 'raw'
+                                      ? colNum % 2 === (includeGroups ? 1 : 0)
+                                        ? 'left'
+                                        : 'right'
+                                      : undefined
+                                  }
+                                >
+                                  {usedValues === 'raw' &&
+                                  (!includeGroups || colNum > 0) ? (
+                                    <Tooltip
+                                      tooltip={
+                                        colNum % 2 === (includeGroups ? 1 : 0)
+                                          ? i18n.reports.occupancies.sum
+                                          : i18n.reports.occupancies.caretakers
+                                      }
+                                    >
+                                      {cell}
+                                    </Tooltip>
+                                  ) : (
+                                    <>{cell}</>
+                                  )}
+                                </StyledTd>
+                              ))}
+                          </Tr>
+                        )
+                    )}
+                  </React.Fragment>
                 ))}
               </Tbody>
+              {usedValues !== 'raw' && (
+                <StyledTfoot>
+                  <Tr>
+                    <Td colSpan={includeGroups ? 2 : undefined}>
+                      {i18n.reports.common.total}
+                    </Td>
+                    <Td colSpan={1 + dateCols.length}>
+                      {formatAverage(averages?.average ?? null, usedValues)}
+                    </Td>
+                  </Tr>
+                </StyledTfoot>
+              )}
             </TableScrollable>
             <Gap size="s" />
             <Legend>
