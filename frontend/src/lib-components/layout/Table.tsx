@@ -120,6 +120,8 @@ export const Thead = styled.thead``
 
 export const Tbody = styled.tbody``
 
+export const Tfoot = styled.tfoot``
+
 const SortableIconContainer = styled.div`
   display: flex;
   flex-direction: column;
