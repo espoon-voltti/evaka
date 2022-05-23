@@ -46,7 +46,7 @@ dependencies {
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
         api("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
-        api("org.flywaydb:flyway-core:8.5.5")
+        api("org.flywaydb:flyway-core:8.5.11")
         api("org.glassfish.jaxb:jaxb-runtime:2.3.2")
         api("org.jetbrains:annotations:23.0.0")
         api("org.mockito:mockito-core:${Version.mockito}")
@@ -61,12 +61,11 @@ dependencies {
         api("redis.clients:jedis:4.2.1")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220328"))
-    api(platform("io.netty:netty-bom:4.1.77.Final"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.13.3"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.28.0"))
-    api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.20"))
+    api(platform("org.jetbrains.kotlin:kotlin-bom:1.6.21"))
     api(platform("org.junit:junit-bom:5.8.2"))
-    api(platform("org.springframework.boot:spring-boot-dependencies:2.6.7"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:2.7.0"))
     api(platform("software.amazon.awssdk:bom:2.17.164"))
 }
