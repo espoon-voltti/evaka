@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
@@ -32,7 +32,7 @@ class UnitAccessControlTest : AccessControlTest() {
             areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             featureDaycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            tx.setFeatures(featureDaycareId, setOf(unitFeature))
+            tx.setUnitFeatures(featureDaycareId, setOf(unitFeature))
         }
     }
 
@@ -81,8 +81,3 @@ class UnitAccessControlTest : AccessControlTest() {
         assertFalse(accessControl.hasPermissionFor(otherMobile, action, daycareId))
     }
 }
-private fun Database.Transaction.setFeatures(id: DaycareId, features: Collection<PilotFeature>) =
-    createUpdate("UPDATE daycare SET enabled_pilot_features = :features WHERE id = :id")
-        .bind("id", id)
-        .bind("features", features.toTypedArray())
-        .execute()

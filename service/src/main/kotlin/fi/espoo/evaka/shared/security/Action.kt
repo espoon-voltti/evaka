@@ -295,7 +295,7 @@ sealed interface Action {
         ),
         READ_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
             IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment()
         ),
         DELETE_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
@@ -304,7 +304,7 @@ sealed interface Action {
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -373,11 +373,17 @@ sealed interface Action {
         READ_CHILD_RECIPIENTS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
         UPDATE_CHILD_RECIPIENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()),
 
-        CREATE_VASU_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), HasGroupRole(STAFF).inPlacementGroupOfChild()),
-        READ_VASU_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), HasGroupRole(STAFF).inPlacementGroupOfChild()),
+        CREATE_VASU_DOCUMENT(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChild()
+        ),
+        READ_VASU_DOCUMENT(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChild(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChild()
+        ),
 
-        CREATE_PEDAGOGICAL_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
-        READ_PEDAGOGICAL_DOCUMENTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
+        CREATE_PEDAGOGICAL_DOCUMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChild()),
+        READ_PEDAGOGICAL_DOCUMENTS(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChild()),
 
         READ_SENSITIVE_INFO(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = true).inPlacementUnitOfChild()),
 
@@ -536,9 +542,9 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
-        CREATE_ATTACHMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),),
-        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),),
-        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfPedagogicalDocument(),);
+        CREATE_ATTACHMENT(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocument()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocument()),
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocument());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -657,12 +663,27 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
-        READ(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument(), HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocument()),
-        UPDATE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument(), HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocument()),
-        EVENT_PUBLISHED(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument(), HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocument()),
-        EVENT_MOVED_TO_READY(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument(), HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocument()),
-        EVENT_RETURNED_TO_READY(HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfVasuDocument()),
-        EVENT_MOVED_TO_REVIEWED(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocument(), HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocument()),
+        READ(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocument()
+        ),
+        UPDATE(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocument()
+        ),
+        EVENT_PUBLISHED(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocument()
+        ),
+        EVENT_MOVED_TO_READY(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocument()
+        ),
+        EVENT_RETURNED_TO_READY(HasUnitRole(UNIT_SUPERVISOR).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument()),
+        EVENT_MOVED_TO_REVIEWED(
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocument()
+        ),
         EVENT_RETURNED_TO_REVIEWED,
         EVENT_MOVED_TO_CLOSED;
 
@@ -671,8 +692,8 @@ sealed interface Action {
 
     enum class VasuDocumentFollowup(override vararg val defaultRules: ScopedActionRule<in VasuDocumentFollowupEntryId>) : ScopedAction<VasuDocumentFollowupEntryId> {
         UPDATE(
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfVasuDocumentFollowupEntry(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildOfVasuDocumentFollowupEntry(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocumentFollowupEntry(),
+            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocumentFollowupEntry(),
             IsEmployee.authorOfVasuDocumentFollowupEntry()
         );
 
