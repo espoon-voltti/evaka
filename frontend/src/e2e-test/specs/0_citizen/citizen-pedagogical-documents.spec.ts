@@ -77,7 +77,7 @@ describe('Citizen pedagogical documents', () => {
         1
       )
 
-      await header.selectTab('pedagogical-documents')
+      await header.selectTab('child-documents')
       await pedagogicalDocumentsPage.downloadAttachment(attachmentId)
       await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
     })
@@ -92,7 +92,7 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('pedagogical-documents')
+      await header.selectTab('child-documents')
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
         pd.data.id,
@@ -109,7 +109,7 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('pedagogical-documents')
+      await header.selectTab('child-documents')
 
       await pedagogicalDocumentsPage.assertChildNameIsNotShown(pd.data.id)
     })
@@ -128,7 +128,7 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('pedagogical-documents')
+      await header.selectTab('child-documents')
 
       await pedagogicalDocumentsPage.assertChildNameIsShown(pd.data.id)
       await pedagogicalDocumentsPage.assertChildNameIsShown(pd2.data.id)
@@ -148,7 +148,7 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('pedagogical-documents')
+      await header.selectTab('child-documents')
 
       // Jari has a preferred name
       await pedagogicalDocumentsPage.assertChildNameIs(pd.data.id, 'Jari')

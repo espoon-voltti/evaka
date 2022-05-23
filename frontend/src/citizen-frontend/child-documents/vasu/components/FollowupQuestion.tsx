@@ -12,7 +12,7 @@ import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
-import { useTranslation } from '../../localization'
+import { useTranslation } from '../../../localization'
 
 import { QuestionProps } from './question-props'
 

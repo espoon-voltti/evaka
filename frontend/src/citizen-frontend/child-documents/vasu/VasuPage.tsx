@@ -15,7 +15,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../localization'
+import { useTranslation } from '../../localization'
 
 import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'

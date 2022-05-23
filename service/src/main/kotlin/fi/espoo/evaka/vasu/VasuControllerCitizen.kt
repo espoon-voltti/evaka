@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.getGuardianDependants
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -24,16 +25,35 @@ import org.springframework.web.bind.annotation.RestController
 class VasuControllerCitizen(
     private val accessControl: AccessControl
 ) {
-    @GetMapping("/children/{childId}/vasu-summaries")
-    fun getGuardianVasuSummariesByChild(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable childId: ChildId
-    ): List<VasuDocumentSummary> {
-        Audit.ChildVasuDocumentsReadByGuardian.log(childId, user.rawId())
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_VASU_DOCUMENT, childId)
+    data class ChildBasicInfo(
+        val id: ChildId,
+        val firstName: String,
+        val lastName: String
+    )
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuDocumentSummaries(childId) } }
+    data class ChildVasuSummary(
+        val child: ChildBasicInfo,
+        val vasuDocumentsSummary: List<VasuDocumentSummary>
+    )
+
+    @GetMapping("/children/vasu-summaries")
+    fun getGuardianChildVasuSummaries(
+        db: Database,
+        user: AuthenticatedUser
+    ): List<ChildVasuSummary> {
+        Audit.ChildVasuDocumentsReadByGuardian.log(user.rawId())
+
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val children = tx.getGuardianDependants(PersonId(user.rawId()))
+                children.map { child ->
+                    ChildVasuSummary(
+                        child = ChildBasicInfo(id = child.id, firstName = child.firstName, lastName = child.lastName),
+                        vasuDocumentsSummary = tx.getVasuDocumentSummaries(child.id)
+                    )
+                }
+            }
+        }
     }
 
     data class CitizenGetVasuDocumentResponse(

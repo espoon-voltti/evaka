@@ -250,8 +250,8 @@ const Navigation = React.memo(function Navigation({
       )}
       {user.accessibleFeatures.pedagogicalDocumentation && (
         <StyledNavLink
-          to="/pedagogical-documents"
-          data-qa="nav-pedagogical-documents"
+          to="/child-documents"
+          data-qa="nav-child-documents"
           onClick={close}
         >
           {t.header.nav.pedagogicalDocuments}

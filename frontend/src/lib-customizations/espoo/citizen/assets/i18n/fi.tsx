@@ -1781,8 +1781,13 @@ export default {
       returnMessage: 'Palaa takaisin'
     }
   },
+  childDocuments: {
+    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    description:
+      'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
+  },
   pedagogicalDocuments: {
-    title: 'Kasvu ja oppiminen',
+    title: 'Lapsen arkeen liittyviä dokumentteja',
     description:
       'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
@@ -1794,6 +1799,7 @@ export default {
     toggleExpandText: 'Näytä tai piilota teksti'
   },
   vasu: {
+    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
     lastModified: 'Viimeisin muokkauspäivämäärä',
     lastPublished: 'Viimeksi julkaistu huoltajalle',
     leavePage: 'Poistu',

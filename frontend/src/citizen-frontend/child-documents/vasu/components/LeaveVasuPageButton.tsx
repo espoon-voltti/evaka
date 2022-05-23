@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 
-import { useTranslation } from '../../localization'
+import { useTranslation } from '../../../localization'
 
 export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
   childId,

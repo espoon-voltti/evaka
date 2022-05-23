@@ -7,7 +7,7 @@ import React from 'react'
 import { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import { VasuTranslations } from 'lib-customizations/employee'
 
-import { useTranslation } from '../../localization'
+import { useTranslation } from '../../../localization'
 
 import { ReadOnlyValue } from './ReadOnlyValue'
 import { QuestionProps } from './question-props'

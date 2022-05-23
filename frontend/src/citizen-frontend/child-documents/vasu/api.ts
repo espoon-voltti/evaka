@@ -5,16 +5,16 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  ChildVasuSummary,
   CitizenGetVasuDocumentResponse,
   VasuDocument,
-  VasuDocumentEvent,
-  VasuDocumentSummary
+  VasuDocumentEvent
 } from 'lib-common/generated/api-types/vasu'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { client } from '../api-client'
+import { client } from '../../api-client'
 
 import { mapVasuContent } from './vasu-content'
 
@@ -49,19 +49,22 @@ const mapVasuDocumentResponse = ({
   }
 })
 
-export async function getVasuDocumentSummaries(
-  childId: UUID
-): Promise<Result<VasuDocumentSummary[]>> {
+export async function getGuardianChildVasuSummaries(): Promise<
+  Result<ChildVasuSummary[]>
+> {
   return client
-    .get<JsonOf<VasuDocumentSummary[]>>(
-      `/citizen/vasu/children/${childId}/vasu-summaries`
-    )
+    .get<JsonOf<ChildVasuSummary[]>>(`/citizen/vasu/children/vasu-summaries`)
     .then((res) =>
       Success.of(
-        res.data.map(({ events, modifiedAt, ...rest }) => ({
-          ...rest,
-          events: events.map(mapVasuDocumentEvent),
-          modifiedAt: new Date(modifiedAt)
+        res.data.map((childVasuSummary) => ({
+          ...childVasuSummary,
+          vasuDocumentsSummary: childVasuSummary.vasuDocumentsSummary.map(
+            ({ events, modifiedAt, ...rest }) => ({
+              ...rest,
+              events: events.map(mapVasuDocumentEvent),
+              modifiedAt: new Date(modifiedAt)
+            })
+          )
         }))
       )
     )

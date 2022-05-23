@@ -19,11 +19,28 @@ export interface ChangeDocumentStateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.ChildBasicInfo
+*/
+export interface ChildBasicInfo {
+  firstName: string
+  id: UUID
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.ChildLanguage
 */
 export interface ChildLanguage {
   languageSpokenAtHome: string
   nativeLanguage: string
+}
+
+/**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.ChildVasuSummary
+*/
+export interface ChildVasuSummary {
+  child: ChildBasicInfo
+  vasuDocumentsSummary: VasuDocumentSummary[]
 }
 
 /**

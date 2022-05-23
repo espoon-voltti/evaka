@@ -187,8 +187,7 @@ sealed interface Action {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_VASU_DOCUMENT(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

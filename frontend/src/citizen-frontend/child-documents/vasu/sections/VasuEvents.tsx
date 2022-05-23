@@ -13,7 +13,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { useTranslation } from '../../localization'
+import { useTranslation } from '../../../localization'
 import { VasuStateChip } from '../components/VasuStateChip'
 import { isDateQuestion } from '../vasu-content'
 import { getLastPublished } from '../vasu-events'

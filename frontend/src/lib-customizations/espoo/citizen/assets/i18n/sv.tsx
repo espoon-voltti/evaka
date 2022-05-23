@@ -1805,6 +1805,11 @@ const sv: Translations = {
       returnMessage: 'Gå tillbaka till inloggningen'
     }
   },
+  childDocuments: {
+    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    description:
+      'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
+  },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',
     description:
@@ -1818,6 +1823,7 @@ const sv: Translations = {
     toggleExpandText: 'Visa eller göm texten'
   },
   vasu: {
+    title: 'Lapsen arkeen liittyviä dokumentteja',
     lastModified: 'Viimeisin muokkauspäivämäärä',
     lastPublished: 'Viimeksi julkaistu huoltajalle',
     leavePage: 'Poistu',
