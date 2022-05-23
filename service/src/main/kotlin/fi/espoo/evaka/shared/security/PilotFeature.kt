@@ -5,13 +5,16 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.shared.db.DatabaseEnum
 
 @ConstList("pilotFeatures")
-enum class PilotFeature {
+enum class PilotFeature : DatabaseEnum {
     MESSAGING,
     MOBILE,
     RESERVATIONS,
     VASU_AND_PEDADOC,
     MOBILE_MESSAGING,
-    PLACEMENT_TERMINATION
+    PLACEMENT_TERMINATION;
+
+    override val sqlType: String = "pilot_feature"
 }
