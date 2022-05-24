@@ -61,4 +61,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2016-1000027</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Spring Security 5.4+ are not vulnerable to this, but the OSSINDEX database incorrectly flags at least 5.7.1 vulnerable
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
+        <cve>CVE-2020-5408</cve>
+    </suppress>
 </suppressions>
