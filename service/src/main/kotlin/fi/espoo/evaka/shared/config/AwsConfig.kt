@@ -23,19 +23,18 @@ import software.amazon.awssdk.services.ses.SesClient
 @Configuration
 class AwsConfig {
     @Bean
-    @Profile("production")
-    fun containerCredentialsProvider() = DefaultCredentialsProvider.create()
+    @Profile("local")
+    fun credentialsProviderLocal(): AwsCredentialsProvider =
+        StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
 
     @Bean
     @Profile("local")
-    fun amazonS3Local(env: BucketEnv): S3Client {
+    fun amazonS3Local(env: BucketEnv, credentialsProvider: AwsCredentialsProvider): S3Client {
         val client = S3Client.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
             .endpointOverride(env.s3MockUrl)
-            .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
-            )
+            .credentialsProvider(credentialsProvider)
             .build()
 
         for (bucket in env.allBuckets()) {
@@ -48,7 +47,17 @@ class AwsConfig {
 
     @Bean
     @Profile("local")
-    fun amazonS3PresignerLocal(): S3Presigner? = null
+    fun amazonS3PresignerLocal(env: BucketEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner =
+        S3Presigner.builder()
+            .region(Region.US_EAST_1)
+            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+            .endpointOverride(env.s3MockUrl)
+            .credentialsProvider(credentialsProvider)
+            .build()
+
+    @Bean
+    @Profile("production")
+    fun credentialsProviderProd(): AwsCredentialsProvider = DefaultCredentialsProvider.create()
 
     @Bean
     @Profile("production")
@@ -59,7 +68,7 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun amazonS3PresignerProd(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner? =
+    fun amazonS3PresignerProd(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner =
         S3Presigner.builder()
             .region(env.awsRegion)
             .credentialsProvider(credentialsProvider)

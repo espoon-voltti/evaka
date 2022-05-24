@@ -6,6 +6,7 @@ evaka:
   aws:
     region: eu-west-1
   bucket:
+    proxy_through_nginx: false
     attachments: evaka-attachments-dev
     data: evaka-data-dev
     decisions: evaka-daycaredecisions-dev

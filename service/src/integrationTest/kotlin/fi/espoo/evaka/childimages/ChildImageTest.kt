@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.BlobDataPart
 import com.github.kittinunf.fuel.core.Method
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.s3.fuelResponseToS3URL
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
@@ -117,10 +118,12 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
     }
 
     private fun downloadImage(imageId: ChildImageId): ByteArray {
-        val (_, response, data) = http.get("/child-images/$imageId")
+        val (_, response, _) = http.get("/child-images/$imageId")
             .asUser(admin)
             .response()
         assertEquals(200, response.statusCode)
+
+        val (_, _, data) = http.get(fuelResponseToS3URL(response)).response()
         return data.get()
     }
 }

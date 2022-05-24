@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.s3
 
+import com.github.kittinunf.fuel.core.Response
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ContentDisposition
-import org.springframework.http.MediaType
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
@@ -27,10 +27,12 @@ data class Document(
 
 data class DocumentLocation(val bucket: String, val key: String)
 
-@Service
+const val INTERNAL_REDIRECT_PREFIX = "/internal_redirect/"
+
 class DocumentService(
     private val s3Client: S3Client,
-    private val s3Presigner: S3Presigner?
+    private val s3Presigner: S3Presigner,
+    private val proxyThroughNginx: Boolean,
 ) {
     fun get(bucketName: String, key: String): Document {
         val request = GetObjectRequest.builder()
@@ -64,9 +66,7 @@ class DocumentService(
         }
     }
 
-    private fun presignedGetUrl(bucketName: String, key: String, contentDispositionHeader: String?): URL? {
-        if (s3Presigner == null) return null
-
+    private fun presignedGetUrl(bucketName: String, key: String, contentDispositionHeader: String?): URL {
         val request = GetObjectRequest.builder()
             .bucket(bucketName)
             .key(key)
@@ -92,16 +92,12 @@ class DocumentService(
         val contentDispositionHeader = getContentDispositionHeader(contentDisposition)
         val presignedUrl = presignedGetUrl(bucketName, key, contentDispositionHeader)
 
-        return if (presignedUrl != null) {
-            val url = "/internal_redirect/$presignedUrl"
+        return if (proxyThroughNginx) {
+            val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
             ResponseEntity.ok().header("X-Accel-Redirect", url).body("")
         } else {
-            // nginx is not available in development => pass the file data through our app
-            val document = this.get(bucketName, key)
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(document.contentType))
-                .header("Content-Disposition", contentDispositionHeader)
-                .body(document.bytes)
+            // nginx is not available in development => redirect to the presigned S3 url
+            ResponseEntity.status(HttpStatus.FOUND).header("Location", presignedUrl.toString()).body("")
         }
     }
 
@@ -129,4 +125,12 @@ class DocumentService(
         val request = DeleteObjectRequest.builder().bucket(bucketName).key(key).build()
         s3Client.deleteObject(request)
     }
+}
+
+fun fuelResponseToS3URL(response: Response): String {
+    return response.headers["X-Accel-Redirect"].first().replace(INTERNAL_REDIRECT_PREFIX, "")
+}
+
+fun responseEntityToS3URL(response: ResponseEntity<Any>): String {
+    return response.headers["X-Accel-Redirect"]!!.first().replace(INTERNAL_REDIRECT_PREFIX, "")
 }

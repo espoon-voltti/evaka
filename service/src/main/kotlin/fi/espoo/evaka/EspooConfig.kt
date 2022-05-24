@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -38,6 +39,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 @Configuration
 @Profile("espoo_evaka")
@@ -79,6 +82,10 @@ class EspooConfig {
 
     @Bean
     fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
+
+    @Bean
+    fun documentService(s3Client: S3Client, s3Presigner: S3Presigner, env: BucketEnv): DocumentService =
+        DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
 
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
