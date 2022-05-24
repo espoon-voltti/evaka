@@ -16,13 +16,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Dependency of spring-ws-security, which is already at latest version (3.0.10.RELEASE).
-        ]]></notes>
-        <filePath regex="true">.*/commons-collections-3\.2\.1\.jar</filePath>
-        <cve>CVE-2017-15708</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         Not relevant for us as we do not use velocity templates.
         ]]></notes>
         <cve>CVE-2020-13936</cve>
@@ -37,19 +30,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-            Workaround for misidentification: ktlint-reporter-checkstyle is not the actual Checkstyle
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-reporter\-checkstyle@.*$</packageUrl>
-        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Not relevant for us, since it's only exploitable by local users and only when sessions are persisted with Tomcat FileStore.
-       ]]></notes>
-        <cve>CVE-2022-23181</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
             Workaround for misidentification: sarif4k is not the same as detekt, even though it comes from the detekt developer(s)
         ]]></notes>
        <packageUrl regex="true">^pkg:maven/io\.github\.detekt\.sarif4k/sarif4k@.*$</packageUrl>
@@ -60,5 +40,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         Not a vulnerability: https://github.com/spring-projects/spring-framework/issues/24434
         ]]></notes>
         <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Spring Security 5.4+ are not vulnerable to this, but the OSSINDEX database incorrectly flags at least 5.7.1 vulnerable
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
+        <cve>CVE-2020-5408</cve>
     </suppress>
 </suppressions>

@@ -42,7 +42,7 @@ dependencies {
         api("org.apache.commons:commons-pool2:2.11.1")
         api("org.apache.commons:commons-text:1.9")
         api("org.apache.santuario:xmlsec:2.2.3")
-        api("org.apache.tika:tika-core:2.3.0")
+        api("org.apache.tika:tika-core:2.4.0")
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
         api("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
