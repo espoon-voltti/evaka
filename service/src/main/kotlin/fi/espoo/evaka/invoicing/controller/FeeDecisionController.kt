@@ -139,14 +139,14 @@ class FeeDecisionController(
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
     }
 
-    @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
-        Audit.FeeDecisionPdfRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, uuid)
+    @GetMapping("/pdf/{decisionId}")
+    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable decisionId: FeeDecisionId): ResponseEntity<Any> {
+        Audit.FeeDecisionPdfRead.log(targetId = decisionId)
+        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, decisionId)
 
-        val (filename, pdf) = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.read { tx ->
-                val decision = tx.getFeeDecision(uuid) ?: error("Cannot find fee decision $uuid")
+                val decision = tx.getFeeDecision(decisionId) ?: error("Cannot find fee decision $decisionId")
 
                 val personIds = listOfNotNull(
                     decision.headOfFamily.id,
@@ -159,14 +159,9 @@ class FeeDecisionController(
                 if (restrictedDetails && !user.isAdmin) {
                     throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
                 }
-
-                service.getFeeDecisionPdf(tx, uuid)
             }
+            service.getFeeDecisionPdfResponse(dbc, decisionId)
         }
-        return ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; filename=\"$filename\"")
-            .header("Content-Type", "application/pdf")
-            .body(pdf)
     }
 
     @GetMapping("/{uuid}")

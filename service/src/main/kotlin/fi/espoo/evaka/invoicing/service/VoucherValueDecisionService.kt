@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
-import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.isElementaryFamily
@@ -16,6 +15,8 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -28,12 +29,13 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.langWithDefault
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 
 @Component
 class VoucherValueDecisionService(
     private val pdfService: PDFService,
-    private val s3Client: S3DocumentClient,
+    private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     env: BucketEnv
@@ -47,14 +49,14 @@ class VoucherValueDecisionService(
         val settings = tx.getSettings()
 
         val pdf = generatePdf(decision, settings)
-        val key = uploadPdf(decision.id, pdf)
+        val key = documentClient.upload(bucket, Document("value_decision_$decisionId.pdf", pdf, "application/pdf")).key
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
 
-    fun getDecisionPdf(tx: Database.Read, decisionId: VoucherValueDecisionId): Pair<String, ByteArray> {
-        val key = tx.getVoucherValueDecisionDocumentKey(decisionId)
+    fun getDecisionPdfResponse(dbc: Database.Connection, decisionId: VoucherValueDecisionId): ResponseEntity<Any> {
+        val documentKey = dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
             ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
-        return key to s3Client.getPdf(bucket, key)
+        return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
     fun sendDecision(tx: Database.Transaction, decisionId: VoucherValueDecisionId): Boolean {
@@ -111,13 +113,6 @@ class VoucherValueDecisionService(
         tx.getVoucherValueDecision(decisionId)?.let {
             it.copy(isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
         } ?: error("No voucher value decision found with ID ($decisionId)")
-
-    private val key = { id: VoucherValueDecisionId -> "value_decision_$id.pdf" }
-    private fun uploadPdf(decisionId: VoucherValueDecisionId, file: ByteArray): String {
-        val key = key(decisionId)
-        s3Client.uploadPdfToS3(bucket, key, file)
-        return key
-    }
 
     private fun generatePdf(decision: VoucherValueDecisionDetailed, settings: Map<SettingType, String>): ByteArray {
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.sv else DocumentLang.fi
