@@ -3983,7 +3983,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 productProvider,
                 featureConfig,
                 object : InvoiceGenerationLogicChooser {
-                    override fun logicForMonth(year: Int, month: Month, childId: ChildId) =
+                    override fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId) =
                         InvoiceGenerationLogic.Free
                 }
             )
@@ -4017,7 +4017,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 productProvider,
                 featureConfig,
                 object : InvoiceGenerationLogicChooser {
-                    override fun logicForMonth(year: Int, month: Month, childId: ChildId) =
+                    override fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId) =
                         InvoiceGenerationLogic.IgnoreAbsences
                 }
             )
