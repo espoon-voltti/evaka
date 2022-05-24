@@ -82,12 +82,12 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: DecisionId
-    ): ResponseEntity<ByteArray> {
+    ): ResponseEntity<Any> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
         accessControl.requirePermissionFor(user, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
+            val decision = dbc.transaction { tx ->
                 val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
                 val application = tx.fetchApplicationDetails(decision.applicationId)
                     ?: error("Cannot find application for decision id '$decisionId'")
@@ -101,12 +101,9 @@ class DecisionController(
                 if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
                     throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-                decisionService.getDecisionPdf(tx, decisionId)
+                decision
             }
-        }.let { document ->
-            ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                .body(document.getBytes())
+            decisionService.getDecisionPdf(dbc, decision)
         }
     }
 }

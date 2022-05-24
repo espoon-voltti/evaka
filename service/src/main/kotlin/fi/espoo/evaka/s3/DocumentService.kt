@@ -4,41 +4,36 @@
 
 package fi.espoo.evaka.s3
 
-import java.io.InputStream
-import java.net.URL
+import org.springframework.http.ResponseEntity
 
-interface Document {
-    fun getName(): String
-    fun getBytes(): ByteArray
-}
-
-data class DocumentWrapper(private val name: String, private val bytes: ByteArray) : Document {
-    override fun getName() = name
-    override fun getBytes() = bytes
-}
+data class Document(
+    val name: String,
+    val bytes: ByteArray,
+    val contentType: String,
+)
 
 data class DocumentLocation(val bucket: String, val key: String)
 
 interface DocumentService {
     /**
-     * Get attachment by attachment path. Subclasses can set add more restrictions to path value.
+     * Get file by path
      */
     fun get(bucketName: String, key: String): Document
 
     /**
-     * Create a presigned URL to get a file. Returns NULL if not supported.
+     * Return the file as a response with Content-Disposition: attachment and an optional filename
      */
-    fun presignedGetUrl(bucketName: String, key: String): URL?
+    fun responseAttachment(bucketName: String, key: String, fileName: String?): ResponseEntity<Any>
 
     /**
-     * Get InputStream of the file by path.
+     * Return the file as a response with Content-Disposition: inline
      */
-    fun stream(bucketName: String, key: String): InputStream
+    fun responseInline(bucketName: String, key: String): ResponseEntity<Any>
 
     /**
      * Upload a document to S3. [DocumentLocation] is returned in response
      */
-    fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation
+    fun upload(bucketName: String, document: Document): DocumentLocation
 
     /**
      * Delete a document from S3

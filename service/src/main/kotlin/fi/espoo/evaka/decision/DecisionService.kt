@@ -18,7 +18,6 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -37,6 +36,7 @@ import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import java.util.Locale
@@ -46,7 +46,7 @@ val logger = KotlinLogging.logger { }
 @Service
 class DecisionService(
     private val personService: PersonService,
-    private val s3Client: DocumentService,
+    private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
@@ -170,10 +170,9 @@ class DecisionService(
     }
 
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
-        s3Client.upload(
+        documentClient.upload(
             bucket,
-            DocumentWrapper(name = key, bytes = document),
-            "application/pdf"
+            Document(name = key, bytes = document, contentType = "appliation/pdf"),
         ).also {
             logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
@@ -251,18 +250,14 @@ class DecisionService(
         sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)))
     }
 
-    fun getDecisionPdf(tx: Database.Read, decisionId: DecisionId): Document {
-        val decision = tx.getDecision(decisionId)
-            ?: throw NotFound("No decision $decisionId found")
-        val lang = tx.getDecisionLanguage(decisionId)
-        return decision.documentKey
-            ?.let { key -> s3Client.get(decisionBucket, key) }
-            ?.let {
-                DocumentWrapper(
-                    name = calculateDecisionFileName(tx, decision, lang),
-                    bytes = it.getBytes()
-                )
-            } ?: throw NotFound("Decision S3 key is not set for $decisionId. Document generation is still in progress.")
+    fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {
+        val (documentKey, fileName) = dbc.read { tx ->
+            val documentKey = decision.documentKey ?: throw NotFound("Document generation for ${decision.id} in progress")
+            val lang = tx.getDecisionLanguage(decision.id)
+            val fileName = calculateDecisionFileName(tx, decision, lang)
+            documentKey to fileName
+        }
+        return documentClient.responseAttachment(decisionBucket, documentKey, fileName)
     }
 
     private fun calculateDecisionFileName(tx: Database.Read, decision: Decision, lang: String): String {

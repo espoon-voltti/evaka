@@ -14,7 +14,6 @@ import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.sficlient.soap.KyselyWS1
 import fi.espoo.evaka.sficlient.soap.KyselyWS10
 import fi.espoo.evaka.sficlient.soap.KyselyWS2
@@ -42,11 +41,11 @@ import org.junit.jupiter.api.assertThrows
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
+import org.springframework.http.ResponseEntity
 import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
 import java.io.InputStream
 import java.net.ServerSocket
-import java.net.URL
 import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.Certificate
@@ -98,11 +97,12 @@ class SoapStackIntegrationTest {
         override fun get(bucketName: String, key: String): Document {
             assertEquals(message.documentBucket, bucketName)
             assertEquals(message.documentKey, key)
-            return DocumentWrapper("name", dummyContent.clone())
+            return Document("name", dummyContent, "text/plain")
         }
-        override fun presignedGetUrl(bucketName: String, key: String): URL? = throw NotImplementedError()
-        override fun stream(bucketName: String, key: String): InputStream = throw NotImplementedError()
-        override fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation = throw NotImplementedError()
+
+        override fun responseAttachment(bucketName: String, key: String, fileName: String?): ResponseEntity<Any> = throw NotImplementedError()
+        override fun responseInline(bucketName: String, key: String): ResponseEntity<Any> = throw NotImplementedError()
+        override fun upload(bucketName: String, document: Document): DocumentLocation = throw NotImplementedError()
         override fun delete(bucketName: String, key: String) = throw NotImplementedError()
     }
 

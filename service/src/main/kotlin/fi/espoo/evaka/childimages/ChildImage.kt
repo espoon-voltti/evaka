@@ -5,8 +5,8 @@
 package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.s3.ContentType
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -40,11 +40,11 @@ fun replaceImage(
 
         documentClient.upload(
             bucket,
-            DocumentWrapper(
+            Document(
                 name = "$childImagesBucketPrefix$imageId",
-                bytes = file.bytes
+                bytes = file.bytes,
+                contentType = contentType
             ),
-            contentType
         )
     }
     if (deletedId != null) {
