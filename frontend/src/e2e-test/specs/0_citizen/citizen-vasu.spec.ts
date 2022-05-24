@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -21,6 +22,8 @@ import {
   enduserGuardianFixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import CitizenHeader from '../../pages/citizen/citizen-header'
+import { ChildDocumentsPage } from '../../pages/employee/vasu/child-documents'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -29,8 +32,9 @@ let page: Page
 let childId: UUID
 let templateId: UUID
 let vasuDocId: UUID
+let header: CitizenHeader
 
-beforeAll(async () => {
+beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
@@ -49,12 +53,12 @@ beforeAll(async () => {
   templateId = await insertVasuTemplateFixture()
   vasuDocId = await insertVasuDocument(childId, templateId)
   await publishVasuDocument(vasuDocId)
-
   page = await Page.open()
+  header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page)
 })
 
-describe('Citizen Vasu document page', () => {
+describe('Citizen vasu document page', () => {
   const openDocument = async () => {
     await page.goto(`${config.enduserUrl}/vasu/${vasuDocId}`)
     return new VasuPreviewPage(page)
@@ -75,5 +79,25 @@ describe('Citizen Vasu document page', () => {
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+  })
+})
+
+describe('Citizen child documents listing page', () => {
+  test('Published vasu document is in the list', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: childId
+      }
+    ])
+    await page.reload()
+    await header.selectTab('child-documents')
+    const childDocumentsPage = new ChildDocumentsPage(page)
+    await childDocumentsPage.vasuCollapsible.open()
+    await childDocumentsPage.assertVasuRow(
+      vasuDocId,
+      'Luonnos',
+      LocalDate.today().format('dd.MM.yyyy')
+    )
   })
 })

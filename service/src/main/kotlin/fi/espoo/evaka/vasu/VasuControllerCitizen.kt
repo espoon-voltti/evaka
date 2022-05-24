@@ -49,7 +49,7 @@ class VasuControllerCitizen(
                 children.map { child ->
                     ChildVasuSummary(
                         child = ChildBasicInfo(id = child.id, firstName = child.firstName, lastName = child.lastName),
-                        vasuDocumentsSummary = tx.getVasuDocumentSummaries(child.id)
+                        vasuDocumentsSummary = tx.getVasuDocumentSummaries(child.id).filter { it.publishedAt != null }
                     )
                 }
             }

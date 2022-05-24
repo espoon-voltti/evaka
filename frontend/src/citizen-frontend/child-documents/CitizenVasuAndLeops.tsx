@@ -63,23 +63,26 @@ export default React.memo(function CitizenVasuAndLeops() {
                     <VasuTable key={summary.child.id}>
                       <tbody>
                         {summary.vasuDocumentsSummary.map((vasu) => (
-                          <VasuTr key={vasu.id}>
+                          <VasuTr key={vasu.id} data-qa={`vasu-${vasu.id}`}>
                             <VasuTd>
                               <InlineButton
                                 onClick={() => navigate(`/vasu/${vasu.id}`)}
                                 text={vasu.name}
+                                data-qa="vasu-link"
                               />
                             </VasuTd>
-                            <StateCell>
+                            <StateCell data-qa={`state-chip-${vasu.id}`}>
                               <VasuStateChip
                                 state={vasu.documentState}
                                 labels={i18n.vasu.states}
                               />
                             </StateCell>
-                            <VasuTd>
-                              {LocalDate.fromSystemTzDate(
-                                vasu.modifiedAt
-                              ).format()}
+                            <VasuTd data-qa={`published-at-${vasu.id}`}>
+                              {vasu.publishedAt
+                                ? LocalDate.fromSystemTzDate(
+                                    vasu.publishedAt
+                                  ).format()
+                                : ''}
                             </VasuTd>
                           </VasuTr>
                         ))}

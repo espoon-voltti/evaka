@@ -59,10 +59,11 @@ export async function getGuardianChildVasuSummaries(): Promise<
         res.data.map((childVasuSummary) => ({
           ...childVasuSummary,
           vasuDocumentsSummary: childVasuSummary.vasuDocumentsSummary.map(
-            ({ events, modifiedAt, ...rest }) => ({
+            ({ events, modifiedAt, publishedAt, ...rest }) => ({
               ...rest,
               events: events.map(mapVasuDocumentEvent),
-              modifiedAt: new Date(modifiedAt)
+              modifiedAt: new Date(modifiedAt),
+              publishedAt: publishedAt ? new Date(publishedAt) : null
             })
           )
         }))

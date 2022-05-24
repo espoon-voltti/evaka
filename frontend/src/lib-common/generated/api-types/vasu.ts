@@ -187,6 +187,7 @@ export interface VasuDocumentSummary {
   id: UUID
   modifiedAt: Date
   name: string
+  publishedAt: Date | null
 }
 
 /**
