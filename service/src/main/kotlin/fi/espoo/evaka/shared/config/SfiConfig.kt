@@ -19,9 +19,9 @@ class SfiConfig {
     private val logger = KotlinLogging.logger { }
 
     @Bean
-    fun sfiMessagesClient(env: ObjectProvider<SfiEnv>, documentService: DocumentService): SfiMessagesClient = env.ifAvailable?.let {
+    fun sfiMessagesClient(env: ObjectProvider<SfiEnv>, documentClient: DocumentService): SfiMessagesClient = env.ifAvailable?.let {
         logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
-        SfiMessagesSoapClient(it, documentService)
+        SfiMessagesSoapClient(it, documentClient::get)
     } ?: MockSfiMessagesClient().also {
         logger.info { "Using mock Suomi.fi Messages API client" }
     }
