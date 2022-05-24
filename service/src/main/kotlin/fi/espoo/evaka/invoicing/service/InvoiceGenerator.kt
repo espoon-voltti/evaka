@@ -55,6 +55,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
         val invoices = draftInvoiceGenerator.generateDraftInvoices(
+            tx,
             invoiceCalculationData.decisions,
             invoiceCalculationData.placements,
             invoiceCalculationData.period,

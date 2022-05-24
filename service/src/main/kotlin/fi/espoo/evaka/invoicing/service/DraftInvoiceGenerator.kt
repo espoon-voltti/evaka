@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -41,11 +42,11 @@ enum class InvoiceGenerationLogic {
 }
 
 interface InvoiceGenerationLogicChooser {
-    fun logicForMonth(year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic
+    fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic
 }
 
 object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
-    override fun logicForMonth(year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic =
+    override fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId): InvoiceGenerationLogic =
         InvoiceGenerationLogic.Default
 }
 
@@ -56,6 +57,7 @@ class DraftInvoiceGenerator(
     private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
 ) {
     fun generateDraftInvoices(
+        tx: Database.Read,
         decisions: Map<PersonId, List<FeeDecision>>,
         placements: Map<PersonId, List<Placements>>,
         period: DateRange,
@@ -71,6 +73,7 @@ class DraftInvoiceGenerator(
         return placements.keys.mapNotNull { headOfFamilyId ->
             try {
                 generateDraftInvoice(
+                    tx,
                     decisions[headOfFamilyId] ?: listOf(),
                     placements[headOfFamilyId] ?: listOf(),
                     period,
@@ -105,6 +108,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun generateDraftInvoice(
+        tx: Database.Read,
         decisions: List<FeeDecision>,
         placements: List<Placements>,
         invoicePeriod: DateRange,
@@ -180,6 +184,7 @@ class DraftInvoiceGenerator(
                 val separatePeriods = mergePeriods(childStubs)
 
                 val logic = invoiceGenerationLogicChooser.logicForMonth(
+                    tx,
                     invoicePeriod.start.year,
                     invoicePeriod.start.month,
                     child.id
