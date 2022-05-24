@@ -456,7 +456,7 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.created,
     i.start_date,
     person.id AS personId,
-    person.first_name || ' ' || person.last_name AS personName,
+    person.last_name || ' ' || person.first_name AS personName,
     ca.name AS primaryCareArea
 FROM income_statement i
 JOIN person ON person.id = i.person_id
