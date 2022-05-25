@@ -307,6 +307,14 @@ server {
     proxy_max_temp_file_size 0;
 
     proxy_pass $1$is_args$args;
+
+    proxy_intercept_errors on;
+    error_page 403 404 /static/try-again-later.txt;
+  }
+
+  location /static/ {
+    internal;
+    root /;
   }
 
 
