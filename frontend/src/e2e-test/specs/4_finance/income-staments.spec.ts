@@ -159,7 +159,7 @@ describe('Income statements', () => {
     await waitUntilEqual(() => incomeStatementsPage.getRowCount(), 1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,
-      `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`,
+      `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`,
       'lapsen tulotiedot'
     )
 

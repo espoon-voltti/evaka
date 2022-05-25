@@ -456,7 +456,7 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.created,
     i.start_date,
     person.id AS personId,
-    person.first_name || ' ' || person.last_name AS personName,
+    person.last_name || ' ' || person.first_name AS personName,
     ca.name AS primaryCareArea
 FROM income_statement i
 JOIN person ON person.id = i.person_id
@@ -508,7 +508,7 @@ WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
 AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
 AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
-ORDER BY i.created, i.start_date, i.id, a.id  -- order by area to get the same result each time
+ORDER BY i.created, i.start_date, i.id, a.id, person.last_name, person.first_name  -- order by area to get the same result each time
 """
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(

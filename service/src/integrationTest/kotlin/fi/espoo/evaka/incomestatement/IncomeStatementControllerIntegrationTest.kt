@@ -298,7 +298,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement1.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "John Doe",
+                        personName = "Doe John",
                         primaryCareArea = "Test Area",
                     ),
                     IncomeStatementAwaitingHandler(
@@ -307,7 +307,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Joan Doe",
+                        personName = "Doe Joan",
                         primaryCareArea = "Lwiz Foo",
                     ),
                     IncomeStatementAwaitingHandler(
@@ -316,7 +316,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement3.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
-                        personName = "Mark Foo",
+                        personName = "Foo Mark",
                         primaryCareArea = "Lwiz Foo",
                     ),
                     IncomeStatementAwaitingHandler(
@@ -325,7 +325,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement4.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
-                        personName = "Dork Aman",
+                        personName = "Aman Dork",
                         primaryCareArea = "Test Area",
                     ),
                     IncomeStatementAwaitingHandler(
@@ -334,7 +334,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement5.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
-                        personName = "Johannes Olavi Antero Tapio Karhula",
+                        personName = "Karhula Johannes Olavi Antero Tapio",
                         primaryCareArea = "Lwiz Foo",
                     ),
                     IncomeStatementAwaitingHandler(
@@ -343,7 +343,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement6.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_6.id,
-                        personName = "Ville Vilkas",
+                        personName = "Vilkas Ville",
                         primaryCareArea = null,
                     ),
                     IncomeStatementAwaitingHandler(
@@ -352,7 +352,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement7.startDate,
                         type = IncomeStatementType.CHILD_INCOME,
                         personId = testChild_1.id,
-                        personName = "Ricky Doe",
+                        personName = "Doe Ricky",
                         primaryCareArea = "Test Area",
                     )
                 ),
@@ -402,7 +402,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Joan Doe",
+                        personName = "Doe Joan",
                         primaryCareArea = "Lwiz Foo",
                     )
                 ),
@@ -458,7 +458,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Joan Doe",
+                        personName = "Doe Joan",
                         primaryCareArea = "Test Area",
                     )
                 ),
@@ -521,7 +521,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement1.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
-                        personName = "John Doe",
+                        personName = "Doe John",
                         primaryCareArea = "Test Area"
                     )
                 ),
@@ -544,7 +544,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         startDate = incomeStatement2.startDate,
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
-                        personName = "Joan Doe",
+                        personName = "Doe Joan",
                         primaryCareArea = "Test Area",
                     )
                 ),
