@@ -104,6 +104,7 @@ services:
       FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_DAYCAREDECISION: evaka-daycaredecisions-dev
       FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_PAYMENTDECISION: evaka-paymentdecisions-dev
       FI_ESPOO_VOLTTI_S3MOCK_URL: ${S3MOCK_URL}
+      EVAKA_BUCKET_PROXY_THROUGH_NGINX: "true"
       FI_ESPOO_INTEGRATION_INVOICE_ENABLED: "false"
       FI_ESPOO_EVAKA_MESSAGE_ENABLED: "false"
       FI_ESPOO_INTEGRATION_VARDA_URL: "http://localhost:8888/mock-integration/varda/api"
