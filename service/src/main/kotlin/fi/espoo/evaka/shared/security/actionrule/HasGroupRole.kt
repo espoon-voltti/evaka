@@ -96,7 +96,6 @@ AND curriculum_document.id = ANY(:ids)
     fun inPlacementGroupOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasGroupRole> {
-            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
@@ -107,6 +106,8 @@ AND curriculum_document.id = ANY(:ids)
                     inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
+            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
+            override fun hashCode(): Int = this.hashCode()
         }
     )
 }

@@ -80,7 +80,6 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
     fun inAnyUnit() = UnscopedDatabaseActionRule(
         this,
         object : UnscopedDatabaseActionRule.Query<HasUnitRole> {
-            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
@@ -102,6 +101,8 @@ WHERE employee_id = :userId
                     else -> emptySet()
                 }
             )
+            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            override fun hashCode(): Int = this.javaClass.hashCode()
         }
     )
 
@@ -464,7 +465,6 @@ AND curriculum_document.id = ANY(:ids)
     fun inPlacementUnitOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
         this,
         object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasUnitRole> {
-            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
@@ -475,6 +475,8 @@ AND curriculum_document.id = ANY(:ids)
                     inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
+            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
+            override fun hashCode(): Int = this.javaClass.hashCode()
         }
     )
 
