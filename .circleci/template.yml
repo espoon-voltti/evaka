@@ -1083,19 +1083,19 @@ jobs:
           command: ./circle-check-migrations.sh
       - owasp/generate_cache_keys:
           cache_key: gradle-v1-cache-key
-      - owasp/restore_owasp_cache:
-          cache_key: gradle-v1-cache-key
-      - run:
-          name: Update OWASP Dependency-Check Database
-          working_directory: *workspace_service
-          command: ./gradlew dependencyCheckUpdate
-      - owasp/store_owasp_cache:
-          cve_data_directory: << pipeline.parameters.workspace_root >>/.gradle-user-home/dependency-check-data
-          cache_key: gradle-v1-cache-key
-      - run:
-          name: Run OWASP Dependency-Check Analyzer
-          working_directory: *workspace_service
-          command: ./gradlew dependencyCheckAnalyze
+      #- owasp/restore_owasp_cache:
+      #    cache_key: gradle-v1-cache-key
+      #- run:
+      #    name: Update OWASP Dependency-Check Database
+      #    working_directory: *workspace_service
+      #    command: ./gradlew dependencyCheckUpdate
+      #- owasp/store_owasp_cache:
+      #    cve_data_directory: << pipeline.parameters.workspace_root >>/.gradle-user-home/dependency-check-data
+      #    cache_key: gradle-v1-cache-key
+      #- run:
+      #    name: Run OWASP Dependency-Check Analyzer
+      #    working_directory: *workspace_service
+      #    command: ./gradlew dependencyCheckAnalyze
       - store_artifacts:
           path: << pipeline.parameters.workspace_root >>/service/build/reports/
       - notify_slack
