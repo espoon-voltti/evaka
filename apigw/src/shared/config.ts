@@ -308,3 +308,11 @@ export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
         )
       }
     : undefined
+
+const titaniaUsername = process.env.EVAKA_TITANIA_USERNAME
+export const titaniaConfig = titaniaUsername
+  ? {
+      username: titaniaUsername,
+      password: required(process.env.EVAKA_TITANIA_PASSWORD)
+    }
+  : undefined
