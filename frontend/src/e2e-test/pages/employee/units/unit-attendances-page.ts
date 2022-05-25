@@ -183,9 +183,9 @@ export class ReservationModal extends Modal {
     await this.submit()
   }
 
-  async addReservation() {
+  async addReservation(endDate: LocalDate) {
     await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(LocalDate.today().format())
+    await this.setEndDate(endDate.format())
     await this.setStartTime('10:00', 0)
     await this.setEndTime('16:00', 0)
     await this.save()

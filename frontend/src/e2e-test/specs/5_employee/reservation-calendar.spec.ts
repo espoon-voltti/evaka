@@ -32,7 +32,7 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 
-const mockedToday = LocalDate.today()
+const mockedToday = LocalDate.of(2023, 2, 15)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
@@ -101,7 +101,7 @@ describe('Unit group calendar', () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
-    await reservationModal.addReservation()
+    await reservationModal.addReservation(mockedToday)
   })
 })
 
