@@ -79,15 +79,27 @@ export default React.memo(function VasuPage() {
           <FooterContainer>
             <ContentArea opaque paddingVertical="xs" paddingHorizontal="L">
               <ExpandingInfo
-                info={t.vasu.givePermissionToShareInfoVasu}
+                info={
+                  vasu.type === 'DAYCARE'
+                    ? t.vasu.givePermissionToShareInfoVasu
+                    : t.vasu.givePermissionToShareInfoLeops
+                }
                 ariaLabel={t.common.openExpandingInfo}
               >
-                <Label>{t.vasu.givePermissionToShareTitle}</Label>
+                <Label>
+                  {vasu.type === 'DAYCARE'
+                    ? t.vasu.givePermissionToShareTitleVasu
+                    : t.vasu.givePermissionToShareTitleLeops}
+                </Label>
               </ExpandingInfo>
               <Gap />
               <Checkbox
                 checked={givePermissionToShareSelected}
-                label={t.vasu.givePermissionToShare}
+                label={
+                  vasu.type === 'DAYCARE'
+                    ? t.vasu.givePermissionToShareVasu
+                    : t.vasu.givePermissionToShareLeops
+                }
                 onChange={setGivePermissionToShareSelected}
                 data-qa="confirm-checkbox"
               />

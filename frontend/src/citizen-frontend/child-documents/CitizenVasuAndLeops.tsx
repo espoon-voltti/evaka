@@ -4,16 +4,18 @@
 
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   CollapsibleContentArea,
   ContentArea
 } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
+import { faExclamation } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
@@ -31,11 +33,13 @@ const VasuTr = styled.tr``
 
 const VasuTd = styled.td`
   padding-bottom: 16px;
+  padding-right: 16px;
 `
 
-const StateCell = styled(VasuTd)`
-  display: flex;
-  justify-content: flex-start;
+const StateTd = styled(VasuTd)``
+const PermissionToShareContainer = styled.div``
+const PermissionToShareText = styled.span`
+  padding-left: 6px;
 `
 
 export default React.memo(function CitizenVasuAndLeops() {
@@ -44,6 +48,7 @@ export default React.memo(function CitizenVasuAndLeops() {
   const [vasus] = useApiState(() => getGuardianChildVasuSummaries(), [])
   const navigate = useNavigate()
   const user = useUser()
+  const theme = useTheme()
 
   return (
     <>
@@ -69,16 +74,16 @@ export default React.memo(function CitizenVasuAndLeops() {
                             <VasuTd>
                               <InlineButton
                                 onClick={() => navigate(`/vasu/${vasu.id}`)}
-                                text={vasu.name}
+                                text={`${vasu.name}`}
                                 data-qa="vasu-link"
                               />
                             </VasuTd>
-                            <StateCell data-qa={`state-chip-${vasu.id}`}>
+                            <StateTd data-qa={`state-chip-${vasu.id}`}>
                               <VasuStateChip
                                 state={vasu.documentState}
                                 labels={i18n.vasu.states}
                               />
-                            </StateCell>
+                            </StateTd>
                             <VasuTd data-qa={`published-at-${vasu.id}`}>
                               {vasu.publishedAt
                                 ? LocalDate.fromSystemTzDate(
@@ -86,13 +91,25 @@ export default React.memo(function CitizenVasuAndLeops() {
                                   ).format()
                                 : ''}
                             </VasuTd>
-                            <td
+                            <VasuTd
                               data-qa={`permission-to-share-needed-${vasu.id}`}
                             >
                               {!vasu.guardiansThatHaveGivenPermissionToShare.some(
                                 (guardianId) => guardianId === user?.id
-                              ) && <div>TODO ei ole antanut lupaa</div>}
-                            </td>
+                              ) && (
+                                <PermissionToShareContainer>
+                                  <RoundIcon
+                                    content={faExclamation}
+                                    color={theme.colors.status.warning}
+                                    size="s"
+                                    data-qa="attention-indicator"
+                                  />
+                                  <PermissionToShareText>
+                                    {i18n.vasu.givePermissionToShareReminder}
+                                  </PermissionToShareText>
+                                </PermissionToShareContainer>
+                              )}
+                            </VasuTd>
                           </VasuTr>
                         ))}
                       </tbody>
