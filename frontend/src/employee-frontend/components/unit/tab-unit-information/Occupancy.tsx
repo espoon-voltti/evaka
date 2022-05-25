@@ -48,11 +48,13 @@ interface SelectionsState {
 type Props = {
   filters: UnitFilters
   occupancies: UnitOccupancies
+  realtimeStaffAttendanceEnabled: boolean
 }
 
 export default React.memo(function OccupancyContainer({
   filters,
-  occupancies
+  occupancies,
+  realtimeStaffAttendanceEnabled
 }: Props) {
   const { startDate, endDate } = filters
 
@@ -69,7 +71,9 @@ export default React.memo(function OccupancyContainer({
           occupancies={occupancies.confirmed}
           plannedOccupancies={occupancies.planned}
           realizedOccupancies={occupancies.realized}
-          realtimeOccupancies={occupancies.realtime}
+          realtimeOccupancies={
+            realtimeStaffAttendanceEnabled ? occupancies.realtime : null
+          }
         />
       ) : (
         <WrapBox>

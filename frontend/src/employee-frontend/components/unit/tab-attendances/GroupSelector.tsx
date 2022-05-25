@@ -10,7 +10,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { getDaycareGroups } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
@@ -20,13 +19,15 @@ interface Props {
   selected: UUID | 'no-group' | 'staff' | null
   onSelect: (val: UUID | 'no-group' | 'staff') => void
   'data-qa'?: string
+  realtimeStaffAttendanceEnabled: boolean
 }
 
 export default React.memo(function GroupSelector({
   unitId,
   selected,
   onSelect,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  realtimeStaffAttendanceEnabled
 }: Props) {
   const { i18n } = useTranslation()
   const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
@@ -47,9 +48,9 @@ export default React.memo(function GroupSelector({
         )
         .getOrElse([]),
       'no-group',
-      ...(featureFlags.experimental?.realtimeStaffAttendance ? ['staff'] : [])
+      ...(realtimeStaffAttendanceEnabled ? ['staff'] : [])
     ],
-    [groups, selected]
+    [groups, selected, realtimeStaffAttendanceEnabled]
   )
 
   const getItemLabel = useCallback(

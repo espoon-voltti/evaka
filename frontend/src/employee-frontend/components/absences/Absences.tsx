@@ -48,13 +48,15 @@ interface Props {
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   reservationEnabled: boolean
+  staffAttendanceEnabled: boolean
 }
 
 export default React.memo(function Absences({
   groupId,
   selectedDate,
   setSelectedDate,
-  reservationEnabled
+  reservationEnabled,
+  staffAttendanceEnabled
 }: Props) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
@@ -188,6 +190,7 @@ export default React.memo(function Absences({
             childList={absences.children}
             operationDays={absences.operationDays}
             reservationEnabled={reservationEnabled}
+            staffAttendanceEnabled={staffAttendanceEnabled}
           />
           <Gap />
           <AddAbsencesButton

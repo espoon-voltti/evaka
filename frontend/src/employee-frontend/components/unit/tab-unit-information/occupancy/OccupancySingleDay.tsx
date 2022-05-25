@@ -8,7 +8,6 @@ import styled from 'styled-components'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { OccupancyResponse } from '../../../../api/unit'
 import { useTranslation } from '../../../../state/i18n'
@@ -40,10 +39,7 @@ const OccupancySingleDay = React.memo(function OccupancySingleDay({
 }: Props) {
   const { i18n } = useTranslation()
 
-  if (
-    featureFlags.experimental?.realtimeStaffAttendance &&
-    realtimeOccupancies
-  ) {
+  if (realtimeOccupancies) {
     return (
       <Container>
         <OccupancyDayGraph occupancy={realtimeOccupancies} />

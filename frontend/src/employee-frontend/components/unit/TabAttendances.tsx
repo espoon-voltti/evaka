@@ -77,6 +77,12 @@ export default React.memo(function TabAttendances() {
     .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))
     .getOrElse(false)
 
+  const realtimeStaffAttendanceEnabled = unitInformation
+    .map((u) =>
+      u.daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE')
+    )
+    .getOrElse(false)
+
   const staffOrNoGroupSelected = groupId === 'staff' || groupId === 'no-group'
   return (
     <>
@@ -119,6 +125,7 @@ export default React.memo(function TabAttendances() {
             <Occupancy
               filters={filters}
               occupancies={unitData.unitOccupancies}
+              realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
             />
           ) : null
         )}
@@ -148,6 +155,7 @@ export default React.memo(function TabAttendances() {
             selected={groupId}
             onSelect={setGroupId}
             data-qa="attendances-group-select"
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
           />
         </GroupSelectorWrapper>
 
@@ -157,6 +165,7 @@ export default React.memo(function TabAttendances() {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             reservationEnabled={reservationEnabled}
+            staffAttendanceEnabled={!realtimeStaffAttendanceEnabled}
           />
         )}
 
@@ -174,6 +183,7 @@ export default React.memo(function TabAttendances() {
                 .map(({ daycare }) => daycare.operationDays)
                 .getOrElse(null) ?? [1, 2, 3, 4, 5]
             }
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
           />
         )}
         <Gap size="L" />

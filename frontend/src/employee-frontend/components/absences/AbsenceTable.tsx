@@ -15,7 +15,6 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
@@ -240,6 +239,7 @@ interface AbsenceTableProps {
   childList: AbsenceChild[]
   operationDays: LocalDate[]
   reservationEnabled: boolean
+  staffAttendanceEnabled: boolean
 }
 
 export default React.memo(function AbsenceTable({
@@ -249,7 +249,8 @@ export default React.memo(function AbsenceTable({
   selectedDate,
   childList,
   operationDays,
-  reservationEnabled
+  reservationEnabled,
+  staffAttendanceEnabled
 }: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
@@ -286,7 +287,7 @@ export default React.memo(function AbsenceTable({
           />
         ))}
         {renderEmptyRow()}
-        {!featureFlags.experimental?.realtimeStaffAttendance && (
+        {staffAttendanceEnabled && (
           <StaffAttendance
             groupId={groupId}
             selectedDate={selectedDate}
