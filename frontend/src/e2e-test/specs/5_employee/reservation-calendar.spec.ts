@@ -32,7 +32,7 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 
-const mockedToday = LocalDate.of(2022, 3, 28)
+const mockedToday = LocalDate.of(2023, 2, 15)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
@@ -101,7 +101,7 @@ describe('Unit group calendar', () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
-    await reservationModal.addReservation()
+    await reservationModal.addReservation(mockedToday)
   })
 })
 
@@ -114,7 +114,7 @@ describe('Unit group calendar for shift care unit', () => {
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.selectRepetitionType('IRREGULAR')
 
-    const startDate = mockedToday.startOfWeek()
+    const startDate = mockedToday
     await reservationModal.setStartDate(startDate.format())
     await reservationModal.setEndDate(startDate.format())
     await reservationModal.setStartTime('00:00', 0)
@@ -124,13 +124,12 @@ describe('Unit group calendar for shift care unit', () => {
 
     await reservationModal.setStartTime('20:00', 1)
     await reservationModal.setEndTime('00:00', 1)
-
     await reservationModal.save()
 
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
   })
 
-  // Breaks on daylight saving time
+  // DST breaks this
   test.skip('Employee sees attendances along reservations', async () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
@@ -138,7 +137,7 @@ describe('Unit group calendar for shift care unit', () => {
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.selectRepetitionType('IRREGULAR')
 
-    const startDate = mockedToday.startOfWeek()
+    const startDate = mockedToday
     const arrived = new Date(`${startDate.formatIso()}T08:30Z`)
     const departed = new Date(`${startDate.formatIso()}T13:30Z`)
 
