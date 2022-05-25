@@ -129,15 +129,14 @@ describe('Unit group calendar for shift care unit', () => {
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 2)
   })
 
-  // Breaks on daylight saving time
-  test.skip('Employee sees attendances along reservations', async () => {
+  test('Employee sees attendances along reservations', async () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
 
     reservationModal = await calendarPage.openReservationModal(child1Fixture.id)
     await reservationModal.selectRepetitionType('IRREGULAR')
 
-    const startDate = mockedToday.startOfWeek()
+    const startDate = mockedToday
     const arrived = new Date(`${startDate.formatIso()}T08:30Z`)
     const departed = new Date(`${startDate.formatIso()}T13:30Z`)
 
