@@ -373,6 +373,56 @@ describe('Application transitions', () => {
     await waitingConfirmation.assertRowCount(1)
   })
 
+  test('Placement proposal rejection status', async () => {
+    const fixture1 = {
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.familyWithTwoGuardians.guardian
+      ),
+      status: 'SENT' as const
+    }
+    applicationId = fixture1.id
+
+    await insertApplications([fixture1])
+
+    await execSimpleApplicationActions(applicationId, [
+      'move-to-waiting-placement',
+      'create-default-placement-plan',
+      'send-placement-proposal'
+    ])
+
+    const page2 = await Page.open()
+    const unitPage = new UnitPage(page2)
+
+    await employeeLogin(
+      page2,
+      (
+        await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+      ).data
+    )
+
+    // unit supervisor
+    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    const placementProposals = (await unitPage.openApplicationProcessTab())
+      .placementProposals
+
+    await placementProposals.clickProposalReject(applicationId)
+    await placementProposals.selectProposalRejectionReason(0)
+    await placementProposals.submitProposalRejectionReason()
+    await placementProposals.clickAcceptButton()
+
+    // service worker
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    await applicationWorkbench.waitUntilLoaded()
+    await applicationWorkbench.openPlacementProposalQueue()
+
+    await applicationWorkbench.assertApplicationStatusTextMatches(
+      0,
+      'TILARAJOITE'
+    )
+  })
+
   test('Supervisor can download decision PDF only after it has been generated', async () => {
     const application = {
       ...applicationFixture(

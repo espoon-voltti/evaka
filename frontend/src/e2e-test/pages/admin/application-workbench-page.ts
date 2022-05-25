@@ -54,6 +54,13 @@ export class ApplicationWorkbenchPage {
   #applicationNoteContent = this.page.find(
     '[data-qa="application-note-content"]'
   )
+
+  #applicationPlacementProposalStatusIndicator = this.page.find(
+    '[data-qa="placement-proposal-status"]'
+  )
+  #applicationPlacementProposalStatusTooltip = this.page.find(
+    '[data-qa="placement-proposal-status-tooltip"]'
+  )
   applicationsSent = this.page.find(
     '[data-qa="application-status-filter-SENT"]'
   )
@@ -176,6 +183,17 @@ export class ApplicationWorkbenchPage {
   async openPlacementProposalQueue() {
     await this.#applicationsWaitingUnitConfirmation.click()
     await this.waitUntilLoaded()
+  }
+
+  async assertApplicationStatusTextMatches(
+    index: number,
+    matchingText: string
+  ) {
+    await this.#applicationPlacementProposalStatusIndicator.hover()
+    const tooltip = await this.#applicationPlacementProposalStatusTooltip
+      .innerText
+    const match = tooltip.match(matchingText)
+    return match ? match.length > 0 : false
   }
 
   async verifyNoteExists(note: string) {
