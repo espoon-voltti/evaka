@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
@@ -210,6 +211,8 @@ data class SummaryResultRow(
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime? = null,
+    @Json
+    val basics: VasuBasics,
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null
@@ -225,7 +228,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             e.id AS event_id,
             e.created AS event_created,
             e.event_type,
-            vc.published_at
+            vc.published_at,
+            cd.basics
         FROM curriculum_document cd
         JOIN curriculum_template ct ON cd.template_id = ct.id
         JOIN child c ON c.id = cd.child_id
@@ -251,6 +255,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 name = documents[0].name,
                 modifiedAt = documents[0].modifiedAt,
                 publishedAt = documents[0].publishedAt,
+                guardiansThatHaveGivenPermissionToShare = documents[0].basics.guardians.filter { it.hasGivenPermissionToShare }.map { it.id },
                 events = documents.mapNotNull {
                     if (it.eventId != null && it.eventCreated != null && it.eventType != null) VasuDocumentEvent(
                         id = it.eventId,

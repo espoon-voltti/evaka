@@ -99,5 +99,7 @@ describe('Citizen child documents listing page', () => {
       'Luonnos',
       LocalDate.today().format('dd.MM.yyyy')
     )
+
+    //await page.pause()
   })
 })

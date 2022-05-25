@@ -72,6 +72,7 @@ data class VasuDocumentSummary(
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
     val publishedAt: HelsinkiDateTime?,
+    val guardiansThatHaveGivenPermissionToShare: List<PersonId>
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)

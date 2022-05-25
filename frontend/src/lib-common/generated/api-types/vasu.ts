@@ -184,6 +184,7 @@ export type VasuDocumentState =
 export interface VasuDocumentSummary {
   documentState: VasuDocumentState
   events: VasuDocumentEvent[]
+  guardiansThatHaveGivenPermissionToShare: UUID[]
   id: UUID
   modifiedAt: Date
   name: string

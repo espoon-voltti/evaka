@@ -16,6 +16,7 @@ import {
 import { H2, H3 } from 'lib-components/typography'
 
 import { renderResult } from '../async-rendering'
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import { getGuardianChildVasuSummaries } from './vasu/api'
@@ -42,6 +43,7 @@ export default React.memo(function CitizenVasuAndLeops() {
   const [open, setOpen] = useState(true)
   const [vasus] = useApiState(() => getGuardianChildVasuSummaries(), [])
   const navigate = useNavigate()
+  const user = useUser()
 
   return (
     <>
@@ -84,6 +86,13 @@ export default React.memo(function CitizenVasuAndLeops() {
                                   ).format()
                                 : ''}
                             </VasuTd>
+                            <td
+                              data-qa={`permission-to-share-needed-${vasu.id}`}
+                            >
+                              {!vasu.guardiansThatHaveGivenPermissionToShare.some(
+                                (guardianId) => guardianId === user?.id
+                              ) && <div>TODO ei ole antanut lupaa</div>}
+                            </td>
                           </VasuTr>
                         ))}
                       </tbody>

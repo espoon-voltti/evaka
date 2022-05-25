@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -53,6 +54,7 @@ export default React.memo(function VasuPage() {
     <VasuContainer gapSize="zero" data-qa="vasu-preview">
       {vasu && (
         <>
+          <ReturnButton label={t.common.return} />
           <VasuHeader document={vasu} />
           <BasicsSection
             sectionIndex={0}
