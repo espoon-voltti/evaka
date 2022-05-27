@@ -1300,10 +1300,6 @@ export default {
     deleteFile: 'Poista tiedosto'
   },
   fileDownload: {
-    modalHeader: 'Tiedoston käsittely on kesken',
-    modalMessage:
-      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-    modalClose: 'Sulje',
     download: 'Lataa'
   },
   personalDetails: {

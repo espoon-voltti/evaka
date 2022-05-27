@@ -6,7 +6,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { UUID } from 'lib-common/types'
 
-import { client } from './client'
+import { API_URL, client } from './client'
 
 async function doSaveAttachment(
   config: { path: string; params?: unknown },
@@ -81,14 +81,6 @@ export const deleteAttachment = (id: UUID): Promise<Result<void>> =>
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 
-export async function getAttachmentBlob(
-  attachmentId: UUID
-): Promise<Result<BlobPart>> {
-  return client({
-    url: `/attachments/${attachmentId}/download`,
-    method: 'GET',
-    responseType: 'blob'
-  })
-    .then((result) => Success.of(result.data))
-    .catch((e) => Failure.fromError(e))
+export function getAttachmentUrl(attachmentId: UUID): string {
+  return `${API_URL}/attachments/${attachmentId}/download`
 }

@@ -11,7 +11,7 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../attachments'
 import { useTranslation } from '../localization'
@@ -67,8 +67,8 @@ export default React.memo(function Attachments({
         files={attachments}
         onUpload={handleUpload}
         onDelete={handleDelete}
-        onDownloadFile={getAttachmentBlob}
-        i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+        getDownloadUrl={getAttachmentUrl}
+        i18n={{ upload: t.fileUpload }}
       />
     </FixedSpaceColumn>
   )

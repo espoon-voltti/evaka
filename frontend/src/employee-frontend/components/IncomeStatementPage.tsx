@@ -11,11 +11,11 @@ import { combine, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
   Accountant,
+  ChildIncome,
   Entrepreneur,
   EstimatedIncome,
   Gross,
-  Income,
-  ChildIncome
+  Income
 } from 'lib-common/api-types/incomeStatement'
 import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
@@ -37,7 +37,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
 import {
@@ -411,11 +411,7 @@ function UploadedFiles({ files }: { files: Attachment[] }) {
       {files.map((file) => (
         <div key={file.id} data-qa="attachment">
           <FileIcon icon={fileIcon(file)} />
-          <FileDownloadButton
-            file={file}
-            fileFetchFn={getAttachmentBlob}
-            onFileUnavailable={() => undefined}
-          />
+          <FileDownloadButton file={file} getFileUrl={getAttachmentUrl} />
         </div>
       ))}
     </FixedSpaceColumn>
@@ -475,7 +471,7 @@ function EmployeeAttachments({
         files={attachments}
         onUpload={handleUpload}
         onDelete={handleDelete}
-        onDownloadFile={getAttachmentBlob}
+        getDownloadUrl={getAttachmentUrl}
         i18n={i18n.fileUpload}
       />
     </>

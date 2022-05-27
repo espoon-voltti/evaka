@@ -9,7 +9,7 @@ import {
   faFileWord
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { ApplicationAttachment } from 'lib-common/api-types/application/ApplicationDetails'
@@ -19,9 +19,8 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Dimmed } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { getAttachmentBlob } from '../../api/attachments'
+import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 
 const AttachmentContainer = styled.div`
   display: flex;
@@ -55,7 +54,6 @@ const contentTypeIcon = (contentType: string) => {
 
 function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
   const { i18n } = useTranslation()
-  const { setErrorMessage } = useContext(UIContext)
 
   return (
     <AttachmentContainer className="attachment" data-qa={dataQa}>
@@ -67,15 +65,7 @@ function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
         />
         <FileDownloadButton
           file={attachment}
-          fileFetchFn={getAttachmentBlob}
-          onFileUnavailable={() =>
-            setErrorMessage({
-              type: 'warning',
-              title: i18n.common.fileDownloadError.modalHeader,
-              text: i18n.common.fileDownloadError.modalMessage,
-              resolveLabel: i18n.common.ok
-            })
-          }
+          getFileUrl={getAttachmentUrl}
           data-qa="attachment-download"
         />
         <ReceivedAtText data-qa="attachment-received-at">

@@ -13,7 +13,6 @@ import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faExclamationTriangle,
@@ -21,7 +20,6 @@ import {
   faFileImage,
   faFilePdf,
   faFileWord,
-  faInfo,
   faPaperclip,
   faPlus,
   faTimes
@@ -64,11 +62,6 @@ const getErrorCode = (res: Failure<string>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
 export interface FileUploadI18n {
-  download: {
-    modalHeader: string
-    modalMessage: string
-    modalClose: string
-  }
   upload: {
     deleteFile: string
     input: {
@@ -88,7 +81,7 @@ interface FileUploadProps {
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
-  onDownloadFile: (id: UUID) => Promise<Result<BlobPart>>
+  getDownloadUrl: (id: UUID) => string
   i18n: FileUploadI18n
   disabled?: boolean
   slim?: boolean
@@ -294,7 +287,7 @@ export default React.memo(function FileUpload({
   files,
   onUpload,
   onDelete,
-  onDownloadFile,
+  getDownloadUrl,
   slimSingleFile = false,
   slim = false,
   disabled = false,
@@ -303,9 +296,6 @@ export default React.memo(function FileUpload({
 }: FileUploadProps) {
   const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const [unavailableModalVisible, setUnavailableModalVisible] =
-    useState<boolean>(false)
 
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
     files.map(attachmentToFile)
@@ -442,15 +432,6 @@ export default React.memo(function FileUpload({
 
   return (
     <FileUploadContainer data-qa={dataQa} slim={slim}>
-      {unavailableModalVisible && (
-        <InfoModal
-          title={i18n.download.modalHeader}
-          text={i18n.download.modalMessage}
-          close={() => setUnavailableModalVisible(false)}
-          closeLabel={i18n.download.modalClose}
-          icon={faInfo}
-        />
-      )}
       {slimSingleFile ? (
         uploadedFiles.length > 0 ? (
           <></>
@@ -513,10 +494,7 @@ export default React.memo(function FileUpload({
                     !file.deleteInProgress ? (
                       <FileDownloadButton
                         file={file}
-                        fileFetchFn={onDownloadFile}
-                        onFileUnavailable={() =>
-                          setUnavailableModalVisible(true)
-                        }
+                        getFileUrl={getDownloadUrl}
                         data-qa="file-download-button"
                       />
                     ) : (

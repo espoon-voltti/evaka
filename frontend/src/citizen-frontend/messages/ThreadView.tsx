@@ -32,9 +32,8 @@ import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getAttachmentBlob } from '../attachments'
+import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
-import { OverlayContext } from '../overlay/state'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContainer } from './MessageComponents'
@@ -89,9 +88,6 @@ const SingleMessage = React.memo(function SingleMessage({
 }: {
   message: Message
 }) {
-  const i18n = useTranslation()
-  const { setErrorMessage } = useContext(OverlayContext)
-
   return (
     <MessageContainer>
       <TitleRow>
@@ -115,17 +111,9 @@ const SingleMessage = React.memo(function SingleMessage({
               <FileDownloadButton
                 key={attachment.id}
                 file={attachment}
-                fileFetchFn={getAttachmentBlob}
-                onFileUnavailable={() =>
-                  setErrorMessage({
-                    type: 'error',
-                    title: i18n.fileDownload.modalHeader,
-                    text: i18n.fileDownload.modalMessage
-                  })
-                }
+                getFileUrl={getAttachmentUrl}
                 icon
                 data-qa="attachment"
-                openInBrowser
               />
             ))}
           </FixedSpaceColumn>

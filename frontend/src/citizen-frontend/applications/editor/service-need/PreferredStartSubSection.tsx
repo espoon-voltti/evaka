@@ -20,7 +20,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
@@ -191,8 +191,8 @@ export default React.memo(function PreferredStartSubSection({
                   files={formData.urgencyAttachments}
                   onUpload={uploadUrgencyAttachment}
                   onDelete={deleteUrgencyAttachment}
-                  onDownloadFile={getAttachmentBlob}
-                  i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+                  getDownloadUrl={getAttachmentUrl}
+                  i18n={{ upload: t.fileUpload }}
                   data-qa="urgent-file-upload"
                 />
               </>

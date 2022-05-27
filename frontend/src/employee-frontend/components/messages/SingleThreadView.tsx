@@ -33,9 +33,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
 
-import { getAttachmentBlob } from '../../api/attachments'
+import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
@@ -83,14 +82,12 @@ const MessageContent = styled.div`
 
 function SingleMessage({
   message,
-  index,
-  onAttachmentUnavailable
+  index
 }: {
   message: Message
   type?: MessageType
   title?: string
   index: number
-  onAttachmentUnavailable: () => void
 }) {
   return (
     <MessageContainer>
@@ -116,8 +113,7 @@ function SingleMessage({
               <FileDownloadButton
                 key={attachment.id}
                 file={attachment}
-                fileFetchFn={getAttachmentBlob}
-                onFileUnavailable={onAttachmentUnavailable}
+                getFileUrl={getAttachmentUrl}
                 icon
                 data-qa="attachment"
               />
@@ -162,7 +158,6 @@ export function SingleThreadView({
   const { i18n } = useTranslation()
   const { getReplyContent, sendReply, replyState, setReplyContent } =
     useContext(MessageContext)
-  const { setErrorMessage } = useContext(UIContext)
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
   const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState<number>(0)
   const stickyTitleRowRef = useRef<HTMLDivElement>(null)
@@ -211,17 +206,6 @@ export function SingleThreadView({
     [i18n]
   )
 
-  const onAttachmentUnavailable = useCallback(
-    () =>
-      setErrorMessage({
-        type: 'error',
-        resolveLabel: i18n.common.ok,
-        title: i18n.fileUpload.download.modalHeader,
-        text: i18n.fileUpload.download.modalMessage
-      }),
-    [i18n, setErrorMessage]
-  )
-
   return (
     <ThreadContainer>
       <ContentArea opaque>
@@ -248,12 +232,7 @@ export function SingleThreadView({
                 />
               </div>
             )}
-            <SingleMessage
-              key={message.id}
-              message={message}
-              index={idx}
-              onAttachmentUnavailable={onAttachmentUnavailable}
-            />
+            <SingleMessage key={message.id} message={message} index={idx} />
           </React.Fragment>
         ))}
         {canReply &&

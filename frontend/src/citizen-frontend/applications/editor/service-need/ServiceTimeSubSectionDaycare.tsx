@@ -18,13 +18,12 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
@@ -299,8 +298,8 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             files={formData.shiftCareAttachments}
             onUpload={uploadExtendedCareAttachment}
             onDelete={deleteExtendedCareAttachment}
-            onDownloadFile={getAttachmentBlob}
-            i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+            getDownloadUrl={getAttachmentUrl}
+            i18n={{ upload: t.fileUpload }}
           />
         </>
       )}
