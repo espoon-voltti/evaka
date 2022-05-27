@@ -221,6 +221,7 @@ export interface FullDayAbsenceRequest {
 export interface GroupInfo {
   id: UUID
   name: string
+  utilization: number
 }
 
 /**
@@ -313,6 +314,7 @@ export interface UnitInfo {
   id: UUID
   name: string
   staff: Staff[]
+  utilization: number
 }
 
 /**

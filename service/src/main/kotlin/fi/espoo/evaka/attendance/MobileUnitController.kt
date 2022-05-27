@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import kotlin.math.roundToInt
 
 @RestController
 @RequestMapping("/mobile/units")
@@ -32,11 +33,20 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
+        @RequestParam useRealtimeStaffAttendance: Boolean?
     ): UnitInfo {
         Audit.UnitRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_INFO, unitId)
-        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitInfo(unitId, evakaClock.today()) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchUnitInfo(
+                    unitId,
+                    evakaClock.today(),
+                    useRealtimeStaffAttendance ?: false
+                )
+            }
+        }
     }
 
     @GetMapping("/stats")
@@ -49,7 +59,15 @@ class MobileUnitController(private val accessControl: AccessControl) {
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
         accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_STATS, unitIds)
-        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitStats(unitIds, evakaClock.today(), useRealtimeStaffAttendance) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchUnitStats(
+                    unitIds,
+                    evakaClock.today(),
+                    useRealtimeStaffAttendance
+                )
+            }
+        }
     }
 }
 
@@ -58,12 +76,14 @@ data class UnitInfo(
     val name: String,
     val groups: List<GroupInfo>,
     val staff: List<Staff>,
-    val features: List<PilotFeature>
+    val features: List<PilotFeature>,
+    val utilization: Double
 )
 
 data class GroupInfo(
     val id: GroupId,
-    val name: String
+    val name: String,
+    val utilization: Double
 )
 
 data class Staff(
@@ -75,7 +95,7 @@ data class Staff(
     val groups: List<GroupId>
 )
 
-fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
+fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeStaffAttendance: Boolean): UnitInfo {
     data class UnitBasics(
         val id: DaycareId,
         val name: String,
@@ -97,17 +117,82 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     // language=sql
     val groupsSql =
         """
-        SELECT g.id, g.name
+        WITH child AS (
+            SELECT
+                dgp.daycare_group_id as group_id,
+                SUM(COALESCE(an.capacity_factor, 1) * CASE
+                    WHEN dc.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+                    WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+                    ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
+                END) AS capacity
+            FROM child_attendance ca
+                JOIN daycare dc ON dc.id = ca.unit_id
+                JOIN person ch ON ch.id = ca.child_id
+                JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+                LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
+                LEFT JOIN service_need_option sno on sn.option_id = sno.id
+                LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+                LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
+                JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id
+            WHERE ca.unit_id = :unitId AND ca.end_time IS NULL
+            GROUP BY dgp.daycare_group_id
+        ), staff AS (
+            SELECT sa.group_id as group_id, SUM(sa.capacity) AS capacity
+            FROM daycare_group g
+            JOIN (
+                SELECT sa.group_id, 7 * (sa.count + sa.count_other) AS capacity FROM staff_attendance sa
+                WHERE NOT :useRealtimeStaffAttendance AND sa.date = :date
+        
+                UNION ALL
+        
+                SELECT sa.group_id, sa.occupancy_coefficient AS capacity FROM staff_attendance_realtime sa
+                WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+        
+                UNION ALL
+        
+                SELECT sa.group_id, sa.occupancy_coefficient AS capacity FROM staff_attendance_external sa
+                WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+            ) sa ON sa.group_id = g.id
+            WHERE g.daycare_id = :unitId AND daterange(g.start_date, g.end_date, '[]') @> :date
+            GROUP BY sa.group_id
+        )
+        SELECT g.id, g.name, s.capacity AS staff_capacity, c.capacity AS child_capacity,
+               CASE
+                   WHEN c.capacity IS NULL OR c.capacity = 0 THEN 0.0
+                   WHEN s.capacity IS NULL OR s.capacity = 0 THEN 'Infinity'::REAL
+                   ELSE round(c.capacity / s.capacity * 100, 1)
+               END AS utilization
         FROM daycare u
-        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
+            JOIN daycare_group g ON u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
+            LEFT JOIN child c ON c.group_id = g.id
+            LEFT JOIN staff s ON s.group_id = g.id
         WHERE u.id = :unitId
         """.trimIndent()
 
-    val groups = createQuery(groupsSql)
+    data class TempGroupInfo(
+        val id: GroupId,
+        val name: String,
+        val utilization: Double,
+        val staffCapacity: Int,
+        val childCapacity: Int
+    )
+
+    val tmpGroups = createQuery(groupsSql)
         .bind("unitId", unitId)
         .bind("date", date)
-        .mapTo<GroupInfo>()
+        .bind("useRealtimeStaffAttendance", useRealtimeStaffAttendance)
+        .mapTo<TempGroupInfo>()
         .list()
+
+    val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }.toDouble()
+    val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }.toDouble()
+    val unitUtilization =
+        if (totalStaffCapacity > 0) {
+            (totalChildCapacity / totalStaffCapacity * 1000).roundToInt() / 10.0
+        } else {
+            Double.POSITIVE_INFINITY
+        }
+    val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }
 
     val staff = createQuery(
         """
@@ -140,7 +225,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         name = unit.name,
         groups = groups,
         staff = staff,
-        features = unit.features
+        features = unit.features,
+        utilization = unitUtilization
     )
 }
 
@@ -228,9 +314,9 @@ SELECT
     coalesce(ps.count, 0) AS present_staff,
     coalesce(ts.count, 0) AS total_staff,
     CASE
-        WHEN coalesce(pc.capacity, 0) = 0 THEN 0.0
-        WHEN coalesce(ps.capacity, 0) = 0 THEN 'Infinity'::REAL
-        ELSE round(coalesce(pc.capacity, 0) / coalesce(ps.capacity, 0.0001) * 100, 1)
+        WHEN pc.capacity IS NULL OR pc.capacity = 0 THEN 0.0
+        WHEN ps.capacity IS NULL OR ps.capacity = 0 THEN 'Infinity'::REAL
+        ELSE round(pc.capacity / ps.capacity * 100, 1)
     END AS utilization
 FROM daycare u
 LEFT JOIN present_children pc ON pc.unit_id = u.id

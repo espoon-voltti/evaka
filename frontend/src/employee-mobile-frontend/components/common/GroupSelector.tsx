@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
-import { fontWeights } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontSizesMobile, fontWeights } from 'lib-components/typography'
+import colors, { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
+import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
@@ -43,59 +45,116 @@ export default function GroupSelector({
 
   return renderResult(unitInfoResponse, (unitInfo) => (
     <Wrapper>
-      <ChipWrapper>
-        <>
-          {includeSelectAll && (
-            <ChoiceChip
-              text={`${i18n.common.all}${
-                countInfo
-                  ? `(${countInfo.getPresentCount(
-                      undefined
-                    )}/${countInfo.getTotalCount(undefined)})`
-                  : ''
-              }`}
-              selected={!selectedGroup}
-              onChange={() => onChangeGroup(undefined)}
-              data-qa="group--all"
-            />
-          )}
-          <Gap horizontal size="xxs" />
-          {(groups || unitInfo.groups).map((group) => (
-            <Fragment key={group.id}>
-              <ChoiceChip
-                text={`${group.name}${
-                  countInfo
-                    ? `(${countInfo.getPresentCount(
-                        group.id
-                      )}/${countInfo.getTotalCount(group.id)})`
-                    : ''
-                }`}
-                selected={selectedGroup ? selectedGroup.id === group.id : false}
-                onChange={() => {
-                  onChangeGroup(group)
-                }}
-                data-qa={`group--${group.id}`}
-              />
-              <Gap horizontal size="xxs" />
-            </Fragment>
-          ))}
-        </>
-        {countInfo && <Info>{countInfo.infoText}</Info>}
-      </ChipWrapper>
+      {includeSelectAll && (
+        <Group
+          selected={!selectedGroup}
+          onClick={() => onChangeGroup(undefined)}
+          data-qa="group--all"
+          name={i18n.common.all}
+          utilization={unitInfo.utilization}
+          count={
+            countInfo
+              ? `${countInfo.getPresentCount(
+                  undefined
+                )}/${countInfo.getTotalCount(undefined)}`
+              : ''
+          }
+        />
+      )}
+      {(groups || unitInfo.groups).map((group) => (
+        <Group
+          key={group.id}
+          name={group.name}
+          utilization={group.utilization}
+          selected={selectedGroup ? selectedGroup.id === group.id : false}
+          onClick={() => {
+            onChangeGroup(group)
+          }}
+          data-qa={`group--${group.id}`}
+          count={
+            countInfo
+              ? `${countInfo.getPresentCount(
+                  group.id
+                )}/${countInfo.getTotalCount(group.id)}`
+              : ''
+          }
+        />
+      ))}
+      {countInfo && !featureFlags.experimental?.realtimeStaffAttendance && (
+        <Info>{countInfo.infoText}</Info>
+      )}
     </Wrapper>
   ))
 }
 
-const Info = styled.span`
+const Info = styled.div`
   font-style: normal;
   font-weight: ${fontWeights.semibold};
   font-size: 14px;
   line-height: 21px;
   color: ${colors.grayscale.g70};
+  text-align: center;
+  width: 100%;
+  padding: 15px 16px 15px 16px;
+`
+
+type GroupProps = {
+  name: string
+  count: string
+  'data-qa': string
+  selected: boolean
+  utilization: number
+  onClick: () => void
+}
+
+const Group = ({
+  name,
+  count,
+  selected,
+  utilization,
+  onClick,
+  'data-qa': dataQa
+}: GroupProps) => (
+  <GroupContainer onClick={onClick} data-qa={dataQa} selected={selected}>
+    <SelectionIndicator selected={selected}>
+      <FontAwesomeIcon icon={faCheck} />
+    </SelectionIndicator>
+    <GroupName>{name}</GroupName>
+    {featureFlags.experimental?.realtimeStaffAttendance ? (
+      <Utilization warn={utilization >= 100}>
+        {utilization.toFixed ? utilization.toFixed(1) : '∞'}%
+      </Utilization>
+    ) : (
+      count
+    )}
+  </GroupContainer>
+)
+
+const GroupContainer = styled(FixedSpaceRow)<{ selected: boolean }>`
+  padding: 15px 16px 15px 16px;
+  border-bottom: 1px solid ${colors.grayscale.g15};
+  color: ${(p) => (p.selected ? colors.main.m1 : colors.grayscale.g70)};
+  font-size: ${fontSizesMobile.h2};
+  font-weight: ${theme.typography.h2.mobile?.weight ??
+  theme.typography.h2.weight};
+  cursor: pointer;
+`
+
+const SelectionIndicator = styled.span<{ selected: boolean }>`
+  padding-right: 16px;
+  opacity: ${(p) => (p.selected ? 1 : 0)};
+`
+
+const GroupName = styled.span`
+  flex: 1;
+`
+
+const Utilization = styled.span<{ warn: boolean }>`
+  align-self: right;
+  color: ${(p) => (p.warn ? colors.status.danger : 'inherit')};
 `
 
 const Wrapper = styled.div`
-  margin: 12px 16px 8px 16px;
   max-height: 60vh;
   overflow: auto;
 `
