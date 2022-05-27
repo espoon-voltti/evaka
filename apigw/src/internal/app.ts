@@ -14,7 +14,12 @@ import createAdSamlStrategy, {
 import createEvakaSamlStrategy, {
   createSamlConfig as createEvakaSamlconfig
 } from '../shared/auth/keycloak-saml'
-import { appCommit, cookieSecret, enableDevApi } from '../shared/config'
+import {
+  appCommit,
+  cookieSecret,
+  enableDevApi,
+  titaniaConfig
+} from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -37,6 +42,7 @@ import mobileDeviceSession, {
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
 import AsyncRedisClient from '../shared/async-redis-client'
+import expressBasicAuth from 'express-basic-auth'
 
 const app = express()
 const redisClient = createRedisClient()
@@ -74,6 +80,12 @@ app.use('/api/csp', csp)
 function internalApiRouter() {
   const router = Router()
   router.all('/system/*', (_, res) => res.sendStatus(404))
+
+  const integrationUsers = {
+    ...(titaniaConfig && { [titaniaConfig.username]: titaniaConfig.password })
+  }
+  router.use('/integration', expressBasicAuth({ users: integrationUsers }))
+  router.all('/integration/*', createProxy())
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {

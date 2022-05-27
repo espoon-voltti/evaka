@@ -5,7 +5,7 @@
 import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config'
-import { createAuthHeader } from './auth'
+import { createAuthHeader, createIntegrationAuthHeader } from './auth'
 import { SamlUser } from './routes/auth/saml/types'
 
 export const client = axios.create({
@@ -48,6 +48,9 @@ export function createServiceRequestHeaders(
   user: SamlUser | undefined | null = req?.user
 ) {
   const headers: ServiceRequestHeaders = {}
+  if (req?.path.startsWith('/integration/')) {
+    headers.Authorization = createIntegrationAuthHeader()
+  }
   if (user) {
     headers.Authorization = createAuthHeader(user)
   }

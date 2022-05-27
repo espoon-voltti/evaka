@@ -25,6 +25,7 @@
     "date-fns": "^2.28.0",
     "dd-trace": "^2.5.0",
     "express": "^4.17.3",
+    "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^1.6.3",
     "express-session": "^1.17.2",
     "fast-json-parse": "^1.0.3",

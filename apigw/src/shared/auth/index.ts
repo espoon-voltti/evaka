@@ -78,6 +78,13 @@ export function createAuthHeader(user: SamlUser): string {
   return `Bearer ${createJwtToken(user)}`
 }
 
+export function createIntegrationAuthHeader(): string {
+  return `Bearer ${createJwt({
+    sub: '00000000-0000-0000-0000-000000000000',
+    evaka_type: 'integration'
+  })}`
+}
+
 export function createLogoutToken(
   nameID: Required<Profile>['nameID'],
   sessionIndex: Profile['sessionIndex']
