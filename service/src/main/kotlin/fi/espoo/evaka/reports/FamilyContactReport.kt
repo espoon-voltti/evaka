@@ -7,8 +7,10 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.kotlin.mapTo
@@ -17,6 +19,7 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 class FamilyContactReportController(private val accessControl: AccessControl) {
@@ -24,6 +27,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
     fun getFamilyContactsReport(
         db: Database,
         user: AuthenticatedUser,
+        evakaClock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
@@ -31,27 +35,27 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getFamilyContacts(unitId)
+                it.getFamilyContacts(evakaClock.today(), unitId)
             }
         }
     }
 }
 
-private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyContactReportRow> {
+private fun Database.Read.getFamilyContacts(today: LocalDate, unitId: DaycareId): List<FamilyContactReportRow> {
     // language=sql
     val sql =
         """
             WITH all_placements AS (
                 SELECT pl.child_id, dgp.daycare_group_id AS group_id
                 FROM placement pl
-                LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> current_date
-                WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
+                LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today
+                WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :today
                 
                 UNION DISTINCT 
                 
                 SELECT bc.child_id, bc.group_id
                 FROM backup_care bc
-                WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> current_date
+                WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today
             )
             SELECT
                 ch.id,
@@ -83,7 +87,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
             FROM all_placements pl
             JOIN person ch ON ch.id = pl.child_id
             LEFT JOIN daycare_group dg ON dg.id = pl.group_id
-            LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> current_date
+            LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :today
             LEFT JOIN person hoc ON hoc.id = fc.head_of_child
             LEFT JOIN guardian g1 ON ch.id = g1.child_id AND g1.guardian_id = (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
             LEFT JOIN guardian g2 ON ch.id = g2.child_id AND g2.guardian_id = (SELECT max(guardian_id::text)::uuid FROM guardian where child_id = ch.id) AND g2.guardian_id != (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
@@ -93,6 +97,7 @@ private fun Database.Read.getFamilyContacts(unitId: DaycareId): List<FamilyConta
         """.trimIndent()
 
     return createQuery(sql)
+        .bind("today", today)
         .bind("unitId", unitId)
         .mapTo<FamilyContactReportRow>()
         .toList()
@@ -115,8 +120,9 @@ data class FamilyContactReportRow(
     val guardian2: Contact?
 )
 
-@PropagateNull("id")
 data class Contact(
+    @PropagateNull
+    val id: PersonId,
     val firstName: String,
     val lastName: String,
     val phone: String,
