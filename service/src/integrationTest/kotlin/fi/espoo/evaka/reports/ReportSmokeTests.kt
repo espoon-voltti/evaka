@@ -11,10 +11,17 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.withMockedTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -109,10 +116,21 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `family-contacts report returns http 200`() {
+        db.transaction {
+            it.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2022, 1, 1),
+                    endDate = LocalDate.of(2022, 3, 1),
+                )
+            )
+        }
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 1), LocalTime.of(12, 0))
         assertOkResponse(
             http.get(
                 "/reports/family-contacts?unitId=${testDaycare.id}"
-            )
+            ).withMockedTime(now)
         )
     }
 
