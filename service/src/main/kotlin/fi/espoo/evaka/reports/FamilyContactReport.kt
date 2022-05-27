@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -119,8 +120,9 @@ data class FamilyContactReportRow(
     val guardian2: Contact?
 )
 
-@PropagateNull("id")
 data class Contact(
+    @PropagateNull
+    val id: PersonId,
     val firstName: String,
     val lastName: String,
     val phone: String,

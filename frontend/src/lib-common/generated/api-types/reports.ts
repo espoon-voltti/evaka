@@ -117,6 +117,7 @@ export interface ChildrenInDifferentAddressReportRow {
 export interface Contact {
   email: string | null
   firstName: string
+  id: UUID
   lastName: string
   phone: string
 }
