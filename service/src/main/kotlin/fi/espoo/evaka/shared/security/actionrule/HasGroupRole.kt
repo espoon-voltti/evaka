@@ -4,102 +4,69 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
-private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, targets: Set<T>) -> Iterable<IdAndRole>
+private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
 
-data class HasGroupRole(val oneOf: EnumSet<UserRole>) : ActionRuleParams<HasGroupRole> {
+data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) : ActionRuleParams<HasGroupRole> {
     init {
-        oneOf.forEach { check(it.isGroupScopedRole()) { "Expected a group-scoped role, got $it" } }
+        oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
-    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet())
+    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet())
 
-    override fun merge(other: HasGroupRole): HasGroupRole = HasGroupRole(
-        (this.oneOf.asSequence() + other.oneOf.asSequence()).toEnumSet()
-    )
+    fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, targets)
-                .fold(targets.associateTo(linkedMapOf()) { (it to emptyEnumSet<UserRole>()) }) { acc, (target, role) ->
-                    acc[target]?.plusAssign(role)
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, now, targets)
+                .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
+                    acc[target]?.plusAssign(result)
                     acc
                 }
-                .mapValues { (_, rolesInGroup) -> Deferred(rolesInGroup) }
+                .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
         }
-
-        override fun classifier(): Any = getGroupRoles.javaClass
     }
-    private data class Deferred(private val rolesInGroup: Set<UserRole>) : DatabaseActionRule.Deferred<HasGroupRole> {
-        override fun evaluate(params: HasGroupRole): AccessControlDecision = if (rolesInGroup.any { params.oneOf.contains(it) }) {
-            AccessControlDecision.Permitted(params)
-        } else {
-            AccessControlDecision.None
-        }
+    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
+        override fun evaluate(params: HasGroupRole): AccessControlDecision =
+            if (queryResult.any { params.oneOf.contains(it.role) && it.unitFeatures.containsAll(params.unitFeatures) }) {
+                AccessControlDecision.Permitted(params)
+            } else {
+                AccessControlDecision.None
+            }
     }
 
     fun inPlacementGroupOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, ids ->
+        Query<ChildId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-    SELECT child_id AS id, role
-    FROM child_acl_view
-    WHERE employee_id = :userId
-    AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
-
-    fun inPlacementGroupOfChildOfPedagogicalDocument() = DatabaseActionRule(
-        this,
-        Query<PedagogicalDocumentId> { tx, user, ids ->
-            tx.createQuery(
-                """
-SELECT pd.id, role
-FROM pedagogical_document pd
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+FROM employee_child_group_acl(:today) acl
+JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND pd.id = ANY(:ids)
+AND child_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
-                .mapTo()
-        }
-    )
-
-    fun inPlacementGroupOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, user, ids ->
-            tx.createQuery(
-                """
-SELECT attachment.id, role
-FROM attachment
-JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN child_acl_view ON pd.child_id = child_acl_view.child_id
-WHERE employee_id = :userId
-AND attachment.id = ANY(:ids)
-                """.trimIndent()
-            )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -108,16 +75,18 @@ AND attachment.id = ANY(:ids)
 
     fun inPlacementGroupOfChildOfVasuDocument() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, user, ids ->
+        Query<VasuDocumentId> { tx, user, now, ids ->
             tx.createQuery(
                 """
-SELECT curriculum_document.id AS id, role
+SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
-JOIN child_acl_view ON curriculum_document.child_id = child_acl_view.child_id
+JOIN employee_child_group_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
@@ -130,14 +99,15 @@ AND curriculum_document.id = ANY(:ids)
             override fun execute(
                 tx: Database.Read,
                 user: AuthenticatedUser,
+                now: HelsinkiDateTime,
                 targets: Set<VasuDocumentFollowupEntryId>
             ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasGroupRole>> {
                 val vasuDocuments =
-                    inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, targets.map { it.first }.toSet())
+                    inPlacementGroupOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
-
-            override fun classifier(): Any = this.javaClass
+            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
+            override fun hashCode(): Int = this.hashCode()
         }
     )
 }

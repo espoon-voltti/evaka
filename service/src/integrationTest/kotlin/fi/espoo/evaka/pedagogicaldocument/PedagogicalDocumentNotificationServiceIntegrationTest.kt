@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -33,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
@@ -69,6 +71,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.setUnitFeatures(testDaycare.id, setOf(PilotFeature.VASU_AND_PEDADOC))
 
             val groupId = GroupId(UUID.randomUUID())
             tx.insertTestDaycareGroup(

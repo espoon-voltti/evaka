@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -21,13 +22,28 @@ import kotlin.test.assertTrue
 class UnitAccessControlTest : AccessControlTest() {
     private lateinit var areaId: AreaId
     private lateinit var daycareId: DaycareId
+    private lateinit var featureDaycareId: DaycareId
+
+    private val unitFeature = PilotFeature.MESSAGING
 
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
             areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            featureDaycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            tx.setUnitFeatures(featureDaycareId, setOf(unitFeature))
         }
+    }
+
+    @Test
+    fun `HasUnitRole inAnyUnit`() {
+        val action = Action.Global.READ_UNITS
+        rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inAnyUnit())
+        val deniedSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR, featureDaycareId to UserRole.STAFF))
+        val permittedSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.UNIT_SUPERVISOR))
+        assertFalse(accessControl.hasPermissionFor(deniedSupervisor, action))
+        assertTrue(accessControl.hasPermissionFor(permittedSupervisor, action))
     }
 
     @Test
@@ -38,6 +54,18 @@ class UnitAccessControlTest : AccessControlTest() {
         val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF))
         assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, daycareId))
         assertFalse(accessControl.hasPermissionFor(otherEmployee, action, daycareId))
+    }
+
+    @Test
+    fun `HasUnitRole inUnit with unit features`() {
+        val action = Action.Unit.READ
+        rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inUnit())
+        val unitSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR, featureDaycareId to UserRole.UNIT_SUPERVISOR))
+        val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF))
+        assertFalse(accessControl.hasPermissionFor(unitSupervisor, action, daycareId))
+        assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, featureDaycareId))
+        assertFalse(accessControl.hasPermissionFor(otherEmployee, action, daycareId))
+        assertFalse(accessControl.hasPermissionFor(otherEmployee, action, featureDaycareId))
     }
 
     @Test

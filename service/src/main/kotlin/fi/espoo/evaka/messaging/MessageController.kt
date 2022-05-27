@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -284,7 +285,7 @@ class MessageController(
         }
         (
             employeeOrMobileId != null && db.read {
-                it.isEmployeeAuthorizedToSendTo(employeeOrMobileId, recipientAccountIds)
+                it.isEmployeeAuthorizedToSendTo(RealEvakaClock(), employeeOrMobileId, recipientAccountIds)
             }
             ) || throw Forbidden("Not authorized to send to the given recipients")
     }

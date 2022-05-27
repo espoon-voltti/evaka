@@ -17,23 +17,25 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, targets: Set<T>) -> Iterable<T>
+private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
 data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> {
-    override fun merge(other: IsCitizen): IsCitizen = IsCitizen(this.allowWeakLogin || other.allowWeakLogin)
-
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
             is AuthenticatedUser.Citizen -> Pair(user.authLevel, user.id)
             else -> null
-        }?.let { (authLevel, id) -> filter(tx, id, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
-
-        override fun classifier(): Any = filter.javaClass
+        }?.let { (authLevel, id) -> filter(tx, id, now, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
     }
     private class Deferred(private val authLevel: CitizenAuthLevel) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =
@@ -62,7 +64,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
 
     fun uploaderOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, personId, ids ->
+        Query<AttachmentId> { tx, personId, _, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -79,7 +81,7 @@ AND id = ANY(:ids)
 
     fun guardianOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, guardianId, ids ->
+        Query<ChildId> { tx, guardianId, _, ids ->
             tx.createQuery(
                 """
 SELECT child_id
@@ -96,7 +98,7 @@ AND child_id = ANY(:ids)
 
     fun guardianOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, guardianId, ids ->
+        Query<ChildImageId> { tx, guardianId, _, ids ->
             tx.createQuery(
                 """
 SELECT img.id
@@ -115,7 +117,7 @@ AND guardian_id = :guardianId
 
     fun guardianOfChildOfIncomeStatement() = DatabaseActionRule(
         this,
-        Query<IncomeStatementId> { tx, citizenId, ids ->
+        Query<IncomeStatementId> { tx, citizenId, _, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -133,7 +135,7 @@ AND g.guardian_id = :userId
 
     fun guardianOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, guardianId, ids ->
+        Query<PedagogicalDocumentId> { tx, guardianId, _, ids ->
             tx.createQuery(
                 """
 SELECT pd.id
@@ -151,7 +153,7 @@ AND g.guardian_id = :guardianId
 
     fun guardianOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, guardianId, ids ->
+        Query<AttachmentId> { tx, guardianId, _, ids ->
             tx.createQuery(
                 """
 SELECT a.id
@@ -170,7 +172,7 @@ AND g.guardian_id = :guardianId
 
     fun guardianOfChildOfPlacement() = DatabaseActionRule(
         this,
-        Query<PlacementId> { tx, guardianId, ids ->
+        Query<PlacementId> { tx, guardianId, _, ids ->
             tx.createQuery(
                 """
 SELECT placement.id
@@ -188,12 +190,12 @@ AND guardian_id = :guardianId
 
     fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, personId, ids -> tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids) }
+        Query<AttachmentId> { tx, personId, _, ids -> tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids) }
     )
 
     fun ownerOfApplication() = DatabaseActionRule(
         this,
-        Query<ApplicationId> { tx, citizenId, ids ->
+        Query<ApplicationId> { tx, citizenId, _, ids ->
             tx.createQuery(
                 """
 SELECT id
@@ -210,7 +212,7 @@ AND id = ANY(:ids)
 
     fun ownerOfApplicationOfSentDecision() = DatabaseActionRule(
         this,
-        Query<DecisionId> { tx, citizenId, ids ->
+        Query<DecisionId> { tx, citizenId, _, ids ->
             tx.createQuery(
                 """
 SELECT decision.id
@@ -229,7 +231,7 @@ AND decision.sent_date IS NOT NULL
 
     fun ownerOfIncomeStatement() = DatabaseActionRule(
         this,
-        Query<IncomeStatementId> { tx, citizenId, ids ->
+        Query<IncomeStatementId> { tx, citizenId, _, ids ->
             tx.createQuery(
                 """
 SELECT id

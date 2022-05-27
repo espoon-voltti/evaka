@@ -8,14 +8,22 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.PilotFeature
+import org.jdbi.v3.core.mapper.Nested
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional information
  */
-interface StaticActionRule : ScopedActionRule<Any> {
+interface StaticActionRule : ScopedActionRule<Any>, UnscopedActionRule {
     fun isPermitted(user: AuthenticatedUser): Boolean
 }
+
+/**
+ * A rule that grants permission based on an `AuthenticatedUser`, and possibly some data from the database.
+ */
+sealed interface UnscopedActionRule
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser` and a "target", which is some data that can be
@@ -64,21 +72,27 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  * database queries in this scenario.
  */
 data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>) : ScopedActionRule<T> {
-    data class Classifier(val paramsClass: Class<*>, val queryClass: Class<*>, val queryClassifier: Any)
-    val classifier: Classifier
-        get() = Classifier(params.javaClass, query.javaClass, query.classifier())
-
     interface Query<T, P> {
-        fun classifier(): Any
-        fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, Deferred<P>>
+        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
+        override fun hashCode(): Int
+        override fun equals(other: Any?): Boolean
     }
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
 }
-
-interface ActionRuleParams<This> {
-    fun merge(other: This): This
+/**
+ * Like DatabaseActionRule, but is not tied to any targets.
+ */
+data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
+    interface Query<P> {
+        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime): DatabaseActionRule.Deferred<P>
+        override fun hashCode(): Int
+        override fun equals(other: Any?): Boolean
+    }
 }
 
-internal data class IdAndRole(val id: Id<*>, val role: UserRole)
+interface ActionRuleParams<This>
+
+internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
+internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)

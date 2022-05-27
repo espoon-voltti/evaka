@@ -15,27 +15,33 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import org.jdbi.v3.core.kotlin.mapTo
 
-private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, targets: Set<T>) -> Iterable<T>
+private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
 data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
-    override fun merge(other: IsMobile): IsMobile =
-        IsMobile(this.requirePinLogin && other.requirePinLogin)
-
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
         MobileAuthLevel.PIN_LOGIN -> true
         MobileAuthLevel.DEFAULT -> !requirePinLogin
     }
 
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
-        override fun execute(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
-            is AuthenticatedUser.MobileDevice -> filter(tx, user.id, targets).associateWith { Deferred(user.authLevel) }
+        override fun execute(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (user) {
+            is AuthenticatedUser.MobileDevice -> filter(
+                tx,
+                user.id,
+                now,
+                targets
+            ).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
-
-        override fun classifier(): Any = filter.javaClass
     }
     private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =
@@ -55,16 +61,17 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, mobileId, ids ->
+        Query<ChildId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT child_id
-FROM child_acl_view
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_daycare_acl(:today)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND child_id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -73,17 +80,18 @@ AND child_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, mobileId, ids ->
+        Query<ChildDailyNoteId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT cdn.id
-FROM child_acl_view
-JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_daily_note cdn
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -92,17 +100,18 @@ AND cdn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, mobileId, ids ->
+        Query<ChildStickyNoteId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT csn.id
-FROM child_acl_view
-JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_sticky_note csn
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -111,17 +120,18 @@ AND csn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, mobileId, ids ->
+        Query<ChildImageId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT img.id
-FROM child_acl_view
-JOIN child_images img ON child_acl_view.child_id = img.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_images img
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND img.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -130,7 +140,7 @@ AND img.id = ANY(:ids)
 
     fun inUnitOfGroup() = DatabaseActionRule(
         this,
-        Query<GroupId> { tx, mobileId, ids ->
+        Query<GroupId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT g.id
@@ -148,7 +158,7 @@ AND g.id = ANY(:ids)
 
     fun inUnitOfGroupNote() = DatabaseActionRule(
         this,
-        Query<GroupNoteId> { tx, mobileId, ids ->
+        Query<GroupNoteId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT gn.id
@@ -167,7 +177,7 @@ AND gn.id = ANY(:ids)
 
     fun inUnit() = DatabaseActionRule(
         this,
-        Query<DaycareId> { tx, mobileId, ids ->
+        Query<DaycareId> { tx, mobileId, _, ids ->
             tx.createQuery(
                 """
 SELECT daycare_id AS id
