@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   AuthStatus,
@@ -16,19 +18,19 @@ import { client } from './client'
 export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {
   return client
     .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
-    .then(({ data: { user, ...status } }) =>
-      Success.of(
-        user?.userType === 'MOBILE'
-          ? {
-              user,
-              ...status
-            }
-          : {
-              ...status,
-              loggedIn: false
-            }
-      )
-    )
+    .then(({ data: { user, ...status } }) => {
+      if (user?.userType === 'MOBILE') {
+        return Success.of({ user, ...status })
+      } else {
+        if (user) {
+          Sentry.captureMessage(
+            `Invalid user type ${user.userType} in mobile frontend`,
+            Sentry.Severity.Error
+          )
+        }
+        return Success.of({ ...status, loggedIn: false })
+      }
+    })
     .catch((e) => Failure.fromError(e))
 }
 
