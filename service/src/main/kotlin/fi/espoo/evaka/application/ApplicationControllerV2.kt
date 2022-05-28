@@ -294,12 +294,10 @@ class ApplicationControllerV2(
                     personService.getGuardians(tx, user, application.childId)
                         .map { personDTO -> PersonJSON.from(personDTO) }
 
-                val attachments =
-                    if (accessControl.hasPermissionFor(user, Action.Application.READ_ATTACHMENTS, applicationId)) {
-                        tx.getApplicationAttachments(applicationId)
-                    } else {
-                        listOf()
-                    }
+                val attachments = tx.getApplicationAttachments(applicationId).let { allAttachments ->
+                    val permissions = accessControl.checkPermissionFor(tx, user, Action.Attachment.READ_APPLICATION_ATTACHMENT, allAttachments.map { it.id })
+                    allAttachments.filter { attachment -> permissions[attachment.id]?.isPermitted() ?: false }
+                }
 
                 val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, applicationId)
 

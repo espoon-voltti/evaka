@@ -185,6 +185,12 @@ class AccessControl(
         user: AuthenticatedUser,
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
+    ): Map<T, AccessControlDecision> = dbc.read { tx -> checkPermissionFor(tx, user, action, targets) }
+    fun <T> checkPermissionFor(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        action: Action.ScopedAction<T>,
+        targets: Iterable<T>
     ): Map<T, AccessControlDecision> {
         if (user.isAdmin) {
             return targets.associateWith { AccessControlDecision.PermittedToAdmin }
@@ -205,13 +211,13 @@ class AccessControl(
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as DatabaseActionRule.Query<T, Any?>
-                    dbc.read { tx -> query.execute(tx, user, now, decisions.undecided) }
+                    query.execute(tx, user, now, decisions.undecided)
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
                 is UnscopedDatabaseActionRule<*> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = dbc.read { tx -> query.execute(tx, user, now) }
+                    val deferred = query.execute(tx, user, now)
                     decisions.decideAll(deferred.evaluate(rule.params))
                 }
             }
