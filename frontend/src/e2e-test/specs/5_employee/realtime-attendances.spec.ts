@@ -38,9 +38,15 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-
-  daycare = daycare2Fixture
+  daycare = (
+    await Fixture.daycare()
+      .with({
+        ...daycare2Fixture,
+        enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+      })
+      .careArea(careArea)
+      .save()
+  ).data
 
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
@@ -93,14 +99,7 @@ beforeEach(async () => {
   await Fixture.staffOccupancyCoefficient(daycare.id, staff[1].id).save()
 
   page = await Page.open({
-    mockedTime: mockedToday.toSystemTzDate(),
-    employeeCustomizations: {
-      featureFlags: {
-        experimental: {
-          realtimeStaffAttendance: true
-        }
-      }
-    }
+    mockedTime: mockedToday.toSystemTzDate()
   })
   await employeeLogin(page, unitSupervisor)
 })

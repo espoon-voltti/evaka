@@ -34,7 +34,6 @@ class MobileUnitController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam useRealtimeStaffAttendance: Boolean?
     ): UnitInfo {
         Audit.UnitRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_INFO, unitId)
@@ -43,7 +42,6 @@ class MobileUnitController(private val accessControl: AccessControl) {
                 tx.fetchUnitInfo(
                     unitId,
                     evakaClock.today(),
-                    useRealtimeStaffAttendance ?: false
                 )
             }
         }
@@ -54,8 +52,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         evakaClock: EvakaClock,
-        @RequestParam unitIds: List<DaycareId>,
-        @RequestParam useRealtimeStaffAttendance: Boolean
+        @RequestParam unitIds: List<DaycareId>
     ): List<UnitStats> {
         Audit.UnitRead.log(targetId = unitIds)
         accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_STATS, unitIds)
@@ -64,7 +61,6 @@ class MobileUnitController(private val accessControl: AccessControl) {
                 tx.fetchUnitStats(
                     unitIds,
                     evakaClock.today(),
-                    useRealtimeStaffAttendance
                 )
             }
         }
@@ -95,7 +91,7 @@ data class Staff(
     val groups: List<GroupId>
 )
 
-fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeStaffAttendance: Boolean): UnitInfo {
+fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     data class UnitBasics(
         val id: DaycareId,
         val name: String,
@@ -139,20 +135,24 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeS
         ), staff AS (
             SELECT sa.group_id as group_id, SUM(sa.capacity) AS capacity
             FROM daycare_group g
+            JOIN daycare ON g.daycare_id = daycare.id
             JOIN (
-                SELECT sa.group_id, 7 * (sa.count + sa.count_other) AS capacity FROM staff_attendance sa
-                WHERE NOT :useRealtimeStaffAttendance AND sa.date = :date
+                SELECT sa.group_id, 7 * (sa.count + sa.count_other) AS capacity, FALSE AS realtime
+                FROM staff_attendance sa
+                WHERE sa.date = :date
         
                 UNION ALL
         
-                SELECT sa.group_id, sa.occupancy_coefficient AS capacity FROM staff_attendance_realtime sa
-                WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+                SELECT sa.group_id, sa.occupancy_coefficient AS capacity, TRUE AS realtime
+                FROM staff_attendance_realtime sa
+                WHERE sa.departed IS NULL
         
                 UNION ALL
         
-                SELECT sa.group_id, sa.occupancy_coefficient AS capacity FROM staff_attendance_external sa
-                WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
-            ) sa ON sa.group_id = g.id
+                SELECT sa.group_id, sa.occupancy_coefficient AS capacity, TRUE AS realtime
+                FROM staff_attendance_external sa
+                WHERE sa.departed IS NULL
+            ) sa ON sa.group_id = g.id AND realtime = ('REALTIME_STAFF_ATTENDANCE' = ANY(daycare.enabled_pilot_features))
             WHERE g.daycare_id = :unitId AND daterange(g.start_date, g.end_date, '[]') @> :date
             GROUP BY sa.group_id
         )
@@ -180,7 +180,6 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeS
     val tmpGroups = createQuery(groupsSql)
         .bind("unitId", unitId)
         .bind("date", date)
-        .bind("useRealtimeStaffAttendance", useRealtimeStaffAttendance)
         .mapTo<TempGroupInfo>()
         .list()
 
@@ -243,7 +242,6 @@ data class UnitStats(
 fun Database.Read.fetchUnitStats(
     unitIds: List<DaycareId>,
     date: LocalDate,
-    useRealtimeStaffAttendance: Boolean
 ): List<UnitStats> {
     return createQuery(
         """
@@ -284,20 +282,24 @@ WITH present_children AS (
 ), present_staff AS (
     SELECT g.daycare_id AS unit_id, sum(sa.capacity) AS capacity, sum(sa.count) AS count
     FROM daycare_group g
+    JOIN daycare ON g.daycare_id = daycare.id
     JOIN (
-        SELECT sa.group_id, 7 * (sa.count + sa.count_other) as capacity, sa.count + sa.count_other AS count FROM staff_attendance sa
-        WHERE NOT :useRealtimeStaffAttendance AND sa.date = :date
+        SELECT sa.group_id, 7 * (sa.count + sa.count_other) as capacity, sa.count + sa.count_other AS count, FALSE AS realtime
+        FROM staff_attendance sa
+        WHERE sa.date = :date
 
         UNION ALL
 
-        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count FROM staff_attendance_realtime sa
-        WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, TRUE AS realtime
+        FROM staff_attendance_realtime sa
+        WHERE sa.departed IS NULL
 
         UNION ALL
 
-        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count FROM staff_attendance_external sa
-        WHERE :useRealtimeStaffAttendance AND sa.arrived IS NOT NULL AND sa.departed IS NULL
-    ) sa ON sa.group_id = g.id
+        SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, TRUE AS realtime
+        FROM staff_attendance_external sa
+        WHERE sa.departed IS NULL
+    ) sa ON sa.group_id = g.id AND realtime = ('REALTIME_STAFF_ATTENDANCE' = ANY(daycare.enabled_pilot_features))
     WHERE g.daycare_id = ANY(:unitIds) AND daterange(g.start_date, g.end_date, '[]') @> :date
     GROUP BY g.daycare_id
 ), total_staff AS (
@@ -328,7 +330,6 @@ WHERE u.id = ANY(:unitIds)
     )
         .bind("unitIds", unitIds.toTypedArray())
         .bind("date", date)
-        .bind("useRealtimeStaffAttendance", useRealtimeStaffAttendance)
         .mapTo<UnitStats>()
         .toList()
 }

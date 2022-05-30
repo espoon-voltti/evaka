@@ -28,7 +28,6 @@ const features: Features = {
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
       personalDetailsPage: true,
       mobileMessages: true,
       leops: true
@@ -49,7 +48,6 @@ const features: Features = {
     experimental: {
       ai: true,
       messageAttachments: true,
-      realtimeStaffAttendance: true,
       personalDetailsPage: true,
       mobileMessages: true,
       leops: true
@@ -70,7 +68,6 @@ const features: Features = {
     experimental: {
       ai: false,
       messageAttachments: true,
-      realtimeStaffAttendance: false,
       personalDetailsPage: false,
       mobileMessages: false,
       leops: false

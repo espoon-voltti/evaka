@@ -5,9 +5,8 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
 import { JsonOf } from 'lib-common/json'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 
-import { client } from '../api/client'
+import { client } from './client'
 
 type PairingStatus =
   | 'WAITING_CHALLENGE'
@@ -74,12 +73,7 @@ export function authMobile(
 
 export function getMobileUnitInfo(unitId: string): Promise<Result<UnitInfo>> {
   return client
-    .get<JsonOf<UnitInfo>>(`/mobile/units/${unitId}`, {
-      params: {
-        useRealtimeStaffAttendance:
-          featureFlags.experimental?.realtimeStaffAttendance ?? false
-      }
-    })
+    .get<JsonOf<UnitInfo>>(`/mobile/units/${unitId}`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -90,9 +84,7 @@ export function getMobileUnitStats(
   return client
     .get<JsonOf<UnitStats[]>>('/mobile/units/stats', {
       params: {
-        unitIds: unitIds.join(','),
-        useRealtimeStaffAttendance:
-          featureFlags.experimental?.realtimeStaffAttendance ?? false
+        unitIds: unitIds.join(',')
       }
     })
     .then((res) => Success.of(res.data))

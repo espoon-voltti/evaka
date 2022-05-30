@@ -5,6 +5,7 @@
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
+  daycare2Fixture,
   daycareGroupFixture,
   EmployeeBuilder,
   Fixture,
@@ -35,12 +36,30 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup().with(daycareGroupFixture).save()
-  await Fixture.daycareGroup().with(daycareGroup2Fixture).save()
+  await Fixture.daycare()
+    .with({
+      ...daycare2Fixture,
+      careAreaId: fixtures.careAreaFixture.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+    })
+    .save()
+
+  await Fixture.daycareGroup()
+    .with({
+      ...daycareGroupFixture,
+      daycareId: daycare2Fixture.id
+    })
+    .save()
+  await Fixture.daycareGroup()
+    .with({
+      ...daycareGroup2Fixture,
+      daycareId: daycare2Fixture.id
+    })
+    .save()
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId: fixtures.familyWithTwoGuardians.children[0].id,
-      unitId: fixtures.daycareFixture.id
+      unitId: daycare2Fixture.id
     })
     .save()
   await Fixture.groupPlacement()
@@ -49,22 +68,15 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
-  staffFixture = await Fixture.employeeStaff(fixtures.daycareFixture.id).save()
+  staffFixture = await Fixture.employeeStaff(daycare2Fixture.id).save()
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
 
   page = await Page.open({
-    mockedTime: new Date('2022-05-05T13:00Z'),
-    employeeMobileCustomizations: {
-      featureFlags: {
-        experimental: {
-          realtimeStaffAttendance: true
-        }
-      }
-    }
+    mockedTime: new Date('2022-05-05T13:00Z')
   })
   nav = new MobileNav(page)
 
-  mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+  mobileSignupUrl = await pairMobileDevice(daycare2Fixture.id)
   await page.goto(mobileSignupUrl)
   await nav.openPage('staff')
   staffAttendancePage = new StaffAttendancePage(page)
