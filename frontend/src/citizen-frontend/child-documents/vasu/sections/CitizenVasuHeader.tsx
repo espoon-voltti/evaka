@@ -44,7 +44,7 @@ interface Props {
     'basics' | 'documentState' | 'templateName' | 'language' | 'type'
   >
 }
-export function VasuHeader({
+export function CitizenVasuHeader({
   document: {
     basics: {
       child: { firstName, lastName }

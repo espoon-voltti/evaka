@@ -54,7 +54,7 @@ interface Props {
   content: VasuDocument['content']
 }
 
-export function VasuEvents({
+export function CitizenVasuEvents({
   document: { documentState, events, modifiedAt, type },
   content
 }: Props) {

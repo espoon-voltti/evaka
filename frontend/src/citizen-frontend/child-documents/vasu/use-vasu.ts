@@ -24,12 +24,12 @@ import { getCitizenVasuDocument } from './api'
 
 type State = 'loading' | 'loading-dirty' | 'loading-error' | 'clean' | 'dirty'
 
-export interface VasuStatus {
+export interface CitizenVasuStatus {
   state: State
   savedAt?: Date
 }
 
-type VasuMetadata = Omit<
+type CitizenVasuMetadata = Omit<
   VasuDocument,
   | 'content'
   | 'authorsContent'
@@ -37,20 +37,19 @@ type VasuMetadata = Omit<
   | 'evaluationDiscussionContent'
 >
 
-interface Vasu {
-  vasu: VasuMetadata | undefined
+interface CitizenVasu {
+  vasu: CitizenVasuMetadata | undefined
   content: VasuContent
-  setContent: Dispatch<SetStateAction<VasuContent>>
   childLanguage: ChildLanguage | null
-  status: VasuStatus
+  status: CitizenVasuStatus
   translations: VasuTranslations
   guardianHasGivenPermissionToShare: boolean
   setGuardianHasGivenPermissionToShare: Dispatch<SetStateAction<boolean>>
 }
 
-export function useVasu(id: string): Vasu {
-  const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
-  const [vasu, setVasu] = useState<VasuMetadata>()
+export function useVasu(id: string): CitizenVasu {
+  const [status, setStatus] = useState<CitizenVasuStatus>({ state: 'loading' })
+  const [vasu, setVasu] = useState<CitizenVasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
   const [
@@ -103,7 +102,6 @@ export function useVasu(id: string): Vasu {
   return {
     vasu,
     content,
-    setContent,
     childLanguage,
     status,
     translations,

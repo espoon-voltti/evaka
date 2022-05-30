@@ -28,7 +28,7 @@ interface Props {
   translations: VasuTranslations
 }
 
-export function BasicsSection({
+export function CitizenBasicsSection({
   sectionIndex,
   type,
   basics,

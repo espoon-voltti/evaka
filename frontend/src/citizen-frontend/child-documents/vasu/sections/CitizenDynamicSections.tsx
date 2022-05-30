@@ -3,16 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { last } from 'lodash'
-import React, { Dispatch, Fragment, SetStateAction } from 'react'
+import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
 import {
-  FollowupEntry,
   MultiSelectQuestion,
   RadioGroupQuestion
 } from 'lib-common/api-types/vasu'
 import {
-  VasuContent,
   VasuSection,
   VasuDocumentState
 } from 'lib-common/generated/api-types/vasu'
@@ -46,17 +44,13 @@ import {
 interface Props {
   sections: VasuSection[]
   sectionIndex: number
-  setContent?: Dispatch<SetStateAction<VasuContent>>
   state: VasuDocumentState
-  permittedFollowupActions?: { [key: string]: string[] }
   translations: VasuTranslations
-  editFollowupEntry?: (entry: FollowupEntry) => void
 }
 
-export function DynamicSections({
+export function CitizenDynamicSections({
   sections,
   sectionIndex: sectionOffset,
-  setContent,
   state,
   translations
 }: Props) {
@@ -65,13 +59,12 @@ export function DynamicSections({
       return null
     }
 
-    const highlightSection = !!setContent && section.hideBeforeReady
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
         <SectionContent
           opaque
-          highlighted={highlightSection}
+          highlighted={false}
           padBottom={!isLastQuestionFollowup}
           data-qa="vasu-document-section"
         >

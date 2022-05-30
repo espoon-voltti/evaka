@@ -20,10 +20,10 @@ import { useTranslation } from '../../localization'
 
 import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'
-import { BasicsSection } from './sections/BasicsSection'
-import { DynamicSections } from './sections/DynamicSections'
-import { VasuEvents } from './sections/VasuEvents'
-import { VasuHeader } from './sections/VasuHeader'
+import { CitizenBasicsSection } from './sections/CitizenBasicsSection'
+import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
+import { CitizenVasuEvents } from './sections/CitizenVasuEvents'
+import { CitizenVasuHeader } from './sections/CitizenVasuHeader'
 import { useVasu } from './use-vasu'
 
 const FooterContainer = styled.div`
@@ -55,8 +55,8 @@ export default React.memo(function VasuPage() {
       {vasu && (
         <>
           <ReturnButton label={t.common.return} />
-          <VasuHeader document={vasu} />
-          <BasicsSection
+          <CitizenVasuHeader document={vasu} />
+          <CitizenBasicsSection
             sectionIndex={0}
             type={vasu.type}
             basics={vasu.basics}
@@ -64,14 +64,14 @@ export default React.memo(function VasuPage() {
             templateRange={vasu.templateRange}
             translations={translations}
           />
-          <DynamicSections
+          <CitizenDynamicSections
             sections={content.sections}
             sectionIndex={dynamicSectionsOffset}
             state={vasu.documentState}
             translations={translations}
           />
           <Gap size="s" />
-          <VasuEvents document={vasu} content={content} />
+          <CitizenVasuEvents document={vasu} content={content} />
         </>
       )}
       {vasu && !guardianHasGivenPermissionToShare && (
