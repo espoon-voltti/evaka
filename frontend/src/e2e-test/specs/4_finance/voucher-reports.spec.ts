@@ -21,6 +21,7 @@ import {
 } from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, {
+  ServiceVoucherUnitReport,
   VoucherServiceProvidersReport
 } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -85,6 +86,25 @@ describe('Reporting - voucher reports', () => {
     assert(
       !csvReport.includes(daycare2Fixture.name),
       `Expected csv report to not contain ${daycare2Fixture.name}`
+    )
+  })
+
+  test('voucher service provider unit report', async () => {
+    await report.selectMonth('Tammikuu')
+    await report.selectYear(2020)
+    await report.selectArea('Superkeskus')
+
+    await report.assertRowCount(1)
+    await report.openUnitReport(daycareFixture.name)
+
+    const unitReport = new ServiceVoucherUnitReport(page)
+    await unitReport.assertChildRowCount(1)
+    await unitReport.assertChild(
+      0,
+      'Karhula Kaarina Veera Nelli',
+      870,
+      289,
+      581
     )
   })
 })
