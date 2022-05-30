@@ -382,7 +382,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // when we get the receivers for the citizen person1
         val receivers = db.read {
-            it.getCitizenReceivers(person1Account)
+            it.getCitizenReceivers(LocalDate.now(), person1Account)
         }
 
         // the result consists of two instances of MessageAccount:
@@ -436,7 +436,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         // when we get the receivers for the citizen person1
         val receivers = db.read {
-            it.getCitizenReceivers(person1Account)
+            it.getCitizenReceivers(LocalDate.now(), person1Account)
         }
 
         // the result is empty

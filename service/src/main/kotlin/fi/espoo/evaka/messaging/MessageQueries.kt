@@ -367,111 +367,68 @@ fun Database.Read.getMessage(id: MessageId): Message {
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(accountId: MessageAccountId): List<MessageAccount> {
-    val params = mapOf(
-        "accountId" to accountId,
-    )
-
+fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): List<MessageAccount> {
     // language=SQL
     val sql = """
-WITH all_placement_ids AS (
-    SELECT pl.id, pl.unit_id
+WITH all_placements AS (
+    SELECT p.id, p.unit_id
     FROM guardian g
-    JOIN placement pl
-    ON g.child_id = pl.child_id
-    WHERE guardian_id = (
-        SELECT person_id AS id
-        FROM message_account
-        WHERE id = :accountId
+    JOIN placement p ON p.child_id = g.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE guardian_id = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
+    AND NOT EXISTS (
+        SELECT 1 FROM messaging_blocklist b
+        WHERE b.child_id = p.child_id
+        AND b.blocked_recipient = g.guardian_id
     )
-    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
-    AND NOT (
-        SELECT EXISTS (
-            SELECT 1
-            FROM messaging_blocklist
-            WHERE child_id = pl.child_id
-            AND blocked_recipient = guardian_id
-            )
-        )
 
     UNION
 
-    SELECT pl.id, pl.unit_id
+    SELECT p.id, p.unit_id
     FROM fridge_child fg
-    JOIN placement pl
-    ON fg.child_id = pl.child_id
-    WHERE head_of_child = (
-        SELECT person_id AS id
-        FROM message_account
-        WHERE id = :accountId
-    )
-    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
-    AND daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    JOIN placement p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
+    AND fg.head_of_child = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
     AND fg.conflict = false
-    AND NOT (
-        SELECT EXISTS (
-            SELECT 1
-            FROM messaging_blocklist
-            WHERE child_id = pl.child_id
-            AND blocked_recipient = head_of_child
-            )
-        )
-
+    AND NOT EXISTS (
+        SELECT 1 FROM messaging_blocklist b
+        WHERE b.child_id = p.child_id
+        AND b.blocked_recipient = fg.head_of_child
+    )
 ),
-pilot_placement_ids AS (
-    SELECT pl.id
-    FROM all_placement_ids pl
-    JOIN daycare d
-    ON pl.unit_id = d.id
-    WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+relevant_placements AS (
+    SELECT p.id, p.unit_id
+    FROM all_placements p
+    WHERE EXISTS (
+        SELECT 1 FROM daycare u
+        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
+    )
 ),
-personal_account_owners AS (
-    SELECT DISTINCT e.id AS id
-    FROM pilot_placement_ids
-    JOIN placement plt
-    ON pilot_placement_ids.id = plt.id
-    JOIN daycare d
-    ON plt.unit_id = d.id
-    JOIN daycare_acl acl
-    ON acl.daycare_id = d.id
-    JOIN employee e
-    ON acl.employee_id = e.id
-    WHERE acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER'
+personal_accounts AS (
+    SELECT acc.id, acc_name.account_name AS name, 'PERSONAL' AS type
+    FROM (SELECT DISTINCT unit_id FROM relevant_placements) p
+    JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
+    JOIN message_account acc ON acc.employee_id = acl.employee_id
+    JOIN message_account_name_view acc_name ON acc_name.id = acc.id
 ),
-groups AS (
-    SELECT DISTINCT gplt.daycare_group_id AS id
-    FROM pilot_placement_ids
-    JOIN daycare_group_placement gplt
-    ON pilot_placement_ids.id = gplt.daycare_placement_id
+group_accounts AS (
+    SELECT acc.id, g.name, 'GROUP' AS type
+    FROM relevant_placements p
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id
+    JOIN daycare_group g ON g.id = dgp.daycare_group_id
+    JOIN message_account acc on g.id = acc.daycare_group_id
+),
+mixed_accounts AS (
+    SELECT id, name, type FROM personal_accounts
+    UNION ALL
+    SELECT id, name, type FROM group_accounts
 )
-
-SELECT
-    msg.id AS id,
-    msg_name.account_name AS name,
-    'PERSONAL' AS type
-FROM personal_account_owners
-JOIN employee e
-ON e.id = personal_account_owners.id
-JOIN message_account msg
-ON e.id = msg.employee_id
-JOIN message_account_name_view msg_name
-ON msg.id = msg_name.id
-
-UNION
-
-SELECT
-    msg.id AS id,
-    g.name AS name,
-    'GROUP' AS type
-FROM groups
-JOIN daycare_group g
-ON groups.id = g.id
-JOIN message_account msg
-ON g.id = msg.daycare_group_id
+SELECT id, name, type FROM mixed_accounts
+ORDER BY type, name  -- groups first
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bindMap(params)
+        .bind("accountId", accountId)
+        .bind("today", today)
         .mapTo<MessageAccount>()
         .toList()
 }
