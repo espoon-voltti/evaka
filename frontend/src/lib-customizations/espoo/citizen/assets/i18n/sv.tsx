@@ -1806,9 +1806,9 @@ const sv: Translations = {
     }
   },
   childDocuments: {
-    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    title: 'Småbarnsutbildningsplan och förskolans lärandeplan',
     description:
-      'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
+      'På denna sida publiceras barnets förskoleplan och förskolans lärandeplan och bilder och andra dokument som rör barnets tillväxt, lärande och vardag sammanställs.'
   },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',
@@ -1823,45 +1823,45 @@ const sv: Translations = {
     toggleExpandText: 'Visa eller göm texten'
   },
   vasu: {
-    title: 'Lapsen arkeen liittyviä dokumentteja',
-    lastModified: 'Viimeisin muokkauspäivämäärä',
-    lastPublished: 'Viimeksi julkaistu huoltajalle',
-    leavePage: 'Poistu',
-    edited: 'muokattu',
+    title: 'Dokument relaterade till barnets dagliga liv',
+    lastModified: 'Senaste ändringsdatum',
+    lastPublished: 'Senast publicerad av målsman',
+    leavePage: 'Utgång',
+    edited: 'anpassas',
     eventTypes: {
-      PUBLISHED: 'Julkaistu huoltajalle',
-      MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
-      RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
-      MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
-      RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
-      MOVED_TO_CLOSED: 'Päättynyt'
+      PUBLISHED: 'Publicerad till en vårdnadshavare',
+      MOVED_TO_READY: 'Publicerad i utkastläge',
+      RETURNED_TO_READY: 'Återvänd till färdigställt tillstånd',
+      MOVED_TO_REVIEWED: 'Publicerad i rated',
+      RETURNED_TO_REVIEWED: 'Återvänd till betyg',
+      MOVED_TO_CLOSED: 'Färdiga'
     },
     states: {
-      DRAFT: 'Luonnos',
-      READY: 'Laadittu',
-      REVIEWED: 'Arvioitu',
-      CLOSED: 'Päättynyt'
+      DRAFT: 'Förslag',
+      READY: 'Beredd',
+      REVIEWED: 'Beräknad',
+      CLOSED: 'Färdiga'
     },
-    state: 'Suunnitelman tila',
+    state: 'Status för planen',
     events: {
-      DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
-      PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
+      DAYCARE: 'Evenemang för tidig barndomsutbildning',
+      PRESCHOOL: 'Barn förskola lärande plan händelser'
     },
-    noRecord: 'Ei merkintää',
+    noRecord: 'Ingen ingång',
     givePermissionToShareTitleVasu:
-      'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      'Bekräftelse av överföringen av planen för förskoleundervisning till andra mottagare',
     givePermissionToShareTitleLeops:
-      'Vahvistus esiopetuksen oppimissuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      'Bekräftelse av överföring av förskolans lärandeplan till andra mottagare',
     givePermissionToShareVasu:
-      'Vahvistan, että lapsen varhaiskasvatussuunitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      'Jag bekräftar att barnets förskoleplan kan överlämnas till de parter som nämns i avsnittet "Mottagare".',
     givePermissionToShareLeops:
-      'Vahvistan, että lapsen esiopetuksen oppimissuunnitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      'Jag bekräftar att barnets lärandeplan för förskolan kan komma att överlämnas till de parter som nämns i avsnittet ”Informationsmottagare”.',
     givePermissionToShareInfoVasu:
-      'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Lapsen vaihtaessa toiseen Espoon kaupungin varhaiskasvatusyksikköön varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirretään uuteen yksikköön (koskee myös Espoon ostopalveluna järjestämää varhaiskasvatusta). Siirrosta informoidaan huoltajaa etukäteen. Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle pyydämme huoltajalta luvan. Mikäli lapsi siirtyy yksityiseen tai toisen kunnan varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman lupaa, jos tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (varhaiskasvatuslaki 41 §:n 3 mom.). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (perusopetuslaki 41 §:n 4 mom.). Luovuttamisesta informoidaan huoltajaa etukäteen.',
+      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. När ett barn byter till en annan förskoleenhet i Esbo stad, överförs planen för förskoleundervisningen och andra förskoleundervisningsdokument till den nya enheten (gäller även förskoleutbildning som anordnas av Esbo som inköpstjänst). Vårdnadshavaren kommer att informeras om överföringen i förväg. Vi ber vårdnadshavaren om tillstånd att lämna över förskoleplanen till en utomstående. Om ett barn går in i privat eller annan kommuns förskoleundervisning, ska förskoleplanen lämnas till den nya förskoleanordnaren även utan tillstånd, om uppgifterna är nödvändiga för att ordna barnets förskoleundervisning (41 § 3 st. ) i lagen om förskoleundervisning). Dessutom ska planen för förskoleundervisningen lämnas till den som anordnar för- eller grundutbildningen om det behövs för att organisera barnets utbildning (41 § 4 mom. lagen om grundläggande utbildning). Vårdnadshavaren kommer att informeras om överföringen i förväg.',
     givePermissionToShareInfoLeops:
-      'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Esiopetuksen oppimissuunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §).',
+      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. Förskolans lärandeplan får överlämnas till en ny anordnare av förskoleundervisning, förskoleutbildning eller grundläggande utbildning även utan vårdnadshavarens tillstånd, om det är nödvändigt för att anordna förskoleundervisning, förskoleutbildning eller grundutbildning (§ 41 40 och 41 §§ lagen om grundläggande utbildning).',
     givePermissionToShareReminder:
-      'Vahvista tiedonsaajatahot, joille suunnitelman saa luovuttaa'
+      'Bekräfta de mottagare som planen kan lämnas ut till'
   },
   placement: {
     type: {

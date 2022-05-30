@@ -173,7 +173,7 @@ AND g.guardian_id = :guardianId
 
     fun guardianOfChildOfVasu() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, citizenId, ids ->
+        Query<VasuDocumentId> { tx, citizenId, _, ids ->
             tx.createQuery(
                 """
 SELECT id

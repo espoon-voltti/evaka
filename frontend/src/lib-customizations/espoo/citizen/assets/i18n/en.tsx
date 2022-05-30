@@ -1849,9 +1849,9 @@ const en: Translations = {
     }
   },
   childDocuments: {
-    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    title: 'Early Childhood Education Plan and Preschool Learning Plan',
     description:
-      'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
+      "On this page, the child's early childhood education plan and pre-school learning plan are published, and pictures and other documents related to the child's growth, learning and everyday life are compiled."
   },
   pedagogicalDocuments: {
     title: 'Growth and learning',
@@ -1866,7 +1866,7 @@ const en: Translations = {
     toggleExpandText: 'Show or hide the text'
   },
   vasu: {
-    title: 'Lapsen arkeen liittyviä dokumentteja',
+    title: "Documents related to the child's daily life",
     lastModified: 'Last modified',
     lastPublished: 'Last published',
     leavePage: 'Leave page',
@@ -1890,21 +1890,21 @@ const en: Translations = {
       DAYCARE: 'Early childhood plan events',
       PRESCHOOL: 'Preschool plan events'
     },
-    noRecord: 'Ei merkintää',
+    noRecord: 'No record',
     givePermissionToShareTitleVasu:
-      'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      'Confirmation of the transfer of the early childhood education plan to other recipients',
     givePermissionToShareTitleLeops:
-      'Vahvistus esiopetuksen oppimissuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      'Confirmation of the transfer of the pre-school learning plan to other recipients',
     givePermissionToShareVasu:
-      'Vahvistan, että lapsen varhaiskasvatussuunitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      "I confirm that the child's early childhood education plan may be handed over to the parties mentioned in the “Recipients” section.",
     givePermissionToShareLeops:
-      'Vahvistan, että lapsen esiopetuksen oppimissuunnitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      "I confirm that the child's pre-school learning plan may be handed over to the parties mentioned in the “Information Recipients” section.",
     givePermissionToShareInfoVasu:
-      'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Lapsen vaihtaessa toiseen Espoon kaupungin varhaiskasvatusyksikköön varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirretään uuteen yksikköön (koskee myös Espoon ostopalveluna järjestämää varhaiskasvatusta). Siirrosta informoidaan huoltajaa etukäteen. Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle pyydämme huoltajalta luvan. Mikäli lapsi siirtyy yksityiseen tai toisen kunnan varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman lupaa, jos tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (varhaiskasvatuslaki 41 §:n 3 mom.). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (perusopetuslaki 41 §:n 4 mom.). Luovuttamisesta informoidaan huoltajaa etukäteen.',
+      "If you want to change the recipients mentioned in the plan, contact the staff of your child's early childhood education unit. When a child changes to another early childhood education unit in the City of Espoo, the early childhood education plan and other early childhood education documents are transferred to the new unit (also applies to early childhood education organized by Espoo as a purchasing service). The guardian will be informed about the transfer in advance. We ask the guardian for permission to hand over the early childhood education plan to an outsider. However, if a child enters private or other municipality's early childhood education, the early childhood education plan must be submitted to the new early childhood education provider even without permission, if the information is necessary for arranging the child's early childhood education (section 41 (3) of the Early Childhood Education Act). In addition, the early childhood education plan must be submitted to the organizer of pre-primary or primary education if it is necessary for the organization of the child's education (section 41 (4) of the Basic Education Act). The guardian will be informed of the transfer in advance.",
     givePermissionToShareInfoLeops:
-      'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Esiopetuksen oppimissuunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §).',
+      "If you want to change the recipients mentioned in the plan, contact the staff of your child's early childhood education unit. The pre-school learning plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 41, Sections 40 and 41 of the Basic Education Act).",
     givePermissionToShareReminder:
-      'Vahvista tiedonsaajatahot, joille suunnitelman saa luovuttaa'
+      'Confirm the recipients to whom the plan may be disclosed'
   },
   placement: {
     // TODO i18n
