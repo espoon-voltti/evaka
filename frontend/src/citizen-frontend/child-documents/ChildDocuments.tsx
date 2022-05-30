@@ -7,6 +7,7 @@ import React from 'react'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../localization'
 
@@ -18,6 +19,8 @@ export default React.memo(function ChildDocuments() {
   return (
     <>
       <Container>
+        <Gap size="s" />
+
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.childDocuments.title}</H1>
           <p>{t.childDocuments.description}</p>
@@ -25,9 +28,13 @@ export default React.memo(function ChildDocuments() {
 
         <Gap size="s" />
 
-        <CitizenVasuAndLeops />
+        {featureFlags.experimental?.citizenVasu && (
+          <>
+            <CitizenVasuAndLeops />
 
-        <Gap size="s" />
+            <Gap size="s" />
+          </>
+        )}
 
         <PedagogicalDocuments />
       </Container>

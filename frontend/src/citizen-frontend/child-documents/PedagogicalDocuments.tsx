@@ -32,7 +32,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -345,7 +345,6 @@ export default React.memo(function PedagogicalDocuments() {
   return (
     <>
       <Container>
-        <Gap size="s" />
         {renderResult(pedagogicalDocuments, (items) => (
           <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
         ))}
