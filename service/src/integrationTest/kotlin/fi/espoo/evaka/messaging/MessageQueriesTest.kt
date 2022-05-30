@@ -333,8 +333,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val placementId: UUID = UUID.randomUUID()
         val group1Id: UUID = UUID.randomUUID()
         val group2Id: UUID = UUID.randomUUID()
-        val startDate = LocalDate.now().minusDays(30)
-        val endDate = LocalDate.now().plusDays(30)
+
+        val today = LocalDate.now()
+        val startDate = today.minusDays(30)
+        val endDateGroup1 = today.plusDays(15)
+        val startDateGroup2 = today.plusDays(16)
+        val endDate = today.plusDays(30)
+
         db.transaction { tx ->
             // When there is a daycare with two groups and employee1 as the supervisor
             listOf(employee1Id, employee2Id).forEach { tx.upsertEmployeeMessageAccount(it) }
@@ -366,7 +371,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = startDate,
                 endDate = endDate
             )
-            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDate)
+            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group1Id), startDate = startDate, endDate = endDateGroup1)
+            tx.insertTestDaycareGroupPlacement(id = GroupPlacementId(UUID.randomUUID()), daycarePlacementId = PlacementId(placementId), groupId = GroupId(group2Id), startDate = startDateGroup2, endDate = endDate)
         }
 
         val (person1Account, group1Account, group2Account) = db.read {
@@ -385,9 +391,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.getCitizenReceivers(LocalDate.now(), person1Account)
         }
 
-        // the result consists of two instances of MessageAccount:
-        // the personal account of employee 1 and the account of the group the persons child is in
-        assertEquals(setOf(supervisorPersonalAccount, group1Account), receivers.map { it.id }.toSet())
+        assertEquals(
+            listOf(
+                MessageAccount(group1Account, "Testiläiset", AccountType.GROUP),
+                MessageAccount(supervisorPersonalAccount, "Employee Firstname", AccountType.PERSONAL),
+            ),
+            receivers
+        )
     }
 
     @Test
