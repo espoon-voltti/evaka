@@ -1039,12 +1039,7 @@ RETURNING id
         "activeApplicationStatus",
         arrayOf(
             ApplicationStatus.CREATED,
-            ApplicationStatus.SENT,
-            ApplicationStatus.WAITING_PLACEMENT,
-            ApplicationStatus.WAITING_CONFIRMATION,
-            ApplicationStatus.WAITING_UNIT_CONFIRMATION,
-            ApplicationStatus.WAITING_DECISION,
-            ApplicationStatus.WAITING_MAILING
+            ApplicationStatus.SENT
         )
     )
     .bind("preferredStartDateMinDate", preferredStartDateMinDate)
