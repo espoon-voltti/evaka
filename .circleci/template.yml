@@ -458,7 +458,7 @@ commands:
           command: |
             tries=3
             while true; do
-              docker-compose build && break || ((--tries)) || exit 1
+              ./compose-e2e build --pull && break || ((--tries)) || exit 1
               echo "Retrying ..."
               sleep 5
             done
@@ -473,7 +473,12 @@ commands:
             docker pull "<< pipeline.parameters.ecr_public >>/evaka/e2e-playwright:${CIRCLE_SHA1}" \
               && export COMPOSE_TAG=${CIRCLE_SHA1} || true
             cd ./compose
-            ./test-e2e build playwright
+            tries=3
+            while true; do
+              ./test-e2e build playwright && break || ((--tries)) || exit 1
+              echo "Retrying ..."
+              sleep 5
+            done
             cd -
             CI=true ./bin/circleci-e2e.sh << parameters.test_runner >>
       - run:
