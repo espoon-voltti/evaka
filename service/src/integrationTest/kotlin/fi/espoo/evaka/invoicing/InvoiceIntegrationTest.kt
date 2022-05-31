@@ -94,59 +94,33 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     )
 
-    private val testDecisions = listOf(
-        createFeeDecisionFixture(
-            status = FeeDecisionStatus.DRAFT,
-            decisionType = FeeDecisionType.NORMAL,
-            headOfFamilyId = testAdult_1.id,
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-                ),
-                createFeeDecisionChildFixture(
-                    childId = testChild_2.id,
-                    dateOfBirth = testChild_2.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    siblingDiscount = 50,
-                    fee = 14500
-                )
+    private val decision1 = createFeeDecisionFixture(
+        status = FeeDecisionStatus.SENT,
+        decisionType = FeeDecisionType.NORMAL,
+        headOfFamilyId = testAdult_1.id,
+        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+        children = listOf(
+            createFeeDecisionChildFixture(
+                childId = testChild_2.id,
+                dateOfBirth = testChild_2.dateOfBirth,
+                placementUnitId = testDaycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
             )
-        ),
-        createFeeDecisionFixture(
-            status = FeeDecisionStatus.SENT,
-            decisionType = FeeDecisionType.NORMAL,
-            headOfFamilyId = testAdult_1.id,
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_2.id,
-                    dateOfBirth = testChild_2.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-                )
-            )
-        ),
-        createFeeDecisionFixture(
-            status = FeeDecisionStatus.SENT,
-            decisionType = FeeDecisionType.NORMAL,
-            headOfFamilyId = testAdult_2.id,
-            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-                )
+        )
+    )
+    private val decision2 = createFeeDecisionFixture(
+        status = FeeDecisionStatus.SENT,
+        decisionType = FeeDecisionType.NORMAL,
+        headOfFamilyId = testAdult_2.id,
+        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+        children = listOf(
+            createFeeDecisionChildFixture(
+                childId = testChild_1.id,
+                dateOfBirth = testChild_1.dateOfBirth,
+                placementUnitId = testDaycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
             )
         )
     )
@@ -775,7 +749,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `createAllDraftInvoices works with one decision`() {
-        val decision = testDecisions.find { it.status == FeeDecisionStatus.SENT }!!
+        val decision = decision1
         insertDecisions(listOf(decision))
 
         val (_, response, _) = http.post("/invoices/create-drafts")
@@ -801,7 +775,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `createAllDraftInvoices works with two decisions`() {
-        val testDecisions2 = testDecisions.filter { it.status == FeeDecisionStatus.SENT }.take(2)
+        val testDecisions2 = listOf(decision1, decision2)
         insertDecisions(testDecisions2)
 
         val (_, response, _) = http.post("/invoices/create-drafts")
@@ -827,7 +801,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `createAllDraftInvoices is idempotent`() {
-        val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
+        val decisions = listOf(decision1)
         insertDecisions(decisions)
 
         for (i in 1..4) {
@@ -855,7 +829,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `createAllDraftInvoices generates no drafts from already invoiced decisions`() {
-        val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
+        val decisions = listOf(decision1)
         insertDecisions(decisions)
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
@@ -892,7 +866,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `createAllDraftInvoices overrides drafts`() {
-        val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!).take(1)
+        val decisions = listOf(decision1)
         insertDecisions(decisions)
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
