@@ -143,6 +143,12 @@ export default class ApplicationReadView {
       .waitUntilVisible()
   }
 
+  async assertExtendedCareAttachmentDoesNotExist(fileName: string) {
+    await this.page
+      .findByDataQa(`extended-care-attachment-${fileName}`)
+      .waitUntilHidden()
+  }
+
   async assertApplicantIsDead() {
     await this.page.find('[data-qa="applicant-dead"]').waitUntilVisible()
   }
