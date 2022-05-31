@@ -15,7 +15,7 @@ import {
   Truncated
 } from 'lib-components/molecules/ThreadListItem'
 
-import { getAttachmentBlob } from '../attachments'
+import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
@@ -25,15 +25,13 @@ interface Props {
   active: boolean
   hasUnreadMessages: boolean
   onClick: () => void
-  onAttachmentUnavailable: () => void
 }
 
 export default React.memo(function ThreadListItem({
   thread,
   active,
   hasUnreadMessages,
-  onClick,
-  onAttachmentUnavailable
+  onClick
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
@@ -69,11 +67,9 @@ export default React.memo(function ThreadListItem({
               <FileDownloadButton
                 key={attachment.id}
                 file={attachment}
-                fileFetchFn={getAttachmentBlob}
-                onFileUnavailable={onAttachmentUnavailable}
+                getFileUrl={getAttachmentUrl}
                 icon
                 data-qa="thread-list-attachment"
-                openInBrowser
               />
             ))}
           </FixedSpaceColumn>

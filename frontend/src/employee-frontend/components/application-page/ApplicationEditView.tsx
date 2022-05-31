@@ -50,7 +50,7 @@ import {
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveApplicationAttachment
 } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
@@ -269,7 +269,7 @@ export default React.memo(function ApplicationEditView({
                   <FileUpload
                     onUpload={onUploadAttachment('URGENCY')}
                     onDelete={onDeleteAttachment}
-                    onDownloadFile={getAttachmentBlob}
+                    getDownloadUrl={getAttachmentUrl}
                     i18n={i18n.fileUpload}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
                     data-qa="file-upload-urgent"
@@ -443,7 +443,7 @@ export default React.memo(function ApplicationEditView({
                   <FileUpload
                     onUpload={onUploadAttachment('EXTENDED_CARE')}
                     onDelete={onDeleteAttachment}
-                    onDownloadFile={getAttachmentBlob}
+                    getDownloadUrl={getAttachmentUrl}
                     i18n={i18n.fileUpload}
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'

@@ -151,11 +151,6 @@ export const fi = {
     ready: 'Valmis',
     page: 'Sivu',
     group: 'Ryhmä',
-    fileDownloadError: {
-      modalHeader: 'Tiedoston käsittely on kesken',
-      modalMessage:
-        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
-    },
     openExpandingInfo: 'Avaa lisätietokenttä',
     datetime: {
       weekdaysShort: ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'],

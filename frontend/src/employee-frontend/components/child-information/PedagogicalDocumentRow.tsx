@@ -21,7 +21,7 @@ import { faPen, faTrash } from 'lib-icons'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
 import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents'
@@ -147,7 +147,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
             i18n={i18n.fileUpload}
-            onDownloadFile={getAttachmentBlob}
+            getDownloadUrl={getAttachmentUrl}
             onUpload={handleAttachmentUpload}
             onDelete={handleAttachmentDelete}
             accept={[

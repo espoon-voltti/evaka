@@ -21,7 +21,7 @@ import { Gap } from 'lib-components/white-space'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
@@ -200,8 +200,8 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 files={formData.shiftCareAttachments}
                 onUpload={uploadExtendedCareAttachment}
                 onDelete={deleteExtendedCareAttachment}
-                onDownloadFile={getAttachmentBlob}
-                i18n={{ upload: t.fileUpload, download: t.fileDownload }}
+                getDownloadUrl={getAttachmentUrl}
+                i18n={{ upload: t.fileUpload }}
               />
             </>
           )}

@@ -25,7 +25,7 @@ import { faArrowLeft } from 'lib-icons'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveMessageAttachment
 } from '../../api/attachments'
 import {
@@ -113,7 +113,7 @@ export default function MessageEditorPage() {
         }}
         deleteAttachment={deleteAttachment}
         draftContent={undefined}
-        getAttachmentBlob={getAttachmentBlob}
+        getAttachmentUrl={getAttachmentUrl}
         i18n={{
           ...i18n.messages.messageEditor,
           ...i18n.fileUpload,

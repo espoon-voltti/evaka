@@ -18,7 +18,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../localization'
-import { OverlayContext } from '../overlay/state'
 
 import ThreadListItem from './ThreadListItem'
 import { MessageContext } from './state'
@@ -61,17 +60,6 @@ export default React.memo(function ThreadList({
       }
     },
     [navigate]
-  )
-
-  const { setErrorMessage } = useContext(OverlayContext)
-  const onAttachmentUnavailable = useCallback(
-    () =>
-      setErrorMessage({
-        title: t.fileDownload.modalHeader,
-        text: t.fileDownload.modalMessage,
-        type: 'error'
-      }),
-    [t, setErrorMessage]
   )
 
   return (
@@ -124,7 +112,6 @@ export default React.memo(function ThreadList({
                 onClick={() => selectThread(thread.id)}
                 active={selectedThread?.id === thread.id}
                 hasUnreadMessages={hasUnreadMessages(thread, accountId)}
-                onAttachmentUnavailable={onAttachmentUnavailable}
               />
             </li>
           ))}

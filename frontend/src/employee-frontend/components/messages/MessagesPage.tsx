@@ -18,7 +18,7 @@ import { featureFlags } from 'lib-customizations/employee'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveMessageAttachment
 } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
@@ -151,7 +151,7 @@ export default React.memo(function MessagesPage() {
               }}
               deleteAttachment={deleteAttachment}
               draftContent={selectedDraft}
-              getAttachmentBlob={getAttachmentBlob}
+              getAttachmentUrl={getAttachmentUrl}
               i18n={{
                 ...i18n.messages.messageEditor,
                 ...i18n.fileUpload,

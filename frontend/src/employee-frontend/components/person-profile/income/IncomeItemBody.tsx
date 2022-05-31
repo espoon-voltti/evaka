@@ -17,7 +17,7 @@ import { fileIcon } from 'lib-components/molecules/FileUpload'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { getAttachmentBlob } from '../../../api/attachments'
+import { getAttachmentUrl } from '../../../api/attachments'
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
@@ -128,11 +128,7 @@ function IncomeAttachments({ attachments }: { attachments: Attachment[] }) {
           {attachments.map((file) => (
             <div key={file.id} data-qa="attachment">
               <FileIcon icon={fileIcon(file)} />
-              <FileDownloadButton
-                file={file}
-                fileFetchFn={getAttachmentBlob}
-                onFileUnavailable={() => undefined}
-              />
+              <FileDownloadButton file={file} getFileUrl={getAttachmentUrl} />
             </div>
           ))}
         </FixedSpaceColumn>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
@@ -10,9 +10,8 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { getAttachmentBlob } from '../../../attachments'
+import { getAttachmentUrl } from '../../../attachments'
 import { useTranslation } from '../../../localization'
-import { OverlayContext } from '../../../overlay/state'
 
 type Props = {
   formData: ApplicationFormData
@@ -28,8 +27,6 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
   formData
 }: Props) {
   const t = useTranslation()
-
-  const { setErrorMessage } = useContext(OverlayContext)
 
   return (
     <>
@@ -56,14 +53,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                     <li key={file.id}>
                       <FileDownloadButton
                         file={file}
-                        fileFetchFn={getAttachmentBlob}
-                        onFileUnavailable={() =>
-                          setErrorMessage({
-                            type: 'error',
-                            title: t.fileDownload.modalHeader,
-                            text: t.fileDownload.modalMessage
-                          })
-                        }
+                        getFileUrl={getAttachmentUrl}
                         data-qa="service-need-urgency-attachment-download"
                         icon
                       />
@@ -86,8 +76,6 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
   formData
 }: Props) {
   const t = useTranslation()
-
-  const { setErrorMessage } = useContext(OverlayContext)
 
   return (
     <>
@@ -114,14 +102,7 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                   <li key={file.id}>
                     <FileDownloadButton
                       file={file}
-                      fileFetchFn={getAttachmentBlob}
-                      onFileUnavailable={() =>
-                        setErrorMessage({
-                          type: 'error',
-                          title: t.fileDownload.modalHeader,
-                          text: t.fileDownload.modalMessage
-                        })
-                      }
+                      getFileUrl={getAttachmentUrl}
                       data-qa="service-need-shift-care-attachment-download"
                       icon
                     />

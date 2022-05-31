@@ -136,7 +136,7 @@ interface Props {
   defaultSender: ReactSelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
-  getAttachmentBlob: (attachmentId: UUID) => Promise<Result<BlobPart>>
+  getAttachmentUrl: (attachmentId: UUID) => string
   i18n: MessageEditorI18n & FileUploadI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean
@@ -160,7 +160,7 @@ export default React.memo(function MessageEditor({
   defaultSender,
   deleteAttachment,
   draftContent,
-  getAttachmentBlob,
+  getAttachmentUrl,
   i18n,
   initDraftRaw,
   mobileVersion = false,
@@ -544,7 +544,7 @@ export default React.memo(function MessageEditor({
                 data-qa="upload-message-attachment"
                 files={message.attachments}
                 i18n={i18nWithReplacedTitle}
-                onDownloadFile={getAttachmentBlob}
+                getDownloadUrl={getAttachmentUrl}
                 onUpload={handleAttachmentUpload}
                 onDelete={handleAttachmentDelete}
               />

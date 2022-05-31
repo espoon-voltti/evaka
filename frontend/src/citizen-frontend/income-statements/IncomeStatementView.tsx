@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -34,9 +34,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPen } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { getAttachmentBlob } from '../attachments'
+import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
-import { OverlayContext } from '../overlay/state'
 
 import { getIncomeStatement } from './api'
 
@@ -346,24 +345,12 @@ const UploadedFiles = React.memo(function UploadedFiles({
 }: {
   files: Attachment[]
 }) {
-  const { setErrorMessage } = useContext(OverlayContext)
-  const t = useTranslation()
-  const onFileUnavailable = () =>
-    setErrorMessage({
-      title: t.fileDownload.modalHeader,
-      text: t.fileDownload.modalMessage,
-      type: 'error'
-    })
   return (
     <FixedSpaceColumn>
       {files.map((file) => (
         <div key={file.id}>
           <FileIcon icon={fileIcon(file)} />
-          <FileDownloadButton
-            file={file}
-            fileFetchFn={getAttachmentBlob}
-            onFileUnavailable={onFileUnavailable}
-          />
+          <FileDownloadButton file={file} getFileUrl={getAttachmentUrl} />{' '}
         </div>
       ))}
     </FixedSpaceColumn>

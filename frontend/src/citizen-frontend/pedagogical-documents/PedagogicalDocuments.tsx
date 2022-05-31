@@ -7,8 +7,8 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 import styled from 'styled-components'
 
@@ -33,9 +33,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { getAttachmentBlob } from '../attachments'
+import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
-import { OverlayContext } from '../overlay/state'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
@@ -44,25 +43,25 @@ const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
   attachment,
   onRead,
-  onAttachmentUnavailable,
   dataQa
 }: {
   pedagogicalDocument: PedagogicalDocumentCitizen
   attachment: Attachment
   onRead: (doc: PedagogicalDocumentCitizen) => void
-  onAttachmentUnavailable: () => void
   dataQa: string
 }) {
+  const afterOpen = useCallback(
+    () => onRead(pedagogicalDocument),
+    [onRead, pedagogicalDocument]
+  )
   return (
     <FileDownloadButton
       key={attachment.id}
       file={attachment}
-      fileFetchFn={getAttachmentBlob}
-      afterFetch={() => onRead(pedagogicalDocument)}
-      onFileUnavailable={onAttachmentUnavailable}
+      getFileUrl={getAttachmentUrl}
+      afterOpen={afterOpen}
       icon
       data-qa={dataQa}
-      openInBrowser={true}
     />
   )
 })
@@ -71,23 +70,24 @@ const AttachmentDownloadButton = React.memo(function AttachmentDownloadButton({
   pedagogicalDocument,
   attachment,
   onRead,
-  onAttachmentUnavailable,
   dataQa
 }: {
   pedagogicalDocument: PedagogicalDocumentCitizen
   attachment: Attachment
   onRead: (doc: PedagogicalDocumentCitizen) => void
-  onAttachmentUnavailable: () => void
   dataQa: string
 }) {
   const t = useTranslation()
+  const afterOpen = useCallback(
+    () => onRead(pedagogicalDocument),
+    [onRead, pedagogicalDocument]
+  )
   return (
     <FileDownloadButton
       key={attachment.id}
       file={attachment}
-      fileFetchFn={getAttachmentBlob}
-      afterFetch={() => onRead(pedagogicalDocument)}
-      onFileUnavailable={onAttachmentUnavailable}
+      getFileUrl={getAttachmentUrl}
+      afterOpen={afterOpen}
       icon={faArrowDown}
       data-qa={dataQa}
       text={t.fileDownload.download}
@@ -99,13 +99,11 @@ const AttachmentRow = React.memo(function AttachmentRow({
   pedagogicalDocument,
   attachment,
   onRead,
-  onAttachmentUnavailable,
   dataQa
 }: {
   pedagogicalDocument: PedagogicalDocumentCitizen
   attachment: Attachment
   onRead: (doc: PedagogicalDocumentCitizen) => void
-  onAttachmentUnavailable: () => void
   dataQa: string
 }) {
   return (
@@ -114,14 +112,12 @@ const AttachmentRow = React.memo(function AttachmentRow({
         pedagogicalDocument={pedagogicalDocument}
         attachment={attachment}
         onRead={onRead}
-        onAttachmentUnavailable={onAttachmentUnavailable}
         dataQa={`${dataQa}-attachment`}
       />
       <AttachmentDownloadButton
         pedagogicalDocument={pedagogicalDocument}
         attachment={attachment}
         onRead={onRead}
-        onAttachmentUnavailable={onAttachmentUnavailable}
         dataQa={`${dataQa}-download`}
       />
     </AttachmentRowContainer>
@@ -171,12 +167,10 @@ const ItemDescription = React.memo(function ItemDescription({
 const PedagogicalDocumentsDisplay = React.memo(
   function PedagogicalDocumentsDisplay({
     items,
-    onRead,
-    onAttachmentUnavailable
+    onRead
   }: {
     items: PedagogicalDocumentCitizen[]
     onRead: (doc: PedagogicalDocumentCitizen) => void
-    onAttachmentUnavailable: () => void
   }) {
     const t = useTranslation()
 
@@ -198,7 +192,6 @@ const PedagogicalDocumentsDisplay = React.memo(
                 items={items}
                 showChildrenNames={moreThanOneChild}
                 onRead={onRead}
-                onAttachmentUnavailable={onAttachmentUnavailable}
               />
             )}
           </ContentArea>
@@ -212,7 +205,6 @@ const PedagogicalDocumentsDisplay = React.memo(
                 items={items}
                 showChildrenNames={moreThanOneChild}
                 onRead={onRead}
-                onAttachmentUnavailable={onAttachmentUnavailable}
               />
             )}
           </ContentArea>
@@ -225,13 +217,11 @@ const PedagogicalDocumentsDisplay = React.memo(
 const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
   items,
   showChildrenNames,
-  onRead,
-  onAttachmentUnavailable
+  onRead
 }: {
   items: PedagogicalDocumentCitizen[]
   showChildrenNames: boolean
   onRead: (doc: PedagogicalDocumentCitizen) => void
-  onAttachmentUnavailable: () => void
 }) {
   return (
     <>
@@ -255,7 +245,6 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
                 pedagogicalDocument={item}
                 attachment={attachment}
                 onRead={onRead}
-                onAttachmentUnavailable={onAttachmentUnavailable}
                 dataQa={`list-attachment-${attachment.id}`}
               />
             ))}
@@ -270,13 +259,11 @@ const PedagogicalDocumentsTable = React.memo(
   function PedagogicalDocumentsTable({
     items,
     showChildrenNames,
-    onRead,
-    onAttachmentUnavailable
+    onRead
   }: {
     items: PedagogicalDocumentCitizen[]
     showChildrenNames: boolean
     onRead: (doc: PedagogicalDocumentCitizen) => void
-    onAttachmentUnavailable: () => void
   }) {
     const t = useTranslation()
     return (
@@ -315,7 +302,6 @@ const PedagogicalDocumentsTable = React.memo(
                       pedagogicalDocument={item}
                       attachment={attachment}
                       onRead={onRead}
-                      onAttachmentUnavailable={onAttachmentUnavailable}
                       dataQa={`attachment-${attachment.id}`}
                     />
                   ))}
@@ -330,7 +316,6 @@ const PedagogicalDocumentsTable = React.memo(
 )
 
 export default React.memo(function PedagogicalDocuments() {
-  const t = useTranslation()
   const [pedagogicalDocuments, loadData] = useApiState(
     getPedagogicalDocuments,
     []
@@ -344,18 +329,6 @@ export default React.memo(function PedagogicalDocuments() {
     pedagogicalDocuments
   ])
 
-  const { setErrorMessage } = useContext(OverlayContext)
-
-  const onAttachmentUnavailable = useCallback(
-    () =>
-      setErrorMessage({
-        title: t.fileDownload.modalHeader,
-        text: t.fileDownload.modalMessage,
-        type: 'error'
-      }),
-    [t, setErrorMessage]
-  )
-
   const onRead = (doc: PedagogicalDocumentCitizen) => {
     void markPedagogicalDocumentRead(doc.id).then(loadData)
   }
@@ -365,11 +338,7 @@ export default React.memo(function PedagogicalDocuments() {
       <Container>
         <Gap size="s" />
         {renderResult(pedagogicalDocuments, (items) => (
-          <PedagogicalDocumentsDisplay
-            items={items}
-            onRead={onRead}
-            onAttachmentUnavailable={onAttachmentUnavailable}
-          />
+          <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
         ))}
         <Footer />
       </Container>
@@ -448,6 +417,7 @@ const ListItem = styled(FixedSpaceColumn)<{ documentIsRead: boolean }>`
 
 const ListItemHead = styled.div`
   display: flex;
+
   & > :first-child {
     flex: 1;
   }

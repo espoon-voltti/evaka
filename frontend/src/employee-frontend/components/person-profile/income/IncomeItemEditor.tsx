@@ -34,7 +34,7 @@ import { Gap } from 'lib-components/white-space'
 
 import {
   deleteAttachment,
-  getAttachmentBlob,
+  getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
 import { IncomeTypeOptions } from '../../../api/income'
@@ -375,7 +375,7 @@ function IncomeAttachments({
         files={attachments}
         onUpload={handleUpload}
         onDelete={handleDelete}
-        onDownloadFile={getAttachmentBlob}
+        getDownloadUrl={getAttachmentUrl}
         i18n={i18n.fileUpload}
       />
     </>

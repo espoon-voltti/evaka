@@ -296,13 +296,25 @@ server {
     internal;
 
     # Don't proxy sensitive headers
-    proxy_set_header Authorization '';
-    proxy_set_header Cookie '';
+    proxy_set_header        Authorization '';
+    proxy_set_header        Cookie '';
+    proxy_hide_header       x-amz-id-2;
+    proxy_hide_header       x-amz-request-id;
+    proxy_hide_header       Set-Cookie;
+    proxy_ignore_headers    Set-Cookie;
 
     # Do not touch local disks when proxying content to clients
     proxy_max_temp_file_size 0;
 
     proxy_pass $1$is_args$args;
+
+    proxy_intercept_errors on;
+    error_page 403 404 /static/try-again-later.txt;
+  }
+
+  location /static/ {
+    internal;
+    root /;
   }
 
 

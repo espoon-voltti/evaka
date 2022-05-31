@@ -1360,9 +1360,6 @@ const en: Translations = {
     deleteFile: 'Delete file'
   },
   fileDownload: {
-    modalHeader: 'Processing file',
-    modalMessage: 'File is being processed. Try again later',
-    modalClose: 'Close',
     download: 'Download'
   },
   personalDetails: {
