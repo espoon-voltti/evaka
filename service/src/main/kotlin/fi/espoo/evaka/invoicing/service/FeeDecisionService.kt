@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.decision.DecisionSendAddress
-import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -30,6 +30,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
+import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -46,6 +48,7 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -53,11 +56,14 @@ private val logger = KotlinLogging.logger {}
 @Component
 class FeeDecisionService(
     private val pdfService: PDFService,
-    private val s3Client: S3DocumentClient,
+    private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
-    private val env: EvakaEnv
+    private val env: EvakaEnv,
+    private val bucketEnv: BucketEnv,
 ) {
+    val bucket = bucketEnv.feeDecisions
+
     fun confirmDrafts(
         tx: Database.Transaction,
         user: AuthenticatedUser.Employee,
@@ -161,8 +167,8 @@ class FeeDecisionService(
         val lang = getDecisionLanguage(decision)
 
         val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
-        val key = s3Client.uploadFeeDecisionPdf(decision.id, pdfByteArray, lang)
-        tx.updateFeeDecisionDocumentKey(decision.id, key)
+        val documentKey = documentClient.upload(bucket, Document("feedecision_${decision.id}_$lang.pdf", pdfByteArray, "application/pdf")).key
+        tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
 
     fun sendDecision(tx: Database.Transaction, id: FeeDecisionId): Boolean {
@@ -196,7 +202,7 @@ class FeeDecisionService(
             messageId = decision.id.toString(),
             documentId = decision.id.toString(),
             documentDisplayName = feeDecisionDisplayName,
-            documentBucket = s3Client.getFeeDecisionBucket(),
+            documentBucket = bucket,
             documentKey = decision.documentKey,
             language = lang,
             firstName = recipient.firstName,
@@ -225,15 +231,10 @@ class FeeDecisionService(
         tx.setFeeDecisionSent(ids)
     }
 
-    data class PdfResult(
-        val documentKey: String,
-        val pdfBytes: ByteArray
-    )
-
-    fun getFeeDecisionPdf(tx: Database.Read, decisionId: FeeDecisionId): PdfResult {
-        val documentKey = tx.getFeeDecisionDocumentKey(decisionId)
+    fun getFeeDecisionPdfResponse(dbc: Database.Connection, decisionId: FeeDecisionId): ResponseEntity<Any> {
+        val documentKey = dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
             ?: throw NotFound("Document key not found for decision $decisionId")
-        return PdfResult(documentKey, s3Client.getFeeDecisionPdf(documentKey))
+        return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
     fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {

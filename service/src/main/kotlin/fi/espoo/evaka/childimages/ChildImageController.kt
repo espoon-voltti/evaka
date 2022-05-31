@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
-import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -69,21 +68,6 @@ class ChildImageController(
         accessControl.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
-        val presignedUrl = documentClient.presignedGetUrl(bucket, key)
-
-        return if (presignedUrl != null) {
-            val url = "/internal_redirect/$presignedUrl"
-            logger.info("Child image $imageId: Using X-Accel-Redirect $url")
-            ResponseEntity.ok()
-                .header("X-Accel-Redirect", url)
-                .body("")
-        } else {
-            // In dev there's no nginx, so stream the data directly
-            logger.info("Child image $imageId: Streaming to client")
-            val stream = documentClient.stream(bucket, key)
-            ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(InputStreamResource(stream))
-        }
+        return documentClient.responseInline(bucket, key)
     }
 }

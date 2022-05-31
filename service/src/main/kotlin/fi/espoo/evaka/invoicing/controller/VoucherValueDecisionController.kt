@@ -171,14 +171,18 @@ class VoucherValueDecisionController(
         }
     }
 
-    @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
-        Audit.FeeDecisionPdfRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
+    @GetMapping("/pdf/{decisionId}")
+    fun getDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable decisionId: VoucherValueDecisionId
+    ): ResponseEntity<Any> {
+        Audit.FeeDecisionPdfRead.log(targetId = decisionId)
+        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, decisionId)
 
-        val (filename, pdf) = db.connect { dbc ->
+        return db.connect { dbc ->
             dbc.read { tx ->
-                val decision = tx.getVoucherValueDecision(id) ?: error("Cannot find voucher value decision $id")
+                val decision = tx.getVoucherValueDecision(decisionId) ?: error("Cannot find voucher value decision $decisionId")
 
                 val personIds = listOfNotNull(
                     decision.headOfFamily.id,
@@ -191,15 +195,10 @@ class VoucherValueDecisionController(
                 if (restrictedDetails && !user.isAdmin) {
                     throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
                 }
-
-                valueDecisionService.getDecisionPdf(tx, id)
             }
-        }
 
-        return ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; filename=\"$filename\"")
-            .header("Content-Type", "application/pdf")
-            .body(pdf)
+            valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
+        }
     }
 
     @PostMapping("/set-type/{uuid}")

@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -43,7 +44,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
-import java.net.URI
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import javax.sql.DataSource
 
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
@@ -108,11 +109,10 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun s3Client(env: BucketEnv): S3Client {
-        val port = 9876
         val client = S3Client.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(URI.create("http://localhost:$port"))
+            .endpointOverride(env.s3MockUrl)
             .credentialsProvider(
                 StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
             )
@@ -124,6 +124,17 @@ class SharedIntegrationTestConfig {
         }
         return client
     }
+
+    @Bean
+    fun s3Presigner(env: BucketEnv): S3Presigner =
+        S3Presigner.builder()
+            .region(Region.US_EAST_1)
+            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+            .endpointOverride(env.s3MockUrl)
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+            )
+            .build()
 
     @Bean
     fun integrationTestJwtAlgorithm(): Algorithm {
@@ -146,6 +157,10 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
+
+    @Bean
+    fun documentService(s3Client: S3Client, s3Presigner: S3Presigner, env: BucketEnv): DocumentService =
+        DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
 
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()

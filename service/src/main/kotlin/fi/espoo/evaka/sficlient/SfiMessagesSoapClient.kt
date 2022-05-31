@@ -5,7 +5,7 @@
 package fi.espoo.evaka.sficlient
 
 import fi.espoo.evaka.SfiEnv
-import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.sficlient.soap.ArrayOfKohdeWS2A
 import fi.espoo.evaka.sficlient.soap.ArrayOfTiedosto
 import fi.espoo.evaka.sficlient.soap.Asiakas
@@ -45,7 +45,7 @@ private const val MESSAGE_API_VERSION = "1.1"
 
 class SfiMessagesSoapClient(
     private val sfiEnv: SfiEnv,
-    private val docService: DocumentService,
+    private val getDocument: (bucketName: String, key: String) -> Document,
 ) : SfiMessagesClient {
     private val wsTemplate = WebServiceTemplate().apply {
         defaultUri = sfiEnv.address
@@ -112,7 +112,7 @@ class SfiMessagesSoapClient(
     private val logger = KotlinLogging.logger {}
 
     override fun send(msg: SfiMessage) {
-        val pdfBytes = docService.get(msg.documentBucket, msg.documentKey).getBytes()
+        val pdfBytes = getDocument(msg.documentBucket, msg.documentKey).bytes
 
         logger.info(
             mapOf(

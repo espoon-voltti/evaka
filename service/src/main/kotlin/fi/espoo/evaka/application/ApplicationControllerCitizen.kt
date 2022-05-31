@@ -9,6 +9,7 @@ import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.pis.getPersonById
@@ -24,7 +25,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import mu.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -36,8 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/citizen")
@@ -324,19 +322,13 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable id: DecisionId
-    ): ResponseEntity<ByteArray> {
+    ): ResponseEntity<Any> {
         Audit.DecisionDownloadPdf.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                decisionService.getDecisionPdf(tx, id)
-                    .let { document ->
-                        ResponseEntity.ok()
-                            .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                            .body(document.getBytes())
-                    }
-            }
+            val decision = dbc.transaction { tx -> tx.getDecision(id) } ?: throw NotFound("Decision $id does not exist")
+            decisionService.getDecisionPdf(dbc, decision)
         }
     }
 }

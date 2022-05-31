@@ -12,9 +12,6 @@ import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiPrintingEnv
 import fi.espoo.evaka.s3.Document
-import fi.espoo.evaka.s3.DocumentLocation
-import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.sficlient.soap.KyselyWS1
 import fi.espoo.evaka.sficlient.soap.KyselyWS10
 import fi.espoo.evaka.sficlient.soap.KyselyWS2
@@ -46,7 +43,6 @@ import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
 import java.io.InputStream
 import java.net.ServerSocket
-import java.net.URL
 import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.Certificate
@@ -94,16 +90,11 @@ class SoapStackIntegrationTest {
         password = Sensitive("untrustworthy")
     )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
-    private val dummyDocumentService: DocumentService = object : DocumentService {
-        override fun get(bucketName: String, key: String): Document {
-            assertEquals(message.documentBucket, bucketName)
-            assertEquals(message.documentKey, key)
-            return DocumentWrapper("name", dummyContent.clone())
-        }
-        override fun presignedGetUrl(bucketName: String, key: String): URL? = throw NotImplementedError()
-        override fun stream(bucketName: String, key: String): InputStream = throw NotImplementedError()
-        override fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation = throw NotImplementedError()
-        override fun delete(bucketName: String, key: String) = throw NotImplementedError()
+
+    private fun dummyGetDocument(bucketName: String, key: String): Document {
+        assertEquals(message.documentBucket, bucketName)
+        assertEquals(message.documentKey, key)
+        return Document("name", dummyContent, "text/plain")
     }
 
     private fun defaultEnv() = SfiEnv(
@@ -136,9 +127,26 @@ class SoapStackIntegrationTest {
 
     @BeforeEach
     fun beforeEach() {
-        val serverKeys = ClassPathResource("evaka-integration-test/sficlient/server.p12").inputStream.use { CryptoKeys.load(it, password = "localhost", alias = "localhost") }
-        val clientKeys = ClassPathResource("evaka-integration-test/sficlient/client.p12").inputStream.use { CryptoKeys.load(it, password = "client", alias = "client") }
-        server = MockServer.start(clazz = Viranomaispalvelut::class, service = MockViranomaisPalvelut(), serverKeys = serverKeys, clientKeys = clientKeys)
+        val serverKeys = ClassPathResource("evaka-integration-test/sficlient/server.p12").inputStream.use {
+            CryptoKeys.load(
+                it,
+                password = "localhost",
+                alias = "localhost"
+            )
+        }
+        val clientKeys = ClassPathResource("evaka-integration-test/sficlient/client.p12").inputStream.use {
+            CryptoKeys.load(
+                it,
+                password = "client",
+                alias = "client"
+            )
+        }
+        server = MockServer.start(
+            clazz = Viranomaispalvelut::class,
+            service = MockViranomaisPalvelut(),
+            serverKeys = serverKeys,
+            clientKeys = clientKeys
+        )
     }
 
     @AfterEach
@@ -153,7 +161,7 @@ class SoapStackIntegrationTest {
                 keyStore = untrustWorthyKeystore,
                 signingKeyAlias = "untrustworthy"
             ),
-            dummyDocumentService
+            ::dummyGetDocument
         )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message) }
@@ -169,7 +177,7 @@ class SoapStackIntegrationTest {
                 signingKeyAlias = "client",
                 trustStore = untrustWorthyKeystore,
             ),
-            dummyDocumentService
+            ::dummyGetDocument
         )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message) }
@@ -183,7 +191,7 @@ class SoapStackIntegrationTest {
             keyStore = clientKeystore,
             signingKeyAlias = "client"
         )
-        val client = SfiMessagesSoapClient(env, dummyDocumentService)
+        val client = SfiMessagesSoapClient(env, ::dummyGetDocument)
         server.service.implementation.set { viranomainen, request ->
             assertEquals(message.messageId, viranomainen.sanomaTunniste)
             assertEquals(env.authorityIdentifier, viranomainen.viranomaisTunnus)
@@ -262,9 +270,15 @@ private fun findFreePort(): Int = ServerSocket().use {
 }
 
 private const val MOCK_SERVER_CRYPTO: String = "evaka.wss4j.crypto"
+
 class MockServer<T>(val service: T, val port: Int, private val server: Server) : AutoCloseable {
     companion object {
-        fun <Service : Any, Impl : Service> start(clazz: KClass<Service>, service: Impl, serverKeys: CryptoKeys, clientKeys: CryptoKeys): MockServer<Impl> {
+        fun <Service : Any, Impl : Service> start(
+            clazz: KClass<Service>,
+            service: Impl,
+            serverKeys: CryptoKeys,
+            clientKeys: CryptoKeys
+        ): MockServer<Impl> {
             val port = findFreePort()
             val keyPassword = ""
             val keyStore = serverKeys.toKeyStore(alias = "localhost", keyPassword = keyPassword)
@@ -313,7 +327,9 @@ private fun successResponse(viranomainen: Viranomainen): VastausWS2A = VastausWS
 class MockViranomaisPalvelut : Viranomaispalvelut {
     val implementation: AtomicReference<(Viranomainen, KyselyWS2A) -> VastausWS2A> = AtomicReference()
 
-    override fun lahetaViesti(viranomainen: Viranomainen, kysely: KyselyWS2A): VastausWS2A = (implementation.get() ?: throw NotImplementedError()).invoke(viranomainen, kysely)
+    override fun lahetaViesti(viranomainen: Viranomainen, kysely: KyselyWS2A): VastausWS2A =
+        (implementation.get() ?: throw NotImplementedError()).invoke(viranomainen, kysely)
+
     override fun haeTilaTieto(viranomainen: Viranomainen, kysely: KyselyWS10): VastausWS10 = throw NotImplementedError()
     override fun haeAsiakkaita(viranomainen: Viranomainen, kysely: KyselyWS1): VastausWS1 = throw NotImplementedError()
     override fun lisaaKohteita(viranomainen: Viranomainen, kysely: KyselyWS2): VastausWS2 = throw NotImplementedError()

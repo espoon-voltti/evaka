@@ -11,8 +11,8 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentType
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileExtension
 import fi.espoo.evaka.s3.getAndCheckFileContentType
 import fi.espoo.evaka.shared.ApplicationId
@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import software.amazon.awssdk.services.s3.model.S3Exception
 import java.util.UUID
 
 @RestController
@@ -241,11 +240,11 @@ class AttachmentsController(
             )
             documentClient.upload(
                 filesBucket,
-                DocumentWrapper(
+                Document(
                     name = id.toString(),
-                    bytes = file.bytes
+                    bytes = file.bytes,
+                    contentType = contentType
                 ),
-                contentType
             )
             if (onSuccess != null) {
                 onSuccess(tx)
@@ -260,7 +259,7 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable attachmentId: AttachmentId
-    ): ResponseEntity<ByteArray> {
+    ): ResponseEntity<Any> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
 
         val attachment =
@@ -277,17 +276,7 @@ class AttachmentsController(
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
-        return try {
-            documentClient.get(filesBucket, "$attachmentId").let { document ->
-                ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment;filename=${attachment.name}")
-                    .contentType(MediaType.valueOf(attachment.contentType))
-                    .body(document.getBytes())
-            }
-        } catch (e: S3Exception) {
-            if (e.statusCode() == 403) throw NotFound("Attachment $attachmentId not available, scanning in progress or failed")
-            throw e
-        }
+        return documentClient.responseAttachment(filesBucket, "$attachmentId", attachment.name)
     }
 
     @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])

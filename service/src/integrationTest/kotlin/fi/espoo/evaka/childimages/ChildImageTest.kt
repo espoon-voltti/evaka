@@ -4,243 +4,133 @@
 
 package fi.espoo.evaka.childimages
 
+import com.github.kittinunf.fuel.core.BlobDataPart
+import com.github.kittinunf.fuel.core.Method
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.s3.fuelResponseToS3URL
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.core.io.InputStreamResource
-import org.springframework.http.MediaType
-import org.springframework.web.multipart.MultipartFile
-import java.io.File
-import java.io.InputStream
-import java.net.URL
-import javax.xml.bind.DatatypeConverter
+import java.util.UUID
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
-
-    @Autowired
-    private lateinit var controller: ChildImageController
-
-    @MockBean
-    private lateinit var documentService: DocumentService
+    private final val adminId = EmployeeId(UUID.randomUUID())
+    private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
 
     @BeforeEach
     protected fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
         }
     }
 
     @Test
-    fun `inserting image`() {
-        val file = FileMock()
-        controller.putImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            testChild_1.id,
-            file
-        )
+    fun `image round trip`() {
+        uploadImage(testChild_1.id, imageName1, imageData1)
 
         val images = db.read {
             it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list()
         }
-
         assertEquals(1, images.size)
-        verify(documentService).upload(
-            bucketName = "evaka-data-it",
-            document = DocumentWrapper(
-                name = "child-images/${images.first().id}",
-                bytes = file.bytes
-            ),
-            contentType = "image/jpeg"
-        )
+
+        val receivedData = downloadImage(images.first().id)
+        assertContentEquals(imageData1, receivedData)
     }
 
     @Test
     fun `replacing image`() {
-        val oldImageId = db.transaction {
-            it
-                .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
-                .bind("childId", testChild_1.id)
-                .mapTo<ChildImageId>()
-                .one()
+        uploadImage(testChild_1.id, imageName1, imageData1)
+        val oldImage = db.read {
+            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one()
         }
 
-        val file = FileMock()
-        controller.putImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            testChild_1.id,
-            file
-        )
+        uploadImage(testChild_1.id, imageName2, imageData2)
 
-        val images = db.read {
-            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list()
+        val newImage = db.read {
+            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one()
         }
+        assertNotEquals(oldImage.id, newImage.id)
 
-        assertEquals(1, images.size)
-        assertNotEquals(oldImageId, images.first().id)
-
-        verify(documentService).delete(
-            bucketName = "evaka-data-it",
-            key = "child-images/$oldImageId"
-        )
-        verify(documentService).upload(
-            bucketName = "evaka-data-it",
-            document = DocumentWrapper(
-                name = "child-images/${images.first().id}",
-                bytes = file.bytes
-            ),
-            contentType = "image/jpeg"
-        )
+        val receivedData = downloadImage(newImage.id)
+        assertContentEquals(imageData2, receivedData)
     }
 
     @Test
     fun `deleting image`() {
-        val oldImageId = db.transaction {
-            it
-                .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
-                .bind("childId", testChild_1.id)
-                .mapTo<ChildImageId>()
-                .one()
+        uploadImage(testChild_1.id, imageName1, imageData1)
+        deleteImage(testChild_1.id)
+
+        val newImages = db.read {
+            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list()
         }
 
-        controller.deleteImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            testChild_1.id
-        )
+        assertEquals(0, newImages.size)
+    }
+    private val imageName1 = "test1.jpg"
+    private val imageData1 = """
+FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
+FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
+11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
+""".decodeHex()
 
-        verify(documentService).delete(
-            bucketName = "evaka-data-it",
-            key = "child-images/$oldImageId"
-        )
+    private val imageName2 = "test2.jpg"
+    private val imageData2 = """
+FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
+FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
+11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 FF DA 00 08 01 01 00 01 3F 01
+""".decodeHex()
+
+    private fun uploadImage(childId: ChildId, fileName: String, fileData: ByteArray) {
+        val (_, response, _) = http.upload("/children/$childId/image", Method.PUT)
+            .add(BlobDataPart(fileData.inputStream(), "file", fileName))
+            .asUser(admin)
+            .response()
+        assertEquals(200, response.statusCode)
     }
 
-    @Test
-    fun `downloading image (X-Accel-Redirect)`() {
-        val fakeS3Url = URL("https://fake-s3/path?foo=bar&baz=quux")
-        val expectedInternalRedirectUrl = "/internal_redirect/https://fake-s3/path?foo=bar&baz=quux"
-
-        val oldImageId = db.transaction {
-            it
-                .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
-                .bind("childId", testChild_1.id)
-                .mapTo<ChildImageId>()
-                .one()
-        }
-
-        // This triggers using X-Accel-Redirect
-        whenever(documentService.presignedGetUrl("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
-            .thenReturn(fakeS3Url)
-
-        val response = controller.getImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            oldImageId
-        )
-
-        when (val body = response.body) {
-            is String -> assertEquals(body, "")
-            else -> throw AssertionError("Body is not a string")
-        }
-        assertEquals(expectedInternalRedirectUrl, response.headers["X-Accel-Redirect"]!!.first())
-
-        verify(documentService).presignedGetUrl(
-            bucketName = "evaka-data-it",
-            key = "child-images/$oldImageId"
-        )
+    private fun deleteImage(childId: ChildId) {
+        val (_, response, _) = http.delete("/children/$childId/image")
+            .asUser(admin)
+            .response()
+        assertEquals(200, response.statusCode)
     }
 
-    @Test
-    fun `downloading image (stream)`() {
-        val file = FileMock()
-        val oldImageId = db.transaction {
-            it
-                .createQuery("INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id")
-                .bind("childId", testChild_1.id)
-                .mapTo<ChildImageId>()
-                .one()
-        }
+    private fun downloadImage(imageId: ChildImageId): ByteArray {
+        val (_, response, _) = http.get("/child-images/$imageId")
+            .asUser(admin)
+            .response()
+        assertEquals(200, response.statusCode)
 
-        // This triggers using streams
-        whenever(documentService.presignedGetUrl("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
-            .thenReturn(null)
-
-        whenever(documentService.stream("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
-            .thenReturn(file.inputStream)
-
-        val response = controller.getImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            oldImageId
-        )
-
-        when (val body = response.body) {
-            is InputStreamResource -> assertEquals(
-                file.inputStream.readAllBytes().asList(),
-                body.inputStream.readAllBytes().asList()
-            )
-            else -> throw AssertionError("Body is not a stream")
-        }
-        assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType!!)
-
-        verify(documentService).presignedGetUrl(
-            bucketName = "evaka-data-it",
-            key = "child-images/$oldImageId"
-        )
-        verify(documentService).stream(
-            bucketName = "evaka-data-it",
-            key = "child-images/$oldImageId"
-        )
+        val (_, _, data) = http.get(fuelResponseToS3URL(response)).response()
+        return data.get()
     }
 }
 
-class FileMock : MultipartFile {
-    val data: ByteArray = DatatypeConverter.parseHexBinary("FFD8FFDB0000000000000000").asList().toByteArray()
-
-    override fun getInputStream(): InputStream {
-        return data.inputStream()
-    }
-
-    override fun getName(): String {
-        return "test.jpg"
-    }
-
-    override fun getOriginalFilename(): String? {
-        return "test.jpg"
-    }
-
-    override fun getContentType(): String? {
-        return "image/jpeg"
-    }
-
-    override fun isEmpty(): Boolean {
-        return false
-    }
-
-    override fun getSize(): Long {
-        return 1000
-    }
-
-    override fun getBytes(): ByteArray {
-        return data
-    }
-
-    override fun transferTo(dest: File) {
-    }
+private fun String.decodeHex(): ByteArray {
+    return filterNot { it.isWhitespace() }
+        .chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
 }

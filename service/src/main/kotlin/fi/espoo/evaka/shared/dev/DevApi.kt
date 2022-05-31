@@ -73,8 +73,8 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.createReservations
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
@@ -965,11 +965,11 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                 )
                 documentClient.upload(
                     filesBucket,
-                    DocumentWrapper(
+                    Document(
                         name = id.toString(),
-                        bytes = file.bytes
+                        bytes = file.bytes,
+                        contentType = file.contentType ?: "image/jpeg"
                     ),
-                    file.contentType ?: "image/jpeg"
                 )
             }
         }.key

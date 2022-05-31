@@ -161,6 +161,7 @@ data class EmailEnv(
 
 data class BucketEnv(
     val s3MockUrl: URI,
+    val proxyThroughNginx: Boolean,
     val data: String,
     val attachments: String,
     val decisions: String,
@@ -172,6 +173,7 @@ data class BucketEnv(
     companion object {
         fun fromEnvironment(env: Environment) = BucketEnv(
             s3MockUrl = env.lookup("evaka.s3mock.url", "fi.espoo.voltti.s3mock.url"),
+            proxyThroughNginx = env.lookup("evaka.bucket.proxy_through_nginx") ?: true,
             data = env.lookup("evaka.bucket.data", "fi.espoo.voltti.document.bucket.data"),
             attachments = env.lookup("evaka.bucket.attachments", "fi.espoo.voltti.document.bucket.attachments"),
             decisions = env.lookup("evaka.bucket.decisions", "fi.espoo.voltti.document.bucket.daycaredecision"),
