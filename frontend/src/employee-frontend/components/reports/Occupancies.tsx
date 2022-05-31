@@ -20,6 +20,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+import { unitProviderTypes } from 'lib-customizations/employee'
 
 import { getAreas } from '../../api/daycare'
 import {
@@ -122,7 +123,9 @@ function getDisplayCells(
 ): string[][] {
   return reportRows.map((row) => {
     const nameCells =
-      'groupName' in row ? [row.unitName, row.groupName] : [row.unitName]
+      'groupName' in row
+        ? [row.areaName, row.unitName, row.groupName]
+        : [row.areaName, row.unitName]
     if (usedValues === 'raw') {
       const cells = [...nameCells]
       for (const date of dates) {
@@ -186,7 +189,7 @@ export default React.memo(function Occupancies() {
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
-    careAreaId: '',
+    careAreaId: null,
     type: 'UNIT_CONFIRMED'
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
@@ -196,7 +199,7 @@ export default React.memo(function Occupancies() {
   }, [])
 
   useEffect(() => {
-    if (filters.careAreaId == '') return
+    if (filters.careAreaId === null) return
 
     setRows(Loading.of())
     void getOccupanciesReport(filters).then(setRows)
@@ -213,6 +216,8 @@ export default React.memo(function Occupancies() {
   }, [] as Date[])
 
   const includeGroups = filters.type.startsWith('GROUP_')
+
+  const careAreaAll = { id: undefined, name: i18n.common.all }
 
   return (
     <Container>
@@ -246,6 +251,58 @@ export default React.memo(function Occupancies() {
               />
             </Wrapper>
           </FlexRow>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[careAreaAll, ...areas]}
+              onChange={(item) => {
+                if (item) {
+                  setFilters({ ...filters, careAreaId: item.id })
+                }
+              }}
+              selectedItem={
+                filters.careAreaId === undefined
+                  ? careAreaAll
+                  : areas.find((area) => area.id === filters.careAreaId) ?? null
+              }
+              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+              getItemLabel={(item) => item.name}
+            />
+          </Wrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitProviderType}</FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={[
+                {
+                  value: undefined,
+                  label: i18n.common.all
+                },
+                ...unitProviderTypes.map((providerType) => ({
+                  value: providerType,
+                  label: i18n.reports.common.unitProviderTypes[providerType]
+                }))
+              ]}
+              selectedItem={{
+                value: filters.providerType,
+                label: filters.providerType
+                  ? i18n.reports.common.unitProviderTypes[filters.providerType]
+                  : i18n.common.all
+              }}
+              onChange={(value) => {
+                if (value) {
+                  setFilters({
+                    ...filters,
+                    providerType: value.value
+                  })
+                }
+              }}
+              getItemLabel={(item) => item.label}
+            />
+          </Wrapper>
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
@@ -290,24 +347,6 @@ export default React.memo(function Occupancies() {
           </Wrapper>
         </FilterRow>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <Wrapper>
-            <Combobox
-              items={areas}
-              onChange={(item) => {
-                if (item) {
-                  setFilters({ ...filters, careAreaId: item.id })
-                }
-              }}
-              selectedItem={
-                areas.find((area) => area.id === filters.careAreaId) ?? null
-              }
-              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
-              getItemLabel={(item) => item.name}
-            />
-          </Wrapper>
-        </FilterRow>
-        <FilterRow>
           <FilterLabel>
             {i18n.reports.occupancies.filters.valueOnReport}
           </FilterLabel>
@@ -346,11 +385,12 @@ export default React.memo(function Occupancies() {
 
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && filters.careAreaId != '' && (
+        {rows.isSuccess && filters.careAreaId !== null && (
           <>
             <ReportDownload
               data={[
                 [
+                  i18n.reports.common.careAreaName,
                   i18n.reports.common.unitName,
                   includeGroups ? i18n.reports.common.groupName : undefined,
                   usedValues !== 'raw'
@@ -365,12 +405,16 @@ export default React.memo(function Occupancies() {
                 filters.year,
                 filters.month,
                 filters.type,
-                areas.find((area) => area.id == filters.careAreaId)?.name ?? ''
+                filters.careAreaId === undefined
+                  ? i18n.common.all
+                  : areas.find((area) => area.id == filters.careAreaId)?.name ??
+                      ''
               )}
             />
             <TableScrollable>
               <Thead>
                 <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   {includeGroups && <Th>{i18n.reports.common.groupName}</Th>}
                   {usedValues !== 'raw' && (
@@ -386,10 +430,11 @@ export default React.memo(function Occupancies() {
               <Tbody>
                 {rows.value.map((row, rowNum) => (
                   <Tr key={row.unitId}>
+                    <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </StyledTd>
-                    {displayCells[rowNum].slice(1).map((cell, colNum) => (
+                    {displayCells[rowNum].slice(2).map((cell, colNum) => (
                       <StyledTd key={colNum}>{cell}</StyledTd>
                     ))}
                   </Tr>
