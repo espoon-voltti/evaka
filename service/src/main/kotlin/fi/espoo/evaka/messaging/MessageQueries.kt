@@ -442,7 +442,7 @@ groups AS (
     SELECT DISTINCT gplt.daycare_group_id AS id
     FROM pilot_placement_ids
     JOIN daycare_group_placement gplt
-    ON pilot_placement_ids.id = gplt.daycare_placement_id
+    ON pilot_placement_ids.id = gplt.daycare_placement_id AND current_date BETWEEN gplt.start_date AND gplt.end_date
 )
 
 SELECT
