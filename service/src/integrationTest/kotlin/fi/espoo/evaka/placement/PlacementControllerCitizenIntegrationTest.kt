@@ -577,7 +577,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 child = child,
                 applicationId = ApplicationId(UUID.randomUUID()),
                 preferredStartDate = placementTerminationDate.plusDays(1),
-                transferApplication = true
+                transferApplication = true,
+                status = ApplicationStatus.SENT
             )
         }
 

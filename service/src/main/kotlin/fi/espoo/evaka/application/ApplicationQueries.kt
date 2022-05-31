@@ -926,14 +926,14 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
     }
 }
 
-fun Database.Transaction.cancelOutdatedTransferApplications(): List<ApplicationId> = createUpdate(
+fun Database.Transaction.cancelOutdatedSentTransferApplications(): List<ApplicationId> = createUpdate(
     // only include applications that don't have decisions
     // placement type checks are doing in inverse so that the addition and accidental omission of new placement types
     // does not cause the cancellation of applications that shouldn't be cancelled
     """
 UPDATE application SET status = :cancelled
 WHERE transferapplication
-AND status = ANY('{CREATED, SENT, WAITING_PLACEMENT, WAITING_UNIT_CONFIRMATION, WAITING_DECISION}')
+AND status = ANY('{SENT}')
 AND NOT EXISTS (
     SELECT 1
     FROM placement p
@@ -1038,13 +1038,7 @@ RETURNING id
     .bind(
         "activeApplicationStatus",
         arrayOf(
-            ApplicationStatus.CREATED,
-            ApplicationStatus.SENT,
-            ApplicationStatus.WAITING_PLACEMENT,
-            ApplicationStatus.WAITING_CONFIRMATION,
-            ApplicationStatus.WAITING_UNIT_CONFIRMATION,
-            ApplicationStatus.WAITING_DECISION,
-            ApplicationStatus.WAITING_MAILING
+            ApplicationStatus.SENT
         )
     )
     .bind("preferredStartDateMinDate", preferredStartDateMinDate)
