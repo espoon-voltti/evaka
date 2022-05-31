@@ -1700,6 +1700,53 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `invoice generation with 15 contract days, 2 surplus days and one refunded day`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 15 operational days first
+        // then planned absences
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 29)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        // then 2 more operational days
+        // and one refunded day
+        val refundedDay = datesBetween(LocalDate.of(2019, 1, 31), LocalDate.of(2019, 1, 31))
+            .map { it to AbsenceType.FORCE_MAJEURE }
+
+        initDataForAbsences(listOf(period), plannedAbsenceDays + refundedDay, serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(30827, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(3854, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1927, invoiceRow.unitPrice) // 28900 / 15
+                assertEquals(-1927, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with 15 contract days, 2 surplus days and a fee alteration`() {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
@@ -1814,7 +1861,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(30827, invoice.totalPrice)
+            assertEquals(32754, invoice.totalPrice)
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
@@ -1823,9 +1870,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
+                assertEquals(2, invoiceRow.amount)
                 assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
-                assertEquals(1927, invoiceRow.price)
+                assertEquals(3854, invoiceRow.price)
             }
         }
     }

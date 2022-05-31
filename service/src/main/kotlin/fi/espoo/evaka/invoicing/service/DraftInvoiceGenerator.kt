@@ -541,7 +541,9 @@ class DraftInvoiceGenerator(
                 unitPrice = unitPrice(feeAlterationEffect),
                 correctionId = null
             )
-        } + surplusContractDays(
+        }
+
+        val withDailyModifiers = initialRows + surplusContractDays(
             period,
             child,
             price,
@@ -551,10 +553,11 @@ class DraftInvoiceGenerator(
             contractDaysPerMonth,
             attendanceDates,
             absences,
-            fullMonthAbsenceType in listOf(FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH, FullMonthAbsenceType.ABSENCE_FULL_MONTH)
-        )
-
-        val withDailyModifiers = initialRows + dailyAbsenceRefund(
+            fullMonthAbsenceType in listOf(
+                FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH,
+                FullMonthAbsenceType.ABSENCE_FULL_MONTH
+            )
+        ) + dailyAbsenceRefund(
             period,
             initialRows,
             child,
@@ -611,9 +614,12 @@ class DraftInvoiceGenerator(
 
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
-        val sickleavesBeforePeriod = absences.filter { it.absenceType == AbsenceType.SICKLEAVE && it.date < period.start }.size
-        val sickleavesInPeriod = absences.filter { it.absenceType == AbsenceType.SICKLEAVE && period.includes(it.date) }.size
-        val surplusAttendanceDays = attendancesBeforePeriod + attendancesInPeriod + sickleavesBeforePeriod + sickleavesInPeriod - contractDaysPerMonth
+        val unplannedAbsencesBeforePeriod =
+            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && it.date < period.start }.size
+        val unplannedAbsencesInPeriod =
+            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && period.includes(it.date) }.size
+        val surplusAttendanceDays =
+            attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
 
         return if (surplusAttendanceDays > 0) {
             listOf(
