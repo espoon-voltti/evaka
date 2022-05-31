@@ -290,12 +290,12 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
     val sql =
-        "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = :sent::invoice_status"
+        "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = ANY(:sent::invoice_status[])"
 
     return createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
-        .bind("sent", InvoiceStatus.SENT)
+        .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING).toTypedArray())
         .mapTo<PersonId>()
         .list()
 }

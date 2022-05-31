@@ -43,9 +43,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -118,6 +120,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             createFeeDecisionChildFixture(
                 childId = testChild_1.id,
                 dateOfBirth = testChild_1.dateOfBirth,
+                placementUnitId = testDaycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+            )
+        )
+    )
+    private val decisionNoSsn = createFeeDecisionFixture(
+        status = FeeDecisionStatus.SENT,
+        decisionType = FeeDecisionType.NORMAL,
+        headOfFamilyId = testAdult_3.id, // Does not have SSN
+        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+        children = listOf(
+            createFeeDecisionChildFixture(
+                childId = testChild_3.id,
+                dateOfBirth = testChild_3.dateOfBirth,
                 placementUnitId = testDaycare.id,
                 placementType = PlacementType.DAYCARE,
                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
@@ -834,6 +851,33 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val newDrafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
         assertEquals(1, newDrafts.size)
+    }
+
+    @Test
+    fun `createAllDraftInvoices does not create overrides for WAITING_FOR_SENDING invoices`() {
+        val decisions = listOf(decision1, decisionNoSsn)
+        insertDecisions(decisions)
+
+        createDraftInvoices()
+
+        val originalDrafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
+        assertEquals(2, originalDrafts.size)
+
+        sendInvoices(originalDrafts.map { it.id })
+
+        val sent = getInvoicesWithStatus(InvoiceStatus.SENT)
+        assertEquals(1, sent.size)
+
+        val waitingForSending = getInvoicesWithStatus(InvoiceStatus.WAITING_FOR_SENDING)
+        assertEquals(1, waitingForSending.size)
+
+        val draftsLeft = getInvoicesWithStatus(InvoiceStatus.DRAFT)
+        assertEquals(0, draftsLeft.size)
+
+        createDraftInvoices()
+
+        val newDrafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
+        assertEquals(0, newDrafts.size)
     }
 
     private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
