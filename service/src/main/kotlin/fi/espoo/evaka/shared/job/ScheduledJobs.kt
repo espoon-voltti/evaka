@@ -5,10 +5,9 @@
 package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.application.PendingDecisionEmailService
-import fi.espoo.evaka.application.cancelOutdatedTransferApplications
+import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
-import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
@@ -16,7 +15,6 @@ import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
-import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -158,9 +156,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun cancelOutdatedTransferApplications(db: Database.Connection) {
         val canceledApplications = db.transaction {
-            val applicationIds = it.cancelOutdatedTransferApplications()
-            it.deletePlacementPlans(applicationIds)
-            it.clearDecisionDrafts(applicationIds)
+            val applicationIds = it.cancelOutdatedSentTransferApplications()
             applicationIds
         }
         logger.info {

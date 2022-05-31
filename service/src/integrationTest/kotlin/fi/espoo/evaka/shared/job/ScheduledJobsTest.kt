@@ -279,36 +279,6 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `transfer application cancelling cleans up placement plans and decision drafts`() {
-        val preferredStartDate = LocalDate.now()
-        val applicationId = createTransferApplication(
-            ApplicationType.PRESCHOOL,
-            preferredStartDate,
-            status = ApplicationStatus.WAITING_PLACEMENT
-        )
-        db.transaction {
-            applicationStateService.createPlacementPlan(
-                it,
-                serviceWorker,
-                applicationId,
-                DaycarePlacementPlan(
-                    testDaycare.id,
-                    FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
-                )
-            )
-        }
-
-        scheduledJobs.cancelOutdatedTransferApplications(db)
-
-        val applicationStatus = getApplicationStatus(applicationId)
-        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
-        val placementPlans = db.read { it.createQuery("SELECT COUNT(*) FROM placement_plan").mapTo<Int>().first() }
-        assertEquals(0, placementPlans)
-        val decisions = db.read { it.createQuery("SELECT COUNT(*) FROM decision").mapTo<Int>().first() }
-        assertEquals(0, decisions)
-    }
-
-    @Test
     fun `a transfer application with a decision does not get canceled`() {
         val preferredStartDate = LocalDate.now()
         val applicationId = createTransferApplication(
