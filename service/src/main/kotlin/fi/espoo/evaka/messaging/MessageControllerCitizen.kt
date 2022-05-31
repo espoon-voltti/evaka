@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -102,11 +103,12 @@ class MessageControllerCitizen(
     fun getReceivers(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        evakaClock: EvakaClock,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getCitizenReceivers(accountId) }
+            dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) }
         }
     }
 
@@ -135,12 +137,13 @@ class MessageControllerCitizen(
     fun newMessage(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        evakaClock: EvakaClock,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val validReceivers = dbc.read { it.getCitizenReceivers(accountId) }
+            val validReceivers = dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) }
             val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
                 dbc.transaction { tx ->
