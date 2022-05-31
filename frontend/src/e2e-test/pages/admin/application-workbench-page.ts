@@ -14,21 +14,21 @@ import ApplicationDetailsPage from './application-details-page'
 export class SearchFilter {
   constructor(private page: Page) {}
 
-  #statusRadioAll = this.page.find('[data-qa="application-status-filter-ALL"]')
+  #statusRadioAll = this.page.findByDataQa('application-status-filter-ALL')
 
   async filterByTransferOnly() {
-    await this.page.find('[data-qa="filter-transfer-only"]').click()
+    await this.page.findByDataQa('filter-transfer-only').click()
   }
 
   async filterByTransferExclude() {
-    await this.page.find('[data-qa="filter-transfer-exclude"]').click()
+    await this.page.findByDataQa('filter-transfer-exclude').click()
   }
 
   async filterByApplicationStatus(status: ApplicationStatus) {
     await this.#statusRadioAll.click()
     await this.#statusRadioAll.click()
     await new Checkbox(
-      this.page.find(`[data-qa="application-status-filter-all-${status}"]`)
+      this.page.findByDataQa(`application-status-filter-all-${status}`)
     ).click()
   }
 }
@@ -37,11 +37,11 @@ export class DecisionEditorPage {
   constructor(private page: Page) {}
 
   async save() {
-    await this.page.find('[data-qa="save-decisions-button"').click()
+    await this.page.findByDataQa('save-decisions-button').click()
   }
 
   async cancel() {
-    await this.page.find('[data-qa="cancel-decisions-button"').click()
+    await this.page.findByDataQa('cancel-decisions-button').click()
   }
 }
 
@@ -51,49 +51,45 @@ export class ApplicationWorkbenchPage {
   searchFilter = new SearchFilter(this.page)
   decisionEditorPage = new DecisionEditorPage(this.page)
 
-  #applicationNoteContent = this.page.find(
-    '[data-qa="application-note-content"]'
-  )
+  #applicationNoteContent = this.page.findByDataQa('application-note-content')
 
-  #applicationPlacementProposalStatusIndicator = this.page.find(
-    '[data-qa="placement-proposal-status"]'
+  #applicationPlacementProposalStatusIndicator = this.page.findByDataQa(
+    'placement-proposal-status'
   )
-  #applicationPlacementProposalStatusTooltip = this.page.find(
-    '[data-qa="placement-proposal-status-tooltip"]'
+  #applicationPlacementProposalStatusTooltip = this.page.findByDataQa(
+    'placement-proposal-status-tooltip'
   )
-  applicationsSent = this.page.find(
-    '[data-qa="application-status-filter-SENT"]'
+  applicationsSent = this.page.findByDataQa('application-status-filter-SENT')
+  #applicationsWaitingPlacement = this.page.findByDataQa(
+    'application-status-filter-WAITING_PLACEMENT'
   )
-  #applicationsWaitingPlacement = this.page.find(
-    '[data-qa="application-status-filter-WAITING_PLACEMENT"]'
+  #applicationsWaitingDecision = this.page.findByDataQa(
+    'application-status-filter-WAITING_DECISION'
   )
-  #applicationsWaitingDecision = this.page.find(
-    '[data-qa="application-status-filter-WAITING_DECISION"]'
+  #applicationsWaitingUnitConfirmation = this.page.findByDataQa(
+    'application-status-filter-WAITING_UNIT_CONFIRMATION'
   )
-  #applicationsWaitingUnitConfirmation = this.page.find(
-    '[data-qa="application-status-filter-WAITING_UNIT_CONFIRMATION"]'
-  )
-  applicationsAll = this.page.find('[data-qa="application-status-filter-ALL"]')
+  applicationsAll = this.page.findByDataQa('application-status-filter-ALL')
   // only matches when applications have been loaded
-  #applicationList = this.page.find('[data-qa="applications-list"]')
-  #btnCloseApplication = this.page.find('[data-qa="close-application"]')
-  #agreementStatus = this.page.find('[data-qa="agreement-status"]')
-  #otherGuardianTel = this.page.find('[data-qa="second-guardian-phone"]')
-  #otherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
+  #applicationList = this.page.findByDataQa('applications-list')
+  #btnCloseApplication = this.page.findByDataQa('close-application')
+  #agreementStatus = this.page.findByDataQa('agreement-status')
+  #otherGuardianTel = this.page.findByDataQa('second-guardian-phone')
+  #otherGuardianEmail = this.page.findByDataQa('second-guardian-email')
 
-  #withdrawPlacementProposalsButton = this.page.find(
-    `[data-qa="action-bar-withdrawPlacementProposal"]`
+  #withdrawPlacementProposalsButton = this.page.findByDataQa(
+    'action-bar-withdrawPlacementProposal'
   )
 
   async addNote(note: string) {
-    await this.page.find('[data-qa="add-note"]').click()
+    await this.page.findByDataQa('add-note').click()
     await this.fillNote(note)
-    await this.page.find('[data-qa="save-note"]').click()
+    await this.page.findByDataQa('save-note').click()
   }
 
   async deleteNote() {
-    await this.page.find('[data-qa="delete-note"]').click()
-    await this.page.find('[data-qa="modal-okBtn"]').click()
+    await this.page.findByDataQa('delete-note').click()
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 
   getApplicationListItem(applicationId: string) {
@@ -111,7 +107,7 @@ export class ApplicationWorkbenchPage {
 
   async openDaycarePlacementDialogById(id: string) {
     await this.getApplicationById(id)
-      .find('[data-qa="primary-action-create-placement-plan"]')
+      .findByDataQa('primary-action-create-placement-plan')
       .click()
     return new PlacementDraftPage(this.page)
   }
@@ -124,21 +120,19 @@ export class ApplicationWorkbenchPage {
 
   async clickApplicationCheckbox(applicationId: string) {
     await new Checkbox(
-      this.page.find(`[data-qa="application-row-checkbox-${applicationId}"]`)
+      this.page.findByDataQa(`application-row-checkbox-${applicationId}`)
     ).click()
   }
 
   async moveToWaitingPlacement(applicationId: string) {
     await this.clickApplicationCheckbox(applicationId)
-    await this.page
-      .find('[data-qa="action-bar-moveToWaitingPlacement"]')
-      .click()
+    await this.page.findByDataQa('action-bar-moveToWaitingPlacement').click()
   }
 
   async sendDecisionsWithoutProposal(applicationId: string) {
     await this.clickApplicationCheckbox(applicationId)
     await this.page
-      .find('[data-qa="action-bar-sendDecisionsWithoutProposal"]')
+      .findByDataQa('action-bar-sendDecisionsWithoutProposal')
       .click()
   }
 
@@ -204,14 +198,14 @@ export class ApplicationWorkbenchPage {
 
   async fillNote(note: string) {
     const noteTextArea = new TextInput(
-      this.page.find('[data-qa="note-container"]').find('textarea')
+      this.page.findByDataQa('note-container').find('textarea')
     )
     await noteTextArea.fill(note)
   }
 
   async openDecisionEditorById(applicationId: string) {
     await this.getApplicationById(applicationId)
-      .find('[data-qa="primary-action-edit-decisions"]')
+      .findByDataQa('primary-action-edit-decisions')
       .click()
   }
 
@@ -234,12 +228,12 @@ export class ApplicationWorkbenchPage {
     expectedOtherGuardian?: string
   ) {
     await waitUntilEqual(
-      () => this.page.find('[data-qa="guardian-name"]').innerText,
+      () => this.page.findByDataQa('guardian-name').innerText,
       expectedGuardian
     )
     if (expectedOtherGuardian !== undefined) {
       await waitUntilEqual(
-        () => this.page.find('[data-qa="other-guardian-name"]').innerText,
+        () => this.page.findByDataQa('other-guardian-name').innerText,
         expectedOtherGuardian
       )
     }
