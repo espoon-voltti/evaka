@@ -367,11 +367,7 @@ fun Database.Read.getMessage(id: MessageId): Message {
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(accountId: MessageAccountId): List<MessageAccount> {
-    val params = mapOf(
-        "accountId" to accountId,
-    )
-
+fun Database.Read.getCitizenReceivers(accountId: MessageAccountId, today: LocalDate): List<MessageAccount> {
     // language=SQL
     val sql = """
 WITH all_placement_ids AS (
@@ -384,7 +380,7 @@ WITH all_placement_ids AS (
         FROM message_account
         WHERE id = :accountId
     )
-    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND daterange(pl.start_date, pl.end_date, '[]') @> :today
     AND NOT (
         SELECT EXISTS (
             SELECT 1
@@ -405,8 +401,8 @@ WITH all_placement_ids AS (
         FROM message_account
         WHERE id = :accountId
     )
-    AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
-    AND daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    AND daterange(pl.start_date, pl.end_date, '[]') @> :today
+    AND daterange(fg.start_date, fg.end_date, '[]') @> :today
     AND fg.conflict = false
     AND NOT (
         SELECT EXISTS (
@@ -442,7 +438,7 @@ groups AS (
     SELECT DISTINCT gplt.daycare_group_id AS id
     FROM pilot_placement_ids
     JOIN daycare_group_placement gplt
-    ON pilot_placement_ids.id = gplt.daycare_placement_id AND current_date BETWEEN gplt.start_date AND gplt.end_date
+    ON pilot_placement_ids.id = gplt.daycare_placement_id AND :today BETWEEN gplt.start_date AND gplt.end_date
 )
 
 SELECT
@@ -468,10 +464,11 @@ JOIN daycare_group g
 ON groups.id = g.id
 JOIN message_account msg
 ON g.id = msg.daycare_group_id
-    """.trimIndent()
+"""
 
     return this.createQuery(sql)
-        .bindMap(params)
+        .bind("accountId", accountId)
+        .bind("today", today)
         .mapTo<MessageAccount>()
         .toList()
 }
