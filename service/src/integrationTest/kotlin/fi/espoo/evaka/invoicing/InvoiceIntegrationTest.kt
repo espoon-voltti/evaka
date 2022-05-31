@@ -479,11 +479,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        sendInvoices(listOf(draft.id))
     }
 
     @Test
@@ -491,11 +487,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(sent.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(400, response.statusCode)
+        sendInvoices(listOf(sent.id), expectedStatus = 400)
     }
 
     @Test
@@ -503,11 +495,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        sendInvoices(listOf(draft.id))
 
         val (_, _, result) = http.get("/invoices/${draft.id}")
             .asUser(testUser)
@@ -540,11 +528,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         db.transaction { tx -> tx.upsertInvoices(drafts) }
 
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(drafts.map { it.id }))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        sendInvoices(drafts.map { it.id })
 
         val sentInvoices = db.transaction { tx -> tx.getInvoicesByIds(drafts.map { it.id }) }
 
@@ -569,11 +553,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         db.transaction { tx -> tx.upsertInvoices(drafts + sentInvoice) }
 
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(drafts.map { it.id }))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        sendInvoices(drafts.map { it.id })
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(sentInvoice.number!! + drafts.size, maxInvoiceNumber)
@@ -594,9 +574,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val draft = testInvoices[0]
         db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
 
-        val (_, response, _) = http.post("/invoices/send").jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-            .asUser(testUser).responseString()
-        assertEquals(200, response.statusCode)
+        sendInvoices(listOf(draft.id))
 
         val (costCenter, subCostCenter) = db.read { it.readCostCenterFields(draft.id) }
         assertEquals(testArea.subCostCenter, subCostCenter)
@@ -752,10 +730,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val decision = decision1
         insertDecisions(listOf(decision))
 
-        val (_, response, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        createDraftInvoices()
 
         val drafts = db.read { tx ->
             tx.paginatedSearch(
@@ -778,10 +753,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val testDecisions2 = listOf(decision1, decision2)
         insertDecisions(testDecisions2)
 
-        val (_, response, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response.statusCode)
+        createDraftInvoices()
 
         val drafts = db.read { tx ->
             tx.paginatedSearch(
@@ -805,10 +777,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertDecisions(decisions)
 
         for (i in 1..4) {
-            val (_, response, _) = http.post("/invoices/create-drafts")
-                .asUser(testUser)
-                .responseString()
-            assertEquals(200, response.statusCode)
+            createDraftInvoices()
         }
 
         val drafts = db.read { tx ->
@@ -832,35 +801,19 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val decisions = listOf(decision1)
         insertDecisions(decisions)
 
-        val (_, response1, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response1.statusCode)
+        createDraftInvoices()
 
-        val draftIds = db.transaction { tx ->
-            tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf()).map { it.id }
-        }
+        val draftIds = getInvoicesWithStatus(InvoiceStatus.DRAFT).map { it.id }
         assertThat(draftIds).isNotEmpty
 
-        val (_, response2, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(draftIds))
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response2.statusCode)
+        sendInvoices(draftIds)
 
-        val sent = db.transaction { tx ->
-            tx.searchInvoices(listOf(InvoiceStatus.SENT), listOf(), null, listOf())
-        }
+        val sent = getInvoicesWithStatus(InvoiceStatus.SENT)
         assertThat(sent).isNotEmpty
 
-        val (_, response3, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response3.statusCode)
+        createDraftInvoices()
 
-        val drafts = db.transaction { tx ->
-            tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
-        }
+        val drafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
         assertThat(drafts).isEmpty()
     }
 
@@ -869,27 +822,17 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val decisions = listOf(decision1)
         insertDecisions(decisions)
 
-        val (_, response1, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response1.statusCode)
+        createDraftInvoices()
 
-        val originalDrafts = db.transaction { tx ->
-            tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
-        }
+        val originalDrafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
         assertEquals(1, originalDrafts.size)
 
-        val (_, response3, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
-        assertEquals(200, response3.statusCode)
+        createDraftInvoices()
 
         val originalDraft = db.transaction { tx -> tx.getInvoice(originalDrafts.first().id) }
         assertEquals(null, originalDraft)
 
-        val newDrafts = db.transaction { tx ->
-            tx.searchInvoices(listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
-        }
+        val newDrafts = getInvoicesWithStatus(InvoiceStatus.DRAFT)
         assertEquals(1, newDrafts.size)
     }
 
@@ -914,4 +857,24 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
     }
+
+    private fun createDraftInvoices() {
+        val (_, response, _) = http.post("/invoices/create-drafts")
+            .asUser(testUser)
+            .responseString()
+        assertEquals(200, response.statusCode)
+    }
+
+    private fun sendInvoices(invoiceIds: List<InvoiceId>, expectedStatus: Int = 200) {
+        val (_, response, _) = http.post("/invoices/send")
+            .jsonBody(jsonMapper.writeValueAsString(invoiceIds))
+            .asUser(testUser)
+            .responseString()
+        assertEquals(expectedStatus, response.statusCode)
+    }
+
+    private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
+        db.transaction { tx ->
+            tx.searchInvoices(listOf(status), listOf(), null, listOf())
+        }
 }
