@@ -173,8 +173,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeS
         val id: GroupId,
         val name: String,
         val utilization: Double,
-        val staffCapacity: Int,
-        val childCapacity: Int
+        val staffCapacity: Double,
+        val childCapacity: Double
     )
 
     val tmpGroups = createQuery(groupsSql)
@@ -184,8 +184,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeS
         .mapTo<TempGroupInfo>()
         .list()
 
-    val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }.toDouble()
-    val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }.toDouble()
+    val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }
+    val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }
     val unitUtilization =
         if (totalStaffCapacity > 0) {
             (totalChildCapacity / totalStaffCapacity * 1000).roundToInt() / 10.0
