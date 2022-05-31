@@ -391,6 +391,67 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `citizen receivers includes child's current group only`() {
+        val placementId: UUID = UUID.randomUUID()
+        val group1Id: UUID = UUID.randomUUID()
+        val group2Id: UUID = UUID.randomUUID()
+        val placementStartDate = LocalDate.of(2020, 1, 1)
+        val placementEndDate = LocalDate.of(2020, 1, 31)
+        val firstGroupPlacementStartDate = LocalDate.of(2020, 1, 1)
+        val firstGroupPlacementEndDate = LocalDate.of(2020, 1, 15)
+        val secondGroupPlacementStartDate = LocalDate.of(2020, 1, 16)
+        val secondGroupPlacementEndDate = LocalDate.of(2020, 1, 31)
+        db.transaction { tx ->
+            tx.insertTestCareArea(testArea)
+            tx.insertTestDaycare(testDaycare.copy(enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group1Id), daycareId = testDaycare.id, name = "Testiläiset"))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = GroupId(group2Id), daycareId = testDaycare.id, name = "Testiläiset 2"))
+            listOf(group1Id, group2Id).map { tx.createDaycareGroupMessageAccount(GroupId(it)) }
+
+            // and person1 has a child who is placed into a group
+            tx.insertTestPerson(testChild_1)
+            tx.insertTestChild(DevChild(id = testChild_1.id))
+            tx.insertGuardian(guardianId = person1Id, childId = testChild_1.id)
+            tx.insertTestPlacement(
+                id = PlacementId(placementId),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = placementStartDate,
+                endDate = placementEndDate
+            )
+            tx.insertTestDaycareGroupPlacement(
+                id = GroupPlacementId(UUID.randomUUID()),
+                daycarePlacementId = PlacementId(placementId),
+                groupId = GroupId(group1Id),
+                startDate = firstGroupPlacementStartDate,
+                endDate = firstGroupPlacementEndDate
+            )
+            tx.insertTestDaycareGroupPlacement(
+                id = GroupPlacementId(UUID.randomUUID()),
+                daycarePlacementId = PlacementId(placementId),
+                groupId = GroupId(group2Id),
+                startDate = secondGroupPlacementStartDate,
+                endDate = secondGroupPlacementEndDate
+            )
+        }
+
+        val (person1Account, group1Account, group2Account) = db.read {
+            listOf(
+                it.getCitizenMessageAccount(person1Id),
+                it.getDaycareGroupMessageAccount(GroupId(group1Id)),
+                it.getDaycareGroupMessageAccount(GroupId(group2Id))
+            )
+        }
+
+        db.read { it.getCitizenReceivers(person1Account, firstGroupPlacementEndDate) }
+            .let { receivers -> assertEquals(listOf(group1Account), receivers.map { it.id }) }
+
+        db.read { it.getCitizenReceivers(person1Account, secondGroupPlacementStartDate) }
+            .let { receivers -> assertEquals(listOf(group2Account), receivers.map { it.id }) }
+    }
+
+    @Test
     fun `query citizen receivers when the citizen is on a blocklist`() {
         val placementId: UUID = UUID.randomUUID()
         val group1Id: UUID = UUID.randomUUID()
