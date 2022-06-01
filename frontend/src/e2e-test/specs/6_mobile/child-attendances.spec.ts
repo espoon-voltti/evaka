@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import LocalDate from 'lib-common/local-date'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -10,6 +11,8 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
+  careAreaFixture,
+  daycare2Fixture,
   daycareFixture,
   daycareGroupFixture,
   EmployeeBuilder,
@@ -54,7 +57,9 @@ beforeEach(async () => {
     .with({ roles: ['ADMIN'] })
     .save()
 
-  page = await Page.open()
+  const mockedDate = LocalDate.of(2021, 5, 15)
+  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   childAttendancePage = new ChildAttendancePage(page)
@@ -346,5 +351,72 @@ describe('Child mobile attendance list', () => {
 
     await listPage.selectGroup(daycareGroupFixture.id)
     await waitUntilEqual(() => listPage.readChildGroupName(childId), '')
+  })
+
+  test('Child will not be visible in two groups at the same time', async () => {
+    const childId = enduserChildFixtureKaarina.id
+
+    await Fixture.daycare()
+      .with({ ...daycare2Fixture, careAreaId: careAreaFixture.id })
+      .save()
+
+    const daycareGroup2Fixture = (
+      await Fixture.daycareGroup()
+        .with({
+          id: uuidv4(),
+          name: 'testgroup',
+          daycareId: daycare2Fixture.id,
+          startDate: '2021-01-01'
+        })
+        .save()
+    ).data
+
+    const placement1StartDate = '2021-01-01'
+    const placement1EndDate = '2021-04-30'
+
+    const placement2StartDate = '2021-05-01'
+    const placement2EndDate = '2021-06-30'
+
+    const daycarePlacementFixture = await Fixture.placement()
+      .with({
+        childId,
+        unitId: fixtures.daycareFixture.id,
+        startDate: placement1StartDate,
+        endDate: placement1EndDate
+      })
+      .save()
+
+    const daycarePlacement2Fixture = await Fixture.placement()
+      .with({
+        childId,
+        unitId: daycare2Fixture.id,
+        startDate: placement2StartDate,
+        endDate: placement2EndDate
+      })
+      .save()
+
+    await Fixture.groupPlacement()
+      .with({
+        daycarePlacementId: daycarePlacementFixture.data.id,
+        daycareGroupId: daycareGroupFixture.id,
+        startDate: placement1StartDate,
+        endDate: placement2EndDate
+      })
+      .save()
+
+    await Fixture.groupPlacement()
+      .with({
+        daycarePlacementId: daycarePlacement2Fixture.data.id,
+        daycareGroupId: daycareGroup2Fixture.id,
+        startDate: placement1StartDate,
+        endDate: placement2EndDate
+      })
+      .save()
+
+    await page.goto(await pairMobileDevice(daycareFixture.id))
+    await assertAttendanceCounts(0, 0, 0, 0, 0)
+
+    await page.goto(await pairMobileDevice(daycare2Fixture.id))
+    await assertAttendanceCounts(1, 0, 0, 0, 1)
   })
 })
