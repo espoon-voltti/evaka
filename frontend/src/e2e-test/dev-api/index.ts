@@ -14,6 +14,7 @@ import {
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import {
+  FeeAlteration,
   FeeDecision,
   FeeThresholds,
   Invoice,
@@ -1005,6 +1006,16 @@ export async function upsertOccupancyCoefficient(body: {
 }): Promise<void> {
   try {
     await devClient.post('/occupancy-coefficient', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFeeAlterations(
+  body: FeeAlteration[]
+): Promise<void> {
+  try {
+    await devClient.post('/fee-alterations', body)
   } catch (e) {
     throw new DevApiError(e)
   }

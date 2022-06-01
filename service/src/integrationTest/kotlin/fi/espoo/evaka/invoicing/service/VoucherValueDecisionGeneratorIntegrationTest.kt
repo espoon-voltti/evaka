@@ -18,10 +18,12 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -51,6 +53,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -531,16 +534,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
-    private fun insertFeeAlteration(childId: ChildId, amount: Double, period: DateRange) {
+    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
             tx.insertTestFeeAlteration(
-                childId,
-                type = FeeAlteration.Type.DISCOUNT,
-                amount = amount,
-                isAbsolute = false,
-                validFrom = period.start,
-                validTo = period.end,
-                updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                DevFeeAlteration(
+                    id = FeeAlterationId(UUID.randomUUID()),
+                    personId = personId,
+                    type = FeeAlteration.Type.DISCOUNT,
+                    amount = amount,
+                    isAbsolute = false,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
             )
         }
     }

@@ -450,6 +450,18 @@ class DevApi(
     fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): FeeThresholdsId =
         db.connect { dbc -> dbc.transaction { it.insertTestFeeThresholds(feeThresholds) } }
 
+    @PostMapping("/fee-alterations")
+    fun createFeeAlterations(db: Database, @RequestBody feeAlterations: List<DevFeeAlteration>) =
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                feeAlterations.forEach { feeAlteration ->
+                    tx.insertTestFeeAlteration(feeAlteration)
+                    // Notice that for this to be effective the voucher value decisions
+                    // must be regenerated
+                }
+            }
+        }
+
     data class DevCreateIncomeStatements(val personId: PersonId, val data: List<IncomeStatementBody>)
 
     @PostMapping("/income-statements")

@@ -467,7 +467,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         {formatCents(row.serviceVoucherValue, true)}
                       </Td>
                       <Td data-qa="co-payment">
-                        {formatCents(row.serviceVoucherCoPayment, true)}
+                        {formatCents(row.serviceVoucherFinalCoPayment, true)}
                       </Td>
                       <Td data-qa="realized-amount">
                         {formatCents(row.realizedAmount, true)}
