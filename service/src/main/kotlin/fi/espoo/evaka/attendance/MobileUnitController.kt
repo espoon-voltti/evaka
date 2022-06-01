@@ -133,7 +133,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate, useRealtimeS
                 LEFT JOIN service_need_option sno on sn.option_id = sno.id
                 LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
                 LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
-                JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id
+                JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :date
             WHERE ca.unit_id = :unitId AND ca.end_time IS NULL
             GROUP BY dgp.daycare_group_id
         ), staff AS (
