@@ -8,22 +8,16 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  insertDaycarePlacementFixtures,
-  insertParentshipFixtures,
   insertVoucherValueDecisionFixtures,
   insertVoucherValues,
-  resetDatabase,
-  runPendingAsyncJobs
+  resetDatabase
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
-  createDaycarePlacementFixture,
   daycare2Fixture,
   daycareFixture,
-  EmployeeBuilder,
   Fixture,
-  uuidv4,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
@@ -42,14 +36,12 @@ let endDate: LocalDate
 let child: PersonDetail
 let otherChild: PersonDetail
 let guardian: PersonDetail
-let financeAdmin: EmployeeBuilder
 
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  financeAdmin = await Fixture.employeeFinanceAdmin().save()
   await insertVoucherValues()
 
   startDate = LocalDate.of(2020, 1, 1)
@@ -57,38 +49,6 @@ beforeEach(async () => {
   child = fixtures.enduserChildFixtureKaarina
   otherChild = fixtures.enduserChildFixtureJari
   guardian = fixtures.enduserGuardianFixture
-
-  await insertParentshipFixtures([
-    {
-      childId: child.id,
-      headOfChildId: guardian.id,
-      startDate: child.dateOfBirth,
-      endDate: '2099-01-01'
-    },
-    {
-      childId: otherChild.id,
-      headOfChildId: guardian.id,
-      startDate: otherChild.dateOfBirth,
-      endDate: '2099-01-01'
-    }
-  ])
-
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      uuidv4(),
-      child.id,
-      fixtures.daycareFixture.id,
-      startDate.formatIso(),
-      endDate.formatIso()
-    ),
-    createDaycarePlacementFixture(
-      uuidv4(),
-      otherChild.id,
-      daycare2Fixture.id,
-      startDate.formatIso(),
-      endDate.formatIso()
-    )
-  ])
 
   await insertVoucherValueDecisionFixtures([
     voucherValueDecisionsFixture(
@@ -144,20 +104,6 @@ describe('Reporting - voucher reports', () => {
   })
 
   test('voucher service provider unit report', async () => {
-    await Fixture.feeAlteration()
-      .with({
-        type: 'RELIEF',
-        amount: 50,
-        isAbsolute: false,
-        validFrom: startDate,
-        validTo: endDate,
-        personId: child.id,
-        updatedBy: financeAdmin.data.id
-      })
-      .save()
-
-    await runPendingAsyncJobs()
-
     await report.selectMonth('Tammikuu')
     await report.selectYear(2020)
     await report.selectArea('Superkeskus')

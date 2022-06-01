@@ -192,12 +192,6 @@ export class Element {
       .then((str) => (str ? parseFloat(str) : null))
   }
 
-  get textContentAsInt(): Promise<number | null> {
-    return this.locator
-      .textContent()
-      .then((str) => (str ? parseInt(str) : null))
-  }
-
   get visible(): Promise<boolean> {
     return this.locator.isVisible()
   }

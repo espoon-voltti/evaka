@@ -168,7 +168,6 @@ export class VoucherServiceProvidersReport {
   }
 
   async openUnitReport(unitName: string) {
-    //await this.page.findByDataQa(unitId)  .findByDataQa('unit-id').click()
     await this.page.findTextExact(unitName).click()
   }
 }

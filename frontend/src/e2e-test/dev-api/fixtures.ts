@@ -17,7 +17,6 @@ import {
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import {
-  FeeAlteration,
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,
@@ -72,7 +71,6 @@ import {
   insertDecisionFixtures,
   insertEmployeeFixture,
   insertEmployeePins,
-  insertFeeAlterations,
   insertFeeThresholds,
   insertFridgeChildren,
   insertGuardianFixtures,
@@ -1435,21 +1433,6 @@ export class Fixture {
       unitId
     })
   }
-
-  static feeAlteration() {
-    return new FeeAlterationBuilder({
-      id: uuidv4(),
-      amount: 0,
-      isAbsolute: false,
-      notes: '',
-      personId: '',
-      type: 'DISCOUNT',
-      updatedAt: new Date(),
-      updatedBy: nullUUID,
-      validFrom: LocalDate.today(),
-      validTo: null
-    })
-  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1881,16 +1864,5 @@ export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevStaffOcc
 
   copy() {
     return new StaffOccupancyCoefficientBuilder({ ...this.data })
-  }
-}
-
-export class FeeAlterationBuilder extends FixtureBuilder<FeeAlteration> {
-  async save() {
-    await insertFeeAlterations([this.data])
-    return this
-  }
-
-  copy() {
-    return new FeeAlterationBuilder({ ...this.data })
   }
 }
