@@ -75,7 +75,7 @@ export default React.memo(function UnitList() {
                             <StatDesc>{i18n.units.staff}</StatDesc>
                           </div>
                           <div>
-                            <Stat>{utilization} %</Stat>
+                            <Stat>{utilization.toFixed(1)} %</Stat>
                             <StatDesc>{i18n.units.utilization}</StatDesc>
                           </div>
                         </UnitRow>
