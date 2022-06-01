@@ -97,6 +97,7 @@ export default React.memo(function PlacementProposalRow({
               }`}
               target="_blank"
               rel="noreferrer"
+              data-qa="open-application"
             >
               <IconButton
                 onClick={() => undefined}
