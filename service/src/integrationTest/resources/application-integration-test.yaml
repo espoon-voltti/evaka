@@ -13,6 +13,13 @@ evaka:
     voucher_value_decisions: evaka-vouchervaluedecisions-it
   clock:
     mock: true
+  database: # not in use, see SharedIntegrationTestConfig.kt
+    url: jdbc:postgresql://localhost:15432/evaka_it
+    username: evaka_it
+    password: evaka_it
+    flyway:
+      username: evaka_it
+      password: evaka_it
   email:
     application_received:
       sender_address:
