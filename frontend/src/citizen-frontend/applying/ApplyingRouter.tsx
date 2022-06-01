@@ -23,7 +23,11 @@ const WhiteBg = styled.div`
   background-color: ${colors.grayscale.g0};
 `
 
-export default React.memo(function ApplyingRouter() {
+export interface Props {
+  scrollToTop: () => void
+}
+
+export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
   const t = useTranslation()
   const user = useUser()
   const isEndUser = user?.userType === 'ENDUSER'
@@ -73,7 +77,7 @@ export default React.memo(function ApplyingRouter() {
             </RequireAuth>
           }
         />
-        <Route path="map" element={<MapView />} />
+        <Route path="map" element={<MapView scrollToTop={scrollToTop} />} />
         <Route
           path="decisions"
           element={
