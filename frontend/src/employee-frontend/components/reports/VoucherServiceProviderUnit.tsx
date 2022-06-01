@@ -407,6 +407,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
 
                   return (
                     <Tr
+                      data-qa="child-row"
                       key={`${
                         row.serviceVoucherDecisionId
                       }:${row.realizedPeriod.start.formatIso()}`}
@@ -426,7 +427,10 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       </BlankTd>
                       <Td>
                         <FixedSpaceColumn spacing="xs">
-                          <Link to={`/child-information/${row.childId}`}>
+                          <Link
+                            data-qa="child-name"
+                            to={`/child-information/${row.childId}`}
+                          >
                             {formatName(
                               row.childFirstName,
                               row.childLastName,
@@ -459,9 +463,15 @@ export default React.memo(function VoucherServiceProviderUnit() {
                           {formatDecimal(row.assistanceNeedCapacityFactor)}
                         </Td>
                       )}
-                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
-                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
-                      <Td>{formatCents(row.realizedAmount, true)}</Td>
+                      <Td data-qa="voucher-value">
+                        {formatCents(row.serviceVoucherValue, true)}
+                      </Td>
+                      <Td data-qa="co-payment">
+                        {formatCents(row.serviceVoucherFinalCoPayment, true)}
+                      </Td>
+                      <Td data-qa="realized-amount">
+                        {formatCents(row.realizedAmount, true)}
+                      </Td>
                     </Tr>
                   )
                 })}

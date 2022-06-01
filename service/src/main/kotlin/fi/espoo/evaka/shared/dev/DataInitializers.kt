@@ -568,40 +568,28 @@ VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome)
 ).bindKotlin(incomeStatement)
     .execute()
 
-fun Database.Transaction.insertTestFeeAlteration(
-    childId: ChildId,
-    id: FeeAlterationId = FeeAlterationId(UUID.randomUUID()),
-    type: FeeAlteration.Type = FeeAlteration.Type.DISCOUNT,
-    amount: Double = 50.0,
-    isAbsolute: Boolean = false,
-    validFrom: LocalDate = LocalDate.of(2019, 1, 1),
-    validTo: LocalDate? = null,
-    notes: String = "",
-    updatedAt: Instant = Instant.now(),
-    updatedBy: EvakaUserId
-): FeeAlterationId {
+data class DevFeeAlteration(
+    val id: FeeAlterationId,
+    val personId: PersonId,
+    val type: FeeAlteration.Type,
+    val amount: Double,
+    val isAbsolute: Boolean,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val notes: String = "",
+    val updatedBy: EvakaUserId,
+    val updatedAt: Instant = Instant.now()
+)
+
+fun Database.Transaction.insertTestFeeAlteration(feeAlteration: DevFeeAlteration) {
     createUpdate(
         """
             INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
-            VALUES (:id, :childId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
+            VALUES (:id, :personId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
         """.trimIndent()
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "type" to type.toString(),
-                "amount" to amount,
-                "isAbsolute" to isAbsolute,
-                "validFrom" to validFrom,
-                "validTo" to validTo,
-                "notes" to notes,
-                "updatedAt" to updatedAt,
-                "updatedBy" to updatedBy
-            )
-        )
+        .bindKotlin(feeAlteration)
         .execute()
-    return id
 }
 
 fun Database.Transaction.insertTestFeeThresholds(feeThresholds: FeeThresholds) = insertTestDataRow(

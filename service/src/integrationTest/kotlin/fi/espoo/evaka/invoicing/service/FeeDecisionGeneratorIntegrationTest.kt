@@ -34,10 +34,12 @@ import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
@@ -2158,16 +2160,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertFeeAlteration(childId: ChildId, amount: Double, period: DateRange) {
+    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
             tx.insertTestFeeAlteration(
-                childId,
-                type = FeeAlteration.Type.DISCOUNT,
-                amount = amount,
-                isAbsolute = false,
-                validFrom = period.start,
-                validTo = period.end,
-                updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                DevFeeAlteration(
+                    id = FeeAlterationId(UUID.randomUUID()),
+                    personId,
+                    type = FeeAlteration.Type.DISCOUNT,
+                    amount = amount,
+                    isAbsolute = false,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
             )
         }
     }

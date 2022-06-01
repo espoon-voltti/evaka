@@ -13,6 +13,8 @@ import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -21,11 +23,17 @@ import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevFeeAlteration
+import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
@@ -39,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -72,6 +81,25 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
         janReport.assertContainsRow(ORIGINAL, janFirst, janFirst.toEndOfMonth(), 87000, 28800, 58200)
+    }
+
+    @Test
+    fun `service voucher unit report counts fee alterations correctly`() {
+        createVoucherDecision(
+            validFrom = janFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800,
+            feeAlterations = listOf(
+                FeeAlterationWithEffect(
+                    type = FeeAlteration.Type.DISCOUNT,
+                    amount = 50,
+                    isAbsolute = false,
+                    effect = -14400
+                )
+            )
+        )
+
+        val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        janReport.assertContainsRow(ORIGINAL, janFirst, janFirst.toEndOfMonth(), 87000, 14400, 72600)
     }
 
     @Test
@@ -452,15 +480,16 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         periodStart: LocalDate,
         periodEnd: LocalDate,
         value: Int,
-        coPayment: Int,
+        finalCoPayment: Int,
         realizedValue: Int
+
     ) {
         val row = this.find {
             it.type == type && it.realizedPeriod.start == periodStart && it.realizedPeriod.end == periodEnd
         }
         assertNotNull(row)
         assertEquals(value, row.serviceVoucherValue)
-        assertEquals(coPayment, row.serviceVoucherCoPayment)
+        assertEquals(finalCoPayment, row.serviceVoucherFinalCoPayment)
         assertEquals(realizedValue, row.realizedAmount)
     }
 
@@ -488,7 +517,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         value: Int,
         coPayment: Int,
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
-        alwaysUseDaycareFinanceDecisionHandler: Boolean = false
+        alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
+        feeAlterations: List<FeeAlterationWithEffect> = listOf()
     ): VoucherValueDecision {
         val id = db.transaction {
             val decision = createVoucherValueDecisionFixture(
@@ -509,7 +539,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                     snDefaultDaycare.feeDescriptionSv,
                     snDefaultDaycare.voucherValueDescriptionFi,
                     snDefaultDaycare.voucherValueDescriptionSv
-                )
+                ),
+                feeAlterations = feeAlterations
             )
             it.upsertValueDecisions(listOf(decision))
 
@@ -528,5 +559,22 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         asyncJobRunner.runPendingJobsSync()
 
         return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
+    }
+
+    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
+        db.transaction { tx ->
+            tx.insertTestFeeAlteration(
+                DevFeeAlteration(
+                    id = FeeAlterationId(UUID.randomUUID()),
+                    personId,
+                    type = FeeAlteration.Type.DISCOUNT,
+                    amount = amount,
+                    isAbsolute = false,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
+        }
     }
 }

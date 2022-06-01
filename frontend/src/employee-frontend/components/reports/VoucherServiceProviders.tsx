@@ -278,6 +278,7 @@ export default React.memo(function VoucherServiceProviders() {
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link
+                        data-qa="unit-link"
                         to={`/reports/voucher-service-providers/${row.unitId}?${query}`}
                       >
                         {row.unitName}

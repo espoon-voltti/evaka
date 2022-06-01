@@ -166,6 +166,47 @@ export class VoucherServiceProvidersReport {
     ])
     return captureTextualDownload(download)
   }
+
+  async openUnitReport(unitName: string) {
+    await this.page.findTextExact(unitName).click()
+  }
+}
+
+export class ServiceVoucherUnitReport {
+  constructor(private page: Page) {}
+  #childRows = this.page.findAllByDataQa('child-row')
+
+  async assertChildRowCount(expected: number) {
+    await waitUntilEqual(() => this.#childRows.count(), expected)
+  }
+
+  async assertChild(
+    nth: number,
+    expectedName: string,
+    expectedVoucherValue: number,
+    expectedCoPayment: number,
+    expectedRealizedAmount: number
+  ) {
+    await waitUntilEqual(
+      () => this.page.findAllByDataQa('child-name').nth(nth).textContent,
+      expectedName
+    )
+    await waitUntilEqual(
+      () =>
+        this.page.findAllByDataQa('voucher-value').nth(nth).textContentAsFloat,
+      expectedVoucherValue
+    )
+    await waitUntilEqual(
+      () => this.page.findAllByDataQa('co-payment').nth(nth).textContentAsFloat,
+      expectedCoPayment
+    )
+    await waitUntilEqual(
+      () =>
+        this.page.findAllByDataQa('realized-amount').nth(nth)
+          .textContentAsFloat,
+      expectedRealizedAmount
+    )
+  }
 }
 
 export class VardaErrorsReport {

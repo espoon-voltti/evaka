@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
 import fi.espoo.evaka.assistanceneed.insertAssistanceNeed
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
@@ -17,11 +18,14 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -49,6 +53,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -81,6 +86,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(134850, decision.baseValue)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(134850, decision.voucherValue)
+            assertEquals(28900, decision.finalCoPayment)
         }
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
@@ -90,6 +96,40 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(87000, decision.baseValue)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(87000, decision.voucherValue)
+            assertEquals(28900, decision.finalCoPayment)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions works as expected with fee alterations`() {
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertFeeAlteration(testChild_1.id, 50.0, period)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
+        assertEquals(2, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(testChild_1.dateOfBirth.plusYears(3).minusDays(1), decision.validTo)
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(134850, decision.baseValue)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(134850, decision.voucherValue)
+            assertEquals(14450, decision.finalCoPayment)
+        }
+        voucherValueDecisions.last().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(testChild_1.dateOfBirth.plusYears(3), decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(87000, decision.voucherValue)
+            assertEquals(14450, decision.finalCoPayment)
         }
     }
 
@@ -488,6 +528,23 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     validTo = period.end,
                     effect = IncomeEffect.INCOME,
                     data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
+        }
+    }
+
+    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
+        db.transaction { tx ->
+            tx.insertTestFeeAlteration(
+                DevFeeAlteration(
+                    id = FeeAlterationId(UUID.randomUUID()),
+                    personId = personId,
+                    type = FeeAlteration.Type.DISCOUNT,
+                    amount = amount,
+                    isAbsolute = false,
+                    validFrom = period.start,
+                    validTo = period.end,
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )

@@ -183,6 +183,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherDecisionId: VoucherValueDecisionId,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
+    val serviceVoucherFinalCoPayment: Int,
     val serviceNeedDescription: String,
     val assistanceNeedCapacityFactor: BigDecimal,
     val realizedAmount: Int,
@@ -372,6 +373,7 @@ SELECT
     decision.id AS service_voucher_decision_id,
     decision.voucher_value AS service_voucher_value,
     decision.co_payment AS service_voucher_co_payment,
+    decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.capacity_factor AS assistance_need_capacity_factor,
     coalesce(
@@ -443,6 +445,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             decision.id AS service_voucher_decision_id,
             decision.voucher_value AS service_voucher_value,
             decision.co_payment AS service_voucher_co_payment,
+            decision.final_co_payment AS service_voucher_final_co_payment,
             decision.service_need_voucher_value_description_fi AS service_need_description,
             decision.capacity_factor AS assistance_need_capacity_factor,
             sn_decision.realized_amount,

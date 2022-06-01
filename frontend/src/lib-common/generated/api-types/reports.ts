@@ -432,6 +432,7 @@ export interface ServiceVoucherValueRow {
   serviceNeedDescription: string
   serviceVoucherCoPayment: number
   serviceVoucherDecisionId: UUID
+  serviceVoucherFinalCoPayment: number
   serviceVoucherValue: number
   type: VoucherReportRowType
   unitId: UUID
