@@ -27,6 +27,7 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
+import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.withMockedTime
 import org.junit.jupiter.api.BeforeEach
@@ -45,13 +46,16 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     fun beforeEach() {
         val groupId = GroupId(UUID.randomUUID())
+        val groupId2 = GroupId(UUID.randomUUID())
         val groupName = "Testaajat"
-        val placementStart = now.toLocalDate().minusDays(30)
-        val placementEnd = now.toLocalDate().plusDays(30)
+        val groupName2 = "Tyhjä"
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child ->
                 val daycarePlacementId = PlacementId(UUID.randomUUID())
                 tx.insertTestPlacement(
@@ -69,13 +73,38 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     endDate = placementEnd
                 )
             }
+
+            // Add child with multiple group placements
+            val daycarePlacementId = PlacementId(UUID.randomUUID())
+            tx.insertTestPlacement(
+                id = daycarePlacementId,
+                childId = testChild_6.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId,
+                groupId = groupId2,
+                startDate = placementStart,
+                endDate = today.minusDays(1)
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId,
+                groupId = groupId,
+                startDate = today,
+                endDate = placementEnd
+            )
+
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
 
             tx.insertAttendance(testChild_1.id, testDaycare.id, today, LocalTime.of(8, 30, 0))
             tx.insertAttendance(testChild_2.id, testDaycare.id, today, LocalTime.of(9, 0, 0))
             tx.insertAttendance(testChild_3.id, testDaycare.id, today, LocalTime.of(9, 30, 0))
             tx.insertAttendance(testChild_4.id, testDaycare.id, today, LocalTime.of(10, 0, 0))
-            tx.insertAttendance(testChild_5.id, testDaycare.id, today, LocalTime.of(10, 30, 0))
+            tx.insertAttendance(testChild_5.id, testDaycare.id, today, LocalTime.of(10, 15, 0))
+            tx.insertAttendance(testChild_6.id, testDaycare.id, today, LocalTime.of(10, 30, 0))
 
             FixtureBuilder(tx)
                 .addEmployee()
@@ -88,6 +117,13 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .addEmployee()
                 .withName("Two", "in group 1")
                 .withGroupAccess(testDaycare.id, groupId)
+                .withScopedRole(UserRole.STAFF, testDaycare.id)
+                .saveAnd {
+                    tx.markStaffArrival(employeeId, groupId, now.minusDays(1), BigDecimal(7.0))
+                }
+                .addEmployee()
+                .withName("Three", "in group 2")
+                .withGroupAccess(testDaycare.id, groupId2)
                 .withScopedRole(UserRole.STAFF, testDaycare.id)
                 .saveAnd {
                     tx.markStaffArrival(employeeId, groupId, now.minusDays(1), BigDecimal(7.0))
