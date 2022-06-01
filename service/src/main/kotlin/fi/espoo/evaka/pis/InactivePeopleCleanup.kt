@@ -14,8 +14,8 @@ import java.time.LocalDate
 
 val logger = KotlinLogging.logger {}
 
-fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
-    tx.setStatementTimeout(Duration.ofMinutes(10))
+fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate, timeout: Duration): Set<PersonId> {
+    tx.setStatementTimeout(timeout)
     val deletedPeople = tx.createUpdate(
         """
 WITH people_with_no_archive_data AS (

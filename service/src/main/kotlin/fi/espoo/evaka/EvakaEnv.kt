@@ -83,6 +83,7 @@ data class DatabaseEnv(
     val flywayPassword: Sensitive<String>,
     val leakDetectionThreshold: Long,
     val defaultStatementTimeout: Duration,
+    val inactivePeopleCleanupTimeout: Duration,
     val maximumPoolSize: Int,
     val logSql: Boolean
 ) {
@@ -98,6 +99,7 @@ data class DatabaseEnv(
                 "spring.datasource.hikari.leak-detection-threshold"
             ) ?: 0,
             defaultStatementTimeout = env.lookup("evaka.database.default_statement_timeout") ?: Duration.ofSeconds(60),
+            inactivePeopleCleanupTimeout = env.lookup("evaka.database.inactive_people_cleanup_timeout") ?: Duration.ofMinutes(10),
             maximumPoolSize = env.lookup("evaka.database.maximum_pool_size", "spring.datasource.hikari.maximumPoolSize")
                 ?: 10,
             logSql = env.lookup("evaka.database.log_sql") ?: false

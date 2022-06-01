@@ -40,6 +40,7 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -286,7 +287,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     }
 
     private fun assertCleanedUpPeople(queryDate: LocalDate, cleanedUpPeople: Set<PersonId>) {
-        val result = db.transaction { cleanUpInactivePeople(it, queryDate) }
+        val result = db.transaction { cleanUpInactivePeople(it, queryDate, Duration.ofMinutes(10)) }
 
         assertEquals(cleanedUpPeople, result)
     }

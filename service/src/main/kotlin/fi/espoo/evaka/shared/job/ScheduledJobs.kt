@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.job
 
+import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -58,6 +59,7 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val voucherValueDecisionService: VoucherValueDecisionService,
     private val koskiUpdateService: KoskiUpdateService,
+    private val databaseEnv: DatabaseEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
@@ -189,7 +191,8 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun inactivePeopleCleanup(db: Database.Connection) {
-        db.transaction { cleanUpInactivePeople(it, LocalDate.now(europeHelsinki)) }
+        db.transaction { cleanUpInactivePeople(it, LocalDate.now(europeHelsinki),
+            databaseEnv.inactivePeopleCleanupTimeout) }
     }
 
     fun inactiveEmployeesRoleReset(db: Database.Connection) {
