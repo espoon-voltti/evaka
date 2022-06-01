@@ -263,7 +263,17 @@ data class KoskiActiveDataRaw(
     fun haeLisätiedot() = Lisätiedot(
         vammainen = developmentalDisability1.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() },
         vaikeastiVammainen = developmentalDisability2.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() },
-        pidennettyOppivelvollisuus = extendedCompulsoryEducation?.let { Aikajakso.from(it) },
+        pidennettyOppivelvollisuus = extendedCompulsoryEducation?.let { ece ->
+            // Koski has an extra validation rule which checks that all extended compulsory education
+            // dates which are included in at least one of the disability date ranges.
+            // https://github.com/Opetushallitus/koski/blob/2b25eb7e16bb651e1eb09cce636a736e85811ad0/src/main/scala/fi/oph/koski/validation/KoskiValidator.scala#L579
+            // https://github.com/Opetushallitus/koski/pull/1860
+
+            // Since we don't have a similar restriction, find the largest overlap that satisfies Koski requirements
+            val disabilities = Timeline.of(developmentalDisability1).addAll(developmentalDisability2)
+            val overlaps = disabilities.intersection(Timeline.of(ece))
+            overlaps.ranges().maxByOrNull { it.durationInDays() }?.let { Aikajakso.from(it) }
+        },
         kuljetusetu = transportBenefit?.let { Aikajakso.from(it) },
         erityisenTuenPäätökset = (
             specialAssistanceDecisionWithGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
