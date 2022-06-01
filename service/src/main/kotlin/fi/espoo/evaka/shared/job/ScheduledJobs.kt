@@ -191,8 +191,12 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun inactivePeopleCleanup(db: Database.Connection) {
-        db.transaction { cleanUpInactivePeople(it, LocalDate.now(europeHelsinki),
-            databaseEnv.inactivePeopleCleanupTimeout) }
+        db.transaction {
+            cleanUpInactivePeople(
+                it, LocalDate.now(europeHelsinki),
+                databaseEnv.inactivePeopleCleanupTimeout
+            )
+        }
     }
 
     fun inactiveEmployeesRoleReset(db: Database.Connection) {
