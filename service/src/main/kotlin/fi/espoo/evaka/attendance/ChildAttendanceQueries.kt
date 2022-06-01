@@ -129,7 +129,8 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             FROM daycare_group_placement gp
             JOIN placement p ON p.id = gp.daycare_placement_id
             WHERE
-                p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :date AND
+                p.unit_id = :unitId AND 
+                daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') @> :date AND
                 NOT EXISTS (
                     SELECT 1
                     FROM backup_care bc
