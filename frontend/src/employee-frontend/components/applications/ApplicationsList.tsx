@@ -370,10 +370,10 @@ const ApplicationsList = React.memo(function Applications({
           )}
           {application.placementProposalStatus?.unitConfirmationStatus ===
             'REJECTED' && (
-            <div>
+            <div data-qa="placement-proposal-status">
               <Tooltip
                 tooltip={
-                  <p>
+                  <p data-qa="placement-proposal-status-tooltip">
                     {application.placementProposalStatus
                       ? application.placementProposalStatus.unitRejectReason ===
                         'OTHER'
