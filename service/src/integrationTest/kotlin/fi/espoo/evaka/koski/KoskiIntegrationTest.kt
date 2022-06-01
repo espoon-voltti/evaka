@@ -378,10 +378,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertEquals(
             Lisätiedot(
-                vammainen = listOf(Aikajakso(alku = testCases[0].period.start, loppu = testCases[0].period.end)),
-                vaikeastiVammainen = listOf(
-                    Aikajakso(alku = testCases[1].period.start, loppu = testCases[1].period.end)
-                ),
+                vammainen = listOf(Aikajakso.from(testCases[0].period)),
+                vaikeastiVammainen = listOf(Aikajakso.from(testCases[1].period)),
                 pidennettyOppivelvollisuus = null,
                 kuljetusetu = null,
                 erityisenTuenPäätökset = null
@@ -436,11 +434,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen = listOf(Aikajakso.from(testCases[0].period)),
                 vaikeastiVammainen = null,
-                pidennettyOppivelvollisuus = Aikajakso(
-                    alku = testCases[0].period.start,
-                    loppu = testCases[0].period.end
-                ),
-                kuljetusetu = Aikajakso(alku = testCases[1].period.start, loppu = testCases[1].period.end),
+                pidennettyOppivelvollisuus = Aikajakso.from(testCases[0].period),
+                kuljetusetu = Aikajakso.from(testCases[1].period),
                 erityisenTuenPäätökset = listOf(
                     ErityisenTuenPäätös(
                         alku = testCases[2].period.start,
