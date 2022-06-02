@@ -258,6 +258,7 @@ class ChildAttendanceController(
                                     if (date < today) LocalTime.of(23, 59) else body.departed
                                 )
                             }
+                            .filter { (_, startTime, endTime) -> startTime != endTime }
                             .forEach { (date, startTime, endTime) ->
                                 tx.insertAttendance(childId, unitId, date, startTime, endTime)
                             }
