@@ -21,15 +21,18 @@ import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import Container, {
+  CollapsibleContentArea,
+  ContentArea
+} from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { fontWeights, H1 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { fontWeights, H1, H2 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -173,6 +176,7 @@ const PedagogicalDocumentsDisplay = React.memo(
     onRead: (doc: PedagogicalDocumentCitizen) => void
   }) {
     const t = useTranslation()
+    const [open, setOpen] = useState(true)
 
     const moreThanOneChild = useMemo(
       () => uniq(items.map((doc) => doc.childId)).length > 1,
@@ -197,9 +201,14 @@ const PedagogicalDocumentsDisplay = React.memo(
           </ContentArea>
         </Mobile>
         <Desktop>
-          <ContentArea opaque paddingVertical="L">
-            <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
-            <p>{t.pedagogicalDocuments.description}</p>
+          <CollapsibleContentArea
+            title={<H2 noMargin>{t.pedagogicalDocuments.title}</H2>}
+            open={open}
+            toggleOpen={() => setOpen(!open)}
+            opaque
+            paddingVertical="L"
+            data-qa="pedagogical-documents-collapsible"
+          >
             {items.length > 0 && (
               <PedagogicalDocumentsTable
                 items={items}
@@ -207,7 +216,7 @@ const PedagogicalDocumentsDisplay = React.memo(
                 onRead={onRead}
               />
             )}
-          </ContentArea>
+          </CollapsibleContentArea>
         </Desktop>
       </>
     )
@@ -336,7 +345,6 @@ export default React.memo(function PedagogicalDocuments() {
   return (
     <>
       <Container>
-        <Gap size="s" />
         {renderResult(pedagogicalDocuments, (items) => (
           <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
         ))}

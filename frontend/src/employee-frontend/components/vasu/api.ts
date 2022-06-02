@@ -68,10 +68,11 @@ export async function getVasuDocumentSummaries(
     .get<JsonOf<VasuDocumentSummary[]>>(`/children/${childId}/vasu-summaries`)
     .then((res) =>
       Success.of(
-        res.data.map(({ events, modifiedAt, ...rest }) => ({
+        res.data.map(({ events, modifiedAt, publishedAt, ...rest }) => ({
           ...rest,
           events: events.map(mapVasuDocumentEvent),
-          modifiedAt: new Date(modifiedAt)
+          modifiedAt: new Date(modifiedAt),
+          publishedAt: publishedAt ? new Date(publishedAt) : null
         }))
       )
     )

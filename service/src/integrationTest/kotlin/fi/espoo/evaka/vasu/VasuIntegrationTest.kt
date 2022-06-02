@@ -8,13 +8,16 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_CLOSED
@@ -89,6 +92,29 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `creating new preschool document`() {
         createNewDocument(CurriculumType.PRESCHOOL)
+    }
+
+    @Test
+    fun `guardian gives permission to share the document`() {
+        val guardian = testAdult_1
+        val child = testChild_1
+        db.transaction { it.insertGuardian(guardian.id, child.id) }
+        val template = getTemplate(CurriculumType.PRESCHOOL)
+        val documentId = postVasuDocument(
+            child.id,
+            VasuController.CreateDocumentRequest(
+                templateId = template.id
+            )
+        )
+
+        val withoutPermission = getVasuDocument(documentId)
+        assertEquals(1, withoutPermission.basics.guardians.size)
+        assertEquals(false, withoutPermission.basics.guardians[0].hasGivenPermissionToShare)
+
+        givePermissionToShare(documentId, AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG))
+        val withPermission = getVasuDocument(documentId)
+        assertEquals(1, withPermission.basics.guardians.size)
+        assertEquals(true, withPermission.basics.guardians[0].hasGivenPermissionToShare)
     }
 
     private fun createNewDocument(type: CurriculumType) {
@@ -428,6 +454,14 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun deleteVasuTemplate(id: VasuTemplateId, expectedStatus: Int = 200) {
         val (_, res, _) = http.delete("/vasu/templates/$id")
             .asUser(adminUser)
+            .response()
+
+        assertEquals(expectedStatus, res.statusCode)
+    }
+
+    private fun givePermissionToShare(id: VasuDocumentId, user: AuthenticatedUser, expectedStatus: Int = 200) {
+        val (_, res, _) = http.post("/citizen/vasu/$id/give-permission-to-share")
+            .asUser(user)
             .response()
 
         assertEquals(expectedStatus, res.statusCode)

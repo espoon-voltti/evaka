@@ -6,6 +6,8 @@ import config from '../config'
 
 import { Page, TextInput } from './page'
 
+import { waitUntilEqual } from './index'
+
 export type DevLoginRole = typeof devLoginRoles[number]
 const devLoginRoles = [
   'SERVICE_WORKER',
@@ -18,6 +20,10 @@ const devLoginRoles = [
 export async function enduserLogin(page: Page) {
   await page.goto(config.enduserUrl)
   await page.findByDataQa('strong-login').click()
+  await waitUntilEqual(
+    () => page.findByDataQa('applications-list').getAttribute('data-isloading'),
+    'false'
+  )
 }
 
 export async function enduserLoginWeak(page: Page) {

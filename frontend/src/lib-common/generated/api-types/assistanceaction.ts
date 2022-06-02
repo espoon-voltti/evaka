@@ -53,7 +53,7 @@ export interface AssistanceActionResponse {
 /**
 * Generated from fi.espoo.evaka.assistanceaction.AssistanceMeasure
 */
-export type AssistanceMeasure = 
+export type AssistanceMeasure =
   | 'SPECIAL_ASSISTANCE_DECISION'
   | 'INTENSIFIED_ASSISTANCE'
   | 'EXTENDED_COMPULSORY_EDUCATION'

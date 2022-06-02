@@ -82,7 +82,7 @@ export type PilotFeature = typeof pilotFeatures[number]
 /**
 * Generated from fi.espoo.evaka.shared.job.ScheduledJob
 */
-export type ScheduledJob = 
+export type ScheduledJob =
   | 'CancelOutdatedTransferApplications'
   | 'DvvUpdate'
   | 'EndOfDayAttendanceUpkeep'
@@ -118,7 +118,7 @@ export interface TriggerBody {
 /**
 * Generated from fi.espoo.evaka.shared.auth.UserRole
 */
-export type UserRole = 
+export type UserRole =
   | 'END_USER'
   | 'CITIZEN_WEAK'
   | 'ADMIN'

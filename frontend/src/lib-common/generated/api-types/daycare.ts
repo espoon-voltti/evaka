@@ -30,7 +30,7 @@ export interface Absence {
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceCategory
 */
-export type AbsenceCategory = 
+export type AbsenceCategory =
   | 'BILLABLE'
   | 'NONBILLABLE'
 
@@ -69,7 +69,7 @@ export interface AbsenceGroup {
 /**
 * Generated from fi.espoo.evaka.daycare.service.AbsenceType
 */
-export type AbsenceType = 
+export type AbsenceType =
   | 'OTHER_ABSENCE'
   | 'SICKLEAVE'
   | 'PLANNED_ABSENCE'
@@ -125,7 +125,7 @@ export interface AreaJSON {
 /**
 * Generated from fi.espoo.evaka.daycare.CareType
 */
-export type CareType = 
+export type CareType =
   | 'CLUB'
   | 'FAMILY'
   | 'CENTRE'
@@ -358,7 +358,7 @@ export interface GroupUpdateRequest {
 /**
 * Generated from fi.espoo.evaka.daycare.domain.Language
 */
-export type Language = 
+export type Language =
   | 'fi'
   | 'sv'
   | 'en'
@@ -386,7 +386,7 @@ export interface PreschoolTerm {
 /**
 * Generated from fi.espoo.evaka.daycare.domain.ProviderType
 */
-export type ProviderType = 
+export type ProviderType =
   | 'MUNICIPAL'
   | 'PURCHASED'
   | 'PRIVATE'

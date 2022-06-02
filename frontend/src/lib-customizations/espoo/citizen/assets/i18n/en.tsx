@@ -1848,6 +1848,11 @@ const en: Translations = {
       returnMessage: 'Go back'
     }
   },
+  childDocuments: {
+    title: 'Early Childhood Education Plan and Preschool Learning Plan',
+    description:
+      "On this page, the child's early childhood education plan and pre-school learning plan are published, and pictures and other documents related to the child's growth, learning and everyday life are compiled."
+  },
   pedagogicalDocuments: {
     title: 'Growth and learning',
     description:
@@ -1859,6 +1864,47 @@ const en: Translations = {
       description: 'Description'
     },
     toggleExpandText: 'Show or hide the text'
+  },
+  vasu: {
+    title: "Documents related to the child's daily life",
+    lastModified: 'Last modified',
+    lastPublished: 'Last published',
+    leavePage: 'Leave page',
+    edited: 'Edited',
+    eventTypes: {
+      PUBLISHED: 'Published',
+      MOVED_TO_READY: 'Move to ready',
+      RETURNED_TO_READY: 'Returned to ready',
+      MOVED_TO_REVIEWED: 'Moved to reviewed',
+      RETURNED_TO_REVIEWED: 'Returned to reviewed',
+      MOVED_TO_CLOSED: 'Moved to closed'
+    },
+    states: {
+      DRAFT: 'Draft',
+      READY: 'Ready',
+      REVIEWED: 'Reviewed',
+      CLOSED: 'Closed'
+    },
+    state: 'State',
+    events: {
+      DAYCARE: 'Early childhood plan events',
+      PRESCHOOL: 'Preschool plan events'
+    },
+    noRecord: 'No record',
+    givePermissionToShareTitleVasu:
+      'Confirmation of the transfer of the early childhood education plan to other recipients',
+    givePermissionToShareTitleLeops:
+      'Confirmation of the transfer of the pre-school learning plan to other recipients',
+    givePermissionToShareVasu:
+      "I confirm that the child's early childhood education plan may be handed over to the parties mentioned in the “Recipients” section.",
+    givePermissionToShareLeops:
+      "I confirm that the child's pre-school learning plan may be handed over to the parties mentioned in the “Information Recipients” section.",
+    givePermissionToShareInfoVasu:
+      "If you want to change the recipients mentioned in the plan, contact the staff of your child's early childhood education unit. When a child changes to another early childhood education unit in the City of Espoo, the early childhood education plan and other early childhood education documents are transferred to the new unit (also applies to early childhood education organized by Espoo as a purchasing service). The guardian will be informed about the transfer in advance. We ask the guardian for permission to hand over the early childhood education plan to an outsider. However, if a child enters private or other municipality's early childhood education, the early childhood education plan must be submitted to the new early childhood education provider even without permission, if the information is necessary for arranging the child's early childhood education (section 41 (3) of the Early Childhood Education Act). In addition, the early childhood education plan must be submitted to the organizer of pre-primary or primary education if it is necessary for the organization of the child's education (section 41 (4) of the Basic Education Act). The guardian will be informed of the transfer in advance.",
+    givePermissionToShareInfoLeops:
+      "If you want to change the recipients mentioned in the plan, contact the staff of your child's early childhood education unit. The pre-school learning plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 41, Sections 40 and 41 of the Basic Education Act).",
+    givePermissionToShareReminder:
+      'Confirm the recipients to whom the plan may be disclosed'
   },
   placement: {
     // TODO i18n

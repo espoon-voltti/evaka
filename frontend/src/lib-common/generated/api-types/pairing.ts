@@ -59,7 +59,7 @@ export interface Pairing {
 /**
 * Generated from fi.espoo.evaka.pairing.PairingStatus
 */
-export type PairingStatus = 
+export type PairingStatus =
   | 'WAITING_CHALLENGE'
   | 'WAITING_RESPONSE'
   | 'READY'
@@ -91,7 +91,7 @@ export interface PinLoginResponse {
 /**
 * Generated from fi.espoo.evaka.pairing.PinLoginStatus
 */
-export type PinLoginStatus = 
+export type PinLoginStatus =
   | 'SUCCESS'
   | 'WRONG_PIN'
   | 'PIN_LOCKED'

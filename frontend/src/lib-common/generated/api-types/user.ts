@@ -19,7 +19,7 @@ export interface EvakaUser {
 /**
 * Generated from fi.espoo.evaka.user.EvakaUserType
 */
-export type EvakaUserType = 
+export type EvakaUserType =
   | 'SYSTEM'
   | 'CITIZEN'
   | 'EMPLOYEE'

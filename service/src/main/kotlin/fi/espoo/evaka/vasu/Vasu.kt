@@ -71,6 +71,8 @@ data class VasuDocumentSummary(
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
+    val publishedAt: HelsinkiDateTime?,
+    val guardiansThatHaveGivenPermissionToShare: List<PersonId>
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -114,7 +116,8 @@ data class VasuChild(
 data class VasuGuardian(
     val id: PersonId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val hasGivenPermissionToShare: Boolean = false
 )
 
 @Json

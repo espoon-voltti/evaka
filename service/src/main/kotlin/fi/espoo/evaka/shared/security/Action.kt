@@ -226,6 +226,12 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+        enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu()),
+            GIVE_PERMISSION_TO_SHARE(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
     }
 
     enum class Application(override vararg val defaultRules: ScopedActionRule<in ApplicationId>) : ScopedAction<ApplicationId> {

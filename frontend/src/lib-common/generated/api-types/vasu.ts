@@ -19,11 +19,36 @@ export interface ChangeDocumentStateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.ChildBasicInfo
+*/
+export interface ChildBasicInfo {
+  firstName: string
+  id: UUID
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.ChildLanguage
 */
 export interface ChildLanguage {
   languageSpokenAtHome: string
   nativeLanguage: string
+}
+
+/**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.ChildVasuSummary
+*/
+export interface ChildVasuSummary {
+  child: ChildBasicInfo
+  vasuDocumentsSummary: VasuDocumentSummary[]
+}
+
+/**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.CitizenGetVasuDocumentResponse
+*/
+export interface CitizenGetVasuDocumentResponse {
+  guardianHasGivenPermissionToShare: boolean
+  vasu: VasuDocument
 }
 
 /**
@@ -54,7 +79,7 @@ export interface CreateTemplateRequest {
 /**
 * Generated from fi.espoo.evaka.vasu.CurriculumType
 */
-export type CurriculumType = 
+export type CurriculumType =
   | 'DAYCARE'
   | 'PRESCHOOL'
 
@@ -136,7 +161,7 @@ export interface VasuDocumentEvent {
 /**
 * Generated from fi.espoo.evaka.vasu.VasuDocumentEventType
 */
-export type VasuDocumentEventType = 
+export type VasuDocumentEventType =
   | 'PUBLISHED'
   | 'MOVED_TO_READY'
   | 'RETURNED_TO_READY'
@@ -147,7 +172,7 @@ export type VasuDocumentEventType =
 /**
 * Generated from fi.espoo.evaka.vasu.VasuDocumentState
 */
-export type VasuDocumentState = 
+export type VasuDocumentState =
   | 'DRAFT'
   | 'READY'
   | 'REVIEWED'
@@ -159,9 +184,11 @@ export type VasuDocumentState =
 export interface VasuDocumentSummary {
   documentState: VasuDocumentState
   events: VasuDocumentEvent[]
+  guardiansThatHaveGivenPermissionToShare: UUID[]
   id: UUID
   modifiedAt: Date
   name: string
+  publishedAt: Date | null
 }
 
 /**
@@ -169,6 +196,7 @@ export interface VasuDocumentSummary {
 */
 export interface VasuGuardian {
   firstName: string
+  hasGivenPermissionToShare: boolean
   id: UUID
   lastName: string
 }
@@ -176,7 +204,7 @@ export interface VasuGuardian {
 /**
 * Generated from fi.espoo.evaka.vasu.VasuLanguage
 */
-export type VasuLanguage = 
+export type VasuLanguage =
   | 'FI'
   | 'SV'
 

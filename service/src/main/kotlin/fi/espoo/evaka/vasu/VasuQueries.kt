@@ -6,13 +6,16 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
@@ -207,6 +210,9 @@ data class SummaryResultRow(
     val id: VasuDocumentId,
     val name: String,
     val modifiedAt: HelsinkiDateTime,
+    val publishedAt: HelsinkiDateTime? = null,
+    @Json
+    val basics: VasuBasics,
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null
@@ -221,11 +227,20 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             cd.modified_at,
             e.id AS event_id,
             e.created AS event_created,
-            e.event_type
+            e.event_type,
+            vc.published_at,
+            cd.basics
         FROM curriculum_document cd
         JOIN curriculum_template ct ON cd.template_id = ct.id
         JOIN child c ON c.id = cd.child_id
         LEFT JOIN curriculum_document_event e ON cd.id = e.curriculum_document_id
+        LEFT JOIN LATERAL (
+            SELECT vc.published_at
+            FROM curriculum_content vc
+            WHERE vc.published_at IS NOT NULL AND vc.document_id = cd.id
+            ORDER BY vc.published_at DESC
+            LIMIT 1
+        ) vc ON TRUE
         WHERE c.id = :childId
         ORDER BY cd.modified_at DESC
     """.trimIndent()
@@ -239,6 +254,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 id = documentId,
                 name = documents[0].name,
                 modifiedAt = documents[0].modifiedAt,
+                publishedAt = documents[0].publishedAt,
+                guardiansThatHaveGivenPermissionToShare = documents[0].basics.guardians.filter { it.hasGivenPermissionToShare }.map { it.id },
                 events = documents.mapNotNull {
                     if (it.eventId != null && it.eventCreated != null && it.eventType != null) VasuDocumentEvent(
                         id = it.eventId,
@@ -327,4 +344,45 @@ fun Database.Read.getVasuFollowupEntry(id: VasuDocumentFollowupEntryId): Followu
         .bind("entryId", entryId.toString())
         .map { row -> row.mapJsonColumn<FollowupEntry>("entry") }
         .one()
+}
+
+fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId, guardianId: PersonId) {
+    val currentBasics = getVasuDocumentMaster(docId)?.basics
+        ?: throw NotFound("Vasu document not found!")
+
+    val (guardianFromDocument, otherGuardiansFromDocument) = currentBasics.guardians.partition {
+            g ->
+        g.id == guardianId
+    }
+
+    val guardian = if (guardianFromDocument.size == 1) guardianFromDocument[0] else {
+        createQuery(
+            """
+        SELECT p.id, p.first_name, p.last_name
+        FROM person p
+        WHERE p.id = :id
+            """.trimIndent()
+        )
+            .bind("id", guardianId)
+            .mapTo<VasuGuardian>()
+            .first()
+    }
+
+    createUpdate(
+        """
+UPDATE curriculum_document
+SET basics = :basics
+WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", docId)
+        .bind(
+            "basics",
+            currentBasics.copy(
+                guardians = otherGuardiansFromDocument + guardian.copy(
+                    hasGivenPermissionToShare = true
+                )
+            )
+        )
+        .execute()
 }

@@ -31,7 +31,7 @@ export interface CreateRetroactiveFeeDecisionsBody {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.DistinctiveParams
 */
-export type DistinctiveParams = 
+export type DistinctiveParams =
   | 'UNCONFIRMED_HOURS'
   | 'EXTERNAL_CHILD'
   | 'RETROACTIVE'
@@ -185,7 +185,7 @@ export interface FeeDecisionServiceNeed {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 */
-export type FeeDecisionSortParam = 
+export type FeeDecisionSortParam =
   | 'HEAD_OF_FAMILY'
   | 'VALIDITY'
   | 'NUMBER'
@@ -197,7 +197,7 @@ export type FeeDecisionSortParam =
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 */
-export type FeeDecisionStatus = 
+export type FeeDecisionStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
   | 'WAITING_FOR_MANUAL_SENDING'
@@ -235,7 +235,7 @@ export interface FeeDecisionThresholds {
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionType
 */
-export type FeeDecisionType = 
+export type FeeDecisionType =
   | 'NORMAL'
   | 'RELIEF_REJECTED'
   | 'RELIEF_PARTLY_ACCEPTED'
@@ -298,7 +298,7 @@ export interface GenerateDecisionsBody {
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeEffect
 */
-export type IncomeEffect = 
+export type IncomeEffect =
   | 'MAX_FEE_ACCEPTED'
   | 'INCOMPLETE'
   | 'INCOME'
@@ -394,7 +394,7 @@ export interface InvoiceDetailed {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 */
-export type InvoiceDistinctiveParams = 
+export type InvoiceDistinctiveParams =
   | 'MISSING_ADDRESS'
 
 /**
@@ -461,7 +461,7 @@ export interface InvoiceRowSummary {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 */
-export type InvoiceSortParam = 
+export type InvoiceSortParam =
   | 'HEAD_OF_FAMILY'
   | 'CHILDREN'
   | 'START'
@@ -473,7 +473,7 @@ export type InvoiceSortParam =
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.InvoiceStatus
 */
-export type InvoiceStatus = 
+export type InvoiceStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
   | 'SENT'
@@ -620,14 +620,14 @@ export interface SearchVoucherValueDecisionRequest {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.SortDirection
 */
-export type SortDirection = 
+export type SortDirection =
   | 'ASC'
   | 'DESC'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeAlteration.Type
 */
-export type Type = 
+export type Type =
   | 'DISCOUNT'
   | 'INCREASE'
   | 'RELIEF'
@@ -753,14 +753,14 @@ export interface VoucherValueDecisionServiceNeed {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 */
-export type VoucherValueDecisionSortParam = 
+export type VoucherValueDecisionSortParam =
   | 'HEAD_OF_FAMILY'
   | 'STATUS'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 */
-export type VoucherValueDecisionStatus = 
+export type VoucherValueDecisionStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
   | 'WAITING_FOR_MANUAL_SENDING'
@@ -789,7 +789,7 @@ export interface VoucherValueDecisionSummary {
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 */
-export type VoucherValueDecisionType = 
+export type VoucherValueDecisionType =
   | 'NORMAL'
   | 'RELIEF_REJECTED'
   | 'RELIEF_PARTLY_ACCEPTED'

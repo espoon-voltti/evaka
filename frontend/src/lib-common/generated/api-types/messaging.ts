@@ -12,7 +12,7 @@ import { UUID } from '../../types'
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType
 */
-export type AccountType = 
+export type AccountType =
   | 'PERSONAL'
   | 'GROUP'
   | 'CITIZEN'
@@ -132,7 +132,7 @@ export interface MessageThread {
 /**
 * Generated from fi.espoo.evaka.messaging.MessageType
 */
-export type MessageType = 
+export type MessageType =
   | 'MESSAGE'
   | 'BULLETIN'
 

@@ -70,7 +70,7 @@ export interface AttendanceResponse {
 /**
 * Generated from fi.espoo.evaka.attendance.AttendanceStatus
 */
-export type AttendanceStatus = 
+export type AttendanceStatus =
   | 'COMING'
   | 'PRESENT'
   | 'DEPARTED'

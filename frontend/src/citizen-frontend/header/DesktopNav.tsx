@@ -80,8 +80,8 @@ export default React.memo(function DesktopNav({
                   )}
                   {user.accessibleFeatures.pedagogicalDocumentation && (
                     <StyledNavLink
-                      to="/pedagogical-documents"
-                      data-qa="nav-pedagogical-documents"
+                      to="/child-documents"
+                      data-qa="nav-child-documents"
                     >
                       {t.header.nav.pedagogicalDocuments}
                       {maybeLockElem}

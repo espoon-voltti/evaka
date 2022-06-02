@@ -25,6 +25,9 @@ import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
+import ChildDocuments from './child-documents/ChildDocuments'
+import { PedagogicalDocumentsContextProvider } from './child-documents/state'
+import VasuPage from './child-documents/vasu/VasuPage'
 import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -42,8 +45,6 @@ import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
-import PedagogicalDocuments from './pedagogical-documents/PedagogicalDocuments'
-import { PedagogicalDocumentsContextProvider } from './pedagogical-documents/state'
 import PersonalDetails from './personal-details/PersonalDetails'
 
 export default function App() {
@@ -225,10 +226,18 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            path="/pedagogical-documents"
+            path="/child-documents"
             element={
               <RequireAuth>
-                <PedagogicalDocuments />
+                <ChildDocuments />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/vasu/:id"
+            element={
+              <RequireAuth>
+                <VasuPage />
               </RequireAuth>
             }
           />

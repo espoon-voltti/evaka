@@ -95,6 +95,6 @@ export interface QuestionnaireConditions {
 /**
 * Generated from fi.espoo.evaka.holidayperiod.QuestionnaireType
 */
-export type QuestionnaireType = 
+export type QuestionnaireType =
   | 'FIXED_PERIOD'
   | 'OPEN_RANGES'

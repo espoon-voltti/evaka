@@ -1805,6 +1805,11 @@ const sv: Translations = {
       returnMessage: 'Gå tillbaka till inloggningen'
     }
   },
+  childDocuments: {
+    title: 'Småbarnsutbildningsplan och förskolans lärandeplan',
+    description:
+      'På denna sida publiceras barnets förskoleplan och förskolans lärandeplan och bilder och andra dokument som rör barnets tillväxt, lärande och vardag sammanställs.'
+  },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',
     description:
@@ -1816,6 +1821,47 @@ const sv: Translations = {
       description: 'Beskrivning'
     },
     toggleExpandText: 'Visa eller göm texten'
+  },
+  vasu: {
+    title: 'Dokument relaterade till barnets dagliga liv',
+    lastModified: 'Senaste ändringsdatum',
+    lastPublished: 'Senast publicerad av målsman',
+    leavePage: 'Utgång',
+    edited: 'anpassas',
+    eventTypes: {
+      PUBLISHED: 'Publicerad till en vårdnadshavare',
+      MOVED_TO_READY: 'Publicerad i utkastläge',
+      RETURNED_TO_READY: 'Återvänd till färdigställt tillstånd',
+      MOVED_TO_REVIEWED: 'Publicerad i rated',
+      RETURNED_TO_REVIEWED: 'Återvänd till betyg',
+      MOVED_TO_CLOSED: 'Färdiga'
+    },
+    states: {
+      DRAFT: 'Förslag',
+      READY: 'Beredd',
+      REVIEWED: 'Beräknad',
+      CLOSED: 'Färdiga'
+    },
+    state: 'Status för planen',
+    events: {
+      DAYCARE: 'Evenemang för tidig barndomsutbildning',
+      PRESCHOOL: 'Barn förskola lärande plan händelser'
+    },
+    noRecord: 'Ingen ingång',
+    givePermissionToShareTitleVasu:
+      'Bekräftelse av överföringen av planen för förskoleundervisning till andra mottagare',
+    givePermissionToShareTitleLeops:
+      'Bekräftelse av överföring av förskolans lärandeplan till andra mottagare',
+    givePermissionToShareVasu:
+      'Jag bekräftar att barnets förskoleplan kan överlämnas till de parter som nämns i avsnittet "Mottagare".',
+    givePermissionToShareLeops:
+      'Jag bekräftar att barnets lärandeplan för förskolan kan komma att överlämnas till de parter som nämns i avsnittet ”Informationsmottagare”.',
+    givePermissionToShareInfoVasu:
+      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. När ett barn byter till en annan förskoleenhet i Esbo stad, överförs planen för förskoleundervisningen och andra förskoleundervisningsdokument till den nya enheten (gäller även förskoleutbildning som anordnas av Esbo som inköpstjänst). Vårdnadshavaren kommer att informeras om överföringen i förväg. Vi ber vårdnadshavaren om tillstånd att lämna över förskoleplanen till en utomstående. Om ett barn går in i privat eller annan kommuns förskoleundervisning, ska förskoleplanen lämnas till den nya förskoleanordnaren även utan tillstånd, om uppgifterna är nödvändiga för att ordna barnets förskoleundervisning (41 § 3 st. ) i lagen om förskoleundervisning). Dessutom ska planen för förskoleundervisningen lämnas till den som anordnar för- eller grundutbildningen om det behövs för att organisera barnets utbildning (41 § 4 mom. lagen om grundläggande utbildning). Vårdnadshavaren kommer att informeras om överföringen i förväg.',
+    givePermissionToShareInfoLeops:
+      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. Förskolans lärandeplan får överlämnas till en ny anordnare av förskoleundervisning, förskoleutbildning eller grundläggande utbildning även utan vårdnadshavarens tillstånd, om det är nödvändigt för att anordna förskoleundervisning, förskoleutbildning eller grundutbildning (§ 41 40 och 41 §§ lagen om grundläggande utbildning).',
+    givePermissionToShareReminder:
+      'Bekräfta de mottagare som planen kan lämnas ut till'
   },
   placement: {
     type: {
