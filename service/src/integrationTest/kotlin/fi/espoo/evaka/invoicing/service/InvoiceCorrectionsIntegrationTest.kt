@@ -359,6 +359,15 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(refundId, invoiceWithCorrections.rows.last().correctionId)
     }
 
+    @Test
+    fun `refunds without a matching invoice do not generate new invoices`() {
+        val month = Month.JANUARY
+        insertTestCorrection(1, -50_00, month)
+
+        val invoicesWithCorrections = db.read { it.applyCorrections(listOf(), month) }
+        assertEquals(0, invoicesWithCorrections.size)
+    }
+
     private fun Database.Read.applyCorrections(
         invoices: List<Invoice>,
         month: Month,

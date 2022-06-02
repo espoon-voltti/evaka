@@ -192,7 +192,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                         invoiceWithSubtractions.copy(rows = invoiceWithSubtractions.rows + subtractionWithMaxUnitPrice.toInvoiceRow())
                     }
                 }
-        }
+        }.filter { it.rows.isNotEmpty() }
 
         return invoicesWithCorrections + invoices.filterNot { invoice ->
             invoicesWithCorrections.any { correction -> invoice.id == correction.id }
