@@ -99,8 +99,14 @@ const Content = React.memo(function Content() {
       <Main ariaHidden={modalOpen} ref={mainRef}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/map" element={<MapView />} />
-          <Route path="/applying/*" element={<ApplyingRouter />} />
+          <Route
+            path="/map"
+            element={<MapView scrollToTop={scrollMainToTop} />}
+          />
+          <Route
+            path="/applying/*"
+            element={<ApplyingRouter scrollToTop={scrollMainToTop} />}
+          />
           <Route
             path="/accessibility"
             element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
