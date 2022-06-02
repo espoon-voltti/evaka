@@ -75,7 +75,12 @@ export default React.memo(function UnitList() {
                             <StatDesc>{i18n.units.staff}</StatDesc>
                           </div>
                           <div>
-                            <Stat>{utilization.toFixed(1)} %</Stat>
+                            <Stat>
+                              {utilization.toFixed
+                                ? utilization.toFixed(1)
+                                : utilization}{' '}
+                              %
+                            </Stat>
                             <StatDesc>{i18n.units.utilization}</StatDesc>
                           </div>
                         </UnitRow>
