@@ -300,6 +300,18 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
+    fun `post child departs - multi day attendance that ends at midnight`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildPresent(LocalTime.of(8, 50), LocalDate.now().minusDays(1))
+
+        val departed = LocalTime.of(0, 0)
+        val child = markDepartedAssertOkOneChild(departed, null)
+
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+    }
+
+    @Test
     fun `post child departs - departing twice is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
@@ -452,12 +464,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.COMING, child.status)
     }
 
-    private fun givenChildPresent(arrived: LocalTime = roundedTimeNow().minusHours(1)) {
+    private fun givenChildPresent(arrived: LocalTime = roundedTimeNow().minusHours(1), date: LocalDate = LocalDate.now()) {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = HelsinkiDateTime.now().withTime(arrived),
+                arrived = HelsinkiDateTime.of(date, arrived),
                 departed = null
             )
         }
