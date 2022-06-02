@@ -296,6 +296,7 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
         .list()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
+    // The default application date is set to be 15 days before the start because it's the minimum for Varda to not deduce the application as urgent
     // language=sql
     val sql = """
         SELECT
@@ -303,7 +304,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             p.child_id AS child_id,
             sn.start_date,
             sn.end_date,
-            LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date) AS application_date,            
+            LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
             COALESCE((af.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
             sno.daycare_hours_per_week AS hours_per_week,
             CASE 
