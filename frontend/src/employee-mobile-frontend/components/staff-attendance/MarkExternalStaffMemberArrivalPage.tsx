@@ -102,6 +102,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
             onChange={(name) => setForm((old) => ({ ...old, name }))}
             width="full"
             data-qa="input-name"
+            placeholder={`${i18n.common.lastName} ${i18n.common.firstName}`}
           />
 
           <Label>{i18n.common.group}</Label>

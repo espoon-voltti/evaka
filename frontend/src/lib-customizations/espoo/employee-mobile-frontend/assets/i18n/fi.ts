@@ -80,7 +80,9 @@ export const fi = {
     openExpandingInfo: 'Avaa lisätietokenttä',
     nb: 'Huom',
     validity: 'Voimassaolo',
-    validTo: (date: string) => `Voimassa ${date} saakka`
+    validTo: (date: string) => `Voimassa ${date} saakka`,
+    lastName: 'Sukunimi',
+    firstName: 'Etunimi'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
