@@ -105,6 +105,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -454,7 +455,16 @@ class DevApi(
 
     @PostMapping("/income-statements")
     fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
-        db.connect { dbc -> dbc.transaction { tx -> body.data.forEach { tx.createIncomeStatement(body.personId, it) } } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                body.data.forEach {
+                    tx.createIncomeStatement(
+                        body.personId,
+                        it
+                    )
+                }
+            }
+        }
 
     @PostMapping("/income")
     fun createIncome(db: Database, @RequestBody body: DevIncome) {
@@ -483,7 +493,13 @@ class DevApi(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val personId = tx.insertTestPerson(body)
-                tx.insertEvakaUser(EvakaUser(id = EvakaUserId(personId.raw), type = EvakaUserType.CITIZEN, name = "${body.lastName} ${body.firstName}"))
+                tx.insertEvakaUser(
+                    EvakaUser(
+                        id = EvakaUserId(personId.raw),
+                        type = EvakaUserType.CITIZEN,
+                        name = "${body.lastName} ${body.firstName}"
+                    )
+                )
                 tx.createPersonMessageAccount(personId)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {
@@ -925,7 +941,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                 employeePins.forEach { employeePin ->
                     val userId =
                         if (employeePin.userId != null) employeePin.userId
-                        else if (!employeePin.employeeExternalId.isNullOrBlank()) it.getEmployeeIdByExternalId(employeePin.employeeExternalId)
+                        else if (!employeePin.employeeExternalId.isNullOrBlank()) it.getEmployeeIdByExternalId(
+                            employeePin.employeeExternalId
+                        )
                         else throw Error("Cannot create dev employee pin: user id and external user id missing")
 
                     it.insertEmployeePin(employeePin.copy(userId = userId))
@@ -1136,6 +1154,21 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             }
         }
     }
+
+    @PostMapping("/realtime-staff-attendance")
+    fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    """
+                    INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient)
+                    VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient)
+                    """.trimIndent()
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1162,7 +1195,12 @@ private fun <T> Database.Connection.withLockedDatabase(timeout: Duration, f: (tx
     error("Timed out while waiting for database lock")
 }
 
-private data class ActiveConnection(val state: String, val xactStart: Instant?, val queryStart: Instant?, val query: String?)
+private data class ActiveConnection(
+    val state: String,
+    val xactStart: Instant?,
+    val queryStart: Instant?,
+    val query: String?
+)
 
 private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
     val start = Instant.now()
@@ -1524,4 +1562,13 @@ data class DevUpsertStaffOccupancyCoefficient(
     val unitId: DaycareId,
     val employeeId: EmployeeId,
     val coefficient: BigDecimal
+)
+
+data class DevStaffAttendance(
+    val id: StaffAttendanceId,
+    val employeeId: EmployeeId,
+    val groupId: GroupId,
+    val arrived: HelsinkiDateTime,
+    val departed: HelsinkiDateTime?,
+    val occupancyCoefficient: BigDecimal
 )

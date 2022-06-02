@@ -142,6 +142,84 @@ export class UnitAttendancesPage {
     const icons = this.page.findAllByDataQa('icon-occupancy-coefficient')
     await waitUntilEqual(() => icons.count(), expectedCount)
   }
+
+  async clickEditOnRow(rowIx: number): Promise<void> {
+    await this.page
+      .findByDataQa(`attendance-row-${rowIx}`)
+      .findByDataQa('row-menu')
+      .click()
+    await this.page.findByDataQa('menu-item-edit-row').click()
+  }
+
+  async clickCommitOnRow(rowIx: number): Promise<void> {
+    await this.page
+      .findByDataQa(`attendance-row-${rowIx}`)
+      .findByDataQa('inline-editor-state-button')
+      .click()
+  }
+
+  async assertNoTimeInputsVisible(): Promise<void> {
+    const startInputs = this.page.findAllByDataQa('input-start-time')
+    const endInputs = this.page.findAllByDataQa('input-end-time')
+    await waitUntilEqual(() => startInputs.count(), 0)
+    await waitUntilEqual(() => endInputs.count(), 0)
+  }
+
+  async assertCountTimeInputsVisible(count: number): Promise<void> {
+    const startInputs = this.page.findAllByDataQa('input-start-time')
+    const endInputs = this.page.findAllByDataQa('input-end-time')
+    await waitUntilEqual(() => startInputs.count(), count)
+    await waitUntilEqual(() => endInputs.count(), count)
+  }
+
+  async setNthStartTime(nth: number, time: string): Promise<void> {
+    const input = new TextInput(
+      this.page.findAllByDataQa('input-start-time').nth(nth)
+    )
+    await input.fill(time)
+  }
+
+  async setNthArrivalDeparture(
+    nth: number,
+    arrival: string,
+    departure: string
+  ): Promise<void> {
+    await new TextInput(
+      this.page.findAllByDataQa('input-start-time').nth(nth)
+    ).fill(arrival)
+    await new TextInput(
+      this.page.findAllByDataQa('input-end-time').nth(nth)
+    ).fill(departure)
+  }
+
+  async assertArrivalDeparture({
+    rowIx,
+    nth,
+    arrival,
+    departure
+  }: {
+    rowIx: number
+    nth: number
+    arrival: string
+    departure: string
+  }): Promise<void> {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findByDataQa(`attendance-row-${rowIx}`)
+          .findAllByDataQa('arrival-time')
+          .nth(nth).innerText,
+      arrival
+    )
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findByDataQa(`attendance-row-${rowIx}`)
+          .findAllByDataQa('departure-time')
+          .nth(nth).innerText,
+      departure
+    )
+  }
 }
 
 export class ReservationModal extends Modal {

@@ -1020,3 +1020,18 @@ export async function upsertOccupancyCoefficient(body: {
     throw new DevApiError(e)
   }
 }
+
+export async function insertStaffRealtimeAttendance(body: {
+  id: UUID
+  employeeId: UUID
+  groupId: UUID
+  arrived: Date
+  departed?: Date
+  occupancyCoefficient: number
+}): Promise<void> {
+  try {
+    await devClient.post('/realtime-staff-attendance', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
