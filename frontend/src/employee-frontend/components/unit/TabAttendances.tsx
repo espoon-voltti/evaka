@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -17,7 +17,6 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { UnitData } from '../../api/unit'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
@@ -59,9 +58,7 @@ export default React.memo(function TabAttendances() {
   const { id: unitId } = useNonNullableParams<{ id: UUID }>()
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
-  const [mode, setMode] = useState<CalendarMode>(
-    featureFlags.experimental?.realtimeStaffAttendance ? 'week' : 'month'
-  )
+  const [mode, setMode] = useState<CalendarMode>('month')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
   const { roles } = useContext(UserContext)
 
@@ -76,6 +73,18 @@ export default React.memo(function TabAttendances() {
   const reservationEnabled = unitInformation
     .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))
     .getOrElse(false)
+
+  const realtimeStaffAttendanceEnabled = unitInformation
+    .map((u) =>
+      u.daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE')
+    )
+    .getOrElse(false)
+
+  useEffect(() => {
+    if (realtimeStaffAttendanceEnabled) {
+      setMode('week')
+    }
+  }, [realtimeStaffAttendanceEnabled])
 
   const staffOrNoGroupSelected = groupId === 'staff' || groupId === 'no-group'
   return (
@@ -119,6 +128,7 @@ export default React.memo(function TabAttendances() {
             <Occupancy
               filters={filters}
               occupancies={unitData.unitOccupancies}
+              realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
             />
           ) : null
         )}
@@ -127,19 +137,20 @@ export default React.memo(function TabAttendances() {
       <ContentArea opaque>
         <TopRow>
           <H3 noMargin>{i18n.unit.attendances.title}</H3>
-          {reservationEnabled && !staffOrNoGroupSelected && (
-            <FixedSpaceRow spacing="xs">
-              {(['week', 'month'] as const).map((m) => (
-                <ChoiceChip
-                  key={m}
-                  data-qa={`choose-calendar-mode-${m}`}
-                  text={i18n.unit.attendances.modes[m]}
-                  selected={mode === m}
-                  onChange={() => setMode(m)}
-                />
-              ))}
-            </FixedSpaceRow>
-          )}
+          {(reservationEnabled || realtimeStaffAttendanceEnabled) &&
+            !staffOrNoGroupSelected && (
+              <FixedSpaceRow spacing="xs">
+                {(['week', 'month'] as const).map((m) => (
+                  <ChoiceChip
+                    key={m}
+                    data-qa={`choose-calendar-mode-${m}`}
+                    text={i18n.unit.attendances.modes[m]}
+                    selected={mode === m}
+                    onChange={() => setMode(m)}
+                  />
+                ))}
+              </FixedSpaceRow>
+            )}
         </TopRow>
         <Gap size="xs" />
         <GroupSelectorWrapper>
@@ -148,6 +159,7 @@ export default React.memo(function TabAttendances() {
             selected={groupId}
             onSelect={setGroupId}
             data-qa="attendances-group-select"
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
           />
         </GroupSelectorWrapper>
 
@@ -157,6 +169,7 @@ export default React.memo(function TabAttendances() {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             reservationEnabled={reservationEnabled}
+            staffAttendanceEnabled={!realtimeStaffAttendanceEnabled}
           />
         )}
 
@@ -174,6 +187,7 @@ export default React.memo(function TabAttendances() {
                 .map(({ daycare }) => daycare.operationDays)
                 .getOrElse(null) ?? [1, 2, 3, 4, 5]
             }
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
           />
         )}
         <Gap size="L" />

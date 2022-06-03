@@ -9,7 +9,6 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import UnitAccessControl from '../../components/unit/tab-unit-information/UnitAccessControl'
 import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
@@ -53,7 +52,7 @@ export default React.memo(function TabUnitInformation() {
         />
       )}
 
-      {featureFlags.experimental?.realtimeStaffAttendance &&
+      {daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE') &&
         permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <StaffOccupancyCoefficients
             allowEditing={permittedActions.has(

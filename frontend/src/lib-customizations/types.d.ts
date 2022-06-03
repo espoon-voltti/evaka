@@ -122,7 +122,6 @@ interface BaseFeatureFlags {
   experimental?: {
     ai?: boolean
     messageAttachments?: boolean
-    realtimeStaffAttendance?: boolean
     personalDetailsPage?: boolean
     mobileMessages?: boolean
     leops?: boolean

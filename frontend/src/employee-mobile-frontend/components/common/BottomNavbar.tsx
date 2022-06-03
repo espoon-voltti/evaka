@@ -17,7 +17,6 @@ import {
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 import {
   faChild,
   fasChild,
@@ -140,7 +139,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               onClick={() =>
                 selected !== 'staff' &&
                 navigate(
-                  featureFlags.experimental?.realtimeStaffAttendance
+                  unit.features.includes('REALTIME_STAFF_ATTENDANCE')
                     ? `/units/${unitId}/groups/${groupId}/staff-attendance`
                     : `/units/${unitId}/groups/${groupId}/staff`
                 )

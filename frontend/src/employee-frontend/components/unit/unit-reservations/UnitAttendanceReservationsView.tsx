@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
@@ -23,7 +23,6 @@ import {
 import { fontWeights, H3, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import {
@@ -62,6 +61,7 @@ interface Props {
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   isShiftCareUnit: boolean
+  realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
 }
 
@@ -71,6 +71,7 @@ export default React.memo(function UnitAttendanceReservationsView({
   selectedDate,
   setSelectedDate,
   isShiftCareUnit,
+  realtimeStaffAttendanceEnabled,
   operationalDays
 }: Props) {
   const { i18n } = useTranslation()
@@ -181,7 +182,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             />
           ) : (
             <>
-              {featureFlags.experimental?.realtimeStaffAttendance && (
+              {realtimeStaffAttendanceEnabled && (
                 <StaffAttendanceTable
                   operationalDays={childData.operationalDays}
                   staffAttendances={staffData.staff

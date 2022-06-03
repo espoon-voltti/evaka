@@ -11,7 +11,6 @@ import { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontSizesMobile, fontWeights } from 'lib-components/typography'
 import colors, { theme } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -43,48 +42,57 @@ export default function GroupSelector({
 
   const { unitInfoResponse } = useContext(UnitContext)
 
-  return renderResult(unitInfoResponse, (unitInfo) => (
-    <Wrapper>
-      {includeSelectAll && (
-        <Group
-          selected={!selectedGroup}
-          onClick={() => onChangeGroup(undefined)}
-          data-qa="group--all"
-          name={i18n.common.all}
-          utilization={unitInfo.utilization}
-          count={
-            countInfo
-              ? `${countInfo.getPresentCount(
-                  undefined
-                )}/${countInfo.getTotalCount(undefined)}`
-              : ''
-          }
-        />
-      )}
-      {(groups || unitInfo.groups).map((group) => (
-        <Group
-          key={group.id}
-          name={group.name}
-          utilization={group.utilization}
-          selected={selectedGroup ? selectedGroup.id === group.id : false}
-          onClick={() => {
-            onChangeGroup(group)
-          }}
-          data-qa={`group--${group.id}`}
-          count={
-            countInfo
-              ? `${countInfo.getPresentCount(
-                  group.id
-                )}/${countInfo.getTotalCount(group.id)}`
-              : ''
-          }
-        />
-      ))}
-      {countInfo && !featureFlags.experimental?.realtimeStaffAttendance && (
-        <Info>{countInfo.infoText}</Info>
-      )}
-    </Wrapper>
-  ))
+  return renderResult(unitInfoResponse, (unitInfo) => {
+    const realtimeStaffAttendanceEnabled = unitInfo.features.includes(
+      'REALTIME_STAFF_ATTENDANCE'
+    )
+    return (
+      <Wrapper>
+        {includeSelectAll && (
+          <Group
+            selected={!selectedGroup}
+            onClick={() => onChangeGroup(undefined)}
+            data-qa="group--all"
+            name={i18n.common.all}
+            utilization={
+              realtimeStaffAttendanceEnabled ? unitInfo.utilization : undefined
+            }
+            count={
+              countInfo
+                ? `${countInfo.getPresentCount(
+                    undefined
+                  )}/${countInfo.getTotalCount(undefined)}`
+                : ''
+            }
+          />
+        )}
+        {(groups || unitInfo.groups).map((group) => (
+          <Group
+            key={group.id}
+            name={group.name}
+            utilization={
+              realtimeStaffAttendanceEnabled ? group.utilization : undefined
+            }
+            selected={selectedGroup ? selectedGroup.id === group.id : false}
+            onClick={() => {
+              onChangeGroup(group)
+            }}
+            data-qa={`group--${group.id}`}
+            count={
+              countInfo
+                ? `${countInfo.getPresentCount(
+                    group.id
+                  )}/${countInfo.getTotalCount(group.id)}`
+                : ''
+            }
+          />
+        ))}
+        {countInfo && !realtimeStaffAttendanceEnabled && (
+          <Info>{countInfo.infoText}</Info>
+        )}
+      </Wrapper>
+    )
+  })
 }
 
 const Info = styled.div`
@@ -103,7 +111,7 @@ type GroupProps = {
   count: string
   'data-qa': string
   selected: boolean
-  utilization: number
+  utilization?: number
   onClick: () => void
 }
 
@@ -120,7 +128,7 @@ const Group = ({
       <FontAwesomeIcon icon={faCheck} />
     </SelectionIndicator>
     <GroupName>{name}</GroupName>
-    {featureFlags.experimental?.realtimeStaffAttendance ? (
+    {utilization !== undefined ? (
       <Utilization warn={utilization >= 100}>
         {utilization.toFixed ? utilization.toFixed(1) : '∞'}%
       </Utilization>
