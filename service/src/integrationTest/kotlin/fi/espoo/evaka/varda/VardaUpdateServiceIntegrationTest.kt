@@ -304,7 +304,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
 
         assertVardaElementCounts(1, 1, 2)
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),
@@ -449,7 +449,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaElementCounts(1, 1, 1)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),
@@ -484,7 +484,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaElementCounts(1, 1, 1)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),
@@ -530,7 +530,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
         assertEquals(2, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
     }
 
     @Test
@@ -586,7 +586,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
         assertEquals(1, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
     }
 
     @Test
@@ -607,7 +607,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaElementCounts(1, 1, 0)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
     }
 
     @Test
@@ -630,7 +630,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaElementCounts(1, 1, 0)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
     }
 
     @Test
@@ -646,7 +646,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaElementCounts(1, 1, 0)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
     }
 
     @Test
@@ -755,7 +755,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         assertVardaServiceNeedIds(snId, 2, 2)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start.minusDays(15), 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),
