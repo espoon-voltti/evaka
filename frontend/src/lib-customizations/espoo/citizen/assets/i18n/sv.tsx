@@ -1807,12 +1807,10 @@ const sv: Translations = {
   childDocuments: {
     title: 'Småbarnsutbildningsplan och förskolans lärandeplan',
     description:
-      'På denna sida publiceras barnets förskoleplan och förskolans lärandeplan och bilder och andra dokument som rör barnets tillväxt, lärande och vardag sammanställs.'
+      'Hit samlas dokument och bilder angående barnets/barnens tillväxt och inlärning.'
   },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',
-    description:
-      'Hit samlas dokument och bilder angående barnets/barnens tillväxt och inlärning.',
     table: {
       date: 'Datum',
       child: 'Barn',

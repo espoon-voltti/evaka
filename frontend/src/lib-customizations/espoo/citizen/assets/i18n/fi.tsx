@@ -1787,8 +1787,6 @@ export default {
   },
   pedagogicalDocuments: {
     title: 'Lapsen arkeen liittyviä dokumentteja',
-    description:
-      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
       date: 'Päivämäärä',
       child: 'Lapsi',

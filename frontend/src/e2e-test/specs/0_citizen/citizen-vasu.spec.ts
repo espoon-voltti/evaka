@@ -58,6 +58,15 @@ beforeEach(async () => {
   await enduserLogin(page)
 })
 
+const insertVasu = async (childId: string): Promise<string> => {
+  vasuDocId = await insertVasuDocument(
+    childId,
+    await insertVasuTemplateFixture()
+  )
+  await publishVasuDocument(vasuDocId)
+  return vasuDocId
+}
+
 describe('Citizen vasu document page', () => {
   const openDocument = async () => {
     await page.goto(`${config.enduserUrl}/vasu/${vasuDocId}`)
@@ -99,5 +108,18 @@ describe('Citizen child documents listing page', () => {
       'Luonnos',
       LocalDate.today().format('dd.MM.yyyy')
     )
+  })
+
+  test('Published vasu document is in the list', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: childId
+      }
+    ])
+    await insertVasu(childId)
+    await page.reload()
+    await header.selectTab('child-documents')
+    //await page.pause()
   })
 })

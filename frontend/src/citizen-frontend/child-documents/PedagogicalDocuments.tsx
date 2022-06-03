@@ -20,7 +20,6 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { tabletMin } from 'lib-components/breakpoints'
 import Container, {
   CollapsibleContentArea,
   ContentArea
@@ -40,6 +39,7 @@ import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
+import { Desktop, Mobile, PaddedDiv } from './components'
 import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
@@ -189,7 +189,6 @@ const PedagogicalDocumentsDisplay = React.memo(
           <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
             <PaddedDiv>
               <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
-              <p>{t.pedagogicalDocuments.description}</p>
             </PaddedDiv>
             {items.length > 0 && (
               <PedagogicalDocumentsList
@@ -386,26 +385,6 @@ const AttachmentRowContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   padding-bottom: 8px;
-`
-
-const Mobile = styled.div`
-  display: none;
-
-  @media (max-width: ${tabletMin}) {
-    display: block;
-  }
-`
-
-const Desktop = styled.div`
-  display: none;
-
-  @media (min-width: ${tabletMin}) {
-    display: block;
-  }
-`
-
-const PaddedDiv = styled.div`
-  padding: 0 ${defaultMargins.s};
 `
 
 const ListItem = styled(FixedSpaceColumn)<{ documentIsRead: boolean }>`
