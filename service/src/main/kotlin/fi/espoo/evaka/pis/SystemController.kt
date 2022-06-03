@@ -65,15 +65,16 @@ class SystemController(private val personService: PersonService, private val acc
     ): EmployeeUser {
         return db.connect { dbc ->
             dbc.transaction {
-                val employee = it.getEmployeeUserByExternalId(request.externalId)
-                    ?: EmployeeUser(
-                        id = it.createEmployee(request.toNewEmployee()).id,
-                        firstName = request.firstName,
-                        lastName = request.lastName,
-                        globalRoles = emptySet(),
-                        allScopedRoles = emptySet()
-                    )
-                it.markEmployeeLastLogin(employee.id)
+                val inserted = it.loginEmployee(request.toNewEmployee())
+                val roles = it.getEmployeeRoles(inserted.id)
+                val employee = EmployeeUser(
+                    id = inserted.id,
+                    firstName = inserted.firstName,
+                    lastName = inserted.lastName,
+                    employeeNumber = inserted.employeeNumber,
+                    globalRoles = roles.globalRoles,
+                    allScopedRoles = roles.allScopedRoles
+                )
                 it.upsertEmployeeUser(employee.id)
                 employee
             }
@@ -129,10 +130,11 @@ class SystemController(private val personService: PersonService, private val acc
         val externalId: ExternalId,
         val firstName: String,
         val lastName: String,
-        val email: String?
+        val employeeNumber: String?,
+        val email: String?,
     ) {
         fun toNewEmployee(): NewEmployee =
-            NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
+            NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId, employeeNumber = employeeNumber)
     }
 
     @ExcludeCodeGen

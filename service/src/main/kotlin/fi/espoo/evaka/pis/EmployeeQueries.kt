@@ -24,6 +24,7 @@ data class NewEmployee(
     val lastName: String,
     val email: String?,
     val externalId: ExternalId?,
+    val employeeNumber: String?,
     val roles: Set<UserRole> = setOf()
 )
 
@@ -31,6 +32,12 @@ data class EmployeeUser(
     val id: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val employeeNumber: String?,
+    val globalRoles: Set<UserRole> = setOf(),
+    val allScopedRoles: Set<UserRole> = setOf()
+)
+
+data class EmployeeRoles(
     val globalRoles: Set<UserRole> = setOf(),
     val allScopedRoles: Set<UserRole> = setOf()
 )
@@ -56,30 +63,56 @@ data class EmployeeWithDaycareRoles(
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
-INSERT INTO employee (first_name, last_name, email, external_id, roles)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.roles::user_role[])
-RETURNING id, first_name, last_name, email, external_id, created, updated, roles
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[])
+RETURNING id, first_name, last_name, email, external_id, employee_number, created, updated, roles
     """.trimIndent()
 ).bindKotlin("employee", employee)
     .executeAndReturnGeneratedKeys()
     .mapTo<Employee>()
     .asSequence().first()
 
-private fun Database.Read.searchEmployees(id: EmployeeId? = null) = createQuery(
+fun Database.Transaction.loginEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
-SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
-FROM employee e
-WHERE (:id::uuid IS NULL OR e.id = :id)
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[])
+ON CONFLICT (external_id) DO UPDATE
+SET last_login = now(), first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
+RETURNING id, first_name, last_name, email, external_id, employee_number, created, updated, roles
     """.trimIndent()
-).bind("id", id)
+).bindKotlin("employee", employee)
+    .executeAndReturnGeneratedKeys()
+    .mapTo<Employee>()
+    .first()
+
+fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles = createQuery(
+    """
+SELECT employee.roles AS global_roles, (
+    SELECT array_agg(DISTINCT role ORDER BY role)
+    FROM daycare_acl
+    WHERE employee_id = employee.id
+) AS all_scoped_roles
+FROM employee
+WHERE id = :id
+    """.trimIndent()
+).bind("id", id).mapTo<EmployeeRoles>().first()
+
+private fun Database.Read.searchEmployees(id: EmployeeId? = null, externalId: ExternalId? = null) = createQuery(
+    // language=SQL
+    """
+SELECT e.id, first_name, last_name, email, external_id, employee_number, e.created, e.updated, roles
+FROM employee e
+WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
+    """.trimIndent()
+).bind("id", id).bind("externalId", externalId)
     .mapTo<Employee>()
     .asSequence()
 
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) = createQuery(
     // language=SQL
     """
-SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.employee_number, e.created, e.updated, e.roles
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (:id::uuid IS NULL OR e.id = :id)
@@ -91,10 +124,11 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
 fun Database.Read.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
 fun Database.Read.getEmployee(id: EmployeeId): Employee? = searchEmployees(id = id).firstOrNull()
+fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? = searchEmployees(externalId = externalId).firstOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
-SELECT id, first_name, last_name, email, employee.roles AS global_roles, (
+SELECT id, first_name, last_name, employee_number, email, employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id

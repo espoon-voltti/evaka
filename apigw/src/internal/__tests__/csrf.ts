@@ -11,6 +11,7 @@ const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
   firstName: '',
   lastName: '',
+  employeeNumber: null,
   globalRoles: ['SERVICE_WORKER'],
   allScopedRoles: []
 }

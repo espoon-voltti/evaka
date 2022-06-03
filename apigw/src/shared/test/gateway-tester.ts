@@ -88,6 +88,9 @@ export class GatewayTester {
   ): Promise<void> {
     postData = postData !== undefined ? postData : { preset: 'dummy' }
     if (this.sessionType === 'employee') {
+      this.nockScope
+        .get('/dev-api/employee/external-id/espoo-ad:dummy')
+        .reply(200, user)
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',

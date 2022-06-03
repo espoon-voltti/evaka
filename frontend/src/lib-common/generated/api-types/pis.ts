@@ -65,6 +65,7 @@ export interface DisableSsnRequest {
 export interface Employee {
   created: Date
   email: string | null
+  employeeNumber: string | null
   externalId: ExternalId | null
   firstName: string
   id: UUID
@@ -84,6 +85,7 @@ export interface EmployeeUpdate {
 */
 export interface EmployeeUser {
   allScopedRoles: UserRole[]
+  employeeNumber: string | null
   firstName: string
   globalRoles: UserRole[]
   id: UUID
@@ -218,6 +220,7 @@ export interface MergeRequest {
 */
 export interface NewEmployee {
   email: string | null
+  employeeNumber: string | null
   externalId: ExternalId | null
   firstName: string
   lastName: string
