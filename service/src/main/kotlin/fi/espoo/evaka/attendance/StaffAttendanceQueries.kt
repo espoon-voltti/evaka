@@ -34,19 +34,19 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
-        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
-        FROM staff_attendance_realtime sa
-        WHERE sa.employee_id = dacl.employee_id AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
-        ORDER BY sa.arrived DESC 
-        LIMIT 1
-    ) att ON TRUE
-    LEFT JOIN LATERAL (
         SELECT employee_id, array_agg(dg.id) AS group_ids
         FROM daycare_group dg
         JOIN daycare_group_acl dgacl ON dg.id = dgacl.daycare_group_id
         WHERE dg.daycare_id = :unitId AND dgacl.employee_id = dacl.employee_id
         GROUP BY employee_id
     ) dgacl ON true
+    LEFT JOIN LATERAL (
+        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
+        FROM staff_attendance_realtime sa
+        WHERE sa.employee_id = dacl.employee_id AND sa.group_id = ANY(dgacl.group_ids) AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
+        ORDER BY sa.arrived DESC 
+        LIMIT 1
+    ) att ON TRUE
     WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER') OR dgacl.employee_id IS NOT NULL)
     ORDER BY e.last_name, e.first_name
     """.trimIndent()

@@ -68,7 +68,10 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
-  staffFixture = await Fixture.employeeStaff(daycare2Fixture.id).save()
+  staffFixture = await Fixture.employeeStaff(daycare2Fixture.id)
+    .withGroupAcl(daycareGroupFixture.id)
+    .withGroupAcl(daycareGroup2Fixture.id)
+    .save()
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
 
   page = await Page.open({
