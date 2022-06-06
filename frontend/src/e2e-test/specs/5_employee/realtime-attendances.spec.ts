@@ -157,7 +157,8 @@ describe('Realtime staff attendances', () => {
         await calendarPage.assertCountTimeInputsVisible(1)
       })
 
-      test('Editing an existing entry updates it', async () => {
+      // TODO: enable this when we can reliably run time based tests both locally and on CI
+      test.skip('Editing an existing entry updates it', async () => {
         await calendarPage.selectGroup('staff')
         await calendarPage.assertNoTimeInputsVisible()
         await calendarPage.assertArrivalDeparture({
