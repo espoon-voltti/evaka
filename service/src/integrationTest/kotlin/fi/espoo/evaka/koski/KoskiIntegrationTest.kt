@@ -378,10 +378,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertEquals(
             Lisätiedot(
-                vammainen = listOf(Aikajakso(alku = testCases[0].period.start, loppu = testCases[0].period.end)),
-                vaikeastiVammainen = listOf(
-                    Aikajakso(alku = testCases[1].period.start, loppu = testCases[1].period.end)
-                ),
+                vammainen = listOf(Aikajakso.from(testCases[0].period)),
+                vaikeastiVammainen = listOf(Aikajakso.from(testCases[1].period)),
                 pidennettyOppivelvollisuus = null,
                 kuljetusetu = null,
                 erityisenTuenPäätökset = null
@@ -408,6 +406,15 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         )
         db.transaction { tx ->
+            tx.insertTestAssistanceNeed(
+                DevAssistanceNeed(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = testCases[0].period.start,
+                    endDate = testCases[0].period.end,
+                    bases = setOf("DEVELOPMENTAL_DISABILITY_1")
+                )
+            )
             testCases.forEach {
                 tx.insertTestAssistanceAction(
                     DevAssistanceAction(
@@ -425,13 +432,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertEquals(
             Lisätiedot(
-                vammainen = null,
+                vammainen = listOf(Aikajakso.from(testCases[0].period)),
                 vaikeastiVammainen = null,
-                pidennettyOppivelvollisuus = Aikajakso(
-                    alku = testCases[0].period.start,
-                    loppu = testCases[0].period.end
-                ),
-                kuljetusetu = Aikajakso(alku = testCases[1].period.start, loppu = testCases[1].period.end),
+                pidennettyOppivelvollisuus = Aikajakso.from(testCases[0].period),
+                kuljetusetu = Aikajakso.from(testCases[1].period),
                 erityisenTuenPäätökset = listOf(
                     ErityisenTuenPäätös(
                         alku = testCases[2].period.start,
@@ -440,6 +444,53 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         opiskeleeToimintaAlueittain = false
                     )
                 )
+            ),
+            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+        )
+    }
+
+    @Test
+    fun `sent extended compulsory education date ranges are adjusted to fit Koski requirements`() {
+        // https://github.com/Opetushallitus/koski/pull/1860
+
+        insertPlacement(testChild_1)
+        val assistanceNeeds = listOf(
+            Pair(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
+            Pair(testPeriod(4L to 8L), "DEVELOPMENTAL_DISABILITY_2")
+        )
+        db.transaction { tx ->
+            assistanceNeeds.forEach {
+                tx.insertTestAssistanceNeed(
+                    DevAssistanceNeed(
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        childId = testChild_1.id,
+                        startDate = it.first.start,
+                        endDate = it.first.end,
+                        bases = setOf(it.second)
+                    )
+                )
+            }
+            val actionPeriod = testPeriod(1L to 7L)
+            tx.insertTestAssistanceAction(
+                DevAssistanceAction(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = actionPeriod.start,
+                    endDate = actionPeriod.end,
+                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
+                    actions = emptySet()
+                )
+            )
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+        assertEquals(
+            Lisätiedot(
+                vammainen = listOf(Aikajakso.from(assistanceNeeds[0].first)),
+                vaikeastiVammainen = listOf(Aikajakso.from(assistanceNeeds[1].first)),
+                pidennettyOppivelvollisuus = Aikajakso.from(testPeriod(4L to 7L)),
+                kuljetusetu = null,
+                erityisenTuenPäätökset = null
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
         )
