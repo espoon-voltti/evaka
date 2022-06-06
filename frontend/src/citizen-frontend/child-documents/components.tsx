@@ -8,10 +8,10 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 
 export const Mobile = styled.div`
-  display: none;
+  display: block;
 
-  @media (max-width: ${tabletMin}) {
-    display: block;
+  @media (min-width: ${tabletMin}) {
+    display: none;
   }
 `
 

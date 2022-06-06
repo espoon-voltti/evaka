@@ -1805,7 +1805,7 @@ const sv: Translations = {
     }
   },
   childDocuments: {
-    title: 'Småbarnsutbildningsplan och förskolans lärandeplan',
+    title: 'Tillväxt och inlärning',
     description:
       'Hit samlas dokument och bilder angående barnets/barnens tillväxt och inlärning.'
   },

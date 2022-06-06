@@ -1848,7 +1848,7 @@ const en: Translations = {
     }
   },
   childDocuments: {
-    title: 'Early Childhood Education Plan and Preschool Learning Plan',
+    title: 'Growth and learning',
     description:
       'Documents and photos relating to the growth and learning of the child are gathered on this page.'
   },

@@ -30,7 +30,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { fontWeights, H1, H2 } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
 
@@ -188,7 +188,7 @@ const PedagogicalDocumentsDisplay = React.memo(
         <Mobile>
           <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
             <PaddedDiv>
-              <H1 noMargin>{t.pedagogicalDocuments.title}</H1>
+              <H2 noMargin>{t.pedagogicalDocuments.title}</H2>
             </PaddedDiv>
             {items.length > 0 && (
               <PedagogicalDocumentsList

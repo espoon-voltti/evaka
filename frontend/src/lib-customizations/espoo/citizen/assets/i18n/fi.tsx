@@ -1781,7 +1781,7 @@ export default {
     }
   },
   childDocuments: {
-    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    title: 'Kasvu ja oppiminen',
     description:
       'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
   },

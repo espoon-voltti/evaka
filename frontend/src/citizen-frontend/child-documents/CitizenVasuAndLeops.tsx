@@ -181,7 +181,11 @@ const VasuDisplay = React.memo(function VasuDisplay({
     <>
       <Mobile>
         <CollapsibleContentArea
-          title={<H2 noMargin>{i18n.vasu.title}</H2>}
+          title={
+            <PaddedDiv>
+              <H2 noMargin>{i18n.vasu.title}</H2>
+            </PaddedDiv>
+          }
           open={open}
           toggleOpen={() => setOpen(!open)}
           opaque
