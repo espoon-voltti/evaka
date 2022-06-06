@@ -6,7 +6,10 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
-import { ChildVasuSummary } from 'lib-common/generated/api-types/vasu'
+import {
+  ChildVasuSummary,
+  VasuDocumentSummary
+} from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -42,19 +45,36 @@ const VasuTd = styled.td`
 `
 
 const StateTd = styled(VasuTd)``
-const PermissionToShareContainer = styled.div``
 const PermissionToShareText = styled.span`
   padding-left: 6px;
 `
+
+const PermissionToShare = React.memo(function PermissionToShare() {
+  const i18n = useTranslation()
+  const theme = useTheme()
+
+  return (
+    <>
+      <RoundIcon
+        content={faExclamation}
+        color={theme.colors.status.warning}
+        size="s"
+        data-qa="attention-indicator"
+      />
+      <PermissionToShareText>
+        {i18n.vasu.givePermissionToShareReminder}
+      </PermissionToShareText>
+    </>
+  )
+})
 
 const VasuTable = React.memo(function VasuTable({
   summary
 }: {
   summary: ChildVasuSummary
 }) {
-  const i18n = useTranslation()
   const navigate = useNavigate()
-  const theme = useTheme()
+  const i18n = useTranslation()
   const user = useUser()
 
   return (
@@ -84,19 +104,7 @@ const VasuTable = React.memo(function VasuTable({
               <VasuTd data-qa={`permission-to-share-needed-${vasu.id}`}>
                 {!vasu.guardiansThatHaveGivenPermissionToShare.some(
                   (guardianId) => guardianId === user?.id
-                ) && (
-                  <PermissionToShareContainer>
-                    <RoundIcon
-                      content={faExclamation}
-                      color={theme.colors.status.warning}
-                      size="s"
-                      data-qa="attention-indicator"
-                    />
-                    <PermissionToShareText>
-                      {i18n.vasu.givePermissionToShareReminder}
-                    </PermissionToShareText>
-                  </PermissionToShareContainer>
-                )}
+                ) && <PermissionToShare />}
               </VasuTd>
             </VasuTr>
           ))}
@@ -106,73 +114,116 @@ const VasuTable = React.memo(function VasuTable({
   )
 })
 
-const MobileRowContainer = styled.div`
+const MobileRowContainer = styled.div<{ isLast: boolean }>`
   border-bottom: 1px solid ${colors.grayscale.g15};
   padding: ${defaultMargins.s};
+  border-bottom: ${(p) =>
+    p.isLast ? 'none' : `1px solid ${colors.grayscale.g15}`};
 `
 const MobileStatusRow = styled.div``
 
+const MobilePermissionToShareContainer = styled.div`
+  padding-top: 16px;
+  display: flex;
+  flex-direction: row;
+`
+
+const VasuChildContainer = styled.div<{ isLast: boolean }>`
+  border-bottom: ${(p) =>
+    p.isLast ? 'none' : `1px solid ${colors.grayscale.g15}`};
+`
+
 const VasuList = React.memo(function VasuList({
-  vasus
+  items
 }: {
-  vasus: ChildVasuSummary[]
+  items: ChildVasuSummary[]
 }) {
   const i18n = useTranslation()
   const navigate = useNavigate()
-  // TODO
-  //const user = useUser()
-  //const theme = useTheme()
+  const user = useUser()
+
+  const itemsWithDocs = React.useMemo(
+    () =>
+      items ? items.filter((item) => item.vasuDocumentsSummary.length) : [],
+    [items]
+  )
+
+  const isLastChildOfTheList = (
+    childId: string,
+    allChildren: ChildVasuSummary[]
+  ) => {
+    return childId === allChildren[allChildren.length - 1].child.id
+  }
+
+  const isLastDocumentOfTheList = (
+    documentId: string,
+    allDocuments: VasuDocumentSummary[]
+  ) => {
+    return documentId === allDocuments[allDocuments.length - 1].id
+  }
 
   return (
     <>
-      {vasus.map(
-        (summary) =>
-          summary.vasuDocumentsSummary.length > 0 && (
-            <div key={summary.child.id}>
-              <Mobile>
-                <PaddedDiv>
-                  <H3>{`${summary.child.firstName} ${summary.child.lastName}`}</H3>
-                </PaddedDiv>
-                {summary.vasuDocumentsSummary.map((vasu) => (
-                  <MobileRowContainer key={vasu.id}>
-                    <MobileStatusRow>
-                      <VasuStateChip
-                        state={vasu.documentState}
-                        labels={i18n.vasu.states}
-                      />
-                      <Gap horizontal size="xs" />
-                      <span data-qa={`published-at-${vasu.id}`}>
-                        {vasu.publishedAt
-                          ? LocalDate.fromSystemTzDate(
-                              vasu.publishedAt
-                            ).format()
-                          : ''}
-                      </span>
-                    </MobileStatusRow>
-                    <Gap size="xs" />
-                    <InlineButton
-                      onClick={() => navigate(`/vasu/${vasu.id}`)}
-                      text={`${vasu.name}`}
-                      data-qa="vasu-link"
-                    />
-                  </MobileRowContainer>
-                ))}
-              </Mobile>
-              <Desktop>
-                <H3>{`${summary.child.firstName} ${summary.child.lastName}`}</H3>
-                <VasuTable summary={summary} />
-              </Desktop>
-            </div>
-          )
-      )}
+      {itemsWithDocs.map((summary) => (
+        <VasuChildContainer
+          key={summary.child.id}
+          data-qa="vasu-child-container"
+          isLast={isLastChildOfTheList(summary.child.id, itemsWithDocs)}
+        >
+          <Mobile>
+            <PaddedDiv>
+              <H3>{`${summary.child.firstName} ${summary.child.lastName}`}</H3>
+            </PaddedDiv>
+            {summary.vasuDocumentsSummary.map((vasu) => (
+              <MobileRowContainer
+                key={vasu.id}
+                isLast={isLastDocumentOfTheList(
+                  vasu.id,
+                  summary.vasuDocumentsSummary
+                )}
+              >
+                <MobileStatusRow>
+                  <VasuStateChip
+                    state={vasu.documentState}
+                    labels={i18n.vasu.states}
+                  />
+                  <Gap horizontal size="xs" />
+                  <span data-qa={`published-at-${vasu.id}`}>
+                    {vasu.publishedAt
+                      ? LocalDate.fromSystemTzDate(vasu.publishedAt).format()
+                      : ''}
+                  </span>
+                </MobileStatusRow>
+                <Gap size="xs" />
+                <InlineButton
+                  onClick={() => navigate(`/vasu/${vasu.id}`)}
+                  text={`${vasu.name}`}
+                  data-qa="vasu-link"
+                />
+                {!vasu.guardiansThatHaveGivenPermissionToShare.some(
+                  (guardianId) => guardianId === user?.id
+                ) && (
+                  <MobilePermissionToShareContainer>
+                    <PermissionToShare />
+                  </MobilePermissionToShareContainer>
+                )}
+              </MobileRowContainer>
+            ))}
+          </Mobile>
+          <Desktop>
+            <H3>{`${summary.child.firstName} ${summary.child.lastName}`}</H3>
+            <VasuTable summary={summary} />
+          </Desktop>
+        </VasuChildContainer>
+      ))}
     </>
   )
 })
 
 const VasuDisplay = React.memo(function VasuDisplay({
-  vasus
+  items
 }: {
-  vasus: ChildVasuSummary[]
+  items: ChildVasuSummary[]
 }) {
   const i18n = useTranslation()
   const [open, setOpen] = useState(true)
@@ -189,12 +240,12 @@ const VasuDisplay = React.memo(function VasuDisplay({
           open={open}
           toggleOpen={() => setOpen(!open)}
           opaque
-          paddingVertical="L"
+          paddingVertical="16px 0px 0px 0px;"
           paddingHorizontal="zero"
           data-qa="vasu-and-leops-collapsible"
         >
           <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">
-            <VasuList vasus={vasus} />
+            <VasuList items={items} />
           </ContentArea>
         </CollapsibleContentArea>
       </Mobile>
@@ -209,7 +260,7 @@ const VasuDisplay = React.memo(function VasuDisplay({
           data-qa="vasu-and-leops-collapsible"
         >
           <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">
-            <VasuList vasus={vasus} />
+            <VasuList items={items} />
           </ContentArea>
         </CollapsibleContentArea>
       </Desktop>
@@ -223,7 +274,7 @@ export default React.memo(function CitizenVasuAndLeops() {
     <>
       <Container>
         {renderResult(vasus, (vasus) => (
-          <VasuDisplay vasus={vasus} />
+          <VasuDisplay items={vasus} />
         ))}
       </Container>
     </>

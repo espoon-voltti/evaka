@@ -15,6 +15,9 @@ export class ChildDocumentsPage {
     this.page.find(`[data-qa="state-chip-${vasuId}"] >> visible=true`)
   readonly #vasuRowPublishedAt = (vasuId: string) =>
     this.page.find(`[data-qa="published-at-${vasuId}"] >> visible=true`)
+  readonly #vasuChildContainer = this.page.findAll(
+    `[data-qa="vasu-child-container"] >> visible=true`
+  )
 
   async assertVasuRow(
     vasuId: string,
@@ -29,5 +32,9 @@ export class ChildDocumentsPage {
       () => this.#vasuRowPublishedAt(vasuId).textContent,
       expectedPublishedAt
     )
+  }
+
+  async assertVasuChildCount(expectedCount: number) {
+    await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }
 }
