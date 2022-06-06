@@ -1998,7 +1998,7 @@ export default {
         Saavutettavuuden valvonnan yksikkö
         <br />
         <ExternalLink
-          href="www.saavutettavuusvaatimukset.fi"
+          href="https://www.saavutettavuusvaatimukset.fi"
           text="www.saavutettavuusvaatimukset.fi"
         />
         <br />

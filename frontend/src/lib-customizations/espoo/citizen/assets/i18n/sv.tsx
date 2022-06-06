@@ -1915,130 +1915,128 @@ const sv: Translations = {
       terminate: 'Säg upp platsen'
     }
   },
-  // TODO: Translate
   accessibilityStatement: (
     <>
-      <H1>Saavutettavuusseloste</H1>
+      <H1>Tillgänglighetsutlåtande</H1>
       <P>
-        Tämä saavutettavuusseloste koskee Espoon kaupungin varhaiskasvatuksen
-        eVaka-verkkopalvelua osoitteessa{' '}
+        Detta tillgänglighetsutlåtande gäller Esbo stads webbtjänst eVaka för
+        småbarnspedagogiken på adressen{' '}
         <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
-        Espoon kaupunki pyrkii takaamaan verkkopalvelun saavutettavuuden,
-        parantamaan käyttäjäkokemusta jatkuvasti ja soveltamaan asianmukaisia
-        saavutettavuusstandardeja.
+        Esbo stad strävar efter att säkerställa webbtjänstens tillgänglighet,
+        kontinuerligt förbättra användarupplevelsen och att tillämpa lämpliga
+        tillgänglighetsstandarder.
       </P>
       <P>
-        Palvelun saavutettavuuden on arvioinut palvelun kehitystiimi, ja seloste
-        on laadittu 12.4.2022.
+        Tjänstens tillgänglighet har bedömts av tjänsteutvecklingsteamet, och
+        utlåtandet har utarbetats den 12 april 2022.
       </P>
-      <H2>Palvelun vaatimustenmukaisuus</H2>
+      <H2>Tjänstens överensstämmelse med krav</H2>
       <P>
-        Verkkopalvelu täyttää lain asettamat kriittiset
-        saavutettavuusvaatimukset WCAG v2.1 -tason AA mukaisesti. Palvelu ei ole
-        vielä kaikilta osin vaatimusten mukainen.
+        Webbtjänsten uppfyller de lagstadgade kritiska tillgänglighetskraven
+        enligt nivå AA i WCAG 2.1. Tjänsten uppfyller ännu inte alla krav.
       </P>
-      <H2>Toimet saavutettavuuden tukemiseksi</H2>
+      <H2>Åtgärder för att stödja tillgängligheten</H2>
       <P>
-        Verkkopalvelun saavutettavuus varmistetaan muun muassa seuraavilla
-        toimenpiteillä:
+        Webbtjänstens tillgänglighet säkerställs bland annat genom följande
+        åtgärder:
       </P>
       <ul>
         <li>
-          Saavutettavuus huomioidaan alusta lähtien suunnitteluvaiheessa, mm.
-          valitsemalla palvelun värit ja kirjaisinten koot saavutettavasti.
+          Tillgängligheten beaktas redan från början i planeringsfasen till
+          exempel genom att välja färgerna och fontstorleken i tjänsten med
+          tillgängligheten i åtanke.
+        </li>
+        <li>Elementen i tjänsten har definierats semantiskt konsekvent.</li>
+        <li>Tjänsten testas ständigt med en skärmläsare.</li>
+        <li>
+          Olika användare testar tjänsten och ger respons på tillgängligheten.
         </li>
         <li>
-          Palvelun elementit on määritelty semantiikaltaan johdonmukaisesti.
-        </li>
-        <li>Palvelua testataan jatkuvasti ruudunlukijalla.</li>
-        <li>
-          Erilaiset käyttäjät testaavat palvelua ja antavat saavutettavuudesta
-          palautetta.
-        </li>
-        <li>
-          Sivuston saavutettavuudesta huolehditaan jatkuvalla valvonnalla
-          tekniikan tai sisällön muuttuessa.
+          Webbplatsens tillgänglighet säkerställs genom kontinuerliga kontroller
+          vid tekniska eller innehållsmässiga förändringar.
         </li>
       </ul>
       <P>
-        Tätä selostetta päivitetään sivuston muutosten ja saavutettavuuden
-        tarkistusten yhteydessä.
+        Detta utlåtande uppdateras när webbplatsen ändras eller tillgängligheten
+        justeras.
       </P>
-      <H2>Tunnetut saavutettavuusongelmat</H2>
+      <H2>Kända tillgänglighetsproblem</H2>
       <P>
-        Käyttäjät saattavat edelleen kohdata sivustolla joitakin ongelmia.
-        Seuraavassa on kuvaus tunnetuista saavutettavuusongelmista. Jos huomaat
-        sivustolla ongelman, joka ei ole luettelossa, otathan meihin yhteyttä.
+        Användare kan fortfarande stöta på vissa problem på webbplatsen. Nedan
+        följer beskrivningar av kända tillgänglighetsproblem. Om du upptäcker
+        ett problem som inte finns med på listan, vänligen kontakta oss.
       </P>
       <ul>
         <li>
-          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
-          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
+          I navigeringen på sidan Meddelanden med tangentbordet eller
+          skärmläsaren måste förflyttningar och element som ska markeras ännu
+          korrigeras.
         </li>
         <li>
-          Palvelun yksikkökartassa ei pysty liikkumaan
-          näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
-          näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen
-          osapuolen tuottama.
+          Det går inte att navigera på serviceenhetskartan med
+          tangentbordet/skärmläsaren, men man kan bläddra bland enheterna på
+          listan i samma vy. Kartan som används i tjänsten är framtagen av en
+          tredje part.
         </li>
       </ul>
-      <H2>Kolmannet osapuolet</H2>
+      <H2>Tredje parter</H2>
       <P>
-        Verkkopalvelussa käytetään seuraavia kolmannen osapuolen palveluita,
-        joiden saavutettavuudesta emme voi vastata.
+        Webbtjänsten använder följande tredjepartstjänster, vars tillgänglighet
+        vi inte är ansvariga för.
       </P>
       <ul>
-        <li>Keycloak käyttäjän tunnistautumispalvelu</li>
-        <li>Suomi.fi-tunnistautuminen</li>
-        <li>Leaflet-karttapalvelu</li>
+        <li>Användarautentiseringstjänsten Keycloak</li>
+        <li>Tjänsten suomi.fi</li>
+        <li>Karttjänsten Leaflet</li>
       </ul>
-      <H2>Vaihtoehtoiset asiointitavat</H2>
+      <H2>Alternativa sätt att sköta ärenden</H2>
       <P>
         <ExternalLink
-          href="https://www.espoo.fi/fi/espoon-kaupunki/asiakaspalvelu/asiointipisteet-ja-espoo-info/asiointipisteet"
-          text="Espoon kaupungin asiointipisteistä"
+          href="https://www.espoo.fi/sv/esbo-stad/kundservice/servicepunkterna-och-esbo-info/servicepunkterna"
+          text="Esbo stads servicepunkter"
         />{' '}
-        saa apua sähköiseen asiointiin. Asiointipisteiden palveluneuvojat
-        auttavat käyttäjiä, joille digipalvelut eivät ole saavutettavissa.
+        hjälper till med användningen av e-tjänsterna. Rådgivarna vid
+        servicepunkterna hjälper de användare, för vilka de digitala tjänsterna
+        inte är tillgängliga.
       </P>
-      <H2>Anna palautetta</H2>
+      <H2>Ge respons</H2>
       <P>
-        Jos huomaat saavutettavuuspuutteen verkkopalvelussamme, kerro siitä
-        meille. Voit antaa palautetta{' '}
+        er en tillgänglighetsbrist i vår webbtjänst, vänligen meddela oss. Du
+        kan ge respons med{' '}
         <ExternalLink
-          href="https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
-          text="verkkolomakkeella"
+          href="https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
+          text="webformuläret"
         />{' '}
-        tai sähköpostitse{' '}
+        eller via e-post{' '}
         <a href="mailto:evakatuki@espoo.fi">evakatuki@espoo.fi</a>.
       </P>
-      <H2>Valvontaviranomainen</H2>
+      <H2>Tillsynsmyndighet</H2>
       <P>
-        Jos huomaat sivustolla saavutettavuusongelmia, anna ensin palautetta
-        meille sivuston ylläpitäjille. Vastauksessa voi mennä 14 päivää. Jos et
-        ole tyytyväinen saamaasi vastaukseen, tai et saa vastausta lainkaan
-        kahden viikon aikana, voit antaa palautteen Etelä-Suomen
-        aluehallintovirastoon. Etelä-Suomen aluehallintoviraston sivulla
-        kerrotaan tarkasti, miten valituksen voi tehdä, ja miten asia
-        käsitellään.
+        Om du upptäcker tillgänglighetsproblem på webbplatsen, ge först respons
+        till oss, webbplatsens administratörer. Det kan ta upp till 14 dagar
+        tills du får ett svar från oss. Om du inte är nöjd med det svar du har
+        fått eller om du inte alls har fått något svar inom två veckor, kan du
+        ge respons till Regionförvaltningsverket i Södra Finland. På
+        regionförvaltningsverkets webbplats finns information om hur du kan
+        lämna in ett klagomål samt om hur ärendet handläggs.
       </P>
-
       <P>
-        <strong>Valvontaviranomaisen yhteystiedot </strong>
+        <strong>Kontaktuppgifter till tillsynsmyndigheten</strong>
         <br />
-        Etelä-Suomen aluehallintovirasto <br />
-        Saavutettavuuden valvonnan yksikkö
+        Regionförvaltningsverket i Södra Finland
+        <br />
+        Enheten för tillgänglighetstillsyn
         <br />
         <ExternalLink
-          href="www.saavutettavuusvaatimukset.fi"
-          text="www.saavutettavuusvaatimukset.fi"
+          href="https://www.tillganglighetskrav.fi"
+          text="www.tillganglighetskrav.fi"
         />
         <br />
         <a href="mailto:saavutettavuus@avi.fi">saavutettavuus@avi.fi</a>
         <br />
-        puhelinnumero vaihde 0295 016 000
+        telefonnummer till växeln 0295 016 000
         <br />
-        Avoinna: ma-pe klo 8.00–16.15
+        Öppet mån.– fre. kl. 8.00–16.15
       </P>
     </>
   )
