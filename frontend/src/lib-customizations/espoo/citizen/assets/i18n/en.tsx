@@ -1959,130 +1959,131 @@ const en: Translations = {
       terminate: 'Terminate the agreement'
     }
   },
-  // TODO: Translate
   accessibilityStatement: (
     <>
-      <H1>Saavutettavuusseloste</H1>
+      <H1>Accessibility statement</H1>
       <P>
-        Tämä saavutettavuusseloste koskee Espoon kaupungin varhaiskasvatuksen
-        eVaka-verkkopalvelua osoitteessa{' '}
+        This accessibility statement applies to the City of Espoo’s early
+        childhood education online service eVaka at{' '}
         <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
-        Espoon kaupunki pyrkii takaamaan verkkopalvelun saavutettavuuden,
-        parantamaan käyttäjäkokemusta jatkuvasti ja soveltamaan asianmukaisia
-        saavutettavuusstandardeja.
+        The City of Espoo endeavours to ensure the accessibility of the online
+        service, continuously improve the user experience and apply appropriate
+        accessibility standards.
       </P>
       <P>
-        Palvelun saavutettavuuden on arvioinut palvelun kehitystiimi, ja seloste
-        on laadittu 12.4.2022.
+        The accessibility of the service was assessed by the development team of
+        the service, and this statement was drawn up on 12 April 2022.
       </P>
-      <H2>Palvelun vaatimustenmukaisuus</H2>
+      <H2>Compliance of the service</H2>
       <P>
-        Verkkopalvelu täyttää lain asettamat kriittiset
-        saavutettavuusvaatimukset WCAG v2.1 -tason AA mukaisesti. Palvelu ei ole
-        vielä kaikilta osin vaatimusten mukainen.
+        The online service complies with the statutory critical accessibility
+        requirements in accordance with Level AA of the Accessibility Guidelines
+        for the WCAG v2.1. The service is not yet fully compliant with the
+        requirements.
       </P>
-      <H2>Toimet saavutettavuuden tukemiseksi</H2>
+      <H2>Measures to support accessibility</H2>
       <P>
-        Verkkopalvelun saavutettavuus varmistetaan muun muassa seuraavilla
-        toimenpiteillä:
+        The accessibility of the online service is ensured, among other things,
+        by the following measures:
       </P>
       <ul>
         <li>
-          Saavutettavuus huomioidaan alusta lähtien suunnitteluvaiheessa, mm.
-          valitsemalla palvelun värit ja kirjaisinten koot saavutettavasti.
+          Accessibility has been taken into account from the beginning of the
+          design phase, for example, when choosing the colours and font sizes of
+          the service.
         </li>
         <li>
-          Palvelun elementit on määritelty semantiikaltaan johdonmukaisesti.
+          The service elements have been defined in consistently in terms of
+          semantics.
         </li>
-        <li>Palvelua testataan jatkuvasti ruudunlukijalla.</li>
+        <li>The service is continuously tested with a screen reader.</li>
         <li>
-          Erilaiset käyttäjät testaavat palvelua ja antavat saavutettavuudesta
-          palautetta.
+          Various users test the service and give feedback on its accessibility.
         </li>
         <li>
-          Sivuston saavutettavuudesta huolehditaan jatkuvalla valvonnalla
-          tekniikan tai sisällön muuttuessa.
+          When website technology or content changes, its accessibility is
+          ensured through constant monitoring.
         </li>
       </ul>
       <P>
-        Tätä selostetta päivitetään sivuston muutosten ja saavutettavuuden
-        tarkistusten yhteydessä.
+        This statement will be updated in conjunction with website changes and
+        accessibility evaluations.
       </P>
-      <H2>Tunnetut saavutettavuusongelmat</H2>
+      <H2>Known accessibility issues</H2>
       <P>
-        Käyttäjät saattavat edelleen kohdata sivustolla joitakin ongelmia.
-        Seuraavassa on kuvaus tunnetuista saavutettavuusongelmista. Jos huomaat
-        sivustolla ongelman, joka ei ole luettelossa, otathan meihin yhteyttä.
-      </P>
-      <ul>
-        <li>
-          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
-          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
-        </li>
-        <li>
-          Palvelun yksikkökartassa ei pysty liikkumaan
-          näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
-          näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen
-          osapuolen tuottama.
-        </li>
-      </ul>
-      <H2>Kolmannet osapuolet</H2>
-      <P>
-        Verkkopalvelussa käytetään seuraavia kolmannen osapuolen palveluita,
-        joiden saavutettavuudesta emme voi vastata.
+        Users may still encounter some issues on the website. The following
+        contains a description of known accessibility issues. If you notice an
+        issue on the site that is not listed, please contact us.
       </P>
       <ul>
-        <li>Keycloak käyttäjän tunnistautumispalvelu</li>
-        <li>Suomi.fi-tunnistautuminen</li>
-        <li>Leaflet-karttapalvelu</li>
+        <li>
+          Navigating on the Messages page using the keyboard or screen reader
+          still requires revision for part of moving and targeted elements.
+        </li>
+        <li>
+          The service’s unit map cannot be navigated using the keyboard/screen
+          reader, but the units can be browsed on the list available in the same
+          view. The map used in the service is produced by a third party.
+        </li>
       </ul>
-      <H2>Vaihtoehtoiset asiointitavat</H2>
+      <H2>Third parties</H2>
+      <P>
+        The online service uses the following third party services, the
+        accessibility of which we cannot be responsible for.
+      </P>
+      <ul>
+        <li>Keycloak user identification service</li>
+        <li>Suomi.fi identification</li>
+        <li>Leaflet map service</li>
+      </ul>
+      <H2>Alternative ways of accessing the service</H2>
       <P>
         <ExternalLink
-          href="https://www.espoo.fi/fi/espoon-kaupunki/asiakaspalvelu/asiointipisteet-ja-espoo-info/asiointipisteet"
-          text="Espoon kaupungin asiointipisteistä"
+          href="https://www.espoo.fi/en/city-espoo/customer-service/service-points-and-espoo-info/service-points"
+          text="The City of Espoo’s Service Points"
         />{' '}
-        saa apua sähköiseen asiointiin. Asiointipisteiden palveluneuvojat
-        auttavat käyttäjiä, joille digipalvelut eivät ole saavutettavissa.
+        provide assistance with using electronic services. Service advisors at
+        the Service Points help users who cannot access digital services.
       </P>
-      <H2>Anna palautetta</H2>
+      <H2>Give feedback</H2>
       <P>
-        Jos huomaat saavutettavuuspuutteen verkkopalvelussamme, kerro siitä
-        meille. Voit antaa palautetta{' '}
+        If you notice an accessibility gap in our online service, please let us
+        know! You can give us feedback using the{' '}
         <ExternalLink
-          href="https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
-          text="verkkolomakkeella"
+          href="https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
+          text="online form"
         />{' '}
-        tai sähköpostitse{' '}
+        or by emailing{' '}
         <a href="mailto:evakatuki@espoo.fi">evakatuki@espoo.fi</a>.
       </P>
-      <H2>Valvontaviranomainen</H2>
+      <H2>Supervisory authority</H2>
       <P>
-        Jos huomaat sivustolla saavutettavuusongelmia, anna ensin palautetta
-        meille sivuston ylläpitäjille. Vastauksessa voi mennä 14 päivää. Jos et
-        ole tyytyväinen saamaasi vastaukseen, tai et saa vastausta lainkaan
-        kahden viikon aikana, voit antaa palautteen Etelä-Suomen
-        aluehallintovirastoon. Etelä-Suomen aluehallintoviraston sivulla
-        kerrotaan tarkasti, miten valituksen voi tehdä, ja miten asia
-        käsitellään.
+        If you notice any accessibility issues on the website, please send us,
+        the site administrator, feedback first. It may take us up to 14 days to
+        reply. If you are not satisfied with the reply or you do not receive a
+        reply within two weeks, you can give feedback to the Regional State
+        Administrative Agency for Southern Finland. The website of the Regional
+        State Administrative Agency for Southern Finland explains in detail how
+        a complaint can be submitted, and how the matter will be processed.
       </P>
 
       <P>
-        <strong>Valvontaviranomaisen yhteystiedot </strong>
+        <strong>Contact information of the supervisory authority</strong>
         <br />
-        Etelä-Suomen aluehallintovirasto <br />
-        Saavutettavuuden valvonnan yksikkö
+        Regional State Administrative Agency of Southern Finland
+        <br />
+        Accessibility Supervision Unit
         <br />
         <ExternalLink
-          href="www.saavutettavuusvaatimukset.fi"
+          href="https://www.saavutettavuusvaatimukset.fi"
           text="www.saavutettavuusvaatimukset.fi"
         />
         <br />
         <a href="mailto:saavutettavuus@avi.fi">saavutettavuus@avi.fi</a>
         <br />
-        puhelinnumero vaihde 0295 016 000
+        tel. (exchange) 0295 016 000
         <br />
-        Avoinna: ma-pe klo 8.00–16.15
+        Open: Mon-Fri 8.00–16.15
       </P>
     </>
   )
