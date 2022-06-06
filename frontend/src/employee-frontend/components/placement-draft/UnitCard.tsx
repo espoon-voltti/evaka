@@ -114,7 +114,8 @@ async function getSpeculatedOccupancies(
     ? LocalDate.today()
     : period.start
   const maxDate = start.addYears(1)
-  const end = period.end.isAfter(maxDate) ? maxDate : period.end
+  const maxOrEnd = period.end.isAfter(maxDate) ? maxDate : period.end
+  const end = maxOrEnd.isAfter(start) ? maxOrEnd : start
   return getSpeculatedOccupancyRates(
     applicationId,
     unitId,
