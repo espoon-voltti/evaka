@@ -68,6 +68,100 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `increases are invoiced only once`() {
+        val month = Month.JANUARY
+        val correctionId = insertTestCorrection(1, 100_00, month)
+
+        val invoicesWithCorrections = db.transaction {
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00, month)), month)
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+            invoices
+        }
+        assertEquals(1, invoicesWithCorrections.size)
+        val invoiceWithCorrections = invoicesWithCorrections.first()
+        assertEquals(2, invoiceWithCorrections.rows.size)
+        assertEquals(200_00, invoiceWithCorrections.totalPrice)
+        assertEquals(1, invoiceWithCorrections.rows.first().amount)
+        assertEquals(100_00, invoiceWithCorrections.rows.first().unitPrice)
+        assertEquals(1, invoiceWithCorrections.rows.last().amount)
+        assertEquals(100_00, invoiceWithCorrections.rows.last().unitPrice)
+        assertEquals(correctionId, invoiceWithCorrections.rows.last().correctionId)
+
+        val nextMonthsInvoicesWithCorrections = db.transaction {
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00, month.plus(1))), month.plus(1))
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+            invoices
+        }
+        assertEquals(1, nextMonthsInvoicesWithCorrections.size)
+        val nextMonthsInvoiceWithCorrections = nextMonthsInvoicesWithCorrections.first()
+        assertEquals(1, nextMonthsInvoiceWithCorrections.rows.size)
+        assertEquals(100_00, nextMonthsInvoiceWithCorrections.totalPrice)
+        assertEquals(1, nextMonthsInvoiceWithCorrections.rows.first().amount)
+        assertEquals(100_00, nextMonthsInvoiceWithCorrections.rows.first().unitPrice)
+    }
+
+    @Test
+    fun `refunds are invoiced only once`() {
+        val month = Month.JANUARY
+        val correctionId = insertTestCorrection(1, -100_00, month)
+
+        val invoicesWithCorrections = db.transaction {
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00, month)), month)
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+            invoices
+        }
+        assertEquals(1, invoicesWithCorrections.size)
+        val invoiceWithCorrections = invoicesWithCorrections.first()
+        assertEquals(2, invoiceWithCorrections.rows.size)
+        assertEquals(0, invoiceWithCorrections.totalPrice)
+        assertEquals(1, invoiceWithCorrections.rows.first().amount)
+        assertEquals(100_00, invoiceWithCorrections.rows.first().unitPrice)
+        assertEquals(1, invoiceWithCorrections.rows.last().amount)
+        assertEquals(-100_00, invoiceWithCorrections.rows.last().unitPrice)
+        assertEquals(correctionId, invoiceWithCorrections.rows.last().correctionId)
+
+        val nextMonthsInvoicesWithCorrections = db.transaction {
+            val invoices = it.applyCorrections(listOf(createTestInvoice(100_00, month.plus(1))), month.plus(1))
+            it.upsertInvoices(invoices)
+            invoiceService.sendInvoices(
+                it,
+                AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                invoices.map { it.id },
+                null,
+                null
+            )
+            invoices
+        }
+        assertEquals(1, nextMonthsInvoicesWithCorrections.size)
+        val nextMonthsInvoiceWithCorrections = nextMonthsInvoicesWithCorrections.first()
+        assertEquals(1, nextMonthsInvoiceWithCorrections.rows.size)
+        assertEquals(100_00, nextMonthsInvoiceWithCorrections.totalPrice)
+        assertEquals(1, nextMonthsInvoiceWithCorrections.rows.first().amount)
+        assertEquals(100_00, nextMonthsInvoiceWithCorrections.rows.first().unitPrice)
+    }
+
+    @Test
     fun `refund with smaller unit price totaling one month's invoice is refunded completely`() {
         val month = Month.JANUARY
         val invoice = createTestInvoice(100_00, month)
