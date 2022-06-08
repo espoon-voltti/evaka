@@ -13,7 +13,8 @@ import {
   insertVasuDocument,
   insertVasuTemplateFixture,
   publishVasuDocument,
-  resetDatabase
+  resetDatabase,
+  revokeVasuSharingPermission
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -88,6 +89,9 @@ describe('Citizen vasu document page', () => {
     await vasuPage.givePermissionToShare()
 
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await page.reload()
+    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await revokeVasuSharingPermission(vasuDocId)
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
   })

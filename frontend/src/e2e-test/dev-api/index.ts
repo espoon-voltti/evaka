@@ -1035,3 +1035,11 @@ export async function insertStaffRealtimeAttendance(body: {
     throw new DevApiError(e)
   }
 }
+
+export async function revokeVasuSharingPermission(docId: UUID): Promise<void> {
+  try {
+    await devClient.post(`/vasu/revokeSharingPermission/${docId}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

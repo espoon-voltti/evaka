@@ -137,6 +137,7 @@ import fi.espoo.evaka.vasu.getVasuTemplate
 import fi.espoo.evaka.vasu.insertVasuDocument
 import fi.espoo.evaka.vasu.insertVasuTemplate
 import fi.espoo.evaka.vasu.publishVasuDocument
+import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import mu.KotlinLogging
@@ -1010,6 +1011,15 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                     language = VasuLanguage.FI,
                     content = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
                 )
+            }
+        }
+    }
+
+    @PostMapping("/vasu/revokeSharingPermission/{docId}")
+    fun revokeSharingPermission(db: Database, @PathVariable docId: VasuDocumentId) {
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.revokeVasuGuardianHasGivenPermissionToShare(docId)
             }
         }
     }
