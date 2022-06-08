@@ -12,6 +12,12 @@ body {
   overflow: hidden;
 }
 
+@media print {
+  body {
+    height: unset;
+  }
+}
+
 input,
 button,
 textarea,

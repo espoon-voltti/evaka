@@ -21,6 +21,7 @@ const sv: Translations = {
     title: 'Småbarnspedagogik',
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
+    download: 'Ladda ner',
     ok: 'Ok',
     save: 'Spara',
     discard: 'Spar inte',

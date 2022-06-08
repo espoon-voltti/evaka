@@ -20,6 +20,7 @@ export default {
     title: 'Varhaiskasvatus',
     cancel: 'Peruuta',
     return: 'Palaa',
+    download: 'Lataa',
     ok: 'Ok',
     save: 'Tallenna',
     discard: 'Älä tallenna',

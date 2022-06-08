@@ -13,6 +13,7 @@ export interface IconSet {
   faAngleLeft: IconDefinition
   faAngleRight: IconDefinition
   faArrowDown: IconDefinition
+  faArrowDownToLine: IconDefinition
   faArrowLeft: IconDefinition
   faArrowRight: IconDefinition
   faAngleUp: IconDefinition
@@ -133,6 +134,7 @@ export const faAngleDown = iconSet.faAngleDown
 export const faAngleLeft = iconSet.faAngleLeft
 export const faAngleRight = iconSet.faAngleRight
 export const faArrowDown = iconSet.faArrowDown
+export const faArrowDownToLine = iconSet.faArrowDownToLine
 export const faArrowLeft = iconSet.faArrowLeft
 export const faArrowRight = iconSet.faArrowRight
 export const faAngleUp = iconSet.faAngleUp

@@ -21,6 +21,7 @@ const en: Translations = {
     title: 'Early childhood education',
     cancel: 'Cancel',
     return: 'Return',
+    download: 'Download',
     ok: 'Ok',
     save: 'Save',
     discard: 'Discard',

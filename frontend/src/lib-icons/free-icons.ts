@@ -113,6 +113,7 @@ const icons: IconSet = {
   faAngleLeft,
   faAngleRight,
   faArrowDown,
+  faArrowDownToLine: faArrowDown,
   faArrowLeft,
   faArrowRight,
   faAngleUp,
