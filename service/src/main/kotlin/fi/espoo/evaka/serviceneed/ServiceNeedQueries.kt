@@ -260,7 +260,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<Placement
             name_fi, name_sv, name_en,
             valid_placement_type
         FROM service_need_option
-        WHERE default_option IS FALSE AND valid_placement_type = ANY(:placementTypes::placement_type[])
+        WHERE default_option IS FALSE AND show_for_citizen IS TRUE AND valid_placement_type = ANY(:placementTypes::placement_type[])
         ORDER BY display_order
     """.trimIndent()
     return createQuery(sql)
