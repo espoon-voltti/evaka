@@ -5,11 +5,15 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
+import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.UUID
 
 val snDefaultDaycare = ServiceNeedOption(
@@ -20,7 +24,6 @@ val snDefaultDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = true,
     feeCoefficient = BigDecimal("1.00"),
-    voucherValueCoefficient = BigDecimal("1.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 35,
@@ -42,7 +45,6 @@ val snDefaultPartDayDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE_PART_TIME,
     defaultOption = true,
     feeCoefficient = BigDecimal("1.00"),
-    voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -64,7 +66,6 @@ val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("1.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 45,
@@ -86,7 +87,6 @@ val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -108,7 +108,6 @@ val snDefaultPreschool = ServiceNeedOption(
     validPlacementType = PlacementType.PRESCHOOL,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.00"),
     occupancyCoefficient = BigDecimal("0.50"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 0,
@@ -130,7 +129,6 @@ val snDefaultPreschoolDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -152,7 +150,6 @@ val snDefaultPreparatory = ServiceNeedOption(
     validPlacementType = PlacementType.PREPARATORY,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("0.50"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 0,
@@ -174,7 +171,6 @@ val snDefaultPreparatoryDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.PREPARATORY_DAYCARE,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -196,7 +192,6 @@ val snDefaultClub = ServiceNeedOption(
     validPlacementType = PlacementType.CLUB,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 0,
@@ -218,7 +213,6 @@ val snDefaultTemporaryDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.TEMPORARY_DAYCARE,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 35,
@@ -240,7 +234,6 @@ val snDefaultTemporaryPartDayDaycare = ServiceNeedOption(
     validPlacementType = PlacementType.TEMPORARY_DAYCARE_PART_DAY,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.00"),
     occupancyCoefficient = BigDecimal("0.54"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -262,7 +255,6 @@ val snDaycareFullDay35 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("1.00"),
-    voucherValueCoefficient = BigDecimal("1.0"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 35,
@@ -284,7 +276,6 @@ val snDaycareFullDay25to35 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("1.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 30,
@@ -306,7 +297,6 @@ val snDaycareFullDayPartWeek25 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.60"),
-    voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -328,7 +318,6 @@ val snDaycarePartDay25 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE_PART_TIME,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.60"),
-    voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -350,7 +339,6 @@ val snPreschoolDaycare45 = ServiceNeedOption(
     validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -372,7 +360,6 @@ val snPreschoolDaycarePartDay35to45 = ServiceNeedOption(
     validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.60"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 20,
@@ -394,7 +381,6 @@ val snPreschoolDaycarePartDay35 = ServiceNeedOption(
     validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.35"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 15,
@@ -416,7 +402,6 @@ val snPreparatoryDaycare50 = ServiceNeedOption(
     validPlacementType = PlacementType.PREPARATORY_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.80"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -438,7 +423,6 @@ val snPreparatoryDaycarePartDay40to50 = ServiceNeedOption(
     validPlacementType = PlacementType.PREPARATORY_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.60"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 20,
@@ -460,7 +444,6 @@ val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
     validPlacementType = PlacementType.PREPARATORY_DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.35"),
-    voucherValueCoefficient = BigDecimal("0.50"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 15,
@@ -482,7 +465,6 @@ val snDaycareFiveYearOldsFullDayPartWeek25 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.60"),
-    voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 25,
@@ -504,7 +486,6 @@ val snDaycareContractDays15 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.75"),
-    voucherValueCoefficient = BigDecimal("0.75"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 30,
@@ -526,7 +507,6 @@ val snDaycareContractDays10 = ServiceNeedOption(
     validPlacementType = PlacementType.DAYCARE,
     defaultOption = false,
     feeCoefficient = BigDecimal("0.5"),
-    voucherValueCoefficient = BigDecimal("0.5"),
     occupancyCoefficient = BigDecimal("0.5"),
     occupancyCoefficientUnder3y = BigDecimal("0.88"),
     daycareHoursPerWeek = 20,
@@ -548,7 +528,6 @@ val snDefaultSchoolShiftcare = ServiceNeedOption(
     validPlacementType = PlacementType.SCHOOL_SHIFT_CARE,
     defaultOption = true,
     feeCoefficient = BigDecimal("0.00"),
-    voucherValueCoefficient = BigDecimal("0.00"),
     occupancyCoefficient = BigDecimal("1.00"),
     occupancyCoefficientUnder3y = BigDecimal("1.75"),
     daycareHoursPerWeek = 0,
@@ -586,8 +565,55 @@ val serviceNeedTestFixtures = listOf(
     snPreparatoryDaycarePartDay40,
     snDaycareFiveYearOldsFullDayPartWeek25,
     snDaycareContractDays15,
+    snDaycareContractDays10,
     snDefaultSchoolShiftcare
 )
+
+val serviceNeedOptionVoucherValueCoefficients = mapOf(
+    snDefaultDaycare.id to BigDecimal("1.00"),
+    snDefaultPartDayDaycare.id to BigDecimal("0.60"),
+    snDefaultFiveYearOldsDaycare.id to BigDecimal("1.00"),
+    snDefaultFiveYearOldsPartDayDaycare.id to BigDecimal("0.60"),
+    snDefaultPreschool.id to BigDecimal("0.00"),
+    snDefaultPreschoolDaycare.id to BigDecimal("0.50"),
+    snDefaultPreparatory.id to BigDecimal("0.50"),
+    snDefaultPreparatoryDaycare.id to BigDecimal("0.50"),
+    snDefaultClub.id to BigDecimal("0.00"),
+    snDefaultTemporaryDaycare.id to BigDecimal("0.00"),
+    snDefaultTemporaryPartDayDaycare.id to BigDecimal("0.00"),
+    snDaycareFullDay35.id to BigDecimal("1.00"),
+    snDaycareFullDay25to35.id to BigDecimal("1.00"),
+    snDaycareFullDayPartWeek25.id to BigDecimal("0.60"),
+    snDaycarePartDay25.id to BigDecimal("0.60"),
+    snPreschoolDaycare45.id to BigDecimal("0.50"),
+    snPreschoolDaycarePartDay35to45.id to BigDecimal("0.50"),
+    snPreschoolDaycarePartDay35.id to BigDecimal("0.50"),
+    snPreparatoryDaycare50.id to BigDecimal("0.50"),
+    snPreparatoryDaycarePartDay40to50.id to BigDecimal("0.50"),
+    snPreparatoryDaycarePartDay40.id to BigDecimal("0.50"),
+    snDaycareFiveYearOldsFullDayPartWeek25.id to BigDecimal("0.60"),
+    snDaycareContractDays15.id to BigDecimal("0.75"),
+    snDaycareContractDays10.id to BigDecimal("0.50"),
+    snDefaultSchoolShiftcare.id to BigDecimal("0.00"),
+)
+
+val serviceNeedOptionVoucherValueTestFixtures = serviceNeedTestFixtures.map {
+    val baseValue = 87000
+    val baseValueUnder3y = 134850 // 87000 * 1.55
+    val coefficient = serviceNeedOptionVoucherValueCoefficients.get(it.id)!!
+
+    ServiceNeedOptionVoucherValue(
+        id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
+        serviceNeedOptionId = it.id,
+        validity = DateRange(LocalDate.of(2020, 1, 1), null),
+        baseValue = baseValue,
+        coefficient = coefficient,
+        value = (BigDecimal(baseValue) * coefficient).toInt(),
+        baseValueUnder3y = baseValueUnder3y,
+        coefficientUnder3y = coefficient,
+        valueUnder3y = (BigDecimal(baseValueUnder3y) * coefficient).toInt(),
+    )
+}
 
 fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
     feeCoefficient = this.feeCoefficient,
@@ -599,7 +625,7 @@ fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
 
 fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionServiceNeed(
     feeCoefficient = this.feeCoefficient,
-    voucherValueCoefficient = this.voucherValueCoefficient,
+    voucherValueCoefficient = serviceNeedOptionVoucherValueCoefficients[this.id]!!,
     feeDescriptionFi = this.feeDescriptionFi,
     feeDescriptionSv = this.feeDescriptionSv,
     voucherValueDescriptionFi = this.voucherValueDescriptionFi,

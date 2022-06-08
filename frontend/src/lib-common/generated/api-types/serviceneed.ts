@@ -64,7 +64,6 @@ export interface ServiceNeedOption {
   partWeek: boolean
   updated: Date
   validPlacementType: PlacementType
-  voucherValueCoefficient: number
   voucherValueDescriptionFi: string
   voucherValueDescriptionSv: string
 }

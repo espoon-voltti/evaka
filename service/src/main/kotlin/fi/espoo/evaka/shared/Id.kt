@@ -63,6 +63,7 @@ sealed interface DatabaseTable {
     sealed class PlacementPlan : DatabaseTable
     sealed class ServiceNeed : DatabaseTable
     sealed class ServiceNeedOption : DatabaseTable
+    sealed class ServiceNeedOptionVoucherValue : DatabaseTable
     sealed class StaffAttendance : DatabaseTable
     sealed class StaffAttendanceExternal : DatabaseTable
     sealed class StaffOccupancyCoefficient : DatabaseTable
@@ -126,6 +127,7 @@ typealias PlacementId = Id<DatabaseTable.Placement>
 typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
 typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
+typealias ServiceNeedOptionVoucherValueId = Id<DatabaseTable.ServiceNeedOptionVoucherValue>
 typealias StaffAttendanceId = Id<DatabaseTable.StaffAttendance>
 typealias StaffAttendanceExternalId = Id<DatabaseTable.StaffAttendanceExternal>
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>

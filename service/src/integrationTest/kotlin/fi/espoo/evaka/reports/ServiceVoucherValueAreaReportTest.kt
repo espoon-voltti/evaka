@@ -11,7 +11,6 @@ import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
@@ -36,6 +35,7 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toValueDecisionServiceNeed
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -159,14 +159,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 value = value,
                 coPayment = coPayment,
                 placementType = PlacementType.DAYCARE,
-                serviceNeed = VoucherValueDecisionServiceNeed(
-                    snDefaultDaycare.feeCoefficient,
-                    snDefaultDaycare.voucherValueCoefficient,
-                    snDefaultDaycare.feeDescriptionFi,
-                    snDefaultDaycare.feeDescriptionSv,
-                    snDefaultDaycare.voucherValueDescriptionFi,
-                    snDefaultDaycare.voucherValueDescriptionSv
-                )
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
             )
             it.upsertValueDecisions(listOf(decision))
 

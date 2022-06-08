@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
+  insertDefaultServiceNeedOptions,
   insertVoucherValueDecisionFixtures,
   insertVoucherValues,
   resetDatabase
@@ -42,6 +43,7 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  await insertDefaultServiceNeedOptions()
   await insertVoucherValues()
 
   startDate = LocalDate.of(2020, 1, 1)

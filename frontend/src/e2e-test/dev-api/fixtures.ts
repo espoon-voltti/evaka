@@ -1266,7 +1266,6 @@ export class Fixture {
       partWeek: false,
       updated: new Date(),
       validPlacementType: 'DAYCARE',
-      voucherValueCoefficient: 0,
       voucherValueDescriptionFi: `Test service need option ${id}`,
       voucherValueDescriptionSv: `Test service need option ${id}`,
       active: true

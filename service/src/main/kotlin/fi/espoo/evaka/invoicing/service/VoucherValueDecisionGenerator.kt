@@ -22,7 +22,7 @@ import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
-import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
@@ -30,13 +30,13 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
-import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
-import fi.espoo.evaka.invoicing.domain.getBaseValue
+import fi.espoo.evaka.invoicing.domain.getVoucherValues
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -60,10 +60,11 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val fridgeSiblings = families.flatMap { it.fridgeSiblings }.toSet()
 
     val prices = getFeeThresholds(from)
-    val voucherValues = getVoucherValues(from)
+    val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val capacityFactors = if (featureConfig.valueDecisionCapacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
+    val capacityFactors =
+        if (featureConfig.valueDecisionCapacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
@@ -109,7 +110,7 @@ private fun generateNewValueDecisions(
     families: List<FridgeFamily>,
     allPlacements: Map<ChildWithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>,
     prices: List<FeeThresholds>,
-    voucherValues: List<VoucherValue>,
+    voucherValues: Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValue>>,
     incomes: List<Income>,
     capacityFactors: List<AssistanceNeedCapacityFactor>,
     feeAlterations: List<FeeAlteration>,
@@ -134,9 +135,6 @@ private fun generateNewValueDecisions(
 
             val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
-
-            val voucherValue = voucherValues.find { it.validity.contains(period) }
-                ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
                 .find { family.headOfFamily == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
@@ -179,13 +177,18 @@ private fun generateNewValueDecisions(
 
             voucherChildPlacement.let { placement ->
                 val familyIncomes = family.partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                val baseCoPayment = calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
-                val baseValue = getBaseValue(period, voucherChild.dateOfBirth, voucherValue)
-                val value =
-                    if (placement == null || serviceVoucherUnits.none { unit -> unit == placement.unitId }) 0
-                    else calculateVoucherValue(baseValue, capacityFactor, placement.serviceNeed.voucherValueCoefficient)
+                val baseCoPayment =
+                    calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
+                val voucherValue =
+                    if (placement == null || serviceVoucherUnits.none { unit -> unit == placement.unitId }) null
+                    else {
+                        val voucherValue =
+                            voucherValues[placement.serviceNeed.optionId]?.find { it.validity.contains(period) }
+                                ?: error("Cannot generate voucher value decision: Missing voucher value for service need option ${placement.serviceNeed.optionId}, period ${period.start} - ${period.end}")
+                        getVoucherValues(period, voucherChild.dateOfBirth, voucherValue)
+                    }
 
-                if (value == 0 || placement == null) return@let period to VoucherValueDecision.empty(
+                if (voucherValue == null || voucherValue.value == 0 || placement == null) return@let period to VoucherValueDecision.empty(
                     status = VoucherValueDecisionStatus.DRAFT,
                     decisionType = VoucherValueDecisionType.NORMAL,
                     headOfFamilyId = family.headOfFamily,
@@ -200,7 +203,7 @@ private fun generateNewValueDecisions(
                     child = voucherChild,
                     baseCoPayment = baseCoPayment,
                     siblingDiscount = price.siblingDiscountPercent(1),
-                    baseValue = baseValue,
+                    baseValue = 0,
                 )
 
                 val siblingIndex = validPlacements
@@ -209,7 +212,12 @@ private fun generateNewValueDecisions(
 
                 val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
                 val coPaymentBeforeAlterations =
-                    calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
+                    calculateFeeBeforeFeeAlterations(
+                        baseCoPayment,
+                        placement.serviceNeed.feeCoefficient,
+                        siblingDiscountMultiplier,
+                        price.minFee
+                    )
                 val relevantFeeAlterations = feeAlterations.filter {
                     DateRange(it.validFrom, it.validTo).contains(period)
                 }
@@ -234,7 +242,7 @@ private fun generateNewValueDecisions(
                     placement = VoucherValueDecisionPlacement(placement.unitId, placement.type),
                     serviceNeed = VoucherValueDecisionServiceNeed(
                         placement.serviceNeed.feeCoefficient,
-                        placement.serviceNeed.voucherValueCoefficient,
+                        voucherValue.coefficient,
                         placement.serviceNeed.feeDescriptionFi,
                         placement.serviceNeed.feeDescriptionSv,
                         placement.serviceNeed.voucherValueDescriptionFi,
@@ -248,9 +256,9 @@ private fun generateNewValueDecisions(
                         relevantFeeAlterations
                     ),
                     finalCoPayment = finalCoPayment,
-                    baseValue = baseValue,
+                    baseValue = voucherValue.baseValue,
                     capacityFactor = capacityFactor,
-                    voucherValue = value
+                    voucherValue = (BigDecimal(voucherValue.value) * capacityFactor).toInt()
                 )
             }
         }
@@ -264,19 +272,24 @@ private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
         .toList()
 }
 
-private fun Database.Read.getVoucherValues(from: LocalDate): List<VoucherValue> {
+private fun Database.Read.getVoucherValues(from: LocalDate): List<ServiceNeedOptionVoucherValue> {
     return createQuery(
         """
 SELECT
     id,
+    service_need_option_id,
     validity,
     base_value,
-    base_value_age_under_three
-FROM voucher_value
+    coefficient,
+    value,
+    base_value_under_3y,
+    coefficient_under_3y,
+    value_under_3y
+FROM service_need_option_voucher_value
 WHERE validity && daterange(:from, null, '[]')
         """.trimIndent()
     )
         .bind("from", from)
-        .mapTo<VoucherValue>()
+        .mapTo<ServiceNeedOptionVoucherValue>()
         .toList()
 }
