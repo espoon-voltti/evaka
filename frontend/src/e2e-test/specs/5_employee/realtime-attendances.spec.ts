@@ -5,7 +5,11 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
+import {
+  insertDefaultServiceNeedOptions,
+  insertStaffRealtimeAttendance,
+  resetDatabase
+} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -98,7 +102,16 @@ beforeEach(async () => {
   ]
   await Fixture.staffOccupancyCoefficient(daycare.id, staff[1].id).save()
 
+  await insertStaffRealtimeAttendance({
+    id: uuidv4(),
+    employeeId: staff[1].id,
+    groupId: groupId,
+    arrived: mockedToday.toSystemTzDateAtTime('07:00'),
+    occupancyCoefficient: 7.0
+  })
+
   page = await Page.open({
+    viewport: { width: 1440, height: 720 },
     mockedTime: mockedToday.toSystemTzDate()
   })
   await employeeLogin(page, unitSupervisor)
@@ -126,6 +139,44 @@ describe('Realtime staff attendances', () => {
     test('The icon tells whether a staff member is counted in occupancy or not', async () => {
       await calendarPage.assertPositiveOccupancyCoefficientCount(1)
       await calendarPage.assertZeroOccupancyCoefficientCount(1)
+    })
+
+    test('It is not possible to create new entries', async () => {
+      await calendarPage.selectGroup('staff')
+      await calendarPage.assertNoTimeInputsVisible()
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.assertNoTimeInputsVisible()
+      await calendarPage.clickCommitOnRow(0)
+    })
+
+    describe('With one attendance entry', () => {
+      test('Existing entries can be edited', async () => {
+        await calendarPage.selectGroup('staff')
+        await calendarPage.assertNoTimeInputsVisible()
+        await calendarPage.clickEditOnRow(1)
+        await calendarPage.assertCountTimeInputsVisible(1)
+      })
+
+      // TODO: enable this when we can reliably run time based tests both locally and on CI
+      test.skip('Editing an existing entry updates it', async () => {
+        await calendarPage.selectGroup('staff')
+        await calendarPage.assertNoTimeInputsVisible()
+        await calendarPage.assertArrivalDeparture({
+          rowIx: 1,
+          nth: 0,
+          arrival: '07:00',
+          departure: '-'
+        })
+        await calendarPage.clickEditOnRow(1)
+        await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+        await calendarPage.closeInlineEditor()
+        await calendarPage.assertArrivalDeparture({
+          rowIx: 1,
+          nth: 0,
+          arrival: '07:00',
+          departure: '15:00'
+        })
+      })
     })
   })
 })

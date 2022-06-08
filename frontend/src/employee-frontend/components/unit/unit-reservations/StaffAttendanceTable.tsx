@@ -467,7 +467,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   }, [])
 
   return (
-    <DayTr>
+    <DayTr data-qa={`attendance-row-${rowIndex}`}>
       <NameTd partialRow={false} rowIndex={rowIndex}>
         <FixedSpaceRow spacing="xs">
           <Tooltip
@@ -515,10 +515,10 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 />
               ) : (
                 <>
-                  <AttendanceTime>
+                  <AttendanceTime data-qa="arrival-time">
                     {renderArrivalTime(range.startTime)}
                   </AttendanceTime>
-                  <AttendanceTime>
+                  <AttendanceTime data-qa="departure-time">
                     {renderDepartureTime(range.endTime)}
                   </AttendanceTime>
                 </>
@@ -568,6 +568,7 @@ const RowMenu = React.memo(function RowMenu({ onEdit }: RowMenuProps) {
           onClick: onEdit
         }
       ]}
+      data-qa="row-menu"
     />
   )
 })
