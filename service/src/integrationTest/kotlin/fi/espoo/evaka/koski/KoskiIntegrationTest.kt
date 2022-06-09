@@ -361,6 +361,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestCase(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
             TestCase(testPeriod(2L to 3L), "DEVELOPMENTAL_DISABILITY_2")
         )
+        val actionPeriod = testPeriod(0L to 3L)
         db.transaction { tx ->
             testCases.forEach {
                 tx.insertTestAssistanceNeed(
@@ -373,6 +374,18 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 )
             }
+            // Koski validation rules require extended compulsory education when developmental disability date ranges
+            // are present
+            tx.insertTestAssistanceAction(
+                DevAssistanceAction(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = actionPeriod.start,
+                    endDate = actionPeriod.end,
+                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
+                    actions = emptySet()
+                )
+            )
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -380,7 +393,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen = listOf(Aikajakso.from(testCases[0].period)),
                 vaikeastiVammainen = listOf(Aikajakso.from(testCases[1].period)),
-                pidennettyOppivelvollisuus = null,
+                pidennettyOppivelvollisuus = Aikajakso.from(actionPeriod),
                 kuljetusetu = null,
                 erityisenTuenPäätökset = null
             ),
