@@ -22,7 +22,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -501,8 +501,8 @@ fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
     createUpdate(
         // language=sql
         """
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, active, updated)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :active, :updated)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, active, updated)
+VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :active, :updated)
 """
     )
         .bindKotlin(option)
@@ -514,8 +514,8 @@ fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
         // language=sql
         """
 ALTER TABLE service_need_option DISABLE TRIGGER set_timestamp;
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
+VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
 ON CONFLICT (id) DO UPDATE SET updated = :updated, daycare_hours_per_week = :daycareHoursPerWeek;
 ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
 """
@@ -601,9 +601,12 @@ RETURNING id
     """.trimIndent()
 ).let(::FeeThresholdsId)
 
-fun Database.Transaction.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
-    voucherValue,
-    "INSERT INTO voucher_value (id, validity, base_value, base_value_age_under_three) VALUES (:id, :validity, :baseValue, :baseValueAgeUnderThree)"
+fun Database.Transaction.insertTestServiceNeedOptionVoucherValue(serviceNeedOptionVoucherValue: ServiceNeedOptionVoucherValue) = insertTestDataRow(
+    serviceNeedOptionVoucherValue,
+    """
+INSERT INTO service_need_option_voucher_value (id, service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
+VALUES (:id, :serviceNeedOptionId, :validity, :baseValue, :coefficient, :value, :baseValueUnder3y, :coefficientUnder3y, :valueUnder3y)
+"""
 )
 
 fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(

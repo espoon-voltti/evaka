@@ -248,11 +248,10 @@ internal fun Database.Read.getPaidPlacements(
 
         val serviceNeeds = createQuery(
             """
-SELECT 
+SELECT
     daterange(sn.start_date, sn.end_date, '[]') AS range, 
-    sno.id, 
+    sno.id AS option_id, 
     sno.fee_coefficient, 
-    sno.voucher_value_coefficient, 
     sno.contract_days_per_month,
     sno.fee_description_fi, 
     sno.fee_description_sv, 
@@ -272,7 +271,14 @@ WHERE sn.placement_id = ANY(:placementIds)
         val defaultServiceNeeds = createQuery(
             // language=sql
             """
-SELECT valid_placement_type, id, fee_coefficient, voucher_value_coefficient, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv
+SELECT 
+    valid_placement_type,
+    id AS option_id,
+    fee_coefficient,
+    fee_description_fi,
+    fee_description_sv,
+    voucher_value_description_fi,
+    voucher_value_description_sv
 FROM service_need_option WHERE default_option
 """
         )
@@ -283,7 +289,7 @@ FROM service_need_option WHERE default_option
             }
             .toMap()
 
-        val placementsWithServiceNeeds = run {
+        val placementsWithServiceNeedOptions = run {
             placements.flatMap { placement ->
                 val placementPeriod = DateRange(placement.startDate, placement.endDate)
                 asDistinctPeriods(serviceNeeds.map { it.first }, placementPeriod)
@@ -301,7 +307,7 @@ FROM service_need_option WHERE default_option
             }
         }
 
-        child to placementsWithServiceNeeds
+        child to placementsWithServiceNeedOptions
     }
 }
 

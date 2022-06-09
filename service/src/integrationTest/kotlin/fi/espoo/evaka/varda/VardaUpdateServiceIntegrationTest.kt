@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -46,6 +45,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testExternalPurchasedDaycare
 import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.toValueDecisionServiceNeed
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
@@ -1054,14 +1054,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
                 value = value,
                 coPayment = coPayment,
                 placementType = PlacementType.DAYCARE,
-                serviceNeed = VoucherValueDecisionServiceNeed(
-                    snDefaultDaycare.feeCoefficient,
-                    snDefaultDaycare.voucherValueCoefficient,
-                    snDefaultDaycare.feeDescriptionFi,
-                    snDefaultDaycare.feeDescriptionSv,
-                    snDefaultDaycare.voucherValueDescriptionFi,
-                    snDefaultDaycare.voucherValueDescriptionSv
-                )
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
             )
             it.upsertValueDecisions(listOf(decision))
             it.setVoucherValueDecisionSentAt(decision.id, sentAt)

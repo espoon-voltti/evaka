@@ -75,7 +75,6 @@ data class ServiceNeedOption(
     val validPlacementType: PlacementType,
     val defaultOption: Boolean,
     val feeCoefficient: BigDecimal,
-    val voucherValueCoefficient: BigDecimal,
     val occupancyCoefficient: BigDecimal,
     val occupancyCoefficientUnder3y: BigDecimal,
     val daycareHoursPerWeek: Int,

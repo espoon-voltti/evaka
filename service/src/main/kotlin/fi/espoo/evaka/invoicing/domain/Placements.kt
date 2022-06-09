@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import java.math.BigDecimal
 
 data class UnitData(
@@ -26,9 +26,8 @@ data class PlacementWithServiceNeed(
 )
 
 data class ServiceNeedValue(
-    val id: ServiceNeedId,
+    val optionId: ServiceNeedOptionId,
     val feeCoefficient: BigDecimal,
-    val voucherValueCoefficient: BigDecimal,
     val contractDaysPerMonth: Int?,
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,

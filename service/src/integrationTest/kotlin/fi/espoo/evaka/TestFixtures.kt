@@ -27,7 +27,6 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.UnitData
-import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -35,7 +34,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.VoucherValueId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -51,7 +49,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -535,19 +532,11 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         )
     )
 
-    insertTestVoucherValue(
-        VoucherValue(
-            id = VoucherValueId(UUID.randomUUID()),
-            validity = DateRange(LocalDate.of(2000, 1, 1), null),
-            baseValue = 87000,
-            baseValueAgeUnderThree = 134850 // 87000 * 1.55
-        )
-    )
-
     insertPreschoolTerms()
     insertClubTerms()
 
     insertServiceNeedOptions()
+    insertServiceNeedOptionVoucherValues()
     insertAssistanceActionOptions()
     insertAssistanceBasisOptions()
 }
@@ -612,11 +601,24 @@ fun Database.Transaction.insertServiceNeedOptions() {
     val batch = prepareBatch(
         // language=sql
         """
-INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, contract_days_per_month)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :contractDaysPerMonth)
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, contract_days_per_month)
+VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :contractDaysPerMonth)
 """
     )
     serviceNeedTestFixtures.forEach { fixture ->
+        batch.bindKotlin(fixture).add()
+    }
+    batch.execute()
+}
+
+fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
+    val batch = prepareBatch(
+        """
+INSERT INTO service_need_option_voucher_value (service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
+VALUES (:serviceNeedOptionId, :validity, :baseValue, :coefficient, :value, :baseValueUnder3y, :coefficientUnder3y, :valueUnder3y)
+"""
+    )
+    serviceNeedOptionVoucherValueTestFixtures.forEach { fixture ->
         batch.bindKotlin(fixture).add()
     }
     batch.execute()
