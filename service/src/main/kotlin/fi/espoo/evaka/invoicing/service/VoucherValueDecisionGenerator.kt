@@ -120,6 +120,7 @@ private fun generateNewValueDecisions(
         incomes.map { DateRange(it.validFrom, it.validTo) } +
         capacityFactors.map { it.dateRange } +
         prices.map { it.validDuring } +
+        voucherValues.flatMap { it.value.map { voucherValues -> voucherValues.validity } } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
                 DateRange(child.dateOfBirth, firstOfMonthAfterThirdBirthday(child.dateOfBirth).minusDays(1)),
