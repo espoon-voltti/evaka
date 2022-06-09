@@ -77,10 +77,6 @@ const Icon = styled(FontAwesomeIcon)`
   margin-right: 10px;
 `
 
-const NoApplications = styled.p`
-  color: ${colors.grayscale.g70};
-`
-
 interface ChildApplicationsBlockProps {
   childId: string
   childName: string
@@ -178,7 +174,7 @@ export default React.memo(function ChildApplicationsBlock({
         />
       </TitleContainer>
 
-      {applicationSummaries.length ? (
+      {applicationSummaries.length > 0 &&
         applicationSummaries.map(
           (
             {
@@ -315,10 +311,7 @@ export default React.memo(function ChildApplicationsBlock({
               {index != applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
           )
-        )
-      ) : (
-        <NoApplications>{t.applicationsList.noApplications}</NoApplications>
-      )}
+        )}
     </ContentArea>
   )
 })

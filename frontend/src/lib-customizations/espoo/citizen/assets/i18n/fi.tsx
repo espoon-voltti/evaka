@@ -1245,7 +1245,6 @@ export default {
       </P>
     ),
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
-    noApplications: 'Ei hakemuksia',
     type: {
       DAYCARE: 'Varhaiskasvatushakemus',
       PRESCHOOL: 'Esiopetushakemus',
