@@ -65,6 +65,7 @@ export interface EmployeeLoginRequest {
   firstName: string
   lastName: string
   email?: string
+  employeeNumber?: string
 }
 
 export interface EmployeeUser {

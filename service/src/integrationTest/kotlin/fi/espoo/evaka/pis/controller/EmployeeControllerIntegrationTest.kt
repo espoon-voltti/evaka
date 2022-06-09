@@ -79,7 +79,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         email = employee.email,
         firstName = employee.firstName,
         lastName = employee.lastName,
-        externalId = employee.externalId
+        externalId = employee.externalId,
+        employeeNumber = null
     )
 
     val employee1 = Employee(

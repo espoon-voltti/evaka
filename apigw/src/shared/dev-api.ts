@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { adExternalIdPrefix } from './config'
 import { client, UserRole, UUID } from './service-client'
 
 interface DevEmployee {
@@ -16,6 +17,13 @@ export async function upsertEmployee(employee: DevEmployee): Promise<UUID> {
   const { data } = await client.post(
     `/dev-api/employee/external-id/${employee.externalId}`,
     employee
+  )
+  return data
+}
+
+export async function getEmployeeByExternalId(externalId: string) {
+  const { data } = await client.get<Employee>(
+    `/dev-api/employee/external-id/${adExternalIdPrefix}:${externalId}`
   )
   return data
 }

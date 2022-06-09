@@ -218,6 +218,7 @@ export interface MergeRequest {
 */
 export interface NewEmployee {
   email: string | null
+  employeeNumber: string | null
   externalId: ExternalId | null
   firstName: string
   lastName: string

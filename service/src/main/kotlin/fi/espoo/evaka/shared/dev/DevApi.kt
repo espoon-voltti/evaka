@@ -64,6 +64,7 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
+import fi.espoo.evaka.pis.getEmployeeByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -526,6 +527,11 @@ class DevApi(
     @PostMapping("/employee")
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
         return db.connect { dbc -> dbc.transaction { it.insertTestEmployee(body) } }
+    }
+
+    @GetMapping("/employee/external-id/{id}")
+    fun getEmployee(db: Database, @PathVariable id: ExternalId): Employee {
+        return db.connect { dbc -> dbc.transaction { tx -> tx.getEmployeeByExternalId(id) ?: throw NotFound() } }
     }
 
     @DeleteMapping("/employee/external-id/{externalId}")
