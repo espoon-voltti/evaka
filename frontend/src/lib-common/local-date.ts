@@ -253,7 +253,7 @@ export default class LocalDate {
     return result
   }
 
-  private static tryCreate(
+  static tryCreate(
     year: number,
     month: number,
     date: number
