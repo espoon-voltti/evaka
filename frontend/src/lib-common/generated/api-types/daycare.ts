@@ -211,6 +211,7 @@ export interface CreateGroupRequest {
 export interface Daycare {
   additionalInfo: string | null
   area: DaycareCareArea
+  businessId: string
   capacity: number
   closingDate: LocalDate | null
   clubApplyPeriod: DateRange | null
@@ -221,6 +222,7 @@ export interface Daycare {
   enabledPilotFeatures: PilotFeature[]
   financeDecisionHandler: FinanceDecisionHandler | null
   ghostUnit: boolean
+  iban: string
   id: UUID
   invoicedByMunicipality: boolean
   language: Language
@@ -233,6 +235,7 @@ export interface Daycare {
   ophUnitOid: string | null
   phone: string | null
   preschoolApplyPeriod: DateRange | null
+  providerId: string
   providerType: ProviderType
   roundTheClock: boolean
   type: CareType[]
@@ -276,6 +279,7 @@ export interface DaycareDecisionCustomization {
 export interface DaycareFields {
   additionalInfo: string | null
   areaId: UUID
+  businessId: string
   capacity: number
   closingDate: LocalDate | null
   clubApplyPeriod: DateRange | null
@@ -285,6 +289,7 @@ export interface DaycareFields {
   email: string | null
   financeDecisionHandlerId: UUID | null
   ghostUnit: boolean
+  iban: string
   invoicedByMunicipality: boolean
   language: Language
   location: Coordinate | null
@@ -296,6 +301,7 @@ export interface DaycareFields {
   ophUnitOid: string | null
   phone: string | null
   preschoolApplyPeriod: DateRange | null
+  providerId: string
   providerType: ProviderType
   roundTheClock: boolean
   type: CareType[]

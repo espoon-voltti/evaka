@@ -79,7 +79,10 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         ophOrganizerOid = "1.22.33.44.55",
         operationDays = setOf(1, 2, 3, 4, 5),
         financeDecisionHandlerId = null,
-        roundTheClock = false
+        roundTheClock = false,
+        businessId = "Y-123456789",
+        iban = "FI123456789",
+        providerId = "123456789",
     )
 
     @BeforeEach

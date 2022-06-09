@@ -1375,7 +1375,10 @@ data class DevDaycare(
     val roundTheClock: Boolean? = false,
     val operationDays: Set<Int> = setOf(1, 2, 3, 4, 5),
     val enabledPilotFeatures: Set<PilotFeature> = setOf(),
-    val financeDecisionHandler: EmployeeId? = null
+    val financeDecisionHandler: EmployeeId? = null,
+    val businessId: String = "",
+    val iban: String = "",
+    val providerId: String = "",
 )
 
 data class DevDaycareGroup(

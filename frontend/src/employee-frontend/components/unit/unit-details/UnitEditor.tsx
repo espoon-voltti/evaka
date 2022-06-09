@@ -11,6 +11,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import {
   CareType,
   DaycareCareArea,
+  DaycareFields,
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
@@ -38,7 +39,6 @@ import colors from 'lib-customizations/common'
 import { featureFlags, unitProviderTypes } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
-import { DaycareFields } from '../../../api/unit'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { DayOfWeek } from '../../../types'
@@ -81,6 +81,9 @@ interface FormData {
   ophUnitOid: string
   ophOrganizerOid: string
   operationDays: DayOfWeek[]
+  businessId: string
+  iban: string
+  providerId: string
 }
 
 interface UnitDecisionCustomization {
@@ -171,8 +174,17 @@ const AddressSecondRowContainer = styled.div`
   }
 `
 
-const IndentChckboxLabel = styled.div`
+const IndentCheckboxLabel = styled.div`
   margin-left: 46px;
+`
+
+const IndentedTable = styled.div`
+  margin-left: 46px;
+  display: inline-grid;
+  align-items: center;
+  grid-template-columns: min-content min-content;
+  column-gap: 80px;
+  row-gap: 3px;
 `
 
 const Url = styled.a`
@@ -376,6 +388,14 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.openingDateIsAfterClosingDate)
   }
+  if (
+    featureFlags.experimental?.voucherUnitPayments &&
+    form.providerType === 'PRIVATE_SERVICE_VOUCHER'
+  ) {
+    if (!form.businessId) errors.push(i18n.unitEditor.error.businessId)
+    if (!form.iban) errors.push(i18n.unitEditor.error.iban)
+    if (!form.providerId) errors.push(i18n.unitEditor.error.providerId)
+  }
 
   const {
     openingDate,
@@ -395,7 +415,10 @@ function validateForm(
     invoicedByMunicipality,
     ophUnitOid,
     ophOrganizerOid,
-    operationDays
+    operationDays,
+    businessId,
+    iban,
+    providerId
   } = form
 
   if (
@@ -445,7 +468,10 @@ function validateForm(
         },
         ophUnitOid,
         ophOrganizerOid,
-        operationDays
+        operationDays,
+        businessId,
+        iban,
+        providerId
       },
       errors
     ]
@@ -519,7 +545,10 @@ function toFormData(unit: Unit | undefined): FormData {
       phone: unit?.unitManager?.phone ?? '',
       email: unit?.unitManager?.email ?? ''
     },
-    operationDays: unit?.operationDays ?? []
+    operationDays: unit?.operationDays ?? [],
+    businessId: unit?.businessId ?? '',
+    iban: unit?.iban ?? '',
+    providerId: unit?.providerId ?? ''
   }
 }
 
@@ -797,7 +826,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 {period != null && (
                   <>
                     <Gap size="xs" />
-                    <IndentChckboxLabel>
+                    <IndentCheckboxLabel>
                       <FixedSpaceRow alignItems="center">
                         <div>{i18n.unitEditor.field.applyPeriod}</div>
                         <div>
@@ -854,7 +883,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                           )}
                         </div>
                       </FixedSpaceRow>
-                    </IndentChckboxLabel>
+                    </IndentCheckboxLabel>
                   </>
                 )}
               </div>
@@ -867,19 +896,82 @@ export default function UnitEditor(props: Props): JSX.Element {
         {props.editable ? (
           <FixedSpaceColumn>
             {unitProviderTypes.map((value) => (
-              <Radio
-                key={value}
-                label={i18n.common.providerType[value]}
-                checked={form.providerType === value}
-                onChange={() => updateForm({ providerType: value })}
-                data-qa={`provider-type-${value}`}
-              />
+              <>
+                <Radio
+                  key={value}
+                  label={i18n.common.providerType[value]}
+                  checked={form.providerType === value}
+                  onChange={() => updateForm({ providerType: value })}
+                  data-qa={`provider-type-${value}`}
+                />
+                {featureFlags.experimental?.voucherUnitPayments &&
+                  value === 'PRIVATE_SERVICE_VOUCHER' &&
+                  form.providerType === value && (
+                    <IndentedTable>
+                      <label htmlFor="private-service-voucher-business-id">
+                        {i18n.unitEditor.label.businessId}
+                      </label>
+                      <div>
+                        <InputField
+                          id="private-service-voucher-business-id"
+                          value={form.businessId}
+                          width="m"
+                          onChange={(value) =>
+                            updateForm({ businessId: value })
+                          }
+                        />
+                      </div>
+                      <label htmlFor="private-service-voucher-iban">
+                        {i18n.unitEditor.label.iban}
+                      </label>
+                      <div>
+                        <InputField
+                          id="private-service-voucher-iban"
+                          value={form.iban}
+                          width="m"
+                          onChange={(value) => updateForm({ iban: value })}
+                        />
+                      </div>
+                      <label htmlFor="private-service-voucher-provider-id">
+                        {i18n.unitEditor.label.providerId}
+                      </label>
+                      <div>
+                        <InputField
+                          id="private-service-voucher-provider-id"
+                          value={form.providerId}
+                          width="m"
+                          onChange={(value) =>
+                            updateForm({ providerId: value })
+                          }
+                        />
+                      </div>
+                    </IndentedTable>
+                  )}
+              </>
             ))}
           </FixedSpaceColumn>
         ) : (
-          i18n.common.providerType[form.providerType]
+          <div>{i18n.common.providerType[form.providerType]}</div>
         )}
       </FormPart>
+      {featureFlags.experimental?.voucherUnitPayments &&
+        !props.editable &&
+        form.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
+          <>
+            <FormPart>
+              <div>{i18n.unitEditor.label.businessId}</div>
+              <div>{form.businessId}</div>
+            </FormPart>
+            <FormPart>
+              <div>{i18n.unitEditor.label.iban}</div>
+              <div>{form.iban}</div>
+            </FormPart>
+            <FormPart>
+              <div>{i18n.unitEditor.label.providerId}</div>
+              <div>{form.providerId}</div>
+            </FormPart>
+          </>
+        )}
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
         <OperationDaysContainer>

@@ -31,7 +31,8 @@ const features: Features = {
       personalDetailsPage: true,
       mobileMessages: true,
       leops: true,
-      citizenVasu: true
+      citizenVasu: true,
+      voucherUnitPayments: true
     }
   },
   staging: {

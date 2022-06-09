@@ -1,0 +1,4 @@
+ALTER TABLE daycare
+    ADD COLUMN business_id TEXT NOT NULL DEFAULT '',
+    ADD COLUMN iban TEXT NOT NULL DEFAULT '',
+    ADD COLUMN provider_id TEXT NOT NULL DEFAULT '';

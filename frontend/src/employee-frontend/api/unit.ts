@@ -17,14 +17,9 @@ import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
-  CareType,
-  DaycareDecisionCustomization,
-  Language,
-  MailingAddress,
-  ProviderType,
-  Stats,
-  UnitManager,
-  VisitingAddress
+  CreateDaycareResponse,
+  DaycareFields,
+  Stats
 } from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyResponseSpeculated,
@@ -37,12 +32,10 @@ import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { DayOfWeek } from '../types'
 import {
   DaycareGroup,
   DaycarePlacement,
@@ -774,44 +767,6 @@ export async function getPairingStatus(
     .get<JsonOf<PairingStatusResponse>>(`/public/pairings/${pairingId}/status`)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface DaycareFields {
-  name: string
-  openingDate: LocalDate | null
-  closingDate: LocalDate | null
-  areaId: UUID
-  type: CareType[]
-  daycareApplyPeriod: DateRange | null
-  preschoolApplyPeriod: DateRange | null
-  clubApplyPeriod: DateRange | null
-  providerType: ProviderType
-  roundTheClock: boolean
-  capacity: number
-  language: Language
-  ghostUnit: boolean
-  uploadToVarda: boolean
-  uploadChildrenToVarda: boolean
-  uploadToKoski: boolean
-  invoicedByMunicipality: boolean
-  costCenter: string | null
-  financeDecisionHandlerId: UUID
-  additionalInfo: string | null
-  phone: string | null
-  email: string | null
-  url: string | null
-  visitingAddress: VisitingAddress
-  location: Coordinate | null
-  mailingAddress: MailingAddress
-  unitManager: UnitManager | null
-  decisionCustomization: DaycareDecisionCustomization
-  ophUnitOid: string | null
-  ophOrganizerOid: string | null
-  operationDays: DayOfWeek[] | null
-}
-
-interface CreateDaycareResponse {
-  id: UUID
 }
 
 export async function createDaycare(

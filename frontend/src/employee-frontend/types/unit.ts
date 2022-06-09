@@ -2,66 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  CareType,
-  DaycareCareArea,
-  DaycareDecisionCustomization,
-  FinanceDecisionHandler,
-  Language,
-  MailingAddress,
-  ProviderType,
-  UnitManager,
-  VisitingAddress
-} from 'lib-common/generated/api-types/daycare'
+import { Daycare } from 'lib-common/generated/api-types/daycare'
 import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { Coordinate, PilotFeature } from 'lib-common/generated/api-types/shared'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { DayOfWeek } from './index'
 
-export interface Unit {
-  id: UUID
-  name: string
-  openingDate: LocalDate | null
-  closingDate: LocalDate | null
-  area: DaycareCareArea
-  type: CareType[]
-  daycareApplyPeriod: DateRange | null
-  preschoolApplyPeriod: DateRange | null
-  clubApplyPeriod: DateRange | null
-  providerType: ProviderType
-  roundTheClock: boolean
-  capacity: number
-  language: Language
-  ghostUnit: boolean
-  uploadToVarda: boolean
-  uploadChildrenToVarda: boolean
-  uploadToKoski: boolean
-  invoicedByMunicipality: boolean
-  costCenter: string | null
-  financeDecisionHandler: FinanceDecisionHandler | null
-  additionalInfo: string | null
-  phone: string | null
-  email: string | null
-  url: string | null
-  visitingAddress: VisitingAddress
-  location: Coordinate | null
-  mailingAddress: MailingAddress
-  unitManager: UnitManager | null
-  decisionCustomization: DaycareDecisionCustomization
-  ophUnitOid: string | null
-  ophOrganizerOid: string | null
+export interface Unit extends Omit<Daycare, 'operationDays'> {
   operationDays: DayOfWeek[] | null
-  enabledPilotFeatures: PilotFeature[]
 }
 
 export interface UnitFiltersType {

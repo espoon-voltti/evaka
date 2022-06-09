@@ -5,19 +5,17 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 import { combine, Loading, Result } from 'lib-common/api'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea,
+  DaycareFields
+} from 'lib-common/generated/api-types/daycare'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import {
-  DaycareFields,
-  getDaycare,
-  UnitResponse,
-  updateDaycare
-} from '../../../api/unit'
+import { getDaycare, UnitResponse, updateDaycare } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
