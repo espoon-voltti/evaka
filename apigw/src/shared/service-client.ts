@@ -72,7 +72,6 @@ export interface EmployeeUser {
   id: string
   firstName: string
   lastName: string
-  employeeNumber: string | null
   globalRoles: UserRole[]
   allScopedRoles: UserRole[]
 }

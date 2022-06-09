@@ -106,10 +106,7 @@ export default function createAdStrategy(
         [AD_ROLES_KEY]: [],
         [AD_GIVEN_NAME_KEY]: employee.firstName,
         [AD_FAMILY_NAME_KEY]: employee.lastName,
-        [AD_EMAIL_KEY]: employee.email ? employee.email : '',
-        [AD_EMPLOYEE_NUMBER_KEY]: employee.employeeNumber
-          ? employee.employeeNumber
-          : undefined
+        [AD_EMAIL_KEY]: employee.email ? employee.email : ''
       })
     }
 

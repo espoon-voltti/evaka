@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -57,10 +58,11 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertTrue(res.isSuccessful)
         val expected = EmployeeUser(
-            id = employeeId, employeeNumber = null,
+            id = employeeId,
             firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
         )
         assertEquals(expected, result.get().copy(id = employeeId))
+        assertNull(db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
 
     @Test
@@ -79,10 +81,11 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertTrue(res.isSuccessful)
         val expected = EmployeeUser(
-            id = employeeId, employeeNumber = "666666",
+            id = employeeId,
             firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
         )
         assertEquals(expected, result.get().copy(id = employeeId))
+        assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
 
     @Test
@@ -104,10 +107,11 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertTrue(res.isSuccessful)
         val expected = EmployeeUser(
-            id = employeeId, employeeNumber = "666666",
+            id = employeeId,
             firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(UserRole.FINANCE_ADMIN), allScopedRoles = setOf()
         )
         assertEquals(expected, result.get())
+        assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
 
     @Test

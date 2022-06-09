@@ -80,7 +80,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         firstName = employee.firstName,
         lastName = employee.lastName,
         externalId = employee.externalId,
-        employeeNumber = employee.employeeNumber
+        employeeNumber = null
     )
 
     val employee1 = Employee(
@@ -88,7 +88,6 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         firstName = "etunimi1",
         lastName = "sukunimi1",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
-        employeeNumber = null,
         created = Instant.now(),
         updated = Instant.now(),
         id = EmployeeId(UUID.randomUUID())
@@ -99,7 +98,6 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         firstName = "etunimi2",
         lastName = "sukunimi2",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
-        employeeNumber = null,
         created = Instant.now(),
         updated = Instant.now(),
         id = EmployeeId(UUID.randomUUID())

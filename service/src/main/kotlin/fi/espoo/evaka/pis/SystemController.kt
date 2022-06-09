@@ -71,7 +71,6 @@ class SystemController(private val personService: PersonService, private val acc
                     id = inserted.id,
                     firstName = inserted.firstName,
                     lastName = inserted.lastName,
-                    employeeNumber = inserted.employeeNumber,
                     globalRoles = roles.globalRoles,
                     allScopedRoles = roles.allScopedRoles
                 )

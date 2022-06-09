@@ -168,7 +168,6 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
         lastName = "Test",
         email = "integration-test@example.org",
         externalId = null,
-        employeeNumber = null,
         created = Instant.now(),
         updated = null
     )
