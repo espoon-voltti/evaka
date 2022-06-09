@@ -497,6 +497,52 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `disability date ranges are only sent if extended compulsory education is sent`() {
+        // https://github.com/Opetushallitus/koski/pull/1860
+
+        insertPlacement(testChild_1)
+        val assistanceNeeds = listOf(
+            Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1"),
+        )
+        db.transaction { tx ->
+            assistanceNeeds.forEach {
+                tx.insertTestAssistanceNeed(
+                    DevAssistanceNeed(
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        childId = testChild_1.id,
+                        startDate = it.first.start,
+                        endDate = it.first.end,
+                        bases = setOf(it.second)
+                    )
+                )
+            }
+            val actionPeriod = testPeriod(7L to 8L)
+            tx.insertTestAssistanceAction(
+                DevAssistanceAction(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = actionPeriod.start,
+                    endDate = actionPeriod.end,
+                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION, AssistanceMeasure.TRANSPORT_BENEFIT),
+                    actions = emptySet()
+                )
+            )
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+        assertEquals(
+            Lisätiedot(
+                vammainen = null,
+                vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = null,
+                kuljetusetu = Aikajakso.from(testPeriod(7L to 8L)),
+                erityisenTuenPäätökset = null
+            ),
+            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+        )
+    }
+
+    @Test
     fun `gaps in placements results in temporary interruptions (eventually qualified)`() {
         insertPlacement(testChild_1, period = testPeriod((0L to 2L)))
         insertPlacement(testChild_1, period = testPeriod((10L to 12L)))

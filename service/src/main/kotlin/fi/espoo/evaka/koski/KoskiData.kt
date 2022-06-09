@@ -260,26 +260,28 @@ data class KoskiActiveDataRaw(
         )
     )
 
-    fun haeLisätiedot() = Lisätiedot(
-        vammainen = developmentalDisability1.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() },
-        vaikeastiVammainen = developmentalDisability2.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() },
-        pidennettyOppivelvollisuus = extendedCompulsoryEducation?.let { ece ->
-            // Koski has an extra validation rule which checks that all extended compulsory education
-            // dates which are included in at least one of the disability date ranges.
-            // https://github.com/Opetushallitus/koski/blob/2b25eb7e16bb651e1eb09cce636a736e85811ad0/src/main/scala/fi/oph/koski/validation/KoskiValidator.scala#L579
-            // https://github.com/Opetushallitus/koski/pull/1860
-
-            // Since we don't have a similar restriction, find the largest overlap that satisfies Koski requirements
+    fun haeLisätiedot(): Lisätiedot? {
+        // Koski has an extra validation rule for developmental disability and extended compulsory education date ranges.
+        // https://github.com/Opetushallitus/koski/blob/2b25eb7e16bb651e1eb09cce636a736e85811ad0/src/main/scala/fi/oph/koski/validation/KoskiValidator.scala#L579
+        // https://github.com/Opetushallitus/koski/pull/1860
+        // Since we don't have similar restrictions, adjust data to satisfy Koski requirements
+        val adjustedEce = extendedCompulsoryEducation?.let { ece ->
             val disabilities = Timeline.of(developmentalDisability1).addAll(developmentalDisability2)
             val overlaps = disabilities.intersection(Timeline.of(ece))
             overlaps.ranges().maxByOrNull { it.durationInDays() }?.let { Aikajakso.from(it) }
-        },
-        kuljetusetu = transportBenefit?.let { Aikajakso.from(it) },
-        erityisenTuenPäätökset = (
-            specialAssistanceDecisionWithGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
-                specialAssistanceDecisionWithoutGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) }
-            ).takeIf { it.isNotEmpty() }
-    ).takeIf { it.vammainen != null || it.vaikeastiVammainen != null || it.pidennettyOppivelvollisuus != null || it.kuljetusetu != null || it.erityisenTuenPäätökset != null }
+        }
+
+        return Lisätiedot(
+            vammainen = developmentalDisability1.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() && adjustedEce != null },
+            vaikeastiVammainen = developmentalDisability2.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() && adjustedEce != null },
+            pidennettyOppivelvollisuus = adjustedEce,
+            kuljetusetu = transportBenefit?.let { Aikajakso.from(it) },
+            erityisenTuenPäätökset = (
+                specialAssistanceDecisionWithGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
+                    specialAssistanceDecisionWithoutGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) }
+                ).takeIf { it.isNotEmpty() }
+        ).takeIf { it.vammainen != null || it.vaikeastiVammainen != null || it.pidennettyOppivelvollisuus != null || it.kuljetusetu != null || it.erityisenTuenPäätökset != null }
+    }
 }
 
 sealed class StudyRightTermination {
