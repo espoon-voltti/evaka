@@ -1256,7 +1256,6 @@ const sv: Translations = {
       </P>
     ),
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
-    noApplications: 'Inga ansökningar',
     type: {
       DAYCARE: 'Ansökan till småbarnspedagogik',
       PRESCHOOL: 'Ansökan till förskolan',
