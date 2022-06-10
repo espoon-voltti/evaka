@@ -341,7 +341,7 @@ export const fi = {
       START: 'Aloitetaan'
     },
     wizard: {
-      text1: 'Syötä eVakasta saatava 10-merkkinen koodi kenttään alla.',
+      text1: 'Syötä eVakasta saatava 12-merkkinen koodi kenttään alla.',
       text2: 'Syötä alla oleva vahvistuskoodi eVakaan.',
       title1: 'eVaka-mobiilin käyttöönotto, vaihe 1/3',
       title2: 'eVaka-mobiilin käyttöönotto, vaihe 2/3',

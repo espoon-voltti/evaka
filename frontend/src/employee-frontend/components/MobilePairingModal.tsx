@@ -65,7 +65,7 @@ export default React.memo(function MobilePairingModal({
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (responseKey.length === 10) {
+    if (responseKey.length === 12) {
       if (pairingResponse.isSuccess) {
         void postPairingResponse(
           pairingResponse.value.id,
