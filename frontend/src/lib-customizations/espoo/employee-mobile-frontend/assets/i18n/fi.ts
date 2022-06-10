@@ -240,6 +240,7 @@ export const fi = {
     allergies: 'Allergiat',
     diet: 'Ruokavalio',
     medication: 'Lääkitys',
+    additionalInfo: 'Lisätiedot',
     contactInfoHeader: 'Yhteystiedot',
     contact: 'Yhteyshenkilö',
     name: 'Nimi',

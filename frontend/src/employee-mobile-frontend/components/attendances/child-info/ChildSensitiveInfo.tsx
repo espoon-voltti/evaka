@@ -120,6 +120,12 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
           <Gap size="s" />
           <FixedSpaceColumn>
             {renderKeyValue(
+              i18n.childInfo.additionalInfo,
+              child.additionalInfo,
+              'child-info-additional-info'
+            )}
+
+            {renderKeyValue(
               i18n.childInfo.allergies,
               child.allergies,
               'child-info-allergies'
