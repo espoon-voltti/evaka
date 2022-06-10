@@ -157,7 +157,7 @@ export default React.memo(function MobilePairingModal({
             <Flex>
               <InputField
                 value={responseKey}
-                onChange={setResponseKey}
+                onChange={(v) => setResponseKey(v.toLowerCase())}
                 placeholder={i18n.common.code}
                 width="m"
                 data-qa="response-key-input"
