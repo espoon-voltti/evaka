@@ -323,7 +323,7 @@ const DevicesTable = React.memo(function DevicesTable({
         </Tr>
       </Thead>
       <Tbody>
-        {sortBy(rows, ['name']).map((row) => (
+        {sortBy(rows, (row) => row.name).map((row) => (
           <DeviceRow
             key={row.id}
             row={row}
