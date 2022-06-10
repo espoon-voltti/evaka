@@ -49,7 +49,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val id = res1.id
         val challengeKey = res1.challengeKey
         assertEquals(testUnitId, res1.unitId)
-        assertEquals(10, challengeKey.length)
+        assertEquals(12, challengeKey.length)
         assertNull(res1.responseKey)
         assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_CHALLENGE, res1.status)
@@ -63,7 +63,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(id, res2.id)
         assertEquals(testUnitId, res2.unitId)
         assertEquals(challengeKey, res2.challengeKey)
-        assertEquals(10, responseKey!!.length)
+        assertEquals(12, responseKey!!.length)
         assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_RESPONSE, res2.status)
 
@@ -368,15 +368,16 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `generatePairingKey - values are unique and chars are easy to distinguish`() {
+    fun `generatePairingKey - values are unique, chars are easy to distinguish and no uppercase chars`() {
         val count = 100
         val values = (1..count).map { generatePairingKey() }.toSet()
         assertEquals(count, values.size)
-        assertTrue(values.all { key -> key.length == 10 })
+        assertTrue(values.all { key -> key.length == 12 })
 
         val concatenated = values.joinToString(separator = "")
         val badChars = listOf('i', 'l', 'I', '1', 'o', 'O', '0', ' ')
         badChars.forEach { c -> assertFalse(concatenated.contains(c, ignoreCase = false)) }
+        concatenated.forEach { c -> assertFalse(c.isUpperCase()) }
     }
 
     private fun givenPairing(pairing: Pairing, attempts: Int = 0) {

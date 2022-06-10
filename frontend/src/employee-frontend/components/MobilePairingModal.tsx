@@ -65,7 +65,7 @@ export default React.memo(function MobilePairingModal({
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (responseKey.length === 10) {
+    if (responseKey.length === 12) {
       if (pairingResponse.isSuccess) {
         void postPairingResponse(
           pairingResponse.value.id,
@@ -157,7 +157,7 @@ export default React.memo(function MobilePairingModal({
             <Flex>
               <InputField
                 value={responseKey}
-                onChange={setResponseKey}
+                onChange={(v) => setResponseKey(v.toLowerCase())}
                 placeholder={i18n.common.code}
                 width="m"
                 data-qa="response-key-input"

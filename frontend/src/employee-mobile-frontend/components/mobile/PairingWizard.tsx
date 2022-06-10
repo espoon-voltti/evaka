@@ -119,7 +119,7 @@ export default React.memo(function ParingWizard() {
               <Flex>
                 <InputField
                   value={challengeKey}
-                  onChange={setChallengeKey}
+                  onChange={(v) => setChallengeKey(v.toLowerCase())}
                   placeholder={i18n.common.code}
                   data-qa="challenge-key-input"
                 />

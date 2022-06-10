@@ -154,8 +154,8 @@ fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) 
         .execute()
 }
 
-const val distinguishableChars = "abcdefghkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-const val keyLength = 10
+const val distinguishableChars = "abcdefghkmnpqrstuvwxyz23456789"
+const val keyLength = 12
 val random: SecureRandom = SecureRandom()
 fun generatePairingKey(): String = (1..keyLength)
     .map { random.nextInt(distinguishableChars.length) }
