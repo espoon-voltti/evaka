@@ -22,7 +22,7 @@ const sv: Translations = {
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     ok: 'Ok',
-    save: 'Spar',
+    save: 'Spara',
     discard: 'Spar inte',
     saveConfirmation: 'Vill du spara ändringar?',
     confirm: 'Bekräfta',
