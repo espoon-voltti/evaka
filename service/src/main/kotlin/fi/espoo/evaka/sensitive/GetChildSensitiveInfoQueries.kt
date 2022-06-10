@@ -34,6 +34,7 @@ fun Database.Read.getChildSensitiveInfo(childId: ChildId): ChildSensitiveInforma
         allergies = child?.additionalInformation?.allergies ?: "",
         diet = child?.additionalInformation?.diet ?: "",
         medication = child?.additionalInformation?.medication ?: "",
+        additionalInfo = child?.additionalInformation?.additionalInfo ?: "",
         contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
             ContactInfo(
                 id = it.id.toString(),

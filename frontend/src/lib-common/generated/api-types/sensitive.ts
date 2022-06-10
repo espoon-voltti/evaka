@@ -14,6 +14,7 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.sensitive.ChildSensitiveInformation
 */
 export interface ChildSensitiveInformation {
+  additionalInfo: string
   allergies: string
   backupPickups: ContactInfo[]
   childAddress: string
