@@ -88,30 +88,41 @@ export default React.memo(function PersonVoucherValueDecisions({
               voucherValueDecisions,
               ['sentAt', 'validFrom'],
               ['desc']
-            ).map((decision) => (
-              <Tr
-                key={`${decision.id}`}
-                data-qa="table-voucher-value-decision-row"
-              >
-                <Td>
-                  {decision.child.lastName} {decision.child.firstName}
-                  <br />
-                  <Link to={`/finance/value-decisions/${decision.id}`}>
-                    {`${decision.validFrom.format()} - ${
-                      decision.validTo?.format() ?? ''
-                    }`}
-                  </Link>
-                </Td>
-                <Td>{decision.decisionNumber}</Td>
-                <Td>{formatCents(decision.voucherValue)}</Td>
-                <Td>{formatCents(decision.finalCoPayment)}</Td>
-                <Td>{formatDate(decision.created)}</Td>
-                <Td data-qa="voucher-value-decision-sent-at">
-                  {formatDate(decision.sentAt)}
-                </Td>
-                <Td>{i18n.valueDecision.status[decision.status]}</Td>
-              </Tr>
-            ))}
+            ).map((decision) => {
+              const formattedRange = `${decision.validFrom.format()} - ${
+                decision.validTo?.format() ?? ''
+              }`
+
+              return (
+                <Tr
+                  key={`${decision.id}`}
+                  data-qa="table-voucher-value-decision-row"
+                >
+                  <Td>
+                    {decision.child.lastName} {decision.child.firstName}
+                    <br />
+                    {decision.annullingDecision ? (
+                      <span>
+                        {i18n.valueDecisions.table.annullingDecision}{' '}
+                        {formattedRange}
+                      </span>
+                    ) : (
+                      <Link to={`/finance/value-decisions/${decision.id}`}>
+                        {formattedRange}
+                      </Link>
+                    )}
+                  </Td>
+                  <Td>{decision.decisionNumber}</Td>
+                  <Td>{formatCents(decision.voucherValue)}</Td>
+                  <Td>{formatCents(decision.finalCoPayment)}</Td>
+                  <Td>{formatDate(decision.created)}</Td>
+                  <Td data-qa="voucher-value-decision-sent-at">
+                    {formatDate(decision.sentAt)}
+                  </Td>
+                  <Td>{i18n.valueDecision.status[decision.status]}</Td>
+                </Tr>
+              )
+            })}
           </Tbody>
         </Table>
       ))}
