@@ -44,7 +44,7 @@ AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
         .mapTo<KoskiStudyRightKey>()
         .list()
 
-fun Database.Transaction.beginKoskiUpload(sourceSystem: String, ophOrganizationOid: String, key: KoskiStudyRightKey, today: LocalDate) =
+fun Database.Transaction.beginKoskiUpload(sourceSystem: String, ophOrganizationOid: String, ophMunicipalityCode: String, key: KoskiStudyRightKey, today: LocalDate) =
     createQuery(
         // language=SQL
         """
@@ -127,7 +127,7 @@ RETURNING id, void_date IS NOT NULL AS voided
             WHERE ksr.id = :id
                     """
                 ).bind("id", id).bind("today", today)
-                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.toKoskiData(sourceSystem, ophOrganizationOid, today)
+                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
             }
         }
 

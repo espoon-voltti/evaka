@@ -139,7 +139,7 @@ data class KoskiActiveDataRaw(
 
     private val approverTitle = "Esiopetusyksikön johtaja"
 
-    fun toKoskiData(sourceSystem: String, ophOrganizationOid: String, today: LocalDate): KoskiData? {
+    fun toKoskiData(sourceSystem: String, ophOrganizationOid: String, ophMunicipalityCode: String, today: LocalDate): KoskiData? {
         val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
         val termination = if (today.isAfter(placementSpan.end)) {
@@ -165,7 +165,7 @@ data class KoskiActiveDataRaw(
         return KoskiData(
             oppija = Oppija(
                 henkilö = child.toHenkilö(),
-                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, ophOrganizationOid, termination))
+                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, ophOrganizationOid, ophMunicipalityCode, termination))
             ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
             organizationOid = ophOrganizationOid
@@ -200,9 +200,9 @@ data class KoskiActiveDataRaw(
         return result
     }
 
-    private fun haeSuoritus(termination: StudyRightTermination?, ophOrganizationOid: String) = unit.haeSuoritus(type).let {
+    private fun haeSuoritus(termination: StudyRightTermination?, ophOrganizationOid: String, ophMunicipalityCode: String) = unit.haeSuoritus(type).let {
         val vahvistus = when (termination) {
-            is StudyRightTermination.Qualified -> haeVahvistus(termination.date, ophOrganizationOid)
+            is StudyRightTermination.Qualified -> haeVahvistus(termination.date, ophOrganizationOid, ophMunicipalityCode)
             else -> null
         }
         if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) it.copy(
@@ -232,11 +232,11 @@ data class KoskiActiveDataRaw(
         ) else it.copy(vahvistus = vahvistus)
     }
 
-    fun haeOpiskeluoikeus(sourceSystem: String, ophOrganizationOid: String, termination: StudyRightTermination?): Opiskeluoikeus {
+    fun haeOpiskeluoikeus(sourceSystem: String, ophOrganizationOid: String, ophMunicipalityCode: String, termination: StudyRightTermination?): Opiskeluoikeus {
         return Opiskeluoikeus(
             oid = studyRightOid,
             tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(termination)),
-            suoritukset = listOf(haeSuoritus(termination, ophOrganizationOid)),
+            suoritukset = listOf(haeSuoritus(termination, ophOrganizationOid, ophMunicipalityCode)),
             lähdejärjestelmänId = LähdejärjestelmäId(
                 id = studyRightId.raw,
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
@@ -247,9 +247,9 @@ data class KoskiActiveDataRaw(
         )
     }
 
-    fun haeVahvistus(qualifiedDate: LocalDate, ophOrganizationOid: String) = Vahvistus(
+    fun haeVahvistus(qualifiedDate: LocalDate, ophOrganizationOid: String, ophMunicipalityCode: String) = Vahvistus(
         päivä = qualifiedDate,
-        paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
+        paikkakunta = VahvistusPaikkakunta(koodiarvo = ophMunicipalityCode),
         myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = ophOrganizationOid),
         myöntäjäHenkilöt = listOf(
             MyöntäjäHenkilö(

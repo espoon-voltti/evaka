@@ -915,6 +915,32 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `municipality of preparatory education confirmation is as configured`() {
+        insertPlacement()
+
+        val testerWithMunicipalityCode = KoskiTester(
+            db,
+            KoskiClient(
+                KoskiEnv.fromEnvironment(env).copy(
+                    url = "http://localhost:${koskiServer.port}",
+                ),
+                OphEnv.fromEnvironment(env).copy(
+                    municipalityCode = "001"
+                ),
+                fuel = http,
+                asyncJobRunner = null
+            )
+        )
+
+        testerWithMunicipalityCode.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        assertEquals(
+            "001",
+            koskiServer.getStudyRights().values.first().opiskeluoikeus.suoritukset.first().vahvistus?.paikkakunta?.koodiarvo
+        )
+    }
+
     private fun insertPlacement(
         child: DevPerson = testChild_1,
         daycareId: DaycareId = testDaycare.id,

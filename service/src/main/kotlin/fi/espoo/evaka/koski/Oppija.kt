@@ -257,13 +257,8 @@ data class Vahvistus(
     val myöntäjäHenkilöt: List<MyöntäjäHenkilö>
 )
 
-enum class VahvistusPaikkakuntaKoodi {
-    @JsonProperty("049")
-    ESPOO
-}
-
 data class VahvistusPaikkakunta(
-    val koodiarvo: VahvistusPaikkakuntaKoodi,
+    val koodiarvo: String,
     val koodistoUri: String = "kunta"
 )
 
