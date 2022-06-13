@@ -11,6 +11,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { tabletMin } from 'lib-components/breakpoints'
 import { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -39,6 +40,12 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `
 
+const MobileDownloadButtonContainer = styled.div`
+  @media (max-width: ${tabletMin}) {
+    margin-right: ${defaultMargins.m};
+  }
+`
+
 export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
   const t = useTranslation()
@@ -62,7 +69,9 @@ export default React.memo(function VasuPage() {
         <>
           <ButtonContainer>
             <ReturnButton label={t.common.return} />
-            <DownloadButton label={t.common.download} />
+            <MobileDownloadButtonContainer>
+              <DownloadButton label={t.common.download} />
+            </MobileDownloadButtonContainer>
           </ButtonContainer>
           <CitizenVasuHeader document={vasu} />
           <CitizenBasicsSection

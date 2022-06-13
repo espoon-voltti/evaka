@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import {
@@ -13,7 +13,6 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   CollapsibleContentArea,
   Container,
@@ -37,7 +36,11 @@ const VasuTableContainer = styled.table`
   padding-left 16px;
 `
 
-const VasuTr = styled.tr``
+const VasuTr = styled.tr`
+  & td {
+    vertical-align: top;
+  }
+`
 
 const VasuTd = styled.td`
   padding-bottom: 16px;
@@ -73,7 +76,6 @@ const VasuTable = React.memo(function VasuTable({
 }: {
   summary: ChildVasuSummary
 }) {
-  const navigate = useNavigate()
   const i18n = useTranslation()
   const user = useUser()
 
@@ -84,11 +86,9 @@ const VasuTable = React.memo(function VasuTable({
           {summary.vasuDocumentsSummary.map((vasu) => (
             <VasuTr key={vasu.id} data-qa={`vasu-${vasu.id}`}>
               <VasuTd>
-                <InlineButton
-                  onClick={() => navigate(`/vasu/${vasu.id}`)}
-                  text={`${vasu.name}`}
-                  data-qa="vasu-link"
-                />
+                <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
+                  {`${vasu.name}`}
+                </Link>
               </VasuTd>
               <StateTd data-qa={`state-chip-${vasu.id}`}>
                 <VasuStateChip
@@ -139,7 +139,6 @@ const VasuList = React.memo(function VasuList({
   items: ChildVasuSummary[]
 }) {
   const i18n = useTranslation()
-  const navigate = useNavigate()
   const user = useUser()
 
   const itemsWithDocs = React.useMemo(
@@ -195,11 +194,9 @@ const VasuList = React.memo(function VasuList({
                   </span>
                 </MobileStatusRow>
                 <Gap size="xs" />
-                <InlineButton
-                  onClick={() => navigate(`/vasu/${vasu.id}`)}
-                  text={`${vasu.name}`}
-                  data-qa="vasu-link"
-                />
+                <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
+                  {`${vasu.name}`}
+                </Link>
                 {!vasu.guardiansThatHaveGivenPermissionToShare.some(
                   (guardianId) => guardianId === user?.id
                 ) && (
