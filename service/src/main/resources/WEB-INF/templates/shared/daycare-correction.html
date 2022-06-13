@@ -45,8 +45,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
     <div class="col-row" th:text="#{address.title}"></div>
     <br />
+    <div class="col-row" th:if="#{address.title.2} != ''" th:text="#{address.title.2}"></div>
     <div class="row">
-        <div class="col-row">
+        <div class="col-row" th:if="#{address.street.value} != ''">
             <div class="left" th:text="#{address.street.caption}"></div>
             <div class="right" th:text="#{address.street.value}"></div>
         </div>
@@ -58,6 +59,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="left" th:text="#{address.postal.caption}"></div>
             <div class="right" th:text="#{address.postal.value}"></div>
         </div>
+        <div class="col-row" th:if="#{address.postal.note} != ''" th:text="#{address.postal.note}"></div>
         <div class="col-row">
             <div class="left" th:text="#{address.email.caption}"></div>
             <div class="right">
