@@ -126,6 +126,7 @@ interface BaseFeatureFlags {
     mobileMessages?: boolean
     leops?: boolean
     citizenVasu?: boolean
+    voucherUnitPayments?: boolean
   }
 }
 

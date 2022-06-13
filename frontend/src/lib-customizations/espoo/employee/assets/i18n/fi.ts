@@ -2725,7 +2725,10 @@ export const fi = {
         preschoolName: 'Yksikön nimi esiopetuspäätöksellä',
         handler: 'Huoltajan ilmoituksen vastaanottaja',
         handlerAddress: 'Ilmoituksen vastaanottajan osoite'
-      }
+      },
+      businessId: 'Y-tunnus',
+      iban: 'Tilinumero',
+      providerId: 'Toimittajanumero'
     },
     field: {
       applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
@@ -2796,7 +2799,10 @@ export const fi = {
       financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu',
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
-      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen'
+      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen',
+      businessId: 'Y-tunnus puuttuu',
+      iban: 'Tilinumero puuttuu',
+      providerId: 'Toimittajanumero puuttuu'
     },
     warning: {
       placementsShouldBeEndedIfUnitIsClosed:

@@ -139,7 +139,7 @@ INSERT INTO daycare (
   unit_manager_id,
   decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
   oph_unit_oid, oph_organizer_oid, round_the_clock, operation_days, enabled_pilot_features,
-  finance_decision_handler
+  finance_decision_handler, business_id, iban, provider_id
 ) VALUES (
   :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
   :capacity, :language, :ghostUnit, :uploadToVarda, :uploadChildrenToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter,
@@ -148,7 +148,8 @@ INSERT INTO daycare (
   :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,
   (SELECT id FROM insert_unit_manager),
   :decisionCustomization.daycareName, :decisionCustomization.preschoolName, :decisionCustomization.handler, :decisionCustomization.handlerAddress,
-  :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationDays, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler
+  :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationDays, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler,
+  :businessId, :iban, :providerId
 )
 RETURNING id
 """

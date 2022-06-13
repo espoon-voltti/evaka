@@ -58,7 +58,10 @@ data class DaycareFields(
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val operationDays: Set<Int>?,
-    val roundTheClock: Boolean
+    val roundTheClock: Boolean,
+    val businessId: String,
+    val iban: String,
+    val providerId: String,
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -212,7 +215,10 @@ SET
   oph_unit_oid = :ophUnitOid,
   oph_organizer_oid = :ophOrganizerOid,
   operation_days = :operationDays,
-  round_the_clock = :roundTheClock
+  round_the_clock = :roundTheClock,
+  business_id = :businessId,
+  iban = :iban,
+  provider_id = :providerId
 WHERE id = :id
 """
 ).bind("id", id)
