@@ -64,6 +64,10 @@ data class VoucherValueDecision(
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
+        if (this.isEmpty() && decision.isEmpty()) {
+            return this.headOfFamilyId == decision.headOfFamilyId
+        }
+
         return this.headOfFamilyId == decision.headOfFamilyId &&
             this.partnerId == decision.partnerId &&
             this.headOfFamilyIncome == decision.headOfFamilyIncome &&
