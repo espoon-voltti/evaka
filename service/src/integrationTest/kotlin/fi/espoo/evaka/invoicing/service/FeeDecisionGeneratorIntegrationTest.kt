@@ -2057,6 +2057,40 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, getAllFeeDecisions().size)
     }
 
+    @Test
+    fun `empty fee decisions are merged into one even if income changes mid decision`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertIncome(testAdult_1.id, 500000, period.copy(end = period.start.plusMonths(6)))
+        insertIncome(testAdult_1.id, 400000, period.copy(start = period.start.plusMonths(6).plusDays(1)))
+        val sentDecision = createFeeDecisionFixture(
+            status = FeeDecisionStatus.SENT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = testAdult_1.id,
+            period = period,
+            children = listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = DAYCARE,
+                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                    baseFee = 0,
+                    fee = 0
+                )
+            )
+        )
+        db.transaction { it.upsertFeeDecisions(listOf(sentDecision)) }
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period.start) }
+        val feeDecisions = getAllFeeDecisions()
+        assertEquals(2, feeDecisions.size)
+        assertEquals(1, feeDecisions.filter { it.status == FeeDecisionStatus.SENT }.size)
+        val draft = feeDecisions.find { it.status == FeeDecisionStatus.DRAFT }
+        assertEquals(true, draft?.isEmpty())
+    }
+
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->

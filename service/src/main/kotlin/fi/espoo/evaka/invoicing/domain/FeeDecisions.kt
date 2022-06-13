@@ -54,6 +54,10 @@ data class FeeDecision(
     override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
     override fun contentEquals(decision: FeeDecision): Boolean {
+        if (this.isEmpty() && decision.isEmpty()) {
+            return this.headOfFamilyId == decision.headOfFamilyId
+        }
+
         return this.children.toSet() == decision.children.toSet() &&
             this.headOfFamilyId == decision.headOfFamilyId &&
             this.partnerId == decision.partnerId &&
