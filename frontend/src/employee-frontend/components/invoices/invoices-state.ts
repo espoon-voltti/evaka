@@ -136,17 +136,15 @@ export function useInvoicesState() {
 
   const loadInvoices = useRestApi(getInvoices, setInvoicesResult)
   const reloadInvoices = useCallback(() => {
-    const area = searchFilters.area.join(',')
     const status = searchFilters.status
-    const distinctiveDetails = searchFilters.distinctiveDetails.join(',')
     const params: InvoiceSearchParams = {
-      area: area.length > 0 ? area : undefined,
-      unit: searchFilters.unit ? searchFilters.unit : undefined,
-      status: status.length > 0 ? status : undefined,
-      distinctions: distinctiveDetails ? distinctiveDetails : undefined,
+      area: searchFilters.area,
+      unit: searchFilters.unit,
+      status: status.length > 0 ? [status] : undefined,
+      distinctions: searchFilters.distinctiveDetails,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      periodStart: searchFilters.startDate?.formatIso(),
-      periodEnd: searchFilters.endDate?.formatIso()
+      periodStart: searchFilters.startDate,
+      periodEnd: searchFilters.endDate
     }
     loadInvoices(
       state.page,

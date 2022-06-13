@@ -63,17 +63,16 @@ export default React.memo(function VoucherValueDecisionsPage() {
 
   const loadDecisions = useCallback(() => {
     const status = searchFilters.status
-    const area = searchFilters.area.join(',')
     const params: VoucherValueDecisionSearchParams = {
       status: status.length > 0 ? status : undefined,
-      area: area.length > 0 ? area : undefined,
-      unit: searchFilters.unit ? searchFilters.unit : undefined,
+      area: searchFilters.area,
+      unit: searchFilters.unit,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
         ? searchFilters.financeDecisionHandlerId
         : undefined,
-      startDate: searchFilters.startDate?.formatIso(),
-      endDate: searchFilters.endDate?.formatIso(),
+      startDate: searchFilters.startDate,
+      endDate: searchFilters.endDate,
       searchByStartDate: searchFilters.searchByStartDate
     }
     reloadDecisions(page, pageSize, sortBy, sortDirection, params)

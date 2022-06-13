@@ -290,7 +290,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val drafts = testDecisions.filter { it.status === FeeDecisionStatus.DRAFT }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
             .asUser(user)
             .responseString()
 
@@ -306,7 +306,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val sent = testDecisions.filter { it.status === FeeDecisionStatus.SENT }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": "SENT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
             .asUser(user)
             .responseString()
 
@@ -321,7 +321,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT,SENT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT","SENT"]}""")
             .asUser(user)
             .responseString()
 
@@ -344,7 +344,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecision, testDecisionMissingServiceNeed)) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "UNCONFIRMED_HOURS"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["UNCONFIRMED_HOURS"]}""")
             .asUser(user)
             .responseString()
 
@@ -363,7 +363,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "EXTERNAL_CHILD"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["EXTERNAL_CHILD"]}""")
             .asUser(user)
             .responseString()
 
@@ -382,7 +382,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": "RETROACTIVE"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["RETROACTIVE"]}""")
             .asUser(user)
             .responseString()
 
@@ -397,7 +397,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "area": "test_area"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": ["test_area"]}""")
             .asUser(user)
             .responseString()
 
@@ -412,7 +412,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "area": "test_area", "status": "DRAFT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": ["test_area"], "status": ["DRAFT"]}""")
             .asUser(user)
             .responseString()
 
@@ -427,7 +427,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "area": "non_existent"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "area": ["non_existent"]}""")
             .asUser(user)
             .responseString()
         assertEqualEnough(
@@ -1204,7 +1204,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
             .asUser(user)
             .responseString()
 
@@ -1232,7 +1232,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(200, response.statusCode)
 
         val (_, _, result) = http.post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": "DRAFT"}""")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
             .asUser(user)
             .responseString()
 

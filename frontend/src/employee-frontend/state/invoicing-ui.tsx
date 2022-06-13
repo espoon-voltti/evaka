@@ -35,13 +35,13 @@ export interface Checked {
 
 interface FeeDecisionSearchFilters {
   area: string[]
-  unit?: string
+  unit?: UUID
   status: FeeDecisionStatus
   distinctiveDetails: DistinctiveParams[]
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
-  financeDecisionHandlerId: string | undefined
+  financeDecisionHandlerId: UUID | undefined
 }
 
 interface FeeDecisionSearchFilterState {
@@ -55,9 +55,9 @@ interface FeeDecisionSearchFilterState {
 
 interface ValueDecisionSearchFilters {
   area: string[]
-  unit?: string
+  unit?: UUID
   status: VoucherValueDecisionStatus
-  financeDecisionHandlerId?: string
+  financeDecisionHandlerId?: UUID
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean

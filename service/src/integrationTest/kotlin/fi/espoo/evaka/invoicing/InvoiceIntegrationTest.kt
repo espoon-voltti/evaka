@@ -157,7 +157,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val drafts = testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": "DRAFT"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -174,7 +174,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val sent = testInvoices.filter { it.status === InvoiceStatus.SENT }
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": "SENT"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -191,7 +191,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val canceled = testInvoices.filter { it.status === InvoiceStatus.CANCELED }
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": "CANCELED"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["CANCELED"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -209,7 +209,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             testInvoices.filter { it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED }
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": "SENT,CANCELED"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT","CANCELED"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -227,7 +227,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": "DRAFT,SENT,CANCELED"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT","SENT","CANCELED"]}""")
             .asUser(testUser)
             .responseString()
 
@@ -245,7 +245,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": "test_area"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["test_area"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -262,7 +262,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": "test_area", "status": "DRAFT"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["test_area"], "status": ["DRAFT"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -280,7 +280,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": "non_existent"}""")
+            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["non_existent"]}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
@@ -453,7 +453,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .reversed()
 
         val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 2, "status": "DRAFT", "sortBy": "START", "sortDirection": "DESC"}""")
+            .jsonBody("""{"page": 1, "pageSize": 2, "status": ["DRAFT"], "sortBy": "START", "sortDirection": "DESC"}""")
             .asUser(testUser)
             .responseString()
         assertEquals(200, response.statusCode)
