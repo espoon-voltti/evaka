@@ -361,6 +361,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestCase(testPeriod(0L to 1L), "DEVELOPMENTAL_DISABILITY_1"),
             TestCase(testPeriod(2L to 3L), "DEVELOPMENTAL_DISABILITY_2")
         )
+        val actionPeriod = testPeriod(0L to 3L)
         db.transaction { tx ->
             testCases.forEach {
                 tx.insertTestAssistanceNeed(
@@ -373,6 +374,18 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 )
             }
+            // Koski validation rules require extended compulsory education when developmental disability date ranges
+            // are present
+            tx.insertTestAssistanceAction(
+                DevAssistanceAction(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = actionPeriod.start,
+                    endDate = actionPeriod.end,
+                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
+                    actions = emptySet()
+                )
+            )
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -380,7 +393,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen = listOf(Aikajakso.from(testCases[0].period)),
                 vaikeastiVammainen = listOf(Aikajakso.from(testCases[1].period)),
-                pidennettyOppivelvollisuus = null,
+                pidennettyOppivelvollisuus = Aikajakso.from(actionPeriod),
                 kuljetusetu = null,
                 erityisenTuenPäätökset = null
             ),
@@ -490,6 +503,52 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 vaikeastiVammainen = listOf(Aikajakso.from(assistanceNeeds[1].first)),
                 pidennettyOppivelvollisuus = Aikajakso.from(testPeriod(4L to 7L)),
                 kuljetusetu = null,
+                erityisenTuenPäätökset = null
+            ),
+            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+        )
+    }
+
+    @Test
+    fun `disability date ranges are only sent if extended compulsory education is sent`() {
+        // https://github.com/Opetushallitus/koski/pull/1860
+
+        insertPlacement(testChild_1)
+        val assistanceNeeds = listOf(
+            Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1"),
+        )
+        db.transaction { tx ->
+            assistanceNeeds.forEach {
+                tx.insertTestAssistanceNeed(
+                    DevAssistanceNeed(
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        childId = testChild_1.id,
+                        startDate = it.first.start,
+                        endDate = it.first.end,
+                        bases = setOf(it.second)
+                    )
+                )
+            }
+            val actionPeriod = testPeriod(7L to 8L)
+            tx.insertTestAssistanceAction(
+                DevAssistanceAction(
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    childId = testChild_1.id,
+                    startDate = actionPeriod.start,
+                    endDate = actionPeriod.end,
+                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION, AssistanceMeasure.TRANSPORT_BENEFIT),
+                    actions = emptySet()
+                )
+            )
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+        assertEquals(
+            Lisätiedot(
+                vammainen = null,
+                vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = null,
+                kuljetusetu = Aikajakso.from(testPeriod(7L to 8L)),
                 erityisenTuenPäätökset = null
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
