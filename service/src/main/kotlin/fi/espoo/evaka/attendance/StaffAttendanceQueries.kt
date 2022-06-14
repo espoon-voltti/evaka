@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
+import java.time.LocalTime
 import java.util.UUID
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> = createQuery(
@@ -261,8 +262,8 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         """.trimIndent()
     )
         .bind("unitId", unitId)
-        .bind("start", range.start)
-        .bind("end", range.end)
+        .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
+        .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<RawAttendance>()
         .list()
 
@@ -297,8 +298,8 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, rang
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .bind("start", range.start)
-    .bind("end", range.end)
+    .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
+    .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
     .mapTo<ExternalAttendance>()
     .list()
 
