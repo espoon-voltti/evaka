@@ -120,7 +120,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             listOf("areaId" to areaId, "year" to year, "month" to month)
         )
             .asUser(adminUser)
-            .responseObject<ServiceVoucherValueReportController.ServiceVoucherReport>(jsonMapper)
+            .responseObject<ServiceVoucherReport>(jsonMapper)
         assertEquals(200, response.statusCode)
 
         return data.get().rows

@@ -10,6 +10,7 @@ export namespace Action {
 export type Global =
   | 'ACCESS_MESSAGING'
   | 'CREATE_DRAFT_INVOICES'
+  | 'CREATE_DRAFT_PAYMENTS'
   | 'CREATE_EMPLOYEE'
   | 'CREATE_FEE_THRESHOLDS'
   | 'CREATE_HOLIDAY_PERIOD'

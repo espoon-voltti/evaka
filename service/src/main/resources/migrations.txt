@@ -240,3 +240,4 @@ V239__daycare_extra_fields.sql
 V240__service_need_hiding.sql
 V241__realtime_staff_attendance_type.sql
 V242__staff_attendance_plan.sql
+V243__payment.sql
