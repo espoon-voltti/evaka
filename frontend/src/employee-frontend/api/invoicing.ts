@@ -8,18 +8,23 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Absence } from 'lib-common/generated/api-types/daycare'
 import {
+  DistinctiveParams,
   FeeDecision,
   FeeDecisionDetailed,
+  FeeDecisionStatus,
   FeeDecisionSummary,
   Invoice,
   InvoiceCodes,
   InvoiceCorrection,
   InvoiceDetailed,
+  InvoiceDistinctiveParams,
+  InvoiceStatus,
   InvoiceSummary,
   NewInvoiceCorrection,
   PersonBasic,
   PersonDetailed,
   VoucherValueDecisionDetailed,
+  VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
@@ -29,34 +34,33 @@ import { UUID } from 'lib-common/types'
 import { API_URL, client } from './client'
 
 export interface SearchParams {
-  status?: string
-  area?: string
-  unit?: string
-  distinctions?: string
+  area?: string[]
+  unit?: UUID
   searchTerms?: string
 }
 
 export interface FeeDecisionSearchParams extends SearchParams {
-  startDate?: string
-  endDate?: string
+  status?: FeeDecisionStatus[]
+  distinctions?: DistinctiveParams[]
+  startDate?: LocalDate
+  endDate?: LocalDate
   searchByStartDate: boolean
-  financeDecisionHandlerId?: string
+  financeDecisionHandlerId?: UUID
 }
 
-export interface VoucherValueDecisionSearchParams {
-  status?: string
-  area?: string
-  unit?: string
-  searchTerms?: string
-  financeDecisionHandlerId?: string
-  startDate?: string
-  endDate?: string
+export interface VoucherValueDecisionSearchParams extends SearchParams {
+  status?: VoucherValueDecisionStatus
+  financeDecisionHandlerId?: UUID
+  startDate?: LocalDate
+  endDate?: LocalDate
   searchByStartDate: boolean
 }
 
 export interface InvoiceSearchParams extends SearchParams {
-  periodStart?: string
-  periodEnd?: string
+  status?: InvoiceStatus[]
+  distinctions?: InvoiceDistinctiveParams[]
+  periodStart?: LocalDate
+  periodEnd?: LocalDate
 }
 
 interface AbsenceParams {

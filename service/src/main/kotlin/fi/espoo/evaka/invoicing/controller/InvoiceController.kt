@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.getDetailedInvoice
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyInvoices
@@ -30,7 +29,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,9 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-@IncludeCodeGen
 enum class InvoiceDistinctiveParams {
     MISSING_ADDRESS
 }
@@ -83,13 +79,13 @@ class InvoiceController(
                         body.pageSize,
                         body.sortBy ?: InvoiceSortParam.STATUS,
                         body.sortDirection ?: SortDirection.DESC,
-                        body.status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
-                        body.area?.split(",") ?: listOf(),
+                        body.status ?: emptyList(),
+                        body.area ?: emptyList(),
                         body.unit,
-                        body.distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
+                        body.distinctions ?: emptyList(),
                         body.searchTerms ?: "",
-                        body.periodStart?.let { LocalDate.parse(body.periodStart, DateTimeFormatter.ISO_DATE) },
-                        body.periodEnd?.let { LocalDate.parse(body.periodEnd, DateTimeFormatter.ISO_DATE) }
+                        body.periodStart,
+                        body.periodEnd,
                     )
                 }
         }
@@ -197,11 +193,11 @@ data class SearchInvoicesRequest(
     val pageSize: Int,
     val sortBy: InvoiceSortParam?,
     val sortDirection: SortDirection?,
-    val status: String?,
-    val area: String?,
+    val status: List<InvoiceStatus>?,
+    val area: List<String>?,
     val unit: DaycareId?,
-    val distinctions: String?,
+    val distinctions: List<InvoiceDistinctiveParams>?,
     val searchTerms: String?,
-    val periodStart: String?,
-    val periodEnd: String?
+    val periodStart: LocalDate?,
+    val periodEnd: LocalDate?
 )

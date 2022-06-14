@@ -567,9 +567,9 @@ export interface ProductWithName {
 * Generated from fi.espoo.evaka.invoicing.controller.SearchFeeDecisionRequest
 */
 export interface SearchFeeDecisionRequest {
-  area: string | null
-  distinctions: string | null
-  endDate: string | null
+  area: string[] | null
+  distinctions: DistinctiveParams[] | null
+  endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
   page: number
   pageSize: number
@@ -577,8 +577,8 @@ export interface SearchFeeDecisionRequest {
   searchTerms: string | null
   sortBy: FeeDecisionSortParam | null
   sortDirection: SortDirection | null
-  startDate: string | null
-  status: string | null
+  startDate: LocalDate | null
+  status: FeeDecisionStatus[] | null
   unit: UUID | null
 }
 
@@ -586,16 +586,16 @@ export interface SearchFeeDecisionRequest {
 * Generated from fi.espoo.evaka.invoicing.controller.SearchInvoicesRequest
 */
 export interface SearchInvoicesRequest {
-  area: string | null
-  distinctions: string | null
+  area: string[] | null
+  distinctions: InvoiceDistinctiveParams[] | null
   page: number
   pageSize: number
-  periodEnd: string | null
-  periodStart: string | null
+  periodEnd: LocalDate | null
+  periodStart: LocalDate | null
   searchTerms: string | null
   sortBy: InvoiceSortParam | null
   sortDirection: SortDirection | null
-  status: string | null
+  status: InvoiceStatus[] | null
   unit: UUID | null
 }
 
@@ -603,8 +603,8 @@ export interface SearchInvoicesRequest {
 * Generated from fi.espoo.evaka.invoicing.controller.SearchVoucherValueDecisionRequest
 */
 export interface SearchVoucherValueDecisionRequest {
-  area: string | null
-  endDate: string | null
+  area: string[] | null
+  endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
   page: number
   pageSize: number
@@ -612,8 +612,8 @@ export interface SearchVoucherValueDecisionRequest {
   searchTerms: string | null
   sortBy: VoucherValueDecisionSortParam | null
   sortDirection: SortDirection | null
-  startDate: string | null
-  status: string | null
+  startDate: LocalDate | null
+  status: VoucherValueDecisionStatus
   unit: UUID | null
 }
 

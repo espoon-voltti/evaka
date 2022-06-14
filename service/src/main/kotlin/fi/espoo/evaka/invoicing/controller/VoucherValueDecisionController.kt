@@ -51,7 +51,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -60,7 +59,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/value-decisions")
@@ -90,13 +88,12 @@ class VoucherValueDecisionController(
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
                         body.sortDirection ?: SortDirection.DESC,
-                        body.status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
-                            ?: throw BadRequest("Status is a mandatory parameter"),
-                        body.area?.split(",") ?: listOf(),
+                        body.status,
+                        body.area ?: emptyList(),
                         body.unit,
                         body.searchTerms ?: "",
-                        body.startDate?.let { LocalDate.parse(body.startDate, DateTimeFormatter.ISO_DATE) },
-                        body.endDate?.let { LocalDate.parse(body.endDate, DateTimeFormatter.ISO_DATE) },
+                        body.startDate,
+                        body.endDate,
                         body.searchByStartDate,
                         body.financeDecisionHandlerId
                     )
@@ -293,13 +290,13 @@ data class SearchVoucherValueDecisionRequest(
     val pageSize: Int,
     val sortBy: VoucherValueDecisionSortParam?,
     val sortDirection: SortDirection?,
-    val status: String?,
-    val area: String?,
+    val status: VoucherValueDecisionStatus,
+    val area: List<String>?,
     val unit: DaycareId?,
     val searchTerms: String?,
     val financeDecisionHandlerId: EmployeeId?,
-    val startDate: String?,
-    val endDate: String?,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
     val searchByStartDate: Boolean = false
 )
 

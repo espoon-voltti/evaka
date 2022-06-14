@@ -59,16 +59,14 @@ export default React.memo(function FeeDecisionsPage() {
 
   const loadDecisions = useCallback(() => {
     const status = searchFilters.status
-    const area = searchFilters.area.join(',')
-    const distinctiveDetails = searchFilters.distinctiveDetails.join(',')
     const params: FeeDecisionSearchParams = {
-      status: status.length > 0 ? status : undefined,
-      area: area.length > 0 ? area : undefined,
-      unit: searchFilters.unit ? searchFilters.unit : undefined,
-      distinctions: distinctiveDetails ? distinctiveDetails : undefined,
+      status: status.length > 0 ? [status] : undefined,
+      area: searchFilters.area,
+      unit: searchFilters.unit,
+      distinctions: searchFilters.distinctiveDetails,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      startDate: searchFilters.startDate?.formatIso(),
-      endDate: searchFilters.endDate?.formatIso(),
+      startDate: searchFilters.startDate,
+      endDate: searchFilters.endDate,
       searchByStartDate: searchFilters.searchByStartDate,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
     }
