@@ -13,7 +13,8 @@ import {
   insertVasuDocument,
   insertVasuTemplateFixture,
   publishVasuDocument,
-  resetDatabase
+  resetDatabase,
+  revokeVasuSharingPermission
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -30,6 +31,7 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let childId: UUID
+let child2Id: UUID
 let templateId: UUID
 let vasuDocId: UUID
 let header: CitizenHeader
@@ -42,6 +44,7 @@ beforeEach(async () => {
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
+  child2Id = fixtures.enduserChildFixtureJari.id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -57,6 +60,15 @@ beforeEach(async () => {
   header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page)
 })
+
+const insertVasu = async (childId: string): Promise<string> => {
+  vasuDocId = await insertVasuDocument(
+    childId,
+    await insertVasuTemplateFixture()
+  )
+  await publishVasuDocument(vasuDocId)
+  return vasuDocId
+}
 
 describe('Citizen vasu document page', () => {
   const openDocument = async () => {
@@ -79,6 +91,9 @@ describe('Citizen vasu document page', () => {
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await revokeVasuSharingPermission(vasuDocId)
+    await page.reload()
+    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
   })
 })
 
@@ -99,5 +114,24 @@ describe('Citizen child documents listing page', () => {
       'Luonnos',
       LocalDate.today().format('dd.MM.yyyy')
     )
+  })
+
+  test('Documents for more than 1 child are shown', async () => {
+    await insertGuardianFixtures([
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: childId
+      },
+      {
+        guardianId: enduserGuardianFixture.id,
+        childId: child2Id
+      }
+    ])
+    await insertVasu(childId)
+    await insertVasu(child2Id)
+    await page.reload()
+    await header.selectTab('child-documents')
+    const childDocumentsPage = new ChildDocumentsPage(page)
+    await childDocumentsPage.assertVasuChildCount(2)
   })
 })

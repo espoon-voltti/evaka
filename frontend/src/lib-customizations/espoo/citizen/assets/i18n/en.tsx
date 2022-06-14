@@ -21,6 +21,7 @@ const en: Translations = {
     title: 'Early childhood education',
     cancel: 'Cancel',
     return: 'Return',
+    download: 'Download',
     ok: 'Ok',
     save: 'Save',
     discard: 'Discard',
@@ -1848,14 +1849,12 @@ const en: Translations = {
     }
   },
   childDocuments: {
-    title: 'Early Childhood Education Plan and Preschool Learning Plan',
+    title: 'Growth and learning',
     description:
-      "On this page, the child's early childhood education plan and pre-school learning plan are published, and pictures and other documents related to the child's growth, learning and everyday life are compiled."
+      'Documents and photos relating to the growth and learning of the child are gathered on this page.'
   },
   pedagogicalDocuments: {
     title: 'Growth and learning',
-    description:
-      'Documents and photos relating to the growth and learning of the child are gathered on this page.',
     table: {
       date: 'Date',
       child: 'Child',

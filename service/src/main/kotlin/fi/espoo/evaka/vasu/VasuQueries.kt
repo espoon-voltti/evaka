@@ -386,3 +386,24 @@ WHERE id = :id
         )
         .execute()
 }
+
+fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId) {
+    val currentBasics = getVasuDocumentMaster(docId)?.basics
+        ?: throw NotFound("Vasu document not found!")
+
+    createUpdate(
+        """
+UPDATE curriculum_document
+SET basics = :basics
+WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", docId)
+        .bind(
+            "basics",
+            currentBasics.copy(
+                guardians = currentBasics.guardians.map { guardian -> guardian.copy(hasGivenPermissionToShare = false) }
+            )
+        )
+        .execute()
+}

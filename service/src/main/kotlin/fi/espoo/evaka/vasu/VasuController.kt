@@ -136,6 +136,7 @@ class VasuController(
                 val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
                 validateVasuDocumentUpdate(vasu, body)
                 tx.updateVasuDocumentMaster(id, body.content, body.childLanguage)
+                tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
     }
@@ -177,6 +178,8 @@ class VasuController(
                     vasu.content.editFollowupEntry(entryId, evakaClock, editedBy, body.text),
                     vasu.basics.childLanguage
                 )
+
+                tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
     }

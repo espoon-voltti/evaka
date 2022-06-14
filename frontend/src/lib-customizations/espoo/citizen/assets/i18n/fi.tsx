@@ -20,6 +20,7 @@ export default {
     title: 'Varhaiskasvatus',
     cancel: 'Peruuta',
     return: 'Palaa',
+    download: 'Lataa',
     ok: 'Ok',
     save: 'Tallenna',
     discard: 'Älä tallenna',
@@ -1781,14 +1782,12 @@ export default {
     }
   },
   childDocuments: {
-    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+    title: 'Kasvu ja oppiminen',
     description:
       'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.'
   },
   pedagogicalDocuments: {
     title: 'Lapsen arkeen liittyviä dokumentteja',
-    description:
-      'Tälle sivulle kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
     table: {
       date: 'Päivämäärä',
       child: 'Lapsi',

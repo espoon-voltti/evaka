@@ -9,12 +9,15 @@ export class ChildDocumentsPage {
   constructor(readonly page: Page) {}
 
   readonly vasuCollapsible = new Collapsible(
-    this.page.findByDataQa('vasu-and-leops-collapsible')
+    this.page.find('[data-qa="vasu-and-leops-collapsible"] >> visible=true')
   )
   readonly #vasuRowStateChip = (vasuId: string) =>
-    this.page.findByDataQa(`state-chip-${vasuId}`)
+    this.page.find(`[data-qa="state-chip-${vasuId}"] >> visible=true`)
   readonly #vasuRowPublishedAt = (vasuId: string) =>
-    this.page.findByDataQa(`published-at-${vasuId}`)
+    this.page.find(`[data-qa="published-at-${vasuId}"] >> visible=true`)
+  readonly #vasuChildContainer = this.page.findAll(
+    `[data-qa="vasu-child-container"] >> visible=true`
+  )
 
   async assertVasuRow(
     vasuId: string,
@@ -29,5 +32,9 @@ export class ChildDocumentsPage {
       () => this.#vasuRowPublishedAt(vasuId).textContent,
       expectedPublishedAt
     )
+  }
+
+  async assertVasuChildCount(expectedCount: number) {
+    await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }
 }
