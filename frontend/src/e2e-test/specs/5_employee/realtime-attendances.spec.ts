@@ -104,6 +104,14 @@ beforeEach(async () => {
 
   await insertStaffRealtimeAttendance({
     id: uuidv4(),
+    employeeId: staff[0].id,
+    groupId: groupId,
+    arrived: LocalDate.of(2022, 3, 27).toSystemTzDateAtTime('07:00'),
+    departed: LocalDate.of(2022, 3, 27).toSystemTzDateAtTime('15:00'),
+    occupancyCoefficient: 7.0
+  })
+  await insertStaffRealtimeAttendance({
+    id: uuidv4(),
     employeeId: staff[1].id,
     groupId: groupId,
     arrived: mockedToday.toSystemTzDateAtTime('07:00'),
@@ -147,6 +155,18 @@ describe('Realtime staff attendances', () => {
       await calendarPage.clickEditOnRow(0)
       await calendarPage.assertNoTimeInputsVisible()
       await calendarPage.clickCommitOnRow(0)
+    })
+
+    // TODO: enable this when we can reliably run time based tests both locally and on CI
+    test.skip('Sunday entries are shown in the calendar', async () => {
+      await calendarPage.selectGroup('staff')
+      await calendarPage.navigateToPreviousWeek()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 6,
+        arrival: '07:00',
+        departure: '15:00'
+      })
     })
 
     describe('With one attendance entry', () => {

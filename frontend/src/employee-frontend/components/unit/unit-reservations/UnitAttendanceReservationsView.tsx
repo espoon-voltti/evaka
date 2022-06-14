@@ -159,6 +159,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             icon={faChevronLeft}
             onClick={() => setSelectedDate(selectedDate.subDays(7))}
             size="s"
+            data-qa="previous-week"
           />
           <WeekTitle primary centered>
             {formatWeekTitle(dateRange)}
@@ -167,6 +168,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             icon={faChevronRight}
             onClick={() => setSelectedDate(selectedDate.addDays(7))}
             size="s"
+            data-qa="next-week"
           />
         </WeekPicker>
         <Gap size="s" />

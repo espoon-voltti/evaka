@@ -220,6 +220,10 @@ export class UnitAttendancesPage {
       departure
     )
   }
+
+  async navigateToPreviousWeek() {
+    await this.page.findByDataQa('previous-week').click()
+  }
 }
 
 export class ReservationModal extends Modal {
