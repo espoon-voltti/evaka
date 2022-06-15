@@ -41,7 +41,9 @@ data class DvvModification(
     JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
     JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS"),
     JsonSubTypes.Type(value = ResidenceCodeDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
-    JsonSubTypes.Type(value = HomeMunicipalityDvvInfoGroup::class, name = "KOTIKUNTA")
+    JsonSubTypes.Type(value = HomeMunicipalityDvvInfoGroup::class, name = "KOTIKUNTA"),
+    JsonSubTypes.Type(value = ChildInfoGroup::class, name = "LAPSI"),
+    JsonSubTypes.Type(value = ChildInfoGroup::class, name = "LAPSI_SUPPEA")
 )
 
 interface DvvInfoGroup {
@@ -164,6 +166,16 @@ data class SsnDvvInfoGroup(
     val aktiivinenHenkilotunnus: String,
     val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ChildInfoGroup(
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val lapsi: DvvChild
+) : DvvInfoGroup
+
+@JsonIgnoreProperties("sukupuoli", "etunimet", "sukunimi", "kansalaisuuskoodi", "kansalaisuusnimi", "nimienLisatieto")
+data class DvvChild(val henkilotunnus: String?, val syntymapv: DvvDate?)
 
 data class DvvDate(
     val arvo: String,

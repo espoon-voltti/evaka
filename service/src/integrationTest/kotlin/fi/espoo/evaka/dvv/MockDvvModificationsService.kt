@@ -511,7 +511,26 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }            
-    """.trimIndent()
+    """.trimIndent(),
+    "010170-123F" to """
+{
+  "henkilotunnus": "010170-123F",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "LAPSI_SUPPEA",
+      "muutosattribuutti": "LISATTY",
+      "lapsi": {
+        "henkilotunnus": "010120A123K",
+        "sukupuoli": "PUUTTUU",
+        "kansalaisuuskoodi": "247"
+      },
+      "isaAiti": "ISA",
+      "lapsiVanhempiSuhdePaattynyt": false
+    }
+  ],
+  "muutospv": "2021-09-14T12:01:04.568Z"
+}
+"""
 )
 
 data class ModificationsRequest(

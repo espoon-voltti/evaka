@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -87,6 +88,30 @@ class FridgeFamilyService(
                 }
             }
             logger.info("Completed refreshing person $personId")
+        }
+    }
+
+    fun addChildToFamily(db: Database.Connection, headSSN: String, childSSN: String) {
+        db.transaction { tx ->
+            val person = tx.getPersonBySSN(headSSN) ?: return@transaction
+            val personWithDependants = personService
+                .getPersonWithChildren(tx, AuthenticatedUser.SystemInternalUser, person.id, forceRefresh = true)
+                ?: return@transaction
+            val child = personWithDependants.children.find { it.socialSecurityNumber == childSSN } ?: return@transaction
+            if (livesInSameAddress(personWithDependants.address, child.address)) {
+                try {
+                    parentshipService.createParentship(
+                        tx,
+                        childId = child.id,
+                        headOfChildId = person.id,
+                        startDate = child.dateOfBirth,
+                        endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+                    )
+                    logger.info("Child ${child.id} added")
+                } catch (e: Exception) {
+                    logger.debug("Ignored the following:", e)
+                }
+            }
         }
     }
 

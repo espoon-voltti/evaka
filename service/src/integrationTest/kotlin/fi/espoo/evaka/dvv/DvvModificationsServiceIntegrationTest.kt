@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.pis.createParentship
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.getChildGuardians
@@ -227,6 +229,65 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
             db.transaction {
                 it.deleteDvvModificationToken("0")
             }
+        }
+    }
+
+    @Test
+    fun `a child born is added as a fridge child starting from the child's date of birth`() {
+        val ssn = "010170-123F"
+        val personWithoutChildren = testPerson.copy(ssn = ssn)
+        val childDateOfBirth = LocalDate.of(2020, 1, 1)
+        val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
+
+        createTestPerson(personWithoutChildren)
+        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+
+        db.read { tx ->
+            val person = tx.getPersonBySSN(ssn)
+            val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
+            assertEquals(listOf(), children)
+        }
+        dvvModificationsService.updatePersonsFromDvv(db, listOf(ssn))
+        db.read { tx ->
+            val person = tx.getPersonBySSN(ssn)
+            val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
+            assertEquals(
+                listOf(child.ssn to childDateOfBirth),
+                children.map { it.child.socialSecurityNumber to it.startDate }
+            )
+        }
+    }
+
+    @Test
+    fun `a child born is ignored if the child is already in a fridge family`() {
+        val ssn = "010170-123F"
+        val personWithoutChildren = testPerson.copy(ssn = ssn)
+        val parent = testPerson.copy(id = PersonId(UUID.randomUUID()))
+        val childDateOfBirth = LocalDate.of(2020, 1, 1)
+        val child = testPerson.copy(
+            id = PersonId(UUID.randomUUID()),
+            dateOfBirth = childDateOfBirth,
+            ssn = "010120A123K"
+        )
+
+        createTestPerson(personWithoutChildren)
+        createTestPerson(parent)
+        createTestPerson(child)
+        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+        db.transaction {
+            it.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusYears(18).minusDays(1))
+        }
+
+        db.read { tx ->
+            val person = tx.getPersonBySSN(ssn)
+            val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
+            assertEquals(listOf(), children)
+        }
+        dvvModificationsService.updatePersonsFromDvv(db, listOf(ssn))
+        db.read { tx ->
+            val person = tx.getPersonBySSN(ssn)
+            val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
+            assertEquals(listOf(), children)
         }
     }
 

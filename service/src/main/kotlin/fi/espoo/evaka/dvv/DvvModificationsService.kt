@@ -73,6 +73,9 @@ class DvvModificationsService(
                             is PersonNameDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is PersonNameChangeDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
+                            is ChildInfoGroup -> handleChild(db, personModifications.henkilotunnus, infoGroup) {
+                                ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            }
                             else -> {
                                 logger.info("Refreshing person from VTJ for an unsupported DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
                                 ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
@@ -215,6 +218,15 @@ class DvvModificationsService(
     // is done in those
     private fun handleHomeMunicipalityChangeDvvInfoGroup() {
         logger.debug("DVV change KOTIKUNTA received")
+    }
+
+    private fun handleChild(db: Database.Connection, ssn: String, childInfoGroup: ChildInfoGroup, runIfNotAdded: () -> Unit) {
+        val childSSN = childInfoGroup.lapsi.henkilotunnus
+        if (childSSN != null && childInfoGroup.muutosattribuutti == "LISATTY") {
+            fridgeFamilyService.addChildToFamily(db, ssn, childInfoGroup.lapsi.henkilotunnus)
+        } else {
+            runIfNotAdded()
+        }
     }
 
     fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
