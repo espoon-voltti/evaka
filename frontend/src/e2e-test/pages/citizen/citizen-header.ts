@@ -4,6 +4,7 @@
 
 import { Lang } from 'lib-customizations/citizen'
 
+import { waitUntilEqual, waitUntilFalse } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class CitizenHeader {
@@ -20,6 +21,9 @@ export default class CitizenHeader {
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
   #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
   #applyingTab = this.page.find('[data-qa="nav-applying"]')
+  #unreadChildDocumentsCount = this.page.findAllByDataQa(
+    'unread-child-documents-count'
+  )
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
@@ -132,5 +136,16 @@ export default class CitizenHeader {
     }
 
     await personalDetailsLink.click()
+  }
+
+  async assertUnreadChildDocumentsCount(expectedCount: number) {
+    expectedCount != 0
+      ? await waitUntilEqual(
+          () => this.#unreadChildDocumentsCount.first().textContent,
+          expectedCount.toString()
+        )
+      : await waitUntilFalse(
+          () => this.#unreadChildDocumentsCount.first().visible
+        )
   }
 }

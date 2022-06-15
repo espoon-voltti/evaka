@@ -85,6 +85,7 @@ describe('Citizen vasu document page', () => {
     ])
 
     const vasuPage = await openDocument()
+    await header.assertUnreadChildDocumentsCount(1)
     await vasuPage.assertTitleChildName('Antero Onni Leevi Aatu Högfors')
     await vasuPage.givePermissionToShare()
 
@@ -94,6 +95,7 @@ describe('Citizen vasu document page', () => {
     await revokeVasuSharingPermission(vasuDocId)
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await header.assertUnreadChildDocumentsCount(0)
   })
 })
 
