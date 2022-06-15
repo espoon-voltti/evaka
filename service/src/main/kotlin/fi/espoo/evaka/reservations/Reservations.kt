@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
@@ -45,7 +46,9 @@ fun List<DailyReservationRequest>.validate(reservableDates: List<FiniteDateRange
 
 @JsonSerialize(using = TimeRangeSerializer::class)
 data class TimeRange(
+    @ForceCodeGenType(String::class)
     val startTime: LocalTime,
+    @ForceCodeGenType(String::class)
     val endTime: LocalTime,
 )
 
@@ -60,7 +63,9 @@ class TimeRangeSerializer : JsonSerializer<TimeRange>() {
 
 @JsonSerialize(using = OpenTimeRangeSerializer::class)
 data class OpenTimeRange(
+    @ForceCodeGenType(String::class)
     val startTime: LocalTime,
+    @ForceCodeGenType(String::class)
     val endTime: LocalTime?,
 )
 

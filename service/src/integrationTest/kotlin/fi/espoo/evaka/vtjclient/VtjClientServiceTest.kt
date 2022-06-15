@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.lookup
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
@@ -36,7 +37,6 @@ import org.springframework.ws.test.client.RequestMatchers.validPayload
 import org.springframework.ws.test.client.RequestMatchers.xpath
 import org.springframework.ws.test.client.ResponseCreators.withSoapEnvelope
 import org.springframework.xml.transform.StringSource
-import java.time.Instant
 import java.util.UUID
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
@@ -168,7 +168,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
         lastName = "Test",
         email = "integration-test@example.org",
         externalId = null,
-        created = Instant.now(),
+        created = HelsinkiDateTime.now(),
         updated = null
     )
 

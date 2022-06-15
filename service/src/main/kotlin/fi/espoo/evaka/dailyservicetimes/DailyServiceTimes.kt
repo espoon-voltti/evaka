@@ -7,6 +7,7 @@ package fi.espoo.evaka.dailyservicetimes
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
@@ -16,8 +17,10 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 
 data class TimeRange(
+    @ForceCodeGenType(String::class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     val start: LocalTime,
+    @ForceCodeGenType(String::class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     val end: LocalTime
 ) {

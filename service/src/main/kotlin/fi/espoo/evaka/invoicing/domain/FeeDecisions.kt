@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -20,6 +21,7 @@ import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.math.max
 
@@ -41,9 +43,12 @@ data class FeeDecision(
     val feeThresholds: FeeDecisionThresholds,
     val documentKey: String? = null,
     val approvedById: EmployeeId? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
     val decisionHandlerId: EmployeeId? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionChild, FeeDecision> {
     val totalFee
@@ -154,10 +159,13 @@ data class FeeDecisionDetailed(
     val feeThresholds: FeeDecisionThresholds,
     val documentKey: String? = null,
     val approvedBy: EmployeeWithName? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val isElementaryFamily: Boolean? = false
 ) : Mergeable<FeeDecisionChildDetailed, FeeDecisionDetailed> {
@@ -225,9 +233,12 @@ data class FeeDecisionSummary(
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val headOfFamily: PersonBasic,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
     val finalPrice: Int,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) : Mergeable<PersonBasic, FeeDecisionSummary> {
     override fun withChildren(children: List<PersonBasic>) = this.copy(children = children)

@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka
 
+import kotlin.reflect.KClass
+
 @Target(AnnotationTarget.CLASS)
 annotation class ExcludeCodeGen
 
@@ -12,3 +14,6 @@ annotation class IncludeCodeGen
 
 @Target(AnnotationTarget.CLASS)
 annotation class ConstList(val name: String)
+
+@Target(AnnotationTarget.FIELD)
+annotation class ForceCodeGenType(val type: KClass<*>)

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -21,7 +22,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -100,10 +100,13 @@ data class ApplicationDetails(
     val guardianRestricted: Boolean,
     val guardianDateOfDeath: LocalDate?,
     val checkedByAdmin: Boolean,
+    @ForceCodeGenType(OffsetDateTime::class)
     val createdDate: HelsinkiDateTime?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedDate: HelsinkiDateTime?,
     val sentDate: LocalDate?,
     val dueDate: LocalDate?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val dueDateSetManuallyAt: HelsinkiDateTime?,
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
@@ -127,8 +130,10 @@ data class ApplicationAttachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
-    val updated: OffsetDateTime,
-    val receivedAt: OffsetDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val updated: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val receivedAt: HelsinkiDateTime,
     val type: AttachmentType,
     val uploadedByEmployee: EmployeeId?,
     val uploadedByPerson: PersonId?
@@ -173,8 +178,10 @@ data class ApplicationNote(
     val createdByName: String,
     val updatedBy: EvakaUserId,
     val updatedByName: String,
-    val created: Instant,
-    val updated: Instant
+    @ForceCodeGenType(OffsetDateTime::class)
+    val created: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val updated: HelsinkiDateTime
 )
 
 data class ApplicationUnitSummary(
@@ -203,8 +210,10 @@ data class CitizenApplicationSummary(
     val startDate: LocalDate?,
     val sentDate: LocalDate?,
     val applicationStatus: ApplicationStatus,
-    val createdDate: OffsetDateTime,
-    val modifiedDate: OffsetDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val createdDate: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val modifiedDate: HelsinkiDateTime,
     val transferApplication: Boolean
 )
 

@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.EmployeeId
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.OffsetDateTime
 
 data class Employee(
     val id: EmployeeId,
@@ -14,6 +16,8 @@ data class Employee(
     val lastName: String,
     val email: String?,
     val externalId: ExternalId?,
-    val created: Instant,
-    val updated: Instant?
+    @ForceCodeGenType(OffsetDateTime::class)
+    val created: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val updated: HelsinkiDateTime?
 )

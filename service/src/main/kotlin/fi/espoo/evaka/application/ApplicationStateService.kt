@@ -735,7 +735,7 @@ class ApplicationStateService(
                 // due date should not be set at all if attachments are missing
                 if (attachments.isEmpty()) return null
                 // due date is two weeks from application.sentDate or the first attachment, whichever is later
-                val minAttachmentDate = attachments.minByOrNull { it.receivedAt }?.let { LocalDate.from(it.receivedAt) }
+                val minAttachmentDate = attachments.minByOrNull { it.receivedAt }?.let { it.receivedAt.toLocalDate() }
                 listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
                 sentDate.plusMonths(4)

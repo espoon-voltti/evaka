@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -17,13 +18,16 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class Message(
     val id: MessageId,
     val sender: MessageAccount,
     val recipients: Set<MessageAccount>,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime,
     val content: String,
+    @ForceCodeGenType(OffsetDateTime::class)
     val readAt: HelsinkiDateTime? = null,
     val attachments: List<MessageAttachment>,
     val recipientNames: Set<String>? = null
@@ -41,6 +45,7 @@ data class MessageThread(
 data class SentMessage(
     val contentId: MessageContentId,
     val content: String,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime,
     val threadTitle: String,
     val type: MessageType,
