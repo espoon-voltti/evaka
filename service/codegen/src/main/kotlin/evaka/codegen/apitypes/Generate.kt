@@ -7,6 +7,7 @@ package evaka.codegen.apitypes
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.ForceCodeGenType
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
@@ -20,7 +21,9 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.system.exitProcess
 
@@ -132,8 +135,11 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
     }
 }
 
-private fun analyzeMemberProperty(prop: KProperty1<out Any, *>) =
-    AnalyzedProperty(prop.name, analyzeType(prop.returnType))
+private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedProperty {
+    val forcedType = prop.findAnnotation() ?: prop.javaField?.getAnnotation(ForceCodeGenType::class.java)
+    val type = forcedType?.type?.createType(nullable = prop.returnType.isMarkedNullable) ?: prop.returnType
+    return AnalyzedProperty(prop.name, analyzeType(type))
+}
 
 private sealed class AnalyzedClass(
     val fullName: String
