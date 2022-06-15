@@ -7,20 +7,27 @@ import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getUnreadPedagogicalDocumentsCount } from './api'
+import {
+  getUnreadPedagogicalDocumentsCount,
+  getUnreadVasuDocumentsCount
+} from './api'
 
-export interface PedagogicalDocumentsState {
+export interface ChildDocumentsState {
   unreadPedagogicalDocumentsCount: number | undefined
+  unreadVasuDocumentsCount: number | undefined
   refreshUnreadPedagogicalDocumentsCount: () => void
+  refreshUnreadVasuDocumentsCount: () => void
 }
 
-const defaultState: PedagogicalDocumentsState = {
+const defaultState: ChildDocumentsState = {
   unreadPedagogicalDocumentsCount: undefined,
-  refreshUnreadPedagogicalDocumentsCount: () => undefined
+  unreadVasuDocumentsCount: undefined,
+  refreshUnreadPedagogicalDocumentsCount: () => undefined,
+  refreshUnreadVasuDocumentsCount: () => undefined
 }
 
-export const PedagogicalDocumentsContext =
-  createContext<PedagogicalDocumentsState>(defaultState)
+export const ChildDocumentsContext =
+  createContext<ChildDocumentsState>(defaultState)
 
 export const PedagogicalDocumentsContextProvider = React.memo(
   function PedagogicalDocumentsContextProvider({
@@ -33,29 +40,56 @@ export const PedagogicalDocumentsContextProvider = React.memo(
       setUnreadPedagogicalDocumentsCount
     ] = useState<number>()
 
-    const setUnreadResult = useCallback((res: Result<number>) => {
-      if (res.isSuccess) {
-        setUnreadPedagogicalDocumentsCount(res.value)
-      }
-    }, [])
+    const [unreadVasuDocumentsCount, setUnreadVasuDocumentsCount] =
+      useState<number>()
+
+    const setUnreadPedagogicalDocumentCountResult = useCallback(
+      (res: Result<number>) => {
+        if (res.isSuccess) {
+          setUnreadPedagogicalDocumentsCount(res.value)
+        }
+      },
+      []
+    )
 
     const refreshUnreadPedagogicalDocumentsCount = useRestApi(
       getUnreadPedagogicalDocumentsCount,
-      setUnreadResult
+      setUnreadPedagogicalDocumentCountResult
+    )
+
+    const setUnreadVasuDocumentCountResult = useCallback(
+      (res: Result<number>) => {
+        if (res.isSuccess) {
+          setUnreadVasuDocumentsCount(res.value)
+        }
+      },
+      []
+    )
+
+    const refreshUnreadVasuDocumentsCount = useRestApi(
+      getUnreadVasuDocumentsCount,
+      setUnreadVasuDocumentCountResult
     )
 
     const value = useMemo(
       () => ({
         unreadPedagogicalDocumentsCount,
-        refreshUnreadPedagogicalDocumentsCount
+        unreadVasuDocumentsCount,
+        refreshUnreadPedagogicalDocumentsCount,
+        refreshUnreadVasuDocumentsCount
       }),
-      [unreadPedagogicalDocumentsCount, refreshUnreadPedagogicalDocumentsCount]
+      [
+        unreadPedagogicalDocumentsCount,
+        refreshUnreadPedagogicalDocumentsCount,
+        unreadVasuDocumentsCount,
+        refreshUnreadVasuDocumentsCount
+      ]
     )
 
     return (
-      <PedagogicalDocumentsContext.Provider value={value}>
+      <ChildDocumentsContext.Provider value={value}>
         {children}
-      </PedagogicalDocumentsContext.Provider>
+      </ChildDocumentsContext.Provider>
     )
   }
 )

@@ -56,6 +56,25 @@ class VasuControllerCitizen(
         }
     }
 
+    @GetMapping("/children/unread-count")
+    fun getGuardianUnreadVasuCount(
+        db: Database,
+        user: AuthenticatedUser
+    ): Number {
+        Audit.ChildVasuDocumentsReadByGuardian.log(user.rawId())
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val children = tx.getGuardianDependants(PersonId(user.rawId()))
+                children.map { child ->
+                    tx.getVasuDocumentSummaries(child.id)
+                        .filter { it.publishedAt != null }
+                        .filterNot { doc -> doc.guardiansThatHaveGivenPermissionToShare.contains(PersonId(user.evakaUserId.raw)) }
+                        .size
+                }.sum()
+            }
+        }
+    }
+
     data class CitizenGetVasuDocumentResponse(
         val vasu: VasuDocument,
         val guardianHasGivenPermissionToShare: Boolean

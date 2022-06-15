@@ -40,7 +40,7 @@ import { useTranslation } from '../localization'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { Desktop, Mobile, PaddedDiv } from './components'
-import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
+import { ChildDocumentsContext, ChildDocumentsState } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
@@ -330,8 +330,9 @@ export default React.memo(function PedagogicalDocuments() {
   )
 
   const { refreshUnreadPedagogicalDocumentsCount } =
-    useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
+    useContext<ChildDocumentsState>(ChildDocumentsContext)
 
+  // TODO is this needed?
   useEffect(refreshUnreadPedagogicalDocumentsCount, [
     refreshUnreadPedagogicalDocumentsCount,
     pedagogicalDocuments
