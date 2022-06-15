@@ -44,7 +44,8 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     LEFT JOIN LATERAL (
         SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
         FROM staff_attendance_realtime sa
-        WHERE sa.employee_id = dacl.employee_id AND sa.group_id = ANY(dgacl.group_ids) AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
+        JOIN daycare_group dg ON dg.id = sa.group_id
+        WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
         ORDER BY sa.arrived DESC 
         LIMIT 1
     ) att ON TRUE
