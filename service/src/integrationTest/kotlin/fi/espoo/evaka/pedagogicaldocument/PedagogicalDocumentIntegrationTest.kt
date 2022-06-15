@@ -100,8 +100,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         .responseString()
         .third
 
-    private fun getAttachmentAsUser(attachmentId: AttachmentId, user: AuthenticatedUser) =
-        http.get("/attachments/$attachmentId/download")
+    private fun getAttachmentAsUser(attachmentId: AttachmentId, user: AuthenticatedUser, requestedFilename: String = "evaka-logo.png") =
+        http.get("/attachments/$attachmentId/download/$requestedFilename")
             .asUser(user)
             .responseString()
             .second
@@ -200,7 +200,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             attachment.id
         )
 
-        val res2 = getAttachmentAsUser(attachmentId, supervisor)
+        val res2 = getAttachmentAsUser(attachmentId, supervisor, attachment.name)
         assertEquals(200, res2.statusCode)
     }
 
@@ -237,7 +237,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             attachment.id
         )
 
-        assertEquals(200, getAttachmentAsUser(attachment.id, staff).statusCode)
+        assertEquals(200, getAttachmentAsUser(attachment.id, staff, attachment.name).statusCode)
     }
 
     @Test
@@ -257,7 +257,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             attachment.id
         )
 
-        assertEquals(200, getAttachmentAsUser(attachment.id, groupStaff).statusCode)
+        assertEquals(200, getAttachmentAsUser(attachment.id, groupStaff, attachment.name).statusCode)
     }
 
     @Test
@@ -316,7 +316,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             attachment.id
         )
 
-        assertEquals(200, getAttachmentAsUser(attachment.id, guardian).statusCode)
+        assertEquals(200, getAttachmentAsUser(attachment.id, guardian, attachment.name).statusCode)
     }
 
     @Test

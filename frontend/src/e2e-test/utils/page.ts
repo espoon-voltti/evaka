@@ -48,6 +48,10 @@ export class Page {
     return this.page.waitForEvent('download')
   }
 
+  async waitForPopup() {
+    return this.page.waitForEvent('popup')
+  }
+
   async pause() {
     return this.page.pause()
   }

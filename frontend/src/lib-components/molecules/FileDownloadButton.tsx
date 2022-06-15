@@ -27,7 +27,7 @@ const DownloadButton = styled.button`
 
 interface FileDownloadButtonProps {
   file: Attachment
-  getFileUrl: (fileId: UUID) => string
+  getFileUrl: (fileId: UUID, fileName: string) => string
   afterOpen?: () => void
   icon?: IconDefinition | boolean
   'data-qa'?: string
@@ -42,7 +42,7 @@ export default React.memo(function FileDownloadButton({
   'data-qa': dataQa,
   text
 }: FileDownloadButtonProps) {
-  const url = getFileUrl(file.id)
+  const url = getFileUrl(file.id, file.name)
 
   const handleClick = useCallback(() => {
     window.open(url)
