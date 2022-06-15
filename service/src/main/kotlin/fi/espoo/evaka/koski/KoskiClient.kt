@@ -61,7 +61,7 @@ class KoskiClient(
     }
     fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
-        val data = tx.beginKoskiUpload(env.sourceSystem, ophEnv.organizerOid, msg.key, today)
+        val data = tx.beginKoskiUpload(env.sourceSystem, ophEnv.organizerOid, ophEnv.municipalityCode, msg.key, today)
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
             return@transaction
