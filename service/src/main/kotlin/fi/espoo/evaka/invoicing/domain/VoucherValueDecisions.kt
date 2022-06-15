@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -18,6 +19,7 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @IncludeCodeGen
@@ -56,8 +58,11 @@ data class VoucherValueDecision(
     val voucherValue: Int,
     val documentKey: String? = null,
     val approvedById: EmployeeId? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
@@ -209,8 +214,11 @@ data class VoucherValueDecisionDetailed(
     val documentKey: String? = null,
     @Nested("approved_by")
     val approvedBy: EmployeeWithName? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
@@ -254,8 +262,11 @@ data class VoucherValueDecisionSummary(
     val child: PersonBasic,
     val finalCoPayment: Int,
     val voucherValue: Int,
+    @ForceCodeGenType(OffsetDateTime::class)
     val approvedAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) {
     val annullingDecision

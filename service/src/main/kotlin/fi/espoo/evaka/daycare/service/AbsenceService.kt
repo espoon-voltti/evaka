@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
@@ -35,6 +36,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
+import java.time.OffsetDateTime
 
 @Service
 class AbsenceService {
@@ -237,6 +239,7 @@ data class AbsenceWithModifierInfo(
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
+    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedAt: HelsinkiDateTime
 )
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
@@ -15,6 +16,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
+import java.time.OffsetDateTime
 
 @Service
 class StaffAttendanceService {
@@ -52,6 +54,7 @@ data class GroupStaffAttendance(
     val date: LocalDate,
     val count: Double,
     val countOther: Double,
+    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime
 )
 
@@ -59,6 +62,7 @@ data class UnitStaffAttendance(
     val date: LocalDate,
     val count: Double,
     val countOther: Double,
+    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime?,
     val groups: List<GroupStaffAttendance>
 )

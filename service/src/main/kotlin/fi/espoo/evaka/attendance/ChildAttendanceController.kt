@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
@@ -80,7 +81,9 @@ class ChildAttendanceController(
     )
 
     data class AttendanceTimeRange(
+        @ForceCodeGenType(String::class)
         val startTime: LocalTime,
+        @ForceCodeGenType(String::class)
         val endTime: LocalTime?
     )
 
@@ -118,6 +121,7 @@ class ChildAttendanceController(
     }
 
     data class ArrivalRequest(
+        @ForceCodeGenType(String::class)
         @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
 
@@ -197,6 +201,7 @@ class ChildAttendanceController(
     }
 
     data class DepartureRequest(
+        @ForceCodeGenType(String::class)
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
         val absenceType: AbsenceType?
     )
@@ -495,6 +500,7 @@ private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<
 
 data class AbsenceThreshold(
     val category: AbsenceCategory,
+    @ForceCodeGenType(String::class)
     val time: LocalTime
 )
 

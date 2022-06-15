@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.occupancy
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 
 data class RealtimeOccupancy(
     val childAttendances: List<ChildOccupancyAttendance>,
@@ -62,28 +64,35 @@ data class RealtimeOccupancy(
 }
 
 data class ChildOccupancyAttendance(
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?,
     val capacity: Double
 )
 
 data class ChildCapacityPoint(
+    @ForceCodeGenType(OffsetDateTime::class)
     val time: HelsinkiDateTime,
     val capacity: Double
 )
 
 data class StaffOccupancyAttendance(
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?,
     val capacity: Double
 )
 
 data class StaffCapacityPoint(
+    @ForceCodeGenType(OffsetDateTime::class)
     val time: HelsinkiDateTime,
     val capacity: Double
 )
 
 data class OccupancyPoint(
+    @ForceCodeGenType(OffsetDateTime::class)
     val time: HelsinkiDateTime,
     val childCapacity: Double,
     val staffCapacity: Double

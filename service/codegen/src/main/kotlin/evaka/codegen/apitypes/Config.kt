@@ -22,9 +22,7 @@ private val standardTsMapping: Map<String, String> = mapOf(
     "kotlin.Double" to "number",
     "java.math.BigDecimal" to "number",
     "kotlin.Boolean" to "boolean",
-    "java.time.LocalTime" to "string",
     "java.time.LocalDateTime" to "Date",
-    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to "Date",
     "java.time.Instant" to "Date",
     "java.time.OffsetDateTime" to "Date",
 )
@@ -33,6 +31,8 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "java.util.UUID" to TSMapping("UUID", "import { UUID } from '../../types'"),
     "fi.espoo.evaka.shared.Id" to TSMapping("UUID", "import { UUID } from '../../types'"),
     "java.time.LocalDate" to TSMapping("LocalDate", "import LocalDate from '../../local-date'"),
+    "java.time.LocalTime" to TSMapping("LocalTime", "import LocalTime from '../../local-time'"),
+    "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to TSMapping("HelsinkiDateTime", "import HelsinkiDateTime from '../../helsinki-date-time'"),
     "fi.espoo.evaka.shared.domain.FiniteDateRange" to TSMapping("FiniteDateRange", "import FiniteDateRange from '../../finite-date-range'"),
     "fi.espoo.evaka.shared.domain.DateRange" to TSMapping("DateRange", "import DateRange from '../../date-range'"),
     "fi.espoo.evaka.dailyservicetimes.DailyServiceTimes" to TSMapping("DailyServiceTimes", "import { DailyServiceTimes } from '../../api-types/child/common'"),

@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 enum class CurriculumType {
@@ -44,6 +46,7 @@ enum class VasuDocumentState {
 
 data class VasuDocumentEvent(
     val id: UUID,
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime,
     val eventType: VasuDocumentEventType
 )
@@ -69,8 +72,10 @@ enum class VasuLanguage {
 data class VasuDocumentSummary(
     val id: VasuDocumentId,
     val name: String,
+    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedAt: HelsinkiDateTime,
     val events: List<VasuDocumentEvent> = listOf(),
+    @ForceCodeGenType(OffsetDateTime::class)
     val publishedAt: HelsinkiDateTime?,
     val guardiansThatHaveGivenPermissionToShare: List<PersonId>
 ) {
@@ -80,6 +85,7 @@ data class VasuDocumentSummary(
 
 data class VasuDocument(
     val id: VasuDocumentId,
+    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedAt: HelsinkiDateTime,
     val templateName: String,
     val templateRange: FiniteDateRange,

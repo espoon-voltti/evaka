@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.OffsetDateTime
 
 @RestController
 @RequestMapping("/citizen/pedagogical-documents")
@@ -135,6 +137,7 @@ data class PedagogicalDocumentCitizen(
     val childId: ChildId,
     val description: String,
     val attachments: List<Attachment> = emptyList(),
+    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime,
     val isRead: Boolean,
     val childFirstName: String,

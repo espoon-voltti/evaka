@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
@@ -12,6 +13,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.math.BigDecimal
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class CurrentDayStaffAttendanceResponse(
@@ -23,6 +25,7 @@ data class ExternalStaffMember(
     val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
 )
 
@@ -43,7 +46,9 @@ data class StaffMemberAttendance(
     val id: StaffAttendanceId,
     val employeeId: EmployeeId,
     val groupId: GroupId,
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?
 )
 
@@ -51,7 +56,9 @@ data class ExternalAttendance(
     val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal
 )
@@ -59,7 +66,9 @@ data class ExternalAttendance(
 data class Attendance(
     val id: UUID,
     val groupId: GroupId,
+    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
+    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal
 )

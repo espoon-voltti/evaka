@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.temporal.TemporalAdjusters
 
 interface RowWithPrice {
@@ -39,6 +41,7 @@ data class Invoice(
     val rows: List<InvoiceRow>,
     val number: Long? = null,
     val sentBy: EvakaUserId? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime? = null
 ) {
     val totalPrice
@@ -85,6 +88,7 @@ data class InvoiceDetailed(
     val rows: List<InvoiceRowDetailed>,
     val number: Long?,
     val sentBy: EvakaUserId?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime?
 ) {
     val account: Int = 3295
@@ -124,7 +128,9 @@ data class InvoiceSummary(
     val codebtor: PersonDetailed?,
     val rows: List<InvoiceRowSummary>,
     val sentBy: EvakaUserId?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val sentAt: HelsinkiDateTime?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val createdAt: HelsinkiDateTime? = null
 ) {
     val account: Int = 3295

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -100,10 +101,13 @@ data class ApplicationDetails(
     val guardianRestricted: Boolean,
     val guardianDateOfDeath: LocalDate?,
     val checkedByAdmin: Boolean,
+    @ForceCodeGenType(OffsetDateTime::class)
     val createdDate: HelsinkiDateTime?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedDate: HelsinkiDateTime?,
     val sentDate: LocalDate?,
     val dueDate: LocalDate?,
+    @ForceCodeGenType(OffsetDateTime::class)
     val dueDateSetManuallyAt: HelsinkiDateTime?,
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
