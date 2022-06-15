@@ -179,6 +179,76 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
             )
         ),
         VasuSection(
+            name = "Tehostetun tai erityisen tuen tarve ja tukitoimet",
+            questions = listOf(
+                VasuQuestion.Paragraph(
+                    title = "",
+                    paragraph = "Täytetään, kun lapsella on tarve tuelle, josta tehdään hallintopäätös. Tuen tarvetta seurataan ja arvioidaan toimintakauden aikana."
+                ),
+                VasuQuestion.CheckboxQuestion(
+                    label = "Onko lapsella tehostetun tai erityisen tuen tarve, tai onko tuen taso muuttumassa?",
+                    name = "Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa",
+                    value = false,
+                    id = "special-support"
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Mahdolliset aiemmin toteutetut tukitoimet sekä niiden vaikuttavuuden arviointi",
+                    value = "",
+                    multiline = false,
+                    dependsOn = listOf("special-support")
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Arvio lapsen tarvitsemasta tuesta jatkossa sekä hänelle kohdennettujen tuen muotojen ja mahdollisten tukipalveluiden kuvaus",
+                    value = "",
+                    multiline = false,
+                    dependsOn = listOf("special-support")
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Henkilöstön ja tarvittavien muiden asiantuntijoiden vastuut ja työnjako lapsen tukeen liittyen",
+                    value = "",
+                    multiline = false,
+                    dependsOn = listOf("special-support")
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Kuvaus lapsen ja huoltajien kanssa tehdystä yhteistyöstä",
+                    value = "",
+                    multiline = false,
+                    dependsOn = listOf("special-support")
+                ),
+                VasuQuestion.RadioGroupQuestion(
+                    name = "Lapsen tuen taso jatkossa",
+                    options = listOf(
+                        QuestionOption(
+                            key = "general",
+                            name = "Yleinen tuki"
+                        ),
+                        QuestionOption(
+                            key = "during_range",
+                            name = "Tukipalvelut ajalla",
+                            dateRange = true
+                        ),
+                        QuestionOption(
+                            key = "intensified",
+                            name = "Tehostettu tuki"
+                        ),
+                        QuestionOption(
+                            key = "special",
+                            name = "Erityinen tuki"
+                        )
+                    ),
+                    value = null,
+                    dependsOn = listOf("special-support")
+                ),
+                VasuQuestion.Followup(
+                    title = "Tuen tarpeen ja toteutumisen arviointi toimintakauden aikana",
+                    name = "Tuen tarpeen ja tukitoimenpiteiden toteutumisen seurantaa ja arviointia toimintakauden aikana",
+                    value = listOf(),
+                    continuesNumbering = true,
+                    dependsOn = listOf("special-support")
+                )
+            )
+        ),
+        VasuSection(
             name = when (lang) {
                 VasuLanguage.FI -> "Lapsen hyvinvoinnin tukemiseen liittyvät muut huomioitavat asiat"
                 VasuLanguage.SV -> "Andra frågor som ska beaktas i samband med stöd för barnets välbefinnande"

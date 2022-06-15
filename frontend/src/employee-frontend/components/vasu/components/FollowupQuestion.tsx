@@ -173,9 +173,10 @@ interface FollowupQuestionProps extends QuestionProps<Followup> {
 export default React.memo(function FollowupQuestion({
   onChange,
   onEdited,
-  question: { title, name, value, info },
+  question: { title, name, value, info, continuesNumbering },
   translations,
-  permittedFollowupActions
+  permittedFollowupActions,
+  questionNumber
 }: FollowupQuestionProps) {
   const { i18n } = useTranslation()
 
@@ -186,27 +187,32 @@ export default React.memo(function FollowupQuestion({
     >
       <H2>{title}</H2>
       <QuestionInfo info={info}>
-        <Label>{name}</Label>
+        <Label>{`${
+          continuesNumbering ? `${questionNumber} ` : ''
+        }${name}`}</Label>
       </QuestionInfo>
-      {value.length > 0 ? (
-        value.map((entry, ix) => (
-          <FollowupEntryElement
-            key={ix}
-            entry={entry}
-            onEdited={onEdited}
-            permittedFollowupActions={permittedFollowupActions}
+
+      <div>
+        {value.length > 0 ? (
+          value.map((entry, ix) => (
+            <FollowupEntryElement
+              key={ix}
+              entry={entry}
+              onEdited={onEdited}
+              permittedFollowupActions={permittedFollowupActions}
+            />
+          ))
+        ) : (
+          <Dimmed>{translations.noRecord}</Dimmed>
+        )}
+        {onChange && (
+          <FollowupEntryEditor
+            buttonCaption={i18n.common.addNew}
+            onChange={onChange}
+            data-qa="vasu-followup-entry-new"
           />
-        ))
-      ) : (
-        <Dimmed>{translations.noRecord}</Dimmed>
-      )}
-      {onChange && (
-        <FollowupEntryEditor
-          buttonCaption={i18n.common.addNew}
-          onChange={onChange}
-          data-qa="vasu-followup-entry-new"
-        />
-      )}
+        )}
+      </div>
     </FollowupQuestionContainer>
   )
 })

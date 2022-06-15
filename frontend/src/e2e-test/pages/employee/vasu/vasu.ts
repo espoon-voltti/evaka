@@ -15,6 +15,7 @@ import {
   InfoSharedToSection,
   OtherDocsAndPlansSection,
   PreviousVasuGoalsSection,
+  SpecialSupportSection,
   WellnessSupportSection
 } from './pageSections'
 
@@ -53,28 +54,32 @@ class VasuPageCommon {
     return new GoalsSection(this.getDocumentSection(3))
   }
 
+  get specialSupportSection(): SpecialSupportSection {
+    return new SpecialSupportSection(this.getDocumentSection(4))
+  }
+
   get wellnessSupportSection(): WellnessSupportSection {
-    return new WellnessSupportSection(this.getDocumentSection(4))
+    return new WellnessSupportSection(this.getDocumentSection(5))
   }
 
   get otherDocsAndPlansSection(): OtherDocsAndPlansSection {
-    return new OtherDocsAndPlansSection(this.getDocumentSection(5))
+    return new OtherDocsAndPlansSection(this.getDocumentSection(6))
   }
 
   get infoSharedToSection(): InfoSharedToSection {
-    return new InfoSharedToSection(this.getDocumentSection(6))
+    return new InfoSharedToSection(this.getDocumentSection(7))
   }
 
   get additionalInfoSection(): AdditionalInfoSection {
-    return new AdditionalInfoSection(this.getDocumentSection(7))
+    return new AdditionalInfoSection(this.getDocumentSection(8))
   }
 
   get discussionSection(): DiscussionSection {
-    return new DiscussionSection(this.getDocumentSection(8))
+    return new DiscussionSection(this.getDocumentSection(9))
   }
 
   get evaluationSection(): EvaluationSection {
-    return new EvaluationSection(this.getDocumentSection(9))
+    return new EvaluationSection(this.getDocumentSection(10))
   }
 
   get followupQuestionCount(): Promise<number> {
@@ -85,27 +90,26 @@ class VasuPageCommon {
 export class VasuEditPage extends VasuPageCommon {
   readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
 
-  readonly #followupNewInput = new TextInput(
-    this.page.findAll('[data-qa="vasu-followup-entry-new-input"]').first()
-  )
-  readonly #followupNewSaveButton = this.page.find(
-    '[data-qa="vasu-followup-entry-new-submit"]'
-  )
-  readonly #followupEntryTexts = this.page.findAll(
-    '[data-qa="vasu-followup-entry-text"]'
-  )
-  readonly #followupEntryMetadatas = this.page.findAll(
-    '[data-qa="vasu-followup-entry-metadata"]'
-  )
-  readonly #followupEntryEditButtons = this.page.findAll(
-    '[data-qa="vasu-followup-entry-edit-btn"]'
-  )
-  readonly #followupEntryInput = new TextInput(
-    this.page.find('[data-qa="vasu-followup-entry-edit-input"]')
-  )
-  readonly #followupEntrySaveButton = this.page.find(
-    '[data-qa="vasu-followup-entry-edit-submit"]'
-  )
+  #followup(nth: number) {
+    const question = this.page
+      .findAllByDataQa('vasu-followup-question')
+      .nth(nth)
+    return {
+      newInput: new TextInput(
+        question.findByDataQa('vasu-followup-entry-new-input')
+      ),
+      newSubmit: question.findByDataQa('vasu-followup-entry-new-submit'),
+      entryTexts: question.findAllByDataQa('vasu-followup-entry-text'),
+      entryMetadatas: question.findAllByDataQa('vasu-followup-entry-metadata'),
+      entryEditButtons: question.findAllByDataQa(
+        'vasu-followup-entry-edit-btn'
+      ),
+      entryInput: new TextInput(
+        question.findByDataQa('vasu-followup-entry-edit-input')
+      ),
+      entrySaveButton: question.findByDataQa('vasu-followup-entry-edit-submit')
+    }
+  }
 
   readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
   readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
@@ -127,23 +131,23 @@ export class VasuEditPage extends VasuPageCommon {
     await this.#multiSelectQuestionOptionTextInput(key).fill(text)
   }
 
-  async inputFollowupComment(comment: string) {
-    await this.#followupNewInput.type(comment)
-    await this.#followupNewSaveButton.click()
+  async inputFollowupComment(comment: string, nth: number) {
+    await this.#followup(nth).newInput.type(comment)
+    await this.#followup(nth).newSubmit.click()
   }
 
-  get followupEntryTexts(): Promise<Array<string>> {
-    return this.#followupEntryTexts.allInnerTexts()
+  followupEntryTexts(nth: number): Promise<Array<string>> {
+    return this.#followup(nth).entryTexts.allInnerTexts()
   }
 
-  get followupEntryMetadata(): Promise<Array<string>> {
-    return this.#followupEntryMetadatas.allInnerTexts()
+  followupEntryMetadata(nth: number): Promise<Array<string>> {
+    return this.#followup(nth).entryMetadatas.allInnerTexts()
   }
 
-  async editFollowupComment(ix: number, text: string) {
-    await this.#followupEntryEditButtons.nth(ix).click()
-    await this.#followupEntryInput.type(text)
-    await this.#followupEntrySaveButton.click()
+  async editFollowupComment(ix: number, text: string, nth: number) {
+    await this.#followup(nth).entryEditButtons.nth(ix).click()
+    await this.#followup(nth).entryInput.type(text)
+    await this.#followup(nth).entrySaveButton.click()
   }
 
   get previewBtn(): Element {

@@ -13,7 +13,6 @@ import {
   FollowupEntry,
   MultiFieldQuestion,
   MultiSelectQuestion,
-  QuestionOption,
   RadioGroupQuestion,
   TextQuestion
 } from 'lib-common/api-types/vasu'
@@ -34,7 +33,10 @@ import MultiFieldListQuestionElem from '../components/MultiFieldListQuestion'
 import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import ParagraphElem from '../components/Paragraph'
-import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
+import {
+  RadioGroupQuestion as RadioGroupQuestionElem,
+  RadioGroupSelectedValue
+} from '../components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
 import {
   getQuestionNumber,
@@ -73,6 +75,23 @@ export function DynamicSections({
       return null
     }
 
+    const dependantsById = new Map(
+      section.questions
+        .filter((q) => q.id)
+        .map((question) => {
+          if ('value' in question) {
+            return [question.id, !!question.value]
+          }
+
+          return [question.id, false]
+        })
+    )
+
+    const questionsToShow = section.questions.filter(
+      ({ dependsOn }) =>
+        !dependsOn || dependsOn.every((id) => dependantsById.get(id))
+    )
+
     const highlightSection = !!setContent && section.hideBeforeReady
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
@@ -88,7 +107,7 @@ export function DynamicSections({
           </H2>
           <Gap size="m" />
           <Questions>
-            {section.questions.map((question, questionIndex) => {
+            {questionsToShow.map((question, questionIndex) => {
               const questionNumber = getQuestionNumber(
                 sectionOffset + sectionIndex,
                 section.questions,
@@ -137,15 +156,16 @@ export function DynamicSections({
                       questionNumber={questionNumber}
                       question={question}
                       selectedValue={
-                        (
-                          sections[sectionIndex].questions[
-                            questionIndex
-                          ] as RadioGroupQuestion
-                        ).value
+                        question.value !== null
+                          ? {
+                              key: question.value,
+                              range: question.dateRange
+                            }
+                          : null
                       }
                       onChange={
                         setContent
-                          ? (selectedOption: QuestionOption) =>
+                          ? (selectedOption: RadioGroupSelectedValue) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
@@ -153,6 +173,7 @@ export function DynamicSections({
                                   questionIndex
                                 ] as RadioGroupQuestion
                                 question1.value = selectedOption.key
+                                question1.dateRange = selectedOption.range
                                 return clone
                               })
                           : undefined

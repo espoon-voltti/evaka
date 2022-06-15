@@ -79,6 +79,40 @@ export class GoalsSection extends SimpleTextAreaSection {
   other = this.values.nth(2).innerText
 }
 
+export class SpecialSupportSection extends SimpleTextAreaSection {
+  specialSupportEnabledInput = this.find('[data-qa="checkbox-question"]')
+
+  get specialSupportEnabled() {
+    return this.values.nth(0).innerText
+  }
+
+  get optionalFields() {
+    return {
+      previousSpecialSupportInput: new TextInput(this.textareas.nth(0)),
+      currentSpecialSupportInput: new TextInput(this.textareas.nth(1)),
+      staffResponsibilitiesInput: new TextInput(this.textareas.nth(2)),
+      carerChildCooperationInput: new TextInput(this.textareas.nth(3)),
+
+      previousSpecialSupport: this.values.nth(1).innerText,
+      currentSpecialSupport: this.values.nth(2).innerText,
+      staffResponsibilities: this.values.nth(3).innerText,
+      carerChildCooperation: this.values.nth(4).innerText,
+      supportLevel: this.values.nth(5).innerText
+    }
+  }
+
+  supportLevelOptions = (key: string) =>
+    this.findByDataQa(`radio-group-date-question-option-${key}`)
+  supportLevelOptionRangeStart = (key: string) =>
+    new TextInput(
+      this.findByDataQa(`radio-group-date-question-option-${key}-range-start`)
+    )
+  supportLevelOptionRangeEnd = (key: string) =>
+    new TextInput(
+      this.findByDataQa(`radio-group-date-question-option-${key}-range-end`)
+    )
+}
+
 export class WellnessSupportSection extends SimpleTextAreaSection {
   wellnessInput = new TextInput(this.textareas.nth(0))
   wellness = this.values.nth(0).innerText
@@ -94,7 +128,7 @@ export class InfoSharedToSection extends Element {
     this.find(`[data-qa="multi-select-question-option-${key}"]`)
   otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
 
-  recipients = this.find(`[data-qa="value-or-no-record-8.1"]`)
+  recipients = this.find(`[data-qa="value-or-no-record-9.1"]`)
   other = this.find(`[data-qa="value-or-no-record"]`)
 }
 

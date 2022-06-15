@@ -24,23 +24,34 @@ interface VasuQuestionCommon {
   name: string
   ophKey: string | null
   info: string
+  id: string | null
+  dependsOn: string[] | null
 }
 
 export interface TextQuestion extends VasuQuestionCommon {
+  type: 'TEXT'
   multiline: boolean
   value: string
 }
 
 export interface CheckboxQuestion extends VasuQuestionCommon {
+  type: 'CHECKBOX'
   value: boolean
+  label: string | null
 }
 
 export interface RadioGroupQuestion extends VasuQuestionCommon {
+  type: 'RADIO_GROUP'
   options: QuestionOption[]
   value: string | null
+  dateRange: {
+    start: LocalDate
+    end: LocalDate
+  } | null
 }
 
 export interface MultiSelectQuestion extends VasuQuestionCommon {
+  type: 'MULTISELECT'
   options: QuestionOption[]
   minSelections: number
   maxSelections: number | null
@@ -52,6 +63,7 @@ export interface QuestionOption {
   key: string
   name: string
   textAnswer?: boolean
+  dateRange?: boolean
 }
 
 export interface TextValueMap {
@@ -78,8 +90,10 @@ export interface DateQuestion extends VasuQuestionCommon {
 }
 
 export interface Followup extends VasuQuestionCommon {
+  type: 'FOLLOWUP'
   title: string
   value: FollowupEntry[]
+  continuesNumbering: boolean
 }
 
 export interface FollowupEntry {

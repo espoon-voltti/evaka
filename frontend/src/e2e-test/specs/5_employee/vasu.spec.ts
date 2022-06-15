@@ -207,6 +207,117 @@ describe('Vasu document page', () => {
       )
     })
 
+    test('Fill the intensified or special support need section', async () => {
+      const vasuEditPage = await editDocument()
+      const specialSupport = vasuEditPage.specialSupportSection
+
+      await specialSupport.specialSupportEnabledInput.click()
+
+      await specialSupport.optionalFields.previousSpecialSupportInput.type(
+        'An environment with less...'
+      )
+      await specialSupport.optionalFields.currentSpecialSupportInput.type(
+        'An environment that is...'
+      )
+      await specialSupport.optionalFields.staffResponsibilitiesInput.type(
+        'Staff should monitor...'
+      )
+      await specialSupport.optionalFields.carerChildCooperationInput.type(
+        'Worked together to find...'
+      )
+
+      await specialSupport.supportLevelOptions('during_range').click()
+      await specialSupport
+        .supportLevelOptionRangeStart('during_range')
+        .fill('02.03.2020')
+      await specialSupport
+        .supportLevelOptionRangeEnd('during_range')
+        .fill('11.05.2021')
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.specialSupportSection.specialSupportEnabled,
+        'Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa'
+      )
+      await waitUntilEqual(
+        () =>
+          vasuPage.specialSupportSection.optionalFields.previousSpecialSupport,
+        'An environment with less...'
+      )
+      await waitUntilEqual(
+        () =>
+          vasuPage.specialSupportSection.optionalFields.currentSpecialSupport,
+        'An environment that is...'
+      )
+      await waitUntilEqual(
+        () =>
+          vasuPage.specialSupportSection.optionalFields.staffResponsibilities,
+        'Staff should monitor...'
+      )
+      await waitUntilEqual(
+        () =>
+          vasuPage.specialSupportSection.optionalFields.carerChildCooperation,
+        'Worked together to find...'
+      )
+      await waitUntilEqual(
+        () => vasuPage.specialSupportSection.optionalFields.supportLevel,
+        'Tukipalvelut ajalla 02.03.2020–11.05.2021'
+      )
+    })
+
+    test('Fill the intensified or special support need section as not needed', async () => {
+      const vasuEditPage = await editDocument()
+      const specialSupport = vasuEditPage.specialSupportSection
+
+      // special needs were enabled in previous test; disable
+      await specialSupport.specialSupportEnabledInput.click()
+
+      await waitUntilEqual(
+        () =>
+          vasuEditPage.specialSupportSection
+            .findAllByDataQa('text-question-input')
+            .count(),
+        0
+      )
+
+      await vasuEditPage.waitUntilSaved()
+
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.specialSupportSection.specialSupportEnabled,
+        'Ei'
+      )
+      await waitUntilEqual(
+        () =>
+          vasuPage.specialSupportSection
+            .findAllByDataQa('value-or-no-record')
+            .count(),
+        1
+      )
+    })
+
+    test('Fill the intensified or special support need section with non-date support level', async () => {
+      const vasuEditPage = await editDocument()
+      const specialSupport = vasuEditPage.specialSupportSection
+
+      // special needs were disabled in previous test; enable
+      await specialSupport.specialSupportEnabledInput.click()
+
+      await specialSupport.supportLevelOptions('general').click()
+
+      await vasuEditPage.waitUntilSaved()
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.specialSupportSection.specialSupportEnabled,
+        'Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa'
+      )
+      await waitUntilEqual(
+        () => vasuPage.specialSupportSection.optionalFields.supportLevel,
+        'Yleinen tuki'
+      )
+    })
+
     test('Fill the wellness support section', async () => {
       const vasuEditPage = await editDocument()
       const wellnessSupport = vasuEditPage.wellnessSupportSection
@@ -350,22 +461,39 @@ describe('Vasu document page', () => {
         await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
       })
 
+      test('A published vasu document has two followup question when special support is enabled', async () => {
+        const vasuEditPage = await editDocument()
+        await vasuEditPage.specialSupportSection.specialSupportEnabledInput.click()
+        await vasuEditPage.waitUntilSaved()
+
+        const vasuPage = await openDocument()
+        await waitUntilEqual(() => vasuPage.followupQuestionCount, 2)
+      })
+
       test('Adding a followup comment renders it on the page', async () => {
         const vasuEditPage = await editDocument()
-        await vasuEditPage.inputFollowupComment('This is a followup')
+        await vasuEditPage.inputFollowupComment('This is a followup', 0)
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts,
+          () => vasuEditPage.followupEntryTexts(0),
           ['This is a followup']
         )
-        await vasuEditPage.inputFollowupComment('A second one')
+        await vasuEditPage.inputFollowupComment('A second one', 0)
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts,
+          () => vasuEditPage.followupEntryTexts(0),
           ['This is a followup', 'A second one']
+        )
+        await vasuEditPage.inputFollowupComment(
+          'This is a followup to special support section',
+          1
+        )
+        await waitUntilEqual(
+          () => vasuEditPage.followupEntryTexts(1),
+          ['This is a followup to special support section']
         )
 
         const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa`
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryMetadata,
+          () => vasuEditPage.followupEntryMetadata(0),
           [expectedMetadataStr, expectedMetadataStr]
         )
       })
@@ -374,23 +502,27 @@ describe('Vasu document page', () => {
 
       test('A user can edit his own followup comment', async () => {
         const vasuEditPage = await editDocument()
-        await vasuEditPage.inputFollowupComment('This will be edited')
+        await vasuEditPage.inputFollowupComment('This will be edited', 0)
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts.then(lastElement),
+          () => vasuEditPage.followupEntryTexts(0).then(lastElement),
           'This will be edited'
         )
 
-        const entryCount = (await vasuEditPage.followupEntryTexts).length
-        await vasuEditPage.editFollowupComment(entryCount - 1, 'now edited: ')
+        const entryCount = (await vasuEditPage.followupEntryTexts(0)).length
+        await vasuEditPage.editFollowupComment(
+          entryCount - 1,
+          'now edited: ',
+          0
+        )
 
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts.then(lastElement),
+          () => vasuEditPage.followupEntryTexts(0).then(lastElement),
           'now edited: This will be edited'
         )
 
         const date = LocalDate.todayInSystemTz().format()
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryMetadata.then(lastElement),
+          () => vasuEditPage.followupEntryMetadata(0).then(lastElement),
           `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
         )
       })

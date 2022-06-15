@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 
-import { QuestionOption, RadioGroupQuestion } from 'lib-common/api-types/vasu'
-import Radio from 'lib-components/atoms/form/Radio'
+import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
+import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -13,13 +13,22 @@ import { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 
+import RadioGroupQuestionOption from './RadioGroupQuestionOption'
 import { ValueOrNoRecord } from './ValueOrNoRecord'
+
+export interface RadioGroupSelectedValue {
+  key: string
+  range: {
+    start: LocalDate
+    end: LocalDate
+  } | null
+}
 
 interface Props {
   questionNumber: string
   question: RadioGroupQuestion
-  selectedValue: string | null
-  onChange?: (selected: QuestionOption) => void
+  selectedValue: RadioGroupSelectedValue | null
+  onChange?: (selected: RadioGroupSelectedValue) => void
   translations: VasuTranslations
 }
 
@@ -30,6 +39,15 @@ export function RadioGroupQuestion({
   selectedValue,
   translations
 }: Props) {
+  const selectedOption = options.find(
+    (option) => option.key === selectedValue?.key
+  )
+  const selectedDateRange = selectedValue?.range
+    ? ` ${selectedValue.range.start.format()}–${selectedValue.range.end.format()}`
+    : ''
+
+  const [pendingSelected, setPendingSelected] = useState(selectedValue?.key)
+
   return (
     <div>
       <QuestionInfo info={info}>
@@ -43,18 +61,23 @@ export function RadioGroupQuestion({
           <Gap size="m" />
           <FixedSpaceColumn>
             {options.map((option) => (
-              <Radio
+              <RadioGroupQuestionOption
                 key={option.key}
-                checked={selectedValue === option.key}
-                label={option.name}
-                onChange={() => onChange(option)}
+                option={option}
+                onChange={(value) => {
+                  onChange(value)
+                  setPendingSelected(option.key)
+                }}
+                selectedValue={selectedValue}
+                isSelected={option.key === pendingSelected}
+                onSelected={() => setPendingSelected(option.key)}
               />
             ))}
           </FixedSpaceColumn>
         </>
       ) : (
         <ValueOrNoRecord
-          text={options.find((option) => option.key === selectedValue)?.name}
+          text={selectedOption && `${selectedOption.name}${selectedDateRange}`}
           translations={translations}
         />
       )}

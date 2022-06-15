@@ -25,7 +25,7 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
-import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
+import { VasuSection, VasuTemplate } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import usePrompt from 'lib-common/utils/usePrompt'
@@ -54,6 +54,7 @@ import { useTranslation } from '../../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import { renderResult } from '../../async-rendering'
 import QuestionInfo from '../QuestionInfo'
+import { OptionContainer } from '../components/RadioGroupQuestionOption'
 import {
   getQuestionNumber,
   isCheckboxQuestion,
@@ -80,10 +81,11 @@ export default React.memo(function VasuTemplateEditor() {
   const [dirty, setDirty] = useState(false)
 
   const [sectionNameEdit, setSectionNameEdit] = useState<number | null>(null)
-  const [addingQuestion, setAddingQuestion] = useState<[number, number] | null>(
-    null
-  ) // [section, question]
-  const [addingParagraph, setAddingParagraph] = useState<[number, number]>() // [section, question]
+  const [addingQuestion, setAddingQuestion] = useState<
+    [number, number, VasuSection] | null
+  >(null) // [section, question]
+  const [addingParagraph, setAddingParagraph] =
+    useState<[number, number, VasuSection]>() // [section, question]
 
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
@@ -306,9 +308,14 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <QuestionInfo info={question.info}>
+        {question.label && <H3>{`${questionNumber}. ${question.label}`}</H3>}
         <Checkbox
           checked={question.value}
-          label={`${questionNumber}. ${question.name}`}
+          label={
+            question.label
+              ? question.name
+              : `${questionNumber}. ${question.name}`
+          }
         />
       </QuestionInfo>
     )
@@ -324,7 +331,16 @@ export default React.memo(function VasuTemplateEditor() {
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         {question.options.map((opt) => (
-          <Radio checked={false} label={opt.name} key={opt.key} />
+          <OptionContainer key={opt.key}>
+            <Radio checked={false} label={opt.name} />
+            {opt.dateRange && (
+              <div>
+                <DatePicker locale="fi" date="" onChange={() => void 0} />
+                <span>-</span>
+                <DatePicker locale="fi" date="" onChange={() => void 0} />
+              </div>
+            )}
+          </OptionContainer>
         ))}
       </FixedSpaceColumn>
     )
@@ -410,12 +426,14 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
-  function renderFollowup(question: Followup) {
+  function renderFollowup(question: Followup, questionNumber: string) {
     return (
       <FixedSpaceColumn spacing="s">
         <H2>{question.title}</H2>
         <QuestionInfo info={question.info}>
-          <H3 noMargin>{question.name}</H3>
+          <H3 noMargin>{`${
+            question.continuesNumbering ? `${questionNumber}. ` : ''
+          }${question.name}`}</H3>
         </QuestionInfo>
         <TextArea value="" />
       </FixedSpaceColumn>
@@ -456,7 +474,7 @@ export default React.memo(function VasuTemplateEditor() {
     } else if (isDateQuestion(question)) {
       return renderDateQuestion(question, questionNumber)
     } else if (isFollowup(question)) {
-      return renderFollowup(question)
+      return renderFollowup(question, questionNumber)
     } else if (isParagraph(question)) {
       return renderParagraph(question)
     } else {
@@ -599,6 +617,39 @@ export default React.memo(function VasuTemplateEditor() {
                                 />
                               </FixedSpaceRow>
                             )}
+                            {question.dependsOn &&
+                              question.dependsOn.length > 0 && (
+                                <QuestionDetails>
+                                  {i18n.vasuTemplates.onlyVisibleWhen(
+                                    question.dependsOn.map((dependingId) => {
+                                      const depending = section.questions.find(
+                                        (q) => q.id === dependingId
+                                      )
+
+                                      if (!depending) {
+                                        return i18n.vasuTemplates
+                                          .visibilityConditions.unknownQuestion
+                                      }
+
+                                      const questionNumber = getQuestionNumber(
+                                        sectionIndex + dynamicOffset,
+                                        section.questions,
+                                        depending
+                                      )
+
+                                      if (depending.type === 'CHECKBOX') {
+                                        return i18n.vasuTemplates.visibilityConditions.checked(
+                                          questionNumber
+                                        )
+                                      }
+
+                                      return i18n.vasuTemplates.visibilityConditions.answered(
+                                        questionNumber
+                                      )
+                                    })
+                                  )}
+                                </QuestionDetails>
+                              )}
                             {renderQuestion(
                               section.questions,
                               question,
@@ -615,7 +666,8 @@ export default React.memo(function VasuTemplateEditor() {
                                 onClick={() =>
                                   setAddingQuestion([
                                     sectionIndex,
-                                    questionIndex + 1
+                                    questionIndex + 1,
+                                    section
                                   ])
                                 }
                                 text={i18n.vasuTemplates.addNewQuestion}
@@ -627,7 +679,8 @@ export default React.memo(function VasuTemplateEditor() {
                                 onClick={() =>
                                   setAddingParagraph([
                                     sectionIndex,
-                                    questionIndex + 1
+                                    questionIndex + 1,
+                                    section
                                   ])
                                 }
                                 text={i18n.vasuTemplates.addNewParagraph}
@@ -642,7 +695,9 @@ export default React.memo(function VasuTemplateEditor() {
                     {section.questions.length === 0 && !readonly && (
                       <AddNewContainer showOnHover={false}>
                         <InlineButton
-                          onClick={() => setAddingQuestion([sectionIndex, 0])}
+                          onClick={() =>
+                            setAddingQuestion([sectionIndex, 0, section])
+                          }
                           text={i18n.vasuTemplates.addNewQuestion}
                           icon={faPlus}
                         />
@@ -696,6 +751,7 @@ export default React.memo(function VasuTemplateEditor() {
                   setAddingQuestion(null)
                 }}
                 onCancel={() => setAddingQuestion(null)}
+                section={addingQuestion[2]}
               />
             )}
 
@@ -708,6 +764,7 @@ export default React.memo(function VasuTemplateEditor() {
                   setAddingParagraph(undefined)
                 }}
                 onCancel={() => setAddingParagraph(undefined)}
+                section={addingParagraph[2]}
               />
             )}
           </>

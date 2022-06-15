@@ -6,10 +6,7 @@ import last from 'lodash/last'
 import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
-  MultiSelectQuestion,
-  RadioGroupQuestion
-} from 'lib-common/api-types/vasu'
+import { MultiSelectQuestion } from 'lib-common/api-types/vasu'
 import {
   VasuSection,
   VasuDocumentState
@@ -59,6 +56,23 @@ export function CitizenDynamicSections({
       return null
     }
 
+    const dependantsById = new Map(
+      section.questions
+        .filter((q) => q.id)
+        .map((question) => {
+          if ('value' in question) {
+            return [question.id, !!question.value]
+          }
+
+          return [question.id, false]
+        })
+    )
+
+    const questionsToShow = section.questions.filter(
+      ({ dependsOn }) =>
+        !dependsOn || dependsOn.every((id) => dependantsById.get(id))
+    )
+
     const isLastQuestionFollowup = last(section.questions)?.type === 'FOLLOWUP'
     return (
       <Fragment key={section.name}>
@@ -73,7 +87,7 @@ export function CitizenDynamicSections({
           </H2>
           <Gap size="m" />
           <Questions>
-            {section.questions.map((question, questionIndex) => {
+            {questionsToShow.map((question, questionIndex) => {
               const questionNumber = getQuestionNumber(
                 sectionOffset + sectionIndex,
                 section.questions,
@@ -98,11 +112,12 @@ export function CitizenDynamicSections({
                       questionNumber={questionNumber}
                       question={question}
                       selectedValue={
-                        (
-                          sections[sectionIndex].questions[
-                            questionIndex
-                          ] as RadioGroupQuestion
-                        ).value
+                        question.value !== null
+                          ? {
+                              key: question.value,
+                              range: question.dateRange
+                            }
+                          : null
                       }
                       translations={translations}
                     />
