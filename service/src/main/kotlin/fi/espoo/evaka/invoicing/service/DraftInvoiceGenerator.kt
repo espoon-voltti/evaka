@@ -685,7 +685,10 @@ class DraftInvoiceGenerator(
         dailyFeeDivisor: Int,
     ): Int {
         val forceMajeureAndFreeAbsences = absences
-            .filter { it.absenceType == AbsenceType.FORCE_MAJEURE || it.absenceType == AbsenceType.FREE_ABSENCE }
+            .filter {
+                it.absenceType == AbsenceType.FORCE_MAJEURE ||
+                    (featureConfig.freeAbsenceGivesADailyRefund && it.absenceType == AbsenceType.FREE_ABSENCE)
+            }
             .map { it.date }
         val forceMajeureDays = forceMajeureAndFreeAbsences.filter { period.includes(it) }
 

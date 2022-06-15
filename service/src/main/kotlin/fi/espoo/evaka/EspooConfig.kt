@@ -110,6 +110,7 @@ class EspooConfig {
         citizenReservationThresholdHours = 150,
         dailyFeeDivisorOperationalDaysOverride = null,
         freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
+        freeAbsenceGivesADailyRefund = true,
         alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
     )
 

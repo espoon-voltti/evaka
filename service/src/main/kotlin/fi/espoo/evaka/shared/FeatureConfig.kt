@@ -42,6 +42,9 @@ data class FeatureConfig(
      */
     val freeSickLeaveOnContractDays: Boolean,
 
+    /** Controls whether FREE_ABSENCE absences give a daily refund on invoices or not */
+    val freeAbsenceGivesADailyRefund: Boolean,
+
     /** Whether to always use the marked daycare finance decision handler
      *
      *  If true, regardless of situation use the handler marked in the daycare settings
