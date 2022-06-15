@@ -35,7 +35,7 @@ data class StaffMember(
     val latestCurrentDayAttendance: StaffMemberAttendance?
 ) {
     val present: GroupId?
-        get() = latestCurrentDayAttendance?.takeIf { groupIds.contains(it.groupId) && it.departed == null }?.groupId
+        get() = latestCurrentDayAttendance?.takeIf { it.departed == null }?.groupId
 }
 
 data class StaffMemberAttendance(
