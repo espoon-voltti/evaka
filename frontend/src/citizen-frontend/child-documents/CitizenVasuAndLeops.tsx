@@ -39,15 +39,11 @@ const VasuTableContainer = styled.table`
 const VasuTr = styled.tr`
   & td {
     vertical-align: top;
+    padding-bottom: 16px;
+    padding-right: 16px;
   }
 `
 
-const VasuTd = styled.td`
-  padding-bottom: 16px;
-  padding-right: 16px;
-`
-
-const StateTd = styled(VasuTd)``
 const PermissionToShareText = styled.span`
   padding-left: 6px;
 `
@@ -71,6 +67,22 @@ const PermissionToShare = React.memo(function PermissionToShare() {
   )
 })
 
+const LinkTd = styled.td`
+  width: 40%;
+`
+
+const StateTd = styled.td`
+  width: 10%;
+`
+
+const DateTd = styled.td`
+  width: 10%;
+`
+
+const PermissionTd = styled.td`
+  width: 45%;
+`
+
 const VasuTable = React.memo(function VasuTable({
   summary
 }: {
@@ -85,27 +97,27 @@ const VasuTable = React.memo(function VasuTable({
         <tbody>
           {summary.vasuDocumentsSummary.map((vasu) => (
             <VasuTr key={vasu.id} data-qa={`vasu-${vasu.id}`}>
-              <VasuTd>
+              <LinkTd>
                 <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
                   {`${vasu.name}`}
                 </Link>
-              </VasuTd>
+              </LinkTd>
               <StateTd data-qa={`state-chip-${vasu.id}`}>
                 <VasuStateChip
                   state={vasu.documentState}
                   labels={i18n.vasu.states}
                 />
               </StateTd>
-              <VasuTd data-qa={`published-at-${vasu.id}`}>
+              <DateTd data-qa={`published-at-${vasu.id}`}>
                 {vasu.publishedAt
                   ? LocalDate.fromSystemTzDate(vasu.publishedAt).format()
                   : ''}
-              </VasuTd>
-              <VasuTd data-qa={`permission-to-share-needed-${vasu.id}`}>
+              </DateTd>
+              <PermissionTd data-qa={`permission-to-share-needed-${vasu.id}`}>
                 {!vasu.guardiansThatHaveGivenPermissionToShare.some(
                   (guardianId) => guardianId === user?.id
                 ) && <PermissionToShare />}
-              </VasuTd>
+              </PermissionTd>
             </VasuTr>
           ))}
         </tbody>
