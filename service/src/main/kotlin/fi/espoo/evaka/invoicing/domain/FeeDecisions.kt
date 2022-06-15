@@ -322,10 +322,15 @@ fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDe
     }
 }
 
+fun calculateMaxFee(baseFee: Int, siblingDiscount: Int): Int {
+    val siblingDiscountMultiplier = BigDecimal(100 - siblingDiscount).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
+    return roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier).toInt()
+}
+
 fun toFeeAlterationsWithEffects(fee: Int, feeAlterations: List<FeeAlteration>): List<FeeAlterationWithEffect> {
     val (_, alterations) = feeAlterations.fold(fee to listOf<FeeAlterationWithEffect>()) { pair, feeAlteration ->
         val (currentFee, currentAlterations) = pair
-        val effect = feeAlterationEffect(currentFee, feeAlteration)
+        val effect = feeAlterationEffect(currentFee, feeAlteration.type, feeAlteration.amount, feeAlteration.isAbsolute)
         Pair(
             currentFee + effect,
             currentAlterations + FeeAlterationWithEffect(
@@ -339,17 +344,17 @@ fun toFeeAlterationsWithEffects(fee: Int, feeAlterations: List<FeeAlteration>): 
     return alterations
 }
 
-fun feeAlterationEffect(fee: Int, feeAlteration: FeeAlteration): Int {
-    val multiplier = when (feeAlteration.type) {
+fun feeAlterationEffect(fee: Int, type: FeeAlteration.Type, amount: Int, absolute: Boolean): Int {
+    val multiplier = when (type) {
         FeeAlteration.Type.RELIEF, FeeAlteration.Type.DISCOUNT -> -1
         FeeAlteration.Type.INCREASE -> 1
     }
 
-    val effect = if (feeAlteration.isAbsolute) {
-        val amountInCents = feeAlteration.amount * 100
+    val effect = if (absolute) {
+        val amountInCents = amount * 100
         (multiplier * amountInCents)
     } else {
-        val percentageMultiplier = BigDecimal(feeAlteration.amount).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
+        val percentageMultiplier = BigDecimal(amount).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
         (BigDecimal(fee) * (BigDecimal(multiplier) * percentageMultiplier))
             .setScale(0, RoundingMode.HALF_UP)
             .toInt()

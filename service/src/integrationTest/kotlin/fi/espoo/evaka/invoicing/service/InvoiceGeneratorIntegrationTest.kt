@@ -1767,11 +1767,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
+                    fee = 21700,
                     feeAlterations = listOf(
                         createFeeDecisionAlterationFixture(
                             amount = -50,
                             isAbsolute = false,
-                            effect = -14450,
+                            effect = -10850,
                         )
                     )
                 )
@@ -1795,12 +1796,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(16378, invoice.totalPrice)
-            assertEquals(4, invoice.rows.size)
+            assertEquals(12296, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(
@@ -1811,26 +1812,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     invoiceRow.product
                 )
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(-14450, invoiceRow.unitPrice)
-                assertEquals(-14450, invoiceRow.price)
+                assertEquals(-10850, invoiceRow.unitPrice)
+                assertEquals(-10850, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
-                assertEquals(1927, invoiceRow.unitPrice) // 28900 / 15
-                assertEquals(3854, invoiceRow.price)
-            }
-            invoice.rows[3].let { invoiceRow ->
-                assertEquals(
-                    productProvider.mapToFeeAlterationProduct(
-                        productProvider.contractSurplusDay,
-                        FeeAlteration.Type.DISCOUNT
-                    ),
-                    invoiceRow.product
-                )
-                assertEquals(2, invoiceRow.amount)
-                assertEquals(-963, invoiceRow.unitPrice) // -14450 / 15
-                assertEquals(-1926, invoiceRow.price)
+                assertEquals(723, invoiceRow.unitPrice) // 10850 / 15
+                assertEquals(1446, invoiceRow.price)
             }
         }
     }
@@ -3981,6 +3970,101 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8700, invoiceRow.unitPrice)
                 assertEquals(-8700, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 7 surplus days results in a monthly maximum invoice`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        // no planned absences
+        initDataForAbsences(listOf(period), listOf(), serviceNeed = snDaycareContractDays15)
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
+                assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 7 surplus days with a fee alteration results in a monthly maximum invoice`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 21700,
+                    feeAlterations = listOf(
+                        createFeeDecisionAlterationFixture(
+                            amount = 50,
+                            isAbsolute = false,
+                            effect = -10850,
+                        )
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(14450, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(
+                    productProvider.mapToFeeAlterationProduct(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        FeeAlteration.Type.DISCOUNT
+                    ),
+                    invoiceRow.product
+                )
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-10850, invoiceRow.unitPrice)
+                assertEquals(-10850, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(3600, invoiceRow.unitPrice) // 14450 - 10850
+                assertEquals(3600, invoiceRow.price)
             }
         }
     }
