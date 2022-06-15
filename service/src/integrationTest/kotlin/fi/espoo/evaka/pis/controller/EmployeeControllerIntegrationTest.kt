@@ -13,9 +13,9 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -88,8 +88,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         firstName = "etunimi1",
         lastName = "sukunimi1",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
-        created = Instant.now(),
-        updated = Instant.now(),
+        created = HelsinkiDateTime.now(),
+        updated = HelsinkiDateTime.now(),
         id = EmployeeId(UUID.randomUUID())
     )
 
@@ -98,8 +98,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         firstName = "etunimi2",
         lastName = "sukunimi2",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
-        created = Instant.now(),
-        updated = Instant.now(),
+        created = HelsinkiDateTime.now(),
+        updated = HelsinkiDateTime.now(),
         id = EmployeeId(UUID.randomUUID())
     )
 }

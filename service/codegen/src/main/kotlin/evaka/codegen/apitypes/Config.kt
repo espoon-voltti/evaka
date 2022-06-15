@@ -22,8 +22,6 @@ private val standardTsMapping: Map<String, String> = mapOf(
     "kotlin.Double" to "number",
     "java.math.BigDecimal" to "number",
     "kotlin.Boolean" to "boolean",
-    "java.time.LocalDateTime" to "Date",
-    "java.time.Instant" to "Date",
     "java.time.OffsetDateTime" to "Date",
 )
 

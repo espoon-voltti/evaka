@@ -8,11 +8,13 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeAlteration(
@@ -24,7 +26,8 @@ data class FeeAlteration(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val updatedAt: Instant? = null,
+    @ForceCodeGenType(OffsetDateTime::class)
+    val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: EvakaUserId? = null
 ) {
     enum class Type {
