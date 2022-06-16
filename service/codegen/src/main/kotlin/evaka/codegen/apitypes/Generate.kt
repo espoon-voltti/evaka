@@ -131,7 +131,7 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
             properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
         )
         clazz.isSealed -> null // Not yet supported
-        else -> error("unhandled case")
+        else -> error("unhandled case: $clazz")
     }
 }
 
