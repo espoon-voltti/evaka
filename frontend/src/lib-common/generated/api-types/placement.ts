@@ -106,6 +106,22 @@ export interface GroupTransferRequestBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.placement.MissingGroupPlacement
+*/
+export interface MissingGroupPlacement {
+  backup: boolean
+  childId: UUID
+  dateOfBirth: LocalDate
+  firstName: string
+  gap: FiniteDateRange
+  lastName: string
+  placementId: UUID
+  placementPeriod: FiniteDateRange
+  placementType: PlacementType | null
+  serviceNeeds: ServiceNeed[]
+}
+
+/**
 * Generated from fi.espoo.evaka.placement.PlacementCreateRequestBody
 */
 export interface PlacementCreateRequestBody {
@@ -261,3 +277,25 @@ export type TerminatablePlacementType =
   | 'PREPARATORY'
   | 'DAYCARE'
   | 'PRESCHOOL'
+
+/**
+* Generated from fi.espoo.evaka.placement.TerminatedPlacements
+*/
+export interface TerminatedPlacements {
+  child: ChildBasics
+  currentDaycareGroupName: string | null
+  endDate: LocalDate
+  id: UUID
+  terminatedBy: EvakaUser | null
+  terminationRequestedDate: LocalDate | null
+  type: PlacementType
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.UnitChildrenCapacityFactors
+*/
+export interface UnitChildrenCapacityFactors {
+  assistanceNeedFactor: number
+  childId: UUID
+  serviceNeedFactor: number
+}

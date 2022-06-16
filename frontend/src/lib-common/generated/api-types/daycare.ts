@@ -114,6 +114,15 @@ export interface AdditionalInformation {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.ApplicationUnitType
+*/
+export type ApplicationUnitType =
+  | 'CLUB'
+  | 'DAYCARE'
+  | 'PRESCHOOL'
+  | 'PREPARATORY'
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.AreaJSON
 */
 export interface AreaJSON {
@@ -326,6 +335,31 @@ export interface DaycareGroup {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.DaycareGroupResponse
+*/
+export interface DaycareGroupResponse {
+  id: UUID
+  name: string
+  permittedActions: Action.Group[]
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.DaycareResponse
+*/
+export interface DaycareResponse {
+  daycare: Daycare
+  groups: DaycareGroupResponse[]
+  permittedActions: Action.Unit[]
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.AbsenceController.DeleteChildAbsenceBody
+*/
+export interface DeleteChildAbsenceBody {
+  date: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.FinanceDecisionHandler
 */
 export interface FinanceDecisionHandler {
@@ -424,6 +458,17 @@ export interface PublicUnit {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.service.StaffAttendanceForDates
+*/
+export interface StaffAttendanceForDates {
+  attendances: Record<string, GroupStaffAttendance>
+  endDate: LocalDate | null
+  groupId: UUID
+  groupName: string
+  startDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
 */
 export interface StaffAttendanceUpdate {
@@ -477,6 +522,15 @@ export interface UnitStub {
   id: UUID
   name: string
 }
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitTypeFilter
+*/
+export type UnitTypeFilter =
+  | 'ALL'
+  | 'CLUB'
+  | 'DAYCARE'
+  | 'PRESCHOOL'
 
 /**
 * Generated from fi.espoo.evaka.daycare.VisitingAddress

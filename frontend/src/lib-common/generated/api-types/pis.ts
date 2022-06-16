@@ -343,6 +343,27 @@ export interface PersonJSON {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.service.PersonPatch
+*/
+export interface PersonPatch {
+  backupPhone: string | null
+  dateOfBirth: LocalDate | null
+  email: string | null
+  firstName: string | null
+  forceManualFeeDecisions: boolean | null
+  invoiceRecipientName: string | null
+  invoicingPostOffice: string | null
+  invoicingPostalCode: string | null
+  invoicingStreetAddress: string | null
+  lastName: string | null
+  ophPersonOid: string | null
+  phone: string | null
+  postOffice: string | null
+  postalCode: string | null
+  streetAddress: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonResponse
 */
 export interface PersonResponse {
