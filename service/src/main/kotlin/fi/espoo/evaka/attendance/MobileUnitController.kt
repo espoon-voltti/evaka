@@ -234,8 +234,8 @@ data class UnitStats(
     val name: String,
     val presentChildren: Int,
     val totalChildren: Int,
-    val presentStaff: Int,
-    val totalStaff: Int,
+    val presentStaff: Double,
+    val totalStaff: Double,
     val utilization: Double
 )
 
