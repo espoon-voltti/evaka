@@ -137,7 +137,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             FROM daycare_group g
             JOIN daycare ON g.daycare_id = daycare.id
             JOIN (
-                SELECT sa.group_id, 7 * (sa.count + sa.count_other) AS capacity, FALSE AS realtime
+                SELECT sa.group_id, 7 * sa.count AS capacity, FALSE AS realtime
                 FROM staff_attendance sa
                 WHERE sa.date = :date
         
@@ -234,8 +234,8 @@ data class UnitStats(
     val name: String,
     val presentChildren: Int,
     val totalChildren: Int,
-    val presentStaff: Int,
-    val totalStaff: Int,
+    val presentStaff: Double,
+    val totalStaff: Double,
     val utilization: Double
 )
 
@@ -284,7 +284,7 @@ WITH present_children AS (
     FROM daycare_group g
     JOIN daycare ON g.daycare_id = daycare.id
     JOIN (
-        SELECT sa.group_id, 7 * (sa.count + sa.count_other) as capacity, sa.count + sa.count_other AS count, FALSE AS realtime
+        SELECT sa.group_id, 7 * sa.count as capacity, sa.count AS count, FALSE AS realtime
         FROM staff_attendance sa
         WHERE sa.date = :date
 
