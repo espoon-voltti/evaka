@@ -87,14 +87,21 @@ export default class LocalTime {
     throw new RangeError(`Invalid time ${text}`)
   }
 
-  static parse(text: string, pattern: 'HH:mm'): LocalTime {
+  static tryParse(text: string, pattern: 'HH:mm'): LocalTime | undefined {
     const timestamp = parse(text, pattern, new Date(1970, 0, 1))
-    return LocalTime.of(
+    return LocalTime.tryCreate(
       timestamp.getHours(),
       timestamp.getMinutes(),
       timestamp.getSeconds(),
       millisToNanos(timestamp.getMilliseconds())
     )
+  }
+  static parse(text: string, pattern: 'HH:mm'): LocalTime {
+    const result = LocalTime.tryParse(text, pattern)
+    if (!result) {
+      throw new RangeError(`Invalid time ${text}`)
+    }
+    return result
   }
   static of(
     hour: number,

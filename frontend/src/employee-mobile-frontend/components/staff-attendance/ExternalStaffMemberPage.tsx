@@ -46,6 +46,7 @@ export default React.memo(function ExternalStaffMemberPage() {
   const [time, setTime] = useState(() =>
     HelsinkiDateTime.now().toLocalTime().format('HH:mm')
   )
+  const parsedTime = useMemo(() => LocalTime.tryParse(time, 'HH:mm'), [time])
 
   return (
     <StaffMemberPageContainer>
@@ -82,10 +83,12 @@ export default React.memo(function ExternalStaffMemberPage() {
                   primary
                   text={i18n.attendances.actions.markDeparted}
                   data-qa="mark-departed-link"
+                  disabled={!parsedTime}
                   onClick={() =>
+                    parsedTime &&
                     postExternalStaffDeparture({
                       attendanceId,
-                      time: LocalTime.parse(time, 'HH:mm')
+                      time: parsedTime
                     })
                   }
                   onSuccess={() => {
