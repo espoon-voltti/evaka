@@ -19,6 +19,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -363,24 +364,16 @@ export default React.memo(function CreateQuestionModal({
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.dependsOn}</Label>
-          {Array(dependsOn.length + 1)
-            .fill({})
-            .map((_, i) => (
-              <Combobox
-                key={i}
-                items={section.questions
-                  .flatMap((q) => q.id)
-                  .filter((id) => id && !dependsOn.includes(id))}
-                selectedItem={dependsOn[i]}
-                onChange={(value) => {
-                  if (value) {
-                    const copy = Array.from(dependsOn)
-                    copy[i] = value
-                    setDependsOn(copy)
-                  }
-                }}
-              />
-            ))}
+          <MultiSelect
+            value={dependsOn}
+            options={section.questions
+              .map((q) => q.id)
+              .filter((id): id is string => typeof id === 'string')}
+            onChange={setDependsOn}
+            getOptionId={(id) => id}
+            getOptionLabel={(id) => id}
+            placeholder=""
+          />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>

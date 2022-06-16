@@ -6,8 +6,8 @@ import React, { useState } from 'react'
 
 import { Paragraph } from 'lib-common/api-types/vasu'
 import { VasuSection } from 'lib-common/generated/api-types/vasu'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
@@ -60,24 +60,16 @@ export default React.memo(function CreateParagraphModal({
         <Label>{t.id}</Label>
         <InputField value={identifier} onChange={setIdentifier} width="full" />
         <Label>{t.dependsOn}</Label>
-        {Array(dependsOn.length + 1)
-          .fill({})
-          .map((_, i) => (
-            <Combobox
-              key={i}
-              items={section.questions
-                .flatMap((q) => q.id)
-                .filter((id) => id && !dependsOn.includes(id))}
-              selectedItem={dependsOn[i]}
-              onChange={(value) => {
-                if (value) {
-                  const copy = Array.from(dependsOn)
-                  copy[i] = value
-                  setDependsOn(copy)
-                }
-              }}
-            />
-          ))}
+        <MultiSelect
+          value={dependsOn}
+          options={section.questions
+            .map((q) => q.id)
+            .filter((id): id is string => typeof id === 'string')}
+          onChange={setDependsOn}
+          getOptionId={(id) => id}
+          getOptionLabel={(id) => id}
+          placeholder=""
+        />
       </FixedSpaceColumn>
     </FormModal>
   )
