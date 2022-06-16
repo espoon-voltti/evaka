@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -28,6 +28,7 @@ import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import { Desktop, Mobile, PaddedDiv } from './components'
+import { ChildDocumentsContext, ChildDocumentsState } from './state'
 import { getGuardianChildVasuSummaries } from './vasu/api'
 import { VasuStateChip } from './vasu/components/VasuStateChip'
 
@@ -56,6 +57,7 @@ const PermissionToShare = React.memo(function PermissionToShare() {
     <>
       <RoundIcon
         content={faExclamation}
+        iconColor={theme.colors.grayscale.g0}
         color={theme.colors.status.warning}
         size="s"
         data-qa="attention-indicator"
@@ -236,6 +238,9 @@ const VasuDisplay = React.memo(function VasuDisplay({
 }) {
   const i18n = useTranslation()
   const [open, setOpen] = useState(true)
+  const { unreadVasuDocumentsCount } = useContext<ChildDocumentsState>(
+    ChildDocumentsContext
+  )
 
   return (
     <>
@@ -251,6 +256,7 @@ const VasuDisplay = React.memo(function VasuDisplay({
           opaque
           paddingVertical="16px 0px 0px 0px;"
           paddingHorizontal="zero"
+          countIndicator={unreadVasuDocumentsCount}
           data-qa="vasu-and-leops-collapsible"
         >
           <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">
@@ -266,6 +272,7 @@ const VasuDisplay = React.memo(function VasuDisplay({
           toggleOpen={() => setOpen(!open)}
           opaque
           paddingVertical="L"
+          countIndicator={unreadVasuDocumentsCount}
           data-qa="vasu-and-leops-collapsible"
         >
           <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">

@@ -10,7 +10,8 @@ import styled from 'styled-components'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { desktopMin } from '../breakpoints'
-import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
+import { fontWeights } from '../typography'
+import { defaultMargins, Gap, isSpacingSize, SpacingSize } from '../white-space'
 
 export const Container = styled.div<{ verticalMargin?: string }>`
   margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}
@@ -90,7 +91,12 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
   toggleOpen: () => void
   title: ReactNode
   children: ReactNode
+  countIndicator?: number
 }
+
+const IconContainer = styled.div`
+  display: flex;
+`
 
 export const CollapsibleContentArea = React.memo(
   function CollapsibleContentArea({
@@ -98,6 +104,7 @@ export const CollapsibleContentArea = React.memo(
     toggleOpen,
     title,
     children,
+    countIndicator = 0,
     ...props
   }: CollapsibleContentAreaProps) {
     return (
@@ -109,10 +116,20 @@ export const CollapsibleContentArea = React.memo(
           role="button"
         >
           {title}
-          <TitleIcon
-            icon={open ? faChevronUp : faChevronDown}
-            data-qa="collapsible-trigger"
-          />
+          <IconContainer>
+            {countIndicator > 0 && (
+              <>
+                <CircledChar color="white" data-qa="count-indicator">
+                  {countIndicator}
+                </CircledChar>
+                <Gap horizontal={true} size="s" />
+              </>
+            )}
+            <TitleIcon
+              icon={open ? faChevronUp : faChevronDown}
+              data-qa="collapsible-trigger"
+            />
+          </IconContainer>
         </TitleContainer>
         <Collapsible open={open}>{children}</Collapsible>
       </ContentArea>
@@ -149,6 +166,23 @@ const TitleIcon = styled(FontAwesomeIcon)`
   color: ${(p) => p.theme.colors.main.m2};
   height: 24px !important;
   width: 24px !important;
+`
+
+export const CircledChar = styled.div`
+  width: ${defaultMargins.s};
+  height: ${defaultMargins.s};
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g0};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+  background: ${(p) => p.theme.colors.status.warning};
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 100%;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: ${fontWeights.bold};
+  font-size: ${defaultMargins.s};
 `
 
 const Collapsible = styled.div<{ open: boolean }>`

@@ -121,6 +121,7 @@ type RoundIconProps = BaseProps & {
   bubble?: boolean
   bubblecolor?: string
   number?: number
+  iconColor?: string
 }
 
 const RoundIcon = React.memo(function RoundIcon({
@@ -138,7 +139,8 @@ const RoundIcon = React.memo(function RoundIcon({
   label,
   bubble,
   bubblecolor,
-  number
+  number,
+  iconColor
 }: RoundIconProps) {
   function onKeyDown(e: React.KeyboardEvent) {
     if (onClick && (e.key === ' ' || e.key === 'Enter')) onClick(e)
@@ -184,7 +186,7 @@ const RoundIcon = React.memo(function RoundIcon({
       {typeof content === 'string' ? (
         <span className="text">{content}</span>
       ) : (
-        <FontAwesomeIcon icon={content} />
+        <FontAwesomeIcon icon={content} color={iconColor} />
       )}
     </IconContainer>
   )
