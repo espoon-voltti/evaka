@@ -60,7 +60,6 @@ data class Income(
     )
 }
 
-@ExcludeCodeGen
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
     val effect: IncomeEffect,

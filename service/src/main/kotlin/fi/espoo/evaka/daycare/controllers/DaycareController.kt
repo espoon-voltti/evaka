@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.CaretakerAmount
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
@@ -321,9 +320,7 @@ class DaycareController(
         val caretakers: List<CaretakerAmount>
     )
 
-    @ExcludeCodeGen
     data class DaycareGroupResponse(val id: GroupId, val name: String, val permittedActions: Set<Action.Group>)
 
-    @ExcludeCodeGen
     data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
 }
