@@ -8,6 +8,8 @@ import { Navigate, useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
@@ -49,7 +51,9 @@ export default React.memo(function StaffMarkDepartedPage() {
   )
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
-  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
+  const [time, setTime] = useState<string>(() =>
+    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+  )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
 
   const staffInfo = useMemo(
@@ -185,7 +189,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                       }
                       onClick={() =>
                         postStaffDeparture(attendanceId, {
-                          time,
+                          time: LocalTime.parse(time, 'HH:mm'),
                           pinCode: pinCode.join('')
                         })
                       }

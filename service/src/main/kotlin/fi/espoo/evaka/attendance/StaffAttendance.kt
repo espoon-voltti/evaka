@@ -25,7 +25,6 @@ data class ExternalStaffMember(
     val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
-    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
 )
 
@@ -46,9 +45,7 @@ data class StaffMemberAttendance(
     val id: StaffAttendanceId,
     val employeeId: EmployeeId,
     val groupId: GroupId,
-    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
-    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?
 )
 

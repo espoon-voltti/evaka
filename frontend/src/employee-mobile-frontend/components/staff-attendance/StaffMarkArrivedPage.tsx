@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom'
 
 import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
@@ -29,10 +31,9 @@ import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 import { Actions } from '../attendances/components'
+import { TimeWrapper } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
-
-import { TimeWrapper } from './components/staff-components'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
@@ -60,7 +61,9 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
-  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
+  const [time, setTime] = useState<string>(() =>
+    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+  )
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined
   )
@@ -218,7 +221,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                           ? postStaffArrival({
                               employeeId,
                               groupId: attendanceGroup,
-                              time,
+                              time: LocalTime.parse(time, 'HH:mm'),
                               pinCode: pinCode.join('')
                             }).then((res) => {
                               if (res.isFailure) {
