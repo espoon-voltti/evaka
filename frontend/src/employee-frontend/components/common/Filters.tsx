@@ -112,7 +112,7 @@ export function Filters({
   const { i18n } = useTranslation()
   return (
     <FiltersContainer>
-      {setFreeText && !!searchPlaceholder && (
+      {setFreeText && (
         <FreeTextSearch
           value={freeText || ''}
           setValue={setFreeText}
@@ -193,7 +193,7 @@ const CustomIconButton = styled(IconButton)`
 type FreeTextSearchProps = {
   value: string
   setValue: (s: string) => void
-  placeholder: string
+  placeholder?: string
   background?: string
 }
 
