@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.attachments
 
-import fi.espoo.evaka.s3.ContentType
-import fi.espoo.evaka.s3.checkFileExtension
-import fi.espoo.evaka.s3.getAndCheckFileContentType
+import fi.espoo.evaka.s3.ContentTypePattern
+import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.s3.checkFileContentTypeAndExtension
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -14,28 +14,28 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 class AttachmentsIntegrationTest {
-    private val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")
-    private val jpgFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg")
-    private val licenseFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg.license")
+    private val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png")!!
+    private val jpgFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg")!!
+    private val licenseFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.jpg.license")!!
 
     @Test
     fun `file content type check works for png file`() {
         pngFile.openStream().use { file ->
-            assertEquals("image/png", getAndCheckFileContentType(file, setOf(ContentType.PNG)))
+            assertEquals("image/png", checkFileContentType(file, setOf(ContentTypePattern.PNG)))
         }
     }
 
     @Test
     fun `file content type check works for jpg file`() {
         jpgFile.openStream().use { file ->
-            assertEquals("image/jpeg", getAndCheckFileContentType(file, setOf(ContentType.JPEG)))
+            assertEquals("image/jpeg", checkFileContentType(file, setOf(ContentTypePattern.JPEG)))
         }
     }
 
     @Test
     fun `file content type check throws on disallowed content type`() {
         pngFile.openStream().use { file ->
-            assertThrows<BadRequest> { getAndCheckFileContentType(file, setOf(ContentType.PDF)) }
+            assertThrows<BadRequest> { checkFileContentType(file, setOf(ContentTypePattern.PDF)) }
         }
     }
 
@@ -43,7 +43,7 @@ class AttachmentsIntegrationTest {
     fun `file content type check throws on invalid contentType`() {
         licenseFile.openStream().use { file ->
             val exception = assertThrows<BadRequest> {
-                getAndCheckFileContentType(file, ContentType.values().toSet())
+                checkFileContentType(file, ContentTypePattern.values().toSet())
             }
             assertEquals("Invalid content type text/plain", exception.message)
         }
@@ -52,24 +52,38 @@ class AttachmentsIntegrationTest {
     @Test
     fun `checkFileExtension does not throw on valid cases`() {
         val cases = listOf(
-            "jpeg" to "image/jpeg",
-            "png" to "image/png",
-            "doc" to "application/msword"
+            "jpeg" to jpgFile,
+            "png" to pngFile,
         )
-        cases.forEach { (extension, contentType) ->
-            assertDoesNotThrow { checkFileExtension(extension, contentType) }
+        cases.forEach { (extension, file) ->
+            file.openStream().use { file ->
+                assertDoesNotThrow {
+                    checkFileContentTypeAndExtension(
+                        file,
+                        extension,
+                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
+                    )
+                }
+            }
         }
     }
 
     @Test
     fun `checkFileExtension throws on invalid cases`() {
         val cases = listOf(
-            "foo" to "bar",
-            "png" to "image/jpeg",
-            "pdf" to "application/msword"
+            "foo" to jpgFile,
+            "pdf" to pngFile,
         )
-        cases.forEach { (extension, contentType) ->
-            assertThrows<BadRequest> { checkFileExtension(extension, contentType) }
+        cases.forEach { (extension, file) ->
+            file.openStream().use { file ->
+                assertThrows<BadRequest> {
+                    checkFileContentTypeAndExtension(
+                        file,
+                        extension,
+                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
+                    )
+                }
+            }
         }
     }
 }
