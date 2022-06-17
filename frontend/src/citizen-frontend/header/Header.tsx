@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -50,11 +50,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
 
-  const unreadDocumentCount = useCallback(() => {
-    return (
-      (unreadPedagogicalDocumentsCount || 0) + (unreadVasuDocumentsCount || 0)
-    )
-  }, [unreadPedagogicalDocumentsCount, unreadVasuDocumentsCount])
+  const unreadDocumentCount =
+    (unreadPedagogicalDocumentsCount || 0) + (unreadVasuDocumentsCount || 0)
 
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
@@ -62,14 +59,14 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <EvakaLogo />
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildDocuments={unreadDocumentCount()}
+        unreadChildDocuments={unreadDocumentCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildDocumentsCount={unreadDocumentCount()}
+        unreadChildDocumentsCount={unreadDocumentCount}
         hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>

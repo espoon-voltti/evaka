@@ -90,12 +90,10 @@ describe('Citizen vasu document page', () => {
     await vasuPage.givePermissionToShare()
 
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-    await page.reload()
-    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
+    await header.assertUnreadChildDocumentsCount(0)
     await revokeVasuSharingPermission(vasuDocId)
     await page.reload()
-    await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-    await header.assertUnreadChildDocumentsCount(0)
+    await vasuPage.assertGivePermissionToShareSectionIsVisible()
   })
 })
 

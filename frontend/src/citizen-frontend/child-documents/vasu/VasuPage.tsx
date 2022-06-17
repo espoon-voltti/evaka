@@ -138,7 +138,6 @@ export default React.memo(function VasuPage() {
                   })
                 }}
                 onSuccess={() => {
-                  console.log('DDEBUG')
                   setGuardianHasGivenPermissionToShare(true)
                 }}
                 data-qa="confirm-button"

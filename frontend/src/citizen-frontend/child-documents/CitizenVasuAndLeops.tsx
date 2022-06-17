@@ -82,7 +82,7 @@ const DateTd = styled.td`
 `
 
 const PermissionTd = styled.td`
-  width: 45%;
+  width: 40%;
 `
 
 const VasuTable = React.memo(function VasuTable({
