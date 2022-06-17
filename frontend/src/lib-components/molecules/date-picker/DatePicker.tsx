@@ -51,7 +51,7 @@ const DayPickerDiv = styled.div`
 type DatePickerProps = {
   date: string
   onChange: (date: string) => void
-  onFocus?: () => void
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: () => void
   locale: 'fi' | 'sv' | 'en'
   info?: InputInfo
@@ -175,9 +175,9 @@ export default React.memo(function DatePicker({
           onChange(date)
         }}
         disabled={disabled}
-        onFocus={() => {
+        onFocus={(ev) => {
           setShow(true)
-          onFocus()
+          onFocus(ev)
         }}
         onBlur={() => {
           onBlur()

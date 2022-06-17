@@ -16,6 +16,7 @@ import {
   TimeRanges,
   validateForm
 } from 'lib-common/reservations'
+import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -216,6 +217,9 @@ export default React.memo(function ReservationModal({
             )}
             hideErrorsBeforeTouched={!showAllErrors}
             data-qa="start-date"
+            onFocus={(ev) => {
+              scrollIntoViewSoftKeyboard(ev.target, 'start')
+            }}
           />
           <DatePickerSpacer />
           <DatePicker
@@ -233,6 +237,9 @@ export default React.memo(function ReservationModal({
               reservableDays[0]?.start
             }
             data-qa="end-date"
+            onFocus={(ev) => {
+              scrollIntoViewSoftKeyboard(ev.target, 'start')
+            }}
           />
         </FixedSpaceRow>
         <Gap size="m" />
@@ -255,6 +262,9 @@ export default React.memo(function ReservationModal({
               showAllErrors={showAllErrors}
               allowExtraTimeRange={childrenInShiftCare}
               dataQaPrefix="daily"
+              onFocus={(ev) => {
+                scrollIntoViewSoftKeyboard(ev.target)
+              }}
             />
           )}
 
@@ -301,6 +311,9 @@ export default React.memo(function ReservationModal({
                   showAllErrors={showAllErrors}
                   allowExtraTimeRange={childrenInShiftCare}
                   dataQaPrefix={`weekly-${index}`}
+                  onFocus={(ev) => {
+                    scrollIntoViewSoftKeyboard(ev.target)
+                  }}
                 />
               ) : null
             )}
@@ -344,6 +357,9 @@ export default React.memo(function ReservationModal({
                       showAllErrors={showAllErrors}
                       allowExtraTimeRange={childrenInShiftCare}
                       dataQaPrefix={`irregular-${date.formatIso()}`}
+                      onFocus={(ev) => {
+                        scrollIntoViewSoftKeyboard(ev.target)
+                      }}
                     />
                   )}
                 </Fragment>
@@ -368,6 +384,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
   showAllErrors: boolean
   allowExtraTimeRange: boolean
   dataQaPrefix?: string
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }) {
   const i18n = useTranslation()
 
@@ -409,6 +426,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
               ? `${props.dataQaPrefix}-start-time-0`
               : undefined
           }
+          onFocus={props.onFocus}
         />
         <span>–</span>
         <TimeInput
@@ -432,6 +450,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           data-qa={
             props.dataQaPrefix ? `${props.dataQaPrefix}-end-time-0` : undefined
           }
+          onFocus={props.onFocus}
         />
       </FixedSpaceRow>
       {!extraTimeRange && props.allowExtraTimeRange ? (
@@ -476,6 +495,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
                   ? `${props.dataQaPrefix}-start-time-1`
                   : undefined
               }
+              onFocus={props.onFocus}
             />
             <span>–</span>
             <TimeInput
@@ -500,6 +520,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
                   ? `${props.dataQaPrefix}-end-time-1`
                   : undefined
               }
+              onFocus={props.onFocus}
             />
           </FixedSpaceRow>
           <IconButton

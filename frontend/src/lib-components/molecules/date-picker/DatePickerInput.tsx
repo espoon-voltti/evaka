@@ -15,7 +15,7 @@ interface Props {
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
-  onFocus: () => void
+  onFocus: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
   'data-qa'?: string
