@@ -140,7 +140,7 @@ export default React.memo(function PedagogicalDocuments({
         />
       )}
 
-      {i18n.childInformation.pedagogicalDocument.explanation.length > 0 && (
+      {!!i18n.childInformation.pedagogicalDocument.explanation && (
         <P noMargin>
           {i18n.childInformation.pedagogicalDocument.explanation}
           <InfoButtonWithMargin
@@ -153,7 +153,7 @@ export default React.memo(function PedagogicalDocuments({
           />
         </P>
       )}
-      {expandingInfo !== undefined && (
+      {!!expandingInfo && (
         <ExpandingInfoBox info={expandingInfo} close={closeExpandingInfo} />
       )}
 

@@ -142,7 +142,7 @@ export default React.memo(function AttendanceChildPage() {
                         {child.firstName} {child.lastName}
                       </CustomTitle>
 
-                      {child.preferredName !== null && (
+                      {!!child.preferredName && (
                         <CustomTitle data-qa="child-preferred-name">
                           ({child.preferredName})
                         </CustomTitle>

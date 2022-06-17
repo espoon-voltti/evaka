@@ -134,7 +134,7 @@ function InvoiceRowSectionRow({
         ) : (
           <div>
             <span>{unit?.name}</span>
-            {savedCostCenter !== null && (
+            {!!savedCostCenter && (
               <UnitCostCenter>{savedCostCenter}</UnitCostCenter>
             )}
           </div>

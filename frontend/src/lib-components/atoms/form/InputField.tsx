@@ -303,7 +303,7 @@ export default React.memo(function InputField({
           )}
         </IconContainer>
       )}
-      {infoText !== undefined && (
+      {!!infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
           <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
             {infoText}

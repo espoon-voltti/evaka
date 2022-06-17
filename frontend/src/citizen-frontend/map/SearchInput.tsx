@@ -216,9 +216,7 @@ const OptionContents = React.memo(function Option({
       )}
       <FixedSpaceColumn spacing="zero">
         <span>{label}</span>
-        {secondaryText !== undefined && (
-          <SecondaryText>{secondaryText}</SecondaryText>
-        )}
+        {!!secondaryText && <SecondaryText>{secondaryText}</SecondaryText>}
       </FixedSpaceColumn>
     </FixedSpaceRow>
   )

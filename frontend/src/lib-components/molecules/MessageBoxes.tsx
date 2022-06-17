@@ -91,11 +91,9 @@ export const MessageBox = React.memo(function MessageBox({
           <FontAwesomeIcon icon={icon} size="1x" color={color} inverse />
         </div>
         <div>
-          {title !== undefined && (
-            <span className="message-title">{title}</span>
-          )}
-          {title !== undefined && message !== undefined && <Gap size="s" />}
-          {message !== undefined &&
+          {!!title && <span className="message-title">{title}</span>}
+          {!!title && !!message && <Gap size="s" />}
+          {!!message &&
             (typeof message === 'string' ? <span>{message}</span> : message)}
         </div>
       </div>

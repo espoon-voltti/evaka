@@ -63,7 +63,7 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
       <ContentArea opaque paddingHorizontal="s">
         {smallerHeading ? <H2 {...headingProps} /> : <H1 {...headingProps} />}
 
-        {subHeading !== undefined && (
+        {!!subHeading && (
           <>
             <Gap size="xs" />
             <H3 primary noMargin>

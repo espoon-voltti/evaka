@@ -179,7 +179,7 @@ export default React.memo(function ServiceNeeds({
         </Tbody>
       </Table>
 
-      {deletingId !== null && (
+      {!!deletingId && (
         <InfoModal
           title={t.deleteServiceNeed.confirmTitle}
           type="warning"
