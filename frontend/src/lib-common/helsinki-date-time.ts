@@ -108,6 +108,18 @@ export default class HelsinkiDateTime {
     )
   }
 
+  static fromLocal(date: LocalDate, time: LocalTime): HelsinkiDateTime {
+    return HelsinkiDateTime.of(
+      date.year,
+      date.month,
+      date.date,
+      time.hour,
+      time.minute,
+      time.second,
+      nanosToMillis(time.nanosecond)
+    )
+  }
+
   static of(
     year: number,
     month: number,

@@ -70,6 +70,9 @@ export default class LocalTime {
     return this.formatIso()
   }
 
+  static MIN = LocalTime.of(0, 0, 0, 0)
+  static MAX = LocalTime.of(23, 59, 59, 999_999_999)
+
   static parseIso(text: string): LocalTime {
     const parts =
       isoPattern.exec(text) ??

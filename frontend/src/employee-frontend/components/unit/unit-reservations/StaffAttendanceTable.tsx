@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import { compareAsc, isSameDay } from 'date-fns'
 import groupBy from 'lodash/groupBy'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
@@ -14,7 +13,6 @@ import styled from 'styled-components'
 import EllipsisMenu from 'employee-frontend/components/common/EllipsisMenu'
 import { Result, Success } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
-import { formatTime } from 'lib-common/date'
 import {
   Attendance,
   EmployeeAttendance,
@@ -22,7 +20,9 @@ import {
   UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { validateTimeRange } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -284,21 +284,19 @@ const AttendanceRow = React.memo(function AttendanceRow({
     const dailyAttendances = attendances.flatMap<Attendance>((attendance) => {
       if (
         attendance.departed &&
-        !isSameDay(attendance.arrived, attendance.departed)
+        !attendance.arrived
+          .toLocalDate()
+          .isEqual(attendance.departed.toLocalDate())
       ) {
         return [
           {
             ...attendance,
-            departed: LocalDate.fromSystemTzDate(
-              attendance.arrived
-            ).toSystemTzDateAtTime('23:59')
+            departed: attendance.arrived.withTime(LocalTime.of(23, 59))
           },
           {
             ...attendance,
             id: '',
-            arrived: LocalDate.fromSystemTzDate(
-              attendance.departed
-            ).toSystemTzDateAtTime('00:00')
+            arrived: attendance.departed.withTime(LocalTime.of(0, 0))
           }
         ]
       }
@@ -306,30 +304,36 @@ const AttendanceRow = React.memo(function AttendanceRow({
     })
 
     const daysAndRanges = operationalDays.map((day) => {
-      const date = day.date.toSystemTzDate()
+      const date = day.date
 
       const attendancesOnDay = dailyAttendances.filter((a) =>
-        isSameDay(a.arrived, date)
+        a.arrived.toLocalDate().isEqual(date)
       )
 
-      const laterAttendances = dailyAttendances
-        .filter((a) => compareAsc(a.arrived, date) > 0)
-        .sort((a, b) => compareAsc(a.arrived, b.arrived))
+      const laterAttendances = sortBy(
+        dailyAttendances.filter((a) =>
+          a.arrived.isAfter(HelsinkiDateTime.fromLocal(date, LocalTime.MIN))
+        ),
+        (a) => a.arrived.timestamp
+      )
       const nextEntry =
         laterAttendances.length > 0 ? laterAttendances[0] : undefined
 
       const nextEntryIsOvernight =
-        nextEntry && formatTime(nextEntry.arrived) === '00:00'
+        nextEntry &&
+        nextEntry.arrived.hour == 0 &&
+        nextEntry.arrived.minute == 0
 
       return {
         date: day.date,
         timeRanges:
           attendancesOnDay.length > 0
             ? attendancesOnDay.map((attendance) => {
-                const startTime = formatTime(attendance.arrived)
-                const endTime = attendance.departed
-                  ? formatTime(attendance.departed)
-                  : ''
+                const startTime = attendance.arrived
+                  .toLocalTime()
+                  .format('HH:mm')
+                const endTime =
+                  attendance.departed?.toLocalTime().format('HH:mm') ?? ''
                 return {
                   id: attendance.id,
                   groupId: attendance.groupId,
@@ -382,16 +386,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const saveChanges = useCallback(async () => {
     setEditing(false)
 
-    const rangeToUpsertParams = (range: TimeRangeWithErrorsAndMetadata) => ({
-      attendanceId: !range.id || range.id === '' ? null : range.id,
-      arrived: range.arrived.toSystemTzDateAtTime(range.startTime),
-      departed:
-        range.endTime !== ''
-          ? range.departed.toSystemTzDateAtTime(range.endTime)
-          : null,
-      groupId: range.groupId || ''
-    })
-
     const allTimeRanges = values.flatMap(({ timeRanges }) => timeRanges)
 
     const rangesToSave = allTimeRanges
@@ -430,12 +424,28 @@ const AttendanceRow = React.memo(function AttendanceRow({
       )
     }
 
+    const attendancesToSave = rangesToSave.map((range) => ({
+      attendanceId: !range.id || range.id === '' ? null : range.id,
+      arrived: HelsinkiDateTime.fromLocal(
+        range.arrived,
+        LocalTime.parse(range.startTime, 'HH:mm')
+      ),
+      departed:
+        range.endTime !== ''
+          ? HelsinkiDateTime.fromLocal(
+              range.departed,
+              LocalTime.parse(range.endTime, 'HH:mm')
+            )
+          : null,
+      groupId: range.groupId || ''
+    }))
+
     return saveAttendances({
       staffAttendances: employeeId
-        ? rangesToSave.map((r) => ({ ...rangeToUpsertParams(r), employeeId }))
+        ? attendancesToSave.map((r) => ({ ...r, employeeId }))
         : [],
       externalAttendances: !employeeId
-        ? rangesToSave.map((r) => ({ ...rangeToUpsertParams(r), name }))
+        ? attendancesToSave.map((r) => ({ ...r, name }))
         : []
     }).then(() => reloadStaffAttendances())
   }, [
