@@ -72,12 +72,14 @@ export default React.memo(function BaseModal(props: Props) {
   )
 })
 
-export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
+export const ModalButtons = styled.div<{
+  $justifyContent?: 'center' | 'space-between'
+}>`
   display: flex;
   flex-direction: row-reverse;
   margin-top: ${defaultMargins.XXL};
   margin-bottom: ${defaultMargins.X3L};
-  justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};
+  justify-content: ${({ $justifyContent }) => $justifyContent};
 
   @media (max-width: ${tabletMin}) {
     margin-bottom: ${defaultMargins.L};
