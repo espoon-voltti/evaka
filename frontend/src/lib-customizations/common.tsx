@@ -5,7 +5,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/common'
-import { isArray, mergeWith } from 'lodash'
+import isArray from 'lodash/isArray'
+import mergeWith from 'lodash/mergeWith'
 import React from 'react'
 
 import { JsonOf } from 'lib-common/json'

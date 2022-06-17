@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { last } from 'lodash'
+import last from 'lodash/last'
 import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 

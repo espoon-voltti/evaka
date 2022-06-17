@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { uniqueId } from 'lodash'
+import uniqueId from 'lodash/uniqueId'
 
 import { Absence } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'

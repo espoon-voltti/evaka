@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios from 'axios'
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
@@ -106,7 +106,7 @@ export const queryDistances = async (
       }))
     )
   }
-  const unitsToQuery = _.sortBy(
+  const unitsToQuery = sortBy(
     endLocations.filter((u) => u.straightDistance !== null),
     (u) => u.straightDistance
   ).slice(0, accurateDistancesCount)

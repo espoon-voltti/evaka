@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { cloneDeep } from 'lodash'
-import { last } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import last from 'lodash/last'
 import React, { Dispatch, Fragment, SetStateAction } from 'react'
 import styled, { css } from 'styled-components'
 

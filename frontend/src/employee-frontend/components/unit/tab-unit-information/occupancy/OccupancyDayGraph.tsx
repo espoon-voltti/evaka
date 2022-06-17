@@ -19,7 +19,7 @@ import {
   setMinutes
 } from 'date-fns'
 import { fi } from 'date-fns/locale'
-import { ceil } from 'lodash'
+import ceil from 'lodash/ceil'
 import React, { useMemo, useCallback, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'

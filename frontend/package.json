@@ -96,6 +96,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-expressions": "^1.3.1",
+    "eslint-plugin-lodash": "^7.4.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.29.4",
@@ -219,7 +220,8 @@
     "plugins": [
       "import",
       "react-hooks",
-      "jsx-expressions"
+      "jsx-expressions",
+      "lodash"
     ],
     "settings": {
       "import/internal-regex": "^(citizen-frontend|e2e-test|employee-frontend|employee-mobile-frontend|lib-common|lib-components|lib-customizations|lib-icons|maintenance-page-frontend)(/|$)",
@@ -299,6 +301,15 @@
           ],
           "@typescript-eslint/no-floating-promises": "error",
           "jsx-expressions/strict-logical-expressions": "error"
+        }
+      },
+      {
+        "files": "src/**/*.{js,jsx,ts,tsx}",
+        "rules": {
+          "lodash/import-scope": [
+            "error",
+            "method"
+          ]
         }
       }
     ]

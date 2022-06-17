@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { isEqual } from 'date-fns'
-import { noop } from 'lodash'
+import noop from 'lodash/noop'
 import React, { useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'

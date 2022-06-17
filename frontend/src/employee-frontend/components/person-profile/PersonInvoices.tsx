@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -46,7 +46,7 @@ export default React.memo(function PersonInvoices({ id, open }: Props) {
               </Tr>
             </Thead>
             <Tbody>
-              {_.orderBy(invoices, ['sentAt'], ['desc']).map(
+              {orderBy(invoices, ['sentAt'], ['desc']).map(
                 (invoice: Invoice) => {
                   return (
                     <Tr key={`${invoice.id}`} data-qa="table-invoice-row">

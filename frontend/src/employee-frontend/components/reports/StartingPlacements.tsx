@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { fi } from 'date-fns/locale'
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -106,7 +106,7 @@ export default React.memo(function StartingPlacements() {
 
   const filteredRows: StartingPlacementsRow[] = useMemo(
     () =>
-      _.sortBy(rows.getOrElse([]).filter(displayFilter), [
+      sortBy(rows.getOrElse([]).filter(displayFilter), [
         (row) => row.careAreaName,
         (row) => row.firstName,
         (row) => row.lastName

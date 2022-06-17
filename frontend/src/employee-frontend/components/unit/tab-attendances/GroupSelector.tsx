@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 import DateRange from 'lib-common/date-range'
@@ -36,7 +36,7 @@ export default React.memo(function GroupSelector({
     () => [
       ...groups
         .map((gs) =>
-          _.sortBy(gs, ({ name }) => name)
+          sortBy(gs, ({ name }) => name)
             .filter(
               (group) =>
                 group.id === selected ||
@@ -73,7 +73,7 @@ export default React.memo(function GroupSelector({
   useEffect(() => {
     if (selected === null && groups.isSuccess) {
       const defaultSelection =
-        _.sortBy(groups.value, [(g) => g.name.toLowerCase()]).find((group) =>
+        sortBy(groups.value, [(g) => g.name.toLowerCase()]).find((group) =>
           new DateRange(group.startDate, group.endDate).includes(
             LocalDate.today()
           )

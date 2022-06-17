@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { sortBy, uniqBy } from 'lodash'
+import sortBy from 'lodash/sortBy'
+import uniqBy from 'lodash/uniqBy'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 

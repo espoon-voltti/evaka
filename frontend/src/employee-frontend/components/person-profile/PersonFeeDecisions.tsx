@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -83,7 +83,7 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {_.orderBy(feeDecisions, ['sentAt', 'validFrom'], ['desc']).map(
+            {orderBy(feeDecisions, ['sentAt', 'validFrom'], ['desc']).map(
               (feeDecision: FeeDecision) => (
                 <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
                   <Td>

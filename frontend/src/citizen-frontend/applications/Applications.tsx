@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { Fragment } from 'react'
 
 import { isLoading } from 'lib-common/api'
@@ -43,7 +43,7 @@ export default React.memo(function Applications() {
 
         {renderResult(guardianApplications, (guardianApplications) => (
           <>
-            {_.sortBy(guardianApplications, (a) => a.childName).map(
+            {sortBy(guardianApplications, (a) => a.childName).map(
               (childApplications) => (
                 <Fragment key={childApplications.childId}>
                   <ChildApplicationsBlock

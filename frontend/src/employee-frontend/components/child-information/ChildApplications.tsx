@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -72,7 +72,7 @@ export default React.memo(function ChildApplications({ id, startOpen }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {_.orderBy(
+            {orderBy(
               applications,
               ['preferredStartDate', 'preferredUnitName'],
               ['desc', 'desc']

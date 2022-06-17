@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { orderBy } from 'lodash'
+import orderBy from 'lodash/orderBy'
 import styled from 'styled-components'
 
 import { DecisionSummary } from 'lib-common/generated/api-types/application'

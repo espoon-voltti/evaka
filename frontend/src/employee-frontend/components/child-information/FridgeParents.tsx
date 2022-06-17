@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -35,7 +35,7 @@ const FridgeParents = React.memo(function FridgeParents() {
             </Tr>
           </Thead>
           <Tbody>
-            {_.orderBy(data, ['startDate'], ['desc']).map(
+            {orderBy(data, ['startDate'], ['desc']).map(
               (parentship: Parentship) => (
                 <Tr key={parentship.id}>
                   <Td>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -66,7 +66,7 @@ function renderGroups(
     ),
     backupCares: backupCares.filter((it) => it.group?.id === group.id)
   }))
-  const sortedGroups = _.sortBy(groupsWithPlacements, [
+  const sortedGroups = sortBy(groupsWithPlacements, [
     (g) => g.name.toLowerCase()
   ])
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Loading } from 'lib-common/api'
@@ -65,7 +65,7 @@ export default function BackupCare({ id, startOpen }: Props) {
           {uiMode === 'create-new-backup-care' && (
             <BackupCareForm childId={id} />
           )}
-          {_.orderBy(
+          {orderBy(
             backupCares.value,
             (x) => x.backupCare.period.start,
             'desc'

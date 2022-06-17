@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -244,7 +244,7 @@ const filterUnits = (
       )
       .filter((u) => !shiftCare || u.roundTheClock)
 
-    return _.sortBy(filteredUnits, (u) => u.name)
+    return sortBy(filteredUnits, (u) => u.name)
   })
 
 const PanelWrapper = styled.div`

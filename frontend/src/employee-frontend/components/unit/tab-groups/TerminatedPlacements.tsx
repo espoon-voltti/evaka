@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -50,7 +50,7 @@ export default React.memo(function TerminatedPlacements({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const sortedRows = _.sortBy(recentlyTerminatedPlacements, [
+  const sortedRows = sortBy(recentlyTerminatedPlacements, [
     (p: TerminatedPlacement) => p.terminationRequestedDate,
     (p: TerminatedPlacement) => p.child.lastName,
     (p: TerminatedPlacement) => p.child.firstName

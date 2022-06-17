@@ -4,7 +4,10 @@
 
 import classNames from 'classnames'
 import { compareAsc, isSameDay } from 'date-fns'
-import { groupBy, initial, last, sortBy } from 'lodash'
+import groupBy from 'lodash/groupBy'
+import initial from 'lodash/initial'
+import last from 'lodash/last'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
 

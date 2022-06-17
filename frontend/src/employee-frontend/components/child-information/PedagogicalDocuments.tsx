@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
@@ -194,7 +194,7 @@ export default React.memo(function PedagogicalDocuments({
             </Tr>
           </Thead>
           <Tbody>
-            {_.orderBy(pedagogicalDocuments, ['created'], ['desc']).map(
+            {orderBy(pedagogicalDocuments, ['created'], ['desc']).map(
               (pedagogicalDocument: PedagogicalDocument) => (
                 <PedagogicalDocumentRow
                   key={pedagogicalDocument.id}

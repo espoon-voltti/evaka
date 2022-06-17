@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
@@ -42,13 +42,13 @@ export default React.memo(function UnitList({
   useEffect(() => setShowMoreUnits(false), [selectedAddress])
 
   const accurateUnits = unitsWithDistances.isSuccess
-    ? _.sortBy(
+    ? sortBy(
         unitsWithDistances.value.filter((u) => u.drivingDistance !== null),
         (u) => u.drivingDistance
       ).slice(0, 10)
     : []
   const otherUnits = unitsWithDistances.isSuccess
-    ? _.sortBy(
+    ? sortBy(
         unitsWithDistances.value.filter(
           (u) => !accurateUnits.find((u2) => u2.id === u.id)
         ),

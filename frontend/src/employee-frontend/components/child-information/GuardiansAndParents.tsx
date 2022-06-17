@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -63,7 +63,7 @@ export default React.memo(function Guardians({ startOpen }: Props) {
               </Tr>
             </Thead>
             <Tbody>
-              {_.orderBy(guardians, ['lastName', 'firstName'], ['asc']).map(
+              {orderBy(guardians, ['lastName', 'firstName'], ['asc']).map(
                 (guardian: PersonJSON) => (
                   <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
                     <NameTd data-qa="guardian-name">

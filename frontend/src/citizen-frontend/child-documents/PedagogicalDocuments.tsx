@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { uniq } from 'lodash'
+import uniq from 'lodash/uniq'
 import React, {
   useCallback,
   useContext,

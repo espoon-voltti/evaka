@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as _ from 'lodash'
+import concat from 'lodash/concat'
+import sortBy from 'lodash/sortBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -201,8 +202,8 @@ export default React.memo(function Group({
     }
   })
 
-  const sortedPlacements = _.sortBy(
-    _.concat<DaycareGroupPlacementDetailed | UnitBackupCare>(
+  const sortedPlacements = sortBy(
+    concat<DaycareGroupPlacementDetailed | UnitBackupCare>(
       placements,
       group.backupCares
     ),
