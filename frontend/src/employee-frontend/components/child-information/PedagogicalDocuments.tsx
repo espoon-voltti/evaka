@@ -140,7 +140,7 @@ export default React.memo(function PedagogicalDocuments({
         />
       )}
 
-      {i18n.childInformation.pedagogicalDocument.explanation && (
+      {!!i18n.childInformation.pedagogicalDocument.explanation && (
         <P noMargin>
           {i18n.childInformation.pedagogicalDocument.explanation}
           <InfoButtonWithMargin
@@ -153,7 +153,7 @@ export default React.memo(function PedagogicalDocuments({
           />
         </P>
       )}
-      {expandingInfo && (
+      {!!expandingInfo && (
         <ExpandingInfoBox info={expandingInfo} close={closeExpandingInfo} />
       )}
 
@@ -164,7 +164,8 @@ export default React.memo(function PedagogicalDocuments({
               <Th>{i18n.childInformation.pedagogicalDocument.date}</Th>
               <Th>
                 {i18n.childInformation.pedagogicalDocument.description}
-                {i18n.childInformation.pedagogicalDocument.descriptionInfo && (
+                {!!i18n.childInformation.pedagogicalDocument
+                  .descriptionInfo && (
                   <InfoButtonWithMargin
                     onClick={() =>
                       toggleExpandingInfo(
@@ -178,7 +179,7 @@ export default React.memo(function PedagogicalDocuments({
               </Th>
               <Th>
                 {i18n.childInformation.pedagogicalDocument.document}
-                {i18n.childInformation.pedagogicalDocument.documentInfo && (
+                {!!i18n.childInformation.pedagogicalDocument.documentInfo && (
                   <InfoButtonWithMargin
                     onClick={() =>
                       toggleExpandingInfo(

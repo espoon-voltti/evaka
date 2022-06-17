@@ -142,7 +142,7 @@ export default React.memo(function AttendanceChildPage() {
                         {child.firstName} {child.lastName}
                       </CustomTitle>
 
-                      {child.preferredName && (
+                      {!!child.preferredName && (
                         <CustomTitle data-qa="child-preferred-name">
                           ({child.preferredName})
                         </CustomTitle>
@@ -233,7 +233,7 @@ export default React.memo(function AttendanceChildPage() {
                 }}
               />
               {childInfoResult.isSuccess &&
-                childInfoResult.value.child?.imageUrl && (
+                !!childInfoResult.value.child?.imageUrl && (
                   <Button
                     text={i18n.childInfo.image.modalMenu.deleteImageButton}
                     onClick={() => setUiMode('img-delete')}

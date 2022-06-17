@@ -79,7 +79,7 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
           checked={incomeStatement.handled}
           disabled
         />
-        {incomeStatement.handlerNote && (
+        {!!incomeStatement.handlerNote && (
           <>
             <Gap size="xxs" />
             <Dimmed>{incomeStatement.handlerNote}</Dimmed>

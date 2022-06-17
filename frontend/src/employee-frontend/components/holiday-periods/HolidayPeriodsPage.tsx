@@ -147,7 +147,7 @@ export default React.memo(function HolidayPeriodsPage() {
           </Table>
         ))}
 
-        {periodToDelete && (
+        {!!periodToDelete && (
           <AsyncFormModal
             type="warning"
             title={i18n.holidayPeriods.confirmDelete}
@@ -163,7 +163,7 @@ export default React.memo(function HolidayPeriodsPage() {
           />
         )}
 
-        {questionnaireToDelete && (
+        {!!questionnaireToDelete && (
           <AsyncFormModal
             type="warning"
             title={i18n.holidayQuestionnaires.confirmDelete}

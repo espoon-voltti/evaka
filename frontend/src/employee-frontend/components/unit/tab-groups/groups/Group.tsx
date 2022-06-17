@@ -482,13 +482,13 @@ export default React.memo(function Group({
                 </span>
               </div>
             )}
-            {maxOccupancy && (
+            {!!maxOccupancy && (
               <div>
                 <label>{i18n.unit.groups.maxOccupancy}</label>{' '}
                 <span>{maxOccupancy}</span>
               </div>
             )}
-            {maxRealizedOccupancy && (
+            {!!maxRealizedOccupancy && (
               <div>
                 <label>{i18n.unit.groups.maxRealizedOccupancy}</label>{' '}
                 <span>{maxRealizedOccupancy}</span>

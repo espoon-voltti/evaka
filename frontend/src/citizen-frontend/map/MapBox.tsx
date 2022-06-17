@@ -227,7 +227,7 @@ const UnitMarker = React.memo(function UnitMarker({
               <br />
               {formatCareTypes(t, type).join(', ')}
             </UnitDetailsLeft>
-            {drivingDistance && (
+            {drivingDistance !== null && (
               <UnitDetailsRight>
                 {formatDistance(drivingDistance)}
               </UnitDetailsRight>
@@ -243,7 +243,7 @@ const UnitMarker = React.memo(function UnitMarker({
               />
             </>
           )}
-          {url && (
+          {!!url && (
             <>
               <Gap size="xs" />
               <ExternalLink text={t.map.homepage} href={url} newTab />

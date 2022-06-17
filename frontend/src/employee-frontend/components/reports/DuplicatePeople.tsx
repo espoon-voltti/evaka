@@ -217,7 +217,7 @@ export default React.memo(function DuplicatePeople() {
                 }}
               />
             )}
-            {deleteId && (
+            {!!deleteId && (
               <InfoModal
                 type="warning"
                 title={i18n.reports.duplicatePeople.confirmDeleteTitle}

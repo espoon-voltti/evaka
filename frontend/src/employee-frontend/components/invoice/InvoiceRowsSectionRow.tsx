@@ -134,7 +134,7 @@ function InvoiceRowSectionRow({
         ) : (
           <div>
             <span>{unit?.name}</span>
-            {savedCostCenter && (
+            {!!savedCostCenter && (
               <UnitCostCenter>{savedCostCenter}</UnitCostCenter>
             )}
           </div>
@@ -315,7 +315,7 @@ const UnitCombobox = React.memo(function UnitCombobox({
       return (
         <UnitMenuItem className={classNames({ highlighted, clickable: true })}>
           <span>{unit?.name ?? unitId}</span>
-          {unit?.costCenter && (
+          {!!unit?.costCenter && (
             <UnitCostCenter>{unit.costCenter}</UnitCostCenter>
           )}
         </UnitMenuItem>

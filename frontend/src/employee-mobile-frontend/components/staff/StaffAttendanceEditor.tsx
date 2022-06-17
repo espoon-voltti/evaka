@@ -87,7 +87,7 @@ export default React.memo(function StaffAttendanceEditor({
         data-qa="staff-other-count"
       />
       <Gap size="s" />
-      {groupId && (
+      {!!groupId && (
         <>
           <FixedSpaceRow justifyContent="center">
             <CancelButton

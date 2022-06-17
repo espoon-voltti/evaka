@@ -57,8 +57,8 @@ export default React.memo(function BaseModal(props: Props) {
                 <Gap size="m" />
               </>
             )}
-            {props.title && <H1 data-qa="title">{props.title}</H1>}
-            {props.text && (
+            {!!props.title && <H1 data-qa="title">{props.title}</H1>}
+            {!!props.text && (
               <P data-qa="text" preserveWhiteSpace>
                 {props.text}
               </P>

@@ -224,7 +224,7 @@ export default React.memo(function PlacementSketching() {
                       </Link>
                     </Td>
                     <Td data-qa="current-unit">
-                      {row.currentUnitId && (
+                      {!!row.currentUnitId && (
                         <Link to={`/units/${row.currentUnitId}`}>
                           {row.currentUnitName}
                         </Link>

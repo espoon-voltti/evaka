@@ -532,7 +532,7 @@ const ApplicationsList = React.memo(function Applications({
         <ActionBar reloadApplications={reloadApplications} fullWidth />
       </div>
 
-      {editedNote && (
+      {!!editedNote && (
         <AsyncFormModal
           title={i18n.applications.list.serviceWorkerNote}
           resolveAction={() =>

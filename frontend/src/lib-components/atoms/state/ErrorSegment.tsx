@@ -53,7 +53,7 @@ export default React.memo(function ErrorSegment({
         <FontAwesomeIcon icon={faMeh} />
         <span>{title}</span>
       </div>
-      {info && (
+      {!!info && (
         <>
           <Gap size="s" />
           <p>{info}</p>

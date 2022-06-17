@@ -172,7 +172,7 @@ export default React.memo(function PersonalDetails() {
                       <div />
                       <Label>{t.personalDetails.address}</Label>
                       <div>
-                        {streetAddress &&
+                        {!!streetAddress &&
                           `${streetAddress}, ${postalCode} ${postOffice}`}
                       </div>
                       <Label>{t.personalDetails.phone}</Label>

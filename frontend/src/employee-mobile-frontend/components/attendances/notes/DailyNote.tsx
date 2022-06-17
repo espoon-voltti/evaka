@@ -29,7 +29,7 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
       <Gap size="xs" />
       {child && child.dailyNote ? (
         <FixedSpaceColumn spacing="xs">
-          {child.dailyNote.note && (
+          {!!child.dailyNote.note && (
             <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.note}</Label>
               <span>{child.dailyNote.note}</span>
@@ -68,7 +68,7 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
               </span>
             </FixedSpaceColumn>
           )}
-          {(child.dailyNote.reminderNote ||
+          {(!!child.dailyNote.reminderNote ||
             child.dailyNote.reminders.length > 0) && (
             <FixedSpaceColumn spacing="xxs">
               <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
