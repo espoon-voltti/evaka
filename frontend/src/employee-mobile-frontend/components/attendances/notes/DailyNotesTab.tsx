@@ -224,7 +224,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             <H2 primary noMargin>
               {i18n.attendances.notes.note}
             </H2>
-            {dailyNoteId && (
+            {dailyNoteId !== undefined && (
               <ResponsiveInlineButton
                 onClick={() => setUiMode('confirmDelete')}
                 text={i18n.common.clear}

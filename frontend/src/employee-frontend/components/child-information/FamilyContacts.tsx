@@ -196,17 +196,17 @@ export default React.memo(function FamilyContacts({
                       </FixedSpaceColumn>
                     ) : (
                       <FixedSpaceColumn spacing="xs">
-                        {row.email && (
+                        {row.email !== null && (
                           <span data-qa="family-contact-email">
                             {row.email}
                           </span>
                         )}
-                        {row.phone && (
+                        {row.phone !== null && (
                           <span data-qa="family-contact-phone">
                             {row.phone}
                           </span>
                         )}
-                        {row.backupPhone && (
+                        {row.backupPhone !== null && (
                           <span data-qa="family-contact-backup-phone">
                             {row.backupPhone}{' '}
                             {`(${i18n.childInformation.familyContacts.backupPhone})`}

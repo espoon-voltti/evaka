@@ -112,7 +112,7 @@ export function Filters({
   const { i18n } = useTranslation()
   return (
     <FiltersContainer>
-      {setFreeText && searchPlaceholder && (
+      {setFreeText && searchPlaceholder !== undefined && (
         <FreeTextSearch
           value={freeText || ''}
           setValue={setFreeText}

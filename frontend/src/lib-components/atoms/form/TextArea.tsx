@@ -99,7 +99,7 @@ export default React.memo(function TextArea({
         ref={inputRef}
         rows={rows}
       />
-      {infoText && (
+      {infoText !== undefined && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
           <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
             {infoText}

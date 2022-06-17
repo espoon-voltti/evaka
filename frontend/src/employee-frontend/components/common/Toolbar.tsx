@@ -94,7 +94,7 @@ function Toolbar({
 
   return (
     <ToolbarWrapper data-qa={dataQa}>
-      {warning && (
+      {warning !== undefined && (
         <Tooltip tooltip={warning} position="right">
           <FontAwesomeIcon
             icon={faExclamationTriangle}

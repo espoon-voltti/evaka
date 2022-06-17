@@ -166,7 +166,7 @@ export default React.memo(function UnitDetailsPanel({
             <div>
               {unit.roundTheClock ? t.map.shiftCareYes : t.map.shiftCareNo}
             </div>
-            {unit.url && (
+            {unit.url !== null && (
               <>
                 <Gap size="s" />
 
@@ -175,7 +175,7 @@ export default React.memo(function UnitDetailsPanel({
                 <ExternalLink text={t.map.homepage} href={unit.url} newTab />
               </>
             )}
-            {routeLink && (
+            {routeLink !== null && (
               <>
                 <Gap size="s" />
 

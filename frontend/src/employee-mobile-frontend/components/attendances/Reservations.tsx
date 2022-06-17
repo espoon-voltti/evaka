@@ -41,7 +41,7 @@ export const Reservations = React.memo(function Reservations({
           <Fragment key={startTime.toISOString()}>
             {index !== 0 && <Separator />}
             <span>{formatTime(startTime)}</span>
-            {startDatePart && (
+            {startDatePart !== undefined && (
               <>
                 <Whitespace />
                 <DatePart>{startDatePart}</DatePart>
@@ -49,7 +49,7 @@ export const Reservations = React.memo(function Reservations({
             )}
             <Dash />
             <span>{formatTime(endTime)}</span>
-            {endDatePart && (
+            {endDatePart !== undefined && (
               <>
                 <Whitespace />
                 <DatePart>{endDatePart}</DatePart>
