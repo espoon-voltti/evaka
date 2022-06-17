@@ -25,11 +25,13 @@ export interface TimeInputProps
   > {
   value: string
   onChange: (v: string) => void
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
 export default React.memo(function TimeInput({
   value,
   onChange,
+  onFocus,
   ...props
 }: TimeInputProps) {
   const onChangeWithAutocomplete = useCallback(
@@ -44,14 +46,13 @@ export default React.memo(function TimeInput({
       onChange={onChangeWithAutocomplete}
       type="text"
       inputMode="numeric"
-      onFocus={onFocus}
+      onFocus={(event) => {
+        event.target.select()
+        onFocus?.(event)
+      }}
     />
   )
 })
-
-function onFocus(event: React.FocusEvent<HTMLInputElement>) {
-  event.target.select()
-}
 
 const ShorterInput = styled(InputField)`
   width: calc(3.2em + 24px);

@@ -40,6 +40,23 @@ export function scrollRefIntoView(
   scrollIntoViewWithTimeout(() => ref.current ?? undefined, timeout)
 }
 
+export function scrollIntoViewSoftKeyboard(
+  target: HTMLElement,
+  blockPosition: ScrollLogicalPosition = 'center'
+) {
+  const onResize = () => {
+    target.scrollIntoView({
+      block: blockPosition
+    })
+    window.visualViewport.removeEventListener('resize', onResize)
+  }
+
+  window.visualViewport.addEventListener('resize', onResize)
+  setTimeout(() => {
+    window.visualViewport.removeEventListener('resize', onResize)
+  }, 1000)
+}
+
 function scrollWithTimeout(
   getOptions: () => ScrollToOptions | undefined,
   timeout = 0,
