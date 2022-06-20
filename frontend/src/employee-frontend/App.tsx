@@ -43,6 +43,8 @@ import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
 import AIPage from './components/ai/AIPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
+import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
+import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
@@ -227,6 +229,22 @@ export default function App() {
                     element={
                       <EmployeeRoute>
                         <ChildInformation />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/child-information/:childId/assistance-need-decision/:id"
+                    element={
+                      <EmployeeRoute title={i18n.titles.assistanceNeedDecision}>
+                        <AssistanceNeedDecisionPage />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/child-information/:childId/assistance-need-decision/:id/edit"
+                    element={
+                      <EmployeeRoute title={i18n.titles.assistanceNeedDecision}>
+                        <AssistanceNeedDecisionEditPage />
                       </EmployeeRoute>
                     }
                   />
