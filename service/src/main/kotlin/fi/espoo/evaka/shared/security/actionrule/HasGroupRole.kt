@@ -107,7 +107,7 @@ AND curriculum_document.id = ANY(:ids)
                 return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
             }
             override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
-            override fun hashCode(): Int = this.hashCode()
+            override fun hashCode(): Int = this.javaClass.hashCode()
         }
     )
 }
