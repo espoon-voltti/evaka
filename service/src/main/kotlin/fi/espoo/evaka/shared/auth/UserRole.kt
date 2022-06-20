@@ -17,6 +17,8 @@ enum class UserRole {
     UNIT_SUPERVISOR,
     STAFF,
     SPECIAL_EDUCATION_TEACHER,
+    /** Varhaiskasvatussihteeri */
+    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
     MOBILE,
 
     @Deprecated("Exists only for backwards compatibility")
@@ -34,10 +36,11 @@ enum class UserRole {
         UNIT_SUPERVISOR -> true
         STAFF -> true
         SPECIAL_EDUCATION_TEACHER -> true
+        EARLY_CHILDHOOD_EDUCATION_SECRETARY -> true
         else -> false
     }
     companion object {
         @Suppress("DEPRECATION")
-        val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE, GROUP_STAFF)
+        val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY, MOBILE, GROUP_STAFF)
     }
 }

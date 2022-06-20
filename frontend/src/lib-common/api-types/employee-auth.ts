@@ -34,6 +34,7 @@ export type GlobalRole = typeof globalRoles[number]
 export const scopedRoles = [
   'UNIT_SUPERVISOR',
   'SPECIAL_EDUCATION_TEACHER',
+  'EARLY_CHILDHOOD_EDUCATION_SECRETARY',
   'STAFF'
 ] as const
 
