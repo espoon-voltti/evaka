@@ -238,3 +238,4 @@ V237__service_need_option_voucher_value.sql
 V238__employee_number.sql
 V239__daycare_extra_fields.sql
 V240__service_need_hiding.sql
+V241__realtime_staff_attendance_type.sql
