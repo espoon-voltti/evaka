@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo } from 'react'
 
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -49,6 +50,23 @@ export default React.memo(function StaffMemberPage() {
             <>
               <EmployeeCardBackground staff={toStaff(staffMember)} />
               <FixedSpaceColumn>
+                {staffMember.plannedAttendances.length > 0 && (
+                  <TimeInfo>
+                    <span>
+                      {i18n.attendances.staff.plannedAttendance}{' '}
+                      {orderBy(staffMember.plannedAttendances, ({ start }) =>
+                        start.formatIso()
+                      )
+                        .map(
+                          ({ start, end }) =>
+                            `${start.toLocalTime().format('HH:mm')}–${end
+                              .toLocalTime()
+                              .format('HH:mm')}`
+                        )
+                        .join(', ')}
+                    </span>
+                  </TimeInfo>
+                )}
                 {staffMember.latestCurrentDayAttendance && (
                   <>
                     <TimeInfo>

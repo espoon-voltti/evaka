@@ -236,6 +236,15 @@ export interface OccupancyCoefficientUpsert {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.PlannedStaffAttendance
+*/
+export interface PlannedStaffAttendance {
+  end: HelsinkiDateTime
+  start: HelsinkiDateTime
+  type: StaffAttendanceType
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Staff
 */
 export interface Staff {
@@ -266,6 +275,16 @@ export interface StaffAttendanceResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.StaffAttendanceType
+*/
+export type StaffAttendanceType =
+  | 'PRESENT'
+  | 'OTHER_WORK'
+  | 'TRAINING'
+  | 'OVERTIME'
+  | 'JUSTIFIED_CHANGE'
+
+/**
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
@@ -282,6 +301,7 @@ export interface StaffMember {
   groupIds: UUID[]
   lastName: string
   latestCurrentDayAttendance: StaffMemberAttendance | null
+  plannedAttendances: PlannedStaffAttendance[]
   present: UUID | null
 }
 

@@ -225,7 +225,8 @@ export const fi = {
       markDeparted: 'Kirjaudu poissaolevaksi',
       loginWithPin: 'Kirjaudu PIN-koodilla',
       pinNotSet: 'Aseta itsellesi PIN-koodi',
-      pinLocked: 'Vaihda lukkiutunut PIN-koodi'
+      pinLocked: 'Vaihda lukkiutunut PIN-koodi',
+      plannedAttendance: 'Työvuoro tänään'
     }
   },
   childInfo: {

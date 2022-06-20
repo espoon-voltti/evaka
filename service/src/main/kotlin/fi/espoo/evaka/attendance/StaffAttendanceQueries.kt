@@ -30,7 +30,12 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.group_id AS attendance_group_id,
         att.arrived AS attendance_arrived,
         att.departed AS attendance_departed,
-        coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids
+        coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
+        coalesce((
+            SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type))
+            FROM staff_attendance_plan p
+            WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(:rangeStart, :rangeEnd)
+        ), '[]'::jsonb) AS planned_attendances
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (

@@ -42,7 +42,14 @@ export async function getUnitStaffAttendances(
                     )
                   : null
               }
-            : null
+            : null,
+          plannedAttendances: staff.plannedAttendances.map(
+            ({ start, end, ...plan }) => ({
+              ...plan,
+              start: HelsinkiDateTime.parseIso(start),
+              end: HelsinkiDateTime.parseIso(end)
+            })
+          )
         })),
         extraAttendances: res.data.extraAttendances.map((att) => ({
           ...att,
