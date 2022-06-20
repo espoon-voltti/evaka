@@ -12,6 +12,8 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
+import fi.espoo.evaka.invoicing.domain.calculateMaxFee
+import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
@@ -97,6 +99,7 @@ class DraftInvoiceGenerator(
         val priceBeforeFeeAlterations: Int,
         val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         val finalPrice: Int,
+        val maxPrice: Int,
         val contractDaysPerMonth: Int?,
     )
 
@@ -147,6 +150,7 @@ class DraftInvoiceGenerator(
                                     fee,
                                     listOf(),
                                     fee,
+                                    fee,
                                     null,
                                 )
                             )
@@ -159,6 +163,15 @@ class DraftInvoiceGenerator(
                                 }
                                 .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                 .map { (decisionPeriod, part) ->
+                                    val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
+                                    val maxFee = part.feeAlterations.fold(maxFeeBeforeFeeAlterations) { currentFee, feeAlteration ->
+                                        currentFee + feeAlterationEffect(
+                                            currentFee,
+                                            feeAlteration.type,
+                                            feeAlteration.amount,
+                                            feeAlteration.isAbsolute
+                                        )
+                                    }
                                     DateRange(
                                         maxOf(relevantPeriod.start, decisionPeriod.start),
                                         minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
@@ -170,6 +183,7 @@ class DraftInvoiceGenerator(
                                             Pair(feeAlteration.type, feeAlteration.effect)
                                         },
                                         part.finalFee,
+                                        maxFee,
                                         part.serviceNeed.contractDaysPerMonth,
                                     )
                                 }
@@ -436,6 +450,8 @@ class DraftInvoiceGenerator(
                 invoiceRowStub.child,
                 invoiceRowStub.placement,
                 invoiceRowStub.priceBeforeFeeAlterations,
+                invoiceRowStub.finalPrice,
+                invoiceRowStub.maxPrice,
                 unitId,
                 dailyFeeDivisor,
                 invoiceRowStub.contractDaysPerMonth,
@@ -488,6 +504,8 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
+        finalPrice: Int,
+        maxPrice: Int,
         unitId: DaycareId,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
@@ -546,9 +564,10 @@ class DraftInvoiceGenerator(
         val withDailyModifiers = initialRows + surplusContractDays(
             period,
             child,
-            price,
+            finalPrice,
+            initialRows.sumOf { it.price },
+            maxPrice,
             unitId,
-            feeAlterations,
             dailyFeeDivisor,
             contractDaysPerMonth,
             attendanceDates,
@@ -599,9 +618,10 @@ class DraftInvoiceGenerator(
     private fun surplusContractDays(
         period: DateRange,
         child: ChildWithDateOfBirth,
-        price: Int,
+        monthlyPrice: Int,
+        invoiceRowSum: Int,
+        maxPrice: Int,
         unitId: DaycareId,
-        feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
@@ -621,7 +641,12 @@ class DraftInvoiceGenerator(
         val surplusAttendanceDays =
             attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
 
-        return if (surplusAttendanceDays > 0) {
+        val surplusRows = if (surplusAttendanceDays > 0) {
+            val surplusDailyPrice = calculateDailyPriceForInvoiceRow(monthlyPrice, dailyFeeDivisor)
+            val totalAddition = surplusAttendanceDays * surplusDailyPrice
+            val (amount, unitPrice) =
+                if (invoiceRowSum + totalAddition > maxPrice) 1 to (maxPrice - invoiceRowSum)
+                else surplusAttendanceDays to surplusDailyPrice
             listOf(
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
@@ -630,27 +655,14 @@ class DraftInvoiceGenerator(
                     child = child.id,
                     product = productProvider.contractSurplusDay,
                     unitId = unitId,
-                    amount = surplusAttendanceDays,
-                    unitPrice = calculateDailyPriceForInvoiceRow(price, dailyFeeDivisor),
+                    amount = amount,
+                    unitPrice = unitPrice,
                     correctionId = null
                 )
-            ) + feeAlterations.map { (feeAlterationType, feeAlterationEffect) ->
-                InvoiceRow(
-                    id = InvoiceRowId(UUID.randomUUID()),
-                    periodStart = period.start,
-                    periodEnd = period.end,
-                    child = child.id,
-                    product = productProvider.mapToFeeAlterationProduct(
-                        productProvider.contractSurplusDay,
-                        feeAlterationType
-                    ),
-                    unitId = unitId,
-                    amount = surplusAttendanceDays,
-                    unitPrice = calculateDailyPriceForInvoiceRow(feeAlterationEffect, dailyFeeDivisor),
-                    correctionId = null
-                )
-            }
+            )
         } else listOf()
+
+        return surplusRows
     }
 
     private fun dailyAbsenceRefund(
