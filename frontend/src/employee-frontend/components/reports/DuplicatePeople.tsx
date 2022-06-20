@@ -48,7 +48,7 @@ const hasReferences = (row: DuplicatePeopleReportRow) =>
   row.referenceCounts.find(({ count }) => count > 0) !== undefined
 
 const isChild = (dateOfBirth: LocalDate) => {
-  const age = LocalDate.today().differenceInYears(dateOfBirth)
+  const age = LocalDate.todayInSystemTz().differenceInYears(dateOfBirth)
   return age < CHILD_AGE
 }
 

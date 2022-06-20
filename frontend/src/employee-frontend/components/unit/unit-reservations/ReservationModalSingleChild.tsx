@@ -41,8 +41,8 @@ interface Props {
 }
 
 const reservableDates = new FiniteDateRange(
-  LocalDate.today(),
-  LocalDate.today().addYears(1)
+  LocalDate.todayInSystemTz(),
+  LocalDate.todayInSystemTz().addYears(1)
 )
 
 export default React.memo(function ReservationModalSingleChild({
@@ -56,7 +56,7 @@ export default React.memo(function ReservationModalSingleChild({
 
   const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: [child.id],
-    startDate: LocalDate.today().format(),
+    startDate: LocalDate.todayInSystemTz().format(),
     endDate: '',
     repetition: 'DAILY',
     dailyTimes: [
@@ -178,7 +178,7 @@ export default React.memo(function ReservationModalSingleChild({
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={LocalDate.today()}
+          initialMonth={LocalDate.todayInSystemTz()}
         />
       </FixedSpaceRow>
       <Gap size="m" />

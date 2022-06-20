@@ -52,7 +52,7 @@ export async function getRealizedOccupancyToday(
 async function getRealizedUnitOccupancyToday(
   unitId: UUID
 ): Promise<Result<OccupancyResponse>> {
-  const today = LocalDate.today().toString()
+  const today = LocalDate.todayInSystemTz().toString()
   return await client
     .get<JsonOf<OccupancyResponse>>(`/occupancy/by-unit/${unitId}`, {
       params: { from: today, to: today, type: 'REALIZED' }
@@ -66,7 +66,7 @@ async function getRealizedUnitOccupancyToday(
 export async function getRealizedGroupOccupanciesToday(
   unitId: UUID
 ): Promise<Result<OccupancyResponseGroupLevel>> {
-  const today = LocalDate.today().toString()
+  const today = LocalDate.todayInSystemTz().toString()
   return await client
     .get<JsonOf<OccupancyResponseGroupLevel>>(
       `/occupancy/by-unit/${unitId}/groups`,

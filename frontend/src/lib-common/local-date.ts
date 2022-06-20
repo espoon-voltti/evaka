@@ -22,7 +22,6 @@ import {
   lastDayOfMonth,
   setMonth,
   startOfMonth,
-  startOfToday,
   startOfWeek,
   subDays,
   subMonths,
@@ -176,20 +175,24 @@ export default class LocalDate {
   toSystemTzDate(): Date {
     return new Date(this.year, this.month - 1, this.date)
   }
-  toSystemTzDateAtTime(time: string): Date {
-    const iso = `${this.formatIso()}T${time}`
-    return new Date(iso)
-  }
   toHelsinkiDateTime(time: LocalTime): HelsinkiDateTime {
     return HelsinkiDateTime.fromLocal(this, time)
   }
-  static today(): LocalDate {
-    if (isAutomatedTest) {
-      const now = mockNow()
-      return LocalDate.fromSystemTzDate(now ?? startOfToday())
-    }
-    return LocalDate.fromSystemTzDate(startOfToday())
+
+  /**
+   * Current date in system (= browser local) timezone.
+   */
+  static todayInSystemTz(): LocalDate {
+    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    return LocalDate.fromSystemTzDate(timestamp)
   }
+  /**
+   * Current date in Europe/Helsinki timezone.
+   */
+  static todayInHelsinkiTz(): LocalDate {
+    return HelsinkiDateTime.now().toLocalDate()
+  }
+
   static fromSystemTzDate(date: Date): LocalDate {
     const result = LocalDate.tryFromDate(date)
     if (!result) {

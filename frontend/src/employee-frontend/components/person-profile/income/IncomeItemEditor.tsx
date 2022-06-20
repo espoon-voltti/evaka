@@ -72,7 +72,7 @@ const emptyIncome: IncomeForm = {
   isEntrepreneur: false,
   worksAtECHA: false,
   notes: '',
-  validFrom: LocalDate.today(),
+  validFrom: LocalDate.todayInSystemTz(),
   validTo: undefined,
   attachments: []
 }

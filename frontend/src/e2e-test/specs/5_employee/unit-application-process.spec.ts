@@ -43,8 +43,8 @@ let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
-const placementStartDate = LocalDate.today().subWeeks(4)
-const placementEndDate = LocalDate.today().addWeeks(4)
+const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
+const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -106,7 +106,7 @@ describe('Unit groups - placement plans / proposals', () => {
   })
 
   test('Placement plan is shown', async () => {
-    const today = LocalDate.today()
+    const today = LocalDate.todayInSystemTz()
 
     const application1: Application = {
       ...applicationFixture(enduserChildFixtureJari, enduserGuardianFixture),

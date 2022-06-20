@@ -120,7 +120,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
         ...entry,
         text: textValue,
         edited: {
-          editedAt: LocalDate.today(),
+          editedAt: LocalDate.todayInSystemTz(),
           editorName: user?.name || 'unknown',
           editorId: user?.id
         }
@@ -129,7 +129,7 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
       onChange({
         ...entry,
         id: uuid(),
-        date: LocalDate.today(),
+        date: LocalDate.todayInSystemTz(),
         authorName: user?.name || 'unknown',
         authorId: user?.id,
         text: textValue

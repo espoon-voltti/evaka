@@ -44,8 +44,8 @@ export default React.memo(function Decisions() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<DecisionsReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
-    from: LocalDate.today(),
-    to: LocalDate.today().addMonths(4)
+    from: LocalDate.todayInSystemTz(),
+    to: LocalDate.todayInSystemTz().addMonths(4)
   })
 
   const [displayFilters, setDisplayFilters] =

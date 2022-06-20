@@ -40,8 +40,8 @@ async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
 > {
   return await getReservations(
-    LocalDate.today().subMonths(1).startOfMonth().startOfWeek(),
-    LocalDate.today().addYears(1).lastDayOfMonth()
+    LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
+    LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
   )
 }
 
@@ -103,9 +103,11 @@ const CalendarPage = React.memo(function CalendarPage() {
       const earliestReservableDate =
         data.value.reservableDays &&
         data.value.reservableDays.length > 0 &&
-        data.value.reservableDays[0].start.isEqualOrAfter(LocalDate.today())
+        data.value.reservableDays[0].start.isEqualOrAfter(
+          LocalDate.todayInSystemTz()
+        )
           ? data.value.reservableDays[0].start
-          : LocalDate.today()
+          : LocalDate.todayInSystemTz()
       // First reservable day that has no reservations
       const firstReservableEmptyDate = data.value.dailyData.find(
         (day) =>
@@ -116,7 +118,7 @@ const CalendarPage = React.memo(function CalendarPage() {
         ? firstReservableEmptyDate.date
         : earliestReservableDate
     } else {
-      return LocalDate.today()
+      return LocalDate.todayInSystemTz()
     }
   }, [data])
 

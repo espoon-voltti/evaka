@@ -142,8 +142,8 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
   const initialFormState: FormState =
     isCreate(props) && !isDuplicate(props)
       ? {
-          startDate: LocalDate.today(),
-          endDate: LocalDate.today(),
+          startDate: LocalDate.todayInSystemTz(),
+          endDate: LocalDate.todayInSystemTz(),
           capacityFactor: '1',
           bases: new Set()
         }

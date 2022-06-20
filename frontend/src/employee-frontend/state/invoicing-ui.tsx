@@ -135,7 +135,7 @@ const defaultState: UiState = {
       status: 'DRAFT',
       area: [],
       startDate: undefined,
-      endDate: LocalDate.today(),
+      endDate: LocalDate.todayInSystemTz(),
       searchByStartDate: false,
       financeDecisionHandlerId: undefined
     },
@@ -150,7 +150,7 @@ const defaultState: UiState = {
       status: 'DRAFT',
       area: [],
       startDate: undefined,
-      endDate: LocalDate.today(),
+      endDate: LocalDate.todayInSystemTz(),
       searchByStartDate: false
     },
     setSearchFilters: () => undefined,

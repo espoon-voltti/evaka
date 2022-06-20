@@ -48,10 +48,10 @@ export default React.memo(function CreateOrEditTemplateModal({
   const t = i18n.vasuTemplates
   const [name, setName] = useState(templateToEdit?.name ?? '')
   const [startDate, setStartDate] = useState(
-    templateToEdit?.valid.start ?? LocalDate.today()
+    templateToEdit?.valid.start ?? LocalDate.todayInSystemTz()
   )
   const [endDate, setEndDate] = useState(
-    templateToEdit?.valid.end ?? LocalDate.today().addYears(1)
+    templateToEdit?.valid.end ?? LocalDate.todayInSystemTz().addYears(1)
   )
   const [type, setType] = useState<CurriculumType>(
     templateToEdit?.type ?? 'DAYCARE'

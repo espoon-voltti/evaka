@@ -112,7 +112,7 @@ describe('Citizen child documents listing page', () => {
     await childDocumentsPage.assertVasuRow(
       vasuDocId,
       'Luonnos',
-      LocalDate.today().format('dd.MM.yyyy')
+      LocalDate.todayInSystemTz().format('dd.MM.yyyy')
     )
   })
 

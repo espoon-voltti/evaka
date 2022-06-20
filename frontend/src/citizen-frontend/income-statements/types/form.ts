@@ -65,7 +65,7 @@ export interface Accountant {
 }
 
 export const empty: IncomeStatementForm = {
-  startDate: LocalDate.today().format(),
+  startDate: LocalDate.todayInSystemTz().format(),
   endDate: '',
   highestFee: false,
   childIncome: false,
@@ -112,7 +112,7 @@ export const empty: IncomeStatementForm = {
 }
 
 function findValidStartDate(existingStartDates: LocalDate[]): LocalDate {
-  const yesterday = LocalDate.today().subDays(1)
+  const yesterday = LocalDate.todayInSystemTz().subDays(1)
   return existingStartDates
     .reduce((a, b) => (a.isAfter(b) ? a : b), yesterday)
     .addDays(1)

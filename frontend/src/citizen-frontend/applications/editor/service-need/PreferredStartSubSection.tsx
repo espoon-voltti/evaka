@@ -89,7 +89,7 @@ export default React.memo(function PreferredStartSubSection({
     return (
       type === 'DAYCARE' &&
       preferredStartDate !== null &&
-      preferredStartDate.isBefore(LocalDate.today().addMonths(4))
+      preferredStartDate.isBefore(LocalDate.todayInSystemTz().addMonths(4))
     )
   }
 

@@ -180,7 +180,9 @@ const DayElem = React.memo(function DayElem({
           imageOverlap={9}
         />
       </ChildImagesContainer>
-      {dailyReservations.date.isBefore(LocalDate.today()) && <HistoryOverlay />}
+      {dailyReservations.date.isBefore(LocalDate.todayInSystemTz()) && (
+        <HistoryOverlay />
+      )}
     </Day>
   )
 })

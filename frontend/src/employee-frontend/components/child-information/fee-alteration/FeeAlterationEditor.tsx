@@ -30,7 +30,7 @@ const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   amount: 0,
   isAbsolute: false,
   notes: '',
-  validFrom: LocalDate.today(),
+  validFrom: LocalDate.todayInSystemTz(),
   validTo: null
 })
 

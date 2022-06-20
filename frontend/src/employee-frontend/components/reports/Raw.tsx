@@ -25,8 +25,8 @@ export default React.memo(function Raw() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<RawReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
-    from: LocalDate.today(),
-    to: LocalDate.today()
+    from: LocalDate.todayInSystemTz(),
+    to: LocalDate.todayInSystemTz()
   })
   const invertedRange = filters.to.isBefore(filters.from)
   const tooLongRange = filters.to.isAfter(filters.from.addDays(7))

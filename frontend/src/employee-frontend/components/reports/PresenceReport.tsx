@@ -24,8 +24,8 @@ export default React.memo(function Presences() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<PresenceReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
-    from: LocalDate.today().subWeeks(1),
-    to: LocalDate.today()
+    from: LocalDate.todayInSystemTz().subWeeks(1),
+    to: LocalDate.todayInSystemTz()
   })
 
   useEffect(() => {

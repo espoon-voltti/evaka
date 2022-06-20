@@ -184,7 +184,7 @@ export default React.memo(function DayView({
     <ModalAccessibilityWrapper>
       <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
         <Gap size="XL" />
-        <Content highlight={date.isEqual(LocalDate.today())}>
+        <Content highlight={date.isEqual(LocalDate.todayInSystemTz())}>
           <DayPicker>
             <IconButton
               icon={faChevronLeft}
@@ -354,7 +354,7 @@ function useEditState(
   reservableDays: FiniteDateRange[],
   reloadData: () => void
 ) {
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
 
   const anyChildReservable = useMemo(
     () =>

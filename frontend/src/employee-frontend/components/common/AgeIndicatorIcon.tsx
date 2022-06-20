@@ -26,7 +26,7 @@ export const AgeIndicatorIcon = React.memo(function AgeIndicatorIconTooltip({
   const under3 =
     'isUnder3' in props
       ? props.isUnder3
-      : LocalDate.today().differenceInYears(props.dateOfBirth) < 3
+      : LocalDate.todayInSystemTz().differenceInYears(props.dateOfBirth) < 3
 
   const tooltip =
     tooltipText === 'placement-start'

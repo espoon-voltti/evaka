@@ -126,7 +126,7 @@ export default React.memo(function PlacementDraft() {
     return placementDraft.map((draft) => ({
       ...draft,
       placements: draft.placements.filter(
-        (p) => !p.endDate.isBefore(LocalDate.today())
+        (p) => !p.endDate.isBefore(LocalDate.todayInSystemTz())
       )
     }))
   }

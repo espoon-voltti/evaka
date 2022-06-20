@@ -105,7 +105,10 @@ describe('Child and group notes', () => {
     await notePage.typeAndSaveStickyNote(note2)
 
     await notePage.assertStickyNote(note, 0)
-    await notePage.assertStickyNoteExpires(LocalDate.today().addDays(7), 0)
+    await notePage.assertStickyNoteExpires(
+      LocalDate.todayInSystemTz().addDays(7),
+      0
+    )
     await notePage.assertStickyNote(note2, 1)
 
     await notePage.editStickyNote('Foobar', 1)

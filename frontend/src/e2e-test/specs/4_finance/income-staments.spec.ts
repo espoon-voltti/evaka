@@ -56,12 +56,12 @@ describe('Income statements', () => {
     await insertIncomeStatements(enduserGuardianFixture.id, [
       {
         type: 'HIGHEST_FEE',
-        startDate: LocalDate.today().addYears(-1),
-        endDate: LocalDate.today().addDays(-1)
+        startDate: LocalDate.todayInSystemTz().addYears(-1),
+        endDate: LocalDate.todayInSystemTz().addDays(-1)
       },
       {
         type: 'HIGHEST_FEE',
-        startDate: LocalDate.today(),
+        startDate: LocalDate.todayInSystemTz(),
         endDate: null
       }
     ])
@@ -102,8 +102,8 @@ describe('Income statements', () => {
       }
     ])
 
-    const startDate = LocalDate.today().addYears(-1)
-    const endDate = LocalDate.today()
+    const startDate = LocalDate.todayInSystemTz().addYears(-1)
+    const endDate = LocalDate.todayInSystemTz()
 
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
@@ -149,8 +149,8 @@ describe('Income statements', () => {
       {
         type: 'CHILD_INCOME',
         otherInfo: 'Test info',
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today(),
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz(),
         attachmentIds: []
       }
     ])

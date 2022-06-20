@@ -684,7 +684,7 @@ export default React.memo(function ApplicationEditView({
                           street: '',
                           postalCode: '',
                           postOffice: '',
-                          movingDate: LocalDate.today()
+                          movingDate: LocalDate.todayInSystemTz()
                         })
                       )
                     } else {
@@ -768,7 +768,7 @@ export default React.memo(function ApplicationEditView({
                               street: '',
                               postalCode: '',
                               postOffice: '',
-                              movingDate: LocalDate.today()
+                              movingDate: LocalDate.todayInSystemTz()
                             })
                           )
                         } else {

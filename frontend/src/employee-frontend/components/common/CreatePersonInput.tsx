@@ -59,7 +59,7 @@ export default React.memo(function CreatePersonInput({
               setCreatePersonInfo(set('dateOfBirth', value))
             }}
             onFocus={onFocus}
-            maxDate={LocalDate.today()}
+            maxDate={LocalDate.todayInSystemTz()}
             data-qa="datepicker-dob"
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>

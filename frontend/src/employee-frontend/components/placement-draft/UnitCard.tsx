@@ -110,8 +110,8 @@ async function getSpeculatedOccupancies(
   period: FiniteDateRange,
   preschoolDaycarePeriod: FiniteDateRange | undefined
 ): Promise<Result<OccupancyResponseSpeculated>> {
-  const start = period.start.isBefore(LocalDate.today())
-    ? LocalDate.today()
+  const start = period.start.isBefore(LocalDate.todayInSystemTz())
+    ? LocalDate.todayInSystemTz()
     : period.start
   const maxDate = start.addYears(1)
   const end = period.end.isAfter(maxDate) ? maxDate : period.end

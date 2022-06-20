@@ -162,8 +162,8 @@ describe('Employee - Head of family details', () => {
         id: uuidv4(),
         childId: child.id,
         headOfChild: regularPerson.id,
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today()
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz()
       })
       .save()
 

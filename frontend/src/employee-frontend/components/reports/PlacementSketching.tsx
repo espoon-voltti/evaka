@@ -47,8 +47,12 @@ export default React.memo(function PlacementSketching() {
     Loading.of()
   )
   const [filters, setFilters] = useState<PlacementSketchingReportFilters>({
-    placementStartDate: LocalDate.of(LocalDate.today().year, 1, 1),
-    earliestPreferredStartDate: LocalDate.of(LocalDate.today().year, 8, 1)
+    placementStartDate: LocalDate.of(LocalDate.todayInSystemTz().year, 1, 1),
+    earliestPreferredStartDate: LocalDate.of(
+      LocalDate.todayInSystemTz().year,
+      8,
+      1
+    )
   })
 
   const [displayFilters, setDisplayFilters] =

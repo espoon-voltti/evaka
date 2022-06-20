@@ -35,15 +35,15 @@ beforeEach(async () => {
       uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id,
-      LocalDate.today().formatIso(),
-      LocalDate.today().formatIso()
+      LocalDate.todayInSystemTz().formatIso(),
+      LocalDate.todayInSystemTz().formatIso()
     ),
     createDaycarePlacementFixture(
       uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id,
-      LocalDate.today().addDays(1).formatIso(),
-      LocalDate.today().addDays(1).formatIso()
+      LocalDate.todayInSystemTz().addDays(1).formatIso(),
+      LocalDate.todayInSystemTz().addDays(1).formatIso()
     )
   ])
 

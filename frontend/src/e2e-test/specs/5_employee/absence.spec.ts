@@ -96,7 +96,7 @@ describe('Employee - Absences', () => {
     // Hover shows type and who is the absence maker
     await diaryPage.assertTooltipContains(0, [
       'Varhaiskasvatus: Ilmoittamaton poissaolo',
-      `${LocalDate.today().formatIso()} Henkilökunta)`
+      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
     ])
 
     // Can clear an absence

@@ -19,7 +19,7 @@ import { EditedNote, Note } from './notes'
 
 const newNote = () => ({
   id: '',
-  expires: LocalDate.today().addDays(7),
+  expires: LocalDate.todayInSystemTz().addDays(7),
   note: ''
 })
 

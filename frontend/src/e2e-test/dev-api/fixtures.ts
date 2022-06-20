@@ -586,7 +586,7 @@ export const personFixtureChildZeroYearOld: PersonDetail = {
   email: '',
   phone: '',
   language: 'fi',
-  dateOfBirth: LocalDate.today().formatIso(), // Always a zero-year-old
+  dateOfBirth: LocalDate.todayInSystemTz().formatIso(), // Always a zero-year-old
   streetAddress: 'Kamreerintie 2',
   postalCode: '00370',
   postOffice: 'Espoo',
@@ -784,8 +784,8 @@ export const feeDecisionsFixture = (
   daycareId: UUID,
   partner: PersonDetail | null,
   validDuring: DateRange = new DateRange(
-    LocalDate.today().subYears(1),
-    LocalDate.today().addYears(1)
+    LocalDate.todayInSystemTz().subYears(1),
+    LocalDate.todayInSystemTz().addYears(1)
   ),
   sentAt: Date | null = null,
   id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'
@@ -844,8 +844,8 @@ export const voucherValueDecisionsFixture = (
   daycareId: UUID,
   partner: PersonDetail | null = null,
   status: 'DRAFT' | 'SENT' = 'DRAFT',
-  validFrom = LocalDate.today().subYears(1),
-  validTo = LocalDate.today().addYears(1),
+  validFrom = LocalDate.todayInSystemTz().subYears(1),
+  validTo = LocalDate.todayInSystemTz().addYears(1),
   sentAt: Date | null = null
 ): VoucherValueDecision => ({
   id,
@@ -1205,8 +1205,8 @@ export class Fixture {
       childId: 'not set',
       unitId: 'not set',
       type: 'DAYCARE',
-      startDate: LocalDate.today().formatIso(),
-      endDate: LocalDate.today().addYears(1).formatIso()
+      startDate: LocalDate.todayInSystemTz().formatIso(),
+      endDate: LocalDate.todayInSystemTz().addYears(1).formatIso()
     })
   }
 
@@ -1215,8 +1215,8 @@ export class Fixture {
       id: uuidv4(),
       daycareGroupId: 'not set',
       daycarePlacementId: 'not set',
-      startDate: LocalDate.today().formatIso(),
-      endDate: LocalDate.today().addYears(1).formatIso()
+      startDate: LocalDate.todayInSystemTz().formatIso(),
+      endDate: LocalDate.todayInSystemTz().addYears(1).formatIso()
     })
   }
 
@@ -1227,8 +1227,8 @@ export class Fixture {
       unitId: 'not set',
       groupId: 'not set',
       period: {
-        start: LocalDate.today().formatIso(),
-        end: LocalDate.today().formatIso()
+        start: LocalDate.todayInSystemTz().formatIso(),
+        end: LocalDate.todayInSystemTz().formatIso()
       }
     })
   }
@@ -1242,7 +1242,7 @@ export class Fixture {
       optionId: 'not set',
       shiftCare: false,
       confirmedBy: 'not set',
-      confirmedAt: LocalDate.today()
+      confirmedAt: LocalDate.todayInSystemTz()
     })
   }
 
@@ -1293,7 +1293,7 @@ export class Fixture {
     return new DaycareCaretakersBuilder({
       groupId: 'not_set',
       amount: 1,
-      startDate: LocalDate.today(),
+      startDate: LocalDate.todayInSystemTz(),
       endDate: null
     })
   }
@@ -1341,8 +1341,8 @@ export class Fixture {
     return new IncomeBuilder({
       id: uuidv4(),
       personId: 'not_set',
-      validFrom: LocalDate.today(),
-      validTo: LocalDate.today().addYears(1),
+      validFrom: LocalDate.todayInSystemTz(),
+      validTo: LocalDate.todayInSystemTz().addYears(1),
       data: {
         MAIN_INCOME: {
           amount: 100000,
@@ -1385,8 +1385,11 @@ export class Fixture {
   static holidayPeriod(): HolidayPeriodBuilder {
     return new HolidayPeriodBuilder({
       id: uuidv4(),
-      period: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
-      reservationDeadline: LocalDate.today()
+      period: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      reservationDeadline: LocalDate.todayInSystemTz()
     })
   }
 
@@ -1398,7 +1401,10 @@ export class Fixture {
       title: { fi: '', sv: '', en: '' },
       description: { fi: '', sv: '', en: '' },
       descriptionLink: { fi: '', sv: '', en: '' },
-      active: new FiniteDateRange(LocalDate.today(), LocalDate.today()),
+      active: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
       conditions: {
         continuousPlacement: null
       },

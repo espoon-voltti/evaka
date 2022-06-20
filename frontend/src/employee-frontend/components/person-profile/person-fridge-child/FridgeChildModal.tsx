@@ -40,8 +40,8 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   )
   const initialForm: FridgeChildForm = {
     child: parentship && parentship.child,
-    startDate: parentship ? parentship.startDate : LocalDate.today(),
-    endDate: parentship ? parentship.endDate : LocalDate.today()
+    startDate: parentship ? parentship.startDate : LocalDate.todayInSystemTz(),
+    endDate: parentship ? parentship.endDate : LocalDate.todayInSystemTz()
   }
   const [form, setForm] = useState<FridgeChildForm>(initialForm)
 

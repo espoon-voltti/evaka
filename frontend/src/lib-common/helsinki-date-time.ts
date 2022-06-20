@@ -165,12 +165,13 @@ export default class HelsinkiDateTime {
   static tryParseIso(value: string): HelsinkiDateTime | undefined {
     return HelsinkiDateTime.tryFromDate(parseJSON(value))
   }
+
+  /**
+   * Current timestamp in Europe/Helsinki timezone.
+   */
   static now(): HelsinkiDateTime {
-    if (isAutomatedTest) {
-      const now = mockNow()
-      return HelsinkiDateTime.fromSystemTzDate(now ?? new Date())
-    }
-    return HelsinkiDateTime.fromSystemTzDate(new Date())
+    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    return HelsinkiDateTime.fromSystemTzDate(timestamp)
   }
 
   private static tryCreate(

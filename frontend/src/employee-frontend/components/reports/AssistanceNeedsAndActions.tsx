@@ -50,7 +50,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
   )
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
-      date: LocalDate.today()
+      date: LocalDate.todayInSystemTz()
     })
 
   const [displayFilters, setDisplayFilters] =

@@ -11,7 +11,7 @@ export function isActiveDateRange(
   startDate: LocalDate,
   endDate: LocalDate | null
 ): boolean {
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   return (
     (startDate.isBefore(today) || startDate.isEqual(today)) &&
     !!(endDate?.isAfter(today) || endDate?.isEqual(today))
@@ -22,7 +22,7 @@ export function isComingDateRange(
   startDate: LocalDate,
   endDate: LocalDate
 ): boolean {
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   return startDate.isAfter(today) && endDate.isAfter(today)
 }
 
@@ -30,7 +30,7 @@ export function isCompletedDateRange(
   startDate: LocalDate,
   endDate: LocalDate
 ): boolean {
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   return startDate.isBefore(today) && endDate.isBefore(today)
 }
 

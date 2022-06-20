@@ -53,7 +53,7 @@ function initialForm(
     }
   }
   return {
-    startDate: LocalDate.today().format(),
+    startDate: LocalDate.todayInSystemTz().format(),
     endDate: '',
     selectedChildren
   }
@@ -136,7 +136,9 @@ export default React.memo(function AbsenceModal({
             date={form.startDate}
             onChange={(date) => updateForm({ startDate: date })}
             locale={lang}
-            isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
+            isValidDate={(date) =>
+              LocalDate.todayInSystemTz().isEqualOrBefore(date)
+            }
             info={
               errors &&
               errorToInputInfo(errors.startDate, i18n.validationErrors)
@@ -149,13 +151,16 @@ export default React.memo(function AbsenceModal({
             date={form.endDate}
             onChange={(date) => updateForm({ endDate: date })}
             locale={lang}
-            isValidDate={(date) => LocalDate.today().isEqualOrBefore(date)}
+            isValidDate={(date) =>
+              LocalDate.todayInSystemTz().isEqualOrBefore(date)
+            }
             info={
               errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
             }
             hideErrorsBeforeTouched={!showAllErrors}
             initialMonth={
-              LocalDate.parseFiOrNull(form.startDate) ?? LocalDate.today()
+              LocalDate.parseFiOrNull(form.startDate) ??
+              LocalDate.todayInSystemTz()
             }
             data-qa="end-date"
           />
@@ -222,7 +227,7 @@ const validateForm = (
         ? 'required'
         : startDate === null
         ? 'validDate'
-        : startDate.isBefore(LocalDate.today())
+        : startDate.isBefore(LocalDate.todayInSystemTz())
         ? 'dateTooEarly'
         : undefined,
     endDate:

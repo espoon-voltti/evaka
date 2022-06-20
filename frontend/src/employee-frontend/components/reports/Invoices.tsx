@@ -29,7 +29,7 @@ export default React.memo(function ReportInvoices() {
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<InvoiceReport>>(Loading.of())
   const [filters, setFilters] = useState<InvoiceReportFilters>({
-    date: LocalDate.today()
+    date: LocalDate.todayInSystemTz()
   })
 
   useEffect(() => {

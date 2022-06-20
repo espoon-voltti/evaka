@@ -55,7 +55,7 @@ function monthOptions(lang: Lang) {
 }
 
 function yearOptions() {
-  const currentYear = LocalDate.today().year
+  const currentYear = LocalDate.todayInSystemTz().year
   const yearOptions = []
   for (let year = currentYear; year > currentYear - 5; year--) {
     yearOptions.push({
@@ -84,7 +84,7 @@ export default React.memo(function StartingPlacements() {
   const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(
     Success.of([])
   )
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   const [filters, setFilters] = useState<PlacementsReportFilters>({
     year: today.year,
     month: today.month

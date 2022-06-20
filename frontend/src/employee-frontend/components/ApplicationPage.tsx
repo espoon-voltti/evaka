@@ -77,7 +77,7 @@ export default React.memo(function ApplicationPage() {
       void getApplicationUnits(
         applicationType,
         editedApplication.form.preferences.preferredStartDate ??
-          LocalDate.today()
+          LocalDate.todayInSystemTz()
       ).then(setUnits)
     }
   }, [editing, editedApplication?.type, editedApplication?.form.preferences.preferredStartDate, editedApplication?.form.preferences.preparatory])

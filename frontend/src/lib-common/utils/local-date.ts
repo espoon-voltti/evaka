@@ -9,7 +9,7 @@ import LocalDate from 'lib-common/local-date'
  * Calculate age based on date of birth.
  */
 export const getAge = (dateOfBirth: LocalDate): number => {
-  return LocalDate.today().differenceInYears(dateOfBirth)
+  return LocalDate.todayInSystemTz().differenceInYears(dateOfBirth)
 }
 
 /**

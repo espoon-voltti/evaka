@@ -528,7 +528,7 @@ describe('Application transitions', () => {
       const page = await Page.open({
         mockedTime:
           addDays !== 0
-            ? LocalDate.today().addDays(addDays).toSystemTzDate()
+            ? LocalDate.todayInSystemTz().addDays(addDays).toSystemTzDate()
             : undefined
       })
 

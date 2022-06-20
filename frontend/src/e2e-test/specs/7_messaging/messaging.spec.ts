@@ -130,8 +130,8 @@ describe('Sending and receiving messages', () => {
             unitId: fixtures.daycareFixture.id,
             groupId: daycareGroupFixture.id,
             period: {
-              start: LocalDate.today().formatIso(),
-              end: LocalDate.today().formatIso()
+              start: LocalDate.todayInSystemTz().formatIso(),
+              end: LocalDate.todayInSystemTz().formatIso()
             }
           }
         ])

@@ -62,8 +62,8 @@ beforeEach(async () => {
     fixtures.daycareFixture.id,
     null,
     new DateRange(
-      LocalDate.today().subMonths(1).withDate(1),
-      LocalDate.today().withDate(1).subDays(1)
+      LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+      LocalDate.todayInSystemTz().withDate(1).subDays(1)
     )
   )
   await insertFeeDecisionFixtures([feeDecisionFixture])

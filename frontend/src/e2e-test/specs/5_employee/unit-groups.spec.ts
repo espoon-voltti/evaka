@@ -34,8 +34,8 @@ let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
-const placementStartDate = LocalDate.today().subWeeks(4)
-const placementEndDate = LocalDate.today().addWeeks(4)
+const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
+const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 beforeEach(async () => {
   await resetDatabase()
@@ -115,8 +115,8 @@ describe('Unit groups - unit supervisor', () => {
   test('Child with a terminated placement is shown in terminated placement list', async () => {
     await terminatePlacement(
       child1DaycarePlacementId,
-      LocalDate.today(),
-      LocalDate.today(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       unitSupervisor.id
     )
     const groupsPage = await loadUnitGroupsPage()
@@ -126,15 +126,15 @@ describe('Unit groups - unit supervisor', () => {
   test('Child with a terminated placement is shown not in terminated placement list when termination is older than 2 weeks', async () => {
     await terminatePlacement(
       child1DaycarePlacementId,
-      LocalDate.today(),
-      LocalDate.today(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       unitSupervisor.id
     )
 
     await terminatePlacement(
       child2DaycarePlacementId,
-      LocalDate.today(),
-      LocalDate.today(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       unitSupervisor.id
     )
 
@@ -143,8 +143,8 @@ describe('Unit groups - unit supervisor', () => {
 
     await terminatePlacement(
       child1DaycarePlacementId,
-      LocalDate.today(),
-      LocalDate.today().subDays(15),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz().subDays(15),
       unitSupervisor.id
     )
     groupsPage = await loadUnitGroupsPage()
@@ -258,8 +258,8 @@ describe('Unit groups - staff', () => {
   test('Staff will not see terminated placements', async () => {
     await terminatePlacement(
       child1DaycarePlacementId,
-      LocalDate.today(),
-      LocalDate.today(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       unitSupervisor.id
     )
     const groupsPage = await loadUnitGroupsPage()

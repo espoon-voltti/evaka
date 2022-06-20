@@ -68,9 +68,9 @@ function datePart(dateTime: Date, i18n: Translations): string | undefined {
     return undefined
   }
 
-  const datePart = localDate.isEqual(LocalDate.today().addDays(1))
+  const datePart = localDate.isEqual(LocalDate.todayInSystemTz().addDays(1))
     ? i18n.attendances.serviceTime.tomorrow
-    : localDate.isEqual(LocalDate.today().subDays(1))
+    : localDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
     ? i18n.attendances.serviceTime.yesterday
     : formatDate(dateTime, 'd.M.')
 

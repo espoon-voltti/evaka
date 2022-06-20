@@ -5,6 +5,9 @@
 import { format, parse } from 'date-fns'
 import isInteger from 'lodash/isInteger'
 
+import HelsinkiDateTime from './helsinki-date-time'
+import { isAutomatedTest, mockNow } from './utils/helpers'
+
 // ISO local time with nanosecond precision
 const isoPattern = /^(\d{2}):(\d{2}):(\d{2}).(\d{9})$/
 
@@ -68,6 +71,25 @@ export default class LocalTime {
   }
   valueOf(): string {
     return this.formatIso()
+  }
+
+  /**
+   * Current time in system (= browser local) timezone.
+   */
+  static nowInSystemTz(): LocalTime {
+    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    return LocalTime.of(
+      timestamp.getHours(),
+      timestamp.getMinutes(),
+      timestamp.getSeconds(),
+      millisToNanos(timestamp.getMilliseconds())
+    )
+  }
+  /**
+   * Current time in Europe/Helsinki timezone.
+   */
+  static nowInHelsinkiTz(): LocalTime {
+    return HelsinkiDateTime.now().toLocalTime()
   }
 
   static MIN = LocalTime.of(0, 0, 0, 0)

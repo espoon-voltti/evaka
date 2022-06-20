@@ -58,7 +58,7 @@ function GroupCaretakersModal({
           amount: existing.amount.toLocaleString()
         }
       : {
-          startDate: LocalDate.today(),
+          startDate: LocalDate.todayInSystemTz(),
           endDate: null,
           amount: '3'
         }
@@ -109,10 +109,12 @@ function GroupCaretakersModal({
     (form.endDate && form.endDate.isBefore(form.startDate)) || invalidAmount
 
   const editingHistory =
-    existing && existing.endDate && existing.endDate.isBefore(LocalDate.today())
+    existing &&
+    existing.endDate &&
+    existing.endDate.isBefore(LocalDate.todayInSystemTz())
   const editingActive =
     existing &&
-    !existing.startDate.isAfter(LocalDate.today()) &&
+    !existing.startDate.isAfter(LocalDate.todayInSystemTz()) &&
     !editingHistory
 
   return (

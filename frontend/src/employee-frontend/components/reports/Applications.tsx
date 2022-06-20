@@ -45,8 +45,8 @@ export default React.memo(function Applications() {
     Loading.of()
   )
   const [filters, setFilters] = useState<PeriodFilters>({
-    from: LocalDate.today(),
-    to: LocalDate.today().addMonths(4)
+    from: LocalDate.todayInSystemTz(),
+    to: LocalDate.todayInSystemTz().addMonths(4)
   })
 
   const [displayFilters, setDisplayFilters] =

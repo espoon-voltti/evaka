@@ -38,7 +38,7 @@ describe('SSN disabling', () => {
     const person = {
       firstName: 'Etunimi',
       lastName: 'Sukunimi',
-      dateOfBirth: LocalDate.today().subDays(30),
+      dateOfBirth: LocalDate.todayInSystemTz().subDays(30),
       streetAddress: 'Osoite 1',
       postalCode: '02100',
       postOffice: 'Espoo'

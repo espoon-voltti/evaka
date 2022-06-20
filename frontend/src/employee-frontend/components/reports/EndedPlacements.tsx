@@ -37,8 +37,8 @@ const Wrapper = styled.div`
 
 const monthOptions = range(1, 13)
 const yearOptions = range(
-  LocalDate.today().year,
-  LocalDate.today().year - 4,
+  LocalDate.todayInSystemTz().year,
+  LocalDate.todayInSystemTz().year - 4,
   -1
 )
 
@@ -52,7 +52,7 @@ export default React.memo(function EndedPlacements() {
   const [rows, setRows] = useState<Result<EndedPlacementsReportRow[]>>(
     Success.of([])
   )
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   const [filters, setFilters] = useState<PlacementsReportFilters>({
     year: today.year,
     month: today.month
