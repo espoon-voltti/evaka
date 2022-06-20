@@ -245,6 +245,25 @@ export type ApplicationTypeToggle =
   | 'ALL'
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationUnitSummary
+*/
+export interface ApplicationUnitSummary {
+  applicationId: UUID
+  dateOfBirth: LocalDate
+  firstName: string
+  guardianEmail: string | null
+  guardianFirstName: string
+  guardianLastName: string
+  guardianPhone: string | null
+  lastName: string
+  preferenceOrder: number
+  preferredStartDate: LocalDate
+  requestedPlacementType: PlacementType
+  serviceNeed: ServiceNeedOption | null
+  status: ApplicationStatus
+}
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationUpdate
 */
 export interface ApplicationUpdate {

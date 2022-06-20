@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared.dev
 
 import fi.espoo.evaka.BucketEnv
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -174,7 +173,6 @@ private val logger = KotlinLogging.logger {}
 @Profile("enable_dev_api")
 @RestController
 @RequestMapping("/dev-api")
-@ExcludeCodeGen
 class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,

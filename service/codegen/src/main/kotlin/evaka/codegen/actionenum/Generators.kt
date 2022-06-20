@@ -5,7 +5,6 @@
 package evaka.codegen.actionenum
 
 import evaka.codegen.fileHeader
-import kotlin.reflect.KClass
 
 typealias Generator = () -> String
 
@@ -21,10 +20,7 @@ ${generators.joinToString(separator = "\n", prefix = "\n") { it() }}
 }
 
 inline fun <reified T : Enum<T>> generateEnum(name: String = T::class.simpleName!!): Generator =
-    generateEnum(T::class, name)
-
-fun <T : Enum<T>> generateEnum(clazz: KClass<T>, name: String = clazz.simpleName!!): Generator =
-    generateEnum(name, *clazz.java.enumConstants)
+    generateEnum(name, *enumValues<T>())
 
 fun <T : Enum<T>> generateEnum(name: String, vararg values: T): Generator = {
     when (values.size) {

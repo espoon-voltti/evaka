@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.ForceCodeGenType
-import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -22,7 +21,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-@IncludeCodeGen
 data class VoucherValueDecision(
     override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,

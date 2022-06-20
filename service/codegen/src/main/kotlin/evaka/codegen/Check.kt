@@ -4,10 +4,14 @@
 
 package evaka.codegen
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import evaka.codegen.actionenum.cli.checkGeneratedActionEnumTypes
 import evaka.codegen.apitypes.checkGeneratedApiTypes
+import org.slf4j.LoggerFactory
 
 fun main() {
+    (LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("ROOT").level = Level.INFO
     checkGeneratedActionEnumTypes()
     checkGeneratedApiTypes()
 }

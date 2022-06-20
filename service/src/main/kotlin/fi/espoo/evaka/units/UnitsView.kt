@@ -5,7 +5,6 @@
 package fi.espoo.evaka.units
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationUnitSummary
 import fi.espoo.evaka.application.getApplicationUnitSummaries
@@ -178,7 +177,6 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
     }
 }
 
-@ExcludeCodeGen
 data class UnitDataResponse(
     val groups: List<DaycareGroup>,
     val placements: List<DaycarePlacementWithDetails>,

@@ -4,104 +4,118 @@
 
 package evaka.codegen.apitypes
 
-import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.IncludeCodeGen
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
-import java.io.File
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
-import kotlin.io.path.div
-import kotlin.jvm.internal.Reflection
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.controllers.Wrapper
+import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner
+import org.springframework.core.MethodParameter
+import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.context.support.StaticWebApplicationContext
+import org.springframework.web.method.annotation.RequestParamMethodArgumentResolver
+import org.springframework.web.servlet.mvc.method.annotation.PathVariableMethodArgumentResolver
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KType
-import kotlin.reflect.full.declaredMemberFunctions
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.full.functions
+import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.javaMethod
 
 fun getApiClasses(packageName: String): Set<KClass<*>> {
-    return scanClassPath(packageName)
-        .flatMap { scanController(packageName, it) }
-        .filter { it.annotations.none { it.annotationClass == ExcludeCodeGen::class } }
+    fun KType.collectTypes(): Sequence<KClass<*>> = when (val classifier = this.classifier) {
+        // Include inner type, but ignore the wrapper itself since we don't support type parameters in codegen
+        Wrapper::class, Paged::class
+        -> this.arguments.asSequence().flatMap { it.type?.collectTypes() ?: emptySequence() }
+        // The inner type of Id<*> is irrelevant, because all Ids become UUID/string in frontend
+        Id::class -> emptySequence()
+        is KClass<*> -> sequenceOf(classifier) + this.arguments.asSequence().flatMap { it.type?.collectTypes() ?: emptySequence() }
+        else -> error("Unsupported case $this")
+    }
+
+    val endpoints = StaticWebApplicationContext().use { ctx ->
+        val scanner = ClassPathBeanDefinitionScanner(ctx)
+        scanner.scan(packageName)
+        ctx.getEndpointMetadata()
+    }
+
+    return (
+        endpoints.flatMap { endpoint -> endpoint.types().flatMap { it.collectTypes() } } +
+            sequenceOf(VoucherValueDecision::class) // only used for dev API
+        )
+        .filter { it.qualifiedName?.startsWith("$packageName.") ?: false }
         .toSet()
 }
 
-private fun scanClassPath(packageName: String): Set<KClass<Any>> {
-    val workingDir = Path("")
-    val path = (workingDir / "build/classes/kotlin/main/${packageName.replace('.', '/')}").absolute().normalize()
-    val directory = File(path.toUri())
+fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> = RequestMappingHandlerMapping().also { mapping ->
+    mapping.applicationContext = this
+    mapping.afterPropertiesSet()
+}.getEndpointMetadata()
 
-    if (directory.exists()) {
-        // Get the list of the files contained in the package
-        return directory.walk()
-            .filter { f -> f.isFile() && f.name.contains('$') == false && f.name.endsWith(".class") && !f.name.endsWith("Kt.class") }
-            .map {
-                val fullyQualifiedClassName = packageName +
-                    it.canonicalPath.removePrefix(directory.canonicalPath)
-                        .dropLast(6) // remove .class
-                        .replace('/', '.')
-                        .replace('\\', '.')
+data class EndpointMetadata(
+    val controllerClass: KClass<*>,
+    val path: String,
+    val method: RequestMethod,
+    val pathVariables: List<NamedParameter>,
+    val requestParameters: List<NamedParameter>,
+    val requestBodyType: KType?,
+    val responseBodyType: KType?
+) {
+    fun types(): Sequence<KType> = pathVariables.asSequence().map { it.type } +
+        requestParameters.asSequence().map { it.type } +
+        listOfNotNull(requestBodyType, responseBodyType)
+}
 
-                Reflection.createKotlinClass(Class.forName(fullyQualifiedClassName))
+data class NamedParameter(val name: String, val type: KType)
+
+private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMetadata> {
+    fun KFunction<*>.find(param: MethodParameter): KParameter = valueParameters[param.parameterIndex]
+
+    val pathSupport = PathVariableMethodArgumentResolver()
+    val paramSupport = RequestParamMethodArgumentResolver(true)
+    val bodySupport = RequestResponseBodyMethodProcessor(listOf(StringHttpMessageConverter()))
+    return handlerMethods.asSequence().flatMap { (info, method) ->
+        val controllerClass = method.beanType.kotlin
+        val kotlinMethod = controllerClass.functions.find { it.javaMethod == method.method }!!
+        val pathVariables = method.methodParameters.filter { pathSupport.supportsParameter(it) }
+            .map { param ->
+                val kotlinParam = kotlinMethod.find(param)
+                val name = param.getParameterAnnotation(PathVariable::class.java)?.name?.takeIf { it.isNotBlank() }
+                    ?: kotlinParam.name!!
+                NamedParameter(name = name, type = kotlinParam.type)
             }
-            .toSet()
-    } else error("classes not found")
-}
-
-private fun <T : Any> scanController(packageName: String, clazz: KClass<T>): Set<KClass<*>> {
-    if (clazz.annotations.any { it.annotationClass == IncludeCodeGen::class }) {
-        return setOf(clazz)
-    }
-
-    if (clazz.annotations.none { it.annotationClass == Controller::class || it.annotationClass == RestController::class })
-        return emptySet()
-
-    if (clazz.annotations.any { it.annotationClass == ExcludeCodeGen::class })
-        return emptySet()
-
-    return clazz.declaredMemberFunctions
-        .flatMap { scanEndpoint(it) }
-        .filter { it.qualifiedName!!.startsWith(packageName) }
-        .toSet()
-}
-
-private fun scanEndpoint(func: KFunction<*>): Set<KClass<*>> {
-    return when {
-        func.annotations.any { it.annotationClass == GetMapping::class } ->
-            getResponseBodyClass(func).toSet()
-        func.annotations.any { it.annotationClass in listOf(PutMapping::class, PostMapping::class) } ->
-            getRequestBodyClass(func).toSet() + getResponseBodyClass(func).toSet()
-        else -> emptySet()
-    }
-}
-
-private fun getRequestBodyClass(func: KFunction<*>): Set<KClass<*>> {
-    return func.parameters
-        .find { param -> param.annotations.any { it.annotationClass == RequestBody::class } }
-        ?.type
-        ?.let { getRealType(it) }
-        ?: setOf()
-}
-
-private fun getResponseBodyClass(func: KFunction<*>): Set<KClass<*>> {
-    return getRealType(func.returnType)
-}
-
-private fun getRealType(type: KType): Set<KClass<*>> {
-    var t: Set<KType> = setOf(type)
-    while (t != t.flatMap(::unwrap).toSet()) {
-        t = t.flatMap(::unwrap).toSet()
-    }
-    return t.map { it.jvmErasure }.toSet()
-}
-
-private fun unwrap(type: KType): Set<KType> {
-    return if (classesToUnwrap.any { type.jvmErasure.isSubclassOf(it) }) {
-        type.arguments.map { it.type!! }.toSet()
-    } else setOf(type)
+        val requestParameters = method.methodParameters.filter { paramSupport.supportsParameter(it) }
+            .mapNotNull { param ->
+                val kotlinParam = kotlinMethod.find(param)
+                val name = param.getParameterAnnotation(RequestParam::class.java)?.name?.takeIf { it.isNotBlank() }
+                    ?: kotlinParam.name!!
+                NamedParameter(name = name, type = kotlinParam.type)
+            }
+        val requestBodyType = method.methodParameters.firstOrNull { bodySupport.supportsParameter(it) }
+            ?.let { kotlinMethod.find(it).type }
+        val responseBodyType = if (!method.isVoid && bodySupport.supportsReturnType(method.returnType)) {
+            kotlinMethod.returnType
+        } else null
+        val paths = info.patternValues
+        val methods = info.methodsCondition.methods
+        paths
+            .flatMap { path -> methods.map { method -> Pair(path, method) } }
+            .map { (path, method) ->
+                EndpointMetadata(
+                    controllerClass = controllerClass,
+                    path = path,
+                    method = method,
+                    pathVariables = pathVariables,
+                    requestParameters = requestParameters,
+                    requestBodyType = requestBodyType,
+                    responseBodyType = responseBodyType
+                )
+            }
+    }.toList()
 }

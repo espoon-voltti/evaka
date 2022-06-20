@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -154,7 +153,6 @@ fun Database.Transaction.markStaffDeparture(attendanceId: StaffAttendanceId, dep
     .bind("departed", departureTime)
     .updateExactlyOne()
 
-@ExcludeCodeGen
 data class ExternalStaffArrival(
     val name: String,
     val groupId: GroupId,
@@ -173,7 +171,6 @@ fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival):
     .mapTo<StaffAttendanceExternalId>()
     .one()
 
-@ExcludeCodeGen
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,
     val departed: HelsinkiDateTime
@@ -229,7 +226,6 @@ fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttend
         .updateExactlyOne()
 }
 
-@ExcludeCodeGen
 data class RawAttendance(
     val id: UUID,
     val groupId: GroupId,
@@ -268,7 +264,6 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .mapTo<RawAttendance>()
         .list()
 
-@ExcludeCodeGen
 data class RawAttendanceEmployee(
     val id: EmployeeId,
     val firstName: String,

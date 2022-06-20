@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.IncludeCodeGen
 import fi.espoo.evaka.daycare.createDaycareGroup
 import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroups
@@ -70,7 +69,6 @@ data class DaycareGroup(
     val deletable: Boolean
 )
 
-@IncludeCodeGen
 data class Stats(
     val minimum: Double,
     val maximum: Double

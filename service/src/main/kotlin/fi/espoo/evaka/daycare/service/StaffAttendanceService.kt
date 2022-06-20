@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -67,7 +66,6 @@ data class UnitStaffAttendance(
     val groups: List<GroupStaffAttendance>
 )
 
-@ExcludeCodeGen
 data class StaffAttendanceForDates(
     val groupId: GroupId,
     val groupName: String,

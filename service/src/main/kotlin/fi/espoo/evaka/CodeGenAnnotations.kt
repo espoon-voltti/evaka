@@ -10,9 +10,6 @@ import kotlin.reflect.KClass
 annotation class ExcludeCodeGen
 
 @Target(AnnotationTarget.CLASS)
-annotation class IncludeCodeGen
-
-@Target(AnnotationTarget.CLASS)
 annotation class ConstList(val name: String)
 
 @Target(AnnotationTarget.FIELD)

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -15,7 +14,6 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
-@ExcludeCodeGen
 data class AbsenceInsert(
     val childId: ChildId,
     val dateRange: FiniteDateRange,
