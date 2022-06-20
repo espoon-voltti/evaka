@@ -54,8 +54,8 @@ export default React.memo(function FeesSection() {
         editing: 'new',
         form: {
           ...copyForm(item),
-          validFrom: lastThresholdsEndDate?.format() ?? '',
-          validTo: ''
+          validFrom: lastThresholdsEndDate ?? null,
+          validTo: null
         }
       }),
     [setEditorState, lastThresholdsEndDate]
@@ -134,13 +134,13 @@ type EditorState =
 export type FormState = {
   [k in keyof Omit<FeeThresholds, 'validDuring'>]: string
 } & {
-  validFrom: string
-  validTo: string
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
 }
 
 const emptyForm = (latestEndDate?: LocalDate): FormState => ({
-  validFrom: latestEndDate?.addDays(1).format() ?? '',
-  validTo: '',
+  validFrom: latestEndDate?.addDays(1) ?? null,
+  validTo: null,
   maxFee: '',
   minFee: '',
   minIncomeThreshold2: '',
@@ -171,8 +171,8 @@ const formatMulti = (multi: number) =>
   (multi * 100).toString().replace('.', ',')
 
 const copyForm = (feeThresholds: FeeThresholds): FormState => ({
-  validFrom: feeThresholds.validDuring.start.format() ?? '',
-  validTo: feeThresholds.validDuring.end?.format() ?? '',
+  validFrom: feeThresholds.validDuring.start,
+  validTo: feeThresholds.validDuring.end,
   maxFee: formatCents(feeThresholds.maxFee) ?? '',
   minFee: formatCents(feeThresholds.minFee) ?? '',
   minIncomeThreshold2: formatCents(feeThresholds.minIncomeThreshold2) ?? '',

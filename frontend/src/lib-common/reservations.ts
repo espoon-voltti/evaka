@@ -16,8 +16,8 @@ export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
 
 export interface ReservationFormData {
   selectedChildren: UUID[]
-  startDate: string
-  endDate: string
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   repetition: Repetition
   dailyTimes: TimeRanges
   weeklyTimes: Array<TimeRanges | undefined>
@@ -51,9 +51,14 @@ export type ValidationResult =
   | { errors: ReservationErrors }
   | { errors: undefined; requestPayload: DailyReservationRequest[] }
 
+export type ReservationFormDataForValidation = Omit<
+  ReservationFormData,
+  'endDate' | 'startDate'
+> & { endDate: LocalDate | null; startDate: LocalDate | null }
+
 export function validateForm(
   reservableDays: FiniteDateRange[],
-  formData: ReservationFormData
+  { startDate, endDate, ...formData }: ReservationFormDataForValidation
 ): ValidationResult {
   const errors: ReservationErrors = {}
 
@@ -61,7 +66,6 @@ export function validateForm(
     errors['selectedChildren'] = 'required'
   }
 
-  const startDate = LocalDate.parseFiOrNull(formData.startDate)
   if (
     startDate === null ||
     !reservableDays.some((r) => r.includes(startDate))
@@ -69,7 +73,6 @@ export function validateForm(
     errors['startDate'] = 'validDate'
   }
 
-  const endDate = LocalDate.parseFiOrNull(formData.endDate)
   if (endDate === null || !reservableDays.some((r) => r.includes(endDate))) {
     errors['endDate'] = 'validDate'
   } else if (startDate && endDate.isBefore(startDate)) {

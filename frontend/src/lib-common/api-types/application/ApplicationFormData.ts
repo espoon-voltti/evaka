@@ -8,6 +8,7 @@ import {
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
+import { throwIfNull } from 'lib-common/form-validation'
 import {
   OtherGuardianAgreementStatus,
   ServiceNeedOption
@@ -15,7 +16,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
-  preferredStartDate: string
+  preferredStartDate: LocalDate | null
   urgent: boolean
   connectedDaycare: boolean
   startTime: string
@@ -46,7 +47,7 @@ export type ContactInfoFormData = {
   childSSN: string
   childStreet: string
   childFutureAddressExists: boolean
-  childMoveDate: string
+  childMoveDate: LocalDate | null
   childFutureStreet: string
   childFuturePostalCode: string
   childFuturePostOffice: string
@@ -60,7 +61,7 @@ export type ContactInfoFormData = {
   guardianEmailVerification: string
   guardianFutureAddressExists: boolean
   guardianFutureAddressEqualsChild: boolean
-  guardianMoveDate: string
+  guardianMoveDate: LocalDate | null
   guardianFutureStreet: string
   guardianFuturePostalCode: string
   guardianFuturePostOffice: string
@@ -181,8 +182,7 @@ export function apiDataToFormData(
 
   return {
     serviceNeed: {
-      preferredStartDate:
-        application.form.preferences.preferredStartDate?.format() ?? '',
+      preferredStartDate: application.form.preferences.preferredStartDate,
       urgent: application.form.preferences.urgent,
       connectedDaycare:
         application.type === 'PRESCHOOL' &&
@@ -222,8 +222,7 @@ export function apiDataToFormData(
       childSSN: application.form.child.person.socialSecurityNumber || '',
       childStreet: formatAddress(application.form.child.address),
       childFutureAddressExists: application.form.child.futureAddress !== null,
-      childMoveDate:
-        application.form.child.futureAddress?.movingDate?.format() ?? '',
+      childMoveDate: application.form.child.futureAddress?.movingDate ?? null,
       childFutureStreet: application.form.child.futureAddress?.street ?? '',
       childFuturePostalCode:
         application.form.child.futureAddress?.postalCode ?? '',
@@ -250,7 +249,7 @@ export function apiDataToFormData(
             application.form.guardian.futureAddress.postOffice) ??
         false,
       guardianMoveDate:
-        application.form.guardian.futureAddress?.movingDate?.format() ?? '',
+        application.form.guardian.futureAddress?.movingDate ?? null,
       guardianFutureStreet:
         application.form.guardian.futureAddress?.street ?? '',
       guardianFuturePostalCode:
@@ -304,8 +303,8 @@ export function formDataToApiData(
             postalCode: form.contactInfo.childFuturePostalCode,
             postOffice: form.contactInfo.childFuturePostOffice,
             movingDate: isDraft
-              ? LocalDate.parseFiOrNull(form.contactInfo.childMoveDate)
-              : LocalDate.parseFiOrThrow(form.contactInfo.childMoveDate)
+              ? form.contactInfo.childMoveDate
+              : throwIfNull(form.contactInfo.childMoveDate)
           }
         : null,
       allergies: type !== 'CLUB' ? form.additionalDetails.allergies : '',
@@ -320,8 +319,8 @@ export function formDataToApiData(
             postalCode: form.contactInfo.guardianFuturePostalCode,
             postOffice: form.contactInfo.guardianFuturePostOffice,
             movingDate: isDraft
-              ? LocalDate.parseFiOrNull(form.contactInfo.guardianMoveDate)
-              : LocalDate.parseFiOrThrow(form.contactInfo.guardianMoveDate)
+              ? form.contactInfo.guardianMoveDate
+              : throwIfNull(form.contactInfo.guardianMoveDate)
           }
         : null,
       phoneNumber: form.contactInfo.guardianPhone,
@@ -368,9 +367,7 @@ export function formDataToApiData(
       : [],
     preferences: {
       preferredUnits: form.unitPreference.preferredUnits,
-      preferredStartDate: LocalDate.parseFiOrNull(
-        form.serviceNeed.preferredStartDate
-      ),
+      preferredStartDate: form.serviceNeed.preferredStartDate,
       serviceNeed:
         type === 'DAYCARE' ||
         (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)

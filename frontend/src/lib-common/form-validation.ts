@@ -32,9 +32,14 @@ export type ErrorKey =
   | 'httpUrl'
 
 export const required = (
-  val: string,
+  val: unknown,
   err: ErrorKey = 'required'
-): ErrorKey | undefined => (val.trim().length === 0 ? err : undefined)
+): ErrorKey | undefined =>
+  val === undefined ||
+  val === null ||
+  (typeof val === 'string' && val.trim().length === 0)
+    ? err
+    : undefined
 
 export const requiredSelection = <T>(
   val: T | null | undefined,
@@ -93,7 +98,7 @@ export const validDate = (
 ): ErrorKey | undefined => (!LocalDate.parseFiOrNull(val) ? err : undefined)
 
 export const emailVerificationCheck =
-  (verification: string): StandardValidator =>
+  (verification: string): StandardValidator<string> =>
   (val, err: ErrorKey = 'emailsDoNotMatch') =>
     val === verification ? undefined : err
 
@@ -110,11 +115,11 @@ export const httpUrl = (
   }
 }
 
-type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
+type StandardValidator<T> = (val: T, err?: ErrorKey) => ErrorKey | undefined
 
-export const validate = (
-  val: string,
-  ...validators: StandardValidator[]
+export const validate = <T = string>(
+  val: T,
+  ...validators: StandardValidator<T>[]
 ): ErrorKey | undefined => {
   for (const validator of validators) {
     const err = validator(val)
@@ -123,13 +128,21 @@ export const validate = (
   return undefined
 }
 
-export const validateIf = (
+export const validateIf = <T = string>(
   condition: boolean,
-  val: string,
-  ...validators: StandardValidator[]
+  val: T,
+  ...validators: StandardValidator<T>[]
 ): ErrorKey | undefined => {
   if (condition) return validate(val, ...validators)
   return undefined
+}
+
+export const throwIfNull = <T>(value: T | null) => {
+  if (value === null) {
+    throw new Error('Value cannot be null')
+  }
+
+  return value
 }
 
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType[number]

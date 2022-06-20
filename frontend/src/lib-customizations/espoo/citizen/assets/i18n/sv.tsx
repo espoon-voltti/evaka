@@ -1795,7 +1795,8 @@ const sv: Translations = {
     timeRequired: 'Nödvändig',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
-    httpUrl: 'Ange i formen https://example.com'
+    httpUrl: 'Ange i formen https://example.com',
+    unselectableDate: 'Ogiltigt datum'
   },
   login: {
     failedModal: {

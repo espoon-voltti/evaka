@@ -27,38 +27,36 @@ import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import { createHolidayPeriod, updateHolidayPeriod } from './api'
 
 interface FormState {
-  start: string
-  end: string
-  reservationDeadline: string
+  start: LocalDate | null
+  end: LocalDate | null
+  reservationDeadline: LocalDate | null
 }
 
 const formToHolidayPeriodBody = (
   s: FormState
 ): HolidayPeriodBody | undefined => {
-  const parsedStart = LocalDate.parseFiOrNull(s.start)
-  const parsedEnd = LocalDate.parseFiOrNull(s.end)
-  if (!(parsedStart && parsedEnd)) {
+  if (!s.start || !s.end) {
     return undefined
   }
 
   return {
-    period: new FiniteDateRange(parsedStart, parsedEnd),
-    reservationDeadline: LocalDate.parseFiOrNull(s.reservationDeadline)
+    period: new FiniteDateRange(s.start, s.end),
+    reservationDeadline: s.reservationDeadline
   }
 }
 
 const emptyFormState = (): FormState => ({
-  start: '',
-  end: '',
-  reservationDeadline: ''
+  start: null,
+  end: null,
+  reservationDeadline: null
 })
 
 const toFormState = (p: HolidayPeriod | undefined): FormState =>
   p
     ? {
-        start: p.period.start.format(),
-        end: p.period.end.format(),
-        reservationDeadline: p.reservationDeadline?.format() ?? ''
+        start: p.period.start,
+        end: p.period.end,
+        reservationDeadline: p.reservationDeadline
       }
     : emptyFormState()
 
@@ -82,9 +80,9 @@ export default React.memo(function HolidayPeriodForm({
   )
 
   const [errors, isValid, parsedStart, parsedEnd] = useMemo(() => {
-    const parsedDeadline = LocalDate.parseFiOrNull(form.reservationDeadline)
-    const parsedStart = LocalDate.parseFiOrNull(form.start)
-    const parsedEnd = LocalDate.parseFiOrNull(form.end)
+    const parsedDeadline = form.reservationDeadline
+    const parsedStart = form.start
+    const parsedEnd = form.end
 
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
       reservationDeadline:
@@ -133,10 +131,11 @@ export default React.memo(function HolidayPeriodForm({
             date={form.start}
             locale={lang}
             required
-            isValidDate={(d) => !parsedEnd || d.isEqualOrBefore(parsedEnd)}
+            maxDate={parsedEnd ?? undefined}
             onChange={(start) => update({ start })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-start"
+            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -147,10 +146,11 @@ export default React.memo(function HolidayPeriodForm({
             date={form.end}
             locale={lang}
             required
-            isValidDate={(d) => !parsedStart || d.isEqualOrAfter(parsedStart)}
+            minDate={parsedStart ?? undefined}
             onChange={(end) => update({ end })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-end"
+            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
 
@@ -166,10 +166,11 @@ export default React.memo(function HolidayPeriodForm({
               ),
             [errors.reservationDeadline, i18n.validationErrors]
           )}
-          isValidDate={(d) => !parsedStart || d.isEqualOrBefore(parsedStart)}
+          maxDate={parsedStart ?? undefined}
           date={form.reservationDeadline}
           onChange={(reservationDeadline) => update({ reservationDeadline })}
           data-qa="input-reservation-deadline"
+          errorTexts={i18n.validationErrors}
         />
       </ListGrid>
 

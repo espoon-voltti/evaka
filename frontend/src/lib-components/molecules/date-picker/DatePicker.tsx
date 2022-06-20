@@ -48,22 +48,91 @@ const DayPickerDiv = styled.div`
   }
 `
 
-type DatePickerProps = {
-  date: string
-  onChange: (date: string) => void
+interface BaseDatePickerProps {
+  date: LocalDate | null
+  onChange: (date: LocalDate | null) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: () => void
   locale: 'fi' | 'sv' | 'en'
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
-  isValidDate?: (date: LocalDate) => boolean
   'data-qa'?: string
   id?: string
   required?: boolean
   initialMonth?: LocalDate
   openAbove?: boolean
+  errorTexts: {
+    validDate: string
+  }
+
+  /**
+   * It is preferable to use `minDate` and `maxDate` instead, if possible.
+   * The native date pickers only support minimum and maximum dates, so
+   * it is more user-friendly to use min/max whenever possible.
+   *
+   * Should return a localized error string if the date is invalid, null
+   * if the date is valid.
+   */
+  isInvalidDate?: (date: LocalDate) => string | null
+
+  minDate?: never
+  maxDate?: never
 }
+
+type WithoutMinMaxBaseProps = Omit<BaseDatePickerProps, 'minDate' | 'maxDate'>
+
+interface MinDatePickerProps extends WithoutMinMaxBaseProps {
+  minDate?: LocalDate
+  maxDate?: never
+  errorTexts: BaseDatePickerProps['errorTexts'] & {
+    dateTooEarly: string
+  }
+}
+
+interface MaxDatePickerProps extends WithoutMinMaxBaseProps {
+  minDate?: never
+  maxDate?: LocalDate
+  errorTexts: BaseDatePickerProps['errorTexts'] & {
+    dateTooLate: string
+  }
+}
+
+interface MinMaxDatePickerProps extends WithoutMinMaxBaseProps {
+  minDate?: LocalDate
+  maxDate?: LocalDate
+  errorTexts: BaseDatePickerProps['errorTexts'] & {
+    dateTooEarly: string
+    dateTooLate: string
+  }
+}
+
+export type DatePickerProps =
+  | BaseDatePickerProps
+  | MinDatePickerProps
+  | MaxDatePickerProps
+  | MinMaxDatePickerProps
+
+const nativeDatePickerAgentMatchers = [/Android/i]
+
+const checkDateInputSupport = () => {
+  if (!nativeDatePickerAgentMatchers.some((m) => m.test(navigator.userAgent))) {
+    return false
+  }
+
+  const input = document.createElement('input')
+  input.setAttribute('type', 'date')
+
+  const testDate = LocalDate.of(2020, 2, 11)
+  input.setAttribute('value', testDate.formatIso())
+
+  return (
+    !!input.valueAsDate &&
+    LocalDate.fromSystemTzDate(input.valueAsDate).isEqual(testDate)
+  )
+}
+
+const nativeDatePickerEnabled = checkDateInputSupport()
 
 export default React.memo(function DatePicker({
   date,
@@ -74,17 +143,58 @@ export default React.memo(function DatePicker({
   info,
   hideErrorsBeforeTouched,
   disabled,
-  isValidDate,
+  isInvalidDate,
   id,
   required,
   initialMonth,
   openAbove,
+  maxDate,
+  minDate,
+  errorTexts,
   ...props
 }: DatePickerProps) {
-  const [show, setShow] = useState<boolean>(false)
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
   const [showErrors, setShowErrors] = useState(!hideErrorsBeforeTouched)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
+
+  const [internalDate, setInternalDate] = useState<LocalDate | null>(date)
+  const [parentDate, setParentDate] = useState<LocalDate | null>(date)
+  const [internalError, setInternalError] = useState<InputInfo>()
+
+  useEffect(() => {
+    setParentDate(date)
+    setInternalDate(date)
+  }, [date])
+
+  useEffect(() => {
+    setInternalError(undefined)
+
+    if (parentDate !== internalDate) {
+      if (internalDate === null) {
+        onChange(null)
+      } else if (minDate && internalDate.isBefore(minDate)) {
+        setInternalError({ text: errorTexts.dateTooEarly, status: 'warning' })
+      } else if (maxDate && internalDate.isAfter(maxDate)) {
+        setInternalError({ text: errorTexts.dateTooLate, status: 'warning' })
+      } else {
+        const validationError = isInvalidDate?.(internalDate)
+        if (validationError) {
+          setInternalError({ text: validationError, status: 'warning' })
+        } else {
+          onChange(internalDate)
+        }
+      }
+    }
+  }, [
+    internalDate,
+    isInvalidDate,
+    onChange,
+    errorTexts,
+    minDate,
+    maxDate,
+    parentDate
+  ])
 
   useEffect(() => {
     if (!hideErrorsBeforeTouched) {
@@ -93,7 +203,7 @@ export default React.memo(function DatePicker({
   }, [hideErrorsBeforeTouched])
 
   function hideDatePicker() {
-    setShow(false)
+    setShowDatePicker(false)
     setShowErrors(true)
   }
 
@@ -108,11 +218,11 @@ export default React.memo(function DatePicker({
       return
     }
     hideDatePicker()
-    onChange(LocalDate.fromSystemTzDate(day).format())
+    setInternalDate(LocalDate.fromSystemTzDate(day))
   }
 
   useLayoutEffect(() => {
-    if (show) {
+    if (showDatePicker) {
       const realignPicker = () => {
         if (wrapperRef.current) {
           const distanceFromLeftEdge = wrapperRef.current.offsetLeft
@@ -138,7 +248,7 @@ export default React.memo(function DatePicker({
     }
 
     return
-  }, [show])
+  }, [showDatePicker])
 
   useEffect(() => {
     function handleEvent(event: { target: EventTarget | null }) {
@@ -151,7 +261,7 @@ export default React.memo(function DatePicker({
       hideDatePicker()
     }
 
-    if (show) {
+    if (showDatePicker) {
       addEventListener('focusin', handleEvent)
       addEventListener('pointerup', handleEvent)
 
@@ -162,40 +272,48 @@ export default React.memo(function DatePicker({
     }
 
     return () => undefined
-  }, [show])
+  }, [showDatePicker])
 
   return (
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
-        date={date}
+        date={internalDate}
         setDate={(date) => {
-          if (LocalDate.parseFiOrNull(date) !== null) {
+          if (date !== null) {
             hideDatePicker()
           }
-          onChange(date)
+          setInternalDate(date)
         }}
         disabled={disabled}
         onFocus={(ev) => {
-          setShow(true)
+          setShowDatePicker(true)
           onFocus(ev)
         }}
         onBlur={() => {
           onBlur()
         }}
-        info={showErrors ? info : undefined}
+        info={showErrors ? internalError ?? info : undefined}
         data-qa={props['data-qa']}
         id={id}
         required={required}
         locale={locale}
+        useBrowserPicker={nativeDatePickerEnabled}
+        minDate={minDate}
+        maxDate={maxDate}
+        errorTexts={errorTexts}
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        datePickerVisible={showDatePicker}
       />
-      {show ? (
+      {!nativeDatePickerEnabled && showDatePicker ? (
         <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
           <DayPickerDiv>
             <DatePickerDay
               locale={locale}
-              inputValue={date}
+              inputValue={internalDate}
               handleDayClick={handleDayClick}
-              isValidDate={isValidDate}
+              minDate={minDate}
+              maxDate={maxDate}
+              isInvalidDate={isInvalidDate && ((date) => !!isInvalidDate(date))}
               initialMonth={initialMonth}
             />
           </DayPickerDiv>

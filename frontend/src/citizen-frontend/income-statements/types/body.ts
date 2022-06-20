@@ -35,26 +35,22 @@ export function fromBody(
 ): IncomeStatementBody | null {
   if (!formData.assure) return null
 
-  const startDate = LocalDate.parseFiOrNull(formData.startDate)
-  const endDate =
-    formData.endDate == ''
-      ? null
-      : LocalDate.parseFiOrNull(formData.endDate) ?? invalid
-  if (startDate === null || endDate === invalid) return null
-  if (endDate && startDate > endDate) return null
+  const startDate = formData.startDate
+  if (startDate === null) return null
+  if (formData.endDate && startDate > formData.endDate) return null
 
   if (formData.highestFee) {
     if (personType === 'child') {
       return null
     }
-    return { type: 'HIGHEST_FEE', startDate, endDate }
+    return { type: 'HIGHEST_FEE', startDate, endDate: formData.endDate }
   }
 
   if (formData.childIncome) {
     return {
       type: 'CHILD_INCOME',
       startDate,
-      endDate,
+      endDate: formData.endDate,
       otherInfo: formData.otherInfo,
       attachmentIds: formData.attachments.map((a) => a.id)
     } as ChildIncomeBody
@@ -74,7 +70,7 @@ export function fromBody(
   return {
     type: 'INCOME' as const,
     startDate,
-    endDate,
+    endDate: formData.endDate,
     gross,
     entrepreneur,
     student: formData.student,
@@ -114,8 +110,7 @@ function validateEntrepreneur(formData: Form.Entrepreneur) {
     lightEntrepreneur,
     checkupConsent
   } = formData
-  const startOfEntrepreneurship =
-    LocalDate.parseFiOrNull(formData.startOfEntrepreneurship) ?? invalid
+  const startOfEntrepreneurship = formData.startOfEntrepreneurship ?? invalid
 
   const selfEmployed = validateSelfEmployed(formData.selfEmployed)
   const limitedCompany = validateLimitedCompany(formData.limitedCompany)
@@ -169,34 +164,27 @@ function validateSelfEmployed(formData: Form.SelfEmployed) {
 
 function validateEstimatedIncome(formData: {
   estimatedMonthlyIncome: string
-  incomeStartDate: string
-  incomeEndDate: string
+  incomeStartDate: LocalDate | null
+  incomeEndDate: LocalDate | null
 }) {
   const estimatedMonthlyIncome =
     stringToInt(formData.estimatedMonthlyIncome) ?? invalid
-  const incomeStartDate =
-    LocalDate.parseFiOrNull(formData.incomeStartDate) ?? invalid
-  const incomeEndDate =
-    formData.incomeEndDate != ''
-      ? LocalDate.parseFiOrNull(formData.incomeEndDate) ?? invalid
-      : null
 
-  if (
-    estimatedMonthlyIncome === invalid ||
-    incomeStartDate === invalid ||
-    incomeEndDate === invalid
-  ) {
+  if (estimatedMonthlyIncome === invalid || !formData.incomeStartDate) {
     return invalid
   }
 
-  if (incomeEndDate && incomeStartDate > incomeEndDate) {
+  if (
+    formData.incomeEndDate &&
+    formData.incomeStartDate > formData.incomeEndDate
+  ) {
     return invalid
   }
 
   return {
     estimatedMonthlyIncome,
-    incomeStartDate,
-    incomeEndDate
+    incomeStartDate: formData.incomeStartDate,
+    incomeEndDate: formData.incomeEndDate
   }
 }
 

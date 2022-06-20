@@ -4,6 +4,7 @@
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { JsonOf } from 'lib-common/json'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
 import { PersonDetail } from '../dev-api/types'
@@ -49,7 +50,7 @@ export type FormInput = Partial<{
 }>
 
 export const minimalDaycareForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
@@ -125,7 +126,7 @@ export const minimalDaycareForm: {
 }
 
 export const fullDaycareForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
@@ -272,7 +273,7 @@ export const fullDaycareForm: {
 }
 
 export const minimalClubForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
@@ -332,7 +333,7 @@ export const minimalClubForm: {
 }
 
 export const fullClubForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
@@ -424,7 +425,7 @@ export const fullClubForm: {
 }
 
 export const minimalPreschoolForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
@@ -486,7 +487,7 @@ export const minimalPreschoolForm: {
 }
 
 export const fullPreschoolForm: {
-  form: FormInput
+  form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]

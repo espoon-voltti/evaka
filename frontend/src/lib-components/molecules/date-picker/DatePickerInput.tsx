@@ -2,16 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
+import LocalDate from 'lib-common/local-date'
+import { usePendingUserInput } from 'lib-common/utils/usePendingUserInput'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
 
 interface Props {
-  date: string
-  setDate: (date: string) => void
+  date: LocalDate | null
+  setDate: (date: LocalDate | null) => void
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
@@ -22,10 +24,25 @@ interface Props {
   id?: string
   required?: boolean
   locale: 'fi' | 'sv' | 'en'
+  useBrowserPicker?: boolean
+  minDate?: LocalDate
+  maxDate?: LocalDate
+  onInputStatus?: (hasText: boolean) => void
+  errorTexts: {
+    validDate: string
+  }
+  datePickerVisible: boolean
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
-const DATE_FORMAT = /^(\d){1,2}\.(\d){1,2}\.(\d{4})$/
+
+const transformDate = (d: string) => LocalDate.parseFiOrNull(d)
+
+const DateInputField = styled(InputField)`
+  &::-webkit-date-and-time-value {
+    margin: 0; // remove Android chevron spacing
+  }
+`
 
 export default React.memo(function DatePickerInput({
   date,
@@ -39,34 +56,67 @@ export default React.memo(function DatePickerInput({
   id,
   required,
   locale,
+  useBrowserPicker = false,
+  minDate,
+  maxDate,
+  onInputStatus,
+  errorTexts,
+  datePickerVisible,
   ...props
 }: Props) {
   const ariaId = useUniqueId('date-picker-input')
 
-  function changeHandler(e: string) {
-    // clean up any invalid characters
-    const cleaned = e.replace(DISALLOWED_CHARACTERS, '')
+  const [rawDate, setRawDate, parsedDate] = usePendingUserInput(transformDate)
 
-    // convert d.M.yyyy to dd.MM.yyyy
-    if (DATE_FORMAT.test(cleaned)) {
-      const parts = cleaned.split('.')
-      const d = parts[0].length < 2 ? `0${parts[0]}` : parts[0]
-      const m = parts[1].length < 2 ? `0${parts[1]}` : parts[1]
-      const y = parts[2]
-      setDate(`${d}.${m}.${y}`)
+  useEffect(() => {
+    if (date) {
+      setRawDate(date.format())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date])
+
+  function changeHandler(target: EventTarget & HTMLInputElement) {
+    if (useBrowserPicker) {
+      setDate(
+        target.valueAsDate && LocalDate.fromSystemTzDate(target.valueAsDate)
+      )
     } else {
-      setDate(cleaned)
+      setRawDate(target.value.replace(DISALLOWED_CHARACTERS, ''))
     }
   }
 
+  useEffect(() => {
+    setDate(parsedDate ?? null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedDate])
+
+  useEffect(() => {
+    onInputStatus?.(rawDate.length > 0)
+  }, [rawDate, onInputStatus])
+
+  const dateProps = useBrowserPicker
+    ? {
+        type: 'date' as const,
+        min: minDate?.formatIso(),
+        max: maxDate?.formatIso()
+      }
+    : {}
+
   return (
     <>
-      <InputField
+      <DateInputField
         placeholder="pp.kk.vvvv"
-        value={date}
-        onChange={changeHandler}
+        value={useBrowserPicker ? date?.formatIso() ?? '' : rawDate}
+        onChangeTarget={changeHandler}
         aria-describedby={ariaId}
-        info={info}
+        info={
+          !datePickerVisible && !parsedDate
+            ? {
+                status: 'warning',
+                text: errorTexts.validDate
+              }
+            : info
+        }
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         readonly={disabled}
         onFocus={onFocus}
@@ -76,6 +126,7 @@ export default React.memo(function DatePickerInput({
         id={id}
         required={required}
         width="s"
+        {...dateProps}
       />
       <DatePickerDescription id={ariaId} locale={locale} />
     </>

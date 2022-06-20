@@ -4,6 +4,7 @@
 
 import first from 'lodash/first'
 import last from 'lodash/last'
+import maxBy from 'lodash/maxBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
@@ -38,20 +39,13 @@ type CheckboxOption = TerminatablePlacementGroup & {
 
 interface UiState {
   placements: CheckboxOption[]
-  terminationDate: string | undefined
+  terminationDate: LocalDate | null
 }
 
 const emptyState = (): UiState => ({
   placements: [],
-  terminationDate: undefined
+  terminationDate: null
 })
-
-const validateTerminationDate = (
-  terminationDate: LocalDate,
-  options: CheckboxOption[]
-): boolean =>
-  terminationDate.isEqualOrAfter(LocalDate.todayInSystemTz()) &&
-  options.every((o) => terminationDate.isBefore(o.endDate))
 
 const toCheckboxOption = (
   grp: TerminatablePlacementGroup,
@@ -124,18 +118,11 @@ export default React.memo(function PlacementTerminationForm({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [state, setState] = useState<UiState>(emptyState())
 
-  const isValidDate = useCallback(
-    (date: LocalDate): boolean =>
-      validateTerminationDate(date, state.placements),
-    [state.placements]
-  )
-
   const terminationState = useMemo<TerminationFormState>(() => {
     if (!(state.placements.length > 0 && state.terminationDate)) {
       return { type: 'invalid-missing' }
     }
-    const date = LocalDate.parseFiOrNull(state.terminationDate)
-    if (!(date && validateTerminationDate(date, state.placements))) {
+    if (!state.terminationDate) {
       return { type: 'invalid-date' }
     }
 
@@ -148,7 +135,7 @@ export default React.memo(function PlacementTerminationForm({
         type: state.placements[0].type,
         unitId: state.placements[0].unitId,
         terminateDaycareOnly,
-        terminationDate: date
+        terminationDate: state.terminationDate
       }
     }
   }, [state.placements, state.terminationDate])
@@ -221,17 +208,22 @@ export default React.memo(function PlacementTerminationForm({
           hideErrorsBeforeTouched
           required
           locale={lang}
-          isValidDate={isValidDate}
+          minDate={LocalDate.todayInSystemTz()}
+          maxDate={useMemo(
+            () => maxBy(state.placements, (p) => p.endDate)?.endDate,
+            [state.placements]
+          )}
           info={
             terminationState.type === 'invalid-date'
               ? { text: t.validationErrors.timeFormat, status: 'warning' }
               : undefined
           }
-          date={state.terminationDate ?? ''}
+          date={state.terminationDate}
           onChange={(terminationDate) =>
             setState((prev) => ({ ...prev, terminationDate }))
           }
           openAbove
+          errorTexts={t.validationErrors}
         />
       </div>
 

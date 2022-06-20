@@ -167,7 +167,8 @@ export default class LocalDate {
   formatIso(): string {
     const month = this.month.toString().padStart(2, '0')
     const date = this.date.toString().padStart(2, '0')
-    return `${this.year}-${month}-${date}`
+    const year = this.year.toString().padStart(4, '0')
+    return `${year}-${month}-${date}`
   }
   toJSON(): string {
     return this.formatIso()

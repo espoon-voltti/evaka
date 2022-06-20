@@ -154,9 +154,7 @@ describe('Citizen daycare applications', () => {
     )
 
     await editorPage.setPreferredStartDate(mockedDate.addYears(2).format())
-    await editorPage.assertPreferredStartDateInfo(
-      'Aloituspäivä ei ole sallittu'
-    )
+    await editorPage.assertPreferredStartDateInfo('Valitse aikaisempi päivä')
 
     await editorPage.setPreferredStartDate(mockedDate.addMonths(4).format())
     await editorPage.assertPreferredStartDateInfo(undefined)
@@ -174,9 +172,7 @@ describe('Citizen daycare applications', () => {
 
     await applicationsPage.editApplication(applicationId)
     await editorPage.setPreferredStartDate(mockedDate.subDays(1).format())
-    await editorPage.assertPreferredStartDateInfo(
-      'Aloituspäivä ei ole sallittu'
-    )
+    await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
   })
 
   test('Application can be made for restricted child', async () => {
