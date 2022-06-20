@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
-import { Parentship } from 'lib-common/generated/api-types/pis'
+import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -239,13 +239,15 @@ const layouts: Layouts<typeof components> = {
   ]
 }
 
-function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
+function getCurrentHeadOfChildId(
+  fridgeRelations: ParentshipWithPermittedActions[]
+) {
   const currentDate = LocalDate.todayInSystemTz()
   const currentRelation = fridgeRelations.find(
-    (r) =>
+    ({ data: r }) =>
       !r.startDate.isAfter(currentDate) &&
       (r.endDate ? !r.endDate.isBefore(currentDate) : true)
-  )
+  )?.data
   return currentRelation?.headOfChildId
 }
 

@@ -266,6 +266,14 @@ export interface ParentshipUpdateRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipWithPermittedActions
+*/
+export interface ParentshipWithPermittedActions {
+  data: Parentship
+  permittedActions: Action.Parentship[]
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.Partnership
 */
 export interface Partnership {
