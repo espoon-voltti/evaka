@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { mapValues } from 'lodash'
+import mapValues from 'lodash/mapValues'
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'

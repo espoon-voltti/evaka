@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { Fragment, useContext, useState } from 'react'
 
 import { combine } from 'lib-common/api'
@@ -84,7 +84,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
           combine(serviceNeedOptions, placements),
           ([serviceNeedOptions, placements]) => (
             <div>
-              {_.orderBy(placements, ['startDate'], ['desc']).map((p, i) => (
+              {orderBy(placements, ['startDate'], ['desc']).map((p, i) => (
                 <Fragment key={p.id}>
                   <PlacementRow
                     placement={p}

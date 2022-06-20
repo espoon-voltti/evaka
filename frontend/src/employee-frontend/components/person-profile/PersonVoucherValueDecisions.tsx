@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { orderBy } from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import _ from 'lodash'
+import dropRight from 'lodash/dropRight'
+import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -75,8 +76,11 @@ export interface WeeklyData {
 
 export const asWeeklyData = (dailyData: DailyReservationData[]): WeeklyData[] =>
   dailyData.reduce<WeeklyData[]>((weekly, daily) => {
-    const last = _.last(weekly)
-    if (last === undefined || daily.date.getIsoWeek() !== last.weekNumber) {
+    const lastWeek = last(weekly)
+    if (
+      lastWeek === undefined ||
+      daily.date.getIsoWeek() !== lastWeek.weekNumber
+    ) {
       return [
         ...weekly,
         {
@@ -86,10 +90,10 @@ export const asWeeklyData = (dailyData: DailyReservationData[]): WeeklyData[] =>
       ]
     } else {
       return [
-        ..._.dropRight(weekly),
+        ...dropRight(weekly),
         {
-          ...last,
-          dailyReservations: [...last.dailyReservations, daily]
+          ...lastWeek,
+          dailyReservations: [...lastWeek.dailyReservations, daily]
         }
       ]
     }

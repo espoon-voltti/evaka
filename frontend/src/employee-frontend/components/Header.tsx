@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { partition } from 'lodash'
+import partition from 'lodash/partition'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -139,7 +139,7 @@ export default React.memo(function MissingGroupPlacements({
     }
   }
 
-  const sortedRows = _.sortBy(missingGroupPlacements, [
+  const sortedRows = sortBy(missingGroupPlacements, [
     (p: MissingGroupPlacement) => p.lastName,
     (p: MissingGroupPlacement) => p.firstName,
     (p: MissingGroupPlacement) => p.placementPeriod.start,

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import { sortBy } from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 

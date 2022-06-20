@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { cloneDeep, range } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import range from 'lodash/range'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Loading, Result } from 'lib-common/api'

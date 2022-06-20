@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { partition } from 'lodash'
+import partition from 'lodash/partition'
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'

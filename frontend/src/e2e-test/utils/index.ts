@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInSeconds } from 'date-fns'
-import { isEqual } from 'lodash'
+import isEqual from 'lodash/isEqual'
 import { BaseError } from 'make-error-cause'
 
 import config from '../config'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -119,7 +119,7 @@ export default React.memo(function ServiceNeeds({
             />
           )}
 
-          {_.orderBy(rows, ['startDate'], ['desc']).map((sn) =>
+          {orderBy(rows, ['startDate'], ['desc']).map((sn) =>
             'id' in sn ? (
               editingId === sn.id ? (
                 <ServiceNeedEditorRow

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useEffect, useState } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
@@ -77,7 +77,7 @@ export default React.memo(function ReportInvoices() {
                 </Tr>
               </Thead>
               <Tbody>
-                {_.orderBy(report.value.reportRows, ['areaCode']).map(
+                {orderBy(report.value.reportRows, ['areaCode']).map(
                   (row: InvoiceReportRow) => (
                     <Tr key={row.areaCode}>
                       <Td>{row.areaCode}</Td>

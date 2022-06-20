@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { orderBy, sortBy } from 'lodash'
+import orderBy from 'lodash/orderBy'
+import sortBy from 'lodash/sortBy'
 import React, {
   useCallback,
   useContext,

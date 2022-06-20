@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { format, parse } from 'date-fns'
-import { isInteger } from 'lodash'
+import isInteger from 'lodash/isInteger'
 
 // ISO local time with nanosecond precision
 const isoPattern = /^(\d{2}):(\d{2}):(\d{2}).(\d{9})$/

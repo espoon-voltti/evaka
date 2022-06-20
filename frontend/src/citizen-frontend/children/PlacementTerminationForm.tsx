@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { first, last, sortBy } from 'lodash'
+import first from 'lodash/first'
+import last from 'lodash/last'
+import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import {

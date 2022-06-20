@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, {
   useCallback,
   useContext,
@@ -162,7 +162,7 @@ export default function BackupCareForm({
     () =>
       units
         .map((us) =>
-          _.orderBy(us, (x) => x.name).map(({ id, name }) => ({ id, name }))
+          orderBy(us, (x) => x.name).map(({ id, name }) => ({ id, name }))
         )
         .getOrElse([]),
     [units]

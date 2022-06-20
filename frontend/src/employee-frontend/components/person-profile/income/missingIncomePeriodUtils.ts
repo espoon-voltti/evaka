@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { sortBy } from 'lodash'
+import sortBy from 'lodash/sortBy'
 
 import FiniteDateRange, { mergeDateRanges } from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import * as _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useEffect } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -73,7 +73,7 @@ export default React.memo(function Units() {
   const renderUnits = () =>
     units
       .map((us) =>
-        _.orderBy(us, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
+        orderBy(us, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
           .filter((unit: Unit) =>
             unit.name.toLowerCase().includes(filter.toLowerCase())
           )

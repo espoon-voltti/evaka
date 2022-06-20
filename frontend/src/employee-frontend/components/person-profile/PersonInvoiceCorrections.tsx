@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { uniqBy } from 'lodash'
+import uniqBy from 'lodash/uniqBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -48,7 +48,7 @@ export default React.memo(function PersonDependants({ id, open }: Props) {
               </Tr>
             </Thead>
             <Tbody>
-              {_.orderBy(dependants, ['dateOfBirth'], ['asc']).map(
+              {orderBy(dependants, ['dateOfBirth'], ['asc']).map(
                 (dependant: PersonWithChildrenDTO) => {
                   return (
                     <Tr key={`${dependant.id}`} data-qa="table-dependant-row">

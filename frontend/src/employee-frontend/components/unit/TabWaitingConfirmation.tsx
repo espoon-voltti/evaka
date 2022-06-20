@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -58,7 +58,7 @@ export default React.memo(function TabWaitingConfirmation() {
   const sortedRows = useMemo(
     () =>
       unitData.map((unitData): DaycarePlacementPlan[] =>
-        _.sortBy(unitData.placementPlans ?? [], [
+        sortBy(unitData.placementPlans ?? [], [
           (p: DaycarePlacementPlan) => p.child.lastName,
           (p: DaycarePlacementPlan) => p.child.firstName,
           (p: DaycarePlacementPlan) => p.period.start

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, {
   useCallback,
   useContext,
@@ -159,7 +159,7 @@ export default React.memo(function PlacementProposals({
     [confirmationStates]
   )
 
-  const sortedRows = _.sortBy(placementPlans, [
+  const sortedRows = sortBy(placementPlans, [
     (p: DaycarePlacementPlan) => p.child.lastName,
     (p: DaycarePlacementPlan) => p.child.firstName,
     (p: DaycarePlacementPlan) => p.period.start

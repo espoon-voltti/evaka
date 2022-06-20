@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { head } from 'lodash'
+import head from 'lodash/head'
 import React, {
   createContext,
   useCallback,

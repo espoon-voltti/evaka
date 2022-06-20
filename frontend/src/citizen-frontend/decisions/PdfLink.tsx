@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { noop } from 'lodash'
+import noop from 'lodash/noop'
 import React from 'react'
 
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

@@ -5,7 +5,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/employee'
-import { mergeWith } from 'lodash'
+import mergeWith from 'lodash/mergeWith'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'

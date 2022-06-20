@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { flatMap, partition } from 'lodash'
+import flatMap from 'lodash/flatMap'
+import partition from 'lodash/partition'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import React, { Fragment } from 'react'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -55,7 +55,7 @@ export default React.memo(function Decisions() {
         <Gap size="s" />
         {renderResult(applicationDecisions, (applicationDecisions) => (
           <>
-            {_.sortBy(applicationDecisions, (d) => d.childName).map(
+            {sortBy(applicationDecisions, (d) => d.childName).map(
               (applicationDecision) => (
                 <Fragment key={applicationDecision.applicationId}>
                   <ApplicationDecisionsBlock {...applicationDecision} />

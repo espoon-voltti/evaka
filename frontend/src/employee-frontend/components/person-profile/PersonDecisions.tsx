@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
+import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -51,7 +51,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
               </Tr>
             </Thead>
             <Tbody>
-              {_.orderBy(
+              {orderBy(
                 decisions,
                 ['startDate', 'preferredUnitName'],
                 ['desc', 'desc']
