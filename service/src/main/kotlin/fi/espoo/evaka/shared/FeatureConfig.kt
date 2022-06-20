@@ -52,4 +52,11 @@ data class FeatureConfig(
      *  If false, use the current user as the handler as speficied in the code
      */
     val alwaysUseDaycareFinanceDecisionHandler: Boolean,
+
+    /** The first payment number to use
+     *
+     * The number of subsequent payments is the previous number plus one. If null, payments
+     * cannot be generated.
+     */
+    val paymentNumberSeriesStart: Long?,
 )
