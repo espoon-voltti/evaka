@@ -227,7 +227,12 @@ export class VasuPreviewPage extends VasuPageCommon {
     await waitUntilEqual(() => this.#titleChildName.textContent, expectedName)
   }
 
+  async assertGivePermissionToShareSectionIsVisible() {
+    await this.#confirmButton.waitUntilVisible()
+  }
+
   async assertGivePermissionToShareSectionIsNotVisible() {
+    await this.#titleChildName.waitUntilVisible()
     await this.#confirmButton.waitUntilHidden()
   }
 

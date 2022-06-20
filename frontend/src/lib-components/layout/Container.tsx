@@ -5,12 +5,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { ReactNode } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
+import RoundIcon from '../atoms/RoundIcon'
 import { desktopMin } from '../breakpoints'
-import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
+import { defaultMargins, Gap, isSpacingSize, SpacingSize } from '../white-space'
 
 export const Container = styled.div<{ verticalMargin?: string }>`
   margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}
@@ -90,7 +91,12 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
   toggleOpen: () => void
   title: ReactNode
   children: ReactNode
+  countIndicator?: number
 }
+
+const IconContainer = styled.div`
+  display: flex;
+`
 
 export const CollapsibleContentArea = React.memo(
   function CollapsibleContentArea({
@@ -98,8 +104,10 @@ export const CollapsibleContentArea = React.memo(
     toggleOpen,
     title,
     children,
+    countIndicator = 0,
     ...props
   }: CollapsibleContentAreaProps) {
+    const { colors } = useTheme()
     return (
       <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
         <TitleContainer
@@ -109,10 +117,23 @@ export const CollapsibleContentArea = React.memo(
           role="button"
         >
           {title}
-          <TitleIcon
-            icon={open ? faChevronUp : faChevronDown}
-            data-qa="collapsible-trigger"
-          />
+          <IconContainer>
+            {countIndicator > 0 && (
+              <>
+                <RoundIcon
+                  size="m"
+                  color={colors.status.warning}
+                  content={countIndicator.toString()}
+                  data-qa="count-indicator"
+                />
+                <Gap horizontal={true} size="s" />
+              </>
+            )}
+            <TitleIcon
+              icon={open ? faChevronUp : faChevronDown}
+              data-qa="collapsible-trigger"
+            />
+          </IconContainer>
         </TitleContainer>
         <Collapsible open={open}>{children}</Collapsible>
       </ContentArea>
@@ -150,7 +171,6 @@ const TitleIcon = styled(FontAwesomeIcon)`
   height: 24px !important;
   width: 24px !important;
 `
-
 const Collapsible = styled.div<{ open: boolean }>`
   display: ${(props) => (props.open ? 'block' : 'none')};
 `

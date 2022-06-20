@@ -33,13 +33,13 @@ import { getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
-  unreadPedagogicalDocuments: number
+  unreadChildDocuments: number
   hideLoginButton: boolean
 }
 
 export default React.memo(function DesktopNav({
   unreadMessagesCount,
-  unreadPedagogicalDocuments,
+  unreadChildDocuments,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -78,16 +78,16 @@ export default React.memo(function DesktopNav({
                       )}
                     </StyledNavLink>
                   )}
-                  {user.accessibleFeatures.pedagogicalDocumentation && (
+                  {user.accessibleFeatures.childDocumentation && (
                     <StyledNavLink
                       to="/child-documents"
                       data-qa="nav-child-documents"
                     >
                       {t.header.nav.pedagogicalDocuments}
                       {maybeLockElem}
-                      {isEnduser && unreadPedagogicalDocuments > 0 && (
-                        <CircledChar data-qa="unread-pedagogical-documents-count">
-                          {unreadPedagogicalDocuments}
+                      {isEnduser && unreadChildDocuments > 0 && (
+                        <CircledChar data-qa="unread-child-documents-count">
+                          {unreadChildDocuments}
                         </CircledChar>
                       )}
                     </StyledNavLink>

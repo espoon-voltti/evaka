@@ -43,7 +43,7 @@ type Props = {
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
-  unreadPedagogicalDocumentsCount: number
+  unreadChildDocumentsCount: number
   hideLoginButton: boolean
 }
 
@@ -51,7 +51,7 @@ export default React.memo(function MobileNav({
   showMenu,
   setShowMenu,
   unreadMessagesCount,
-  unreadPedagogicalDocumentsCount,
+  unreadChildDocumentsCount,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -69,7 +69,7 @@ export default React.memo(function MobileNav({
         const showAttentionIndicator =
           !showMenu &&
           (unreadMessagesCount > 0 ||
-            unreadPedagogicalDocumentsCount > 0 ||
+            unreadChildDocumentsCount > 0 ||
             !!(user && !user.email))
 
         return (
@@ -91,9 +91,7 @@ export default React.memo(function MobileNav({
                     close={close}
                     user={user}
                     unreadMessagesCount={unreadMessagesCount}
-                    unreadPedagogicalDocumentsCount={
-                      unreadPedagogicalDocumentsCount
-                    }
+                    unreadChildDocumentsCount={unreadChildDocumentsCount}
                   />
                 )}
                 <VerticalSpacer />
@@ -221,12 +219,12 @@ const Navigation = React.memo(function Navigation({
   close,
   user,
   unreadMessagesCount,
-  unreadPedagogicalDocumentsCount
+  unreadChildDocumentsCount
 }: {
   close: () => void
   user: User
   unreadMessagesCount: number
-  unreadPedagogicalDocumentsCount: number
+  unreadChildDocumentsCount: number
 }) {
   const t = useTranslation()
 
@@ -248,7 +246,7 @@ const Navigation = React.memo(function Navigation({
           )}
         </StyledNavLink>
       )}
-      {user.accessibleFeatures.pedagogicalDocumentation && (
+      {user.accessibleFeatures.childDocumentation && (
         <StyledNavLink
           to="/child-documents"
           data-qa="nav-child-documents"
@@ -256,9 +254,9 @@ const Navigation = React.memo(function Navigation({
         >
           {t.header.nav.pedagogicalDocuments}
           {maybeLockElem}
-          {unreadPedagogicalDocumentsCount > 0 && (
+          {unreadChildDocumentsCount > 0 && (
             <FloatingCircledChar>
-              {unreadPedagogicalDocumentsCount}
+              {unreadChildDocumentsCount}
             </FloatingCircledChar>
           )}
         </StyledNavLink>

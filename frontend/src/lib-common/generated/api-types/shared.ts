@@ -11,8 +11,8 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.shared.security.CitizenFeatures
 */
 export interface CitizenFeatures {
+  childDocumentation: boolean
   messages: boolean
-  pedagogicalDocumentation: boolean
   reservations: boolean
 }
 

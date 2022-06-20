@@ -11,8 +11,8 @@ import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
 import {
-  PedagogicalDocumentsContext,
-  PedagogicalDocumentsState
+  ChildDocumentsContext,
+  ChildDocumentsState
 } from '../child-documents/state'
 import { MessageContext, MessagePageState } from '../messages/state'
 
@@ -35,15 +35,23 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   const {
     unreadPedagogicalDocumentsCount,
-    refreshUnreadPedagogicalDocumentsCount
-  } = useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
+    unreadVasuDocumentsCount,
+    refreshUnreadPedagogicalDocumentsCount,
+    refreshUnreadVasuDocumentsCount
+  } = useContext<ChildDocumentsState>(ChildDocumentsContext)
 
   useEffect(() => {
-    if (user) refreshUnreadPedagogicalDocumentsCount()
-  }, [refreshUnreadPedagogicalDocumentsCount, user])
+    if (user) {
+      refreshUnreadPedagogicalDocumentsCount()
+      refreshUnreadVasuDocumentsCount()
+    }
+  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, user])
 
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
+
+  const unreadDocumentCount =
+    (unreadPedagogicalDocumentsCount || 0) + (unreadVasuDocumentsCount || 0)
 
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
@@ -51,14 +59,14 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <EvakaLogo />
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadPedagogicalDocuments={unreadPedagogicalDocumentsCount ?? 0}
+        unreadChildDocuments={unreadDocumentCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadPedagogicalDocumentsCount={unreadPedagogicalDocumentsCount ?? 0}
+        unreadChildDocumentsCount={unreadDocumentCount}
         hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>

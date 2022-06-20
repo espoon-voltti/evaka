@@ -40,7 +40,7 @@ import { useTranslation } from '../localization'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { Desktop, Mobile, PaddedDiv } from './components'
-import { PedagogicalDocumentsContext, PedagogicalDocumentsState } from './state'
+import { ChildDocumentsContext, ChildDocumentsState } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
@@ -178,6 +178,10 @@ const PedagogicalDocumentsDisplay = React.memo(
     const t = useTranslation()
     const [open, setOpen] = useState(true)
 
+    const { unreadPedagogicalDocumentsCount } = useContext<ChildDocumentsState>(
+      ChildDocumentsContext
+    )
+
     const moreThanOneChild = useMemo(
       () => uniq(items.map((doc) => doc.childId)).length > 1,
       [items]
@@ -207,6 +211,7 @@ const PedagogicalDocumentsDisplay = React.memo(
             opaque
             paddingVertical="L"
             data-qa="pedagogical-documents-collapsible"
+            countIndicator={unreadPedagogicalDocumentsCount}
           >
             {items.length > 0 && (
               <PedagogicalDocumentsTable
@@ -330,7 +335,7 @@ export default React.memo(function PedagogicalDocuments() {
   )
 
   const { refreshUnreadPedagogicalDocumentsCount } =
-    useContext<PedagogicalDocumentsState>(PedagogicalDocumentsContext)
+    useContext<ChildDocumentsState>(ChildDocumentsContext)
 
   useEffect(refreshUnreadPedagogicalDocumentsCount, [
     refreshUnreadPedagogicalDocumentsCount,

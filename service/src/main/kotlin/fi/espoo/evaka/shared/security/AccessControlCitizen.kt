@@ -16,7 +16,7 @@ class AccessControlCitizen {
         return CitizenFeatures(
             messages = tx.citizenHasAccessToMessaging(user.id),
             reservations = tx.citizenHasAccessToReservations(user.id),
-            pedagogicalDocumentation = tx.citizenHasAccessToPedagogicalDocumentation(user.id)
+            childDocumentation = tx.citizenHasAccessToChildDocumentation(user.id)
         )
     }
 
@@ -80,7 +80,7 @@ SELECT EXISTS (
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToPedagogicalDocumentation(personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToChildDocumentation(personId: PersonId): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (

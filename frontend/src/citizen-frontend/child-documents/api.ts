@@ -54,3 +54,14 @@ export async function getUnreadPedagogicalDocumentsCount(): Promise<
     return Failure.fromError(e)
   }
 }
+
+export async function getUnreadVasuDocumentsCount(): Promise<Result<number>> {
+  try {
+    const count = await client
+      .get<number>(`/citizen/vasu/children/unread-count`)
+      .then((res) => res.data)
+    return Success.of(count)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}

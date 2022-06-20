@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -19,6 +19,7 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
+import { ChildDocumentsContext, ChildDocumentsState } from '../state'
 
 import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'
@@ -52,6 +53,10 @@ export default React.memo(function VasuPage() {
 
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
+
+  const { refreshUnreadVasuDocumentsCount } = useContext<ChildDocumentsState>(
+    ChildDocumentsContext
+  )
 
   const {
     vasu,
@@ -126,8 +131,15 @@ export default React.memo(function VasuPage() {
                 primary
                 text={t.common.confirm}
                 disabled={!givePermissionToShareSelected}
-                onClick={() => givePermissionToShareVasu(id)}
-                onSuccess={() => setGuardianHasGivenPermissionToShare(true)}
+                onClick={() => {
+                  return givePermissionToShareVasu(id).then((res) => {
+                    refreshUnreadVasuDocumentsCount()
+                    return res
+                  })
+                }}
+                onSuccess={() => {
+                  setGuardianHasGivenPermissionToShare(true)
+                }}
                 data-qa="confirm-button"
               />
             </ContentArea>
