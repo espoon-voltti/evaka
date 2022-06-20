@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
+import fi.espoo.evaka.payments.PaymentIntegrationClient
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
@@ -76,6 +77,9 @@ class EspooConfig {
     @Bean
     fun espooPatuAsyncJobProcessor(asyncJobRunner: AsyncJobRunner<AsyncJob>, patuIntegrationClient: PatuIntegrationClient) =
         PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
+
+    @Bean
+    fun paymentIntegrationClient(): PaymentIntegrationClient = PaymentIntegrationClient.FailingClient()
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
