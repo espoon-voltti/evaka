@@ -38,7 +38,7 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
-FROM quay.io/keycloak/keycloak:18.0.0-legacy AS keycloak
+FROM quay.io/keycloak/keycloak:18.0.1-legacy AS keycloak
 
 CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
 
