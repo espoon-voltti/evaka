@@ -123,7 +123,7 @@ beforeEach(async () => {
   page = await Page.open({
     viewport: { width: 1440, height: 720 },
     mockedTime: mockedToday
-      .toHelsinkiDateTime(LocalTime.of(0, 0))
+      .toHelsinkiDateTime(LocalTime.of(12, 0))
       .toSystemTzDate()
   })
   await employeeLogin(page, unitSupervisor)
