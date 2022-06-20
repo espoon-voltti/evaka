@@ -57,7 +57,6 @@ const PermissionToShare = React.memo(function PermissionToShare() {
     <>
       <RoundIcon
         content={faExclamation}
-        iconColor={theme.colors.grayscale.g0}
         color={theme.colors.status.warning}
         size="s"
         data-qa="attention-indicator"

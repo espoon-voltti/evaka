@@ -5,12 +5,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { ReactNode } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
+import RoundIcon from '../atoms/RoundIcon'
 import { desktopMin } from '../breakpoints'
-import { fontWeights } from '../typography'
 import { defaultMargins, Gap, isSpacingSize, SpacingSize } from '../white-space'
 
 export const Container = styled.div<{ verticalMargin?: string }>`
@@ -107,6 +107,7 @@ export const CollapsibleContentArea = React.memo(
     countIndicator = 0,
     ...props
   }: CollapsibleContentAreaProps) {
+    const { colors } = useTheme()
     return (
       <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
         <TitleContainer
@@ -119,9 +120,12 @@ export const CollapsibleContentArea = React.memo(
           <IconContainer>
             {countIndicator > 0 && (
               <>
-                <CircledChar color="white" data-qa="count-indicator">
-                  {countIndicator}
-                </CircledChar>
+                <RoundIcon
+                  size="m"
+                  color={colors.status.warning}
+                  content={countIndicator.toString()}
+                  data-qa="count-indicator"
+                />
                 <Gap horizontal={true} size="s" />
               </>
             )}
@@ -167,24 +171,6 @@ const TitleIcon = styled(FontAwesomeIcon)`
   height: 24px !important;
   width: 24px !important;
 `
-
-export const CircledChar = styled.div`
-  width: ${defaultMargins.s};
-  height: ${defaultMargins.s};
-  border: 1px solid ${(p) => p.theme.colors.grayscale.g0};
-  color: ${(p) => p.theme.colors.grayscale.g0};
-  background: ${(p) => p.theme.colors.status.warning};
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-radius: 100%;
-  font-family: 'Open Sans', sans-serif;
-  font-weight: ${fontWeights.bold};
-  font-size: ${defaultMargins.s};
-`
-
 const Collapsible = styled.div<{ open: boolean }>`
   display: ${(props) => (props.open ? 'block' : 'none')};
 `

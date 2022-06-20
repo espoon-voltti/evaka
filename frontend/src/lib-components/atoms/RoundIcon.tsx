@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { readableColor, shade } from 'polished'
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -121,7 +121,6 @@ type RoundIconProps = BaseProps & {
   bubble?: boolean
   bubblecolor?: string
   number?: number
-  iconColor?: string
 }
 
 const RoundIcon = React.memo(function RoundIcon({
@@ -139,12 +138,19 @@ const RoundIcon = React.memo(function RoundIcon({
   label,
   bubble,
   bubblecolor,
-  number,
-  iconColor
+  number
 }: RoundIconProps) {
+  const { colors } = useTheme()
+
   function onKeyDown(e: React.KeyboardEvent) {
     if (onClick && (e.key === ' ' || e.key === 'Enter')) onClick(e)
   }
+
+  const readableIconColor = readableColor(
+    color,
+    colors.grayscale.g0,
+    colors.grayscale.g100
+  )
 
   if (label)
     return (
@@ -186,7 +192,7 @@ const RoundIcon = React.memo(function RoundIcon({
       {typeof content === 'string' ? (
         <span className="text">{content}</span>
       ) : (
-        <FontAwesomeIcon icon={content} color={iconColor} />
+        <FontAwesomeIcon icon={content} color={readableIconColor} />
       )}
     </IconContainer>
   )
