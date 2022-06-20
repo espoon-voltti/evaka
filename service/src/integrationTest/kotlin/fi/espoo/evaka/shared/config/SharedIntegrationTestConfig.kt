@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
+import fi.espoo.evaka.payments.PaymentIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
@@ -151,6 +152,9 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
+
+    @Bean
+    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient = PaymentIntegrationClient.MockClient(jsonMapper)
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()

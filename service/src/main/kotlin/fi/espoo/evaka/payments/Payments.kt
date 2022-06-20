@@ -4,19 +4,41 @@
 
 package fi.espoo.evaka.payments
 
+import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.reports.REPORT_STATEMENT_TIMEOUT
 import fi.espoo.evaka.reports.getLastSnapshotMonth
 import fi.espoo.evaka.reports.getServiceVoucherReport
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PaymentId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import mu.KotlinLogging
+import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
+
+val logger = KotlinLogging.logger {}
+
+interface PaymentIntegrationClient {
+    data class SendResult(
+        val succeeded: List<Payment> = listOf(),
+        val failed: List<Payment> = listOf(),
+    )
+
+    fun send(payments: List<Payment>): SendResult
+
+    class MockClient(private val jsonMapper: JsonMapper) : PaymentIntegrationClient {
+        override fun send(payments: List<Payment>): SendResult {
+            logger.info("Mock payment integration client got invoices ${jsonMapper.writeValueAsString(payments)}")
+            return SendResult(succeeded = payments)
+        }
+    }
+}
 
 enum class PaymentStatus : DatabaseEnum {
     DRAFT,
@@ -51,12 +73,20 @@ fun createPaymentDrafts(tx: Database.Transaction) {
     }
 
     tx.deletePaymentDraftsByDateRange(period)
-    tx.insertPaymentsDrafts(payments)
+    tx.insertPaymentDrafts(payments)
 }
+
+data class PaymentUnit(
+    val id: DaycareId,
+    val name: String,
+    val businessId: String?,
+    val iban: String?,
+    val providerId: String?,
+)
 
 data class Payment(
     val id: PaymentId,
-    val unitId: DaycareId,
+    @Nested("unit_") val unit: PaymentUnit,
     val number: Long?,
     val period: DateRange,
     val amount: Int,
@@ -64,5 +94,56 @@ data class Payment(
     val paymentDate: LocalDate?,
     val dueDate: LocalDate?,
     val sentAt: HelsinkiDateTime?,
-    val sentBy: EmployeeId?,
+    val sentBy: EvakaUserId?,
 )
+
+fun sendPayments(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    integrationClient: PaymentIntegrationClient,
+    user: AuthenticatedUser.Employee,
+    paymentIds: List<PaymentId>,
+    paymentDate: LocalDate,
+    dueDate: LocalDate
+) {
+    val payments = tx.readPaymentsByIds(paymentIds)
+
+    val notDrafts = payments.filterNot { it.status == PaymentStatus.DRAFT }
+    if (notDrafts.isNotEmpty()) {
+        throw BadRequest("Some payments are not drafts")
+    }
+
+    val units = tx.getPaymentUnitsByIds(payments.map { it.unit.id }).associateBy { it.id }
+
+    var nextPaymentNumber = tx.getMaxPaymentNumber().let { if (it >= 5000000000) it + 1 else 5000000000 }
+    val updatedPayments = payments.flatMap { payment ->
+        val unit = units[payment.unit.id] ?: throw Error("Unit ${payment.unit.id} not found")
+
+        // Skip payments whose unit has missing payment details
+        val missingDetails = listOf(unit.name, unit.businessId, unit.iban, unit.providerId).any { it.isNullOrBlank() }
+        if (missingDetails) {
+            logger.warn { "Skipping payment ${payment.id} because unit ${payment.unit.id} has missing payment details" }
+            return@flatMap listOf()
+        }
+
+        val updatedPayment = payment.copy(
+            number = nextPaymentNumber,
+            paymentDate = paymentDate,
+            dueDate = dueDate,
+            unit = payment.unit.copy(
+                name = unit.name,
+                businessId = unit.businessId,
+                iban = unit.iban,
+                providerId = unit.providerId,
+            ),
+            sentBy = user.evakaUserId
+        )
+        nextPaymentNumber += 1
+        listOf(updatedPayment)
+    }
+
+    val sendResult = integrationClient.send(updatedPayments)
+    logger.info { "Successfully sent ${sendResult.succeeded.size} payments: ${sendResult.succeeded.map { it.id }.joinToString(", ")}" }
+    logger.info { "Failed to send ${sendResult.failed.size} payments: ${sendResult.failed.map { it.id }.joinToString(", ")}" }
+    tx.updatePaymentDraftsAsSent(sendResult.succeeded, now)
+}
