@@ -138,7 +138,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(87000 - 28800, payment.amount)
             assertEquals(febSecond, payment.paymentDate)
             assertEquals(febLast, payment.dueDate)
-            assertEquals(5000000000, payment.number)
+            assertEquals(9000000000, payment.number)
             assertEquals(EvakaUserId(testDecisionMaker_1.id.raw), payment.sentBy)
             assertEquals(HelsinkiDateTime.of(febFirst, LocalTime.of(10, 0)), payment.sentAt)
             assertEquals(testDaycare.name, payment.unit.name)

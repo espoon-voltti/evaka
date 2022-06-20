@@ -189,5 +189,6 @@ val testFeatureConfig = FeatureConfig(
     dailyFeeDivisorOperationalDaysOverride = null,
     freeSickLeaveOnContractDays = false,
     freeAbsenceGivesADailyRefund = true,
-    alwaysUseDaycareFinanceDecisionHandler = false
+    alwaysUseDaycareFinanceDecisionHandler = false,
+    paymentNumberSeriesStart = 9000000000,
 )

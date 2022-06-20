@@ -19,10 +19,7 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/payments")
-class PaymentController(
-    private val accessControl: AccessControl,
-    private val integrationClient: PaymentIntegrationClient,
-) {
+class PaymentController(private val accessControl: AccessControl, private val paymentService: PaymentService) {
     @PostMapping("/create-drafts")
     fun createDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         Audit.PaymentsCreate.log()
@@ -47,7 +44,7 @@ class PaymentController(
         accessControl.requirePermissionFor(user, Action.Payment.SEND, body.paymentIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                sendPayments(tx, clock.now(), integrationClient, user, body.paymentIds, body.paymentDate, body.dueDate)
+                paymentService.sendPayments(tx, clock.now(), user, body.paymentIds, body.paymentDate, body.dueDate)
             }
         }
     }
