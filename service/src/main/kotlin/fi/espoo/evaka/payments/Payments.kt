@@ -38,6 +38,12 @@ interface PaymentIntegrationClient {
             return SendResult(succeeded = payments)
         }
     }
+
+    class FailingClient() : PaymentIntegrationClient {
+        override fun send(payments: List<Payment>): SendResult {
+            throw RuntimeException("Payments are not in use")
+        }
+    }
 }
 
 enum class PaymentStatus : DatabaseEnum {
