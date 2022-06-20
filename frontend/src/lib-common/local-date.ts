@@ -31,6 +31,8 @@ import {
 } from 'date-fns'
 
 import { DateFormat, DateFormatWithWeekday, formatDate, locales } from './date'
+import HelsinkiDateTime from './helsinki-date-time'
+import LocalTime from './local-time'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
@@ -177,6 +179,9 @@ export default class LocalDate {
   toSystemTzDateAtTime(time: string): Date {
     const iso = `${this.formatIso()}T${time}`
     return new Date(iso)
+  }
+  toHelsinkiDateTime(time: LocalTime): HelsinkiDateTime {
+    return HelsinkiDateTime.fromLocal(this, time)
   }
   static today(): LocalDate {
     if (isAutomatedTest) {

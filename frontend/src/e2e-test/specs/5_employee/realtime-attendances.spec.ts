@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -106,21 +108,23 @@ beforeEach(async () => {
     id: uuidv4(),
     employeeId: staff[0].id,
     groupId: groupId,
-    arrived: LocalDate.of(2022, 3, 27).toSystemTzDateAtTime('07:00'),
-    departed: LocalDate.of(2022, 3, 27).toSystemTzDateAtTime('15:00'),
+    arrived: HelsinkiDateTime.of(2022, 3, 27, 7, 0),
+    departed: HelsinkiDateTime.of(2022, 3, 27, 15, 0),
     occupancyCoefficient: 7.0
   })
   await insertStaffRealtimeAttendance({
     id: uuidv4(),
     employeeId: staff[1].id,
     groupId: groupId,
-    arrived: mockedToday.toSystemTzDateAtTime('07:00'),
+    arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
     occupancyCoefficient: 7.0
   })
 
   page = await Page.open({
     viewport: { width: 1440, height: 720 },
-    mockedTime: mockedToday.toSystemTzDate()
+    mockedTime: mockedToday
+      .toHelsinkiDateTime(LocalTime.of(0, 0))
+      .toSystemTzDate()
   })
   await employeeLogin(page, unitSupervisor)
 })

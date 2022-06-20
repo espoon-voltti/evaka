@@ -76,6 +76,9 @@ export default class HelsinkiDateTime {
   toJSON(): string {
     return this.formatIso()
   }
+  toSystemTzDate(): Date {
+    return new Date(this.timestamp)
+  }
   valueOf(): number {
     return this.timestamp
   }
