@@ -157,8 +157,7 @@ describe('Realtime staff attendances', () => {
       await calendarPage.clickCommitOnRow(0)
     })
 
-    // TODO: enable this when we can reliably run time based tests both locally and on CI
-    test.skip('Sunday entries are shown in the calendar', async () => {
+    test('Sunday entries are shown in the calendar', async () => {
       await calendarPage.selectGroup('staff')
       await calendarPage.navigateToPreviousWeek()
       await calendarPage.assertArrivalDeparture({
@@ -177,8 +176,7 @@ describe('Realtime staff attendances', () => {
         await calendarPage.assertCountTimeInputsVisible(1)
       })
 
-      // TODO: enable this when we can reliably run time based tests both locally and on CI
-      test.skip('Editing an existing entry updates it', async () => {
+      test('Editing an existing entry updates it', async () => {
         await calendarPage.selectGroup('staff')
         await calendarPage.assertNoTimeInputsVisible()
         await calendarPage.assertArrivalDeparture({
