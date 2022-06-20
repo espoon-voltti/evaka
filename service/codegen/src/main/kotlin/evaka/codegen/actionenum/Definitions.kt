@@ -30,6 +30,7 @@ val generatedFiles = listOf(
             generateEnum<Action.GroupPlacement>(),
             generateEnum<Action.MobileDevice>(),
             generateEnum<Action.Pairing>(),
+            generateEnum<Action.Payment>(),
             generateEnum<Action.Person>(),
             generateEnum<Action.Placement>(),
             generateEnum<Action.ServiceNeed>(),

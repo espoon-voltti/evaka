@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -549,6 +550,12 @@ sealed interface Action {
         READ(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership()),
         RETRY(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership()),
         UPDATE(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class Payment(override vararg val defaultRules: ScopedActionRule<in PaymentId>) : ScopedAction<PaymentId> {
+        SEND(HasGlobalRole(FINANCE_ADMIN)),
+        ;
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

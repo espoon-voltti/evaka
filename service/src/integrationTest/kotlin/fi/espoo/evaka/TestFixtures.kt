@@ -103,7 +103,10 @@ val testDaycare = DevDaycare(
     name = "Test Daycare",
     areaId = testArea.id,
     ophOrganizerOid = defaultMunicipalOrganizerOid,
-    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION)
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION),
+    businessId = "1234567-8",
+    iban = "FI12 3456 7891 2345 67",
+    providerId = "1234"
 )
 
 val testDaycare2 = DevDaycare(

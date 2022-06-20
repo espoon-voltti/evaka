@@ -210,6 +210,8 @@ export type MobileDevice =
 
 export type Pairing = 'POST_RESPONSE'
 
+export type Payment = 'SEND'
+
 export type Person =
   | 'ADD_SSN'
   | 'CREATE_INCOME'
