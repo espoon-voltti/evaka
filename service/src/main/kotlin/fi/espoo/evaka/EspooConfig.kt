@@ -116,6 +116,7 @@ class EspooConfig {
         freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
         freeAbsenceGivesADailyRefund = true,
         alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
+        invoiceNumberSeriesStart = 5000000000,
         paymentNumberSeriesStart = null, // Payments are not yet in use in Espoo
     )
 

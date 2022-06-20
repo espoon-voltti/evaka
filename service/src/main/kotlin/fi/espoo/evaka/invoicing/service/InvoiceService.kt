@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -38,9 +39,12 @@ data class InvoiceCodes(
 @Component
 class InvoiceService(
     private val integrationClient: InvoiceIntegrationClient,
-    private val productProvider: InvoiceProductProvider
+    private val productProvider: InvoiceProductProvider,
+    private val featureConfig: FeatureConfig,
 ) {
     fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
+        val seriesStart = featureConfig.invoiceNumberSeriesStart
+
         val invoices = tx.getInvoicesByIds(invoiceIds)
         if (invoices.isEmpty()) return
 
@@ -49,7 +53,7 @@ class InvoiceService(
             throw BadRequest("Some invoices were not drafts")
         }
 
-        val maxInvoiceNumber = tx.getMaxInvoiceNumber().let { if (it >= 5000000000) it + 1 else 5000000000 }
+        val maxInvoiceNumber = tx.getMaxInvoiceNumber().let { if (it >= seriesStart) it + 1 else seriesStart }
         val updatedInvoices = invoices.mapIndexed { index, invoice ->
             invoice.copy(
                 number = maxInvoiceNumber + index,
