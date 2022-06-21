@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.childimages
 
-import fi.espoo.evaka.s3.ContentType
+import fi.espoo.evaka.s3.ContentTypePattern
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.getAndCheckFileContentType
+import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.db.Database
@@ -22,7 +22,7 @@ data class ChildImage(
 
 const val childImagesBucketPrefix = "child-images/"
 
-val allowedContentTypes = setOf(ContentType.JPEG, ContentType.PNG)
+val allowedContentTypes = setOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
 
 fun replaceImage(
     db: Database.Connection,
@@ -31,7 +31,7 @@ fun replaceImage(
     childId: ChildId,
     file: MultipartFile
 ) {
-    val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
+    val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
 
     var deletedId: ChildImageId? = null
     db.transaction { tx ->

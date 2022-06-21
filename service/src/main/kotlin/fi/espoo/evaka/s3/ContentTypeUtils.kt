@@ -9,55 +9,58 @@ import java.io.InputStream
 
 val tika: org.apache.tika.Tika = org.apache.tika.Tika()
 
-enum class ContentType(val value: String) {
-    JPEG("image/jpeg"),
-    PNG("image/png"),
-    PDF("application/pdf"),
-    MSWORD("application/msword"),
-    MSWORD_DOCX("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-    OPEN_DOCUMENT_TEXT("application/vnd.oasis.opendocument.text"),
-    TIKA_MSOFFICE("application/x-tika-msoffice"),
-    TIKA_OOXML("application/x-tika-ooxml"),
-    VIDEO_ANY("video/*"),
-    AUDIO_ANY("audio/*"),
-}
+enum class ContentTypePattern(
+    private val type: String,
+    private val subtypePattern: String,
+    private val allowedFileExtensions: Set<String>
+) {
+    JPEG("image", "jpeg", setOf("jpg", "jpeg")),
+    PNG("image", "png", setOf("png")),
+    PDF("application", "pdf", setOf("pdf")),
+    MSWORD("application", "msword", setOf("doc")),
+    MSWORD_DOCX("application", "vnd.openxmlformats-officedocument.wordprocessingml.document", setOf("docx")),
+    OPEN_DOCUMENT_TEXT("application", "vnd.oasis.opendocument.text", setOf("odt")),
+    TIKA_MSOFFICE("application", "x-tika-msoffice", setOf("doc", "docx")),
+    TIKA_OOXML("application", "x-tika-ooxml", setOf("doc", "docx")),
+    VIDEO_ANY("video", "*", setOf("avi", "mp4", "mpeg", "mov", "ogv", "webm", "3gp")),
+    AUDIO_ANY("audio", "*", setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp"))
+    ;
 
-fun getAllowedFileExtensionsByContentType(contentType: ContentType): Set<String> = when (contentType) {
-    ContentType.JPEG -> setOf("jpg", "jpeg")
-    ContentType.PNG -> setOf("png")
-    ContentType.PDF -> setOf("pdf")
-    ContentType.MSWORD -> setOf("doc")
-    ContentType.MSWORD_DOCX -> setOf("docx")
-    ContentType.OPEN_DOCUMENT_TEXT -> setOf("odt")
-    ContentType.TIKA_MSOFFICE -> setOf("doc", "docx")
-    ContentType.TIKA_OOXML -> setOf("doc", "docx")
-    ContentType.VIDEO_ANY -> setOf("avi", "mp4", "mpeg", "ogv", "webm", "3gp")
-    ContentType.AUDIO_ANY -> setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp")
-}
+    fun matchesContentType(contentType: String): Boolean {
+        val parts = contentType.split("/", ";")
+        if (parts.size < 2) return false
+        return parts[0] == type && (subtypePattern == "*" || parts[1] == subtypePattern)
+    }
 
-fun getAndCheckFileContentType(file: InputStream, allowedContentTypes: Set<ContentType>): String {
-    val contentType = tika.detect(file)
-    if (!isAllowedContentType(contentType, allowedContentTypes)) throw BadRequest("Invalid content type $contentType", "INVALID_CONTENT_TYPE")
-    return contentType
-}
-
-// Matches given content type with list of allowed contents types which must be either be "type/subtype" or
-// "type/*" to allow all subtypes of the type, like "image/png" or "video/*
-fun isAllowedContentType(contentType: String, allowedContentTypes: Set<ContentType>): Boolean {
-    val contentTypeParts = contentType.split("/", ";")
-    return contentTypeParts.size >= 2 && allowedContentTypes.any { allowedContentType ->
-        val allowedContentTypeParts = allowedContentType.value.split("/")
-        (allowedContentTypeParts.size == 1 && contentTypeParts.get(0) == allowedContentTypeParts.get(0)) ||
-            (
-                allowedContentTypeParts.size == 2 && contentTypeParts.get(0) == allowedContentTypeParts.get(0) &&
-                    (allowedContentTypeParts.get(1) == "*" || contentTypeParts.get(1) == allowedContentTypeParts.get(1))
-                )
+    fun matchesExtension(fileExtension: String): Boolean {
+        return allowedFileExtensions.contains(fileExtension.lowercase())
     }
 }
 
-fun checkFileExtension(fileExtension: String, contentType: String) {
-    ContentType.values().find { it.value == contentType }
-        ?.let { getAllowedFileExtensionsByContentType(it).contains(fileExtension.lowercase()) }
-        ?: false ||
+fun checkFileContentType(
+    file: InputStream,
+    allowedContentTypes: Set<ContentTypePattern>
+): String {
+    val detectedContentType = tika.detect(file)
+    allowedContentTypes.find { it.matchesContentType(detectedContentType) } ?: throw BadRequest(
+        "Invalid content type $detectedContentType",
+        "INVALID_CONTENT_TYPE"
+    )
+    return detectedContentType
+}
+
+fun checkFileContentTypeAndExtension(
+    file: InputStream,
+    fileExtension: String,
+    allowedContentTypes: List<ContentTypePattern>
+): String {
+    val detectedContentType = tika.detect(file)
+    val contentTypePattern = allowedContentTypes.find { it.matchesContentType(detectedContentType) } ?: throw BadRequest(
+        "Invalid content type $detectedContentType",
+        "INVALID_CONTENT_TYPE"
+    )
+    if (!contentTypePattern.matchesExtension(fileExtension)) {
         throw BadRequest("Invalid file extension $fileExtension", "EXTENSION_INVALID")
+    }
+    return detectedContentType
 }

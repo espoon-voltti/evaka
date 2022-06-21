@@ -10,11 +10,10 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
-import fi.espoo.evaka.s3.ContentType
+import fi.espoo.evaka.s3.ContentTypePattern
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.s3.checkFileExtension
-import fi.espoo.evaka.s3.getAndCheckFileContentType
+import fi.espoo.evaka.s3.checkFileContentTypeAndExtension
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeId
@@ -219,14 +218,12 @@ class AttachmentsController(
         user: AuthenticatedUser,
         attachTo: AttachmentParent,
         file: MultipartFile,
-        allowedContentTypes: Set<ContentType>,
+        allowedContentTypes: List<ContentTypePattern>,
         type: AttachmentType? = null,
         onSuccess: ((tx: Database.Transaction) -> Unit)? = null
     ): AttachmentId {
         val fileName = getAndCheckFileName(file)
-        val contentType = getAndCheckFileContentType(file.inputStream, allowedContentTypes)
-
-        checkFileExtension(getFileExtension(fileName), contentType)
+        val contentType = checkFileContentTypeAndExtension(file.inputStream, getFileExtension(fileName), allowedContentTypes)
 
         val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
@@ -311,18 +308,18 @@ class AttachmentsController(
         documentClient.delete(filesBucket, "$attachmentId")
     }
 
-    private val defaultAllowedAttachmentContentTypes: Set<ContentType> =
-        setOf(
-            ContentType.JPEG,
-            ContentType.PNG,
-            ContentType.PDF,
-            ContentType.MSWORD,
-            ContentType.MSWORD_DOCX,
-            ContentType.OPEN_DOCUMENT_TEXT,
-            ContentType.TIKA_MSOFFICE,
-            ContentType.TIKA_OOXML,
+    private val defaultAllowedAttachmentContentTypes =
+        listOf(
+            ContentTypePattern.JPEG,
+            ContentTypePattern.PNG,
+            ContentTypePattern.PDF,
+            ContentTypePattern.MSWORD,
+            ContentTypePattern.MSWORD_DOCX,
+            ContentTypePattern.OPEN_DOCUMENT_TEXT,
+            ContentTypePattern.TIKA_MSOFFICE,
+            ContentTypePattern.TIKA_OOXML,
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =
-        defaultAllowedAttachmentContentTypes + setOf(ContentType.VIDEO_ANY, ContentType.AUDIO_ANY)
+        defaultAllowedAttachmentContentTypes + listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
 }

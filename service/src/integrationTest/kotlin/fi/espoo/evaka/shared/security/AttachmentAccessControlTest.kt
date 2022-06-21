@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
-import fi.espoo.evaka.s3.ContentType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -60,7 +59,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
         val guardianId = tx.insertTestPerson(DevPerson())
         val childId = tx.insertTestPerson(DevPerson())
         val applicationId = tx.insertTestApplication(guardianId = guardianId, childId = childId, type = ApplicationType.DAYCARE)
-        tx.insertAttachment(user, attachmentId, "test.pdf", ContentType.PDF.value, AttachmentParent.Application(applicationId), type = null)
+        tx.insertAttachment(user, attachmentId, "test.pdf", "application/pdf", AttachmentParent.Application(applicationId), type = null)
         attachmentId
     }
 }
