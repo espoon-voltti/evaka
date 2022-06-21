@@ -159,17 +159,18 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
                           setSelectedParentshipId(fridgeChild.id)
                           toggleUiMode(`edit-fridge-child-${fridgeChild.id}`)
                         }}
-                        deletable={permittedActions.includes('DELETE')}
+                        deletable={
+                          fridgeChild.conflict
+                            ? permittedActions.includes(
+                                'DELETE_CONFLICTED_PARENTSHIP'
+                              )
+                            : permittedActions.includes('DELETE')
+                        }
                         onDelete={() => {
                           setSelectedParentshipId(fridgeChild.id)
                           toggleUiMode(`remove-fridge-child-${fridgeChild.id}`)
                         }}
                         conflict={fridgeChild.conflict}
-                        deletableFor={
-                          fridgeChild.conflict
-                            ? ['ADMIN', 'FINANCE_ADMIN', 'UNIT_SUPERVISOR']
-                            : ['ADMIN', 'FINANCE_ADMIN']
-                        }
                       />
                     </ButtonsTd>
                   </Tr>
