@@ -201,6 +201,6 @@ describe('Citizen daycare applications', () => {
     await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
     await editorPage.assertAttachmentUploaded(testFileName)
     await editorPage.goToVerification()
-    await editorPage.assertUrgencyFileDownload(testFileName)
+    await editorPage.assertUrgencyFileDownload()
   })
 })

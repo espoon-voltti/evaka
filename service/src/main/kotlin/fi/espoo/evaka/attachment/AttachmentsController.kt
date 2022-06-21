@@ -251,11 +251,12 @@ class AttachmentsController(
         return id
     }
 
-    @GetMapping("/{attachmentId}/download")
+    @GetMapping("/{attachmentId}/download/{requestedFilename}")
     fun getAttachment(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable attachmentId: AttachmentId
+        @PathVariable attachmentId: AttachmentId,
+        @PathVariable requestedFilename: String
     ): ResponseEntity<Any> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
 
@@ -273,7 +274,9 @@ class AttachmentsController(
         }.exhaust()
         accessControl.requirePermissionFor(user, action, attachmentId)
 
-        return documentClient.responseAttachment(filesBucket, "$attachmentId", attachment.name)
+        if (requestedFilename != attachment.name) throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
+
+        return documentClient.responseInline(filesBucket, "$attachmentId")
     }
 
     @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])

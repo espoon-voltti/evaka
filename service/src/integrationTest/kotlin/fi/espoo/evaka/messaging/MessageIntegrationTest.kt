@@ -658,9 +658,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun downloadAttachment(
         user: AuthenticatedUser,
         attachmentId: AttachmentId,
-        expectedStatus: Int = 200
+        expectedStatus: Int = 200,
+        requestedFilename: String = "evaka-logo.png"
     ) =
-        http.get("/attachments/$attachmentId/download")
+        http.get("/attachments/$attachmentId/download/$requestedFilename")
             .asUser(user)
             .response()
             .also { assertEquals(expectedStatus, it.second.statusCode) }

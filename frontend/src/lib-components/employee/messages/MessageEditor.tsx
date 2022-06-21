@@ -136,7 +136,7 @@ interface Props {
   defaultSender: ReactSelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
-  getAttachmentUrl: (attachmentId: UUID) => string
+  getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   i18n: MessageEditorI18n & FileUploadI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean

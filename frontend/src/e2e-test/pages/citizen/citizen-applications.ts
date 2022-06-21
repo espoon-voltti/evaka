@@ -328,13 +328,13 @@ class CitizenApplicationEditor {
     )
   }
 
-  async assertUrgencyFileDownload(fileName: string) {
-    const [download] = await Promise.all([
-      this.page.waitForDownload(),
+  async assertUrgencyFileDownload() {
+    const [popup] = await Promise.all([
+      this.page.waitForPopup(),
       this.page
         .find('[data-qa="service-need-urgency-attachment-download"]')
         .click()
     ])
-    expect(download.suggestedFilename()).toEqual(fileName)
+    await popup.waitForSelector('img:not([src=""])')
   }
 }

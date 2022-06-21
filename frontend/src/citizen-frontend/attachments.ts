@@ -61,6 +61,9 @@ export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   }
 }
 
-export function getAttachmentUrl(attachmentId: UUID): string {
-  return `${API_URL}/attachments/${attachmentId}/download`
+export function getAttachmentUrl(
+  attachmentId: UUID,
+  requestedFilename: string
+): string {
+  return `${API_URL}/attachments/${attachmentId}/download/${requestedFilename}`
 }

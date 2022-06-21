@@ -81,7 +81,7 @@ interface FileUploadProps {
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
-  getDownloadUrl: (id: UUID) => string
+  getDownloadUrl: (id: UUID, fileName: string) => string
   i18n: FileUploadI18n
   disabled?: boolean
   slim?: boolean
