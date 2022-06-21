@@ -76,13 +76,15 @@ const EmployeeSelectWithTitle: React.FC<{
   titleLabel: string
   selectedTitle: string | null
   onChange: (employee: Employee | null, title: string | null) => void
+  'data-qa'?: string
 }> = ({
   employeeLabel,
   employees,
   selectedEmployee,
   titleLabel,
   selectedTitle,
-  onChange
+  onChange,
+  'data-qa': dataQa
 }) => (
   <FixedSpaceRow>
     <FixedSpaceColumn spacing="zero">
@@ -99,6 +101,7 @@ const EmployeeSelectWithTitle: React.FC<{
         }
         selectedItem={selectedEmployee}
         onChange={(employee) => onChange(employee, selectedTitle)}
+        data-qa={dataQa ? `${dataQa}-select` : undefined}
       />
     </FixedSpaceColumn>
     <FixedSpaceColumn spacing="zero">
@@ -106,6 +109,7 @@ const EmployeeSelectWithTitle: React.FC<{
       <InputField
         value={selectedTitle ?? ''}
         onChange={(title) => onChange(selectedEmployee, title)}
+        data-qa={dataQa ? `${dataQa}-title` : undefined}
       />
     </FixedSpaceColumn>
   </FixedSpaceRow>
@@ -542,6 +546,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
                 decisionMaker: { employeeId: employee?.id ?? null, title }
               })
             }
+            data-qa="decision-maker"
           />
         </FixedSpaceColumn>
       ))}

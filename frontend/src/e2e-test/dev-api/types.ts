@@ -5,6 +5,7 @@
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationForm,
   ApplicationOrigin,
@@ -440,6 +441,70 @@ export interface AssistanceNeed {
   capacityFactor: number
   description: string
   otherBasis: string
+}
+
+export interface AssistanceNeedDecision {
+  assistanceLevel:
+    | 'ASSISTANCE_ENDS'
+    | 'ASSISTANCE_SERVICES_FOR_TIME'
+    | 'ENHANCED_ASSISTANCE'
+    | 'SPECIAL_ASSISTANCE'
+    | null
+  assistanceServicesTime: FiniteDateRange | null
+  careMotivation: string | null
+  childId: UUID
+  decisionMade: LocalDate | null
+  decisionMaker: {
+    employeeId: UUID | null
+    title: string | null
+  } | null
+  decisionNumber: number | null
+  endDate: LocalDate | null
+  expertResponsibilities: string | null
+  guardianInfo: {
+    details: string | null
+    id: UUID | null
+    isHeard: boolean
+    name: string
+    personId: UUID | null
+  }[]
+  guardiansHeardOn: LocalDate | null
+  id: UUID | null
+  language: 'FI' | 'SV'
+  motivationForDecision: string | null
+  otherRepresentativeDetails: string | null
+  otherRepresentativeHeard: boolean
+  pedagogicalMotivation: string | null
+  preparedBy1: {
+    employeeId: UUID | null
+    title: string | null
+  } | null
+  preparedBy2: {
+    employeeId: UUID | null
+    title: string | null
+  } | null
+  selectedUnit: UUID | null
+  sentForDecision: LocalDate | null
+  serviceOptions: {
+    consultationSpecialEd: boolean
+    fullTimeSpecialEd: boolean
+    interpretationAndAssistanceServices: boolean
+    partTimeSpecialEd: boolean
+    specialAides: boolean
+  }
+  servicesMotivation: string | null
+  startDate: LocalDate | null
+  status: 'DRAFT' | 'NEEDS_WORK' | 'ACCEPTED' | 'REJECTED'
+  structuralMotivationDescription: string | null
+  structuralMotivationOptions: {
+    additionalStaff: boolean
+    childAssistant: boolean
+    groupAssistant: boolean
+    smallGroup: boolean
+    smallerGroup: boolean
+    specialGroup: boolean
+  }
+  viewOfGuardians: string | null
 }
 
 export interface DevIncome {
