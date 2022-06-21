@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
+import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -62,38 +63,66 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `person restricted details started`() {
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
+        createVtjPerson(
+            testPerson.copy(
+                ssn = "020180-999Y",
+                streetAddress = "",
+                postalCode = "",
+                postOffice = "",
+                restrictedDetailsEnabled = true,
+                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1)
+            )
+        )
         updatePeopleFromDvv(listOf("020180-999Y"))
         val modifiedPerson = db.read { it.getPersonBySSN("020180-999Y") }!!
         assertEquals(true, modifiedPerson.restrictedDetailsEnabled)
         assertEquals("", modifiedPerson.streetAddress)
         assertEquals("", modifiedPerson.postalCode)
         assertEquals("", modifiedPerson.postOffice)
-        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("020180-999Y"))
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount("020180-999Y"))
     }
 
     @Test
     fun `person restricted details ended and address is set`() {
         createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true, streetAddress = "", postalCode = "", postOffice = ""))
+        createVtjPerson(
+            testPerson.copy(
+                ssn = "030180-999L",
+                streetAddress = "Uusitie 17 A 2",
+                postalCode = "02940",
+                postOffice = "ESPOO",
+                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1)
+            )
+        )
         updatePeopleFromDvv(listOf("030180-999L"))
         val modifiedPerson = db.read { it.getPersonBySSN("030180-999L") }!!
         assertEquals(false, modifiedPerson.restrictedDetailsEnabled)
         assertEquals(LocalDate.parse("2030-01-01"), modifiedPerson.restrictedDetailsEndDate)
-        assertEquals("Vanhakatu 10h5 3", modifiedPerson.streetAddress)
-        assertEquals("02230", modifiedPerson.postalCode)
-        assertEquals("Espoo", modifiedPerson.postOffice)
-        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("020180-999Y"))
+        assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
+        assertEquals("02940", modifiedPerson.postalCode)
+        assertEquals("ESPOO", modifiedPerson.postOffice)
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount("030180-999L"))
     }
 
     @Test
     fun `person address change`() {
         createTestPerson(testPerson.copy(ssn = "040180-9998"))
+        createVtjPerson(
+            testPerson.copy(
+                ssn = "040180-9998",
+                streetAddress = "Uusitie 17 A 2",
+                postalCode = "02940",
+                postOffice = "ESPOO",
+                residenceCode = "abc123"
+            )
+        )
         updatePeopleFromDvv(listOf("040180-9998"))
         val modifiedPerson = db.read { it.getPersonBySSN("040180-9998") }!!
         assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
-        assertEquals("123456789V1B033 ", modifiedPerson.residenceCode)
-        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("040180-9998"))
+        assertEquals("abc123", modifiedPerson.residenceCode)
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount("040180-9998"))
     }
 
     @Test
@@ -379,6 +408,14 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
                 socialSecurityNumber = person.ssn!!,
                 firstNames = person.firstName,
                 lastName = person.lastName,
+                address = if (person.streetAddress.isNullOrBlank()) null else PersonAddress(
+                    streetAddress = person.streetAddress,
+                    postalCode = person.postalCode,
+                    postOffice = person.postOffice,
+                    postOfficeSe = person.postOffice,
+                    streetAddressSe = person.streetAddress
+                ),
+                residenceCode = person.residenceCode,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
                 restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate),
                 guardians = person.guardians.map(::asVtjPerson),

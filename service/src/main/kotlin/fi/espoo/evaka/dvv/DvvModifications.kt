@@ -44,7 +44,10 @@ data class DvvModification(
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIKUNTA"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI"),
-    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI_SUPPEA")
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "AIDINKIELI"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "TILAPAINEN_ULKOMAINEN_OSOITE"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIMAINEN_POSTIOSOITE"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_ULKOMAINEN_OSOITE"),
 )
 
 interface DvvInfoGroup {
