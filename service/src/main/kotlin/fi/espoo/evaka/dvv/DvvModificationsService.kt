@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -34,7 +35,7 @@ class DvvModificationsService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
-    fun updatePersonsFromDvv(db: Database.Connection, ssns: List<String>): Int {
+    fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
         return db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
             val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
@@ -73,9 +74,7 @@ class DvvModificationsService(
                             is PersonNameDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is PersonNameChangeDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
-                            is ChildInfoGroup -> handleChild(db, personModifications.henkilotunnus, infoGroup) {
-                                ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
-                            }
+                            is ChildInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             else -> {
                                 logger.info("Refreshing person from VTJ for an unsupported DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
                                 ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
@@ -101,7 +100,7 @@ class DvvModificationsService(
                     personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
                 }?.let {
                     logger.info("Refreshing all VTJ information for person ${it.id}")
-                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id))
+                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), clock)
                 }
             }
 
@@ -218,15 +217,6 @@ class DvvModificationsService(
     // is done in those
     private fun handleHomeMunicipalityChangeDvvInfoGroup() {
         logger.debug("DVV change KOTIKUNTA received")
-    }
-
-    private fun handleChild(db: Database.Connection, ssn: String, childInfoGroup: ChildInfoGroup, runIfNotAdded: () -> Unit) {
-        val childSSN = childInfoGroup.lapsi.henkilotunnus
-        if (childSSN != null && childInfoGroup.muutosattribuutti == "LISATTY") {
-            fridgeFamilyService.addChildToFamily(db, ssn, childInfoGroup.lapsi.henkilotunnus)
-        } else {
-            runIfNotAdded()
-        }
     }
 
     fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
