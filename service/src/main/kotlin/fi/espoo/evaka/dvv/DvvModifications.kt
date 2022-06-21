@@ -31,19 +31,20 @@ data class DvvModification(
     visible = true
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = PersonNameDvvInfoGroup::class, name = "HENKILON_NIMI"),
-    JsonSubTypes.Type(value = PersonNameChangeDvvInfoGroup::class, name = "NIMENMUUTOS"),
-    JsonSubTypes.Type(value = PersonNameChangeDvvInfoGroup::class, name = "NIMENMUUTOS_LAAJA"),
-    JsonSubTypes.Type(value = RestrictedInfoDvvInfoGroup::class, name = "TURVAKIELTO"),
-    JsonSubTypes.Type(value = AddressDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DeathDvvInfoGroup::class, name = "KUOLINPAIVA"),
-    JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
-    JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
+    JsonSubTypes.Type(value = RestrictedInfoDvvInfoGroup::class, name = "TURVAKIELTO"),
     JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS"),
-    JsonSubTypes.Type(value = ResidenceCodeDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
-    JsonSubTypes.Type(value = HomeMunicipalityDvvInfoGroup::class, name = "KOTIKUNTA"),
-    JsonSubTypes.Type(value = ChildInfoGroup::class, name = "LAPSI"),
-    JsonSubTypes.Type(value = ChildInfoGroup::class, name = "LAPSI_SUPPEA")
+    JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
+
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "HENKILON_NIMI"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "NIMENMUUTOS"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "NIMENMUUTOS_LAAJA"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIKUNTA"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI_SUPPEA")
 )
 
 interface DvvInfoGroup {
@@ -55,24 +56,6 @@ data class DefaultDvvInfoGroup(
     val muutosattribuutti: String?
 ) : DvvInfoGroup
 
-data class PersonNameDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val etunimi: String?,
-    val sukunimi: String?,
-    val alkupv: DvvDate?,
-    val lisatieto: String?
-) : DvvInfoGroup
-
-data class PersonNameChangeDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val nimilaji: String?,
-    val nimi: String?,
-    val alkupv: DvvDate?,
-    val loppupv: DvvDate?
-) : DvvInfoGroup
-
 data class RestrictedInfoDvvInfoGroup(
     override val tietoryhma: String,
     val muutosattribuutti: String?,
@@ -80,67 +63,10 @@ data class RestrictedInfoDvvInfoGroup(
     val turvaLoppuPv: DvvDate?
 ) : DvvInfoGroup
 
-data class AddressDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val katunimi: DvvFiSVValue?,
-    val katunumero: String?,
-    val huoneistonumero: String?,
-    val huoneistokirjain: String?,
-    val osoitenumero: String?,
-    val postinumero: String?,
-    val postitoimipaikka: DvvFiSVValue?,
-    val rakennustunnus: String?,
-    val alkupv: DvvDate?,
-    val loppupv: DvvDate?
-) : DvvInfoGroup {
-    fun katuosoite(): String {
-        val streetAddress = (katunimi?.fi ?: "") +
-            (if (katunumero != null) " $katunumero" else "") +
-            (if (huoneistokirjain != null) " $huoneistokirjain" else "") +
-            (if (huoneistonumero != null) " ${huoneistonumero.toInt()}" else "")
-        return streetAddress.trim()
-    }
-}
-
-data class ResidenceCodeDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val rakennustunnus: String?,
-    val osoitenumero: String?,
-    val huoneistonumero: String?,
-    val huoneistokirjain: String?,
-    val kuntakoodi: String?,
-    val alkupv: DvvDate?,
-    val asuinpaikantunnus: String?
-) : DvvInfoGroup
-
-data class HomeMunicipalityDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val kuntakoodi: String?,
-    val kuntaanMuuttopv: DvvDate?
-) : DvvInfoGroup
-
-data class DvvFiSVValue(
-    val fi: String?,
-    val sv: String?
-)
-
 data class CaretakerLimitedDvvInfoGroup(
     override val tietoryhma: String,
     val muutosattribuutti: String?,
     val huoltaja: DvvSsn,
-    val huoltajanRooli: String,
-    val huoltajanLaji: String,
-    val huoltosuhteenAlkupv: DvvDate?,
-    val huoltosuhteenLoppupv: DvvDate?
-) : DvvInfoGroup
-
-data class CustodianLimitedDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val huollettava: DvvSsn,
     val huoltajanRooli: String,
     val huoltajanLaji: String,
     val huoltosuhteenAlkupv: DvvDate?,
@@ -165,13 +91,6 @@ data class SsnDvvInfoGroup(
     val muutettuHenkilotunnus: String,
     val aktiivinenHenkilotunnus: String,
     val edellisetHenkilotunnukset: List<String>
-) : DvvInfoGroup
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class ChildInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?,
-    val lapsi: DvvChild
 ) : DvvInfoGroup
 
 @JsonIgnoreProperties("sukupuoli", "etunimet", "sukunimi", "kansalaisuuskoodi", "kansalaisuusnimi", "nimienLisatieto")

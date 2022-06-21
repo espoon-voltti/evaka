@@ -42,10 +42,6 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
         val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
         assertEquals(false, restrictedInfo.turvakieltoAktiivinen)
         assertEquals("2030-01-01", restrictedInfo.turvaLoppuPv?.arvo)
-
-        val address = response.muutokset[0].tietoryhmat[1] as AddressDvvInfoGroup
-        assertEquals("Gamlagatan", address.katunimi!!.sv)
-        assertEquals("Espoo", address.postitoimipaikka!!.fi)
     }
 
     @Test
@@ -69,9 +65,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
     fun `guardian is now a sole guardian`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("yksinhuoltaja-muutos"))
         assertEquals("HUOLLETTAVA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
-        val custodian = response.muutokset[0].tietoryhmat[0] as CustodianLimitedDvvInfoGroup
-        assertEquals("010118-999A", custodian.huollettava.henkilotunnus)
-        assertEquals("2020-09-08", custodian.huoltosuhteenAlkupv?.arvo)
+        assertEquals("010579-9999", response.muutokset[0].henkilotunnus)
     }
 
     @Test
