@@ -13,7 +13,11 @@ import {
 } from 'react'
 
 import { Paged, Result } from 'lib-common/api'
-import { InvoiceSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  InvoiceSortParam,
+  InvoiceSummary,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
@@ -22,18 +26,16 @@ import {
   getInvoices,
   InvoiceSearchParams,
   sendInvoices,
-  sendInvoicesByDate,
-  SortByInvoices
+  sendInvoicesByDate
 } from '../../api/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { SearchOrder } from '../../types'
 
 const pageSize = 200
 
 type State = {
   page: number
-  sortBy: SortByInvoices
-  sortDirection: SearchOrder
+  sortBy: InvoiceSortParam
+  sortDirection: SortDirection
   invoices: Record<number, Result<InvoiceSummary[]>>
   invoiceTotals?: { total: number; pages: number }
   checkedInvoices: Record<string, true>
@@ -55,9 +57,9 @@ const useActions = (setState: Dispatch<SetStateAction<State>>) =>
   useMemo(
     () => ({
       setPage: (page: number) => setState((s) => ({ ...s, page })),
-      setSortBy: (sortBy: SortByInvoices) =>
+      setSortBy: (sortBy: InvoiceSortParam) =>
         setState((s) => ({ ...s, sortBy })),
-      setSortDirection: (sortDirection: SearchOrder) =>
+      setSortDirection: (sortDirection: SortDirection) =>
         setState((s) => ({ ...s, sortDirection })),
       openModal: () => setState((s) => ({ ...s, showModal: true })),
       closeModal: () => setState((s) => ({ ...s, showModal: false })),

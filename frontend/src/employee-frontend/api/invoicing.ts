@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -11,6 +10,7 @@ import {
   DistinctiveParams,
   FeeDecision,
   FeeDecisionDetailed,
+  FeeDecisionSortParam,
   FeeDecisionStatus,
   FeeDecisionSummary,
   Invoice,
@@ -18,12 +18,15 @@ import {
   InvoiceCorrection,
   InvoiceDetailed,
   InvoiceDistinctiveParams,
+  InvoiceSortParam,
   InvoiceStatus,
   InvoiceSummary,
   NewInvoiceCorrection,
   PersonBasic,
   PersonDetailed,
+  SortDirection,
   VoucherValueDecisionDetailed,
+  VoucherValueDecisionSortParam,
   VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
@@ -205,31 +208,11 @@ export async function sendVoucherValueDecisions(
     .catch((e) => Failure.fromError(e))
 }
 
-export type SortByFeeDecisions =
-  | 'HEAD_OF_FAMILY'
-  | 'VALIDITY'
-  | 'NUMBER'
-  | 'CREATED'
-  | 'SENT'
-  | 'STATUS'
-  | 'FINAL_PRICE'
-
-export type SortByVoucherValueDecisions = 'HEAD_OF_FAMILY' | 'STATUS'
-
-export type SortByInvoices =
-  | 'HEAD_OF_FAMILY'
-  | 'CHILDREN'
-  | 'START'
-  | 'END'
-  | 'SUM'
-  | 'STATUS'
-  | 'CREATED_AT'
-
 export async function getFeeDecisions(
   page: number,
   pageSize: number,
-  sortBy: SortByFeeDecisions,
-  sortDirection: SearchOrder,
+  sortBy: FeeDecisionSortParam,
+  sortDirection: SortDirection,
   params: FeeDecisionSearchParams
 ): Promise<Result<Paged<FeeDecisionSummary>>> {
   return client
@@ -290,8 +273,8 @@ export async function getPersonFeeDecisions(
 export async function getVoucherValueDecisions(
   page: number,
   pageSize: number,
-  sortBy: SortByVoucherValueDecisions,
-  sortDirection: SearchOrder,
+  sortBy: VoucherValueDecisionSortParam,
+  sortDirection: SortDirection,
   params: VoucherValueDecisionSearchParams
 ): Promise<Result<Paged<VoucherValueDecisionSummary>>> {
   return client
@@ -393,8 +376,8 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
 export async function getInvoices(
   page: number,
   pageSize: number,
-  sortBy: SortByInvoices,
-  sortDirection: SearchOrder,
+  sortBy: InvoiceSortParam,
+  sortDirection: SortDirection,
   params: InvoiceSearchParams
 ): Promise<Result<Paged<InvoiceSummary>>> {
   return client

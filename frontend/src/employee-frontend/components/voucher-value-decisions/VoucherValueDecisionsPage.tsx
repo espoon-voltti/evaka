@@ -5,15 +5,17 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { Paged, Result } from 'lib-common/api'
-import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  VoucherValueDecisionSortParam,
+  VoucherValueDecisionSummary
+} from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import {
   getVoucherValueDecisions,
-  VoucherValueDecisionSearchParams,
-  SortByVoucherValueDecisions
+  VoucherValueDecisionSearchParams
 } from '../../api/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
@@ -32,7 +34,7 @@ export type PagedValueDecisions = {
 export default React.memo(function VoucherValueDecisionsPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] =
-    useState<SortByVoucherValueDecisions>('HEAD_OF_FAMILY')
+    useState<VoucherValueDecisionSortParam>('HEAD_OF_FAMILY')
   const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
   const [totalDecisions, setTotalDecisions] = useState<number>()
   const [totalPages, setTotalPages] = useState<number>()

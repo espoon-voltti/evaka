@@ -5,19 +5,18 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { Paged, Result } from 'lib-common/api'
-import { FeeDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  FeeDecisionSortParam,
+  FeeDecisionSummary,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getFeeDecisions,
-  FeeDecisionSearchParams,
-  SortByFeeDecisions
-} from '../../api/invoicing'
+import { getFeeDecisions, FeeDecisionSearchParams } from '../../api/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { SearchOrder } from '../../types'
 
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
@@ -31,8 +30,8 @@ export type PagedFeeDecisions = {
 
 export default React.memo(function FeeDecisionsPage() {
   const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState<SortByFeeDecisions>('HEAD_OF_FAMILY')
-  const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
+  const [sortBy, setSortBy] = useState<FeeDecisionSortParam>('HEAD_OF_FAMILY')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [totalDecisions, setTotalDecisions] = useState<number>()
   const [totalPages, setTotalPages] = useState<number>()
   const [decisions, setDecisions] = useState<PagedFeeDecisions>({})

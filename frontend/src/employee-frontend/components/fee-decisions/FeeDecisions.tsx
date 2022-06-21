@@ -8,7 +8,11 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { FeeDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  FeeDecisionSortParam,
+  FeeDecisionSummary,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,9 +28,7 @@ import {
   SortableTh
 } from 'lib-components/layout/Table'
 
-import { SortByFeeDecisions } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 
@@ -53,10 +55,10 @@ interface Props {
   pages?: number
   currentPage: number
   setPage: (page: number) => void
-  sortBy: SortByFeeDecisions
-  setSortBy: (v: SortByFeeDecisions) => void
-  sortDirection: SearchOrder
-  setSortDirection: (v: SearchOrder) => void
+  sortBy: FeeDecisionSortParam
+  setSortBy: (v: FeeDecisionSortParam) => void
+  sortDirection: SortDirection
+  setSortDirection: (v: SortDirection) => void
   showCheckboxes: boolean
   checked: { [id: string]: boolean }
   toggleChecked: (id: string) => void
@@ -88,10 +90,10 @@ const FeeDecisions = React.memo(function FeeDecisions({
       ?.map((ds) => ds.length > 0 && ds.every((it) => checked[it.id]))
       .getOrElse(false) ?? false
 
-  const isSorted = (column: SortByFeeDecisions) =>
+  const isSorted = (column: FeeDecisionSortParam) =>
     sortBy === column ? sortDirection : undefined
 
-  const toggleSort = (column: SortByFeeDecisions) => () => {
+  const toggleSort = (column: FeeDecisionSortParam) => () => {
     if (sortBy === column) {
       setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {
