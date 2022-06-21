@@ -40,7 +40,6 @@ import java.util.UUID
 enum class InvoiceGenerationLogic {
     Default,
     Free,
-    IgnoreAbsences,
 }
 
 interface InvoiceGenerationLogicChooser {
@@ -221,23 +220,15 @@ class DraftInvoiceGenerator(
                     childrenPartialMonth
                 )
 
-                val relevantAbsences = if (logic == InvoiceGenerationLogic.IgnoreAbsences) {
-                    listOf()
-                } else {
-                    (absences[child.id] ?: listOf()).filter { absence ->
-                        isUnitOperationalDay(
-                            operationalDays,
-                            separatePeriods,
-                            absence.date
-                        )
-                    }
+                val relevantAbsences = (absences[child.id] ?: listOf()).filter { absence ->
+                    isUnitOperationalDay(
+                        operationalDays,
+                        separatePeriods,
+                        absence.date
+                    )
                 }
 
-                val fullMonthAbsenceType = if (logic === InvoiceGenerationLogic.IgnoreAbsences) {
-                    FullMonthAbsenceType.NOTHING
-                } else {
-                    childrenFullMonthAbsences[child.id] ?: FullMonthAbsenceType.NOTHING
-                }
+                val fullMonthAbsenceType = childrenFullMonthAbsences[child.id] ?: FullMonthAbsenceType.NOTHING
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
@@ -615,6 +606,8 @@ class DraftInvoiceGenerator(
         }
     }
 
+    private val plannedAbsenceTypes = setOf(AbsenceType.PLANNED_ABSENCE, AbsenceType.FREE_ABSENCE)
+
     private fun surplusContractDays(
         period: DateRange,
         child: ChildWithDateOfBirth,
@@ -635,9 +628,9 @@ class DraftInvoiceGenerator(
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
         val unplannedAbsencesBeforePeriod =
-            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && it.date < period.start }.size
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && it.date < period.start }.size
         val unplannedAbsencesInPeriod =
-            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && period.includes(it.date) }.size
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && period.includes(it.date) }.size
         val surplusAttendanceDays =
             attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
 

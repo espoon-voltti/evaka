@@ -4143,6 +4143,43 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `Free absence type is does not generate surplus days`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // free absences for the whole month
+        val free = datesBetween(period.start, period.end).map { it to AbsenceType.FREE_ABSENCE }
+        initDataForAbsences(listOf(period), free, serviceNeed = snDaycareContractDays15)
+
+        // Override freeAbsenceGivesADailyRefund feature config
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(freeAbsenceGivesADailyRefund = false),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(10850, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.price)
+                assertEquals(21700, invoiceRow.unitPrice)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-10850, invoiceRow.unitPrice)
+                assertEquals(-10850, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with Free logic`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
@@ -4163,49 +4200,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
-    }
-
-    @Test
-    fun `invoice generation with IgnoreAbsences logic`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-
-        // Add some absences that would normally affect invoicing
-
-        // 1 force majeure absence
-        val forceMajeure =
-            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
-
-        // 11 sick leaves
-        val sickLeave =
-            datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31))
-                .map { it to AbsenceType.SICKLEAVE }
-
-        initDataForAbsences(listOf(period), forceMajeure + sickLeave)
-
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig,
-                object : InvoiceGenerationLogicChooser {
-                    override fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId) =
-                        InvoiceGenerationLogic.IgnoreAbsences
-                }
-            )
-        )
-
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
-
-        val result = db.read(getAllInvoices)
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice)
-            assertEquals(1, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
-            }
-        }
     }
 
     private fun initByPeriodAndPlacementType(
