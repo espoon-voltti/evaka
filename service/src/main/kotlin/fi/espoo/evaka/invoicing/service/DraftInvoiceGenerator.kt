@@ -40,7 +40,6 @@ import java.util.UUID
 enum class InvoiceGenerationLogic {
     Default,
     Free,
-    IgnoreAbsences,
 }
 
 interface InvoiceGenerationLogicChooser {
@@ -221,23 +220,15 @@ class DraftInvoiceGenerator(
                     childrenPartialMonth
                 )
 
-                val relevantAbsences = if (logic == InvoiceGenerationLogic.IgnoreAbsences) {
-                    listOf()
-                } else {
-                    (absences[child.id] ?: listOf()).filter { absence ->
-                        isUnitOperationalDay(
-                            operationalDays,
-                            separatePeriods,
-                            absence.date
-                        )
-                    }
+                val relevantAbsences = (absences[child.id] ?: listOf()).filter { absence ->
+                    isUnitOperationalDay(
+                        operationalDays,
+                        separatePeriods,
+                        absence.date
+                    )
                 }
 
-                val fullMonthAbsenceType = if (logic === InvoiceGenerationLogic.IgnoreAbsences) {
-                    FullMonthAbsenceType.NOTHING
-                } else {
-                    childrenFullMonthAbsences[child.id] ?: FullMonthAbsenceType.NOTHING
-                }
+                val fullMonthAbsenceType = childrenFullMonthAbsences[child.id] ?: FullMonthAbsenceType.NOTHING
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
