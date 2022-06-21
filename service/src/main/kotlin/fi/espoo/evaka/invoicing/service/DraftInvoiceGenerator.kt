@@ -606,6 +606,8 @@ class DraftInvoiceGenerator(
         }
     }
 
+    private val plannedAbsenceTypes = setOf(AbsenceType.PLANNED_ABSENCE, AbsenceType.FREE_ABSENCE)
+
     private fun surplusContractDays(
         period: DateRange,
         child: ChildWithDateOfBirth,
@@ -626,9 +628,9 @@ class DraftInvoiceGenerator(
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
         val unplannedAbsencesBeforePeriod =
-            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && it.date < period.start }.size
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && it.date < period.start }.size
         val unplannedAbsencesInPeriod =
-            absences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE && period.includes(it.date) }.size
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && period.includes(it.date) }.size
         val surplusAttendanceDays =
             attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
 
