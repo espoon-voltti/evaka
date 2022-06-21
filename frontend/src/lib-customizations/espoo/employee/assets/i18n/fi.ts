@@ -741,7 +741,16 @@ export const fi = {
       decisionMaker: 'Päättäjä',
       title: 'Titteli',
       disclaimer:
-        'Varhaiskasvatuslain 15 e § :n mukainen päätös voidaan panna täytäntöön muutoksenhausta huolimatta.'
+        'Varhaiskasvatuslain 15 e § :n mukainen päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
+      decisionNumber: 'Päätösnumero',
+      statuses: {
+        DRAFT: 'Luonnos',
+        NEEDS_WORK: 'Korjattava',
+        ACCEPTED: 'Hyväksytty',
+        REJECTED: 'Hylätty'
+      },
+      confidential: 'Salassapidettävä',
+      lawReference: 'Varhaiskasvatuslaki 15 §'
     },
     application: {
       title: 'Hakemukset',

@@ -69,4 +69,11 @@ describe('Assistance Need Decisions - Edit page', () => {
   test('Some fields are visible', async () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
   })
+
+  test('Info header shows correct information', async () => {
+    await assistanceNeedDecisionEditPage.assertDecisionStatus('Luonnos')
+    await assistanceNeedDecisionEditPage.assertDecisionNumber(
+      assistanceNeedDecision.decisionNumber
+    )
+  })
 })

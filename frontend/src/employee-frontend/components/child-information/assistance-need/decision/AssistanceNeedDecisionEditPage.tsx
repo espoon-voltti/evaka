@@ -13,16 +13,18 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Content, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import Select, { SelectOption } from 'lib-components/molecules/Select'
 import { H1, H2, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 
 import { getPerson } from '../../../../api/person'
 
 import AssistanceNeededDecisionForm from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
-import { FooterContainer } from './common'
+import { FooterContainer, DecisionInfoHeader } from './common'
 
 export default React.memo(function AssistanceNeedDecisionEditPage() {
   const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
@@ -67,11 +69,22 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                 />
               </FixedSpaceRow>
               <HorizontalLine />
-              <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
-              <H2 noMargin>
-                {child.firstName} {child.lastName}
-              </H2>
-              <Gap size="s" />
+              <FixedSpaceRow
+                alignItems="flex-start"
+                justifyContent="space-between"
+                fullWidth
+              >
+                <FixedSpaceColumn>
+                  <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
+                  <H2 noMargin>
+                    {child.firstName} {child.lastName}
+                  </H2>
+                </FixedSpaceColumn>
+                <DecisionInfoHeader
+                  decisionNumber={formState?.decisionNumber || 0}
+                  decisionStatus={formState?.status || 'DRAFT'}
+                />
+              </FixedSpaceRow>
               {formState && (
                 <AssistanceNeededDecisionForm
                   formState={formState}

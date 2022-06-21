@@ -15,7 +15,7 @@ import { tabletMin } from '../breakpoints'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
-export const StaticChip = styled.div<{ color: string }>`
+export const StaticChip = styled.div<{ color: string; fitContent?: boolean }>`
   display: inline-block;
   font-family: 'Open Sans', sans-serif;
   font-weight: ${fontWeights.semibold};
@@ -39,6 +39,7 @@ export const StaticChip = styled.div<{ color: string }>`
     outline: 2px solid ${(p) => p.theme.colors.main.m3};
     outline-offset: 2px;
   }
+  ${(p) => (p.fitContent ? 'width: fit-content;' : '')}
 `
 
 type SelectionChipProps = {

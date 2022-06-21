@@ -152,7 +152,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
 
   return (
     <FixedSpaceColumn spacing={defaultMargins.m}>
-      <H2>{t.neededTypesOfAssistance}</H2>
+      <H2 noMargin>{t.neededTypesOfAssistance}</H2>
 
       <FieldWithInfo
         info={t.pedagogicalMotivationInfo}
