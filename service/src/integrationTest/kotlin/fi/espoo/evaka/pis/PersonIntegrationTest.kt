@@ -92,6 +92,8 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             PersonReference("application", "other_guardian_id"),
             PersonReference("assistance_action", "child_id"),
             PersonReference("assistance_need", "child_id"),
+            PersonReference("assistance_need_decision", "child_id"),
+            PersonReference("assistance_need_decision_guardian", "person_id"),
             PersonReference("attendance_reservation", "child_id"),
             PersonReference("backup_care", "child_id"),
             PersonReference("backup_pickup", "child_id"),
@@ -130,8 +132,8 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             PersonReference("voucher_value_decision", "head_of_family_id"),
             PersonReference("voucher_value_decision", "partner_id")
         )
-        assertEquals(expected.size, references.size)
         assertEquals(expected, references)
+        assertEquals(expected.size, references.size)
     }
 
     private fun personHasMessageAccount(personId: PersonId): Boolean {
