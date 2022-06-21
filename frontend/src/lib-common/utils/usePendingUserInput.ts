@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 export function usePendingUserInput<T>(
   transform: (input: string) => T | null,
   initialValue?: string
-) {
+): [string, React.Dispatch<React.SetStateAction<string>>, T | undefined] {
   const [input, setInput] = useState(initialValue ?? '')
   const [validated, setValidated] = useState<T>()
 
@@ -21,9 +21,5 @@ export function usePendingUserInput<T>(
     }
   }, [input, transform])
 
-  return [input, setInput, validated] as [
-    string,
-    React.Dispatch<React.SetStateAction<string>>,
-    T | undefined
-  ]
+  return [input, setInput, validated]
 }
