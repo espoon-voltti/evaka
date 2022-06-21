@@ -435,10 +435,13 @@ export default React.memo(function AssistanceNeedDecisionForm({
             t.assistanceLevel.assistanceServicesForTime
           )}
           <DateRangeInput
-            start={formState.assistanceServicesTime?.start ?? LocalDate.today()}
+            start={
+              formState.assistanceServicesTime?.start ??
+              LocalDate.todayInHelsinkiTz()
+            }
             end={
               formState.assistanceServicesTime?.end ??
-              LocalDate.today().addYears(1)
+              LocalDate.todayInHelsinkiTz().addYears(1)
             }
             onValidationResult={(_hasErrors: boolean) => {
               // implement error handling here
