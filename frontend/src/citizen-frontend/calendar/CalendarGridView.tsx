@@ -313,7 +313,7 @@ type DateType = 'past' | 'today' | 'future' | 'otherMonth'
 
 function dateType(year: number, month: number, date: LocalDate): DateType {
   if (date.year !== year || date.month !== month) return 'otherMonth'
-  const today = LocalDate.today()
+  const today = LocalDate.todayInSystemTz()
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
 

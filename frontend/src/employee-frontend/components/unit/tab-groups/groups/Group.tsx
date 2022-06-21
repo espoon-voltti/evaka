@@ -633,7 +633,7 @@ export default React.memo(function Group({
                                         new FiniteDateRange(
                                           sn.startDate,
                                           sn.endDate
-                                        ).includes(LocalDate.today())
+                                        ).includes(LocalDate.todayInSystemTz())
                                       )
                                       .map((sn) => sn.option.nameFi)
                                       .join(' / ')

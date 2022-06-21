@@ -421,7 +421,7 @@ export default React.memo(function FeeThresholdsEditor({
 
             if (
               validationResult.payload.validDuring.start.isBefore(
-                LocalDate.today()
+                LocalDate.todayInSystemTz()
               )
             ) {
               setShowModal(true)

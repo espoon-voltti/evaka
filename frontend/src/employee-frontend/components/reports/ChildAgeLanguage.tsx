@@ -42,7 +42,7 @@ export default React.memo(function ChildAgeLanguage() {
     Loading.of()
   )
   const [filters, setFilters] = useState<DateFilters>({
-    date: LocalDate.today()
+    date: LocalDate.todayInSystemTz()
   })
 
   const [displayFilters, setDisplayFilters] =

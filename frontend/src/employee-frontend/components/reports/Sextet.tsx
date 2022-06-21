@@ -23,7 +23,7 @@ import { TableScrollable } from './common'
 
 const years = (() => {
   const result: number[] = []
-  for (let y = LocalDate.today().year; y >= 2019; y--) {
+  for (let y = LocalDate.todayInSystemTz().year; y >= 2019; y--) {
     result.push(y)
   }
   return result

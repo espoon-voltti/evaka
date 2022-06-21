@@ -92,7 +92,7 @@ export const HolidayPeriodsContextProvider = React.memo(
         }
       }
 
-      const today = LocalDate.today()
+      const today = LocalDate.todayInSystemTz()
       const activeHolidayPeriod = periods.find((p) =>
         p.reservationDeadline?.isEqualOrAfter(today)
       )

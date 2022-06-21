@@ -67,7 +67,10 @@ describe('Child Information - Pedagogical documents', () => {
 
   test('Can add a new pedagogigcal document', async () => {
     await section.addNew()
-    await waitUntilEqual(() => section.startDate, LocalDate.today().format())
+    await waitUntilEqual(
+      () => section.startDate,
+      LocalDate.todayInSystemTz().format()
+    )
     await section.setDescription('Test description')
     await section.save()
     await waitUntilEqual(() => section.description, 'Test description')

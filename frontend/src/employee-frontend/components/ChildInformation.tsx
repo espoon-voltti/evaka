@@ -240,7 +240,7 @@ const layouts: Layouts<typeof components> = {
 }
 
 function getCurrentHeadOfChildId(fridgeRelations: Parentship[]) {
-  const currentDate = LocalDate.today()
+  const currentDate = LocalDate.todayInSystemTz()
   const currentRelation = fridgeRelations.find(
     (r) =>
       !r.startDate.isAfter(currentDate) &&

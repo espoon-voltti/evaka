@@ -48,8 +48,8 @@ export default React.memo(function MissingHeadOfFamily() {
     Loading.of()
   )
   const [filters, setFilters] = useState<MissingHeadOfFamilyReportFilters>({
-    startDate: LocalDate.today().subMonths(1).withDate(1),
-    endDate: LocalDate.today().addMonths(2).lastDayOfMonth()
+    startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+    endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
 
   const [displayFilters, setDisplayFilters] =

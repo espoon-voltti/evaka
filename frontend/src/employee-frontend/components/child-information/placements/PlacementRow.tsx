@@ -171,7 +171,7 @@ export default React.memo(function PlacementRow({
   }
 
   const currentGroupPlacement = placement.groupPlacements.find((gp) =>
-    FiniteDateRange.from(gp).includes(LocalDate.today())
+    FiniteDateRange.from(gp).includes(LocalDate.todayInSystemTz())
   )
 
   return placement.isRestrictedFromUser ? (
@@ -200,7 +200,7 @@ export default React.memo(function PlacementRow({
             ]}
             onDelete={() => setConfirmingDelete(true)}
             deletableFor={
-              placement.startDate.isAfter(LocalDate.today())
+              placement.startDate.isAfter(LocalDate.todayInSystemTz())
                 ? [
                     'ADMIN',
                     'SERVICE_WORKER',
@@ -301,7 +301,9 @@ export default React.memo(function PlacementRow({
             </Link>
           </DataValue>
         </DataRow>
-        {FiniteDateRange.from(placement).includes(LocalDate.today()) && (
+        {FiniteDateRange.from(placement).includes(
+          LocalDate.todayInSystemTz()
+        ) && (
           <DataRow>
             <DataLabel>
               {i18n.childInformation.placements.daycareGroup}

@@ -25,6 +25,7 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -1025,8 +1026,8 @@ export async function insertStaffRealtimeAttendance(body: {
   id: UUID
   employeeId: UUID
   groupId: UUID
-  arrived: Date
-  departed?: Date
+  arrived: HelsinkiDateTime
+  departed?: HelsinkiDateTime
   occupancyCoefficient: number
 }): Promise<void> {
   try {

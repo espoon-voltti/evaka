@@ -46,8 +46,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unit: null,
-    startDate: LocalDate.today(),
-    endDate: LocalDate.today()
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: LocalDate.todayInSystemTz()
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
 

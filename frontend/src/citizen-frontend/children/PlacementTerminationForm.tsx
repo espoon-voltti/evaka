@@ -50,7 +50,7 @@ const validateTerminationDate = (
   terminationDate: LocalDate,
   options: CheckboxOption[]
 ): boolean =>
-  terminationDate.isEqualOrAfter(LocalDate.today()) &&
+  terminationDate.isEqualOrAfter(LocalDate.todayInSystemTz()) &&
   options.every((o) => terminationDate.isBefore(o.endDate))
 
 const toCheckboxOption = (

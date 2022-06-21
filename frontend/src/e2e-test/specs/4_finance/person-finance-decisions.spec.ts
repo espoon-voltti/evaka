@@ -50,7 +50,7 @@ beforeEach(async () => {
 
 describe('Person finance decisions', () => {
   test('Fee decisions are sorted by sent date', async () => {
-    const sentAtFirst = LocalDate.today().subDays(3)
+    const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
 
@@ -82,7 +82,7 @@ describe('Person finance decisions', () => {
   })
 
   test('Voucher value decisions are sorted by sent date', async () => {
-    const sentAtFirst = LocalDate.today().subDays(3)
+    const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
 
@@ -117,7 +117,7 @@ describe('Person finance decisions', () => {
   })
 
   test('Retroactive voucher value decisions can be generated on demand', async () => {
-    const from = LocalDate.today().subMonths(2)
+    const from = LocalDate.todayInSystemTz().subMonths(2)
 
     await insertFeeThresholds(Fixture.feeThresholds().data)
     await insertVoucherValues()
@@ -137,7 +137,7 @@ describe('Person finance decisions', () => {
         enduserChildFixtureKaarina.id,
         daycareFixturePrivateVoucher.id,
         from.formatIso(),
-        LocalDate.today().formatIso()
+        LocalDate.todayInSystemTz().formatIso()
       )
     ])
 

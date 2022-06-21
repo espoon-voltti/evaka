@@ -59,7 +59,9 @@ export default React.memo(function TabAttendances() {
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
   const [mode, setMode] = useState<CalendarMode>('month')
-  const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.today())
+  const [selectedDate, setSelectedDate] = useState<LocalDate>(
+    LocalDate.todayInSystemTz()
+  )
   const { roles } = useContext(UserContext)
 
   const groupParam = useQuery().get('group')

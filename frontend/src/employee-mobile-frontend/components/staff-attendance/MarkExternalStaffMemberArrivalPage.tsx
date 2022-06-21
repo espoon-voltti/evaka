@@ -5,10 +5,11 @@
 import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { formatTime, isValidTime } from 'lib-common/date'
+import { isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -43,19 +44,19 @@ export default function MarkExternalStaffMemberArrivalPage() {
   const { unitInfoResponse } = useContext(UnitContext)
   const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
 
-  const [form, setForm] = useState<FormState>({
-    arrived: formatTime(mockNow() ?? new Date()),
+  const [form, setForm] = useState<FormState>(() => ({
+    arrived: HelsinkiDateTime.now().toLocalTime().format('HH:mm'),
     group: unitInfoResponse
       .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
       .getOrElse(null),
     name: ''
-  })
+  }))
 
   const onSubmit = useCallback(
     () =>
       form.group
         ? postExternalStaffArrival({
-            arrived: form.arrived,
+            arrived: LocalTime.parse(form.arrived, 'HH:mm'),
             groupId: form.group.id,
             name: form.name
           })

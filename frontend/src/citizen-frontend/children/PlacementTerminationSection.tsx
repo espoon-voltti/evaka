@@ -45,7 +45,7 @@ export default React.memo(function PlacementTerminationSection({
             .find((p2) => !!p2.terminationRequestedDate)
         )
         const groups = placements.filter((p) =>
-          p.endDate.isAfter(LocalDate.today())
+          p.endDate.isAfter(LocalDate.todayInSystemTz())
         )
         return (
           <FixedSpaceColumn>

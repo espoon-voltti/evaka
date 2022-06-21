@@ -41,7 +41,7 @@ export default React.memo(function GroupSelector({
               (group) =>
                 group.id === selected ||
                 new DateRange(group.startDate, group.endDate).includes(
-                  LocalDate.today()
+                  LocalDate.todayInSystemTz()
                 )
             )
             .map(({ id }) => id)
@@ -75,7 +75,7 @@ export default React.memo(function GroupSelector({
       const defaultSelection =
         sortBy(groups.value, [(g) => g.name.toLowerCase()]).find((group) =>
           new DateRange(group.startDate, group.endDate).includes(
-            LocalDate.today()
+            LocalDate.todayInSystemTz()
           )
         )?.id ?? 'no-group'
       onSelect(defaultSelection)

@@ -89,8 +89,8 @@ export default function BackupCareForm({
 
   const initialFormState: FormState = {
     unit: backupCare?.unit,
-    startDate: backupCare?.period.start ?? LocalDate.today(),
-    endDate: backupCare?.period.end ?? LocalDate.today()
+    startDate: backupCare?.period.start ?? LocalDate.todayInSystemTz(),
+    endDate: backupCare?.period.end ?? LocalDate.todayInSystemTz()
   }
 
   const [formState, setFormState] = useState<FormState>(initialFormState)

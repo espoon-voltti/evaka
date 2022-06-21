@@ -88,7 +88,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               .map((terms) =>
                 terms
                   .filter(({ applicationPeriod, extendedTerm }) => {
-                    const today = LocalDate.today()
+                    const today = LocalDate.todayInSystemTz()
                     return (
                       applicationPeriod.start.isEqualOrBefore(today) &&
                       extendedTerm.end.isEqualOrAfter(today)

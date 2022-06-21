@@ -102,8 +102,10 @@ const Modal = React.memo(function Modal({
   allInvoicesToggle: boolean
 }) {
   const { i18n } = useTranslation()
-  const [invoiceDate, setInvoiceDate] = useState(LocalDate.today())
-  const [dueDate, setDueDate] = useState(LocalDate.today().addBusinessDays(10))
+  const [invoiceDate, setInvoiceDate] = useState(LocalDate.todayInSystemTz())
+  const [dueDate, setDueDate] = useState(
+    LocalDate.todayInSystemTz().addBusinessDays(10)
+  )
 
   return (
     <AsyncFormModal

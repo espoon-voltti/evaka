@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -56,7 +55,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val employeeId: EmployeeId,
         val pinCode: String,
         val groupId: GroupId,
-        @ForceCodeGenType(String::class)
         val time: LocalTime
     )
     @PostMapping("/arrival")
@@ -95,7 +93,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
     data class StaffDepartureRequest(
         val pinCode: String,
-        @ForceCodeGenType(String::class)
         val time: LocalTime
     )
     @PostMapping("/{attendanceId}/departure")
@@ -130,7 +127,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     data class ExternalStaffArrivalRequest(
         val name: String,
         val groupId: GroupId,
-        @ForceCodeGenType(String::class)
         val arrived: LocalTime
     )
     @PostMapping("/arrival-external")
@@ -163,7 +159,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
     data class ExternalStaffDepartureRequest(
         val attendanceId: StaffAttendanceExternalId,
-        @ForceCodeGenType(String::class)
         val time: LocalTime
     )
     @PostMapping("/departure-external")

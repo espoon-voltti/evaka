@@ -5,7 +5,9 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import { AbsenceCategory } from './daycare'
 import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
@@ -44,8 +46,8 @@ export interface ArrivalRequest {
 * Generated from fi.espoo.evaka.attendance.Attendance
 */
 export interface Attendance {
-  arrived: Date
-  departed: Date | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
   groupId: UUID
   id: UUID
   occupancyCoefficient: number
@@ -173,8 +175,8 @@ export interface EmployeeAttendance {
 * Generated from fi.espoo.evaka.attendance.ExternalAttendance
 */
 export interface ExternalAttendance {
-  arrived: Date
-  departed: Date | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
   groupId: UUID
   id: UUID
   name: string
@@ -185,7 +187,7 @@ export interface ExternalAttendance {
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffArrivalRequest
 */
 export interface ExternalStaffArrivalRequest {
-  arrived: string
+  arrived: LocalTime
   groupId: UUID
   name: string
 }
@@ -195,14 +197,14 @@ export interface ExternalStaffArrivalRequest {
 */
 export interface ExternalStaffDepartureRequest {
   attendanceId: UUID
-  time: string
+  time: LocalTime
 }
 
 /**
 * Generated from fi.espoo.evaka.attendance.ExternalStaffMember
 */
 export interface ExternalStaffMember {
-  arrived: Date
+  arrived: HelsinkiDateTime
   groupId: UUID
   id: UUID
   name: string
@@ -252,7 +254,7 @@ export interface StaffArrivalRequest {
   employeeId: UUID
   groupId: UUID
   pinCode: string
-  time: string
+  time: LocalTime
 }
 
 /**
@@ -268,7 +270,7 @@ export interface StaffAttendanceResponse {
 */
 export interface StaffDepartureRequest {
   pinCode: string
-  time: string
+  time: LocalTime
 }
 
 /**
@@ -287,8 +289,8 @@ export interface StaffMember {
 * Generated from fi.espoo.evaka.attendance.StaffMemberAttendance
 */
 export interface StaffMemberAttendance {
-  arrived: Date
-  departed: Date | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
   employeeId: UUID
   groupId: UUID
   id: UUID
@@ -335,9 +337,9 @@ export interface UnitStats {
 * Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertExternalAttendance
 */
 export interface UpsertExternalAttendance {
-  arrived: Date
+  arrived: HelsinkiDateTime
   attendanceId: UUID | null
-  departed: Date | null
+  departed: HelsinkiDateTime | null
   groupId: UUID
   name: string | null
 }
@@ -354,9 +356,9 @@ export interface UpsertStaffAndExternalAttendanceRequest {
 * Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAttendance
 */
 export interface UpsertStaffAttendance {
-  arrived: Date
+  arrived: HelsinkiDateTime
   attendanceId: UUID | null
-  departed: Date | null
+  departed: HelsinkiDateTime | null
   employeeId: UUID
   groupId: UUID
 }

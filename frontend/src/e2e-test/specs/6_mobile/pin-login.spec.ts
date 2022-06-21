@@ -101,15 +101,15 @@ describe('Mobile PIN login', () => {
         partnershipId: parentshipId,
         indx: 1,
         personId: fixtures.enduserGuardianFixture.id,
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today()
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz()
       },
       {
         partnershipId: parentshipId,
         indx: 2,
         personId: fixtures.enduserChildJariOtherGuardianFixture.id,
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today()
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz()
       }
     ])
 
@@ -151,8 +151,8 @@ describe('Mobile PIN login', () => {
         id: uuidv4(),
         childId: child.id,
         headOfChild: fixtures.enduserGuardianFixture.id,
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today()
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz()
       }
     ])
 

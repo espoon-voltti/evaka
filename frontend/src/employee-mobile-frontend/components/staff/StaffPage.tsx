@@ -78,7 +78,7 @@ export default React.memo(function StaffPage() {
     [reloadRealizedOccupancyToday, reloadStaff]
   )
 
-  const today = useMemo(() => LocalDate.today(), [])
+  const today = useMemo(() => LocalDate.todayInSystemTz(), [])
 
   return (
     <PageWithNavigation

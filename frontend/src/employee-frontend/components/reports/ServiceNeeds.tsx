@@ -32,7 +32,7 @@ export default React.memo(function ServiceNeeds() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<ServiceNeedReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<DateFilters>({
-    date: LocalDate.today()
+    date: LocalDate.todayInSystemTz()
   })
 
   const [displayFilters, setDisplayFilters] =

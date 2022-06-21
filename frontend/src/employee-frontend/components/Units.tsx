@@ -79,7 +79,8 @@ export default React.memo(function Units() {
           )
           .filter(
             (unit: Unit) =>
-              includeClosed || !unit.closingDate?.isBefore(LocalDate.today())
+              includeClosed ||
+              !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
           )
           .map((unit: Unit) => {
             return (

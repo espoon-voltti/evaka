@@ -41,7 +41,7 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
       onSave({
         id: note.id,
         note: text,
-        expires: LocalDate.today().addDays(7)
+        expires: LocalDate.todayInSystemTz().addDays(7)
       }),
     [note.id, onSave, text]
   )

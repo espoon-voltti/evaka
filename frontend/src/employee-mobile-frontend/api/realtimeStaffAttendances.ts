@@ -10,6 +10,7 @@ import {
   StaffArrivalRequest,
   StaffDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -32,16 +33,20 @@ export async function getUnitStaffAttendances(
           latestCurrentDayAttendance: staff.latestCurrentDayAttendance
             ? {
                 ...staff.latestCurrentDayAttendance,
-                arrived: new Date(staff.latestCurrentDayAttendance.arrived),
+                arrived: HelsinkiDateTime.parseIso(
+                  staff.latestCurrentDayAttendance.arrived
+                ),
                 departed: staff.latestCurrentDayAttendance.departed
-                  ? new Date(staff.latestCurrentDayAttendance.departed)
+                  ? HelsinkiDateTime.parseIso(
+                      staff.latestCurrentDayAttendance.departed
+                    )
                   : null
               }
             : null
         })),
         extraAttendances: res.data.extraAttendances.map((att) => ({
           ...att,
-          arrived: new Date(att.arrived)
+          arrived: HelsinkiDateTime.parseIso(att.arrived)
         }))
       })
     )

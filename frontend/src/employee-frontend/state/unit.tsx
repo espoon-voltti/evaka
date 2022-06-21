@@ -41,7 +41,7 @@ const defaultState: UnitState = {
   unitInformation: Loading.of(),
   unitData: Loading.of(),
   reloadUnitData: () => undefined,
-  filters: new UnitFilters(LocalDate.today(), '1 day'),
+  filters: new UnitFilters(LocalDate.todayInSystemTz(), '1 day'),
   setFilters: () => undefined,
   daycareAclRows: Loading.of(),
   reloadDaycareAclRows: () => undefined

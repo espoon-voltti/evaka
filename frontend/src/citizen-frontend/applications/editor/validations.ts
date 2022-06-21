@@ -41,11 +41,11 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
 const minPreferredStartDate = (
   originalPreferredStartDate: LocalDate | null
 ): LocalDate => {
-  return originalPreferredStartDate ?? LocalDate.today()
+  return originalPreferredStartDate ?? LocalDate.todayInSystemTz()
 }
 
 const maxPreferredStartDate = (): LocalDate => {
-  return LocalDate.today().addYears(1)
+  return LocalDate.todayInSystemTz().addYears(1)
 }
 
 const maxDecisionStartDate = (

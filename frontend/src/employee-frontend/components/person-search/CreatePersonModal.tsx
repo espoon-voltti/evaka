@@ -107,7 +107,9 @@ export default React.memo(function CreatePersonModal({
               }
               setForm(set('dateOfBirth', value))
             }}
-            isValidDate={(date) => date.isEqualOrBefore(LocalDate.today())}
+            isValidDate={(date) =>
+              date.isEqualOrBefore(LocalDate.todayInSystemTz())
+            }
             hideErrorsBeforeTouched
             data-qa="date-of-birth-input"
           />

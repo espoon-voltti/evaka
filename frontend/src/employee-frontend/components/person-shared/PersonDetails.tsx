@@ -98,7 +98,7 @@ export default React.memo(function PersonDetails({
   const [form, setForm] = useState<Form>({
     firstName: '',
     lastName: '',
-    dateOfBirth: LocalDate.today(),
+    dateOfBirth: LocalDate.todayInSystemTz(),
     email: '',
     phone: '',
     backupPhone: '',
@@ -269,7 +269,7 @@ export default React.memo(function PersonDetails({
                 type="full-width"
                 date={form.dateOfBirth}
                 onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
-                maxDate={LocalDate.today()}
+                maxDate={LocalDate.todayInSystemTz()}
                 data-qa="input-birthday"
               />
             ) : (

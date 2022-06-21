@@ -64,7 +64,9 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
               icon={faPen}
               onClick={() => {
                 if (
-                  feeThresholds.validDuring.start.isAfter(LocalDate.today())
+                  feeThresholds.validDuring.start.isAfter(
+                    LocalDate.todayInSystemTz()
+                  )
                 ) {
                   editThresholds(id, feeThresholds)
                 } else {

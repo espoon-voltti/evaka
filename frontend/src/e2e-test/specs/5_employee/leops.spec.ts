@@ -49,8 +49,8 @@ beforeAll(async () => {
       id: uuidv4(),
       childId,
       unitId,
-      startDate: LocalDate.today().formatIso(),
-      endDate: LocalDate.today().addYears(1).formatIso(),
+      startDate: LocalDate.todayInSystemTz().formatIso(),
+      endDate: LocalDate.todayInSystemTz().addYears(1).formatIso(),
       type: 'PRESCHOOL'
     })
     .save()

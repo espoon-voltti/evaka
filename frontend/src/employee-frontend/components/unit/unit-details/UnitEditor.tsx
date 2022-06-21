@@ -817,7 +817,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   onChange={(canApply) => {
                     updateForm({
                       [field]: canApply
-                        ? { start: LocalDate.today(), end: null }
+                        ? { start: LocalDate.todayInSystemTz(), end: null }
                         : null
                     })
                   }}
@@ -832,7 +832,9 @@ export default function UnitEditor(props: Props): JSX.Element {
                         <div>
                           {props.editable ? (
                             <DatePickerDeprecated
-                              date={period?.start ?? LocalDate.today()}
+                              date={
+                                period?.start ?? LocalDate.todayInSystemTz()
+                              }
                               onChange={(startDate) => {
                                 if (
                                   !period ||
@@ -864,7 +866,9 @@ export default function UnitEditor(props: Props): JSX.Element {
 
                                 updateForm({
                                   [field]: {
-                                    start: period?.start ?? LocalDate.today(),
+                                    start:
+                                      period?.start ??
+                                      LocalDate.todayInSystemTz(),
                                     end: endDate
                                   }
                                 })
@@ -872,7 +876,9 @@ export default function UnitEditor(props: Props): JSX.Element {
                               onCleared={() => {
                                 updateForm({
                                   [field]: {
-                                    start: period?.start ?? LocalDate.today(),
+                                    start:
+                                      period?.start ??
+                                      LocalDate.todayInSystemTz(),
                                     end: null
                                   }
                                 })

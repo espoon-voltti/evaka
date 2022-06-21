@@ -79,7 +79,7 @@ function renderMissingGroupPlacementRow(
                 ? serviceNeeds
                     .filter((sn) =>
                       new FiniteDateRange(sn.startDate, sn.endDate).includes(
-                        LocalDate.today()
+                        LocalDate.todayInSystemTz()
                       )
                     )
                     .map((sn) => sn.option.nameFi)

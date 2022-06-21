@@ -96,7 +96,7 @@ describe('Citizen pedagogical documents', () => {
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
         pd.data.id,
-        LocalDate.today().format(),
+        LocalDate.todayInSystemTz().format(),
         pd.data.description
       )
     })

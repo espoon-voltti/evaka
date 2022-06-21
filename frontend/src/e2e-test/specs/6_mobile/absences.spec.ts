@@ -57,16 +57,16 @@ describe('Future absences', () => {
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 0)
 
     await absencesPage.markNewAbsencePeriod(
-      LocalDate.today().addWeeks(1),
-      LocalDate.today().addWeeks(2),
+      LocalDate.todayInSystemTz().addWeeks(1),
+      LocalDate.todayInSystemTz().addWeeks(2),
       'SICKLEAVE'
     )
     await childPage.markFutureAbsences()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 1)
 
     await absencesPage.markNewAbsencePeriod(
-      LocalDate.today().addWeeks(4),
-      LocalDate.today().addWeeks(5),
+      LocalDate.todayInSystemTz().addWeeks(4),
+      LocalDate.todayInSystemTz().addWeeks(5),
       'SICKLEAVE'
     )
     await childPage.markFutureAbsences()

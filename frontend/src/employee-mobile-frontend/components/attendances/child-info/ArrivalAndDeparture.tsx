@@ -27,9 +27,9 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
   }
 
   const arrivalDate = LocalDate.fromSystemTzDate(arrival)
-  const dateInfo = arrivalDate.isEqual(LocalDate.today())
+  const dateInfo = arrivalDate.isEqual(LocalDate.todayInSystemTz())
     ? ''
-    : arrivalDate.isEqual(LocalDate.today().subDays(1))
+    : arrivalDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
     ? i18n.common.yesterday
     : arrivalDate.format('d.M.')
 

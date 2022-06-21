@@ -275,7 +275,7 @@ export class ReservationModal extends Modal {
 
   async addOvernightReservation() {
     await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(LocalDate.today().addDays(1).format())
+    await this.setEndDate(LocalDate.todayInSystemTz().addDays(1).format())
     await this.setStartTime('22:00', 0)
     await this.setEndTime('23:59', 0)
     await this.setStartTime('00:00', 1)

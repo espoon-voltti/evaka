@@ -159,7 +159,11 @@ export function DatePickerDeprecated({
         onChange={(newDate) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const date: Date = Array.isArray(newDate) ? newDate[0] : newDate
-          onChange(date ? LocalDate.fromSystemTzDate(date) : LocalDate.today())
+          onChange(
+            date
+              ? LocalDate.fromSystemTzDate(date)
+              : LocalDate.todayInSystemTz()
+          )
         }}
         onFocus={onFocus}
         disabled={disabled}

@@ -4,7 +4,6 @@
 
 import React, { useContext, useMemo } from 'react'
 
-import { formatTime } from 'lib-common/date'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -55,18 +54,18 @@ export default React.memo(function StaffMemberPage() {
                     <TimeInfo>
                       <Label>{i18n.attendances.arrivalTime}</Label>{' '}
                       <span data-qa="arrival-time">
-                        {formatTime(
-                          staffMember.latestCurrentDayAttendance.arrived
-                        )}
+                        {staffMember.latestCurrentDayAttendance.arrived
+                          .toLocalTime()
+                          .format('HH:mm')}
                       </span>
                     </TimeInfo>
                     {staffMember.latestCurrentDayAttendance.departed && (
                       <TimeInfo>
                         <Label>{i18n.attendances.departureTime}</Label>{' '}
                         <span data-qa="departure-time">
-                          {formatTime(
-                            staffMember.latestCurrentDayAttendance.departed
-                          )}
+                          {staffMember.latestCurrentDayAttendance.departed
+                            .toLocalTime()
+                            .format('HH:mm')}
                         </span>
                       </TimeInfo>
                     )}

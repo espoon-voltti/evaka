@@ -114,7 +114,7 @@ export default React.memo(function InvoiceRowsSection({
   const [child, setChild] = useState<PersonDetailed>()
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const [absenceModalDate, setAbsenceModalDate] = useState<LocalDate>(
-    LocalDate.today()
+    LocalDate.todayInSystemTz()
   )
 
   const openAbsences = (child: PersonDetailed, date: LocalDate) => {

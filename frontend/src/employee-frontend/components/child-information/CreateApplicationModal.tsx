@@ -68,7 +68,9 @@ function CreateApplicationModal({
   )
 
   const [type, setType] = useState<ApplicationType>('DAYCARE')
-  const [sentDate, setSentDate] = useState<LocalDate>(LocalDate.today())
+  const [sentDate, setSentDate] = useState<LocalDate>(
+    LocalDate.todayInSystemTz()
+  )
   const [hideFromGuardian, setHideFromGuardian] = useState(false)
   const [createPersonBody, setCreatePersonInfo] = useState<
     Partial<CreatePersonBody>

@@ -62,8 +62,8 @@ describe('Guardian income statements', () => {
       {
         type: 'CHILD_INCOME',
         otherInfo: 'Test other info',
-        startDate: LocalDate.today(),
-        endDate: LocalDate.today(),
+        startDate: LocalDate.todayInSystemTz(),
+        endDate: LocalDate.todayInSystemTz(),
         attachmentIds: []
       }
     ])

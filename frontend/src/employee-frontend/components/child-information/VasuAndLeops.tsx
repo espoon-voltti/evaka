@@ -129,7 +129,7 @@ function VasuInitialization({
       templates
         ? combine(placements, templates).map(([placements, templates]) => {
             const placementsNotInFuture = placements.filter(
-              ({ startDate }) => !startDate.isAfter(LocalDate.today())
+              ({ startDate }) => !startDate.isAfter(LocalDate.todayInSystemTz())
             )
 
             const useableType = placementsNotInFuture.some(({ type }) =>

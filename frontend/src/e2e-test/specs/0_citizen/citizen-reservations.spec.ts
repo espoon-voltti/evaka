@@ -42,8 +42,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
           uuidv4(),
           child.id,
           fixtures.daycareFixture.id,
-          LocalDate.today().formatIso(),
-          LocalDate.today().addYears(1).formatIso()
+          LocalDate.todayInSystemTz().formatIso(),
+          LocalDate.todayInSystemTz().addYears(1).formatIso()
         )
       )
     )
@@ -61,7 +61,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation for all children', async () => {
-    const firstReservationDay = LocalDate.today().addDays(14)
+    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
     const reservationsModal = await calendarPage.openReservationsModal()
@@ -76,9 +76,9 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
   test('Citizen creates a repeating weekly reservation for all children', async () => {
     // This should be a monday
-    const firstReservationDay = LocalDate.today()
+    const firstReservationDay = LocalDate.todayInSystemTz()
       .addDays(14)
-      .subDays(LocalDate.today().getIsoDayOfWeek() - 1)
+      .subDays(LocalDate.todayInSystemTz().getIsoDayOfWeek() - 1)
     const weekdays = [0, 1, 2, 3, 4]
     const reservations = weekdays.map((index) => ({
       startTime: `08:0${index}`,
@@ -101,7 +101,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
-    const firstReservationDay = LocalDate.today().addDays(14)
+    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
     const reservation = { startTime: '08:00', endTime: '16:00' }
 
     const reservationsModal = await calendarPage.openReservationsModal()
@@ -127,7 +127,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
-    const firstReservationDay = LocalDate.today().addDays(14)
+    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
     const initialReservation = { startTime: '08:00', endTime: '16:00' }
 
     let reservationsModal = await calendarPage.openReservationsModal()
@@ -154,7 +154,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a reservation from day view', async () => {
-    const reservationDay = LocalDate.today().addDays(14)
+    const reservationDay = LocalDate.todayInSystemTz().addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
@@ -173,7 +173,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('If absence modal is opened from day view, that day is filled by default', async () => {
-    const reservationDay = LocalDate.today().addDays(14)
+    const reservationDay = LocalDate.todayInSystemTz().addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
     const absencesModal = await dayView.createAbsence()

@@ -122,11 +122,11 @@ export async function sendInvoicesByDate(
       from:
         periodStart && useCustomDatesForInvoiceSending
           ? periodStart
-          : LocalDate.today().withDate(1),
+          : LocalDate.todayInSystemTz().withDate(1),
       to:
         periodEnd && useCustomDatesForInvoiceSending
           ? periodEnd
-          : LocalDate.today().lastDayOfMonth(),
+          : LocalDate.todayInSystemTz().lastDayOfMonth(),
       areas,
       invoiceDate: invoiceDate,
       dueDate: dueDate

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 @RestController
 @RequestMapping("/staff-attendances/realtime")
@@ -87,18 +85,14 @@ class RealtimeStaffAttendanceController(
         val attendanceId: StaffAttendanceId?,
         val employeeId: EmployeeId,
         val groupId: GroupId,
-        @ForceCodeGenType(OffsetDateTime::class)
         val arrived: HelsinkiDateTime,
-        @ForceCodeGenType(OffsetDateTime::class)
         val departed: HelsinkiDateTime?
     )
     data class UpsertExternalAttendance(
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
         val groupId: GroupId,
-        @ForceCodeGenType(OffsetDateTime::class)
         val arrived: HelsinkiDateTime,
-        @ForceCodeGenType(OffsetDateTime::class)
         val departed: HelsinkiDateTime?
     )
     data class UpsertStaffAndExternalAttendanceRequest(

@@ -36,7 +36,10 @@ let guardian: PersonBuilder
 const holidayQuestionnaireFixture = () =>
   Fixture.holidayQuestionnaire().with({
     absenceType: 'FREE_ABSENCE',
-    active: new FiniteDateRange(LocalDate.today(), LocalDate.of(2035, 12, 6)),
+    active: new FiniteDateRange(
+      LocalDate.todayInSystemTz(),
+      LocalDate.of(2035, 12, 6)
+    ),
     description: {
       en: 'Please submit your reservations for 18.12.2035 - 8.1.2036 asap',
       fi: 'Ystävällisesti pyydän tekemään varauksenne ajalle 18.12.2035 - 8.1.2036 heti kun mahdollista, kuitenkin viimeistään 6.12.',

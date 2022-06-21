@@ -10,6 +10,7 @@ import {
   StaffAttendanceResponse,
   UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -21,8 +22,8 @@ const mapExternalAttendance = ({
   ...rest
 }: JsonOf<ExternalAttendance>): ExternalAttendance => ({
   ...rest,
-  arrived: new Date(arrived),
-  departed: departed ? new Date(departed) : null
+  arrived: HelsinkiDateTime.parseIso(arrived),
+  departed: departed ? HelsinkiDateTime.parseIso(departed) : null
 })
 
 const mapEmployeeAttendance = ({
@@ -32,8 +33,8 @@ const mapEmployeeAttendance = ({
   ...rest,
   attendances: attendances.map(({ arrived, departed, ...rest }) => ({
     ...rest,
-    arrived: new Date(arrived),
-    departed: departed ? new Date(departed) : null
+    arrived: HelsinkiDateTime.parseIso(arrived),
+    departed: departed ? HelsinkiDateTime.parseIso(departed) : null
   }))
 })
 

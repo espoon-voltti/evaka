@@ -55,8 +55,8 @@ const setupPlacement = async (
       placementId,
       childId,
       unitId,
-      LocalDate.today().formatIso(),
-      LocalDate.today().formatIso(),
+      LocalDate.todayInSystemTz().formatIso(),
+      LocalDate.todayInSystemTz().formatIso(),
       childPlacementType
     )
   ])
@@ -79,8 +79,8 @@ describe('Child Information placement info', () => {
 
     await terminatePlacement(
       placementId,
-      LocalDate.today(),
-      LocalDate.today(),
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz(),
       familyWithTwoGuardians.guardian.id
     )
 

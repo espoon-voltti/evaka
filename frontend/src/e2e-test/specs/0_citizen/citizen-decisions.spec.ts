@@ -80,7 +80,7 @@ describe('Citizen page', () => {
       preschoolDecisionId,
       `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`,
       'Päätös esiopetuksesta',
-      LocalDate.today().format(),
+      LocalDate.todayInSystemTz().format(),
       'Vahvistettavana huoltajalla'
     )
     await citizenDecisionsPage.assertApplicationDecision(
@@ -88,7 +88,7 @@ describe('Citizen page', () => {
       preschoolDaycareDecisionId,
       `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`,
       'Päätös liittyvästä varhaiskasvatuksesta',
-      LocalDate.today().format(),
+      LocalDate.todayInSystemTz().format(),
       'Vahvistettavana huoltajalla'
     )
 

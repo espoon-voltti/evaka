@@ -5,6 +5,9 @@
 import { format, parse } from 'date-fns'
 import isInteger from 'lodash/isInteger'
 
+import HelsinkiDateTime from './helsinki-date-time'
+import { isAutomatedTest, mockNow } from './utils/helpers'
+
 // ISO local time with nanosecond precision
 const isoPattern = /^(\d{2}):(\d{2}):(\d{2}).(\d{9})$/
 
@@ -70,6 +73,28 @@ export default class LocalTime {
     return this.formatIso()
   }
 
+  /**
+   * Current time in system (= browser local) timezone.
+   */
+  static nowInSystemTz(): LocalTime {
+    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    return LocalTime.of(
+      timestamp.getHours(),
+      timestamp.getMinutes(),
+      timestamp.getSeconds(),
+      millisToNanos(timestamp.getMilliseconds())
+    )
+  }
+  /**
+   * Current time in Europe/Helsinki timezone.
+   */
+  static nowInHelsinkiTz(): LocalTime {
+    return HelsinkiDateTime.now().toLocalTime()
+  }
+
+  static MIN = LocalTime.of(0, 0, 0, 0)
+  static MAX = LocalTime.of(23, 59, 59, 999_999_999)
+
   static parseIso(text: string): LocalTime {
     const parts =
       isoPattern.exec(text) ??
@@ -87,14 +112,21 @@ export default class LocalTime {
     throw new RangeError(`Invalid time ${text}`)
   }
 
-  static parse(text: string, pattern: 'HH:mm'): LocalTime {
+  static tryParse(text: string, pattern: 'HH:mm'): LocalTime | undefined {
     const timestamp = parse(text, pattern, new Date(1970, 0, 1))
-    return LocalTime.of(
+    return LocalTime.tryCreate(
       timestamp.getHours(),
       timestamp.getMinutes(),
       timestamp.getSeconds(),
       millisToNanos(timestamp.getMilliseconds())
     )
+  }
+  static parse(text: string, pattern: 'HH:mm'): LocalTime {
+    const result = LocalTime.tryParse(text, pattern)
+    if (!result) {
+      throw new RangeError(`Invalid time ${text}`)
+    }
+    return result
   }
   static of(
     hour: number,

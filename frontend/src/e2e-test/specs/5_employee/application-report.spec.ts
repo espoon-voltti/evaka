@@ -55,8 +55,8 @@ describe('Reporting - applications', () => {
 
     await report.selectArea('Toinen alue')
     await report.selectDateRangePickerDates(
-      LocalDate.today(),
-      LocalDate.today()
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz()
     )
     await report.assertContainsArea('Toinen alue')
     await report.assertDoesntContainArea(fixtures.careAreaFixture.name)

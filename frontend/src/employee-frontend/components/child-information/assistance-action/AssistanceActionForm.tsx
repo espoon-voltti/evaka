@@ -135,8 +135,8 @@ export default React.memo(function AssistanceActionForm(props: Props) {
     () =>
       isCreate(props) && !isDuplicate(props)
         ? {
-            startDate: LocalDate.today(),
-            endDate: LocalDate.today(),
+            startDate: LocalDate.todayInSystemTz(),
+            endDate: LocalDate.todayInSystemTz(),
             actions: new Set(),
             otherSelected: false,
             otherAction: '',

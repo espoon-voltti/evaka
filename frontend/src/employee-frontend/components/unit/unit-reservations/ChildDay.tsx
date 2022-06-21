@@ -148,7 +148,7 @@ export default React.memo(function ChildDay({
         )}
       </TimesRow>
       <TimesRow data-qa={`attendance-${day.date.formatIso()}-${rowIndex}`}>
-        {editState && day.date.isEqualOrBefore(LocalDate.today()) ? (
+        {editState && day.date.isEqualOrBefore(LocalDate.todayInSystemTz()) ? (
           <TimeRangeEditor
             timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
             update={(timeRange) =>

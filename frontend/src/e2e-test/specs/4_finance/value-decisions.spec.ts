@@ -37,10 +37,10 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let valueDecisionsPage: ValueDecisionsPage
-const decision1DateFrom = LocalDate.today().subWeeks(1)
-const decision1DateTo = LocalDate.today().addWeeks(2)
-const decision2DateFrom = LocalDate.today()
-const decision2DateTo = LocalDate.today().addWeeks(5)
+const decision1DateFrom = LocalDate.todayInSystemTz().subWeeks(1)
+const decision1DateTo = LocalDate.todayInSystemTz().addWeeks(2)
+const decision2DateFrom = LocalDate.todayInSystemTz()
+const decision2DateTo = LocalDate.todayInSystemTz().addWeeks(5)
 
 beforeEach(async () => {
   await resetDatabase()

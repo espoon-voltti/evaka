@@ -13,6 +13,19 @@ describe('LocalTime', () => {
     const time = LocalTime.of(1, 2, 3, 123456789)
     expect(LocalTime.parseIso(time.toJSON()).isEqual(time)).toBeTruthy()
   })
+  it('can be formatted to HH:mm format', () => {
+    const time = LocalTime.of(1, 2, 3, 123456789)
+    expect(time.format('HH:mm')).toStrictEqual('01:02')
+  })
+  it('can be parsed from HH:mm format', () => {
+    const expected = LocalTime.of(1, 2)
+    expect(LocalTime.parse('01:02', 'HH:mm').isEqual(expected)).toBeTruthy()
+    expect(LocalTime.parse('1:2', 'HH:mm').isEqual(expected)).toBeTruthy()
+  })
+  it('fails to parse invalid HH:mm input', () => {
+    expect(LocalTime.tryParse('01:62', 'HH:mm')).toBeUndefined()
+    expect(LocalTime.tryParse('01:00:999', 'HH:mm')).toBeUndefined()
+  })
   it('has property getters for each part of the time', () => {
     const parts = [1, 2, 3, 123456789] as const
     const [hour, minute, second, nanosecond] = parts

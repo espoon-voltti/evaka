@@ -76,6 +76,9 @@ export default class HelsinkiDateTime {
   toJSON(): string {
     return this.formatIso()
   }
+  toSystemTzDate(): Date {
+    return new Date(this.timestamp)
+  }
   valueOf(): number {
     return this.timestamp
   }
@@ -105,6 +108,18 @@ export default class HelsinkiDateTime {
       this.minute,
       this.second,
       millisToNanos(this.millisecond)
+    )
+  }
+
+  static fromLocal(date: LocalDate, time: LocalTime): HelsinkiDateTime {
+    return HelsinkiDateTime.of(
+      date.year,
+      date.month,
+      date.date,
+      time.hour,
+      time.minute,
+      time.second,
+      nanosToMillis(time.nanosecond)
     )
   }
 
@@ -150,12 +165,13 @@ export default class HelsinkiDateTime {
   static tryParseIso(value: string): HelsinkiDateTime | undefined {
     return HelsinkiDateTime.tryFromDate(parseJSON(value))
   }
+
+  /**
+   * Current timestamp in Europe/Helsinki timezone.
+   */
   static now(): HelsinkiDateTime {
-    if (isAutomatedTest) {
-      const now = mockNow()
-      return HelsinkiDateTime.fromSystemTzDate(now ?? new Date())
-    }
-    return HelsinkiDateTime.fromSystemTzDate(new Date())
+    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    return HelsinkiDateTime.fromSystemTzDate(timestamp)
   }
 
   private static tryCreate(

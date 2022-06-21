@@ -5,9 +5,9 @@
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { formatTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -43,7 +43,10 @@ export default React.memo(function ExternalStaffMemberPage() {
     [attendanceId, staffAttendanceResponse]
   )
 
-  const [time, setTime] = useState(formatTime(mockNow() ?? new Date()))
+  const [time, setTime] = useState(() =>
+    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+  )
+  const parsedTime = useMemo(() => LocalTime.tryParse(time, 'HH:mm'), [time])
 
   return (
     <StaffMemberPageContainer>
@@ -59,7 +62,9 @@ export default React.memo(function ExternalStaffMemberPage() {
               <FixedSpaceColumn>
                 <TimeInfo>
                   <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                  <span data-qa="arrival-time">{formatTime(ext.arrived)}</span>
+                  <span data-qa="arrival-time">
+                    {ext.arrived.toLocalTime().format('HH:mm')}
+                  </span>
                 </TimeInfo>
 
                 <TimeInfo>
@@ -78,8 +83,13 @@ export default React.memo(function ExternalStaffMemberPage() {
                   primary
                   text={i18n.attendances.actions.markDeparted}
                   data-qa="mark-departed-link"
+                  disabled={!parsedTime}
                   onClick={() =>
-                    postExternalStaffDeparture({ attendanceId, time })
+                    parsedTime &&
+                    postExternalStaffDeparture({
+                      attendanceId,
+                      time: parsedTime
+                    })
                   }
                   onSuccess={() => {
                     reloadStaffAttendance()

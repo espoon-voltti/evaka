@@ -45,7 +45,9 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
     partner:
       partnership &&
       partnership.partners.find((partner) => partner.id !== headPersonId),
-    startDate: partnership ? partnership.startDate : LocalDate.today(),
+    startDate: partnership
+      ? partnership.startDate
+      : LocalDate.todayInSystemTz(),
     endDate: partnership ? partnership.endDate : null
   }
   const [form, setForm] = useState(initialForm)

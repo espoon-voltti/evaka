@@ -363,7 +363,7 @@ describe('Vasu document page', () => {
           ['This is a followup', 'A second one']
         )
 
-        const expectedMetadataStr = `${LocalDate.today().format()} Seppo Sorsa`
+        const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa`
         await waitUntilEqual(
           () => vasuEditPage.followupEntryMetadata,
           [expectedMetadataStr, expectedMetadataStr]
@@ -388,7 +388,7 @@ describe('Vasu document page', () => {
           'now edited: This will be edited'
         )
 
-        const date = LocalDate.today().format()
+        const date = LocalDate.todayInSystemTz().format()
         await waitUntilEqual(
           () => vasuEditPage.followupEntryMetadata.then(lastElement),
           `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
@@ -415,7 +415,7 @@ describe('Vasu document page', () => {
       await waitUntilEqual(() => vasuPage.documentState(), 'Laadittu')
       await waitUntilEqual(
         () => vasuPage.publishedDate(),
-        LocalDate.today().format()
+        LocalDate.todayInSystemTz().format()
       )
     })
 
@@ -438,7 +438,7 @@ describe('Vasu document page', () => {
       await waitUntilEqual(() => vasuPage.documentState(), 'Arvioitu')
       await waitUntilEqual(
         () => vasuPage.reviewedDate(),
-        LocalDate.today().format()
+        LocalDate.todayInSystemTz().format()
       )
     })
 
@@ -462,7 +462,7 @@ describe('Vasu document page', () => {
       await waitUntilEqual(() => vasuPage.documentState(), 'Päättynyt')
       await waitUntilEqual(
         () => vasuPage.closedDate(),
-        LocalDate.today().format()
+        LocalDate.todayInSystemTz().format()
       )
     })
   })

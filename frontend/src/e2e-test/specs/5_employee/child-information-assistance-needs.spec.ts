@@ -53,8 +53,8 @@ const setupPlacement = async (childPlacementType: PlacementType) => {
       uuidv4(),
       childId,
       unitId,
-      LocalDate.today().formatIso(),
-      LocalDate.today().formatIso(),
+      LocalDate.todayInSystemTz().formatIso(),
+      LocalDate.todayInSystemTz().formatIso(),
       childPlacementType
     )
   ])
