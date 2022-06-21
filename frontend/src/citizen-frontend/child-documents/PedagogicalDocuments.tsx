@@ -12,7 +12,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import Footer from 'citizen-frontend/Footer'
 import {
   Attachment,
   PedagogicalDocumentCitizen
@@ -347,14 +346,11 @@ export default React.memo(function PedagogicalDocuments() {
   }
 
   return (
-    <>
-      <Container>
-        {renderResult(pedagogicalDocuments, (items) => (
-          <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
-        ))}
-        <Footer />
-      </Container>
-    </>
+    <Container>
+      {renderResult(pedagogicalDocuments, (items) => (
+        <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
+      ))}
+    </Container>
   )
 })
 

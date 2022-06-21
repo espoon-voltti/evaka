@@ -10,6 +10,7 @@ import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import Main from 'lib-components/atoms/Main'
 
 import { renderResult } from '../async-rendering'
 
@@ -109,17 +110,19 @@ export default React.memo(function ChildIncomeStatementEditor() {
     }
 
     return (
-      <ChildIncomeStatementForm
-        incomeStatementId={id}
-        formData={formData}
-        showFormErrors={showFormErrors}
-        otherStartDates={startDates}
-        onChange={updateFormData}
-        onSave={save}
-        onSuccess={navigateToList}
-        onCancel={navigateToList}
-        ref={form}
-      />
+      <Main>
+        <ChildIncomeStatementForm
+          incomeStatementId={id}
+          formData={formData}
+          showFormErrors={showFormErrors}
+          otherStartDates={startDates}
+          onChange={updateFormData}
+          onSave={save}
+          onSuccess={navigateToList}
+          onCancel={navigateToList}
+          ref={form}
+        />
+      </Main>
     )
   })
 })

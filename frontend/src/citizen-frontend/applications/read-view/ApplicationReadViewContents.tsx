@@ -7,6 +7,7 @@ import React from 'react'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
@@ -33,28 +34,30 @@ export default React.memo(function ApplicationReadViewContents({
   return (
     <Container>
       <ReturnButton label={t.common.return} />
-      <ContentArea opaque>
-        <H1>{t.applications.editor.heading.title[type]}</H1>
-        <BasicsSection application={application} formData={formData} />
-        <HorizontalLine />
-        <ServiceNeedSection formData={formData} type={type} />
-        <HorizontalLine />
-        <UnitPreferenceSection formData={formData.unitPreference} />
-        <HorizontalLine />
-        <ContactInfoSection
-          formData={formData.contactInfo}
-          type={type}
-          showFridgeFamilySection={
-            type === 'DAYCARE' ||
-            (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
-          }
-        />
-        <HorizontalLine />
-        <AdditionalDetailsSection
-          formData={formData}
-          showAllergiesAndDiet={type !== 'CLUB'}
-        />
-      </ContentArea>
+      <Main>
+        <ContentArea opaque>
+          <H1>{t.applications.editor.heading.title[type]}</H1>
+          <BasicsSection application={application} formData={formData} />
+          <HorizontalLine />
+          <ServiceNeedSection formData={formData} type={type} />
+          <HorizontalLine />
+          <UnitPreferenceSection formData={formData.unitPreference} />
+          <HorizontalLine />
+          <ContactInfoSection
+            formData={formData.contactInfo}
+            type={type}
+            showFridgeFamilySection={
+              type === 'DAYCARE' ||
+              (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
+            }
+          />
+          <HorizontalLine />
+          <AdditionalDetailsSection
+            formData={formData}
+            showAllergiesAndDiet={type !== 'CLUB'}
+          />
+        </ContentArea>
+      </Main>
     </Container>
   )
 })

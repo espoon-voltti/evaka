@@ -13,6 +13,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -52,33 +53,35 @@ export default React.memo(function ChildIncomeStatementView() {
   return renderResult(result, (incomeStatement) => (
     <Container>
       <ReturnButton label={t.common.return} />
-      <ContentArea opaque>
-        <FixedSpaceRow spacing="L">
-          <H1>{t.income.view.title}</H1>
-          {!incomeStatement.handled && (
-            <EditButtonContainer>
-              <ResponsiveInlineButton
-                text={t.common.edit}
-                icon={faPen}
-                onClick={handleEdit}
-                data-qa="edit-button"
-              />
-            </EditButtonContainer>
+      <Main>
+        <ContentArea opaque>
+          <FixedSpaceRow spacing="L">
+            <H1>{t.income.view.title}</H1>
+            {!incomeStatement.handled && (
+              <EditButtonContainer>
+                <ResponsiveInlineButton
+                  text={t.common.edit}
+                  icon={faPen}
+                  onClick={handleEdit}
+                  data-qa="edit-button"
+                />
+              </EditButtonContainer>
+            )}
+          </FixedSpaceRow>
+          <Row
+            label={t.income.view.startDate}
+            value={incomeStatement.startDate.format()}
+            data-qa="start-date"
+          />
+          <Row
+            label={t.income.view.feeBasis}
+            value={t.income.view.statementTypes[incomeStatement.type]}
+          />
+          {incomeStatement.type === 'CHILD_INCOME' && (
+            <ChildIncomeInfo incomeStatement={incomeStatement} />
           )}
-        </FixedSpaceRow>
-        <Row
-          label={t.income.view.startDate}
-          value={incomeStatement.startDate.format()}
-          data-qa="start-date"
-        />
-        <Row
-          label={t.income.view.feeBasis}
-          value={t.income.view.statementTypes[incomeStatement.type]}
-        />
-        {incomeStatement.type === 'CHILD_INCOME' && (
-          <ChildIncomeInfo incomeStatement={incomeStatement} />
-        )}
-      </ContentArea>
+        </ContentArea>
+      </Main>
     </Container>
   ))
 })

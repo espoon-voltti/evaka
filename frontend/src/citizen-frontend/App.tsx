@@ -9,6 +9,7 @@ import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
 
 import { scrollElementToPos } from 'lib-common/utils/scrolling'
+import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
@@ -40,7 +41,7 @@ import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
 import IncomeStatementView from './income-statements/IncomeStatementView'
 import IncomeStatements from './income-statements/IncomeStatements'
 import { Localization, useTranslation } from './localization'
-import MapView from './map/MapView'
+import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
 import GlobalDialog from './overlay/GlobalDialog'
@@ -80,9 +81,11 @@ export default function App() {
 }
 
 const Content = React.memo(function Content() {
+  const t = useTranslation()
+
   const { modalOpen } = useContext(OverlayContext)
 
-  const mainRef = useRef<HTMLElement>(null)
+  const mainRef = useRef<HTMLDivElement>(null)
   const scrollMainToTop = useCallback(
     () =>
       scrollElementToPos(mainRef.current, {
@@ -95,13 +98,14 @@ const Content = React.memo(function Content() {
 
   return (
     <>
+      <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
-      <Main ariaHidden={modalOpen} ref={mainRef}>
+      <MainContainer ariaHidden={modalOpen} ref={mainRef}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/map"
-            element={<MapView scrollToTop={scrollMainToTop} />}
+            element={<MapPage scrollToTop={scrollMainToTop} />}
           />
           <Route
             path="/applying/*"
@@ -249,14 +253,14 @@ const Content = React.memo(function Content() {
           />
           <Route index element={<HandleRedirection />} />
         </Routes>
-      </Main>
+      </MainContainer>
     </>
   )
 })
 
 // eslint-disable-next-line react/display-name
-const Main = React.memo(
-  React.forwardRef(function Main(
+const MainContainer = React.memo(
+  React.forwardRef(function MainContainer(
     {
       ariaHidden,
       children
@@ -264,12 +268,12 @@ const Main = React.memo(
       ariaHidden: boolean
       children: ReactNode
     },
-    ref: React.ForwardedRef<HTMLElement>
+    ref: React.ForwardedRef<HTMLDivElement>
   ) {
     const { user } = useContext(AuthContext)
     const render = useCallback(() => <>{children}</>, [children])
     return (
-      <ScrollableMain id="main" aria-hidden={ariaHidden} ref={ref}>
+      <ScrollableMain aria-hidden={ariaHidden} ref={ref}>
         <UnwrapResult result={user}>{render}</UnwrapResult>
       </ScrollableMain>
     )
@@ -291,7 +295,7 @@ function HandleRedirection() {
   )
 }
 
-const ScrollableMain = styled.main`
+const ScrollableMain = styled.div`
   height: calc(100% - ${headerHeightMobile}px);
   overflow: auto;
 

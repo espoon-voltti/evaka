@@ -7,6 +7,7 @@ import React from 'react'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -26,17 +27,19 @@ export default React.memo(function ChildPage() {
 
   return (
     <>
-      <Container>
-        <ReturnButton label={t.common.return} />
-        <Gap size="s" />
-        {renderResult(childResponse, (child) => (
-          <ContentArea opaque>
-            <ChildHeader child={child} />
-            <HorizontalLine slim dashed />
-            <PlacementTerminationSection childId={childId} />
-          </ContentArea>
-        ))}
-      </Container>
+      <Main>
+        <Container>
+          <ReturnButton label={t.common.return} />
+          <Gap size="s" />
+          {renderResult(childResponse, (child) => (
+            <ContentArea opaque>
+              <ChildHeader child={child} />
+              <HorizontalLine slim dashed />
+              <PlacementTerminationSection childId={childId} />
+            </ContentArea>
+          ))}
+        </Container>
+      </Main>
       <Footer />
     </>
   )

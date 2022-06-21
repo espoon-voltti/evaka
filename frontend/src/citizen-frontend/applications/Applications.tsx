@@ -11,7 +11,6 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import Footer from '../Footer'
 import ChildApplicationsBlock from '../applications/ChildApplicationsBlock'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
@@ -29,39 +28,34 @@ export default React.memo(function Applications() {
   useTitle(t, t.applicationsList.title)
 
   return (
-    <>
-      <Container
-        data-qa="applications-list"
-        data-isloading={isLoading(guardianApplications)}
-      >
-        <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.applicationsList.title}</H1>
-          {t.applicationsList.summary}
-        </ContentArea>
-        <Gap size="s" />
+    <Container
+      data-qa="applications-list"
+      data-isloading={isLoading(guardianApplications)}
+    >
+      <Gap size="s" />
+      <ContentArea opaque paddingVertical="L">
+        <H1 noMargin>{t.applicationsList.title}</H1>
+        {t.applicationsList.summary}
+      </ContentArea>
+      <Gap size="s" />
 
-        {renderResult(guardianApplications, (guardianApplications) => (
-          <>
-            {sortBy(guardianApplications, (a) => a.childName).map(
-              (childApplications) => (
-                <Fragment key={childApplications.childId}>
-                  <ChildApplicationsBlock
-                    childId={childApplications.childId}
-                    childName={childApplications.childName}
-                    applicationSummaries={
-                      childApplications.applicationSummaries
-                    }
-                    reload={loadGuardianApplications}
-                  />
-                  <Gap size="s" />
-                </Fragment>
-              )
-            )}
-          </>
-        ))}
-      </Container>
-      <Footer />
-    </>
+      {renderResult(guardianApplications, (guardianApplications) => (
+        <>
+          {sortBy(guardianApplications, (a) => a.childName).map(
+            (childApplications) => (
+              <Fragment key={childApplications.childId}>
+                <ChildApplicationsBlock
+                  childId={childApplications.childId}
+                  childName={childApplications.childName}
+                  applicationSummaries={childApplications.applicationSummaries}
+                  reload={loadGuardianApplications}
+                />
+                <Gap size="s" />
+              </Fragment>
+            )
+          )}
+        </>
+      ))}
+    </Container>
   )
 })

@@ -11,6 +11,7 @@ import { AuthContext, User } from 'citizen-frontend/auth/state'
 import { Result } from 'lib-common/api'
 import { email, phone } from 'lib-common/form-validation'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -105,174 +106,182 @@ export default React.memo(function PersonalDetails() {
 
   return (
     <>
-      <Container>
-        <Gap size="L" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.personalDetails.title}</H1>
-          {t.personalDetails.description}
-          {renderResult(user, (personalData) => {
-            if (personalData === undefined) {
-              return <Navigate replace to="/" />
-            }
+      <Main>
+        <Container>
+          <Gap size="L" />
+          <ContentArea opaque paddingVertical="L">
+            <H1 noMargin>{t.personalDetails.title}</H1>
+            {t.personalDetails.description}
+            {renderResult(user, (personalData) => {
+              if (personalData === undefined) {
+                return <Navigate replace to="/" />
+              }
 
-            const {
-              firstName,
-              lastName,
-              preferredName,
-              streetAddress,
-              postalCode,
-              postOffice,
-              phone,
-              backupPhone,
-              email,
-              userType
-            } = personalData
+              const {
+                firstName,
+                lastName,
+                preferredName,
+                streetAddress,
+                postalCode,
+                postOffice,
+                phone,
+                backupPhone,
+                email,
+                userType
+              } = personalData
 
-            const canEdit = userType === 'ENDUSER'
+              const canEdit = userType === 'ENDUSER'
 
-            return (
-              <>
-                {(email === null || !phone) && (
-                  <AlertBox
-                    message={getAlertMessage(email, phone)}
-                    data-qa="missing-email-or-phone-box"
-                  />
-                )}
-                <HorizontalLine />
-                <EditButtonRow>
-                  <InlineButton
-                    text={t.common.edit}
-                    icon={canEdit ? faPen : faLockAlt}
-                    onClick={canEdit ? startEditing : navigateToLogin}
-                    disabled={editing}
-                    data-qa={canEdit ? 'start-editing' : 'start-editing-login'}
-                  />
-                </EditButtonRow>
-                {formWrapper(
-                  <>
-                    <ListGrid rowGap="s" columnGap="L" labelWidth="max-content">
-                      <H2 noMargin>{t.personalDetails.personalInfo}</H2>
-                      <div />
-                      <Label>{t.personalDetails.name}</Label>
-                      <div>
-                        {firstName} {lastName}
-                      </div>
-                      <Label>{t.personalDetails.preferredName}</Label>
-                      {editing ? (
-                        <Select
-                          items={preferredNameOptions}
-                          selectedItem={editorState.preferredName}
-                          onChange={updateState.preferredName}
-                          data-qa="preferred-name"
-                        />
-                      ) : (
-                        <div data-qa="preferred-name">{preferredName}</div>
-                      )}
-                      <H2 noMargin>{t.personalDetails.contactInfo}</H2>
-                      <div />
-                      <Label>{t.personalDetails.address}</Label>
-                      <div>
-                        {!!streetAddress &&
-                          `${streetAddress}, ${postalCode} ${postOffice}`}
-                      </div>
-                      <Label>{t.personalDetails.phone}</Label>
-                      <div data-qa="phone">
+              return (
+                <>
+                  {(email === null || !phone) && (
+                    <AlertBox
+                      message={getAlertMessage(email, phone)}
+                      data-qa="missing-email-or-phone-box"
+                    />
+                  )}
+                  <HorizontalLine />
+                  <EditButtonRow>
+                    <InlineButton
+                      text={t.common.edit}
+                      icon={canEdit ? faPen : faLockAlt}
+                      onClick={canEdit ? startEditing : navigateToLogin}
+                      disabled={editing}
+                      data-qa={
+                        canEdit ? 'start-editing' : 'start-editing-login'
+                      }
+                    />
+                  </EditButtonRow>
+                  {formWrapper(
+                    <>
+                      <ListGrid
+                        rowGap="s"
+                        columnGap="L"
+                        labelWidth="max-content"
+                      >
+                        <H2 noMargin>{t.personalDetails.personalInfo}</H2>
+                        <div />
+                        <Label>{t.personalDetails.name}</Label>
+                        <div>
+                          {firstName} {lastName}
+                        </div>
+                        <Label>{t.personalDetails.preferredName}</Label>
                         {editing ? (
-                          <InputField
-                            type="text"
-                            width="m"
-                            value={editorState.phone}
-                            onChange={updateState.phone}
-                            info={errors.phone}
-                            hideErrorsBeforeTouched
-                            placeholder="0401234567"
+                          <Select
+                            items={preferredNameOptions}
+                            selectedItem={editorState.preferredName}
+                            onChange={updateState.preferredName}
+                            data-qa="preferred-name"
                           />
                         ) : (
-                          <div>
-                            {phone ? (
-                              phone
+                          <div data-qa="preferred-name">{preferredName}</div>
+                        )}
+                        <H2 noMargin>{t.personalDetails.contactInfo}</H2>
+                        <div />
+                        <Label>{t.personalDetails.address}</Label>
+                        <div>
+                          {!!streetAddress &&
+                            `${streetAddress}, ${postalCode} ${postOffice}`}
+                        </div>
+                        <Label>{t.personalDetails.phone}</Label>
+                        <div data-qa="phone">
+                          {editing ? (
+                            <InputField
+                              type="text"
+                              width="m"
+                              value={editorState.phone}
+                              onChange={updateState.phone}
+                              info={errors.phone}
+                              hideErrorsBeforeTouched
+                              placeholder="0401234567"
+                            />
+                          ) : (
+                            <div>
+                              {phone ? (
+                                phone
+                              ) : (
+                                <MandatoryValueMissingWarning
+                                  text={t.personalDetails.phoneMissing}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <Label>{t.personalDetails.backupPhone}</Label>
+                        <div data-qa="backup-phone">
+                          {editing ? (
+                            <InputField
+                              type="text"
+                              width="m"
+                              value={editorState.backupPhone}
+                              onChange={updateState.backupPhone}
+                              info={errors.backupPhone}
+                              hideErrorsBeforeTouched
+                              placeholder={
+                                t.personalDetails.backupPhonePlaceholder
+                              }
+                            />
+                          ) : (
+                            backupPhone
+                          )}
+                        </div>
+                        <Label>{t.personalDetails.email}</Label>
+                        {editing ? (
+                          <FixedSpaceColumn spacing="xs">
+                            <div data-qa="email">
+                              <InputField
+                                type="text"
+                                width="m"
+                                value={editorState.email}
+                                onChange={updateState.email}
+                                readonly={editorState.noEmail}
+                                info={errors.email}
+                                hideErrorsBeforeTouched
+                                placeholder={t.personalDetails.email}
+                              />
+                            </div>
+                            <FixedSpaceRow alignItems="center">
+                              <Checkbox
+                                label={t.personalDetails.noEmail}
+                                checked={editorState.noEmail}
+                                onChange={updateState.noEmail}
+                                data-qa="no-email"
+                              />
+                              <InfoButton
+                                onClick={toggleEmailInfo}
+                                aria-label={t.common.openExpandingInfo}
+                              />
+                            </FixedSpaceRow>
+                          </FixedSpaceColumn>
+                        ) : (
+                          <div data-qa="email">
+                            {email ? (
+                              email
                             ) : (
                               <MandatoryValueMissingWarning
-                                text={t.personalDetails.phoneMissing}
+                                text={t.personalDetails.emailMissing}
                               />
                             )}
                           </div>
                         )}
-                      </div>
-                      <Label>{t.personalDetails.backupPhone}</Label>
-                      <div data-qa="backup-phone">
-                        {editing ? (
-                          <InputField
-                            type="text"
-                            width="m"
-                            value={editorState.backupPhone}
-                            onChange={updateState.backupPhone}
-                            info={errors.backupPhone}
-                            hideErrorsBeforeTouched
-                            placeholder={
-                              t.personalDetails.backupPhonePlaceholder
-                            }
+                      </ListGrid>
+                      {editorState.showEmailInfo && (
+                        <>
+                          <ExpandingInfoBox
+                            info={t.personalDetails.emailInfo}
+                            close={toggleEmailInfo}
                           />
-                        ) : (
-                          backupPhone
-                        )}
-                      </div>
-                      <Label>{t.personalDetails.email}</Label>
-                      {editing ? (
-                        <FixedSpaceColumn spacing="xs">
-                          <div data-qa="email">
-                            <InputField
-                              type="text"
-                              width="m"
-                              value={editorState.email}
-                              onChange={updateState.email}
-                              readonly={editorState.noEmail}
-                              info={errors.email}
-                              hideErrorsBeforeTouched
-                              placeholder={t.personalDetails.email}
-                            />
-                          </div>
-                          <FixedSpaceRow alignItems="center">
-                            <Checkbox
-                              label={t.personalDetails.noEmail}
-                              checked={editorState.noEmail}
-                              onChange={updateState.noEmail}
-                              data-qa="no-email"
-                            />
-                            <InfoButton
-                              onClick={toggleEmailInfo}
-                              aria-label={t.common.openExpandingInfo}
-                            />
-                          </FixedSpaceRow>
-                        </FixedSpaceColumn>
-                      ) : (
-                        <div data-qa="email">
-                          {email ? (
-                            email
-                          ) : (
-                            <MandatoryValueMissingWarning
-                              text={t.personalDetails.emailMissing}
-                            />
-                          )}
-                        </div>
+                          <Gap size="s" />
+                        </>
                       )}
-                    </ListGrid>
-                    {editorState.showEmailInfo && (
-                      <>
-                        <ExpandingInfoBox
-                          info={t.personalDetails.emailInfo}
-                          close={toggleEmailInfo}
-                        />
-                        <Gap size="s" />
-                      </>
-                    )}
-                  </>
-                )}
-              </>
-            )
-          })}
-        </ContentArea>
-      </Container>
+                    </>
+                  )}
+                </>
+              )
+            })}
+          </ContentArea>
+        </Container>
+      </Main>
       <Footer />
     </>
   )

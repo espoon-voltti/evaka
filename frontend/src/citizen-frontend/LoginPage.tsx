@@ -8,6 +8,7 @@ import { Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
+import Main from 'lib-components/atoms/Main'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -39,7 +40,7 @@ export default React.memo(function LoginPage() {
   }
 
   return (
-    <>
+    <Main>
       <TabletAndDesktop>
         <Gap size="L" />
       </TabletAndDesktop>
@@ -100,7 +101,7 @@ export default React.memo(function LoginPage() {
         </FixedSpaceColumn>
       </Container>
       <Footer />
-    </>
+    </Main>
   )
 })
 

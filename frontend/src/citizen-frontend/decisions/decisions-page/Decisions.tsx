@@ -12,7 +12,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import Footer from '../../Footer'
 import ApplicationDecisionsBlock from '../../decisions/decisions-page/ApplicationDecisionsBlock'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
@@ -33,40 +32,37 @@ export default React.memo(function Decisions() {
     : 0
 
   return (
-    <>
-      <Container>
-        <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.decisions.title}</H1>
-          <Gap size="xs" />
-          {t.decisions.summary}
-          {unconfirmedDecisionsCount > 0 && (
-            <>
-              <Gap size="s" />
-              <AlertBox
-                message={t.decisions.unconfirmedDecisions(
-                  unconfirmedDecisionsCount
-                )}
-                data-qa="alert-box-unconfirmed-decisions-count"
-              />
-            </>
-          )}
-        </ContentArea>
-        <Gap size="s" />
-        {renderResult(applicationDecisions, (applicationDecisions) => (
+    <Container>
+      <Gap size="s" />
+      <ContentArea opaque paddingVertical="L">
+        <H1 noMargin>{t.decisions.title}</H1>
+        <Gap size="xs" />
+        {t.decisions.summary}
+        {unconfirmedDecisionsCount > 0 && (
           <>
-            {sortBy(applicationDecisions, (d) => d.childName).map(
-              (applicationDecision) => (
-                <Fragment key={applicationDecision.applicationId}>
-                  <ApplicationDecisionsBlock {...applicationDecision} />
-                  <Gap size="s" />
-                </Fragment>
-              )
-            )}
+            <Gap size="s" />
+            <AlertBox
+              message={t.decisions.unconfirmedDecisions(
+                unconfirmedDecisionsCount
+              )}
+              data-qa="alert-box-unconfirmed-decisions-count"
+            />
           </>
-        ))}
-      </Container>
-      <Footer />
-    </>
+        )}
+      </ContentArea>
+      <Gap size="s" />
+      {renderResult(applicationDecisions, (applicationDecisions) => (
+        <>
+          {sortBy(applicationDecisions, (d) => d.childName).map(
+            (applicationDecision) => (
+              <Fragment key={applicationDecision.applicationId}>
+                <ApplicationDecisionsBlock {...applicationDecision} />
+                <Gap size="s" />
+              </Fragment>
+            )
+          )}
+        </>
+      ))}
+    </Container>
   )
 })

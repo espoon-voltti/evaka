@@ -2007,5 +2007,9 @@ export default {
         Avoinna: ma-pe klo 8.00–16.15
       </P>
     </>
-  )
+  ),
+  skipLinks: {
+    mainContent: 'Siirry pääsisältöön',
+    applyingSubNav: 'Siirry hakemusnavigaatioon'
+  }
 }

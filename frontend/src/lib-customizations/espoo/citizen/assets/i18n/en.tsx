@@ -2084,7 +2084,11 @@ const en: Translations = {
         Open: Mon-Fri 8.00–16.15
       </P>
     </>
-  )
+  ),
+  skipLinks: {
+    mainContent: 'Skip to main content',
+    applyingSubNav: 'Skip to applications navigation'
+  }
 }
 
 export default en

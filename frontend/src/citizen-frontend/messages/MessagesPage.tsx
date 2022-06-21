@@ -10,6 +10,7 @@ import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
@@ -80,31 +81,33 @@ export default React.memo(function MessagesPage() {
       <UnwrapResult result={combine(accountId, receivers)}>
         {([id, receivers]) => (
           <>
-            <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-              <ThreadList
-                accountId={id}
-                setEditorVisible={showEditor}
-                newMessageButtonEnabled={!editorVisible}
-              />
-              {selectedThread ? (
-                <ThreadView accountId={id} thread={selectedThread} />
-              ) : (
-                <EmptyThreadView inboxEmpty={threads.length == 0} />
+            <Main>
+              <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+                <ThreadList
+                  accountId={id}
+                  setEditorVisible={showEditor}
+                  newMessageButtonEnabled={!editorVisible}
+                />
+                {selectedThread ? (
+                  <ThreadView accountId={id} thread={selectedThread} />
+                ) : (
+                  <EmptyThreadView inboxEmpty={threads.length == 0} />
+                )}
+              </StyledFlex>
+              {editorVisible && (
+                <MessageEditor
+                  receiverOptions={receivers}
+                  onSend={(message) => sendMessage(message)}
+                  onSuccess={() => {
+                    refreshThreads()
+                    setEditorVisible(false)
+                  }}
+                  onFailure={() => setDisplaySendError(true)}
+                  onClose={() => setEditorVisible(false)}
+                  displaySendError={displaySendError}
+                />
               )}
-            </StyledFlex>
-            {editorVisible && (
-              <MessageEditor
-                receiverOptions={receivers}
-                onSend={(message) => sendMessage(message)}
-                onSuccess={() => {
-                  refreshThreads()
-                  setEditorVisible(false)
-                }}
-                onFailure={() => setDisplaySendError(true)}
-                onClose={() => setEditorVisible(false)}
-                displaySendError={displaySendError}
-              />
-            )}
+            </Main>
             <Footer />
           </>
         )}

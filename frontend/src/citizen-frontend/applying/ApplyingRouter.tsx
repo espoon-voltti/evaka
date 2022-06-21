@@ -7,6 +7,9 @@ import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import styled from 'styled-components'
 
+import Footer from 'citizen-frontend/Footer'
+import Main from 'lib-components/atoms/Main'
+import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
@@ -64,37 +67,47 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
 
   return (
     <>
+      <SkipToContent target="applying-subnavigation">
+        {t.skipLinks.applyingSubNav}
+      </SkipToContent>
       <Gap size="s" />
       <WhiteBg>
-        <Tabs tabs={tabs} data-qa="applying-subnavigation" />
+        <Tabs
+          tabs={tabs}
+          data-qa="applying-subnavigation"
+          id="applying-subnavigation"
+        />
       </WhiteBg>
-      <Routes>
-        <Route
-          path="applications"
-          element={
-            <RequireAuth>
-              <Applications />
-            </RequireAuth>
-          }
-        />
-        <Route path="map" element={<MapView scrollToTop={scrollToTop} />} />
-        <Route
-          path="decisions"
-          element={
-            <RequireAuth>
-              <Decisions />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <Navigate
-              to={isEndUser ? '/applying/applications' : '/applying/map'}
-            />
-          }
-        />
-      </Routes>
+      <Main>
+        <Routes>
+          <Route
+            path="applications"
+            element={
+              <RequireAuth>
+                <Applications />
+              </RequireAuth>
+            }
+          />
+          <Route path="map" element={<MapView scrollToTop={scrollToTop} />} />
+          <Route
+            path="decisions"
+            element={
+              <RequireAuth>
+                <Decisions />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to={isEndUser ? '/applying/applications' : '/applying/map'}
+              />
+            }
+          />
+        </Routes>
+      </Main>
+      <Footer />
     </>
   )
 })

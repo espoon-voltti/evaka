@@ -22,17 +22,19 @@ interface Tab {
 interface Props extends BaseProps {
   mobile?: boolean
   tabs: Tab[]
+  id?: string
 }
 
 export default React.memo(function Tabs({
   mobile,
   'data-qa': dataQa,
-  tabs
+  tabs,
+  id
 }: Props) {
   const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Container>
-      <TabsContainer data-qa={dataQa} shadow={mobile}>
+      <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
           <TabLinkContainer
             key={id}
@@ -50,7 +52,7 @@ export default React.memo(function Tabs({
   )
 })
 
-const TabsContainer = styled.div<{ shadow?: boolean }>`
+const TabsContainer = styled.nav<{ shadow?: boolean }>`
   display: flex;
   flex-direction: row;
   ${(p) =>
