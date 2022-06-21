@@ -296,6 +296,7 @@ export interface StaffDepartureRequest {
 * Generated from fi.espoo.evaka.attendance.StaffMember
 */
 export interface StaffMember {
+  attendances: StaffMemberAttendance[]
   employeeId: UUID
   firstName: string
   groupIds: UUID[]
@@ -314,6 +315,7 @@ export interface StaffMemberAttendance {
   employeeId: UUID
   groupId: UUID
   id: UUID
+  type: StaffAttendanceType
 }
 
 /**

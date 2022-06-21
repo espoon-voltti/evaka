@@ -49,6 +49,13 @@ export async function getUnitStaffAttendances(
               start: HelsinkiDateTime.parseIso(start),
               end: HelsinkiDateTime.parseIso(end)
             })
+          ),
+          attendances: staff.attendances.map(
+            ({ arrived, departed, ...attendance }) => ({
+              ...attendance,
+              arrived: HelsinkiDateTime.parseIso(arrived),
+              departed: departed ? HelsinkiDateTime.parseIso(departed) : null
+            })
           )
         })),
         extraAttendances: res.data.extraAttendances.map((att) => ({

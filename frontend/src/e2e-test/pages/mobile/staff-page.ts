@@ -117,14 +117,14 @@ export class StaffAttendancePage {
   #anyMemberPage = {
     back: this.page.findByDataQa('back-btn'),
     status: this.page.findByDataQa('employee-status'),
-    arrivalTime: this.page.findByDataQa('arrival-time'),
     markDepartedLink: this.page.findByDataQa('mark-departed-link')
   }
   #staffMemberPage = {
-    markArrivedBtn: this.page.findByDataQa('mark-arrived-link'),
-    departureTime: this.page.findByDataQa('departure-time')
+    attendanceTimes: this.page.findAllByDataQa('attendance-time'),
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-link')
   }
   #externalMemberPage = {
+    arrivalTime: this.page.findByDataQa('arrival-time'),
     departureTimeInput: new TextInput(
       this.page.findByDataQa('departure-time-input')
     )
@@ -173,16 +173,16 @@ export class StaffAttendancePage {
     await this.#anyMemberPage.back.click()
   }
 
-  async assertEmployeeArrivalTime(expected: string) {
+  async assertEmployeeAttendanceTimes(index: number, expected: string) {
     await waitUntilEqual(
-      () => this.#anyMemberPage.arrivalTime.textContent,
+      () => this.#staffMemberPage.attendanceTimes.nth(index).textContent,
       expected
     )
   }
 
-  async assertEmployeeDepartureTime(expected: string) {
+  async assertExternalStaffArrivalTime(expected: string) {
     await waitUntilEqual(
-      () => this.#staffMemberPage.departureTime.textContent,
+      () => this.#externalMemberPage.arrivalTime.textContent,
       expected
     )
   }

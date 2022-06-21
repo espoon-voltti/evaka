@@ -47,6 +47,8 @@ data class StaffMember(
     @Nested("attendance")
     val latestCurrentDayAttendance: StaffMemberAttendance?,
     @Json
+    val attendances: List<StaffMemberAttendance>,
+    @Json
     val plannedAttendances: List<PlannedStaffAttendance>
 ) {
     val present: GroupId?
@@ -59,7 +61,8 @@ data class StaffMemberAttendance(
     val employeeId: EmployeeId,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?
+    val departed: HelsinkiDateTime?,
+    val type: StaffAttendanceType
 )
 
 data class ExternalAttendance(

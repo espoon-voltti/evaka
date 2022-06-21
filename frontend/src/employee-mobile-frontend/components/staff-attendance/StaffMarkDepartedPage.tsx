@@ -71,11 +71,9 @@ export default React.memo(function StaffMarkDepartedPage() {
     () =>
       staffAttendanceResponse.map((res) => {
         const staffMember = res.staff.find((s) => s.employeeId === employeeId)
-        const attendanceId =
-          staffMember?.latestCurrentDayAttendance &&
-          staffMember.latestCurrentDayAttendance.departed === null
-            ? staffMember.latestCurrentDayAttendance.id
-            : undefined
+        const attendanceId = staffMember?.attendances.find(
+          ({ departed }) => departed === null
+        )?.id
         return { staffMember, attendanceId }
       }),
     [employeeId, staffAttendanceResponse]
