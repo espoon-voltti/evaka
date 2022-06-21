@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import org.springframework.stereotype.Service
 
 @Service
@@ -20,6 +21,6 @@ class VTJBatchRefreshService(
     }
 
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
-        fridgeFamilyService.doVTJRefresh(db, msg)
+        fridgeFamilyService.doVTJRefresh(db, msg, RealEvakaClock())
     }
 }

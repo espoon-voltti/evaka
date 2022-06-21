@@ -4,17 +4,16 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,8 +23,8 @@ class FridgeFamilyService(
     private val parentshipService: ParentshipService
 ) {
 
-    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh) {
-        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, RealEvakaClock(), msg.personId)
+    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh, clock: EvakaClock) {
+        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, clock, msg.personId)
     }
 
     fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, evakaClock: EvakaClock, personId: PersonId) {
@@ -73,12 +72,16 @@ class FridgeFamilyService(
 
             newChildrenInSameAddress.forEach { child ->
                 try {
+                    val startDate =
+                        if (childShouldBeAddedToFamilyStartingFromBirthday(evakaClock.today(), child.dateOfBirth))
+                            child.dateOfBirth
+                        else evakaClock.today()
                     db.transaction { tx ->
                         parentshipService.createParentship(
                             tx,
                             childId = child.id,
                             headOfChildId = personId,
-                            startDate = evakaClock.today(),
+                            startDate = startDate,
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }
@@ -88,30 +91,6 @@ class FridgeFamilyService(
                 }
             }
             logger.info("Completed refreshing person $personId")
-        }
-    }
-
-    fun addChildToFamily(db: Database.Connection, headSSN: String, childSSN: String) {
-        db.transaction { tx ->
-            val person = tx.getPersonBySSN(headSSN) ?: return@transaction
-            val personWithDependants = personService
-                .getPersonWithChildren(tx, AuthenticatedUser.SystemInternalUser, person.id, forceRefresh = true)
-                ?: return@transaction
-            val child = personWithDependants.children.find { it.socialSecurityNumber == childSSN } ?: return@transaction
-            if (livesInSameAddress(personWithDependants.address, child.address)) {
-                try {
-                    parentshipService.createParentship(
-                        tx,
-                        childId = child.id,
-                        headOfChildId = person.id,
-                        startDate = child.dateOfBirth,
-                        endDate = child.dateOfBirth.plusYears(18).minusDays(1)
-                    )
-                    logger.info("Child ${child.id} added")
-                } catch (e: Exception) {
-                    logger.debug("Ignored the following:", e)
-                }
-            }
         }
     }
 
@@ -143,4 +122,8 @@ class FridgeFamilyService(
         val sameStreetAddress = address1.streetAddress == address2.streetAddress
         return sameResidencyCode || sameStreetAddress
     }
+
+    // 3 months is arbitrary
+    private fun childShouldBeAddedToFamilyStartingFromBirthday(today: LocalDate, birthday: LocalDate) =
+        today <= birthday.plusMonths(3)
 }
