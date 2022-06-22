@@ -5,8 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.invoicing.data.getMaxPaymentNumber
-import fi.espoo.evaka.invoicing.data.getPaymentUnitsByIds
-import fi.espoo.evaka.invoicing.data.readPaymentsByIds
+import fi.espoo.evaka.invoicing.data.readPaymentsByIdsWithFreshUnitData
 import fi.espoo.evaka.invoicing.data.updatePaymentDraftsAsSent
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
@@ -36,22 +35,18 @@ class PaymentService(
         dueDate: LocalDate
     ) {
         val seriesStart = featureConfig.paymentNumberSeriesStart ?: throw Error("paymentNumberSeriesStart not configured")
-        val payments = tx.readPaymentsByIds(paymentIds)
+        val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 
         val notDrafts = payments.filterNot { it.status == PaymentStatus.DRAFT }
         if (notDrafts.isNotEmpty()) {
             throw BadRequest("Some payments are not drafts")
         }
 
-        val units = tx.getPaymentUnitsByIds(payments.map { it.unit.id }).associateBy { it.id }
-
         var nextPaymentNumber = tx.getMaxPaymentNumber().let { if (it >= seriesStart) it + 1 else seriesStart }
         val updatedPayments = payments.flatMap { payment ->
-            val unit = units[payment.unit.id] ?: throw Error("Unit ${payment.unit.id} not found")
-
             // Skip payments whose unit has missing payment details
             val missingDetails =
-                listOf(unit.name, unit.businessId, unit.iban, unit.providerId).any { it.isNullOrBlank() }
+                listOf(payment.unit.name, payment.unit.businessId, payment.unit.iban, payment.unit.providerId).any { it.isNullOrBlank() }
             if (missingDetails) {
                 logger.warn { "Skipping payment ${payment.id} because unit ${payment.unit.id} has missing payment details" }
                 return@flatMap listOf()
@@ -61,12 +56,6 @@ class PaymentService(
                 number = nextPaymentNumber,
                 paymentDate = paymentDate,
                 dueDate = dueDate,
-                unit = payment.unit.copy(
-                    name = unit.name,
-                    businessId = unit.businessId,
-                    iban = unit.iban,
-                    providerId = unit.providerId,
-                ),
                 sentBy = user.evakaUserId
             )
             nextPaymentNumber += 1

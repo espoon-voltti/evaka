@@ -9,8 +9,6 @@ import fi.espoo.evaka.invoicing.controller.PaymentSortParam
 import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentDraft
-import fi.espoo.evaka.invoicing.domain.PaymentUnit
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
@@ -44,15 +42,16 @@ fun Database.Transaction.insertPaymentDrafts(payments: List<PaymentDraft>) {
     batch.execute()
 }
 
-fun Database.Read.readPaymentsByIds(ids: List<PaymentId>): List<Payment> {
+fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
     return createQuery(
         """
         SELECT 
-            id, created, updated,
-            unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id,
-            period, number, amount, status, payment_date, due_date, sent_at, sent_by
+            p.id, p.created, p.updated, p.unit_id, 
+            d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id,
+            p.period, p.number, p.amount, p.status, p.payment_date, p.due_date, p.sent_at, p.sent_by
         FROM payment p
-        WHERE id = ANY(:ids)
+        JOIN daycare d ON d.id = p.unit_id
+        WHERE p.id = ANY(:ids)
         """
     )
         .bind("ids", ids.toTypedArray())
@@ -150,17 +149,4 @@ fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now:
         batch.bind("now", now).bindKotlin(it).add()
     }
     batch.execute()
-}
-
-fun Database.Read.getPaymentUnitsByIds(ids: List<DaycareId>): List<PaymentUnit> {
-    return createQuery(
-        """
-        SELECT id, name, business_id, iban, provider_id
-        FROM daycare
-        WHERE id = ANY(:ids)
-        """
-    )
-        .bind("ids", ids.toTypedArray())
-        .mapTo<PaymentUnit>()
-        .list()
 }
