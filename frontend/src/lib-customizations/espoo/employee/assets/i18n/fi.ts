@@ -25,6 +25,7 @@ export const fi = {
     valueDecision: 'Arvopäätös',
     valueDecisionDraft: 'Arvopäätösluonnos',
     invoices: 'Laskut',
+    payments: 'Maksatus',
     invoice: 'Lasku',
     invoiceDraft: 'Laskuluonnos',
     reports: 'Raportit',
@@ -177,6 +178,7 @@ export const fi = {
     search: 'Asiakastiedot',
     finance: 'Talous',
     invoices: 'Laskut',
+    payments: 'Maksatus',
     incomeStatements: 'Tuloselvitykset',
     feeDecisions: 'Maksupäätökset',
     valueDecisions: 'Arvopäätökset',
@@ -1949,6 +1951,39 @@ export const fi = {
       }
     }
   },
+  payments: {
+    table: {
+      title: 'Maksut',
+      toggleAll: 'Valitse kaikki hakua vastaavat rivit',
+      unit: 'Yksikkö',
+      period: 'Maksatuskausi',
+      createdAt: 'Luonnos luotu',
+      number: 'Laskunro',
+      amount: 'Summa',
+      status: 'Tila',
+      nb: 'Huom',
+      missingPaymentDetails: 'Tietoja puuttuu'
+    },
+    buttons: {
+      createPaymentDrafts: 'Luo maksatusaineisto',
+      checked: (count: number) =>
+        count === 1 ? `${count} rivi valittu` : `${count} riviä valittu`,
+      sendPayments: (count: number) =>
+        count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`
+    },
+    status: {
+      DRAFT: 'Luonnos',
+      SENT: 'Siirretty'
+    },
+    sendModal: {
+      title: 'Siirrä valitut maksut',
+      paymentDate: 'Maksupäivä',
+      dueDate: 'Eräpäivä'
+    },
+    distinctiveDetails: {
+      MISSING_PAYMENT_DETAILS: 'Maksutietoja puuttuu'
+    }
+  },
   placement: {
     type: {
       CLUB: 'Kerho',
@@ -2093,6 +2128,8 @@ export const fi = {
     searchByStartDate: 'Alkupäivä sijoittuu valitulle aikavälille',
     invoiceDate: 'Laskun päiväys',
     invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta',
+    paymentDate: 'Maksupäivä',
+    paymentFreeTextPlaceholder: 'Haku maksun numerolla',
     incomeStatementSent: 'Tuloselvitys lähetetty'
   },
   valueDecision: {

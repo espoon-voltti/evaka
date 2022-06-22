@@ -7,6 +7,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import Tabs from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../state/i18n'
 
@@ -14,34 +15,43 @@ import EmployeeRoute from './EmployeeRoute'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'
 import IncomeStatementsPage from './income-statements/IncomeStatementsPage'
 import InvoicesPage from './invoices/InvoicesPage'
+import PaymentsPage from './payments/PaymentsPage'
 import VoucherValueDecisionsPage from './voucher-value-decisions/VoucherValueDecisionsPage'
 
 export default React.memo(function FinancePage() {
   const { i18n } = useTranslation()
 
   const tabs = useMemo(
-    () => [
-      {
-        id: 'fee-decisions',
-        link: '/finance/fee-decisions',
-        label: i18n.header.feeDecisions
-      },
-      {
-        id: 'value-decisions',
-        link: '/finance/value-decisions',
-        label: i18n.header.valueDecisions
-      },
-      {
-        id: 'invoices',
-        link: '/finance/invoices',
-        label: i18n.header.invoices
-      },
-      {
-        id: 'income-statements',
-        link: '/finance/income-statements',
-        label: i18n.header.incomeStatements
-      }
-    ],
+    () =>
+      [
+        {
+          id: 'fee-decisions',
+          link: '/finance/fee-decisions',
+          label: i18n.header.feeDecisions
+        },
+        {
+          id: 'value-decisions',
+          link: '/finance/value-decisions',
+          label: i18n.header.valueDecisions
+        },
+        {
+          id: 'invoices',
+          link: '/finance/invoices',
+          label: i18n.header.invoices
+        },
+        featureFlags.experimental?.voucherUnitPayments
+          ? {
+              id: 'payments',
+              link: '/finance/payments',
+              label: i18n.header.payments
+            }
+          : null,
+        {
+          id: 'income-statements',
+          link: '/finance/income-statements',
+          label: i18n.header.incomeStatements
+        }
+      ].flatMap((tab) => (tab !== null ? tab : [])),
     [i18n]
   )
 
@@ -74,6 +84,16 @@ export default React.memo(function FinancePage() {
             </EmployeeRoute>
           }
         />
+        {featureFlags.experimental?.voucherUnitPayments && (
+          <Route
+            path="payments"
+            element={
+              <EmployeeRoute title={i18n.titles.payments}>
+                <PaymentsPage />
+              </EmployeeRoute>
+            }
+          />
+        )}
         <Route
           path="income-statements"
           element={

@@ -7,6 +7,7 @@
 
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { CareType } from './daycare'
 import { DecisionIncome } from '../../api-types/income'
@@ -520,6 +521,58 @@ export interface NoteUpdateBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.Payment
+*/
+export interface Payment {
+  amount: number
+  created: HelsinkiDateTime
+  dueDate: LocalDate | null
+  id: UUID
+  number: number | null
+  paymentDate: LocalDate | null
+  period: DateRange
+  sentAt: HelsinkiDateTime | null
+  sentBy: UUID | null
+  status: PaymentStatus
+  unit: PaymentUnit
+  updated: HelsinkiDateTime
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
+*/
+export type PaymentDistinctiveParams =
+  | 'MISSING_PAYMENT_DETAILS'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentSortParam
+*/
+export type PaymentSortParam =
+  | 'UNIT'
+  | 'PERIOD'
+  | 'CREATED'
+  | 'NUMBER'
+  | 'AMOUNT'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.PaymentStatus
+*/
+export type PaymentStatus =
+  | 'DRAFT'
+  | 'SENT'
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.PaymentUnit
+*/
+export interface PaymentUnit {
+  businessId: string | null
+  iban: string | null
+  id: UUID
+  name: string
+  providerId: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.PersonBasic
 */
 export interface PersonBasic {
@@ -600,6 +653,23 @@ export interface SearchInvoicesRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
+*/
+export interface SearchPaymentsRequest {
+  area: string[]
+  distinctions: PaymentDistinctiveParams[]
+  page: number
+  pageSize: number
+  paymentDateEnd: LocalDate | null
+  paymentDateStart: LocalDate | null
+  searchTerms: string
+  sortBy: PaymentSortParam
+  sortDirection: SortDirection
+  status: PaymentStatus
+  unit: UUID | null
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.SearchVoucherValueDecisionRequest
 */
 export interface SearchVoucherValueDecisionRequest {
@@ -615,6 +685,15 @@ export interface SearchVoucherValueDecisionRequest {
   startDate: LocalDate | null
   status: VoucherValueDecisionStatus
   unit: UUID | null
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.SendPaymentsRequest
+*/
+export interface SendPaymentsRequest {
+  dueDate: LocalDate
+  paymentDate: LocalDate
+  paymentIds: UUID[]
 }
 
 /**

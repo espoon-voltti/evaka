@@ -22,14 +22,17 @@ import {
   InvoiceStatus,
   InvoiceSummary,
   NewInvoiceCorrection,
+  Payment,
   PersonBasic,
   PersonDetailed,
+  SearchPaymentsRequest,
   SortDirection,
   VoucherValueDecisionDetailed,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -594,3 +597,57 @@ const deserializePersonDetailed = (
   dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
   dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
 })
+
+export async function createPaymentDrafts(): Promise<Result<void>> {
+  return client
+    .post<void>('/payments/create-drafts')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPayments(
+  params: SearchPaymentsRequest
+): Promise<Result<Paged<Payment>>> {
+  return client
+    .post<JsonOf<Paged<Payment>>>('/payments/search', {
+      ...params,
+      paymentDateStart: params.paymentDateStart
+        ? params.paymentDateStart.formatIso()
+        : null,
+      paymentDateEnd: params.paymentDateEnd
+        ? params.paymentDateEnd.formatIso()
+        : null
+    })
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map((json) => ({
+        ...json,
+        created: HelsinkiDateTime.parseIso(json.created),
+        updated: HelsinkiDateTime.parseIso(json.updated),
+        period: DateRange.parseJson(json.period),
+        paymentDate: json.paymentDate
+          ? LocalDate.parseIso(json.paymentDate)
+          : null,
+        dueDate: json.dueDate ? LocalDate.parseIso(json.dueDate) : null,
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null
+      }))
+    }))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function sendPayments(
+  paymentsIds: string[],
+  paymentDate: LocalDate,
+  dueDate: LocalDate
+): Promise<Result<void>> {
+  return client
+    .post<void>('/payments/send', paymentsIds, {
+      params: {
+        invoiceDate: paymentDate.formatIso(),
+        dueDate: dueDate.formatIso()
+      }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

@@ -98,9 +98,10 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
                 count(*) OVER () AS count
             FROM payment p
             JOIN daycare d ON d.id = p.unit_id
+            JOIN care_area a ON a.id = d.care_area_id
             WHERE
                 (:searchTerms = '' OR p.number::text LIKE '%' || :searchTerms) AND
-                (cardinality(:area::uuid[]) = 0 OR d.care_area_id = ANY(:area::uuid[])) AND
+                (cardinality(:area::text[]) = 0 OR a.short_name = ANY(:area::text[])) AND
                 (:unit::uuid IS NULL OR p.unit_id = :unit::uuid) AND
                 (NOT :includeMissingDetails OR (d.business_id = '' OR d.iban = '' OR d.provider_id = '')) AND
                 p.status = :status::payment_status AND
