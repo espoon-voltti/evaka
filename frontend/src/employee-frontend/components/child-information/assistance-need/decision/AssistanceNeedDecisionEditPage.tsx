@@ -82,7 +82,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
           ))}
         </ContentArea>
         <StickyFooter>
-          <FooterContainer>TODO</FooterContainer>
+          <FooterContainer></FooterContainer>
         </StickyFooter>
       </Content>
     </ChildContextProvider>

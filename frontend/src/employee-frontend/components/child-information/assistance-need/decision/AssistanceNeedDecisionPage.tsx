@@ -16,9 +16,9 @@ export default React.memo(function AssistanceNeedDecisionPage() {
 
   return (
     <Container>
-      TODO: preview {id}
+      preview {id}
       <StickyFooter>
-        <FooterContainer>TODO</FooterContainer>
+        <FooterContainer></FooterContainer>
       </StickyFooter>
     </Container>
   )

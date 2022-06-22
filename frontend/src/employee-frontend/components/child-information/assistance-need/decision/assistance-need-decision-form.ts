@@ -34,7 +34,7 @@ export function useAssistanceNeedDecision(
   useEffect(() => {
     assistanceNeedDecision.mapAll({
       loading: () => null,
-      failure: () => null, // TODO
+      failure: () => null,
       success: (result) => setFormState(result)
     })
   }, [assistanceNeedDecision])
