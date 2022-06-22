@@ -211,9 +211,13 @@ export default React.memo(function ReservationModal({
         <ExpandingInfo
           width="auto"
           ariaLabel={i18n.common.openExpandingInfo}
-          info={i18n.calendar.reservationModal.dateRangeInfo(
-            reservableDays[0].end
-          )}
+          info={
+            reservableDays.length > 0
+              ? i18n.calendar.reservationModal.dateRangeInfo(
+                  reservableDays[0].end
+                )
+              : i18n.calendar.reservationModal.noReservableDays
+          }
         >
           <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
         </ExpandingInfo>

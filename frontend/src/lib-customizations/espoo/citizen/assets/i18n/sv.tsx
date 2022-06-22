@@ -263,6 +263,7 @@ const sv: Translations = {
       dateRangeInfo: (date: LocalDate) =>
         `Du kan göra bokningar fram till ${date.format()}.`,
       missingDateRange: 'Välj barn att reservera',
+      noReservableDays: 'Inga reservation dagar',
       selectRecurrence: 'Välj hur reservationen repeterar',
       postError: 'Misslyckades med att reservera',
       repetitions: {

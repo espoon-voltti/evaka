@@ -264,6 +264,7 @@ const en: Translations = {
       dateRangeInfo: (date: LocalDate) =>
         `You can make reservations until ${date.format()}.`,
       missingDateRange: 'Select days to reserve',
+      noReservableDays: 'No reservable days',
       selectRecurrence: 'Choose how the reservation repeats',
       postError: 'The reservation failed',
       repetitions: {
