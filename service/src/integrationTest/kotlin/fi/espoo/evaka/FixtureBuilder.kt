@@ -27,7 +27,10 @@ import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
+import fi.espoo.evaka.shared.dev.insertEmployeePin
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
@@ -40,6 +43,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.dev.insertTestStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -407,6 +411,7 @@ class FixtureBuilder(
         private val groups: MutableSet<Pair<DaycareId, GroupId>> = mutableSetOf()
         private var firstName: String = "First"
         private var lastName: String = "Last"
+        private var pinCode: String? = null
 
         fun withGlobalRoles(roles: Set<UserRole>) = this.apply {
             this.globalRoles = roles
@@ -423,6 +428,10 @@ class FixtureBuilder(
         fun withName(firstName: String, lastName: String) = this.apply {
             this.firstName = firstName
             this.lastName = lastName
+        }
+
+        fun withPinCode(pinCode: String) = this.apply {
+            this.pinCode = pinCode
         }
 
         fun save(): FixtureBuilder {
@@ -443,6 +452,7 @@ class FixtureBuilder(
             val employeeId = tx.insertTestEmployee(employee)
             unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId, role) }
             groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }
+            pinCode.also { if (it != null) tx.insertEmployeePin(DevEmployeePin(userId = employeeId, pin = it)) }
             return employeeId
         }
     }
@@ -454,7 +464,8 @@ class FixtureBuilder(
         val employeeId: EmployeeId
     ) {
         fun addRealtimeAttendance() = StaffAttendanceBuilder(tx, today, this)
-        fun addStaffAttendancePlan() = StaffAttendancePlanBuilder(tx, this)
+        fun addStaffAttendancePlan() = StaffAttendancePlanBuilder(tx, today, this)
+        fun addAttendancePlan() = StaffAttendancePlanBuilder(tx, today, this)
     }
 
     class StaffAttendanceBuilder(
@@ -499,31 +510,27 @@ class FixtureBuilder(
 
     class StaffAttendancePlanBuilder(
         private val tx: Database.Transaction,
+        private val today: LocalDate,
         private val employeeFixture: EmployeeFixture
     ) {
-        private var startTime: HelsinkiDateTime? = null
-        private var endTime: HelsinkiDateTime? = null
+        private var from: HelsinkiDateTime? = null
+        private var to: HelsinkiDateTime? = null
         private var type: StaffAttendanceType? = null
-        private var description: String? = null
 
-        fun startTime(time: HelsinkiDateTime) = this.apply { this.startTime = time }
-        fun endTime(time: HelsinkiDateTime) = this.apply { this.endTime = time }
-        fun type(type: StaffAttendanceType) = this.apply { this.type = type }
-        fun description(description: String) = this.apply { this.description = description }
+        fun withTime(from: HelsinkiDateTime, to: HelsinkiDateTime) = this.apply {
+            this.from = from
+            this.to = to
+        }
+
         fun save(): EmployeeFixture {
-            tx.createUpdate(
-                """
-                INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
-                VALUES (:employeeId, :type, :startTime, :endTime, :description)
-                """.trimIndent()
+            tx.insertTestStaffAttendancePlan(
+                DevStaffAttendancePlan(
+                    employeeId = employeeFixture.employeeId,
+                    type = this.type ?: StaffAttendanceType.PRESENT,
+                    startTime = this.from ?: error("staff attendance plan start time must be set"),
+                    endTime = this.to ?: error("staff attendance plan end time must be set")
+                )
             )
-                .bind("employeeId", employeeFixture.employeeId)
-                .bind("type", type ?: error("type must be set"))
-                .bind("startTime", startTime ?: error("start time must be set"))
-                .bind("endTime", endTime ?: error("end time must be set"))
-                .bindNullable("description", description)
-                .updateExactlyOne()
-
             return employeeFixture
         }
     }

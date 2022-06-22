@@ -3,15 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter, parse } from 'date-fns'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+import { getAttendanceDepartureDeviationReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
+import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -49,11 +59,20 @@ export default React.memo(function StaffMarkDepartedPage() {
     StaffAttendanceContext
   )
 
+  const staffMember = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) =>
+        res.staff.find((s) => s.employeeId === employeeId)
+      ),
+    [employeeId, staffAttendanceResponse]
+  )
+
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const [time, setTime] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format('HH:mm')
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
+  const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const staffInfo = useMemo(
     () =>
@@ -73,7 +92,8 @@ export default React.memo(function StaffMarkDepartedPage() {
         const attendanceId = staffMember?.attendances.find(
           ({ departed }) => departed === null
         )?.id
-        return { staffMember, attendanceId }
+        const groupId = staffMember?.latestCurrentDayAttendance?.groupId
+        return { staffMember, attendanceId, groupId }
       }),
     [employeeId, staffAttendanceResponse]
   )
@@ -92,6 +112,41 @@ export default React.memo(function StaffMarkDepartedPage() {
 
   const now = mockNow() ?? new Date()
   const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
+
+  const staffAttendanceDeviationReasons: StaffAttendanceType[] = useMemo(
+    () =>
+      staffMember
+        .map((staff) => {
+          const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+          if (!parsedTime || !staff?.spanningPlan) return []
+          const departed = HelsinkiDateTime.fromLocal(
+            LocalDate.todayInHelsinkiTz(),
+            parsedTime
+          )
+          return getAttendanceDepartureDeviationReasons(
+            staff.spanningPlan.end,
+            departed
+          )
+        })
+        .getOrElse([]),
+    [staffMember, time]
+  )
+
+  const confirm = useCallback(() => {
+    const groupId = memberAttendance
+      .map(({ groupId }) => groupId)
+      .getOrElse(undefined)
+
+    return groupId
+      ? postStaffDeparture({
+          employeeId,
+          groupId,
+          time: LocalTime.parse(time, 'HH:mm'),
+          pinCode: pinCode.join(''),
+          type: attendanceType ?? null
+        })
+      : undefined
+  }, [memberAttendance, employeeId, time, pinCode, attendanceType])
 
   return (
     <TallContentArea
@@ -130,6 +185,16 @@ export default React.memo(function StaffMarkDepartedPage() {
               )
             }
 
+            const confirmDisabled =
+              pinLocked ||
+              !pinSet ||
+              !isValidTime(time) ||
+              timeInFuture ||
+              pinCode.join('').trim().length < 4 ||
+              (staffAttendanceDeviationReasons.length > 1 &&
+                (!attendanceType ||
+                  !staffAttendanceDeviationReasons.includes(attendanceType)))
+
             return (
               <>
                 <Title centered noMargin>
@@ -166,6 +231,28 @@ export default React.memo(function StaffMarkDepartedPage() {
                     }
                   />
                   <Gap />
+                  {staffAttendanceDeviationReasons.length > 0 && (
+                    <>
+                      <CustomTitle>
+                        {i18n.attendances.staff.deviationReason}
+                      </CustomTitle>
+                      <Gap size="s" />
+                      <ChipWrapper margin="xs" $justifyContent="center">
+                        {staffAttendanceDeviationReasons.map((type) => (
+                          <ChoiceChip
+                            key={type}
+                            text={i18n.attendances.staffTypes[type]}
+                            selected={attendanceType === type}
+                            onChange={() =>
+                              attendanceType === type
+                                ? setAttendanceType(undefined)
+                                : setAttendanceType(type)
+                            }
+                          />
+                        ))}
+                      </ChipWrapper>
+                    </>
+                  )}
                 </TimeWrapper>
                 <Gap size="xs" />
                 <Actions>
@@ -177,19 +264,8 @@ export default React.memo(function StaffMarkDepartedPage() {
                     <AsyncButton
                       primary
                       text={i18n.common.confirm}
-                      disabled={
-                        pinLocked ||
-                        !pinSet ||
-                        !isValidTime(time) ||
-                        timeInFuture ||
-                        pinCode.join('').trim().length < 4
-                      }
-                      onClick={() =>
-                        postStaffDeparture(attendanceId, {
-                          time: LocalTime.parse(time, 'HH:mm'),
-                          pinCode: pinCode.join('')
-                        })
-                      }
+                      disabled={confirmDisabled}
+                      onClick={confirm}
                       onSuccess={() => {
                         reloadStaffAttendance()
                         history.go(-1)

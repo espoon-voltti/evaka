@@ -234,7 +234,8 @@ export const fi = {
       loginWithPin: 'Kirjaudu PIN-koodilla',
       pinNotSet: 'Aseta itsellesi PIN-koodi',
       pinLocked: 'Vaihda lukkiutunut PIN-koodi',
-      plannedAttendance: 'Työvuoro tänään'
+      plannedAttendance: 'Työvuoro tänään',
+      deviationReason: 'Kirjaa syy'
     }
   },
   childInfo: {

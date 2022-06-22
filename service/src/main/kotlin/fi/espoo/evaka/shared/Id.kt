@@ -70,6 +70,7 @@ sealed interface DatabaseTable {
     sealed class ServiceNeedOptionVoucherValue : DatabaseTable
     sealed class StaffAttendance : DatabaseTable
     sealed class StaffAttendanceExternal : DatabaseTable
+    sealed class StaffAttendancePlan : DatabaseTable
     sealed class StaffOccupancyCoefficient : DatabaseTable
     sealed class VardaDecision : DatabaseTable
     sealed class VardaPlacement : DatabaseTable
@@ -138,6 +139,7 @@ typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 typealias ServiceNeedOptionVoucherValueId = Id<DatabaseTable.ServiceNeedOptionVoucherValue>
 typealias StaffAttendanceId = Id<DatabaseTable.StaffAttendance>
 typealias StaffAttendanceExternalId = Id<DatabaseTable.StaffAttendanceExternal>
+typealias StaffAttendancePlanId = Id<DatabaseTable.StaffAttendancePlan>
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
 typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>

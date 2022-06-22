@@ -56,7 +56,13 @@ export async function getUnitStaffAttendances(
               arrived: HelsinkiDateTime.parseIso(arrived),
               departed: departed ? HelsinkiDateTime.parseIso(departed) : null
             })
-          )
+          ),
+          spanningPlan: staff.spanningPlan
+            ? {
+                start: HelsinkiDateTime.parseIso(staff.spanningPlan.start),
+                end: HelsinkiDateTime.parseIso(staff.spanningPlan.end)
+              }
+            : null
         })),
         extraAttendances: res.data.extraAttendances.map((att) => ({
           ...att,
@@ -77,14 +83,10 @@ export async function postStaffArrival(
 }
 
 export async function postStaffDeparture(
-  attendanceId: UUID,
   request: StaffDepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post(
-      `/mobile/realtime-staff-attendances/${attendanceId}/departure`,
-      request
-    )
+    .post(`/mobile/realtime-staff-attendances/departure`, request)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

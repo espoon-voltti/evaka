@@ -12,6 +12,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.jsonMapper
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.assistanceneed.insertAssistanceBasisOptionRefs
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.DecisionStatus
@@ -58,6 +59,7 @@ import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -905,6 +907,25 @@ fun Database.Transaction.insertTestStaffAttendance(
         .execute()
 }
 
+data class DevStaffAttendancePlan(
+    val id: StaffAttendancePlanId = StaffAttendancePlanId(UUID.randomUUID()),
+    val employeeId: EmployeeId,
+    val type: StaffAttendanceType,
+    val startTime: HelsinkiDateTime,
+    val endTime: HelsinkiDateTime
+)
+fun Database.Transaction.insertTestStaffAttendancePlan(staffAttendancePlan: DevStaffAttendancePlan) {
+    //language=sql
+    val sql =
+        """
+        INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time)
+        VALUES (:id, :employeeId, :type, :startTime, :endTime)
+        """.trimIndent()
+    createUpdate(sql)
+        .bindKotlin(staffAttendancePlan)
+        .execute()
+}
+
 fun Database.Transaction.insertTestAbsence(
     id: AbsenceId = AbsenceId(UUID.randomUUID()),
     childId: ChildId,
@@ -1142,7 +1163,7 @@ RETURNING partnership_id
 ).let(::PartnershipId)
 
 data class DevEmployeePin(
-    val id: UUID,
+    val id: UUID = UUID.randomUUID(),
     val userId: EmployeeId? = null,
     val employeeExternalId: String? = null,
     val pin: String,

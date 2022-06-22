@@ -181,7 +181,7 @@ export default React.memo(function ChildDailyNoteForm({
 
         <FixedSpaceColumn spacing="s">
           <Label>{i18n.unit.groups.daycareDailyNote.feedingHeader}</Label>
-          <ChipWrapper noMargin>
+          <ChipWrapper margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
                 <ChoiceChip
@@ -202,7 +202,7 @@ export default React.memo(function ChildDailyNoteForm({
 
         <FixedSpaceColumn spacing="s">
           <Label>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</Label>
-          <ChipWrapper noMargin>
+          <ChipWrapper margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
                 <ChoiceChip

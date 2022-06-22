@@ -4,9 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
+import { Property } from 'csstype'
 import { readableColor } from 'polished'
 import React, { useCallback } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { faCheck } from 'lib-icons'
@@ -190,15 +191,18 @@ const IconWrapper = styled.div`
   color: ${(p) => p.theme.colors.grayscale.g0};
 `
 
-export const ChipWrapper = styled.div<{ noMargin?: boolean }>`
+export const ChipWrapper = styled.div<{
+  margin?: keyof typeof defaultMargins
+  $justifyContent?: Property.JustifyContent
+}>`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: ${(p) => p.$justifyContent ?? 'flex-start'};
 
-  ${(p) =>
-    p.noMargin
-      ? ''
-      : `> div {
-    margin-bottom: ${defaultMargins.s};
-  }`};
+  ${(p) => css`
+    > div {
+      margin-bottom: ${defaultMargins[p.margin ?? 's']};
+    }
+  `};
 `
