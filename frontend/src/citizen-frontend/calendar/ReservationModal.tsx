@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -11,7 +13,7 @@ import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
 import {
   Repetition,
-  ReservationFormData,
+  ReservationFormDataForValidation,
   TimeRangeErrors,
   TimeRanges,
   validateForm
@@ -59,10 +61,10 @@ export default React.memo(function ReservationModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [formData, setFormData] = useState<ReservationFormData>({
+  const [formData, setFormData] = useState<ReservationFormDataForValidation>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: firstReservableDate.format(),
-    endDate: '',
+    startDate: firstReservableDate,
+    endDate: null,
     repetition: 'DAILY',
     dailyTimes: [
       {
@@ -79,7 +81,7 @@ export default React.memo(function ReservationModal({
     irregularTimes: {}
   })
 
-  const updateForm = (updated: Partial<ReservationFormData>) => {
+  const updateForm = (updated: Partial<ReservationFormDataForValidation>) => {
     setFormData((prev) => ({
       ...prev,
       ...updated
@@ -95,18 +97,17 @@ export default React.memo(function ReservationModal({
   const shiftCareRange = useMemo(() => {
     if (formData.repetition !== 'IRREGULAR') return
 
-    const parsedStartDate = LocalDate.parseFiOrNull(formData.startDate)
-    const parsedEndDate = LocalDate.parseFiOrNull(formData.endDate)
-
     if (
-      !parsedStartDate ||
-      !parsedEndDate ||
-      parsedEndDate.isBefore(parsedStartDate)
+      !formData.startDate ||
+      !formData.endDate ||
+      formData.endDate.isBefore(formData.endDate)
     ) {
       return
     }
 
-    return [...new FiniteDateRange(parsedStartDate, parsedEndDate).dates()]
+    return [
+      ...new FiniteDateRange(formData.startDate, formData.endDate).dates()
+    ]
   }, [formData.repetition, formData.startDate, formData.endDate])
 
   const childrenInShiftCare = useMemo(
@@ -127,8 +128,19 @@ export default React.memo(function ReservationModal({
     )
   }, [availableChildren])
 
-  const isValidDate = useCallback(
-    (date: LocalDate) => reservableDays.some((r) => r.includes(date)),
+  const isInvalidDate = useCallback(
+    (date: LocalDate) =>
+      reservableDays.some((r) => r.includes(date))
+        ? null
+        : i18n.validationErrors.unselectableDate,
+    [reservableDays, i18n]
+  )
+
+  const { minDate, maxDate } = useMemo(
+    () => ({
+      minDate: minBy(reservableDays, (range) => range.start)?.start,
+      maxDate: maxBy(reservableDays, (range) => range.end)?.end
+    }),
     [reservableDays]
   )
 
@@ -210,7 +222,7 @@ export default React.memo(function ReservationModal({
             date={formData.startDate}
             onChange={(date) => updateForm({ startDate: date })}
             locale={lang}
-            isValidDate={isValidDate}
+            isInvalidDate={isInvalidDate}
             info={errorToInputInfo(
               validationResult.errors?.startDate,
               i18n.validationErrors
@@ -220,26 +232,29 @@ export default React.memo(function ReservationModal({
             onFocus={(ev) => {
               scrollIntoViewSoftKeyboard(ev.target, 'start')
             }}
+            minDate={minDate}
+            maxDate={maxDate}
+            errorTexts={i18n.validationErrors}
           />
           <DatePickerSpacer />
           <DatePicker
             date={formData.endDate}
             onChange={(date) => updateForm({ endDate: date })}
             locale={lang}
-            isValidDate={isValidDate}
+            isInvalidDate={isInvalidDate}
             info={errorToInputInfo(
               validationResult.errors?.endDate,
               i18n.validationErrors
             )}
             hideErrorsBeforeTouched={!showAllErrors}
-            initialMonth={
-              LocalDate.parseFiOrNull(formData.startDate) ??
-              reservableDays[0]?.start
-            }
+            initialMonth={formData.startDate ?? reservableDays[0]?.start}
             data-qa="end-date"
             onFocus={(ev) => {
               scrollIntoViewSoftKeyboard(ev.target, 'start')
             }}
+            minDate={minDate}
+            maxDate={maxDate}
+            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
         <Gap size="m" />

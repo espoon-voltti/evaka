@@ -395,7 +395,12 @@ export default React.memo(function VasuTemplateEditor() {
         <QuestionInfo info={question.info}>
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
-        <DatePicker date="" onChange={() => undefined} locale={lang} />
+        <DatePicker
+          date={null}
+          onChange={() => undefined}
+          locale={lang}
+          errorTexts={i18n.validationErrors}
+        />
         {!!question.nameInEvents && (
           <QuestionDetails>
             {`${i18n.vasuTemplates.questionModal.dateIsTrackedInEvents}: ${question.nameInEvents}`}

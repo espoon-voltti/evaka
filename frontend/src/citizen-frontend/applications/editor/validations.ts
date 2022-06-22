@@ -17,8 +17,7 @@ import {
   requiredSelection,
   ssn,
   TIME_REGEXP,
-  validate,
-  validDate
+  validate
 } from 'lib-common/form-validation'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
@@ -38,17 +37,17 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
   return totalErrors > 0
 }
 
-const minPreferredStartDate = (
+export const minPreferredStartDate = (
   originalPreferredStartDate: LocalDate | null
 ): LocalDate => {
   return originalPreferredStartDate ?? LocalDate.todayInSystemTz()
 }
 
-const maxPreferredStartDate = (): LocalDate => {
+export const maxPreferredStartDate = (): LocalDate => {
   return LocalDate.todayInSystemTz().addYears(1)
 }
 
-const maxDecisionStartDate = (
+export const maxDecisionStartDate = (
   startDate: LocalDate,
   type: DecisionType
 ): LocalDate => {
@@ -75,37 +74,18 @@ export const isValidPreferredStartDate = (
   return true
 }
 
-export const isValidDecisionStartDate = (
-  date: LocalDate,
-  startDate: string,
-  type: DecisionType
-): boolean => {
-  let parsedDate: LocalDate
-  try {
-    parsedDate = LocalDate.parseFiOrThrow(startDate)
-  } catch (e) {
-    if (e instanceof RangeError) {
-      return false
-    }
-    // Unexpected
-    throw e
-  }
-  return (
-    date.isEqualOrAfter(parsedDate) &&
-    date.isEqualOrBefore(maxDecisionStartDate(parsedDate, type))
-  )
-}
-
 const preferredStartDateValidator =
   (
     originalPreferredStartDate: LocalDate | null,
     type: ApplicationType,
     terms?: FiniteDateRange[]
   ) =>
-  (val: string, err: ErrorKey = 'preferredStartDate'): ErrorKey | undefined => {
-    const date = LocalDate.parseFiOrNull(val)
-    return date &&
-      isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
+  (
+    val: LocalDate | null,
+    err: ErrorKey = 'preferredStartDate'
+  ): ErrorKey | undefined => {
+    return val &&
+      isValidPreferredStartDate(val, originalPreferredStartDate, type, terms)
       ? undefined
       : err
   }
@@ -127,7 +107,6 @@ export const validateApplication = (
       preferredStartDate: validate(
         form.serviceNeed.preferredStartDate,
         required,
-        validDate,
         preferredStartDateValidator(
           apiData.status !== 'CREATED'
             ? apiData.form.preferences.preferredStartDate
@@ -176,7 +155,7 @@ export const validateApplication = (
     },
     contactInfo: {
       childMoveDate: form.contactInfo.childFutureAddressExists
-        ? validate(form.contactInfo.childMoveDate, required, validDate)
+        ? validate(form.contactInfo.childMoveDate, required)
         : undefined,
       childFutureStreet: form.contactInfo.childFutureAddressExists
         ? validate(form.contactInfo.childFutureStreet, required)
@@ -203,7 +182,7 @@ export const validateApplication = (
               emailVerificationCheck(form.contactInfo.guardianEmail)
             ),
       guardianMoveDate: form.contactInfo.guardianFutureAddressExists
-        ? validate(form.contactInfo.guardianMoveDate, required, validDate)
+        ? validate(form.contactInfo.guardianMoveDate, required)
         : undefined,
       guardianFutureStreet: form.contactInfo.guardianFutureAddressExists
         ? validate(form.contactInfo.guardianFutureStreet, required)

@@ -17,28 +17,24 @@ const weekdayNumbers = [0, 1, 2, 3, 4, 5, 6]
 
 interface Props {
   handleDayClick: (day: Date, modifiers?: DayModifiers) => void
-  inputValue: string
+  inputValue: LocalDate | null
   locale: 'fi' | 'sv' | 'en'
-  isValidDate?: (date: LocalDate) => boolean
+  isInvalidDate?: (date: LocalDate) => boolean
   initialMonth?: LocalDate
+  minDate?: LocalDate
+  maxDate?: LocalDate
 }
 
 export default React.memo(function DatePickerDay({
   handleDayClick,
   inputValue,
   locale,
-  isValidDate,
-  initialMonth
+  isInvalidDate,
+  initialMonth,
+  minDate,
+  maxDate
 }: Props) {
   const dateI18n = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
-
-  function convertToDate(date: string) {
-    try {
-      return LocalDate.parseFiOrThrow(date).toSystemTzDate()
-    } catch (e) {
-      return undefined
-    }
-  }
 
   const months = monthNumbers
     .map((m) => dateI18n.localize?.month(m) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
@@ -58,12 +54,27 @@ export default React.memo(function DatePickerDay({
       weekdaysLong={weekdaysLong}
       weekdaysShort={weekdaysShort}
       firstDayOfWeek={locale === 'en' ? 0 : 1}
-      selectedDays={convertToDate(inputValue)}
-      disabledDays={(date: Date) => {
+      selectedDays={inputValue?.toSystemTzDate() ?? undefined}
+      disabledDays={(date) => {
         const localDate = LocalDate.fromSystemTzDate(date)
-        return isValidDate ? !isValidDate(localDate) : false
+
+        if (isInvalidDate?.(localDate)) {
+          return true
+        }
+
+        if (minDate && minDate.isAfter(localDate)) {
+          return true
+        }
+
+        if (maxDate && maxDate.isBefore(localDate)) {
+          return true
+        }
+
+        return false
       }}
-      initialMonth={convertToDate(inputValue) ?? initialMonth?.toSystemTzDate()}
+      initialMonth={
+        inputValue?.toSystemTzDate() ?? initialMonth?.toSystemTzDate()
+      }
     />
   )
 })

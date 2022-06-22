@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -22,7 +22,7 @@ import { Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
-import { isValidDecisionStartDate } from '../../applications/editor/validations'
+import { maxDecisionStartDate } from '../../applications/editor/validations'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
@@ -58,9 +58,9 @@ export default React.memo(function DecisionResponse({
     type: decisionType
   } = decision
   const [acceptChecked, setAcceptChecked] = useState<boolean>(true)
-  const [requestedStartDate, setRequestedStartDate] =
-    useState<string>(startDate)
-  const [parsedDate, setParsedDate] = useState<LocalDate | null>(null)
+  const [requestedStartDate, setRequestedStartDate] = useState(
+    LocalDate.parseFiOrNull(startDate)
+  )
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [displayCascadeWarning, setDisplayCascadeWarning] =
     useState<boolean>(false)
@@ -81,9 +81,9 @@ export default React.memo(function DecisionResponse({
   }
 
   const handleAcceptDecision = async () => {
-    if (parsedDate === null) throw new Error('Parsed date was null')
+    if (requestedStartDate === null) throw new Error('Parsed date was null')
     setSubmitting(true)
-    return acceptDecision(applicationId, decisionId, parsedDate)
+    return acceptDecision(applicationId, decisionId, requestedStartDate)
   }
 
   const handleRejectDecision = async () => {
@@ -115,20 +115,17 @@ export default React.memo(function DecisionResponse({
   }
 
   useEffect(() => {
-    setParsedDate(LocalDate.parseFiOrNull(requestedStartDate))
-  }, [requestedStartDate])
-
-  useEffect(() => {
-    if (parsedDate === null) {
+    if (requestedStartDate === null) {
       setDateErrorMessage(t.validationErrors.validDate)
     } else {
-      if (isValidDecisionStartDate(parsedDate, startDate, decisionType)) {
-        setDateErrorMessage('')
-      } else {
-        setDateErrorMessage(t.validationErrors.preferredStartDate)
-      }
+      setDateErrorMessage('')
     }
-  }, [parsedDate, startDate, decisionType]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [startDate, decisionType]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const parsedStartDate = useMemo(
+    () => LocalDate.parseFiOrNull(startDate) ?? undefined,
+    [startDate]
+  )
 
   return (
     <div data-qa={`decision-${decision.id}`}>
@@ -185,15 +182,11 @@ export default React.memo(function DecisionResponse({
                       <span onClick={(e) => e.stopPropagation()}>
                         <DatePicker
                           date={requestedStartDate}
-                          onChange={(date: string) =>
-                            setRequestedStartDate(date)
-                          }
-                          isValidDate={(date: LocalDate) =>
-                            isValidDecisionStartDate(
-                              date,
-                              startDate,
-                              decisionType
-                            )
+                          onChange={(date) => setRequestedStartDate(date)}
+                          minDate={parsedStartDate}
+                          maxDate={
+                            parsedStartDate &&
+                            maxDecisionStartDate(parsedStartDate, decisionType)
                           }
                           locale={lang}
                           info={
@@ -204,13 +197,18 @@ export default React.memo(function DecisionResponse({
                                 }
                               : undefined
                           }
+                          errorTexts={t.validationErrors}
                         />
                       </span>
                     )}
                     {t.decisions.applicationDecisions.response.accept2}
                   </>
                 }
-                ariaLabel={`${t.decisions.applicationDecisions.response.accept1} ${requestedStartDate} ${t.decisions.applicationDecisions.response.accept2}`}
+                ariaLabel={`${
+                  t.decisions.applicationDecisions.response.accept1
+                } ${requestedStartDate?.format() ?? ''} ${
+                  t.decisions.applicationDecisions.response.accept2
+                }`}
                 disabled={blocked || submitting}
                 data-qa="radio-accept"
               />

@@ -180,9 +180,10 @@ export type InputInfo = {
   status?: InfoStatus
 }
 
-export interface TextInputProps extends BaseProps {
+interface InputProps extends BaseProps {
   value: string
   onChange?: (value: string) => void
+  onChangeTarget?: (target: EventTarget & HTMLInputElement) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
@@ -199,8 +200,6 @@ export interface TextInputProps extends BaseProps {
   onKeyDown?: HTMLAttributes<HTMLInputElement>['onKeyDown']
   symbol?: string
   type?: string
-  min?: number
-  max?: number
   maxLength?: number
   step?: number
   id?: string
@@ -213,6 +212,19 @@ export interface TextInputProps extends BaseProps {
   inputRef?: RefObject<HTMLInputElement>
   wrapperClassName?: string
 }
+
+interface DateInputProps extends InputProps {
+  type: 'date'
+  min?: string
+  max?: string
+}
+
+interface OtherInputProps extends InputProps {
+  min?: number
+  max?: number
+}
+
+export type TextInputProps = OtherInputProps | DateInputProps
 
 export default React.memo(function InputField({
   value,
@@ -242,7 +254,9 @@ export default React.memo(function InputField({
   inputRef,
   'aria-describedby': ariaId,
   required,
-  autoFocus
+  autoFocus,
+  onChangeTarget,
+  ...rest
 }: TextInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -260,7 +274,10 @@ export default React.memo(function InputField({
         value={value}
         onChange={(e) => {
           e.preventDefault()
-          if (onChange && !readonly) onChange(e.target.value)
+          if (!readonly) {
+            onChange?.(e.target.value)
+            onChangeTarget?.(e.target)
+          }
         }}
         onFocus={onFocus}
         onBlur={(e) => {
@@ -287,6 +304,7 @@ export default React.memo(function InputField({
         required={required ?? false}
         ref={inputRef}
         autoFocus={autoFocus}
+        {...rest}
       />
       {showIcon && (
         <IconContainer clickable={clearable}>

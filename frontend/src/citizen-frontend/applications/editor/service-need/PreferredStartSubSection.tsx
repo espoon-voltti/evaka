@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
+import React, { useMemo } from 'react'
 
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
@@ -25,7 +27,11 @@ import {
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
-import { isValidPreferredStartDate } from '../validations'
+import {
+  isValidPreferredStartDate,
+  maxPreferredStartDate,
+  minPreferredStartDate
+} from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
@@ -83,15 +89,28 @@ export default React.memo(function PreferredStartSubSection({
     })
 
   const showDaycare4MonthWarning = (): boolean => {
-    const preferredStartDate = LocalDate.parseFiOrNull(
-      formData.preferredStartDate
-    )
     return (
       type === 'DAYCARE' &&
-      preferredStartDate !== null &&
-      preferredStartDate.isBefore(LocalDate.todayInSystemTz().addMonths(4))
+      formData.preferredStartDate !== null &&
+      formData.preferredStartDate.isBefore(
+        LocalDate.todayInSystemTz().addMonths(4)
+      )
     )
   }
+
+  const maxDate = useMemo(() => {
+    const maxPreferred = maxPreferredStartDate()
+    const maxTermDate = terms && maxBy(terms, (term) => term.end)?.end
+
+    return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
+  }, [terms])
+
+  const minDate = useMemo(() => {
+    const minPreferred = minPreferredStartDate(originalPreferredStartDate)
+    const minTermDate = terms && minBy(terms, (term) => term.start)?.start
+
+    return minTermDate?.isAfter(minPreferred) ? minTermDate : minPreferred
+  }, [terms, originalPreferredStartDate])
 
   return (
     <>
@@ -134,17 +153,22 @@ export default React.memo(function PreferredStartSubSection({
           locale={lang}
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
-          isValidDate={(date: LocalDate) =>
+          isInvalidDate={(date: LocalDate) =>
             isValidPreferredStartDate(
               date,
               originalPreferredStartDate,
               type,
               terms
             )
+              ? null
+              : t.validationErrors.unselectableDate
           }
+          minDate={minDate}
+          maxDate={maxDate}
           data-qa="preferredStartDate-input"
           id={labelId}
           required={true}
+          errorTexts={t.validationErrors}
         />
 
         {showDaycare4MonthWarning() ? (

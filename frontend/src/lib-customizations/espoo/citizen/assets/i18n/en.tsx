@@ -1838,7 +1838,8 @@ const en: Translations = {
     timeRequired: 'Required',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
-    httpUrl: 'Valid url format is https://example.com'
+    httpUrl: 'Valid url format is https://example.com',
+    unselectableDate: 'Invalid date'
   },
   login: {
     failedModal: {

@@ -7,7 +7,6 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
-import { validateIf, validDate } from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -117,8 +116,8 @@ const ChildIncome = React.memo(function ChildIncome({
 })
 
 interface ChildIncomeTypeSelectionData {
-  startDate: string
-  endDate: string
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   highestFeeSelected: boolean
   grossSelected: boolean
   entrepreneurSelected: boolean
@@ -144,23 +143,12 @@ const ChildIncomeTimeRangeSelection = React.memo(
     const [lang] = useLang()
 
     const startDateInputInfo = useMemo(
-      () => errorToInputInfo(validDate(formData.startDate), t.validationErrors),
-      [formData.startDate, t]
-    )
-    const isValidEndDate = useCallback(
-      (date) => {
-        const startDate = LocalDate.parseFiOrNull(formData.startDate)
-        return startDate === null || startDate <= date
-      },
-      [formData.startDate]
-    )
-    const endDateInputInfo = useMemo(
       () =>
         errorToInputInfo(
-          validateIf(formData.endDate != '', formData.endDate, validDate),
+          formData.startDate ? undefined : 'validDate',
           t.validationErrors
         ),
-      [formData.endDate, t]
+      [formData.startDate, t]
     )
 
     return (
@@ -188,8 +176,11 @@ const ChildIncomeTimeRangeSelection = React.memo(
               info={startDateInputInfo}
               hideErrorsBeforeTouched
               locale={lang}
-              isValidDate={isValidStartDate}
+              isInvalidDate={(d) =>
+                isValidStartDate(d) ? null : t.validationErrors.unselectableDate
+              }
               data-qa="start-date"
+              errorTexts={t.validationErrors}
             />
           </div>
           <div>
@@ -199,11 +190,11 @@ const ChildIncomeTimeRangeSelection = React.memo(
               id="end-date"
               date={formData.endDate}
               onChange={useFieldDispatch(onChange, 'endDate')}
-              isValidDate={isValidEndDate}
-              info={endDateInputInfo}
+              minDate={formData.startDate ?? undefined}
               hideErrorsBeforeTouched
               locale={lang}
               data-qa="end-date"
+              errorTexts={t.validationErrors}
             />
           </div>
         </FixedSpaceRow>

@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Loading, Result, Success } from 'lib-common/api'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -57,11 +56,6 @@ export default React.memo(function ApplicationFormDaycare({
     loadServiceNeedOptions,
     shouldLoadServiceNeedOptions
   ])
-
-  const preferredStartDate = useMemo(
-    () => LocalDate.parseFiOrNull(formData.serviceNeed.preferredStartDate),
-    [formData.serviceNeed.preferredStartDate]
-  )
 
   const originalPreferredStartDate =
     apiData.status !== 'CREATED'
@@ -124,7 +118,7 @@ export default React.memo(function ApplicationFormDaycare({
             }
             applicationType={applicationType}
             preparatory={false}
-            preferredStartDate={preferredStartDate}
+            preferredStartDate={formData.serviceNeed.preferredStartDate}
             errors={errors.unitPreference}
             verificationRequested={verificationRequested}
             shiftCare={formData.serviceNeed.shiftCare}

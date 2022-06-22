@@ -22,7 +22,7 @@ import { CHILD_AGE } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 
 type Form = Omit<CreatePersonBody, 'dateOfBirth'> & {
-  dateOfBirth: string
+  dateOfBirth: LocalDate | null
 }
 
 export default React.memo(function CreatePersonModal({
@@ -34,7 +34,7 @@ export default React.memo(function CreatePersonModal({
   const [form, setForm] = useState<Form>({
     firstName: '',
     lastName: '',
-    dateOfBirth: '',
+    dateOfBirth: null,
     streetAddress: '',
     postalCode: '',
     postOffice: '',
@@ -64,10 +64,7 @@ export default React.memo(function CreatePersonModal({
     }
   }
 
-  const isAdult = (dateOfBirth: string) => {
-    const parsedDateOfBirth = LocalDate.parseFiOrNull(dateOfBirth)
-    return parsedDateOfBirth && getAge(parsedDateOfBirth) >= CHILD_AGE
-  }
+  const isAdult = (dateOfBirth: LocalDate) => getAge(dateOfBirth) >= CHILD_AGE
 
   return (
     <FormModal
@@ -101,17 +98,16 @@ export default React.memo(function CreatePersonModal({
             date={form.dateOfBirth}
             locale={lang}
             onChange={(value) => {
-              if (!isAdult(value)) {
+              if (!value || !isAdult(value)) {
                 setForm(set('phone', ''))
                 setForm(set('email', null))
               }
               setForm(set('dateOfBirth', value))
             }}
-            isValidDate={(date) =>
-              date.isEqualOrBefore(LocalDate.todayInSystemTz())
-            }
+            maxDate={LocalDate.todayInSystemTz()}
             hideErrorsBeforeTouched
             data-qa="date-of-birth-input"
+            errorTexts={i18n.validationErrors}
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>
           <AddressContainer>
@@ -148,7 +144,7 @@ export default React.memo(function CreatePersonModal({
               </PostOfficeContainer>
             </PostalCodeAndOfficeContainer>
           </AddressContainer>
-          {isAdult(form.dateOfBirth) ? (
+          {form.dateOfBirth && isAdult(form.dateOfBirth) ? (
             <>
               <Label>{i18n.personSearch.createNewPerson.form.phone}*</Label>
               <InputField
@@ -208,8 +204,7 @@ const ErrorText = styled.div`
 `
 
 function validateForm(form: Form): CreatePersonBody | undefined {
-  const parsedDateOfBirth =
-    form.dateOfBirth && LocalDate.parseFiOrNull(form.dateOfBirth)
+  const parsedDateOfBirth = form.dateOfBirth
 
   if (
     !form.firstName ||

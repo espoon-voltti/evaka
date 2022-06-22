@@ -47,14 +47,14 @@ function initialForm(
   const selectedChildren = availableChildren.map((child) => child.id)
   if (initialDate) {
     return {
-      startDate: initialDate.format(),
-      endDate: initialDate.format(),
+      startDate: initialDate,
+      endDate: initialDate,
       selectedChildren
     }
   }
   return {
-    startDate: LocalDate.todayInSystemTz().format(),
-    endDate: '',
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: null,
     selectedChildren
   }
 }
@@ -136,33 +136,28 @@ export default React.memo(function AbsenceModal({
             date={form.startDate}
             onChange={(date) => updateForm({ startDate: date })}
             locale={lang}
-            isValidDate={(date) =>
-              LocalDate.todayInSystemTz().isEqualOrBefore(date)
-            }
+            minDate={LocalDate.todayInSystemTz()}
             info={
               errors &&
               errorToInputInfo(errors.startDate, i18n.validationErrors)
             }
             hideErrorsBeforeTouched={!showAllErrors}
             data-qa="start-date"
+            errorTexts={i18n.validationErrors}
           />
           <DatePickerSpacer />
           <DatePicker
             date={form.endDate}
             onChange={(date) => updateForm({ endDate: date })}
             locale={lang}
-            isValidDate={(date) =>
-              LocalDate.todayInSystemTz().isEqualOrBefore(date)
-            }
+            minDate={LocalDate.todayInSystemTz()}
             info={
               errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
             }
             hideErrorsBeforeTouched={!showAllErrors}
-            initialMonth={
-              LocalDate.parseFiOrNull(form.startDate) ??
-              LocalDate.todayInSystemTz()
-            }
+            initialMonth={form.startDate ?? LocalDate.todayInSystemTz()}
             data-qa="end-date"
+            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
         <Gap size="m" />
@@ -209,8 +204,8 @@ export default React.memo(function AbsenceModal({
 })
 
 interface Form {
-  startDate: string
-  endDate: string
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   selectedChildren: string[]
   absenceType?: AbsenceType
 }
@@ -218,26 +213,9 @@ interface Form {
 const validateForm = (
   form: Form
 ): [AbsenceRequest] | [undefined, ErrorsOf<Form>] => {
-  const startDate = LocalDate.parseFiOrNull(form.startDate)
-  const endDate = LocalDate.parseFiOrNull(form.endDate)
-
   const errors: ErrorsOf<Form> = {
-    startDate:
-      form.startDate === ''
-        ? 'required'
-        : startDate === null
-        ? 'validDate'
-        : startDate.isBefore(LocalDate.todayInSystemTz())
-        ? 'dateTooEarly'
-        : undefined,
-    endDate:
-      form.endDate === ''
-        ? 'required'
-        : endDate === null
-        ? 'validDate'
-        : startDate && endDate.isBefore(startDate)
-        ? 'dateTooEarly'
-        : undefined,
+    startDate: !form.startDate ? 'required' : undefined,
+    endDate: !form.endDate ? 'required' : undefined,
     absenceType: form.absenceType === undefined ? 'required' : undefined
   }
 
@@ -249,7 +227,7 @@ const validateForm = (
     {
       childIds: form.selectedChildren,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      dateRange: new FiniteDateRange(startDate!, endDate!),
+      dateRange: new FiniteDateRange(form.startDate!, form.endDate!),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       absenceType: form.absenceType!
     }

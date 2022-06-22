@@ -51,14 +51,14 @@ interface FormState {
   descriptionLinkFi: string
   descriptionLinkSv: string
   descriptionLinkEn: string
-  start: string
-  end: string
+  start: LocalDate | null
+  end: LocalDate | null
   periodOptions: string
   periodOptionLabelFi: string
   periodOptionLabelSv: string
   periodOptionLabelEn: string
-  conditionContinuousPlacementStart: string
-  conditionContinuousPlacementEnd: string
+  conditionContinuousPlacementStart: LocalDate | null
+  conditionContinuousPlacementEnd: LocalDate | null
 }
 
 const parseFiniteDateRange = (range: string): FiniteDateRange | null => {
@@ -81,15 +81,7 @@ const parseDateRanges = (s: string) =>
 const formToQuestionnaireBody = (
   s: FormState
 ): FixedPeriodQuestionnaireBody | undefined => {
-  const parsedStart = LocalDate.parseFiOrNull(s.start)
-  const parsedEnd = LocalDate.parseFiOrNull(s.end)
-  const parsedConditionContinuousPlacementStart = LocalDate.parseFiOrNull(
-    s.conditionContinuousPlacementStart
-  )
-  const parsedConditionContinuousPlacementEnd = LocalDate.parseFiOrNull(
-    s.conditionContinuousPlacementEnd
-  )
-  if (!parsedStart || !parsedEnd) {
+  if (!s.start || !s.end) {
     return undefined
   }
 
@@ -110,7 +102,7 @@ const formToQuestionnaireBody = (
       sv: s.descriptionLinkSv,
       en: s.descriptionLinkEn
     },
-    active: new FiniteDateRange(parsedStart, parsedEnd),
+    active: new FiniteDateRange(s.start, s.end),
     periodOptionLabel: {
       fi: s.periodOptionLabelFi,
       sv: s.periodOptionLabelSv,
@@ -119,11 +111,10 @@ const formToQuestionnaireBody = (
     periodOptions: parseDateRanges(s.periodOptions),
     conditions: {
       continuousPlacement:
-        parsedConditionContinuousPlacementStart &&
-        parsedConditionContinuousPlacementEnd
+        s.conditionContinuousPlacementStart && s.conditionContinuousPlacementEnd
           ? new FiniteDateRange(
-              parsedConditionContinuousPlacementStart,
-              parsedConditionContinuousPlacementEnd
+              s.conditionContinuousPlacementStart,
+              s.conditionContinuousPlacementEnd
             )
           : null
     }
@@ -142,14 +133,14 @@ const emptyFormState: FormState = {
   descriptionLinkFi: '',
   descriptionLinkSv: '',
   descriptionLinkEn: '',
-  start: '',
-  end: '',
+  start: null,
+  end: null,
   periodOptions: '',
   periodOptionLabelFi: '',
   periodOptionLabelSv: '',
   periodOptionLabelEn: '',
-  conditionContinuousPlacementStart: '',
-  conditionContinuousPlacementEnd: ''
+  conditionContinuousPlacementStart: null,
+  conditionContinuousPlacementEnd: null
 }
 
 const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
@@ -166,16 +157,16 @@ const toFormState = (p: FixedPeriodQuestionnaire | undefined): FormState =>
         descriptionLinkFi: p.descriptionLink.fi,
         descriptionLinkSv: p.descriptionLink.sv,
         descriptionLinkEn: p.descriptionLink.en,
-        start: p.active.start.format(),
-        end: p.active.end.format(),
+        start: p.active.start,
+        end: p.active.end,
         periodOptions: p.periodOptions.map((r) => r.format()).join(', '),
         periodOptionLabelFi: p.periodOptionLabel.fi,
         periodOptionLabelSv: p.periodOptionLabel.sv,
         periodOptionLabelEn: p.periodOptionLabel.en,
         conditionContinuousPlacementStart:
-          p.conditions.continuousPlacement?.start.format() ?? '',
+          p.conditions.continuousPlacement?.start ?? null,
         conditionContinuousPlacementEnd:
-          p.conditions.continuousPlacement?.end.format() ?? ''
+          p.conditions.continuousPlacement?.end ?? null
       }
     : emptyFormState
 
@@ -206,14 +197,12 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     parsedConditionContinuousPlacementStart,
     parsedConditionContinuousPlacementEnd
   ] = useMemo(() => {
-    const parsedStart = LocalDate.parseFiOrNull(form.start)
-    const parsedEnd = LocalDate.parseFiOrNull(form.end)
-    const parsedConditionContinuousPlacementStart = LocalDate.parseFiOrNull(
+    const parsedStart = form.start
+    const parsedEnd = form.end
+    const parsedConditionContinuousPlacementStart =
       form.conditionContinuousPlacementStart
-    )
-    const parsedConditionContinuousPlacementEnd = LocalDate.parseFiOrNull(
+    const parsedConditionContinuousPlacementEnd =
       form.conditionContinuousPlacementEnd
-    )
 
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
       absenceType: undefined,
@@ -324,10 +313,11 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             date={form.start}
             locale={lang}
             required
-            isValidDate={(d) => !parsedEnd || d.isEqualOrBefore(parsedEnd)}
+            maxDate={parsedEnd ?? undefined}
             onChange={(start) => update({ start })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-start"
+            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -338,10 +328,11 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             date={form.end}
             locale={lang}
             required
-            isValidDate={(d) => !parsedStart || d.isEqualOrAfter(parsedStart)}
+            minDate={parsedStart ?? undefined}
             onChange={(end) => update({ end })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-end"
+            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
 
@@ -564,15 +555,13 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             date={form.conditionContinuousPlacementStart}
             locale={lang}
             required
-            isValidDate={(d) =>
-              !parsedConditionContinuousPlacementEnd ||
-              d.isEqualOrBefore(parsedConditionContinuousPlacementEnd)
-            }
+            maxDate={parsedConditionContinuousPlacementEnd ?? undefined}
             onChange={(conditionContinuousPlacementStart) =>
               update({ conditionContinuousPlacementStart })
             }
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="continuous-placement-start"
+            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -587,15 +576,13 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             date={form.conditionContinuousPlacementEnd}
             locale={lang}
             required
-            isValidDate={(d) =>
-              !parsedConditionContinuousPlacementStart ||
-              d.isEqualOrAfter(parsedConditionContinuousPlacementStart)
-            }
+            minDate={parsedConditionContinuousPlacementStart ?? undefined}
             onChange={(conditionContinuousPlacementEnd) =>
               update({ conditionContinuousPlacementEnd })
             }
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="continuous-placement-end"
+            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
       </ListGrid>

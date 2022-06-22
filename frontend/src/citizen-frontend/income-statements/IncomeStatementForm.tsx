@@ -12,7 +12,6 @@ import {
   required,
   validate,
   validateIf,
-  validDate,
   validInt
 } from 'lib-common/form-validation'
 import { OtherIncome } from 'lib-common/generated/enums'
@@ -279,8 +278,8 @@ function useSelectIncomeType(
 }
 
 interface IncomeTypeSelectionData {
-  startDate: string
-  endDate: string
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   highestFeeSelected: boolean
   grossSelected: boolean
   entrepreneurSelected: boolean
@@ -315,23 +314,12 @@ const IncomeTypeSelection = React.memo(
     const onSelectEntrepreneur = useSelectIncomeType(onSelect, 'entrepreneur')
 
     const startDateInputInfo = useMemo(
-      () => errorToInputInfo(validDate(formData.startDate), t.validationErrors),
-      [formData.startDate, t]
-    )
-    const isValidEndDate = useCallback(
-      (date) => {
-        const startDate = LocalDate.parseFiOrNull(formData.startDate)
-        return startDate === null || startDate <= date
-      },
-      [formData.startDate]
-    )
-    const endDateInputInfo = useMemo(
       () =>
         errorToInputInfo(
-          validateIf(formData.endDate != '', formData.endDate, validDate),
+          formData.startDate ? undefined : 'validDate',
           t.validationErrors
         ),
-      [formData.endDate, t]
+      [formData.startDate, t]
     )
 
     return (
@@ -358,7 +346,12 @@ const IncomeTypeSelection = React.memo(
                 info={startDateInputInfo}
                 hideErrorsBeforeTouched
                 locale={lang}
-                isValidDate={isValidStartDate}
+                isInvalidDate={(d) =>
+                  isValidStartDate(d)
+                    ? null
+                    : t.validationErrors.unselectableDate
+                }
+                errorTexts={t.validationErrors}
               />
             </div>
             <div>
@@ -368,10 +361,10 @@ const IncomeTypeSelection = React.memo(
                 id="end-date"
                 date={formData.endDate}
                 onChange={useFieldDispatch(onChange, 'endDate')}
-                isValidDate={isValidEndDate}
-                info={endDateInputInfo}
+                minDate={formData.startDate ?? undefined}
                 hideErrorsBeforeTouched
                 locale={lang}
+                errorTexts={t.validationErrors}
               />
             </div>
           </FixedSpaceRow>
@@ -570,16 +563,13 @@ const EntrepreneurIncomeSelection = React.memo(
             info={useMemo(
               () =>
                 errorToInputInfo(
-                  validate(
-                    formData.startOfEntrepreneurship,
-                    required,
-                    validDate
-                  ),
+                  formData.startOfEntrepreneurship ? undefined : 'validDate',
                   t.validationErrors
                 ),
               [formData.startOfEntrepreneurship, t]
             )}
             hideErrorsBeforeTouched={!showFormErrors}
+            errorTexts={t.validationErrors}
           />
           <Gap size="L" />
           <LabelWithError
@@ -744,16 +734,6 @@ const SelfEmployedIncomeSelection = React.memo(
     const t = useTranslation()
     const [lang] = useLang()
 
-    const isValidEndDate = useCallback(
-      (date) => {
-        const incomeStartDate = LocalDate.parseFiOrNull(
-          formData.incomeStartDate
-        )
-        return incomeStartDate === null || incomeStartDate <= date
-      },
-      [formData.incomeStartDate]
-    )
-
     return (
       <Indent>
         <FixedSpaceColumn>
@@ -821,13 +801,13 @@ const SelfEmployedIncomeSelection = React.memo(
                           validateIf(
                             formData.estimation,
                             formData.incomeStartDate,
-                            required,
-                            validDate
+                            required
                           ),
                           t.validationErrors
                         ),
                       [formData.estimation, formData.incomeStartDate, t]
                     )}
+                    errorTexts={t.validationErrors}
                   />
                   <span>{' - '}</span>
                   <DatePicker
@@ -835,20 +815,9 @@ const SelfEmployedIncomeSelection = React.memo(
                     onFocus={useFieldSetter(onChange, 'estimation', true)}
                     onChange={useFieldDispatch(onChange, 'incomeEndDate')}
                     locale={lang}
-                    isValidDate={isValidEndDate}
+                    minDate={formData.incomeStartDate ?? undefined}
                     hideErrorsBeforeTouched={!showFormErrors}
-                    info={useMemo(
-                      () =>
-                        errorToInputInfo(
-                          validateIf(
-                            formData.estimation && formData.incomeEndDate != '',
-                            formData.incomeEndDate,
-                            validDate
-                          ),
-                          t.validationErrors
-                        ),
-                      [formData.estimation, formData.incomeEndDate, t]
-                    )}
+                    errorTexts={t.validationErrors}
                   />
                 </FixedSpaceRow>
               </FixedSpaceColumn>

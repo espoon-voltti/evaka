@@ -56,8 +56,8 @@ export default React.memo(function ReservationModalSingleChild({
 
   const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: [child.id],
-    startDate: LocalDate.todayInSystemTz().format(),
-    endDate: '',
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: null,
     repetition: 'DAILY',
     dailyTimes: [
       {
@@ -90,8 +90,8 @@ export default React.memo(function ReservationModalSingleChild({
   const shiftCareRange = useMemo(() => {
     if (formData.repetition !== 'IRREGULAR') return
 
-    const parsedStartDate = LocalDate.parseFiOrNull(formData.startDate)
-    const parsedEndDate = LocalDate.parseFiOrNull(formData.endDate)
+    const parsedStartDate = formData.startDate
+    const parsedEndDate = formData.endDate
 
     if (
       !parsedStartDate ||
@@ -159,12 +159,19 @@ export default React.memo(function ReservationModalSingleChild({
           data-qa="reservation-start-date"
           onChange={(date) => updateForm({ startDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDates.includes(date)}
+          isInvalidDate={(date) =>
+            reservableDates.includes(date)
+              ? null
+              : i18n.validationErrors.unselectableDate
+          }
+          minDate={reservableDates.start}
+          maxDate={reservableDates.end}
           info={errorToInputInfo(
             validationResult.errors?.startDate,
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
+          errorTexts={i18n.validationErrors}
         />
         <DatePickerSpacer />
         <DatePicker
@@ -172,13 +179,20 @@ export default React.memo(function ReservationModalSingleChild({
           data-qa="reservation-end-date"
           onChange={(date) => updateForm({ endDate: date })}
           locale={lang}
-          isValidDate={(date) => reservableDates.includes(date)}
+          isInvalidDate={(date) =>
+            reservableDates.includes(date)
+              ? null
+              : i18n.validationErrors.unselectableDate
+          }
+          minDate={reservableDates.start}
+          maxDate={reservableDates.end}
           info={errorToInputInfo(
             validationResult.errors?.endDate,
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={LocalDate.todayInSystemTz()}
+          errorTexts={i18n.validationErrors}
         />
       </FixedSpaceRow>
       <Gap size="m" />

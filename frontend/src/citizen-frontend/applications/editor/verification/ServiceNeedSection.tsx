@@ -52,7 +52,7 @@ export default React.memo(function ServiceNeedSection({
               .preferredStartDate
           }
         </Label>
-        <span>{formData.serviceNeed.preferredStartDate}</span>
+        <span>{formData.serviceNeed.preferredStartDate?.format()}</span>
 
         {type === 'DAYCARE' && <ServiceNeedUrgency formData={formData} />}
         {type === 'CLUB' && (

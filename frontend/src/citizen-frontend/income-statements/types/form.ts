@@ -8,8 +8,8 @@ import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {
-  startDate: string
-  endDate: string
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   highestFee: boolean
   childIncome: boolean
   gross: Gross
@@ -32,7 +32,7 @@ export interface Gross {
 export interface Entrepreneur {
   selected: boolean
   fullTime: boolean | null
-  startOfEntrepreneurship: string
+  startOfEntrepreneurship: LocalDate | null
   spouseWorksInCompany: boolean | null
   startupGrant: boolean
   checkupConsent: boolean
@@ -48,8 +48,8 @@ export interface SelfEmployed {
   attachments: boolean
   estimation: boolean
   estimatedMonthlyIncome: string
-  incomeStartDate: string
-  incomeEndDate: string
+  incomeStartDate: LocalDate | null
+  incomeEndDate: LocalDate | null
 }
 
 export interface LimitedCompany {
@@ -65,8 +65,8 @@ export interface Accountant {
 }
 
 export const empty: IncomeStatementForm = {
-  startDate: LocalDate.todayInSystemTz().format(),
-  endDate: '',
+  startDate: LocalDate.todayInSystemTz(),
+  endDate: null,
   highestFee: false,
   childIncome: false,
   gross: {
@@ -79,7 +79,7 @@ export const empty: IncomeStatementForm = {
   entrepreneur: {
     selected: false,
     fullTime: null,
-    startOfEntrepreneurship: '',
+    startOfEntrepreneurship: null,
     spouseWorksInCompany: null,
     startupGrant: false,
     checkupConsent: false,
@@ -88,8 +88,8 @@ export const empty: IncomeStatementForm = {
       attachments: false,
       estimation: false,
       estimatedMonthlyIncome: '',
-      incomeStartDate: '',
-      incomeEndDate: ''
+      incomeStartDate: null,
+      incomeEndDate: null
     },
     limitedCompany: {
       selected: false,
@@ -123,7 +123,7 @@ export const initialFormData = (
 ): IncomeStatementForm => {
   return {
     ...empty,
-    startDate: findValidStartDate(existingStartDates).format()
+    startDate: findValidStartDate(existingStartDates)
   }
 }
 
@@ -132,8 +132,8 @@ export function fromIncomeStatement(
 ): IncomeStatementForm {
   return {
     ...empty,
-    startDate: incomeStatement.startDate.format(),
-    endDate: incomeStatement.endDate?.format() ?? '',
+    startDate: incomeStatement.startDate,
+    endDate: incomeStatement.endDate,
     highestFee: incomeStatement.type === 'HIGHEST_FEE',
     ...(incomeStatement.type === 'INCOME'
       ? {
@@ -169,14 +169,14 @@ function mapEstimation(
   estimatedIncome: IncomeStatement.EstimatedIncome | null
 ): {
   estimatedMonthlyIncome: string
-  incomeStartDate: string
-  incomeEndDate: string
+  incomeStartDate: LocalDate | null
+  incomeEndDate: LocalDate | null
 } {
   return {
     estimatedMonthlyIncome:
       estimatedIncome?.estimatedMonthlyIncome?.toString() ?? '',
-    incomeStartDate: estimatedIncome?.incomeStartDate?.format() ?? '',
-    incomeEndDate: estimatedIncome?.incomeEndDate?.format() ?? ''
+    incomeStartDate: estimatedIncome?.incomeStartDate ?? null,
+    incomeEndDate: estimatedIncome?.incomeEndDate ?? null
   }
 }
 
@@ -187,7 +187,7 @@ function mapEntrepreneur(
   return {
     selected: true,
     fullTime: entrepreneur.fullTime,
-    startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship.format(),
+    startOfEntrepreneurship: entrepreneur.startOfEntrepreneurship,
     spouseWorksInCompany: entrepreneur.spouseWorksInCompany,
     startupGrant: entrepreneur.startupGrant,
     checkupConsent: entrepreneur.checkupConsent,

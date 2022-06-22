@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { JsonOf } from 'lib-common/json'
 
 import { waitUntilEqual, waitUntilDefined, waitUntilTrue } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
@@ -210,11 +211,13 @@ class CitizenApplicationEditor {
     await element.type(value)
   }
 
-  async fillData(data: FormInput) {
+  async fillData(data: JsonOf<FormInput>) {
     await sections
       .map((section) => [section, data[section]])
       .filter(
-        (pair): pair is [Section, Partial<ApplicationFormData[Section]>] =>
+        (
+          pair
+        ): pair is [Section, Partial<JsonOf<ApplicationFormData>[Section]>] =>
           pair[1] !== undefined
       )
       .reduce(async (promise, [section, sectionData]) => {

@@ -74,7 +74,7 @@ export default React.memo(function ContactInfoSection({
         {formData.childFutureAddressExists && (
           <>
             <Label>{tLocal.child.addressChangesAt}</Label>
-            <span>{formData.childMoveDate}</span>
+            <span>{formData.childMoveDate?.format()}</span>
 
             <Label>{tLocal.child.newAddress}</Label>
             <span>
@@ -114,7 +114,7 @@ export default React.memo(function ContactInfoSection({
         {formData.guardianFutureAddressExists && (
           <>
             <Label>{tLocal.guardian.addressChangesAt}</Label>
-            <span>{formData.guardianMoveDate}</span>
+            <span>{formData.guardianMoveDate?.format()}</span>
 
             <Label>{tLocal.guardian.newAddress}</Label>
             <span>

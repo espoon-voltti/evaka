@@ -124,18 +124,14 @@ const Modal = React.memo(function Modal({
   loadDecisions: () => void
 }) {
   const { i18n, lang } = useTranslation()
-  const [date, setDate] = useState<string>('')
-  const dateIsValid = LocalDate.parseFiOrNull(date)
+  const [date, setDate] = useState<LocalDate | null>(null)
 
   const resolve = useCallback(() => {
-    if (dateIsValid) {
-      return createRetroactiveFeeDecisions(
-        headOfFamily,
-        LocalDate.parseFiOrThrow(date)
-      )
+    if (date) {
+      return createRetroactiveFeeDecisions(headOfFamily, date)
     }
     return
-  }, [headOfFamily, date, dateIsValid])
+  }, [headOfFamily, date])
 
   const onSuccess = useCallback(() => {
     clear()
@@ -149,7 +145,7 @@ const Modal = React.memo(function Modal({
       title={i18n.personProfile.feeDecisions.createRetroactive}
       resolveAction={resolve}
       resolveLabel={i18n.common.create}
-      resolveDisabled={!dateIsValid}
+      resolveDisabled={!date}
       onSuccess={onSuccess}
       rejectAction={clear}
       rejectLabel={i18n.common.cancel}
@@ -160,17 +156,10 @@ const Modal = React.memo(function Modal({
           locale={lang}
           date={date}
           onChange={setDate}
-          info={
-            !dateIsValid
-              ? {
-                  status: 'warning',
-                  text: i18n.validationError.dateRange
-                }
-              : undefined
-          }
           hideErrorsBeforeTouched
           openAbove
           data-qa="retroactive-fee-decision-start-date"
+          errorTexts={i18n.validationErrors}
         />
       </FixedSpaceRow>
     </AsyncFormModal>

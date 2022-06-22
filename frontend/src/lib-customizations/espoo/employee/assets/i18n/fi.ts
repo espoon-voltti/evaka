@@ -3175,7 +3175,8 @@ export const fi = {
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
-    httpUrl: 'Anna muodossa https://example.com'
+    httpUrl: 'Anna muodossa https://example.com',
+    unselectableDate: 'Päivä ei ole sallittu'
   },
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',

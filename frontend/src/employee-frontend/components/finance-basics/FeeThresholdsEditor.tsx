@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { throwIfNull } from 'lib-common/form-validation'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
@@ -103,6 +104,7 @@ export default React.memo(function FeeThresholdsEditor({
           info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
           data-qa="valid-from"
+          errorTexts={i18n.validationErrors}
         />
         <span>-</span>
         <DatePicker
@@ -117,6 +119,7 @@ export default React.memo(function FeeThresholdsEditor({
           info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
           data-qa="valid-to"
+          errorTexts={i18n.validationErrors}
         />
       </RowWithMargin>
       {'errors' in validationResult && validationResult.errors.dateOverlap ? (
@@ -508,7 +511,7 @@ type ValidationErrors = Partial<
 >
 type FeeThresholdsPayload = Omit<FeeThresholds, 'id'>
 
-const centProps: readonly (keyof FormState)[] = [
+const centProps = [
   'maxFee',
   'minFee',
   'minIncomeThreshold2',
@@ -533,7 +536,7 @@ const centProps: readonly (keyof FormState)[] = [
   'temporaryFeePartDay',
   'temporaryFeeSibling',
   'temporaryFeeSiblingPartDay'
-]
+] as const
 
 function validateForm(
   i18n: Translations,
@@ -548,20 +551,14 @@ function validateForm(
     }
   })
 
-  const parsedValidFrom = LocalDate.parseFiOrNull(form.validFrom)
-  if (parsedValidFrom === null) {
+  if (form.validFrom === null) {
     validationErrors.validFrom = i18n.validationError.dateRange
   }
 
-  const parsedValidTo = LocalDate.parseFiOrNull(form.validTo)
-  if (form.validTo && parsedValidTo === null) {
-    validationErrors.validTo = i18n.validationError.dateRange
-  }
-
   if (
-    parsedValidFrom !== null &&
-    parsedValidTo !== null &&
-    parsedValidTo.isBefore(parsedValidFrom)
+    form.validFrom !== null &&
+    form.validTo !== null &&
+    form.validTo.isBefore(form.validFrom)
   ) {
     validationErrors.validFrom = i18n.validationError.invertedDateRange
     validationErrors.validTo = i18n.validationError.invertedDateRange
@@ -571,16 +568,16 @@ function validateForm(
     existingThresholds
       .map((ts) =>
         ts.filter((t) => {
-          if (parsedValidFrom === null) {
+          if (form.validFrom === null) {
             return false
           }
 
-          const dateRange = new DateRange(parsedValidFrom, parsedValidTo)
+          const dateRange = new DateRange(form.validFrom, form.validTo)
 
           if (t.thresholds.validDuring.end === null) {
             return (
               t.thresholds.validDuring.overlapsWith(dateRange) &&
-              !t.thresholds.validDuring.start.isBefore(parsedValidFrom)
+              !t.thresholds.validDuring.start.isBefore(form.validFrom)
             )
           }
 
@@ -630,10 +627,7 @@ function parseMultiplier(dec: string): number {
 
 function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
   return {
-    validDuring: new DateRange(
-      LocalDate.parseFiOrThrow(form.validFrom),
-      form.validTo ? LocalDate.parseFiOrThrow(form.validTo) : null
-    ),
+    validDuring: new DateRange(throwIfNull(form.validFrom), form.validTo),
     maxFee: parseCentsOrThrow(form.maxFee),
     minFee: parseCentsOrThrow(form.minFee),
     minIncomeThreshold2: parseCentsOrThrow(form.minIncomeThreshold2),
