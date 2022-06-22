@@ -5,6 +5,9 @@
 package fi.espoo.evaka.payments
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -20,6 +23,15 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/payments")
 class PaymentController(private val accessControl: AccessControl, private val paymentService: PaymentService) {
+    @PostMapping("/search")
+    fun searchPayments(
+        db: Database,
+        user: AuthenticatedUser,
+        @RequestBody params: SearchPaymentsRequest
+    ): Paged<Payment> {
+        return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
+    }
+
     @PostMapping("/create-drafts")
     fun createDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         Audit.PaymentsCreate.log()
@@ -48,4 +60,31 @@ class PaymentController(private val accessControl: AccessControl, private val pa
             }
         }
     }
+}
+
+data class SearchPaymentsRequest(
+    val page: Int,
+    val pageSize: Int,
+    val sortBy: PaymentSortParam,
+    val sortDirection: SortDirection,
+
+    val searchTerms: String,
+    val area: List<String>,
+    val unit: DaycareId?,
+    val distinctions: List<PaymentDistinctiveParams>,
+    val status: PaymentStatus,
+    val paymentDateStart: LocalDate?,
+    val paymentDateEnd: LocalDate?
+)
+
+enum class PaymentSortParam {
+    UNIT,
+    PERIOD,
+    CREATED,
+    NUMBER,
+    AMOUNT,
+}
+
+enum class PaymentDistinctiveParams {
+    MISSING_PAYMENT_DETAILS
 }

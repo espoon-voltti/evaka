@@ -91,6 +91,8 @@ data class PaymentUnit(
 
 data class Payment(
     val id: PaymentId,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
     @Nested("unit_") val unit: PaymentUnit,
     val number: Long?,
     val period: DateRange,

@@ -104,9 +104,6 @@ val testDaycare = DevDaycare(
     areaId = testArea.id,
     ophOrganizerOid = defaultMunicipalOrganizerOid,
     enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION),
-    businessId = "1234567-8",
-    iban = "FI12 3456 7891 2345 67",
-    providerId = "1234"
 )
 
 val testDaycare2 = DevDaycare(
@@ -156,7 +153,10 @@ val testVoucherDaycare = DevDaycare(
     providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
     ophOrganizerOid = defaultPurchasedOrganizerOid,
     invoicedByMunicipality = false,
-    financeDecisionHandler = testDecisionMaker_2.id
+    financeDecisionHandler = testDecisionMaker_2.id,
+    businessId = "1234567-8",
+    iban = "FI12 3456 7891 2345 67",
+    providerId = "1234"
 )
 
 val testVoucherDaycare2 = DevDaycare(
@@ -165,7 +165,10 @@ val testVoucherDaycare2 = DevDaycare(
     areaId = testArea.id,
     providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
     ophOrganizerOid = defaultPurchasedOrganizerOid,
-    invoicedByMunicipality = false
+    invoicedByMunicipality = false,
+    businessId = "8765432-1-8",
+    iban = "FI98 7654 3210 9876 54",
+    providerId = "4321"
 )
 
 val testClub = DevDaycare(
