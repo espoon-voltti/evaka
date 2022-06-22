@@ -31,6 +31,7 @@ import { UUID } from 'lib-common/types'
 import {
   Application,
   AssistanceNeed,
+  AssistanceNeedDecision,
   BackupCare,
   CareArea,
   Child,
@@ -59,6 +60,7 @@ import {
   addVardaReset,
   addVardaServiceNeed,
   insertAssistanceNeedFixtures,
+  insertAssistanceNeedDecisionFixtures,
   insertBackupCareFixtures,
   insertCareAreaFixtures,
   insertChildAttendanceFixtures,
@@ -1289,6 +1291,61 @@ export class Fixture {
     })
   }
 
+  static assistanceNeedDecision(): AssistanceNeedDecisionBuilder {
+    return new AssistanceNeedDecisionBuilder({
+      id: uuidv4(),
+      assistanceLevel: 'SPECIAL_ASSISTANCE',
+      assistanceServicesTime: null,
+      careMotivation: null,
+      childId: 'not_set',
+      decisionMade: null,
+      decisionMaker: {
+        employeeId: null,
+        title: null
+      },
+      decisionNumber: 1001,
+      endDate: null,
+      expertResponsibilities: null,
+      guardianInfo: [],
+      guardiansHeardOn: null,
+      language: 'FI',
+      motivationForDecision: null,
+      otherRepresentativeDetails: null,
+      otherRepresentativeHeard: false,
+      pedagogicalMotivation: null,
+      preparedBy1: {
+        employeeId: null,
+        title: null
+      },
+      preparedBy2: {
+        employeeId: null,
+        title: null
+      },
+      selectedUnit: null,
+      sentForDecision: null,
+      serviceOptions: {
+        consultationSpecialEd: false,
+        fullTimeSpecialEd: false,
+        interpretationAndAssistanceServices: false,
+        partTimeSpecialEd: false,
+        specialAides: false
+      },
+      servicesMotivation: null,
+      startDate: null,
+      status: 'DRAFT',
+      structuralMotivationDescription: null,
+      structuralMotivationOptions: {
+        additionalStaff: false,
+        childAssistant: false,
+        groupAssistant: false,
+        smallGroup: false,
+        smallerGroup: false,
+        specialGroup: false
+      },
+      viewOfGuardians: null
+    })
+  }
+
   static daycareCaretakers(): DaycareCaretakersBuilder {
     return new DaycareCaretakersBuilder({
       groupId: 'not_set',
@@ -1734,6 +1791,28 @@ export class AssistanceNeedBuilder extends FixtureBuilder<AssistanceNeed> {
   // Note: shallow copy
   copy() {
     return new AssistanceNeedBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceNeedDecisionBuilder extends FixtureBuilder<AssistanceNeedDecision> {
+  async save() {
+    await insertAssistanceNeedDecisionFixtures([this.data])
+    return this
+  }
+
+  withChild(childId: UUID) {
+    this.data.childId = childId
+    return this
+  }
+
+  withDecisionNumber(num: number) {
+    this.data.decisionNumber = num
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceNeedDecisionBuilder({ ...this.data })
   }
 }
 

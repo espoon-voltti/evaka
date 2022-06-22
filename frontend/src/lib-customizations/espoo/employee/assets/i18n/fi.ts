@@ -35,7 +35,8 @@ export const fi = {
     employeePinCode: 'PIN-koodin hallinta',
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
-    vasuTemplates: 'Vasu-pohjat'
+    vasuTemplates: 'Vasu-pohjat',
+    assistanceNeedDecision: 'Päätös tuen tarpeesta'
   },
   common: {
     yes: 'Kyllä',
@@ -672,6 +673,75 @@ export const fi = {
         autoCutWarning:
           'Aiemmat päällekkäiset tukitoimet katkaistaan automaattisesti.'
       }
+    },
+    assistanceNeedDecision: {
+      genericPlaceholder: 'Kirjoita',
+      formLanguage: 'Lomakkeen kieli',
+      neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
+      pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
+      pedagogicalMotivationInfo:
+        'Kirjaa tähän esitys lapsen tarvitsemista pedagogisen tuen muodoista, esim. päivän rakenteeseen, päivärytmiin ja oppimisympäristöihin liityvät ratkaisut sekä pedagogiset ja erityispedagogiset ratkaisut. Perustele lyhyesti, miksi lapsi saa näitä tuen muotoja.',
+      structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
+      structuralMotivationInfo:
+        'Valitse lapsen tarvitsemat rakenteellisen tuen muodot. Perustele, miksi lapsi saa näitä tuen muotoja.',
+      structuralMotivationOptions: {
+        smallerGroup: 'Ryhmäkoon pienennys',
+        specialGroup: 'Erityisryhmä',
+        smallGroup: 'Pienryhmä',
+        groupAssistant: 'Ryhmäkohtainen avustaja',
+        childAssistant: 'Lapsikohtainen avustaja',
+        additionalStaff: 'Henkilöresurssin lisäys'
+      },
+      structuralMotivationPlaceholder:
+        'Valittujen rakenteellisten tuen muotojen kuvaus ja perustelut',
+      careMotivation: 'Hoidolliset tuen muodot ja perustelut',
+      careMotivationInfo:
+        'Kirjaa tähän lapsen tarvitsemat hoidollisen tuen muodot, esim. menetelmät lapsen hoitoon, hoivaan ja avustamiseen huomioiden pitkäaikaissairauksien hoito, lääkitys, ruokavalio, liikkuminen ja näihin liittyvät apuvälineet. Perustele, miksi lapsi saa näitä tuen muotoja.',
+      serviceOptions: {
+        consultationSpecialEd:
+          'Varhaiskasvatuksen erityisopettajan antama konsultaatio',
+        partTimeSpecialEd:
+          'Varhaiskasvatuksen erityisopettajan osa-aikainen opetus',
+        fullTimeSpecialEd:
+          'Varhaiskasvatuksen erityisopettajan kokoaikainen opetus',
+        interpretationAndAssistanceServices:
+          'Tulkitsemis- ja avustamispalvelut',
+        specialAides: 'Apuvälineet'
+      },
+      services: 'Tukipalvelut ja perustelut',
+      servicesInfo:
+        'Valitse tästä lapselle esitettävät tukipalvelut. Perustele, miksi lapsi saa näitä tukipalveluja',
+      servicesPlaceholder: 'Perustelut valituille tukipalveluille',
+      collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
+      guardiansHeardAt: 'Huoltajien kuulemisen päivämäärä',
+      guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+      guardiansHeardInfo:
+        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.<br/>Kaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
+      viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
+      viewOfTheGuardiansInfo:
+        'Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.',
+      otherLegalRepresentation:
+        'Muu laillinen edustaja (nimi, puhelinnumero ja kuulemistapa)',
+      decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
+      futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
+      assistanceLevel: {
+        assistanceEnds: 'Tuki päättyy',
+        assistanceServicesForTime: 'Tukipalvelut ajalla',
+        enhancedAssistance: 'Tehostettu tuki',
+        specialAssistance: 'Erityinen tuki'
+      },
+      startDate: 'Päätös voimassa alkaen',
+      startDateInfo:
+        'Päätös on voimassa toistaiseksi alkamispäivästä alkaen. Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
+      selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
+      unitMayChange: 'Loma-aikoina järjestämispaikka saattaa vaihtua.',
+      motivationForDecision: 'Perustelut päätökselle',
+      personsResponsible: 'Vastuuhenkilöt',
+      preparator: 'Päätöksen valmistelija',
+      decisionMaker: 'Päättäjä',
+      title: 'Titteli',
+      disclaimer:
+        'Varhaiskasvatuslain 15 e § :n mukainen päätös voidaan panna täytäntöön muutoksenhausta huolimatta.'
     },
     application: {
       title: 'Hakemukset',

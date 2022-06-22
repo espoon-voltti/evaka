@@ -32,7 +32,8 @@ const features: Features = {
       mobileMessages: true,
       leops: true,
       citizenVasu: true,
-      voucherUnitPayments: true
+      voucherUnitPayments: true,
+      specialNeedsDecisions: true
     }
   },
   staging: {
@@ -53,7 +54,8 @@ const features: Features = {
       personalDetailsPage: true,
       mobileMessages: true,
       leops: true,
-      citizenVasu: true
+      citizenVasu: true,
+      specialNeedsDecisions: true
     }
   },
   prod: {
@@ -74,7 +76,8 @@ const features: Features = {
       personalDetailsPage: false,
       mobileMessages: false,
       leops: false,
-      citizenVasu: false
+      citizenVasu: false,
+      specialNeedsDecisions: false
     }
   }
 }

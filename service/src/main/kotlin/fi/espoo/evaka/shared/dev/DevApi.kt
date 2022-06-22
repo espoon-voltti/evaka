@@ -15,6 +15,13 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
+import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
+import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.daycare.CareType
@@ -81,6 +88,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -142,7 +150,9 @@ import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
+import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -1095,6 +1105,17 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         }
     }
 
+    @PostMapping("/assistance-need-decisions")
+    fun createAssistanceNeedDecisions(db: Database, @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                assistanceNeedDecisions.forEach {
+                    tx.insertTestAssistanceNeedDecision(it.childId, it)
+                }
+            }
+        }
+    }
+
     @PostMapping("/attendances")
     fun postAttendances(
         db: Database,
@@ -1413,6 +1434,46 @@ data class DevAssistanceNeed(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
     val bases: Set<String> = emptySet(),
+)
+
+data class DevAssistanceNeedDecision(
+    val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
+    val decisionNumber: Long?,
+    val childId: ChildId,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+
+    val language: AssistanceNeedDecisionLanguage,
+    val decisionMade: LocalDate?,
+    val sentForDecision: LocalDate?,
+    val selectedUnit: DaycareId?,
+    @Nested("preparer_1")
+    val preparedBy1: AssistanceNeedDecisionEmployee?,
+    @Nested("preparer_2")
+    val preparedBy2: AssistanceNeedDecisionEmployee?,
+    @Nested("decision_maker")
+    val decisionMaker: AssistanceNeedDecisionEmployee?,
+
+    val pedagogicalMotivation: String?,
+    @Nested("structural_motivation_opt")
+    val structuralMotivationOptions: StructuralMotivationOptions,
+    val structuralMotivationDescription: String?,
+    val careMotivation: String?,
+    @Nested("service_opt")
+    val serviceOptions: ServiceOptions,
+    val servicesMotivation: String?,
+    val expertResponsibilities: String?,
+    val guardiansHeardOn: LocalDate?,
+    @Json
+    val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
+    val viewOfGuardians: String?,
+    val otherRepresentativeHeard: Boolean,
+    val otherRepresentativeDetails: String?,
+
+    val assistanceLevel: AssistanceLevel?,
+    val assistanceServicesTime: FiniteDateRange?,
+    val motivationForDecision: String?
 )
 
 data class DevChildAttendance(

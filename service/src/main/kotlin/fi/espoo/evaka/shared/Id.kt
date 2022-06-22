@@ -20,6 +20,9 @@ sealed interface DatabaseTable {
     sealed class AssistanceActionOption : DatabaseTable
     sealed class AssistanceBasisOption : DatabaseTable
     sealed class AssistanceNeed : DatabaseTable
+    sealed class AssistanceNeedDecision : DatabaseTable
+    sealed class AssistanceNeedDecisionEmployee : DatabaseTable
+    sealed class AssistanceNeedDecisionGuardian : DatabaseTable
     sealed class Attachment : DatabaseTable
     sealed class Attendance : DatabaseTable
     sealed class AttendanceReservation : DatabaseTable
@@ -83,6 +86,9 @@ typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
 typealias AssistanceBasisOptionId = Id<DatabaseTable.AssistanceBasisOption>
 typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
+typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
+typealias AssistanceNeedDecisionEmployeeId = Id<DatabaseTable.AssistanceNeedDecisionEmployee>
+typealias AssistanceNeedDecisionGuardianId = Id<DatabaseTable.AssistanceNeedDecisionGuardian>
 typealias AttachmentId = Id<DatabaseTable.Attachment>
 typealias AttendanceId = Id<DatabaseTable.Attendance>
 typealias AttendanceReservationId = Id<DatabaseTable.AttendanceReservation>

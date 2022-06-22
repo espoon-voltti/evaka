@@ -36,6 +36,7 @@ import {
   Application,
   ApplicationEmail,
   AssistanceNeed,
+  AssistanceNeedDecision,
   BackupCare,
   BackupPickup,
   CareArea,
@@ -263,6 +264,16 @@ export async function insertAssistanceNeedFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/assistance-needs`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertAssistanceNeedDecisionFixtures(
+  fixture: AssistanceNeedDecision[]
+): Promise<void> {
+  try {
+    await devClient.post(`/assistance-need-decisions`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
