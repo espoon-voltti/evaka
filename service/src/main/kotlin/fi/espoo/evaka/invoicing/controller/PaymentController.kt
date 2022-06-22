@@ -2,10 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.payments
+package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.data.searchPayments
+import fi.espoo.evaka.invoicing.domain.Payment
+import fi.espoo.evaka.invoicing.domain.PaymentStatus
+import fi.espoo.evaka.invoicing.domain.createPaymentDrafts
+import fi.espoo.evaka.invoicing.service.PaymentService
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
@@ -46,7 +50,7 @@ class PaymentController(private val accessControl: AccessControl, private val pa
     )
 
     @PostMapping("/send")
-    fun sendInvoices(
+    fun sendPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,

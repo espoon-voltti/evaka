@@ -2,17 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.payments
+package fi.espoo.evaka.invoicing
 
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.PaymentController
+import fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
+import fi.espoo.evaka.invoicing.controller.PaymentSortParam
+import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
-import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
+import fi.espoo.evaka.invoicing.data.readPayments
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
+import fi.espoo.evaka.invoicing.domain.Payment
+import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
