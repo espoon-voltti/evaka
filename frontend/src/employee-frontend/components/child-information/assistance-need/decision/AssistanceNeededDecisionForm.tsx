@@ -337,10 +337,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
         <Label>{t.guardiansHeardAt}</Label>
         <DatePicker
           locale={lang}
-          date={formState.guardiansHeardOn?.formatIso() || ''}
-          onChange={(date: string) => {
-            setFieldVal({ guardiansHeardOn: LocalDate.parseIso(date) })
+          date={formState.guardiansHeardOn}
+          onChange={(date) => {
+            setFieldVal({ guardiansHeardOn: date })
           }}
+          errorTexts={i18n.validationErrors}
         />
       </FixedSpaceColumn>
 
@@ -466,10 +467,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <FieldWithInfo info={t.startDateInfo} label={t.startDate} spacing="zero">
         <DatePicker
           locale={lang}
-          date={formState.startDate?.format() || ''}
-          onChange={(date: string) => {
-            setFieldVal({ startDate: LocalDate.parseFiOrNull(date) })
+          date={formState.startDate}
+          onChange={(date) => {
+            setFieldVal({ startDate: date })
           }}
+          errorTexts={i18n.validationErrors}
         />
       </FieldWithInfo>
 
