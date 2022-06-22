@@ -57,4 +57,8 @@ export default React.memo(function TimeInput({
 const ShorterInput = styled(InputField)`
   width: calc(3.2em + 24px);
   max-width: calc(3.2em + 24px);
+
+  input {
+    font-size: 1em;
+  }
 `
