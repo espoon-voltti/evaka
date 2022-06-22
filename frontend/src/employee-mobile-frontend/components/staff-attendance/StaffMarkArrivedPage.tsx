@@ -22,7 +22,6 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
-import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { postStaffArrival } from '../../api/realtimeStaffAttendances'
@@ -30,7 +29,7 @@ import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
 import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
-import { Actions } from '../attendances/components'
+import { Actions, CustomTitle } from '../attendances/components'
 import { TimeWrapper } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
@@ -159,7 +158,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                 )}
                 <Gap />
                 <TimeWrapper>
-                  <Label>{i18n.attendances.arrivalTime}</Label>
+                  <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
                   <TimeInput
                     onChange={setTime}
                     value={time}
@@ -179,7 +178,7 @@ export default React.memo(function StaffMarkArrivedPage() {
                     groupOptions.length > 1 ? (
                       <>
                         <Gap />
-                        <Label>{i18n.common.group}</Label>
+                        <CustomTitle>{i18n.common.group}</CustomTitle>
                         <Select
                           data-qa="group-select"
                           selectedItem={attendanceGroup}

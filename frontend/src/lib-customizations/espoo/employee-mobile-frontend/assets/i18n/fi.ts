@@ -131,6 +131,13 @@ export const fi = {
       DEPARTED: 'Lähtenyt',
       ABSENT: 'Poissa'
     },
+    staffTypes: {
+      PRESENT: 'Paikalla',
+      OTHER_WORK: 'Työasia',
+      TRAINING: 'Koulutus',
+      OVERTIME: 'Ylityö',
+      JUSTIFIED_CHANGE: 'Perusteltu muutos'
+    },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
       markAbsent: 'Merkitse poissaolevaksi',
@@ -225,7 +232,8 @@ export const fi = {
       markDeparted: 'Kirjaudu poissaolevaksi',
       loginWithPin: 'Kirjaudu PIN-koodilla',
       pinNotSet: 'Aseta itsellesi PIN-koodi',
-      pinLocked: 'Vaihda lukkiutunut PIN-koodi'
+      pinLocked: 'Vaihda lukkiutunut PIN-koodi',
+      plannedAttendance: 'Työvuoro tänään'
     }
   },
   childInfo: {

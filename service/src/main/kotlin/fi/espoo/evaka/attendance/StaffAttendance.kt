@@ -8,11 +8,24 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.util.UUID
+
+enum class StaffAttendanceType : DatabaseEnum {
+    PRESENT,
+    OTHER_WORK,
+    TRAINING,
+    OVERTIME,
+    JUSTIFIED_CHANGE,
+    ;
+
+    override val sqlType: String = "staff_attendance_type"
+}
 
 data class CurrentDayStaffAttendanceResponse(
     val staff: List<StaffMember>,
@@ -32,7 +45,11 @@ data class StaffMember(
     val lastName: String,
     val groupIds: List<GroupId>,
     @Nested("attendance")
-    val latestCurrentDayAttendance: StaffMemberAttendance?
+    val latestCurrentDayAttendance: StaffMemberAttendance?,
+    @Json
+    val attendances: List<StaffMemberAttendance>,
+    @Json
+    val plannedAttendances: List<PlannedStaffAttendance>
 ) {
     val present: GroupId?
         get() = latestCurrentDayAttendance?.takeIf { it.departed == null }?.groupId
@@ -44,7 +61,8 @@ data class StaffMemberAttendance(
     val employeeId: EmployeeId,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?
+    val departed: HelsinkiDateTime?,
+    val type: StaffAttendanceType
 )
 
 data class ExternalAttendance(
@@ -76,4 +94,10 @@ data class EmployeeAttendance(
 data class StaffAttendanceResponse(
     val staff: List<EmployeeAttendance>,
     val extraAttendances: List<ExternalAttendance>,
+)
+
+data class PlannedStaffAttendance(
+    val start: HelsinkiDateTime,
+    val end: HelsinkiDateTime,
+    val type: StaffAttendanceType
 )

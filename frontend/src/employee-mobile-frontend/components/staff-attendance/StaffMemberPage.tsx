@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo } from 'react'
 
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { useTranslation } from '../../state/i18n'
 import { StaffAttendanceContext } from '../../state/staff-attendance'
@@ -49,27 +51,65 @@ export default React.memo(function StaffMemberPage() {
             <>
               <EmployeeCardBackground staff={toStaff(staffMember)} />
               <FixedSpaceColumn>
-                {staffMember.latestCurrentDayAttendance && (
+                {featureFlags.experimental?.staffAttendanceTypes ? (
                   <>
-                    <TimeInfo>
-                      <Label>{i18n.attendances.arrivalTime}</Label>{' '}
-                      <span data-qa="arrival-time">
-                        {staffMember.latestCurrentDayAttendance.arrived
-                          .toLocalTime()
-                          .format('HH:mm')}
-                      </span>
-                    </TimeInfo>
-                    {staffMember.latestCurrentDayAttendance.departed && (
+                    {staffMember.plannedAttendances.length > 0 && (
                       <TimeInfo>
-                        <Label>{i18n.attendances.departureTime}</Label>{' '}
-                        <span data-qa="departure-time">
-                          {staffMember.latestCurrentDayAttendance.departed
+                        <span>
+                          {i18n.attendances.staff.plannedAttendance}{' '}
+                          {orderBy(
+                            staffMember.plannedAttendances,
+                            ({ start }) => start.formatIso()
+                          )
+                            .map(
+                              ({ start, end }) =>
+                                `${start.toLocalTime().format('HH:mm')}–${end
+                                  .toLocalTime()
+                                  .format('HH:mm')}`
+                            )
+                            .join(', ')}
+                        </span>
+                      </TimeInfo>
+                    )}
+                    {staffMember.attendances.length > 0 &&
+                      orderBy(staffMember.attendances, ({ arrived }) =>
+                        arrived.formatIso()
+                      ).map(({ arrived, departed, type }) => (
+                        <TimeInfo
+                          key={arrived.formatIso()}
+                          data-qa="attendance-time"
+                        >
+                          <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
+                          <span>
+                            {arrived.toLocalTime().format('HH:mm')}–
+                            {departed?.toLocalTime().format('HH:mm') ?? ''}
+                          </span>
+                        </TimeInfo>
+                      ))}
+                  </>
+                ) : (
+                  staffMember.latestCurrentDayAttendance && (
+                    <>
+                      <TimeInfo>
+                        <Label>{i18n.attendances.arrivalTime}</Label>{' '}
+                        <span data-qa="arrival-time">
+                          {staffMember.latestCurrentDayAttendance.arrived
                             .toLocalTime()
                             .format('HH:mm')}
                         </span>
                       </TimeInfo>
-                    )}
-                  </>
+                      {staffMember.latestCurrentDayAttendance.departed && (
+                        <TimeInfo>
+                          <Label>{i18n.attendances.departureTime}</Label>{' '}
+                          <span data-qa="departure-time">
+                            {staffMember.latestCurrentDayAttendance.departed
+                              ?.toLocalTime()
+                              .format('HH:mm')}
+                          </span>
+                        </TimeInfo>
+                      )}
+                    </>
+                  )
                 )}
                 {staffMember.present ? (
                   <WideLinkButton

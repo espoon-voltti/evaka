@@ -102,7 +102,10 @@ describe('Realtime staff attendance page', () => {
       group: daycareGroupFixture
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
-    await staffAttendancePage.assertEmployeeArrivalTime(arrivalTime)
+    await staffAttendancePage.assertEmployeeAttendanceTimes(
+      0,
+      `Paikalla ${arrivalTime}–`
+    )
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(1)
 
@@ -110,7 +113,10 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.openStaffPage(name)
     await staffAttendancePage.markStaffDeparted({ pin, time: departureTime })
     await staffAttendancePage.assertEmployeeStatus('Poissa')
-    await staffAttendancePage.assertEmployeeDepartureTime(departureTime)
+    await staffAttendancePage.assertEmployeeAttendanceTimes(
+      0,
+      `Paikalla ${arrivalTime}–${departureTime}`
+    )
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
   })
@@ -130,7 +136,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(name)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
-    await staffAttendancePage.assertEmployeeArrivalTime(arrivalTime)
+    await staffAttendancePage.assertExternalStaffArrivalTime(arrivalTime)
     await staffAttendancePage.markExternalStaffDeparted('11:09')
     await staffAttendancePage.assertPresentStaffCount(0)
   })

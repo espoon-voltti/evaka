@@ -128,6 +128,7 @@ interface BaseFeatureFlags {
     citizenVasu?: boolean
     voucherUnitPayments?: boolean
     specialNeedsDecisions?: boolean
+    staffAttendanceTypes?: boolean
   }
 }
 

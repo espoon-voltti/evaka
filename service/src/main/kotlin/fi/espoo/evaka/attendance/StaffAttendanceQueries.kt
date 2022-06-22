@@ -30,7 +30,19 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.group_id AS attendance_group_id,
         att.arrived AS attendance_arrived,
         att.departed AS attendance_departed,
-        coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids
+        att.type AS attendance_type,
+        coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
+        coalesce((
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type))
+            FROM staff_attendance_realtime a
+            JOIN daycare_group dg ON dg.id = a.group_id
+            WHERE e.id = a.employee_id AND dg.daycare_id = :unitId AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
+        ), '[]'::jsonb) AS attendances,
+        coalesce((
+            SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type))
+            FROM staff_attendance_plan p
+            WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(:rangeStart, :rangeEnd)
+        ), '[]'::jsonb) AS planned_attendances
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
@@ -41,11 +53,11 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         GROUP BY employee_id
     ) dgacl ON true
     LEFT JOIN LATERAL (
-        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id
+        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type
         FROM staff_attendance_realtime sa
         JOIN daycare_group dg ON dg.id = sa.group_id
         WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
-        ORDER BY sa.arrived DESC 
+        ORDER BY sa.arrived DESC
         LIMIT 1
     ) att ON TRUE
     WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER') OR dgacl.employee_id IS NOT NULL)
@@ -60,7 +72,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
 
 fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendance? = createQuery(
     """
-    SELECT id, employee_id, group_id, arrived, departed
+    SELECT id, employee_id, group_id, arrived, departed, type
     FROM staff_attendance_realtime
     WHERE id = :id
 """

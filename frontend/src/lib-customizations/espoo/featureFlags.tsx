@@ -33,7 +33,8 @@ const features: Features = {
       leops: true,
       citizenVasu: true,
       voucherUnitPayments: true,
-      specialNeedsDecisions: true
+      specialNeedsDecisions: true,
+      staffAttendanceTypes: true
     }
   },
   staging: {
@@ -55,7 +56,8 @@ const features: Features = {
       mobileMessages: true,
       leops: true,
       citizenVasu: true,
-      specialNeedsDecisions: true
+      specialNeedsDecisions: true,
+      staffAttendanceTypes: true
     }
   },
   prod: {
@@ -77,7 +79,8 @@ const features: Features = {
       mobileMessages: false,
       leops: false,
       citizenVasu: false,
-      specialNeedsDecisions: false
+      specialNeedsDecisions: false,
+      staffAttendanceTypes: false
     }
   }
 }
