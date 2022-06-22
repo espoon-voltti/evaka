@@ -54,29 +54,15 @@ class DvvModificationsService(
                                 personModifications.henkilotunnus,
                                 infoGroup
                             )
-                            is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(
-                                db,
-                                personModifications.henkilotunnus,
-                                infoGroup
-                            )
-                            is ResidenceCodeDvvInfoGroup -> handleResidenceCodeDvvInfoGroup(
-                                db,
-                                personModifications.henkilotunnus,
-                                infoGroup
-                            )
-                            is CustodianLimitedDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is CaretakerLimitedDvvInfoGroup -> {
                                 if (infoGroup.huoltaja.henkilotunnus != null)
                                     ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
                                 else
                                     logger.info("Dvv modification ignored for caretaker: ssn is null")
                             }
-                            is PersonNameDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
-                            is PersonNameChangeDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
-                            is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
-                            is ChildInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            is DefaultDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             else -> {
-                                logger.info("Refreshing person from VTJ for an unsupported DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
+                                logger.error("Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
                                 ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             }
                         }
@@ -174,50 +160,6 @@ class DvvModificationsService(
                 tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
             }
         }
-
-    // We get records LISATTY + MUUTETTU if address has changed (LISATTY is the new address),
-    // TURVAKIELTO=false and MUUTETTU if restrictions are lifted (MUUTETTU is the "new" address)
-    private fun handleAddressDvvInfoGroup(db: Database.Connection, ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) =
-        db.transaction { tx ->
-            tx.getPersonBySSN(ssn)?.let {
-                if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
-                    addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isEmpty()
-                    )
-                ) {
-                    logger.info("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")
-                    tx.updatePersonFromVtj(
-                        it.copy(
-                            streetAddress = addressDvvInfoGroup.katuosoite(),
-                            postalCode = addressDvvInfoGroup.postinumero ?: "",
-                            postOffice = addressDvvInfoGroup.postitoimipaikka?.fi ?: ""
-                        )
-                    )
-                }
-            }
-        }
-
-    private fun handleResidenceCodeDvvInfoGroup(
-        db: Database.Connection,
-        ssn: String,
-        residenceCodeDvvInfoGroup: ResidenceCodeDvvInfoGroup
-    ) = db.transaction { tx ->
-        if (residenceCodeDvvInfoGroup.muutosattribuutti.equals("LISATTY")) {
-            tx.getPersonBySSN(ssn)?.let {
-                logger.info("Dvv modification for ${it.id}: residence code change")
-                tx.updatePersonFromVtj(
-                    it.copy(
-                        residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus ?: ""
-                    )
-                )
-            }
-        }
-    }
-
-    // KOTIKUNTA is received as part of the other address change info groups, the actual address change
-    // is done in those
-    private fun handleHomeMunicipalityChangeDvvInfoGroup() {
-        logger.debug("DVV change KOTIKUNTA received")
-    }
 
     fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
         val token = tx.getNextDvvModificationToken()
