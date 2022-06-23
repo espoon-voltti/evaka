@@ -13,7 +13,6 @@ import {
 
 import { Result } from 'lib-common/api'
 import {
-  Followup,
   FollowupEntry,
   GetVasuDocumentResponse,
   PermittedFollowupActions
@@ -165,8 +164,7 @@ export function useVasu(id: string): Vasu {
       content.sections.forEach((section) => {
         section.questions.forEach((question) => {
           if (question.type === 'FOLLOWUP') {
-            const followup = question as Followup
-            followup.value.forEach((entry: FollowupEntry) => {
+            question.value.forEach((entry: FollowupEntry) => {
               if (entry.id && !permittedFollowupActions[entry.id]) {
                 setPermittedFollowupActions({
                   ...permittedFollowupActions,

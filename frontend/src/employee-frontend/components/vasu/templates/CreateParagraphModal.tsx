@@ -5,7 +5,9 @@
 import React, { useState } from 'react'
 
 import { Paragraph } from 'lib-common/api-types/vasu'
+import { VasuSection } from 'lib-common/generated/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FormModal from 'lib-components/molecules/modals/FormModal'
@@ -16,16 +18,20 @@ import { useTranslation } from '../../../state/i18n'
 interface Props {
   onSave: (paragraph: Paragraph) => void
   onCancel: () => void
+  section: VasuSection
 }
 
 export default React.memo(function CreateParagraphModal({
   onCancel,
-  onSave
+  onSave,
+  section
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.vasuTemplates.questionModal
   const [title, setTitle] = useState('')
   const [paragraph, setParagraph] = useState('')
+  const [identifier, setIdentifier] = useState('')
+  const [dependsOn, setDependsOn] = useState<string[]>([])
 
   return (
     <FormModal
@@ -37,7 +43,9 @@ export default React.memo(function CreateParagraphModal({
           paragraph,
           name: '',
           info: '',
-          ophKey: null
+          ophKey: null,
+          id: identifier || null,
+          dependsOn
         })
       }
       resolveLabel={i18n.common.confirm}
@@ -49,6 +57,19 @@ export default React.memo(function CreateParagraphModal({
         <InputField value={title} onChange={setTitle} width="full" />
         <Label>{t.paragraphText}</Label>
         <TextArea value={paragraph} onChange={setParagraph} />
+        <Label>{t.id}</Label>
+        <InputField value={identifier} onChange={setIdentifier} width="full" />
+        <Label>{t.dependsOn}</Label>
+        <MultiSelect
+          value={dependsOn}
+          options={section.questions
+            .map((q) => q.id)
+            .filter((id): id is string => typeof id === 'string')}
+          onChange={setDependsOn}
+          getOptionId={(id) => id}
+          getOptionLabel={(id) => id}
+          placeholder=""
+        />
       </FixedSpaceColumn>
     </FormModal>
   )

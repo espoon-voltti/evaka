@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
+import LocalDate from 'lib-common/local-date'
 import { Label } from 'lib-components/typography'
 import { VasuTranslations } from 'lib-customizations/employee'
 
@@ -13,7 +14,13 @@ import { ValueOrNoRecord } from './ValueOrNoRecord'
 interface Props {
   questionNumber: string
   question: RadioGroupQuestion
-  selectedValue: string | null
+  selectedValue: {
+    key: string
+    range: {
+      start: LocalDate
+      end: LocalDate
+    } | null
+  } | null
   translations: VasuTranslations
 }
 
@@ -23,6 +30,13 @@ export function RadioGroupQuestion({
   selectedValue,
   translations
 }: Props) {
+  const selectedOption = options.find(
+    (option) => option.key === selectedValue?.key
+  )
+  const selectedDateRange = selectedValue?.range
+    ? ` ${selectedValue.range.start.format()}–${selectedValue.range.end.format()}`
+    : ''
+
   return (
     <div>
       <Label>
@@ -30,7 +44,7 @@ export function RadioGroupQuestion({
       </Label>
 
       <ValueOrNoRecord
-        text={options.find((option) => option.key === selectedValue)?.name}
+        text={selectedOption && `${selectedOption.name}${selectedDateRange}`}
         translations={translations}
       />
     </div>

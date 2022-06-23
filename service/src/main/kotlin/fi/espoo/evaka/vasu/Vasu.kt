@@ -215,7 +215,10 @@ data class VasuSection(
     fun matchesStructurally(section: VasuSection?): Boolean =
         section != null && section.name == this.name && section.questions.size == this.questions.size &&
             this.questions.withIndex()
-                .all { (index, question) -> question.equalsIgnoringValue(section.questions.getOrNull(index)) }
+                .all { (index, question) ->
+                    question.equalsIgnoringValue(section.questions.getOrNull(index)) &&
+                        question.isValid(section)
+                }
 }
 
 @JsonTypeInfo(
@@ -240,12 +243,22 @@ sealed class VasuQuestion(
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
     abstract val info: String
+    abstract val id: String?
+    abstract val dependsOn: List<String>?
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
+
+    open fun isValid(section: VasuSection): Boolean {
+        return dependsOn?.all { dep ->
+            section.questions.any { it.id == dep && it != this }
+        } ?: true
+    }
 
     data class TextQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val multiline: Boolean,
         val value: String
     ) : VasuQuestion(VasuQuestionType.TEXT) {
@@ -258,7 +271,10 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
-        val value: Boolean
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
+        val value: Boolean,
+        val label: String? = null
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is CheckboxQuestion && question.copy(value = this.value) == this
@@ -269,11 +285,26 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val options: List<QuestionOption>,
-        val value: String?
+        val value: String?,
+        val dateRange: FiniteDateRange? = null
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is RadioGroupQuestion && question.copy(value = this.value) == this
+            return question is RadioGroupQuestion && question.copy(
+                value = this.value,
+                dateRange = this.dateRange
+            ) == this
+        }
+
+        override fun isValid(section: VasuSection): Boolean {
+            if (!super.isValid(section)) return false
+
+            if (value == null) return true
+
+            val option = options.find { it.key == value } ?: return false
+            return !option.dateRange || dateRange != null
         }
     }
 
@@ -281,6 +312,8 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val options: List<QuestionOption>,
         val minSelections: Int,
         val maxSelections: Int?,
@@ -296,6 +329,8 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val keys: List<Field>,
         val value: List<String>
     ) : VasuQuestion(VasuQuestionType.MULTI_FIELD) {
@@ -312,6 +347,8 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val keys: List<Field>,
         val value: List<List<String>>
     ) : VasuQuestion(VasuQuestionType.MULTI_FIELD_LIST) {
@@ -330,6 +367,8 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val trackedInEvents: Boolean,
         val nameInEvents: String = "",
         val value: LocalDate?,
@@ -343,8 +382,11 @@ sealed class VasuQuestion(
         override val name: String,
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
+        override val id: String? = null,
+        override val dependsOn: List<String>? = null,
         val title: String = "",
-        val value: List<FollowupEntry>
+        val value: List<FollowupEntry>,
+        val continuesNumbering: Boolean = false
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is Followup && question.copy(value = this.value) == this
@@ -358,6 +400,8 @@ sealed class VasuQuestion(
         override val name = ""
         override val info = ""
         override val ophKey: OphQuestionKey? = null
+        override val id: String? = null
+        override val dependsOn: List<String>? = null
 
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question == this
@@ -369,6 +413,7 @@ data class QuestionOption(
     val key: String,
     val name: String,
     val textAnswer: Boolean = false,
+    val dateRange: Boolean = false
 )
 
 data class Field(val name: String)

@@ -54,20 +54,26 @@ interface FollowupQuestionProps extends QuestionProps<Followup> {
 }
 
 export default React.memo(function FollowupQuestion({
-  question: { title, name, value },
-  translations
+  question: { title, name, value, continuesNumbering },
+  translations,
+  questionNumber
 }: FollowupQuestionProps) {
   return (
     <FollowupQuestionContainer data-qa="vasu-followup-question">
       <H2>{title}</H2>
-      <Label>{name}</Label>
-      {value.length > 0 ? (
-        value.map((entry, ix) => (
-          <FollowupEntryElement key={ix} entry={entry} />
-        ))
-      ) : (
-        <Dimmed>{translations.noRecord}</Dimmed>
-      )}
+      <Label>{`${
+        continuesNumbering ? `${questionNumber} ` : ''
+      }${name}`}</Label>
+
+      <div>
+        {value.length > 0 ? (
+          value.map((entry, ix) => (
+            <FollowupEntryElement key={ix} entry={entry} />
+          ))
+        ) : (
+          <Dimmed>{translations.noRecord}</Dimmed>
+        )}
+      </div>
     </FollowupQuestionContainer>
   )
 })

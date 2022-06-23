@@ -6,6 +6,7 @@ import React from 'react'
 
 import { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { Label } from 'lib-components/typography'
 import { VasuTranslations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
@@ -21,19 +22,33 @@ type Props = QuestionProps<CheckboxQuestion> & {
 
 export function CheckboxQuestion(props: Props) {
   const { i18n } = useTranslation()
-  const label = `${props.questionNumber} ${props.question.name}`
+  const checkboxLabel = props.question.label
+    ? props.question.name
+    : `${props.questionNumber} ${props.question.name}`
+  const numberedLabel =
+    props.question.label && `${props.questionNumber} ${props.question.label}`
+
   return (
     <QuestionInfo info={props.question.info}>
+      {props.onChange && !!numberedLabel && <Label>{numberedLabel}</Label>}
+
       {props.onChange ? (
         <Checkbox
           checked={props.question.value}
-          label={label}
+          label={checkboxLabel}
           onChange={props.onChange}
+          data-qa="checkbox-question"
         />
       ) : (
         <ReadOnlyValue
-          label={label}
-          value={props.question.value ? i18n.common.yes : i18n.common.no}
+          label={numberedLabel ?? checkboxLabel}
+          value={
+            props.question.value
+              ? props.question.label
+                ? props.question.name
+                : i18n.common.yes
+              : i18n.common.no
+          }
           translations={props.translations}
         />
       )}

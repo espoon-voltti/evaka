@@ -81,6 +81,12 @@ function isFollowupJson(
   return question.type === 'FOLLOWUP'
 }
 
+function isRadioGroupQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<RadioGroupQuestion> {
+  return question.type === 'RADIO_GROUP'
+}
+
 export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
   sections: content.sections.map((section: JsonOf<VasuSection>) => ({
     ...section,
@@ -101,6 +107,14 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
                 editedAt: LocalDate.parseIso(entry.edited.editedAt)
               }
             }))
+          }
+        : isRadioGroupQuestionJson(question)
+        ? {
+            ...question,
+            dateRange: question.dateRange && {
+              start: LocalDate.parseIso(question.dateRange.start),
+              end: LocalDate.parseIso(question.dateRange.end)
+            }
           }
         : question
     )

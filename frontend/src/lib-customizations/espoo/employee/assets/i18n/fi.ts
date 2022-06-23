@@ -3133,6 +3133,19 @@ export const fi = {
     addNewParagraph: 'Lisää uusi tekstikappale',
     hideSectionBeforeReady: 'Osio näytetään vasta laatimisen jälkeen',
     autoGrowingList: 'Automaattisesti kasvava lista',
+    onlyVisibleWhen: (conditions: string[]) =>
+      `Näkyvissä vain kun ${conditions
+        .slice(0, conditions.length - 1)
+        .join(', ')}${
+        conditions.length > 1
+          ? ` ja ${conditions[conditions.length - 1]}`
+          : conditions[0]
+      }.`,
+    visibilityConditions: {
+      unknownQuestion: 'tuntemattomaan kysymykseen on vastattu',
+      checked: (qn: string) => `kysymys ${qn} on valittuna`,
+      answered: (qn: string) => `kysymykseen ${qn} on vastattu`
+    },
     questionModal: {
       title: 'Uusi kysymys',
       type: 'Kysymyksen tyyppi',
@@ -3147,7 +3160,11 @@ export const fi = {
       dateIsTrackedInEvents:
         'Päivämäärä näytetään suunnitelman tapahtumissa nimellä',
       paragraphTitle: 'Kappaleen otsikko',
-      paragraphText: 'Kappaleen leipäteksti'
+      paragraphText: 'Kappaleen leipäteksti',
+      id: 'Viitetunniste',
+      dependsOn: 'Riippuvuudet',
+      continuesNumbering: 'Jatkaa numerointia',
+      checkboxLabel: 'Erillinen rastin viereinen teksti'
     },
     questionTypes: {
       TEXT: 'Tekstimuotoinen',
@@ -3217,6 +3234,8 @@ export const fi = {
     dateTooEarly: 'Valitse myöhäisempi päivä',
     dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
+    dateRangeNotLinear:
+      'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
