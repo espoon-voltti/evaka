@@ -79,7 +79,7 @@ export function CitizenDynamicSections({
         <SectionContent
           opaque
           highlighted={false}
-          padBottom={!isLastQuestionFollowup}
+          padBottom={!isLastQuestionFollowup || state === 'DRAFT'}
           data-qa="vasu-document-section"
         >
           <H2 noMargin>

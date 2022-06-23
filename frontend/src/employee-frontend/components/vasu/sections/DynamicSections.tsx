@@ -99,7 +99,7 @@ export function DynamicSections({
         <SectionContent
           opaque
           highlighted={highlightSection}
-          padBottom={!isLastQuestionFollowup}
+          padBottom={!isLastQuestionFollowup || state === 'DRAFT'}
           data-qa="vasu-document-section"
         >
           <H2 noMargin>
