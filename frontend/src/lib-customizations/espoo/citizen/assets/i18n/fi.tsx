@@ -262,6 +262,7 @@ export default {
       dateRangeLabel: 'Tee varaus päiville',
       dateRangeInfo: (date: LocalDate) =>
         `Voit tehdä varauksia enimmillään ${date.format()} asti.`,
+      noReservableDays: 'Ei varattavia päiviä',
       missingDateRange: 'Valitse varattavat päivät',
       selectRecurrence: 'Valitse miten kellonaika toistuu',
       postError: 'Varauksen luominen ei onnistunut',
