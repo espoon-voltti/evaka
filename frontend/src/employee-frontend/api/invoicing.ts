@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { SearchOrder } from 'employee-frontend/types'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -11,6 +10,7 @@ import {
   DistinctiveParams,
   FeeDecision,
   FeeDecisionDetailed,
+  FeeDecisionSortParam,
   FeeDecisionStatus,
   FeeDecisionSummary,
   Invoice,
@@ -18,15 +18,21 @@ import {
   InvoiceCorrection,
   InvoiceDetailed,
   InvoiceDistinctiveParams,
+  InvoiceSortParam,
   InvoiceStatus,
   InvoiceSummary,
   NewInvoiceCorrection,
+  Payment,
   PersonBasic,
   PersonDetailed,
+  SearchPaymentsRequest,
+  SortDirection,
   VoucherValueDecisionDetailed,
+  VoucherValueDecisionSortParam,
   VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -205,31 +211,11 @@ export async function sendVoucherValueDecisions(
     .catch((e) => Failure.fromError(e))
 }
 
-export type SortByFeeDecisions =
-  | 'HEAD_OF_FAMILY'
-  | 'VALIDITY'
-  | 'NUMBER'
-  | 'CREATED'
-  | 'SENT'
-  | 'STATUS'
-  | 'FINAL_PRICE'
-
-export type SortByVoucherValueDecisions = 'HEAD_OF_FAMILY' | 'STATUS'
-
-export type SortByInvoices =
-  | 'HEAD_OF_FAMILY'
-  | 'CHILDREN'
-  | 'START'
-  | 'END'
-  | 'SUM'
-  | 'STATUS'
-  | 'CREATED_AT'
-
 export async function getFeeDecisions(
   page: number,
   pageSize: number,
-  sortBy: SortByFeeDecisions,
-  sortDirection: SearchOrder,
+  sortBy: FeeDecisionSortParam,
+  sortDirection: SortDirection,
   params: FeeDecisionSearchParams
 ): Promise<Result<Paged<FeeDecisionSummary>>> {
   return client
@@ -290,8 +276,8 @@ export async function getPersonFeeDecisions(
 export async function getVoucherValueDecisions(
   page: number,
   pageSize: number,
-  sortBy: SortByVoucherValueDecisions,
-  sortDirection: SearchOrder,
+  sortBy: VoucherValueDecisionSortParam,
+  sortDirection: SortDirection,
   params: VoucherValueDecisionSearchParams
 ): Promise<Result<Paged<VoucherValueDecisionSummary>>> {
   return client
@@ -393,8 +379,8 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
 export async function getInvoices(
   page: number,
   pageSize: number,
-  sortBy: SortByInvoices,
-  sortDirection: SearchOrder,
+  sortBy: InvoiceSortParam,
+  sortDirection: SortDirection,
   params: InvoiceSearchParams
 ): Promise<Result<Paged<InvoiceSummary>>> {
   return client
@@ -611,3 +597,57 @@ const deserializePersonDetailed = (
   dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
   dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
 })
+
+export async function createPaymentDrafts(): Promise<Result<void>> {
+  return client
+    .post<void>('/payments/create-drafts')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPayments(
+  params: SearchPaymentsRequest
+): Promise<Result<Paged<Payment>>> {
+  return client
+    .post<JsonOf<Paged<Payment>>>('/payments/search', {
+      ...params,
+      paymentDateStart: params.paymentDateStart
+        ? params.paymentDateStart.formatIso()
+        : null,
+      paymentDateEnd: params.paymentDateEnd
+        ? params.paymentDateEnd.formatIso()
+        : null
+    })
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map((json) => ({
+        ...json,
+        created: HelsinkiDateTime.parseIso(json.created),
+        updated: HelsinkiDateTime.parseIso(json.updated),
+        period: DateRange.parseJson(json.period),
+        paymentDate: json.paymentDate
+          ? LocalDate.parseIso(json.paymentDate)
+          : null,
+        dueDate: json.dueDate ? LocalDate.parseIso(json.dueDate) : null,
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null
+      }))
+    }))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function sendPayments(
+  paymentsIds: string[],
+  paymentDate: LocalDate,
+  dueDate: LocalDate
+): Promise<Result<void>> {
+  return client
+    .post<void>('/payments/send', paymentsIds, {
+      params: {
+        invoiceDate: paymentDate.formatIso(),
+        dueDate: dueDate.formatIso()
+      }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

@@ -9,7 +9,11 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
-import { InvoiceSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  InvoiceSortParam,
+  InvoiceSummary,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
@@ -19,21 +23,19 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
+  SortableTh,
   Table,
-  Tr,
-  Th,
-  Td,
-  Thead,
   Tbody,
-  SortableTh
+  Td,
+  Th,
+  Thead,
+  Tr
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
 
-import { SortByInvoices } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
@@ -47,8 +49,8 @@ interface Props {
   total?: number
   pages?: number
   currentPage: number
-  sortBy: SortByInvoices
-  sortDirection: SearchOrder
+  sortBy: InvoiceSortParam
+  sortDirection: SortDirection
   showCheckboxes: boolean
   checked: Record<string, true>
   allInvoicesToggle: boolean
@@ -208,10 +210,10 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
       ?.map((is) => is.length > 0 && is.every((i) => checked[i.id]))
       .getOrElse(false) ?? false
 
-  const isSorted = (column: SortByInvoices) =>
+  const isSorted = (column: InvoiceSortParam) =>
     sortBy === column ? sortDirection : undefined
 
-  const toggleSort = (column: SortByInvoices) => () => {
+  const toggleSort = (column: InvoiceSortParam) => () => {
     if (sortBy === column) {
       actions.setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {

@@ -12,6 +12,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.service.DefaultInvoiceGenerationLogic
 import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
@@ -153,6 +154,9 @@ class SharedIntegrationTestConfig {
     fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
+    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient = PaymentIntegrationClient.MockClient(jsonMapper)
+
+    @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
     @Bean
@@ -185,5 +189,7 @@ val testFeatureConfig = FeatureConfig(
     dailyFeeDivisorOperationalDaysOverride = null,
     freeSickLeaveOnContractDays = false,
     freeAbsenceGivesADailyRefund = true,
-    alwaysUseDaycareFinanceDecisionHandler = false
+    alwaysUseDaycareFinanceDecisionHandler = false,
+    invoiceNumberSeriesStart = 5000000000,
+    paymentNumberSeriesStart = 9000000000,
 )

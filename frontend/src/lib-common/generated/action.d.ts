@@ -10,6 +10,7 @@ export namespace Action {
 export type Global =
   | 'ACCESS_MESSAGING'
   | 'CREATE_DRAFT_INVOICES'
+  | 'CREATE_DRAFT_PAYMENTS'
   | 'CREATE_EMPLOYEE'
   | 'CREATE_FEE_THRESHOLDS'
   | 'CREATE_HOLIDAY_PERIOD'
@@ -208,6 +209,8 @@ export type MobileDevice =
   | 'UPDATE_NAME'
 
 export type Pairing = 'POST_RESPONSE'
+
+export type Payment = 'SEND'
 
 export type Person =
   | 'ADD_SSN'

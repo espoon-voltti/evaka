@@ -8,7 +8,11 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
+import {
+  SortDirection,
+  VoucherValueDecisionSortParam,
+  VoucherValueDecisionSummary
+} from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -23,9 +27,7 @@ import {
 } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
 
-import { SortByVoucherValueDecisions } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
 import { renderResult } from '../async-rendering'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
@@ -49,10 +51,10 @@ interface Props {
   pages?: number
   currentPage: number
   setPage: (page: number) => void
-  sortBy: SortByVoucherValueDecisions
-  setSortBy: (v: SortByVoucherValueDecisions) => void
-  sortDirection: SearchOrder
-  setSortDirection: (v: SearchOrder) => void
+  sortBy: VoucherValueDecisionSortParam
+  setSortBy: (v: VoucherValueDecisionSortParam) => void
+  sortDirection: SortDirection
+  setSortDirection: (v: SortDirection) => void
   showCheckboxes: boolean
   checked: { [id: string]: boolean }
   toggleChecked: (id: string) => void
@@ -84,10 +86,10 @@ export default React.memo(function VoucherValueDecisions({
       ?.map((ds) => ds.length > 0 && ds.every((d) => checked[d.id]))
       .getOrElse(false) ?? false
 
-  const isSorted = (column: SortByVoucherValueDecisions) =>
+  const isSorted = (column: VoucherValueDecisionSortParam) =>
     sortBy === column ? sortDirection : undefined
 
-  const toggleSort = (column: SortByVoucherValueDecisions) => () => {
+  const toggleSort = (column: VoucherValueDecisionSortParam) => () => {
     if (sortBy === column) {
       setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {

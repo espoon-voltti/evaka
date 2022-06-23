@@ -396,7 +396,7 @@ export interface ServiceNeedReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherReport
+* Generated from fi.espoo.evaka.reports.ServiceVoucherReport
 */
 export interface ServiceVoucherReport {
   locked: LocalDate | null
