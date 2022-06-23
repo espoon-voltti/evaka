@@ -67,7 +67,7 @@ fun Database.Read.readPayments(): List<Payment> {
                 unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id,
                 period, number, amount, status, payment_date, due_date, sent_at, sent_by
             FROM payment
-            ORDER BY lower(period) DESC, unit_name
+            ORDER BY period DESC, unit_name
         """
     )
         .mapTo<Payment>()
@@ -77,7 +77,7 @@ fun Database.Read.readPayments(): List<Payment> {
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> {
     val orderBy = when (params.sortBy) {
         PaymentSortParam.UNIT -> "lower(p.unit_name)"
-        PaymentSortParam.PERIOD -> "lower(p.period)"
+        PaymentSortParam.PERIOD -> "p.period"
         PaymentSortParam.CREATED -> "p.created"
         PaymentSortParam.NUMBER -> "p.number"
         PaymentSortParam.AMOUNT -> "p.amount"
@@ -99,7 +99,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
             JOIN daycare d ON d.id = p.unit_id
             JOIN care_area a ON a.id = d.care_area_id
             WHERE
-                (:searchTerms = '' OR p.number::text LIKE '%' || :searchTerms) AND
+                (:searchTerms = '' OR p.number::text LIKE :searchTerms || '%') AND
                 (cardinality(:area::text[]) = 0 OR a.short_name = ANY(:area::text[])) AND
                 (:unit::uuid IS NULL OR p.unit_id = :unit::uuid) AND
                 (NOT :includeMissingDetails OR (d.business_id = '' OR d.iban = '' OR d.provider_id = '')) AND
