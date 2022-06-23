@@ -8,6 +8,8 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -139,6 +141,22 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `posting without guardians adds guardians before saving`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+        }
+        val testDecisionWithoutGuardian = testDecision.copy(guardianInfo = setOf())
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecisionWithoutGuardian
+            )
+        )
+        val firstGuardian = assistanceNeedDecision.guardianInfo.first()
+        assertEquals(testAdult_1.id, firstGuardian.personId)
+        assertEquals("${testAdult_1.lastName} ${testAdult_1.firstName}", firstGuardian.name)
+    }
+
+    @Test
     fun `Updating a decision stores the new information`() {
         val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
             AssistanceNeedDecisionRequest(
@@ -192,5 +210,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             .response()
 
         assertEquals(200, res.statusCode)
+    }
+
+    private fun whenGetAssistanceNeedDecisionThenExpectSuccess(id: AssistanceNeedDecisionId?): AssistanceNeedDecision {
+        val (_, res, result) = http.get("/children/${testChild_1.id}/assistance-needs/decision/$id")
+            .asUser(assistanceWorker)
+            .responseObject<AssistanceNeedDecision>(jsonMapper)
+
+        assertEquals(200, res.statusCode)
+        return result.get()
     }
 }

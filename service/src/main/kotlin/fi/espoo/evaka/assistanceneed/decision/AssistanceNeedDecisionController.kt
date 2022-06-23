@@ -4,6 +4,7 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,7 +37,22 @@ class AssistanceNeedDecisionController(
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.insertAssistanceNeedDecision(childId, body.decision)
+                var decision: AssistanceNeedDecision = body.decision
+                if (decision.guardianInfo.isEmpty()) {
+                    val guardianIds = tx.getChildGuardians(childId)
+                    decision = body.decision.copy(
+                        guardianInfo = guardianIds.map { gid ->
+                            AssistanceNeedDecisionGuardian(
+                                personId = gid,
+                                name = "", // not stored
+                                isHeard = false,
+                                details = null
+                            )
+                        }.toSet()
+                    )
+                }
+
+                tx.insertAssistanceNeedDecision(childId, decision)
             }
         }
     }
