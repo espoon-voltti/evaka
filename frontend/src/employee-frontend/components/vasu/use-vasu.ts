@@ -11,6 +11,10 @@ import {
   useState
 } from 'react'
 
+import {
+  useAutosave,
+  AutosaveStatus
+} from 'employee-frontend/utils/use-autosave'
 import { Result } from 'lib-common/api'
 import {
   Followup,
@@ -23,8 +27,6 @@ import {
   VasuContent,
   VasuDocument
 } from 'lib-common/generated/api-types/vasu'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
-import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
@@ -35,21 +37,6 @@ import {
   putVasuDocument,
   PutVasuDocumentParams
 } from './api'
-
-type State =
-  | 'loading'
-  | 'loading-dirty'
-  | 'loading-error'
-  | 'clean'
-  | 'dirty'
-  | 'saving'
-  | 'saving-dirty'
-  | 'save-error'
-
-export interface VasuStatus {
-  state: State
-  savedAt?: Date
-}
 
 type VasuMetadata = Omit<
   VasuDocument,
@@ -65,16 +52,13 @@ interface Vasu {
   setContent: Dispatch<SetStateAction<VasuContent>>
   childLanguage: ChildLanguage | null
   setChildLanguage: Dispatch<ChildLanguage>
-  status: VasuStatus
+  status: AutosaveStatus
   translations: VasuTranslations
   editFollowupEntry: (params: EditFollowupEntryParams) => void
   permittedFollowupActions: PermittedFollowupActions
 }
 
-const debounceInterval = isAutomatedTest ? 200 : 2000
-
 export function useVasu(id: string): Vasu {
-  const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
@@ -82,52 +66,32 @@ export function useVasu(id: string): Vasu {
     useState<PermittedFollowupActions>({})
 
   const handleVasuDocLoaded = useCallback(
-    (res: Result<GetVasuDocumentResponse>) => {
-      res.mapAll({
-        loading: () => null,
-        failure: () => setStatus({ state: 'loading-error' }),
-        success: ({ vasu: { content, ...meta }, permittedFollowupActions }) => {
-          setVasu(meta)
-          setContent(content)
-          setChildLanguage(meta.basics.childLanguage)
-          setPermittedFollowupActions(permittedFollowupActions)
-          setStatus((prev) =>
-            prev.state === 'loading-dirty'
-              ? { ...prev, state: 'dirty' }
-              : { state: 'clean' }
-          )
-        }
-      })
+    ({
+      vasu: { content, ...meta },
+      permittedFollowupActions
+    }: GetVasuDocumentResponse) => {
+      setVasu(meta)
+      setContent(content)
+      setChildLanguage(meta.basics.childLanguage)
+      setPermittedFollowupActions(permittedFollowupActions)
     },
     []
   )
 
-  useEffect(
-    function loadVasuDocument() {
-      setStatus({ state: 'loading' })
-      void getVasuDocument(id).then(handleVasuDocLoaded)
-    },
-    [id, handleVasuDocLoaded]
+  const getSaveParameters = useCallback(
+    () =>
+      [{ documentId: id, content, childLanguage }] as [PutVasuDocumentParams],
+    [id, content, childLanguage]
   )
 
-  const handleSaveResult = useCallback((res: Result<unknown>) => {
-    res.mapAll({
-      loading: () => null,
-      failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
-      success: () => {
-        setStatus({ state: 'clean', savedAt: new Date() })
-      }
-    })
-  }, [])
-  const save = useRestApi(putVasuDocument, handleSaveResult)
-  const saveNow = useCallback(
-    (params: PutVasuDocumentParams) => {
-      setStatus((prev) => ({ ...prev, state: 'saving' }))
-      save(params)
-    },
-    [save]
-  )
-  const [debouncedSave] = useDebouncedCallback(saveNow, debounceInterval)
+  const loadVasuDoc = useCallback(() => getVasuDocument(id), [id])
+
+  const { status, setStatus, setDirty } = useAutosave({
+    load: loadVasuDoc,
+    onLoaded: handleVasuDocLoaded,
+    save: putVasuDocument,
+    getSaveParameters
+  })
 
   const handleEditFollowupEntryResult = useCallback(
     (res: Result<unknown>) =>
@@ -139,25 +103,23 @@ export function useVasu(id: string): Vasu {
             if (prev.state === 'saving-dirty') {
               return { ...prev, state: 'dirty' }
             } else {
-              void getVasuDocument(id).then(handleVasuDocLoaded)
+              void getVasuDocument(id).then((vasuRes) => {
+                vasuRes.mapAll({
+                  loading: () => null,
+                  failure: () =>
+                    setStatus((prev) => ({ ...prev, state: 'save-error' })),
+                  success: handleVasuDocLoaded
+                })
+              })
               return { state: 'loading' }
             }
           })
       }),
-    [id, handleVasuDocLoaded]
+    [setStatus, id, handleVasuDocLoaded]
   )
   const editFollowup = useRestApi(
     editFollowupEntry,
     handleEditFollowupEntryResult
-  )
-
-  useEffect(
-    function saveDirtyContent() {
-      if (status.state === 'dirty') {
-        debouncedSave({ documentId: id, content, childLanguage })
-      }
-    },
-    [debouncedSave, status.state, content, childLanguage, id]
   )
 
   useEffect(
@@ -179,20 +141,6 @@ export function useVasu(id: string): Vasu {
       })
     },
     [content, permittedFollowupActions]
-  )
-
-  const setDirty = useCallback(
-    () =>
-      setStatus((prev) => {
-        const state =
-          prev.state === 'loading'
-            ? 'loading-dirty'
-            : prev.state === 'saving'
-            ? 'saving-dirty'
-            : 'dirty'
-        return { ...prev, state }
-      }),
-    []
   )
 
   const setContentCallback = useCallback(

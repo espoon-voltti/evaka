@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
+import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
 import { ChildContextProvider } from 'employee-frontend/state/child'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'lib-common/types'
@@ -32,7 +33,10 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const { i18n } = useTranslation()
 
-  const { formState, setFormState } = useAssistanceNeedDecision(childId, id)
+  const { formState, setFormState, status } = useAssistanceNeedDecision(
+    childId,
+    id
+  )
 
   const languageOptions = useMemo<SelectOption[]>(
     () => [
@@ -95,7 +99,9 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
           ))}
         </ContentArea>
         <StickyFooter>
-          <FooterContainer></FooterContainer>
+          <FooterContainer>
+            <AutosaveStatusIndicator status={status} />
+          </FooterContainer>
         </StickyFooter>
       </Content>
     </ChildContextProvider>

@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useContext, SetStateAction } from 'react'
+import React, { useCallback, useMemo, SetStateAction } from 'react'
 
 import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import DateRangeInput from 'employee-frontend/components/common/DateRangeInput'
-import { ChildContext } from 'employee-frontend/state'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Employee } from 'employee-frontend/types/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -128,7 +127,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
 }: AssistanceNeedDecisionFormProps) {
   const [units] = useApiState(() => getUnits([], 'ALL'), [])
   const [employees] = useApiState(() => getEmployees(), [])
-  const { guardians } = useContext(ChildContext)
 
   const { i18n, lang } = useTranslation()
   const t = useMemo(() => i18n.childInformation.assistanceNeedDecision, [i18n])
@@ -163,6 +161,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           value={formState.pedagogicalMotivation ?? ''}
           onChange={(val) => setFieldVal({ pedagogicalMotivation: val })}
           placeholder={t.genericPlaceholder}
+          data-qa="pedagogical-motivation-field"
         />
       </FieldWithInfo>
 
@@ -346,54 +345,20 @@ export default React.memo(function AssistanceNeedDecisionForm({
       </FixedSpaceColumn>
 
       <FieldWithInfo info={t.guardiansHeardInfo} label={t.guardiansHeard}>
-        {formState.guardianInfo.length > 0 ? (
-          formState.guardianInfo.map((guardian) => (
-            <GuardianHeardField
-              key={guardian.personId}
-              guardian={guardian}
-              placeholder={t.genericPlaceholder}
-              onChange={(g: AssistanceNeedDecisionGuardian) => {
-                setFieldVal({
-                  guardianInfo: formState.guardianInfo.map((gi) =>
-                    gi.name === g.name ? g : gi
-                  )
-                })
-              }}
-            />
-          ))
-        ) : (
-          <>
-            {renderResult(guardians, (guardians) => (
-              <>
-                {guardians.map((guardian) => {
-                  const formGuardian = formState.guardianInfo?.find(
-                    (g) => g.personId === guardian.id
-                  )
-                  return (
-                    <GuardianHeardField
-                      key={guardian.id}
-                      guardian={{
-                        id: null,
-                        personId: guardian.id,
-                        name: formatName(guardian),
-                        isHeard: formGuardian?.isHeard ?? false,
-                        details: formGuardian?.details ?? ''
-                      }}
-                      placeholder={t.genericPlaceholder}
-                      onChange={(g: AssistanceNeedDecisionGuardian) => {
-                        setFieldVal({
-                          guardianInfo: formState.guardianInfo.map((gi) =>
-                            gi.name === g.name ? g : gi
-                          )
-                        })
-                      }}
-                    />
-                  )
-                })}
-              </>
-            ))}
-          </>
-        )}
+        {formState.guardianInfo.map((guardian) => (
+          <GuardianHeardField
+            key={guardian.personId}
+            guardian={guardian}
+            placeholder={t.genericPlaceholder}
+            onChange={(g: AssistanceNeedDecisionGuardian) => {
+              setFieldVal({
+                guardianInfo: formState.guardianInfo.map((gi) =>
+                  gi.name === g.name ? g : gi
+                )
+              })
+            }}
+          />
+        ))}
         <GuardianHeardField
           guardian={{
             id: null,

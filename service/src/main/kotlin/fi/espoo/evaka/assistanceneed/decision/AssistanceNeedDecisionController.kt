@@ -13,10 +13,11 @@ import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-data class PostAssistanceNeedDecisionRequest(
+data class AssistanceNeedDecisionRequest(
     val decision: AssistanceNeedDecision
 )
 
@@ -29,7 +30,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
-        @RequestBody body: PostAssistanceNeedDecisionRequest
+        @RequestBody body: AssistanceNeedDecisionRequest
     ): AssistanceNeedDecision {
         Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
@@ -52,6 +53,23 @@ class AssistanceNeedDecisionController(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getAssistanceNeedDecisionById(id)
+            }
+        }
+    }
+
+    @PutMapping("/children/{childId}/assistance-needs/decision/{id}")
+    fun createAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId,
+        @PathVariable id: AssistanceNeedDecisionId,
+        @RequestBody body: AssistanceNeedDecisionRequest
+    ) {
+        Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.UPDATE_ASSISTANCE_NEED_DECISION, childId)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateAssistanceNeedDecision(id, body.decision)
             }
         }
     }

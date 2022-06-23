@@ -101,6 +101,13 @@ export type AssistanceNeedDecisionLanguage =
   | 'SV'
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionRequest
+*/
+export interface AssistanceNeedDecisionRequest {
+  decision: AssistanceNeedDecision
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 */
 export type AssistanceNeedDecisionStatus =
@@ -125,13 +132,6 @@ export interface AssistanceNeedRequest {
 export interface AssistanceNeedResponse {
   need: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
-}
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.decision.PostAssistanceNeedDecisionRequest
-*/
-export interface PostAssistanceNeedDecisionRequest {
-  decision: AssistanceNeedDecision
 }
 
 /**
