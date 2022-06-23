@@ -119,7 +119,7 @@ function AsyncButton<T>({
               handleFailure(undefined)
               Sentry.captureMessage(
                 'BUG: AsyncButton promise resolved to a Loading value',
-                Sentry.Severity.Error
+                'error'
               )
             } else if (result.isFailure) {
               handleFailure(result)

@@ -11,10 +11,7 @@ export default function useNonNullableParams<
   const params = useParams<T>()
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined) {
-      Sentry.captureMessage(
-        `Route param ${key} is undefined`,
-        Sentry.Severity.Error
-      )
+      Sentry.captureMessage(`Route param ${key} is undefined`, 'error')
     }
   })
   return params as T

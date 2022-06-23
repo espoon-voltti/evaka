@@ -25,7 +25,7 @@ export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {
         if (user) {
           Sentry.captureMessage(
             `Invalid user type ${user.userType} in mobile frontend`,
-            Sentry.Severity.Error
+            'error'
           )
         }
         return Success.of({ ...status, loggedIn: false })
