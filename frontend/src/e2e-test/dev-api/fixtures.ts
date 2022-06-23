@@ -1315,11 +1315,13 @@ export class Fixture {
       pedagogicalMotivation: null,
       preparedBy1: {
         employeeId: null,
-        title: null
+        title: null,
+        phoneNumber: null
       },
       preparedBy2: {
         employeeId: null,
-        title: null
+        title: null,
+        phoneNumber: null
       },
       selectedUnit: null,
       sentForDecision: null,
@@ -1343,6 +1345,66 @@ export class Fixture {
         specialGroup: false
       },
       viewOfGuardians: null
+    })
+  }
+
+  static preFilledAssistanceNeedDecision(): AssistanceNeedDecisionBuilder {
+    return new AssistanceNeedDecisionBuilder({
+      id: uuidv4(),
+      assistanceLevel: 'ASSISTANCE_SERVICES_FOR_TIME',
+      assistanceServicesTime: new FiniteDateRange(
+        LocalDate.of(2020, 7, 8),
+        LocalDate.of(2020, 8, 8)
+      ),
+      careMotivation: 'Care motivation text',
+      childId: 'not_set',
+      decisionMade: null,
+      decisionMaker: {
+        employeeId: null,
+        title: null
+      },
+      decisionNumber: 1001,
+      endDate: null,
+      expertResponsibilities: 'Expert responsibilities text',
+      guardianInfo: [],
+      guardiansHeardOn: LocalDate.of(2020, 4, 5),
+      language: 'FI',
+      motivationForDecision: 'Motivation for decision text',
+      otherRepresentativeDetails: 'John Doe, 01020304050, via phone',
+      otherRepresentativeHeard: true,
+      pedagogicalMotivation: 'Pedagogical motivation text',
+      preparedBy1: {
+        employeeId: null,
+        title: null,
+        phoneNumber: null
+      },
+      preparedBy2: {
+        employeeId: null,
+        title: null,
+        phoneNumber: null
+      },
+      selectedUnit: null,
+      sentForDecision: LocalDate.of(2020, 5, 11),
+      serviceOptions: {
+        consultationSpecialEd: false,
+        fullTimeSpecialEd: false,
+        interpretationAndAssistanceServices: true,
+        partTimeSpecialEd: true,
+        specialAides: false
+      },
+      servicesMotivation: 'Services motivation text',
+      startDate: LocalDate.of(2020, 7, 1),
+      status: 'DRAFT',
+      structuralMotivationDescription: 'Structural motivation description text',
+      structuralMotivationOptions: {
+        additionalStaff: false,
+        childAssistant: false,
+        groupAssistant: true,
+        smallGroup: false,
+        smallerGroup: true,
+        specialGroup: false
+      },
+      viewOfGuardians: 'VOG text'
     })
   }
 

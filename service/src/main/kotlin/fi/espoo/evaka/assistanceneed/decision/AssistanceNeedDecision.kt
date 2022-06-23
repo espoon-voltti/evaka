@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 
@@ -26,7 +27,8 @@ data class AssistanceNeedDecision(
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    val selectedUnit: DaycareId?,
+    @Nested("selected_unit")
+    val selectedUnit: UnitInfo?,
     @Nested("preparer_1")
     val preparedBy1: AssistanceNeedDecisionEmployee?,
     @Nested("preparer_2")
@@ -64,8 +66,12 @@ enum class AssistanceNeedDecisionLanguage {
 }
 
 data class AssistanceNeedDecisionEmployee(
+    @PropagateNull
     val employeeId: EmployeeId?,
-    val title: String?
+    val title: String?,
+    val name: String? = null,
+    val email: String? = null,
+    val phoneNumber: String?
 )
 
 data class StructuralMotivationOptions(
@@ -96,3 +102,12 @@ data class AssistanceNeedDecisionGuardian(
 enum class AssistanceLevel {
     ASSISTANCE_ENDS, ASSISTANCE_SERVICES_FOR_TIME, ENHANCED_ASSISTANCE, SPECIAL_ASSISTANCE
 }
+
+data class UnitInfo(
+    @PropagateNull
+    val id: DaycareId?,
+    val name: String? = null,
+    val streetAddress: String? = null,
+    val postalCode: String? = null,
+    val postOffice: String? = null
+)

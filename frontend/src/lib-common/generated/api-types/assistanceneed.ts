@@ -63,7 +63,7 @@ export interface AssistanceNeedDecision {
   pedagogicalMotivation: string | null
   preparedBy1: AssistanceNeedDecisionEmployee | null
   preparedBy2: AssistanceNeedDecisionEmployee | null
-  selectedUnit: UUID | null
+  selectedUnit: UnitInfo | null
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
@@ -78,7 +78,10 @@ export interface AssistanceNeedDecision {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {
+  email: string | null
   employeeId: UUID | null
+  name: string | null
+  phoneNumber: string | null
   title: string | null
 }
 
@@ -155,4 +158,15 @@ export interface StructuralMotivationOptions {
   smallGroup: boolean
   smallerGroup: boolean
   specialGroup: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfo
+*/
+export interface UnitInfo {
+  id: UUID | null
+  name: string | null
+  postOffice: string | null
+  postalCode: string | null
+  streetAddress: string | null
 }

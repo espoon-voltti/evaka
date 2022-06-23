@@ -242,3 +242,4 @@ V241__realtime_staff_attendance_type.sql
 V242__staff_attendance_plan.sql
 V243__assistance_need_decisions.sql
 V244__payment.sql
+V245__assistance_need_decision_time_and_employee_phone.sql

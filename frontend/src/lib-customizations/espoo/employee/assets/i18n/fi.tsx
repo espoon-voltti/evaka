@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import { H2, P } from 'lib-components/typography'
 
 export const fi = {
   titles: {
@@ -752,7 +755,101 @@ export const fi = {
         REJECTED: 'Hylätty'
       },
       confidential: 'Salassapidettävä',
-      lawReference: 'Varhaiskasvatuslaki 15 §'
+      lawReference: 'Varhaiskasvatuslaki 15 §',
+      noRecord: 'Ei merkintää',
+      leavePage: 'Poistu',
+      modifyDecision: 'Muokkaa',
+      sendToDecisionMaker: 'Lähetä päättäjälle',
+      sentToDecisionMaker: 'Lähetetty päättäjälle',
+      appealInstructionsTitle: 'Oikaisuvaatimusohje',
+      appealInstructions: (
+        <>
+          <P>
+            Tähän päätökseen tyytymätön voi tehdä kirjallisen
+            oikaisuvaatimuksen.
+          </P>
+          <H2>Oikaisuvaatimusoikeus</H2>
+          <P>
+            Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
+            jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
+            vaikuttaa (asianosainen).
+          </P>
+          <H2>Oikaisuviranomainen</H2>
+          <P>
+            Oikaisu tehdään Länsi- ja Sisä-Suomen aluehallintovirastolle (Vaasan
+            päätoimipaikka).
+          </P>
+          <P>
+            Länsi- ja Sisä-Suomen aluehallintovirasto
+            <br />
+            Wolffintie 35
+            <br />
+            PL 200, 65101 Vaasa
+            <br />
+            faksi 06 317 4817
+            <br />
+            sähköposti: kirjaamo.lansi@avi.fi
+          </P>
+          <H2>Oikaisuvaatimusaika</H2>
+          <P>
+            Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
+            tiedoksisaannista.
+          </P>
+          <H2>Tiedoksisaanti</H2>
+          <P>
+            Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+            näytetä, 7 päivän kuluttua kirjeen lähettämisestä, 3 päivän kuluttua
+            sähköpostin lähettämisestä, saantitodistuksen osoittamana aikana tai
+            erilliseen tiedoksisaantitodistukseen merkittynä aikana.
+            Tiedoksisaantipäivää ei lueta määräaikaan. Jos määräajan viimeinen
+            päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä, joulu- tai
+            juhannusaatto tai arkilauantai, saa tehtävän toimittaa ensimmäisenä
+            arkipäivänä sen jälkeen.
+          </P>
+          <H2>Oikaisuvaatimus</H2>
+          <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+          <ul>
+            <li>
+              Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite ja
+              puhelinnumero
+            </li>
+            <li>päätös, johon haetaan oikaisua</li>
+            <li>
+              miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
+              vaaditaan tehtäväksi
+            </li>
+            <li>vaatimuksen perusteet</li>
+          </ul>
+          <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+          <ul>
+            <li>
+              päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+            </li>
+            <li>
+              todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
+              selvitys oikaisuvaatimusajan alkamisen ajankohdasta
+            </li>
+            <li>
+              asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
+              oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
+              toimitettu viranomaiselle.
+            </li>
+          </ul>
+          <P>
+            Asiamiehen on liitettävä valituskirjelmään valtakirja, kuten
+            oikeudenkäynnistä hallintoasioissa annetun lain (808/2019) 32 §:ssä
+            säädetään.
+          </P>
+          <H2>Oikaisuvaatimuksen toimittaminen</H2>
+          <P>
+            Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan kuluessa
+            oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän tulee olla
+            perillä oikaisuvaatimusajan viimeisenä päivänä ennen viraston
+            aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen postitse tai
+            sähköisesti tapahtuu lähettäjän omalla vastuulla.
+          </P>
+        </>
+      )
     },
     application: {
       title: 'Hakemukset',

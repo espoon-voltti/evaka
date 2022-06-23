@@ -13,7 +13,6 @@ import { Employee } from 'employee-frontend/types/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AssistanceLevel,
-  AssistanceNeedDecision,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
@@ -30,6 +29,8 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
+import { AssistanceNeedDecisionForm } from './assistance-need-decision-form'
 
 const FieldWithInfo: React.FC<{
   info: string
@@ -68,21 +69,41 @@ const formatName = (someone: {
   lastName: string | null
 }) => `${someone.lastName ?? ''} ${someone.firstName ?? ''}`
 
-const EmployeeSelectWithTitle: React.FC<{
+interface EmployeeSelectProps {
   employeeLabel: string
   employees: Employee[]
   selectedEmployee: Employee | null
   titleLabel: string
   selectedTitle: string | null
+  phoneLabel?: undefined
+  selectedPhone?: undefined
+  onChangePhone?: undefined
   onChange: (employee: Employee | null, title: string | null) => void
   'data-qa'?: string
-}> = ({
+}
+
+interface EmployeeSelectWithPhoneProps
+  extends Omit<
+    EmployeeSelectProps,
+    'phoneLabel' | 'selectedPhone' | 'onChangePhone'
+  > {
+  phoneLabel: string
+  selectedPhone: string
+  onChangePhone: (phone: string) => void
+}
+
+const EmployeeSelectWithTitle: React.FC<
+  EmployeeSelectProps | EmployeeSelectWithPhoneProps
+> = ({
   employeeLabel,
   employees,
   selectedEmployee,
   titleLabel,
   selectedTitle,
+  phoneLabel,
+  selectedPhone,
   onChange,
+  onChangePhone,
   'data-qa': dataQa
 }) => (
   <FixedSpaceRow>
@@ -111,13 +132,23 @@ const EmployeeSelectWithTitle: React.FC<{
         data-qa={dataQa ? `${dataQa}-title` : undefined}
       />
     </FixedSpaceColumn>
+    {!!phoneLabel && (
+      <FixedSpaceColumn spacing="zero">
+        <Label>{phoneLabel}</Label>
+        <InputField
+          value={selectedPhone}
+          onChange={(phone) => onChangePhone(phone)}
+          data-qa={dataQa ? `${dataQa}-phone` : undefined}
+        />
+      </FixedSpaceColumn>
+    )}
   </FixedSpaceRow>
 )
 
 type AssistanceNeedDecisionFormProps = {
-  formState: AssistanceNeedDecision
+  formState: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
-    SetStateAction<AssistanceNeedDecision | undefined>
+    SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
 }
 
@@ -132,7 +163,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
   const t = useMemo(() => i18n.childInformation.assistanceNeedDecision, [i18n])
 
   const setFieldVal = useCallback(
-    (val: Partial<AssistanceNeedDecision>) =>
+    (val: Partial<AssistanceNeedDecisionForm>) =>
       setFormState({ ...formState, ...val }),
     [formState, setFormState]
   )
@@ -447,9 +478,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
             items={units}
             getItemLabel={(unit) => unit.name}
             selectedItem={
-              units.find((u) => u.id === formState.selectedUnit) ?? null
+              units.find((u) => u.id === formState.selectedUnit?.id) ?? null
             }
-            onChange={(unit) => setFieldVal({ selectedUnit: unit?.id })}
+            onChange={(unit) =>
+              setFieldVal({ selectedUnit: unit && { id: unit.id } })
+            }
           />
         ))}
         <Gap size="s" />
@@ -480,7 +513,26 @@ export default React.memo(function AssistanceNeedDecisionForm({
             selectedTitle={formState.preparedBy1?.title ?? ''}
             onChange={(employee, title) =>
               setFieldVal({
-                preparedBy1: { employeeId: employee?.id ?? null, title }
+                preparedBy1: {
+                  ...(formState.preparedBy1 ?? {
+                    phoneNumber: null
+                  }),
+                  employeeId: employee?.id ?? null,
+                  title
+                }
+              })
+            }
+            phoneLabel={i18n.common.form.phone}
+            selectedPhone={formState.preparedBy1?.phoneNumber ?? ''}
+            onChangePhone={(phoneNumber) =>
+              setFieldVal({
+                preparedBy1: {
+                  ...(formState.preparedBy1 ?? {
+                    employeeId: null,
+                    title: null
+                  }),
+                  phoneNumber
+                }
               })
             }
           />
@@ -496,7 +548,26 @@ export default React.memo(function AssistanceNeedDecisionForm({
             selectedTitle={formState.preparedBy2?.title ?? ''}
             onChange={(employee, title) =>
               setFieldVal({
-                preparedBy2: { employeeId: employee?.id ?? null, title }
+                preparedBy2: {
+                  ...(formState.preparedBy2 ?? {
+                    phoneNumber: null
+                  }),
+                  employeeId: employee?.id ?? null,
+                  title
+                }
+              })
+            }
+            phoneLabel={i18n.common.form.phone}
+            selectedPhone={formState.preparedBy2?.phoneNumber ?? ''}
+            onChangePhone={(phoneNumber) =>
+              setFieldVal({
+                preparedBy2: {
+                  ...(formState.preparedBy2 ?? {
+                    employeeId: null,
+                    title: null
+                  }),
+                  phoneNumber
+                }
               })
             }
           />
@@ -513,7 +584,13 @@ export default React.memo(function AssistanceNeedDecisionForm({
             selectedTitle={formState.decisionMaker?.title ?? ''}
             onChange={(employee, title) =>
               setFieldVal({
-                decisionMaker: { employeeId: employee?.id ?? null, title }
+                decisionMaker: {
+                  ...(formState.decisionMaker ?? {
+                    phoneNumber: null
+                  }),
+                  employeeId: employee?.id ?? null,
+                  title
+                }
               })
             }
             data-qa="decision-maker"

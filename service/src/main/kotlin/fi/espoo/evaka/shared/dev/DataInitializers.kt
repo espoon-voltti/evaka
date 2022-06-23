@@ -775,8 +775,9 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_service_start, assistance_service_end, motivation_for_decision, decision_maker_employee_id,
-          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title 
+          assistance_level, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
+          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
+          preparer_1_phone_number, preparer_2_phone_number
         )
         VALUES (
             :id,
@@ -810,15 +811,16 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             :otherRepresentativeHeard,
             :otherRepresentativeDetails, 
             :assistanceLevel,
-            :assistanceServiceStart,
-            :assistanceServiceEnd,
+            :assistanceServicesTime,
             :motivationForDecision,
             :decisionMakerEmployeeId,
             :decisionMakerTitle,
             :preparer1EmployeeId,
             :preparer1Title,
             :preparer2EmployeeId,
-            :preparer2Title
+            :preparer2Title,
+            :preparer1PhoneNumber,
+            :preparer2PhoneNumber
         )
         RETURNING id
         """.trimIndent()
@@ -837,14 +839,16 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
         .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
         .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
         .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
-        .bind("assistanceServiceStart", data.assistanceServicesTime?.start)
-        .bind("assistanceServiceEnd", data.assistanceServicesTime?.end)
+        .bind("assistanceServicesTime", data.assistanceServicesTime)
         .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
         .bind("decisionMakerTitle", data.decisionMaker?.title)
         .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
         .bind("preparer1Title", data.preparedBy1?.title)
+        .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
         .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
         .bind("preparer2Title", data.preparedBy2?.title)
+        .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
+        .bind("selectedUnit", data.selectedUnit?.id)
         .mapTo<AssistanceNeedDecisionId>()
         .first()
 

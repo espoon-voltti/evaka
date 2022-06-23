@@ -11,6 +11,8 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../../../../api/client'
 
+import { AssistanceNeedDecisionForm } from './assistance-need-decision-form'
+
 const parseDate = (str: string | null): LocalDate | null =>
   str ? LocalDate.parseIso(str) : null
 
@@ -44,7 +46,7 @@ export function getAssistanceNeedDecision(
 export function putAssistanceNeedDecision(
   childId: UUID,
   id: UUID,
-  data: AssistanceNeedDecision
+  data: AssistanceNeedDecisionForm
 ): Promise<Result<void>> {
   return client
     .put(`/children/${childId}/assistance-needs/decision/${id}`, {

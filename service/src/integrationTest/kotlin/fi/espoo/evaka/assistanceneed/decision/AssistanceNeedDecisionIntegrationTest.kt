@@ -34,12 +34,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         language = AssistanceNeedDecisionLanguage.FI,
         decisionMade = LocalDate.of(2021, 12, 31),
         sentForDecision = LocalDate.of(2021, 12, 1),
-        selectedUnit = testDaycare.id,
-        preparedBy1 = AssistanceNeedDecisionEmployee(employeeId = assistanceWorker.id, title = "worker"),
-        preparedBy2 = AssistanceNeedDecisionEmployee(employeeId = null, title = null),
+        selectedUnit = UnitInfo(id = testDaycare.id),
+        preparedBy1 = AssistanceNeedDecisionEmployee(employeeId = assistanceWorker.id, title = "worker", phoneNumber = "01020405060"),
+        preparedBy2 = null,
         decisionMaker = AssistanceNeedDecisionEmployee(
             employeeId = testDecisionMaker_2.id,
-            title = "Decider of everything"
+            title = "Decider of everything",
+            phoneNumber = null
         ),
 
         pedagogicalMotivation = "Pedagogical motivation",
@@ -103,10 +104,22 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.language, assistanceNeedDecision.language)
         assertEquals(testDecision.decisionMade, assistanceNeedDecision.decisionMade)
         assertEquals(testDecision.sentForDecision, assistanceNeedDecision.sentForDecision)
-        assertEquals(testDecision.selectedUnit, assistanceNeedDecision.selectedUnit)
-        assertEquals(testDecision.preparedBy1, assistanceNeedDecision.preparedBy1)
-        assertEquals(testDecision.preparedBy2, assistanceNeedDecision.preparedBy2)
-        assertEquals(testDecision.decisionMaker, assistanceNeedDecision.decisionMaker)
+        assertEquals(assistanceNeedDecision.selectedUnit?.id, testDaycare.id)
+        assertEquals(assistanceNeedDecision.selectedUnit?.name, testDaycare.name)
+        assertEquals(assistanceNeedDecision.selectedUnit?.postOffice, "ESPOO")
+        assertEquals(assistanceNeedDecision.selectedUnit?.postalCode, "02100")
+        assertEquals(assistanceNeedDecision.selectedUnit?.streetAddress, "Joku katu 9")
+        assertEquals(testDecision.preparedBy1?.employeeId, assistanceNeedDecision.preparedBy1?.employeeId)
+        assertEquals(testDecision.preparedBy1?.title, assistanceNeedDecision.preparedBy1?.title)
+        assertEquals(testDecision.preparedBy1?.phoneNumber, assistanceNeedDecision.preparedBy1?.phoneNumber)
+        assertEquals(assistanceNeedDecision.preparedBy1?.name, "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")
+        assertEquals(assistanceNeedDecision.preparedBy1?.email, testDecisionMaker_1.email)
+        assertEquals(assistanceNeedDecision.preparedBy2, null)
+        assertEquals(testDecision.decisionMaker?.employeeId, assistanceNeedDecision.decisionMaker?.employeeId)
+        assertEquals(testDecision.decisionMaker?.title, assistanceNeedDecision.decisionMaker?.title)
+        assertEquals(assistanceNeedDecision.decisionMaker?.phoneNumber, null)
+        assertEquals(assistanceNeedDecision.decisionMaker?.email, null)
+        assertEquals(assistanceNeedDecision.decisionMaker?.name, "${testDecisionMaker_2.firstName} ${testDecisionMaker_2.lastName}")
 
         assertEquals(testDecision.pedagogicalMotivation, assistanceNeedDecision.pedagogicalMotivation)
         assertEquals(testDecision.structuralMotivationOptions, assistanceNeedDecision.structuralMotivationOptions)
