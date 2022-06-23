@@ -18,10 +18,10 @@ CREATE TABLE payment (
     sent_at timestamp with time zone,
     sent_by uuid,
 
-    CONSTRAINT fk$unit FOREIGN KEY (unit_id) REFERENCES daycare (id),
-    CONSTRAINT unique$number UNIQUE (number),
-    CONSTRAINT fk$sent_by FOREIGN KEY (sent_by) REFERENCES evaka_user (id),
-    CONSTRAINT payment_state CHECK (
+    CONSTRAINT fk$payment_unit FOREIGN KEY (unit_id) REFERENCES daycare (id),
+    CONSTRAINT unique$payment_number UNIQUE (number),
+    CONSTRAINT fk$payment_sent_by FOREIGN KEY (sent_by) REFERENCES evaka_user (id),
+    CONSTRAINT check$payment_state CHECK (
         status = 'DRAFT' OR (
             unit_business_id IS NOT NULL AND unit_business_id <> '' AND
             unit_iban IS NOT NULL AND unit_iban <> '' AND
@@ -36,9 +36,7 @@ CREATE TABLE payment (
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON payment FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
-CREATE INDEX idx$created ON payment (created);
-CREATE INDEX idx$number_text ON payment ((number::text));
-CREATE INDEX idx$status ON payment (status);
+CREATE INDEX idx$payment_created ON payment (created);
 CREATE INDEX idx$payment_date ON payment (payment_date);
-CREATE INDEX idx$period ON payment (lower(period));
-CREATE INDEX idx$amount ON payment (amount);
+CREATE INDEX idx$payment_period ON payment USING GIST (period);
+CREATE INDEX idx$payment_amount ON payment (amount);
