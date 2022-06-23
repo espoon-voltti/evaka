@@ -30,7 +30,7 @@ export function CheckboxQuestion(props: Props) {
 
   return (
     <QuestionInfo info={props.question.info}>
-      {props.onChange && numberedLabel && <Label>{numberedLabel}</Label>}
+      {props.onChange && !!numberedLabel && <Label>{numberedLabel}</Label>}
 
       {props.onChange ? (
         <Checkbox

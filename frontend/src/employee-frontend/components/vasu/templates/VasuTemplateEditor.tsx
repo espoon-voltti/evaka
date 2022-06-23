@@ -308,7 +308,7 @@ export default React.memo(function VasuTemplateEditor() {
   ) {
     return (
       <QuestionInfo info={question.info}>
-        {question.label && <H3>{`${questionNumber}. ${question.label}`}</H3>}
+        {!!question.label && <H3>{`${questionNumber}. ${question.label}`}</H3>}
         <Checkbox
           checked={question.value}
           label={
@@ -335,9 +335,19 @@ export default React.memo(function VasuTemplateEditor() {
             <Radio checked={false} label={opt.name} />
             {opt.dateRange && (
               <div>
-                <DatePicker locale="fi" date="" onChange={() => void 0} />
+                <DatePicker
+                  locale="fi"
+                  date={null}
+                  onChange={() => void 0}
+                  errorTexts={i18n.validationErrors}
+                />
                 <span>-</span>
-                <DatePicker locale="fi" date="" onChange={() => void 0} />
+                <DatePicker
+                  locale="fi"
+                  date={null}
+                  onChange={() => void 0}
+                  errorTexts={i18n.validationErrors}
+                />
               </div>
             )}
           </OptionContainer>
