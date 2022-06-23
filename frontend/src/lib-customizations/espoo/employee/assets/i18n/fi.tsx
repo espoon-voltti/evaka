@@ -1659,6 +1659,7 @@ export const fi = {
     accessControl: {
       unitSupervisors: 'Yksikön johtajat',
       specialEducationTeachers: 'Varhaiskasvatuksen erityisopettajat',
+      earlyChildhoodEducationSecretary: 'Varhaiskasvatussihteerit',
       staff: 'Yksikön henkilökunta',
       email: 'Sähköpostiosoite',
       removeConfirmation:

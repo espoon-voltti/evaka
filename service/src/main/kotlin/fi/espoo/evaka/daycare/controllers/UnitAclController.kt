@@ -5,10 +5,12 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.addEarlyChildhoodEducationSecretary
 import fi.espoo.evaka.daycare.addSpecialEducationTeacher
 import fi.espoo.evaka.daycare.addStaffMember
 import fi.espoo.evaka.daycare.addUnitSupervisor
 import fi.espoo.evaka.daycare.getDaycareAclRows
+import fi.espoo.evaka.daycare.removeEarlyChildhoodEducationSecretary
 import fi.espoo.evaka.daycare.removeSpecialEducationTeacher
 import fi.espoo.evaka.daycare.removeStaffMember
 import fi.espoo.evaka.daycare.removeUnitSupervisor
@@ -88,6 +90,30 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
         db.connect { dbc -> removeSpecialEducationTeacher(dbc, daycareId, employeeId) }
+    }
+
+    @PutMapping("/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}")
+    fun insertEarlyChildhoodEducationSecretary(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable employeeId: EmployeeId
+    ) {
+        Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
+        accessControl.requirePermissionFor(user, Action.Unit.INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY, daycareId)
+        db.connect { dbc -> addEarlyChildhoodEducationSecretary(dbc, daycareId, employeeId) }
+    }
+
+    @DeleteMapping("/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}")
+    fun deleteEarlyChildhoodEducationSecretary(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable daycareId: DaycareId,
+        @PathVariable employeeId: EmployeeId
+    ) {
+        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY, daycareId)
+        db.connect { dbc -> removeEarlyChildhoodEducationSecretary(dbc, daycareId, employeeId) }
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")

@@ -50,6 +50,20 @@ fun removeSpecialEducationTeacher(db: Database.Connection, daycareId: DaycareId,
     db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
 }
 
+fun addEarlyChildhoodEducationSecretary(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
+    db.transaction {
+        it.clearDaycareGroupAcl(daycareId, employeeId)
+        it.insertDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+    }
+}
+
+fun removeEarlyChildhoodEducationSecretary(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
+    db.transaction {
+        it.clearDaycareGroupAcl(daycareId, employeeId)
+        it.deleteDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+    }
+}
+
 fun addStaffMember(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
     db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
 }
