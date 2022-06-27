@@ -49,13 +49,13 @@ export interface AssistanceNeedDecision {
   careMotivation: string | null
   childId: UUID
   decisionMade: LocalDate | null
-  decisionMaker: AssistanceNeedDecisionEmployee | null
+  decisionMaker: AssistanceNeedDecisionMaker | null
   decisionNumber: number | null
   endDate: LocalDate | null
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
-  id: UUID | null
+  id: UUID
   language: AssistanceNeedDecisionLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
@@ -63,7 +63,7 @@ export interface AssistanceNeedDecision {
   pedagogicalMotivation: string | null
   preparedBy1: AssistanceNeedDecisionEmployee | null
   preparedBy2: AssistanceNeedDecisionEmployee | null
-  selectedUnit: UUID | null
+  selectedUnit: UnitInfo | null
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
@@ -78,8 +78,52 @@ export interface AssistanceNeedDecision {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {
+  email: string | null
   employeeId: UUID | null
+  name: string | null
+  phoneNumber: string | null
   title: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployeeForm
+*/
+export interface AssistanceNeedDecisionEmployeeForm {
+  employeeId: UUID | null
+  phoneNumber: string | null
+  title: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionForm
+*/
+export interface AssistanceNeedDecisionForm {
+  assistanceLevel: AssistanceLevel | null
+  assistanceServicesTime: FiniteDateRange | null
+  careMotivation: string | null
+  decisionMade: LocalDate | null
+  decisionMaker: AssistanceNeedDecisionMakerForm | null
+  decisionNumber: number | null
+  endDate: LocalDate | null
+  expertResponsibilities: string | null
+  guardianInfo: AssistanceNeedDecisionGuardian[]
+  guardiansHeardOn: LocalDate | null
+  language: AssistanceNeedDecisionLanguage
+  motivationForDecision: string | null
+  otherRepresentativeDetails: string | null
+  otherRepresentativeHeard: boolean
+  pedagogicalMotivation: string | null
+  preparedBy1: AssistanceNeedDecisionEmployeeForm | null
+  preparedBy2: AssistanceNeedDecisionEmployeeForm | null
+  selectedUnit: UnitIdInfo | null
+  sentForDecision: LocalDate | null
+  serviceOptions: ServiceOptions
+  servicesMotivation: string | null
+  startDate: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+  structuralMotivationDescription: string | null
+  structuralMotivationOptions: StructuralMotivationOptions
+  viewOfGuardians: string | null
 }
 
 /**
@@ -101,10 +145,27 @@ export type AssistanceNeedDecisionLanguage =
   | 'SV'
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMaker
+*/
+export interface AssistanceNeedDecisionMaker {
+  employeeId: UUID | null
+  name: string | null
+  title: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMakerForm
+*/
+export interface AssistanceNeedDecisionMakerForm {
+  employeeId: UUID | null
+  title: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionRequest
 */
 export interface AssistanceNeedDecisionRequest {
-  decision: AssistanceNeedDecision
+  decision: AssistanceNeedDecisionForm
 }
 
 /**
@@ -155,4 +216,22 @@ export interface StructuralMotivationOptions {
   smallGroup: boolean
   smallerGroup: boolean
   specialGroup: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnitIdInfo
+*/
+export interface UnitIdInfo {
+  id: UUID | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfo
+*/
+export interface UnitInfo {
+  id: UUID | null
+  name: string | null
+  postOffice: string | null
+  postalCode: string | null
+  streetAddress: string | null
 }

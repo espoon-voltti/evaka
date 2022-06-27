@@ -13,7 +13,7 @@ import { Employee } from 'employee-frontend/types/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AssistanceLevel,
-  AssistanceNeedDecision,
+  AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
@@ -31,93 +31,138 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-const FieldWithInfo: React.FC<{
+const FieldWithInfo = React.memo(function FieldWithInfo({
+  info,
+  label,
+  children,
+  spacing
+}: {
   info: string
   label: string
   spacing?: string
-}> = ({ info, label, children, spacing }) => (
-  <FixedSpaceColumn spacing={spacing || defaultMargins.s}>
-    <ExpandingInfo info={info} ariaLabel={info}>
-      <Label>{label}</Label>
-    </ExpandingInfo>
-    {children}
-  </FixedSpaceColumn>
-)
+  children: React.ReactNode
+}) {
+  return (
+    <FixedSpaceColumn spacing={spacing || defaultMargins.s}>
+      <ExpandingInfo info={info} ariaLabel={info}>
+        <Label>{label}</Label>
+      </ExpandingInfo>
+      {children}
+    </FixedSpaceColumn>
+  )
+})
 
-const GuardianHeardField: React.FC<{
+const GuardianHeardField = React.memo(function GuardianHeardField({
+  guardian,
+  placeholder,
+  onChange
+}: {
   guardian: AssistanceNeedDecisionGuardian
   placeholder: string
   onChange: (guardian: AssistanceNeedDecisionGuardian) => void
-}> = ({ guardian, placeholder, onChange }) => (
-  <div>
-    <Checkbox
-      checked={guardian.isHeard ?? false}
-      label={guardian.name ?? ''}
-      onChange={(checked) => onChange({ ...guardian, isHeard: checked })}
-    />
-    <InputField
-      value={guardian.details ?? ''}
-      placeholder={placeholder}
-      onChange={(val) => onChange({ ...guardian, details: val })}
-    />
-  </div>
-)
+}) {
+  return (
+    <div>
+      <Checkbox
+        checked={guardian.isHeard ?? false}
+        label={guardian.name ?? ''}
+        onChange={(checked) => onChange({ ...guardian, isHeard: checked })}
+      />
+      <InputField
+        value={guardian.details ?? ''}
+        placeholder={placeholder}
+        onChange={(val) => onChange({ ...guardian, details: val })}
+      />
+    </div>
+  )
+})
 
 const formatName = (someone: {
   firstName: string | null
   lastName: string | null
 }) => `${someone.lastName ?? ''} ${someone.firstName ?? ''}`
 
-const EmployeeSelectWithTitle: React.FC<{
+interface EmployeeSelectProps {
   employeeLabel: string
   employees: Employee[]
   selectedEmployee: Employee | null
   titleLabel: string
   selectedTitle: string | null
-  onChange: (employee: Employee | null, title: string | null) => void
+  phoneLabel?: string
+  selectedPhone?: string | null
+  hasPhoneField?: boolean
+  onChange: (
+    employee: Employee | null,
+    title: string | null,
+    phone: string | null
+  ) => void
   'data-qa'?: string
-}> = ({
+}
+
+const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
   employeeLabel,
   employees,
   selectedEmployee,
   titleLabel,
   selectedTitle,
+  phoneLabel,
+  selectedPhone,
+  hasPhoneField,
   onChange,
   'data-qa': dataQa
-}) => (
-  <FixedSpaceRow>
-    <FixedSpaceColumn spacing="zero">
-      <Label>{employeeLabel}</Label>
-      <Combobox
-        items={employees}
-        getItemLabel={formatName}
-        filterItems={(inputValue: string, items: Employee[]) =>
-          items.filter(
-            (emp) =>
-              formatName(emp).toLowerCase().indexOf(inputValue.toLowerCase()) >=
-              0
-          )
-        }
-        selectedItem={selectedEmployee}
-        onChange={(employee) => onChange(employee, selectedTitle)}
-        data-qa={dataQa ? `${dataQa}-select` : undefined}
-      />
-    </FixedSpaceColumn>
-    <FixedSpaceColumn spacing="zero">
-      <Label>{titleLabel}</Label>
-      <InputField
-        value={selectedTitle ?? ''}
-        onChange={(title) => onChange(selectedEmployee, title)}
-        data-qa={dataQa ? `${dataQa}-title` : undefined}
-      />
-    </FixedSpaceColumn>
-  </FixedSpaceRow>
-)
+}: EmployeeSelectProps) {
+  return (
+    <FixedSpaceRow>
+      <FixedSpaceColumn spacing="zero">
+        <Label>{employeeLabel}</Label>
+        <Combobox
+          items={employees}
+          getItemLabel={formatName}
+          filterItems={(inputValue: string, items: Employee[]) =>
+            items.filter(
+              (emp) =>
+                formatName(emp)
+                  .toLowerCase()
+                  .indexOf(inputValue.toLowerCase()) >= 0
+            )
+          }
+          selectedItem={selectedEmployee}
+          onChange={(employee) =>
+            onChange(employee, selectedTitle, selectedPhone ?? null)
+          }
+          data-qa={dataQa ? `${dataQa}-select` : undefined}
+        />
+      </FixedSpaceColumn>
+      <FixedSpaceColumn spacing="zero">
+        <Label>{titleLabel}</Label>
+        <InputField
+          value={selectedTitle ?? ''}
+          onChange={(title) =>
+            onChange(selectedEmployee, title, selectedPhone ?? null)
+          }
+          data-qa={dataQa ? `${dataQa}-title` : undefined}
+        />
+      </FixedSpaceColumn>
+      {hasPhoneField && (
+        <FixedSpaceColumn spacing="zero">
+          <Label>{phoneLabel}</Label>
+          <InputField
+            value={selectedPhone ?? ''}
+            onChange={(phone) =>
+              onChange(selectedEmployee, selectedTitle, phone)
+            }
+            data-qa={dataQa ? `${dataQa}-phone` : undefined}
+          />
+        </FixedSpaceColumn>
+      )}
+    </FixedSpaceRow>
+  )
+})
 
 type AssistanceNeedDecisionFormProps = {
-  formState: AssistanceNeedDecision
+  formState: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
-    SetStateAction<AssistanceNeedDecision | undefined>
+    SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
 }
 
@@ -132,7 +177,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
   const t = useMemo(() => i18n.childInformation.assistanceNeedDecision, [i18n])
 
   const setFieldVal = useCallback(
-    (val: Partial<AssistanceNeedDecision>) =>
+    (val: Partial<AssistanceNeedDecisionForm>) =>
       setFormState({ ...formState, ...val }),
     [formState, setFormState]
   )
@@ -447,9 +492,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
             items={units}
             getItemLabel={(unit) => unit.name}
             selectedItem={
-              units.find((u) => u.id === formState.selectedUnit) ?? null
+              units.find((u) => u.id === formState.selectedUnit?.id) ?? null
             }
-            onChange={(unit) => setFieldVal({ selectedUnit: unit?.id })}
+            onChange={(unit) =>
+              setFieldVal({ selectedUnit: unit && { id: unit.id } })
+            }
           />
         ))}
         <Gap size="s" />
@@ -478,11 +525,17 @@ export default React.memo(function AssistanceNeedDecisionForm({
             }
             titleLabel={t.title}
             selectedTitle={formState.preparedBy1?.title ?? ''}
-            onChange={(employee, title) =>
+            onChange={(employee, title, phoneNumber) =>
               setFieldVal({
-                preparedBy1: { employeeId: employee?.id ?? null, title }
+                preparedBy1: {
+                  employeeId: employee?.id ?? null,
+                  title,
+                  phoneNumber
+                }
               })
             }
+            phoneLabel={i18n.common.form.phone}
+            selectedPhone={formState.preparedBy1?.phoneNumber}
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.preparator}
@@ -494,11 +547,17 @@ export default React.memo(function AssistanceNeedDecisionForm({
             }
             titleLabel={t.title}
             selectedTitle={formState.preparedBy2?.title ?? ''}
-            onChange={(employee, title) =>
+            onChange={(employee, title, phoneNumber) =>
               setFieldVal({
-                preparedBy2: { employeeId: employee?.id ?? null, title }
+                preparedBy2: {
+                  employeeId: employee?.id ?? null,
+                  title,
+                  phoneNumber
+                }
               })
             }
+            phoneLabel={i18n.common.form.phone}
+            selectedPhone={formState.preparedBy2?.phoneNumber}
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.decisionMaker}
@@ -513,7 +572,10 @@ export default React.memo(function AssistanceNeedDecisionForm({
             selectedTitle={formState.decisionMaker?.title ?? ''}
             onChange={(employee, title) =>
               setFieldVal({
-                decisionMaker: { employeeId: employee?.id ?? null, title }
+                decisionMaker: {
+                  employeeId: employee?.id ?? null,
+                  title
+                }
               })
             }
             data-qa="decision-maker"

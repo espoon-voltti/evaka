@@ -13,7 +13,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
-    data: AssistanceNeedDecision
+    data: AssistanceNeedDecisionForm
 ): AssistanceNeedDecision {
     //language=sql
     val sql =
@@ -27,8 +27,9 @@ fun Database.Transaction.insertAssistanceNeedDecision(
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_service_start, assistance_service_end, motivation_for_decision, decision_maker_employee_id,
-          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title 
+          assistance_level, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
+          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
+          preparer_1_phone_number, preparer_2_phone_number
         )
         VALUES (
             :childId, 
@@ -60,15 +61,16 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             :otherRepresentativeHeard,
             :otherRepresentativeDetails, 
             :assistanceLevel,
-            :assistanceServiceStart,
-            :assistanceServiceEnd,
+            :assistanceServicesTime,
             :motivationForDecision,
             :decisionMakerEmployeeId,
             :decisionMakerTitle,
             :preparer1EmployeeId,
             :preparer1Title,
             :preparer2EmployeeId,
-            :preparer2Title
+            :preparer2Title,
+            :preparer1PhoneNumber,
+            :preparer2PhoneNumber
         )
         RETURNING id
         """.trimIndent()
@@ -87,14 +89,16 @@ fun Database.Transaction.insertAssistanceNeedDecision(
         .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
         .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
         .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
-        .bind("assistanceServiceStart", data.assistanceServicesTime?.start)
-        .bind("assistanceServiceEnd", data.assistanceServicesTime?.end)
+        .bind("assistanceServicesTime", data.assistanceServicesTime)
         .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
         .bind("decisionMakerTitle", data.decisionMaker?.title)
         .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
         .bind("preparer1Title", data.preparedBy1?.title)
+        .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
         .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
         .bind("preparer2Title", data.preparedBy2?.title)
+        .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
+        .bind("selectedUnit", data.selectedUnit?.id)
         .mapTo<AssistanceNeedDecisionId>()
         .first()
 
@@ -124,45 +128,55 @@ fun Database.Transaction.insertAssistanceNeedDecision(
     }
     batch.execute()
 
-    return getAssistanceNeedDecisionById(id)
+    return getAssistanceNeedDecisionById(id, childId)
 }
 
-fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
+fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId, childId: ChildId): AssistanceNeedDecision {
     //language=sql
     val sql =
         """
         SELECT ad.id, decision_number, child_id, start_date, end_date, status, ad.language, decision_made, sent_for_decision,
-          selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
+          pedagogical_motivation, structural_motivation_opt_smaller_group,
           structural_motivation_opt_special_group, structural_motivation_opt_small_group,
           structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
           structural_motivation_opt_additional_staff, structural_motivation_description, care_motivation,
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_service_start, assistance_service_end, motivation_for_decision, decision_maker_employee_id,
-          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
+          assistance_level, assistance_services_time, motivation_for_decision,
+          decision_maker_employee_id, decision_maker_title, concat(dm.first_name, ' ', dm.last_name) decision_maker_name,
+          preparer_1_employee_id, preparer_1_title, concat(p1.first_name, ' ', p1.last_name) preparer_1_name, p1.email preparer_1_email, preparer_1_phone_number,
+          preparer_2_employee_id, preparer_2_title, concat(p2.first_name, ' ', p2.last_name) preparer_2_name, p2.email preparer_2_email, preparer_2_phone_number,
           coalesce(jsonb_agg(jsonb_build_object(
             'id', dg.id,
             'personId', dg.person_id,
             'name', concat(p.last_name, ' ', p.first_name),
             'isHeard', dg.is_heard,
             'details', dg.details
-          )) FILTER (WHERE dg.id IS NOT NULL), '[]') as guardian_info
+          )) FILTER (WHERE dg.id IS NOT NULL), '[]') as guardian_info,
+          selected_unit selected_unit_id, unit.name selected_unit_name, unit.street_address selected_unit_street_address,
+          unit.postal_code selected_unit_postal_code, unit.post_office selected_unit_post_office
         FROM assistance_need_decision ad
         LEFT JOIN assistance_need_decision_guardian dg ON dg.assistance_need_decision_id = ad.id
         LEFT JOIN person p ON p.id = dg.person_id
-        WHERE ad.id = :id
-        GROUP BY ad.id, child_id, start_date, end_date;
+        LEFT JOIN daycare unit ON unit.id = ad.selected_unit
+        LEFT JOIN employee p1 ON p1.id = ad.preparer_1_employee_id
+        LEFT JOIN employee p2 ON p2.id = ad.preparer_2_employee_id
+        LEFT JOIN employee dm ON dm.id = ad.decision_maker_employee_id
+        WHERE ad.id = :id AND ad.child_id = :childId
+        GROUP BY ad.id, child_id, start_date, end_date, unit.id, p1.id, p2.id, dm.id;
         """.trimIndent()
     return createQuery(sql)
         .bind("id", id)
+        .bind("childId", childId)
         .mapTo<AssistanceNeedDecision>()
         .one()
 }
 
 fun Database.Transaction.updateAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
-    data: AssistanceNeedDecision
+    childId: ChildId,
+    data: AssistanceNeedDecisionForm
 ) {
     //language=sql
     val sql =
@@ -188,29 +202,31 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             service_opt_consultation_special_ed=:serviceOptConsultationSpecialEd,
             service_opt_part_time_special_ed = :serviceOptPartTimeSpecialEd,
             service_opt_full_time_special_ed = :serviceOptFullTimeSpecialEd,
-            service_opt_interpretation_and_assistance_services = :serviceOptInterpretationAndAssistanceServices ,
-            service_opt_special_aides = :serviceOptSpecialAides ,
-            services_motivation = :servicesMotivation ,
-            expert_responsibilities = :expertResponsibilities ,
-            guardians_heard_on = :guardiansHeardOn ,
-            view_of_guardians = :viewOfGuardians ,
-            other_representative_heard = :otherRepresentativeHeard ,
-            other_representative_details = :otherRepresentativeDetails ,
-            assistance_level = :assistanceLevel ,
-            assistance_service_start = :assistanceServiceStart ,
-            assistance_service_end = :assistanceServiceEnd ,
-            motivation_for_decision = :motivationForDecision ,
-            decision_maker_employee_id = :decisionMakerEmployeeId ,
-            decision_maker_title = :decisionMakerTitle ,
-            preparer_1_employee_id = :preparer1EmployeeId ,
-            preparer_1_title = :preparer1Title ,
-            preparer_2_employee_id = :preparer2EmployeeId ,
-            preparer_2_title = :preparer2Title 
-        WHERE id = :id
+            service_opt_interpretation_and_assistance_services = :serviceOptInterpretationAndAssistanceServices,
+            service_opt_special_aides = :serviceOptSpecialAides,
+            services_motivation = :servicesMotivation,
+            expert_responsibilities = :expertResponsibilities,
+            guardians_heard_on = :guardiansHeardOn,
+            view_of_guardians = :viewOfGuardians,
+            other_representative_heard = :otherRepresentativeHeard,
+            other_representative_details = :otherRepresentativeDetails,
+            assistance_level = :assistanceLevel,
+            assistance_services_time = :assistanceServicesTime,
+            motivation_for_decision = :motivationForDecision,
+            decision_maker_employee_id = :decisionMakerEmployeeId,
+            decision_maker_title = :decisionMakerTitle,
+            preparer_1_employee_id = :preparer1EmployeeId,
+            preparer_1_title = :preparer1Title,
+            preparer_1_phone_number = :preparer1PhoneNumber,
+            preparer_2_employee_id = :preparer2EmployeeId,
+            preparer_2_title = :preparer2Title,
+            preparer_2_phone_number = :preparer2PhoneNumber 
+        WHERE id = :id AND child_id = :childId
         """.trimIndent()
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
+        .bind("childId", childId)
         .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
         .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
         .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
@@ -222,14 +238,16 @@ fun Database.Transaction.updateAssistanceNeedDecision(
         .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
         .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
         .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
-        .bind("assistanceServiceStart", data.assistanceServicesTime?.start)
-        .bind("assistanceServiceEnd", data.assistanceServicesTime?.end)
+        .bind("assistanceServicesTime", data.assistanceServicesTime)
         .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
         .bind("decisionMakerTitle", data.decisionMaker?.title)
         .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
         .bind("preparer1Title", data.preparedBy1?.title)
+        .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
         .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
         .bind("preparer2Title", data.preparedBy2?.title)
+        .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
+        .bind("selectedUnit", data.selectedUnit?.id)
         .updateExactlyOne()
 
     //language=sql

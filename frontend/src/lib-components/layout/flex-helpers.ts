@@ -13,6 +13,7 @@ interface FixedSpaceRowProps {
   alignItems?: Property.AlignItems
   fullWidth?: boolean
   maxWidth?: string
+  flexWrap?: Property.FlexWrap
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
@@ -20,6 +21,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.fullWidth ? `width: 100%;` : '')}
+  ${(p) => (p.flexWrap ? `flex-wrap: ${p.flexWrap};` : '')}
 
   >* {
     margin-right: ${(p) =>

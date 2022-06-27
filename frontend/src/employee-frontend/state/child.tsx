@@ -56,7 +56,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   children
 }: {
   id: UUID
-  children: JSX.Element
+  children: React.ReactNode
 }) {
   const [childResponse, setChildResponse] = useState<Result<ChildResponse>>(
     Loading.of()

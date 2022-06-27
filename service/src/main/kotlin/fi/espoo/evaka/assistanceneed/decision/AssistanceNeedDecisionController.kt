@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 data class AssistanceNeedDecisionRequest(
-    val decision: AssistanceNeedDecision
+    val decision: AssistanceNeedDecisionForm
 )
 
 @RestController
@@ -37,7 +37,7 @@ class AssistanceNeedDecisionController(
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                var decision: AssistanceNeedDecision = body.decision
+                var decision: AssistanceNeedDecisionForm = body.decision
                 if (decision.guardianInfo.isEmpty()) {
                     val guardianIds = tx.getChildGuardians(childId)
                     decision = body.decision.copy(
@@ -64,28 +64,28 @@ class AssistanceNeedDecisionController(
         @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
-        Audit.ChildAssistanceNeedDecisionRead.log(targetId = childId)
+        Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getAssistanceNeedDecisionById(id)
+                tx.getAssistanceNeedDecisionById(id, childId)
             }
         }
     }
 
     @PutMapping("/children/{childId}/assistance-needs/decision/{id}")
-    fun createAssistanceNeedDecision(
+    fun updateAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
-        Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = childId)
+        Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Child.UPDATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateAssistanceNeedDecision(id, body.decision)
+                tx.updateAssistanceNeedDecision(id, childId, body.decision)
             }
         }
     }

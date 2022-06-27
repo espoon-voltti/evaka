@@ -478,12 +478,16 @@ export interface AssistanceNeedDecision {
   preparedBy1: {
     employeeId: UUID | null
     title: string | null
+    phoneNumber: string | null
   } | null
   preparedBy2: {
     employeeId: UUID | null
     title: string | null
+    phoneNumber: string | null
   } | null
-  selectedUnit: UUID | null
+  selectedUnit: {
+    id: UUID | null
+  } | null
   sentForDecision: LocalDate | null
   serviceOptions: {
     consultationSpecialEd: boolean

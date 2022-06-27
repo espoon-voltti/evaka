@@ -22,6 +22,7 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
+import fi.espoo.evaka.assistanceneed.decision.UnitInfo
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.daycare.CareType
@@ -1447,7 +1448,8 @@ data class DevAssistanceNeedDecision(
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    val selectedUnit: DaycareId?,
+    @Nested("selected_unit")
+    val selectedUnit: UnitInfo?,
     @Nested("preparer_1")
     val preparedBy1: AssistanceNeedDecisionEmployee?,
     @Nested("preparer_2")

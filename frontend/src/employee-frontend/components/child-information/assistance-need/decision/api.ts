@@ -4,7 +4,10 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedDecision,
+  AssistanceNeedDecisionForm
+} from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -44,7 +47,7 @@ export function getAssistanceNeedDecision(
 export function putAssistanceNeedDecision(
   childId: UUID,
   id: UUID,
-  data: AssistanceNeedDecision
+  data: AssistanceNeedDecisionForm
 ): Promise<Result<void>> {
   return client
     .put(`/children/${childId}/assistance-needs/decision/${id}`, {
