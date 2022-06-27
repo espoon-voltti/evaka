@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
+
 import {
   AuthStatus,
   MobileUser,
@@ -26,18 +28,23 @@ export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
 export async function getAuthStatus(): Promise<AuthStatus<User>> {
   return client
     .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
-    .then(({ data: { user, ...status } }) =>
-      user?.userType === 'EMPLOYEE'
-        ? {
-            user: {
-              ...user,
-              permittedGlobalActions: new Set(user.permittedGlobalActions)
-            },
-            ...status
-          }
-        : {
-            ...status,
-            loggedIn: false
-          }
-    )
+    .then(({ data: { user, ...status } }) => {
+      if (user?.userType === 'EMPLOYEE') {
+        return {
+          user: {
+            ...user,
+            permittedGlobalActions: new Set(user.permittedGlobalActions)
+          },
+          ...status
+        }
+      } else {
+        if (user) {
+          Sentry.captureMessage(
+            `Invalid user type ${user.userType} in employee frontend`,
+            'error'
+          )
+        }
+        return { ...status, loggedIn: false }
+      }
+    })
 }
