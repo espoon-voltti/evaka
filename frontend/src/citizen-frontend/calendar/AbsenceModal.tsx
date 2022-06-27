@@ -137,6 +137,7 @@ export default React.memo(function AbsenceModal({
             onChange={(date) => updateForm({ startDate: date })}
             locale={lang}
             minDate={LocalDate.todayInSystemTz()}
+            maxDate={form.endDate ?? undefined}
             info={
               errors &&
               errorToInputInfo(errors.startDate, i18n.validationErrors)
@@ -150,7 +151,11 @@ export default React.memo(function AbsenceModal({
             date={form.endDate}
             onChange={(date) => updateForm({ endDate: date })}
             locale={lang}
-            minDate={LocalDate.todayInSystemTz()}
+            minDate={
+              form.startDate?.isAfter(LocalDate.todayInSystemTz())
+                ? form.startDate
+                : LocalDate.todayInSystemTz()
+            }
             info={
               errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
             }
