@@ -17,7 +17,7 @@ import org.jdbi.v3.json.Json
 import java.time.LocalDate
 
 data class AssistanceNeedDecision(
-    val id: AssistanceNeedDecisionId? = null,
+    val id: AssistanceNeedDecisionId,
     val decisionNumber: Long? = null,
     val childId: ChildId,
     val startDate: LocalDate?,
@@ -34,7 +34,75 @@ data class AssistanceNeedDecision(
     @Nested("preparer_2")
     val preparedBy2: AssistanceNeedDecisionEmployee?,
     @Nested("decision_maker")
-    val decisionMaker: AssistanceNeedDecisionEmployee?,
+    val decisionMaker: AssistanceNeedDecisionMaker?,
+
+    val pedagogicalMotivation: String?,
+    @Nested("structural_motivation_opt")
+    val structuralMotivationOptions: StructuralMotivationOptions,
+    val structuralMotivationDescription: String?,
+    val careMotivation: String?,
+    @Nested("service_opt")
+    val serviceOptions: ServiceOptions,
+    val servicesMotivation: String?,
+    val expertResponsibilities: String?,
+    val guardiansHeardOn: LocalDate?,
+    @Json
+    val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
+    val viewOfGuardians: String?,
+    val otherRepresentativeHeard: Boolean,
+    val otherRepresentativeDetails: String?,
+
+    val assistanceLevel: AssistanceLevel?,
+    val assistanceServicesTime: FiniteDateRange?,
+    val motivationForDecision: String?
+) {
+    fun toForm() = AssistanceNeedDecisionForm(
+        decisionNumber,
+        startDate,
+        endDate,
+        status,
+        language,
+        decisionMade,
+        sentForDecision,
+        selectedUnit = selectedUnit?.toForm(),
+        preparedBy1 = preparedBy1?.toForm(),
+        preparedBy2 = preparedBy2?.toForm(),
+        decisionMaker = decisionMaker?.toForm(),
+        pedagogicalMotivation,
+        structuralMotivationOptions,
+        structuralMotivationDescription,
+        careMotivation,
+        serviceOptions,
+        servicesMotivation,
+        expertResponsibilities,
+        guardiansHeardOn,
+        guardianInfo,
+        viewOfGuardians,
+        otherRepresentativeHeard,
+        otherRepresentativeDetails,
+        assistanceLevel,
+        assistanceServicesTime,
+        motivationForDecision
+    )
+}
+
+data class AssistanceNeedDecisionForm(
+    val decisionNumber: Long? = null,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+
+    val language: AssistanceNeedDecisionLanguage,
+    val decisionMade: LocalDate?,
+    val sentForDecision: LocalDate?,
+    @Nested("selected_unit")
+    val selectedUnit: UnitIdInfo?,
+    @Nested("preparer_1")
+    val preparedBy1: AssistanceNeedDecisionEmployeeForm?,
+    @Nested("preparer_2")
+    val preparedBy2: AssistanceNeedDecisionEmployeeForm?,
+    @Nested("decision_maker")
+    val decisionMaker: AssistanceNeedDecisionMakerForm?,
 
     val pedagogicalMotivation: String?,
     @Nested("structural_motivation_opt")
@@ -72,6 +140,30 @@ data class AssistanceNeedDecisionEmployee(
     val name: String? = null,
     val email: String? = null,
     val phoneNumber: String?
+) {
+    fun toForm() = AssistanceNeedDecisionEmployeeForm(employeeId, title, phoneNumber)
+}
+
+data class AssistanceNeedDecisionEmployeeForm(
+    @PropagateNull
+    val employeeId: EmployeeId?,
+    val title: String?,
+    val phoneNumber: String?
+)
+
+data class AssistanceNeedDecisionMaker(
+    @PropagateNull
+    val employeeId: EmployeeId?,
+    val title: String?,
+    val name: String? = null
+) {
+    fun toForm() = AssistanceNeedDecisionMakerForm(employeeId, title)
+}
+
+data class AssistanceNeedDecisionMakerForm(
+    @PropagateNull
+    val employeeId: EmployeeId?,
+    val title: String?
 )
 
 data class StructuralMotivationOptions(
@@ -110,4 +202,10 @@ data class UnitInfo(
     val streetAddress: String? = null,
     val postalCode: String? = null,
     val postOffice: String? = null
+) {
+    fun toForm() = UnitIdInfo(id)
+}
+
+data class UnitIdInfo(
+    val id: DaycareId?
 )

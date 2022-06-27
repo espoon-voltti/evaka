@@ -13,7 +13,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
-    data: AssistanceNeedDecision
+    data: AssistanceNeedDecisionForm
 ): AssistanceNeedDecision {
     //language=sql
     val sql =
@@ -128,10 +128,10 @@ fun Database.Transaction.insertAssistanceNeedDecision(
     }
     batch.execute()
 
-    return getAssistanceNeedDecisionById(id)
+    return getAssistanceNeedDecisionById(id, childId)
 }
 
-fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
+fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId, childId: ChildId): AssistanceNeedDecision {
     //language=sql
     val sql =
         """
@@ -163,18 +163,20 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
         LEFT JOIN employee p1 ON p1.id = ad.preparer_1_employee_id
         LEFT JOIN employee p2 ON p2.id = ad.preparer_2_employee_id
         LEFT JOIN employee dm ON dm.id = ad.decision_maker_employee_id
-        WHERE ad.id = :id
+        WHERE ad.id = :id AND ad.child_id = :childId
         GROUP BY ad.id, child_id, start_date, end_date, unit.id, p1.id, p2.id, dm.id;
         """.trimIndent()
     return createQuery(sql)
         .bind("id", id)
+        .bind("childId", childId)
         .mapTo<AssistanceNeedDecision>()
         .one()
 }
 
 fun Database.Transaction.updateAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
-    data: AssistanceNeedDecision
+    childId: ChildId,
+    data: AssistanceNeedDecisionForm
 ) {
     //language=sql
     val sql =
@@ -219,11 +221,12 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             preparer_2_employee_id = :preparer2EmployeeId,
             preparer_2_title = :preparer2Title,
             preparer_2_phone_number = :preparer2PhoneNumber 
-        WHERE id = :id
+        WHERE id = :id AND child_id = :childId
         """.trimIndent()
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
+        .bind("childId", childId)
         .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
         .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
         .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)

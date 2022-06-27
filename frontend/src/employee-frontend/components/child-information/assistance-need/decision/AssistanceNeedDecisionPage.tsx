@@ -9,8 +9,8 @@ import styled from 'styled-components'
 
 import { getPerson } from 'employee-frontend/api/person'
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import { ChildContextProvider } from 'employee-frontend/state/child'
 import { useTranslation } from 'employee-frontend/state/i18n'
+import { combine } from 'lib-common/api'
 import { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -24,17 +24,14 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2, InformationText, Label } from 'lib-components/typography'
+import { H1, H2, InformationText, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { getAssistanceNeedDecision } from './api'
+import { DecisionInfoHeader } from './common'
 
 const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
-`
-
-const PreFormattedText = styled.div`
-  white-space: pre-line;
 `
 
 const List = styled.ul`
@@ -64,9 +61,13 @@ const OptionalLabelledValue = React.memo(function OptionalLabelledValue({
     <LabelContainer>
       <Label>{label}</Label>
       <Gap size="xs" />
-      <PreFormattedText data-qa={dataQa ?? `labelled-value-${label}`}>
+      <P
+        noMargin
+        preserveWhiteSpace
+        data-qa={`labelled-value-${dataQa ?? label}`}
+      >
         {value}
-      </PreFormattedText>
+      </P>
     </LabelContainer>
   )
 })
@@ -135,19 +136,32 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
 
   return (
-    <ChildContextProvider id={childId}>
+    <>
       <Content>
         <ReturnButton label={i18n.common.goBack} />
 
         <ContentArea opaque>
-          {renderResult(child, (child) => (
-            <>
-              <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
-              <H2 noMargin>
-                {child.firstName} {child.lastName}
-              </H2>
-              <Gap size="s" />
-              {renderResult(assistanceNeedDecision, (decision) => (
+          {renderResult(
+            combine(child, assistanceNeedDecision),
+            ([child, decision]) => (
+              <>
+                <FixedSpaceRow
+                  alignItems="flex-start"
+                  justifyContent="space-between"
+                  fullWidth
+                >
+                  <FixedSpaceColumn>
+                    <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
+                    <H2 noMargin>
+                      {child.firstName} {child.lastName}
+                    </H2>
+                  </FixedSpaceColumn>
+                  <DecisionInfoHeader
+                    decisionNumber={decision.decisionNumber || 0}
+                    decisionStatus={decision.status || 'DRAFT'}
+                  />
+                </FixedSpaceRow>
+                <Gap size="s" />
                 <FixedSpaceColumn spacing={defaultMargins.s}>
                   <H2>{t.neededTypesOfAssistance}</H2>
 
@@ -155,6 +169,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     <OptionalLabelledValue
                       label={t.pedagogicalMotivation}
                       value={decision.pedagogicalMotivation}
+                      data-qa="pedagogical-motivation"
                     />
 
                     {(someBoolObj(decision.structuralMotivationOptions) ||
@@ -166,9 +181,13 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           texts={t.structuralMotivationOptions}
                         />
                         {!!decision.structuralMotivationDescription && (
-                          <PreFormattedText data-qa="structural-motivation-description">
+                          <P
+                            noMargin
+                            preserveWhiteSpace
+                            data-qa="structural-motivation-description"
+                          >
                             {decision.structuralMotivationDescription}
-                          </PreFormattedText>
+                          </P>
                         )}
                       </LabelContainer>
                     )}
@@ -176,6 +195,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     <OptionalLabelledValue
                       label={t.careMotivation}
                       value={decision.careMotivation}
+                      data-qa="care-motivation"
                     />
 
                     {(someBoolObj(decision.serviceOptions) ||
@@ -187,9 +207,9 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           texts={t.serviceOptions}
                         />
                         {!!decision.servicesMotivation && (
-                          <PreFormattedText>
+                          <P noMargin preserveWhiteSpace>
                             {decision.servicesMotivation}
-                          </PreFormattedText>
+                          </P>
                         )}
                       </div>
                     )}
@@ -201,14 +221,16 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     <OptionalLabelledValue
                       label={t.guardiansHeardAt}
                       value={decision.guardiansHeardOn?.format()}
+                      data-qa="guardians-heard-at"
                     />
 
-                    {decision.guardianInfo.length > 0 && (
+                    {(some(decision.guardianInfo, (i) => i.isHeard) ||
+                      decision.otherRepresentativeHeard) && (
                       <LabelContainer data-qa="guardians-heard-section">
                         <Label>{t.guardiansHeard}</Label>
                         <List>
                           {decision.guardianInfo
-                            .filter((g) => g.id !== null)
+                            .filter((g) => g.id !== null && g.isHeard)
                             .map((guardian) => (
                               <li
                                 key={guardian.personId}
@@ -229,6 +251,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     <OptionalLabelledValue
                       label={t.viewOfTheGuardians}
                       value={decision.viewOfGuardians}
+                      data-qa="view-of-the-guardians"
                     />
                   </div>
 
@@ -241,11 +264,13 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                         decision.assistanceLevel &&
                         assistanceLevelTexts[decision.assistanceLevel]
                       }
+                      data-qa="future-level-of-assistance"
                     />
 
                     <OptionalLabelledValue
                       label={t.startDate}
                       value={decision.startDate?.format()}
+                      data-qa="start-date"
                     />
 
                     <OptionalLabelledValue
@@ -264,11 +289,13 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           </LabelContainer>
                         )
                       }
+                      data-qa="selected-unit"
                     />
 
                     <OptionalLabelledValue
                       label={t.motivationForDecision}
                       value={decision.motivationForDecision}
+                      data-qa="motivation-for-decision"
                     />
                   </div>
 
@@ -319,12 +346,13 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           </LabelContainer>
                         )
                       }
+                      data-qa="decision-maker"
                     />
                   </div>
                 </FixedSpaceColumn>
-              ))}
-            </>
-          ))}
+              </>
+            )
+          )}
         </ContentArea>
         <Gap size="m" />
         <CollapsibleContentArea
@@ -376,6 +404,6 @@ export default React.memo(function AssistanceNeedDecisionPage() {
           </FixedSpaceRow>
         </StickyFooterContainer>
       </StickyFooter>
-    </ChildContextProvider>
+    </>
   )
 })

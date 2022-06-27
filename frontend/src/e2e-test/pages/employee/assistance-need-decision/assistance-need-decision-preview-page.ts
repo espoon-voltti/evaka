@@ -12,7 +12,7 @@ export default class AssistanceNeedDecisionPreviewPage {
   }
 
   readonly pedagogicalMotivation = this.getLabelledValue(
-    'Pedagogiset tuen muodot ja perustelut'
+    'pedagogical-motivation'
   )
   readonly assertStructuralMotivationOption = (opt: string) =>
     this.page
@@ -22,17 +22,13 @@ export default class AssistanceNeedDecisionPreviewPage {
   readonly structuralMotivationDescription = this.page.findByDataQa(
     'structural-motivation-description'
   ).innerText
-  readonly careMotivation = this.getLabelledValue(
-    'Hoidolliset tuen muodot ja perustelut'
-  )
+  readonly careMotivation = this.getLabelledValue('care-motivation')
   readonly assertServiceOption = (opt: string) =>
     this.page
       .findByDataQa('services-section')
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
-  readonly guardiansHeardOn = this.getLabelledValue(
-    'Huoltajien kuulemisen päivämäärä'
-  )
+  readonly guardiansHeardOn = this.getLabelledValue('guardians-heard-at')
   readonly heardGuardian = (id: string) =>
     this.page
       .findByDataQa('guardians-heard-section')
@@ -40,19 +36,15 @@ export default class AssistanceNeedDecisionPreviewPage {
   readonly otherRepresentativeDetails = this.page.findByDataQa(
     'other-representative-details'
   ).innerText
-  readonly viewOfGuardians = this.getLabelledValue(
-    'Huoltajien näkemys esitetystä tuesta'
-  )
+  readonly viewOfGuardians = this.getLabelledValue('view-of-the-guardians')
   readonly futureLevelOfAssistance = this.getLabelledValue(
-    'Lapsen tuen taso jatkossa'
+    'future-level-of-assistance'
   )
-  readonly startDate = this.getLabelledValue('Päätös voimassa alkaen')
-  readonly selectedUnit = this.getLabelledValue(
-    'Päätökselle valittu varhaiskasvatusyksikkö'
-  )
+  readonly startDate = this.getLabelledValue('start-date')
+  readonly selectedUnit = this.getLabelledValue('selected-unit')
   readonly motivationForDecision = this.getLabelledValue(
-    'Perustelut päätökselle'
+    'motivation-for-decision'
   )
-  readonly preparedBy1 = this.page.findByDataQa('prepared-by-1').innerText
-  readonly decisionMaker = this.getLabelledValue('Päättäjä')
+  readonly preparedBy1 = this.getLabelledValue('prepared-by-1')
+  readonly decisionMaker = this.getLabelledValue('decision-maker')
 }

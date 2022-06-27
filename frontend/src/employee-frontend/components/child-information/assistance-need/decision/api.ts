@@ -4,14 +4,15 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedDecision,
+  AssistanceNeedDecisionForm
+} from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../../../../api/client'
-
-import { AssistanceNeedDecisionForm } from './assistance-need-decision-form'
 
 const parseDate = (str: string | null): LocalDate | null =>
   str ? LocalDate.parseIso(str) : null

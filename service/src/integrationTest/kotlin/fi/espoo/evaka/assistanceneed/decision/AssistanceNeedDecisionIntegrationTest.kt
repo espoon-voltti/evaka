@@ -26,21 +26,19 @@ import kotlin.test.assertEquals
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private val testDecision = AssistanceNeedDecision(
-        childId = testChild_1.id,
+    private val testDecision = AssistanceNeedDecisionForm(
         startDate = LocalDate.of(2022, 1, 1),
         endDate = LocalDate.of(2023, 1, 1),
         status = AssistanceNeedDecisionStatus.DRAFT,
         language = AssistanceNeedDecisionLanguage.FI,
         decisionMade = LocalDate.of(2021, 12, 31),
         sentForDecision = LocalDate.of(2021, 12, 1),
-        selectedUnit = UnitInfo(id = testDaycare.id),
-        preparedBy1 = AssistanceNeedDecisionEmployee(employeeId = assistanceWorker.id, title = "worker", phoneNumber = "01020405060"),
+        selectedUnit = UnitIdInfo(id = testDaycare.id),
+        preparedBy1 = AssistanceNeedDecisionEmployeeForm(employeeId = assistanceWorker.id, title = "worker", phoneNumber = "01020405060"),
         preparedBy2 = null,
-        decisionMaker = AssistanceNeedDecisionEmployee(
+        decisionMaker = AssistanceNeedDecisionMakerForm(
             employeeId = testDecisionMaker_2.id,
-            title = "Decider of everything",
-            phoneNumber = null
+            title = "Decider of everything"
         ),
 
         pedagogicalMotivation = "Pedagogical motivation",
@@ -97,7 +95,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
 
-        assertEquals(testDecision.childId, assistanceNeedDecision.childId)
+        assertEquals(testChild_1.id, assistanceNeedDecision.childId)
         assertEquals(testDecision.startDate, assistanceNeedDecision.startDate)
         assertEquals(testDecision.endDate, assistanceNeedDecision.endDate)
         assertEquals(testDecision.status, assistanceNeedDecision.status)
@@ -117,8 +115,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(assistanceNeedDecision.preparedBy2, null)
         assertEquals(testDecision.decisionMaker?.employeeId, assistanceNeedDecision.decisionMaker?.employeeId)
         assertEquals(testDecision.decisionMaker?.title, assistanceNeedDecision.decisionMaker?.title)
-        assertEquals(assistanceNeedDecision.decisionMaker?.phoneNumber, null)
-        assertEquals(assistanceNeedDecision.decisionMaker?.email, null)
         assertEquals(assistanceNeedDecision.decisionMaker?.name, "${testDecisionMaker_2.firstName} ${testDecisionMaker_2.lastName}")
 
         assertEquals(testDecision.pedagogicalMotivation, assistanceNeedDecision.pedagogicalMotivation)
@@ -190,15 +186,16 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     details = "Updated details"
                 )
             }.toSet()
-        )
+        ).toForm()
 
         whenPutAssistanceNeedDecisionThenExpectSuccess(
             AssistanceNeedDecisionRequest(
                 decision = updatedDecision
-            )
+            ),
+            assistanceNeedDecision.id!!
         )
 
-        val finalDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(updatedDecision.id)
+        val finalDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
 
         assertEquals(updatedDecision.pedagogicalMotivation, finalDecision.pedagogicalMotivation)
         assertEquals(updatedDecision.structuralMotivationDescription, finalDecision.structuralMotivationDescription)
@@ -216,8 +213,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return result.get()
     }
 
-    private fun whenPutAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest) {
-        val (_, res) = http.put("/children/${testChild_1.id}/assistance-needs/decision/${request.decision.id}")
+    private fun whenPutAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest, decisionId: AssistanceNeedDecisionId) {
+        val (_, res) = http.put("/children/${testChild_1.id}/assistance-needs/decision/$decisionId")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
             .response()
