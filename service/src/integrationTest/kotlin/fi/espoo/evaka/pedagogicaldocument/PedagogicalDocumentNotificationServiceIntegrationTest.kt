@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -123,7 +124,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
             user = employee,
             PedagogicalDocumentPostBody(testChild_1.id, "foobar")
         )
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(
             testAddresses.toSet(),
@@ -152,7 +153,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
         }
         assertEmailSent(doc.id, false)
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id)
     }
@@ -163,13 +164,13 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
             user = employee,
             PedagogicalDocumentPostBody(testChild_1.id, "")
         )
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id, false)
 
         updateDocument(user = employee, doc.id, PedagogicalDocumentPostBody(testChild_1.id, "babar"))
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id)
     }
@@ -180,13 +181,13 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
             user = employee,
             PedagogicalDocumentPostBody(testChild_1.id, "")
         )
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id, false)
 
         uploadDocumentAttachment(employee, doc.id)
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEmailSent(doc.id, true)
     }
@@ -212,7 +213,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTes
             user = employee,
             PedagogicalDocumentPostBody(testChild_1.id, "foobar")
         )
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(
             testAddresses.toSet(),

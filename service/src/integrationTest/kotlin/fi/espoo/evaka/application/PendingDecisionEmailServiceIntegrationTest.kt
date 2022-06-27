@@ -19,6 +19,8 @@ import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_6
@@ -175,10 +177,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         }
     }
 
-    private fun runPendingDecisionEmailAsyncJobs(): Int {
+    private fun runPendingDecisionEmailAsyncJobs(clock: EvakaClock = RealEvakaClock()): Int {
         scheduledJobs.sendPendingDecisionReminderEmails(db)
         val jobCount = asyncJobRunner.getPendingJobCount()
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(clock)
 
         return jobCount
     }

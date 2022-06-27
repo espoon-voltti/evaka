@@ -7,8 +7,8 @@ package fi.espoo.evaka.dvv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -25,9 +25,9 @@ class DvvModificationsBatchRefreshService(
         asyncJobRunner.registerHandler(::doDvvModificationsRefresh)
     }
 
-    fun doDvvModificationsRefresh(db: Database.Connection, msg: AsyncJob.DvvModificationsRefresh) {
+    fun doDvvModificationsRefresh(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.DvvModificationsRefresh) {
         logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
-        val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, RealEvakaClock(), msg.ssns)
+        val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, clock, msg.ssns)
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 

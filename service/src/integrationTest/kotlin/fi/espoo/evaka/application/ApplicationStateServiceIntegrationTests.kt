@@ -47,9 +47,11 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -976,6 +978,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         )
 
     private fun sendDecisionsWithoutProposalTest(
+        clock: EvakaClock = RealEvakaClock(),
         child: DevPerson,
         applier: DevPerson,
         secondDecisionTo: DevPerson?,
@@ -1004,9 +1007,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
         }
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.runPendingJobsSync()
-        sfiAsyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+        sfiAsyncJobRunner.runPendingJobsSync(clock)
 
         // then
         db.read {
@@ -1150,9 +1153,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
             service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
         }
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.runPendingJobsSync()
-        sfiAsyncJobRunner.runPendingJobsSync()
+        val clock = RealEvakaClock()
+        asyncJobRunner.runPendingJobsSync(clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+        sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
@@ -1214,9 +1218,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
             service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
         }
-        asyncJobRunner.runPendingJobsSync()
-        asyncJobRunner.runPendingJobsSync()
-        sfiAsyncJobRunner.runPendingJobsSync()
+        val clock = RealEvakaClock()
+        asyncJobRunner.runPendingJobsSync(clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+        sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!

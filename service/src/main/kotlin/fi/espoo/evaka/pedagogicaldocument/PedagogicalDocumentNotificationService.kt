@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.updateExactlyOne
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
@@ -122,7 +123,7 @@ SELECT EXISTS(
         }
     }
 
-    fun sendNotification(db: Database.Connection, msg: AsyncJob.SendPedagogicalDocumentNotificationEmail) {
+    fun sendNotification(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendPedagogicalDocumentNotificationEmail) {
         val (pedagogicalDocumentId, recipientEmail, language) = msg
 
         db.transaction { tx ->

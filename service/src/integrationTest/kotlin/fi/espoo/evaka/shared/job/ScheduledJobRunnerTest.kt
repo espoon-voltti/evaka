@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.config.getTestDataSource
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +41,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `a job specified by DailySchedule is scheduled and executed correctly`() {
         val executedJob = AtomicReference<ScheduledJob?>(null)
-        asyncJobRunner.registerHandler { _, msg: AsyncJob.RunScheduledJob ->
+        asyncJobRunner.registerHandler { _, _, msg: AsyncJob.RunScheduledJob ->
             val previous = executedJob.getAndSet(msg.job)
             assertNull(previous)
         }
@@ -60,7 +61,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(executedJob.get(), ScheduledJob.EndOfDayAttendanceUpkeep)
     }
 }

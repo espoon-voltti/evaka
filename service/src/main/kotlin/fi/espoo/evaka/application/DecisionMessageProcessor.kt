@@ -8,6 +8,7 @@ import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -23,7 +24,7 @@ class DecisionMessageProcessor(
         asyncJobRunner.registerHandler(::runSendJob)
     }
 
-    fun runCreateJob(db: Database.Connection, msg: AsyncJob.NotifyDecisionCreated) = db.transaction { tx ->
+    fun runCreateJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyDecisionCreated) = db.transaction { tx ->
         val user = msg.user
         val decisionId = msg.decisionId
 
@@ -36,7 +37,7 @@ class DecisionMessageProcessor(
         }
     }
 
-    fun runSendJob(db: Database.Connection, msg: AsyncJob.SendDecision) = db.transaction { tx ->
+    fun runSendJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendDecision) = db.transaction { tx ->
         val decisionId = msg.decisionId
 
         decisionService.deliverDecisionToGuardians(tx, decisionId)

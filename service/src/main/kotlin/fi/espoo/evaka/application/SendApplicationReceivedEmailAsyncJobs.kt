@@ -20,7 +20,7 @@ class SendApplicationReceivedEmailAsyncJobs(
 ) {
 
     init {
-        asyncJobRunner.registerHandler(::runSendApplicationEmail)
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendApplicationEmail -> runSendApplicationEmail(db, msg) }
     }
 
     private fun runSendApplicationEmail(db: Database.Connection, msg: AsyncJob.SendApplicationEmail) {

@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.stereotype.Service
 
@@ -93,7 +94,7 @@ class MessageNotificationEmailService(
         }
     }
 
-    fun sendMessageNotification(db: Database.Connection, msg: AsyncJob.SendMessageNotificationEmail) {
+    fun sendMessageNotification(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendMessageNotificationEmail) {
         val (threadId, messageRecipientId, personEmail, language, urgent) = msg
 
         db.transaction { tx ->
@@ -105,7 +106,7 @@ class MessageNotificationEmailService(
                 htmlBody = getHtml(language, threadId, urgent),
                 textBody = getText(language, threadId, urgent)
             )
-            tx.markNotificationAsSent(messageRecipientId, HelsinkiDateTime.now())
+            tx.markNotificationAsSent(messageRecipientId, clock.now())
         }
     }
 

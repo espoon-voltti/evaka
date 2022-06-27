@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
@@ -26,19 +27,19 @@ class FeeDecisionGenerationJobProcessor(
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
     }
 
-    fun runJob(db: Database.Connection, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
+    fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
         logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
         db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, msg.dateRange, listOf()) }
     }
 
-    fun runJob(db: Database.Connection, msg: AsyncJob.GenerateFinanceDecisions) {
+    fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {
         logger.info { "Generating finance decisions with parameters $msg" }
         db.transaction { tx ->
             when (msg.person) {
                 is AsyncJob.GenerateFinanceDecisions.Person.Adult ->
-                    generator.generateNewDecisionsForAdult(tx, msg.person.adultId, msg.dateRange.start)
+                    generator.generateNewDecisionsForAdult(tx, clock, msg.person.adultId, msg.dateRange.start)
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
-                    generator.generateNewDecisionsForChild(tx, msg.person.childId, msg.dateRange.start)
+                    generator.generateNewDecisionsForChild(tx, clock, msg.person.childId, msg.dateRange.start)
             }
         }
     }

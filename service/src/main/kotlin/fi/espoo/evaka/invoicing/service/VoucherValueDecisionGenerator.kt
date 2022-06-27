@@ -40,7 +40,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import org.jdbi.v3.core.kotlin.mapTo
@@ -52,6 +52,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     featureConfig: FeatureConfig,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    clock: EvakaClock,
     from: LocalDate,
     child: ChildWithDateOfBirth,
     families: List<FridgeFamily>
@@ -101,7 +102,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
     deleteValueDecisions(existingDrafts.map { it.id })
     upsertValueDecisions(updatedDecisions.updatedDrafts)
-    updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, HelsinkiDateTime.now())
+    updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, clock.now())
 }
 
 private fun generateNewValueDecisions(

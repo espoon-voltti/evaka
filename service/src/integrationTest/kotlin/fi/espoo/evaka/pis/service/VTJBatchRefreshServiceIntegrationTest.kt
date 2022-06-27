@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -87,7 +88,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -110,7 +111,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto)
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verifyNoInteractions(parentshipService)
     }
 
@@ -146,7 +147,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -190,7 +191,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any())).thenReturn(dto1)
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_2.id), any())).thenReturn(dto2)
 
-        service.doVTJRefresh(db, AsyncJob.VTJRefresh(testAdult_1.id))
+        service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verifyNoInteractions(parentshipService)
     }
 }

@@ -214,12 +214,13 @@ class VoucherValueDecisionController(
     fun generateRetroactiveDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
-        db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, id, body.from) } }
+        db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) } }
     }
 }
 

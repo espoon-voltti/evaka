@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -667,7 +668,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -698,7 +699,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .response()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -729,7 +730,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .response()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -760,7 +761,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .response()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -799,7 +800,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -837,7 +838,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = draft.copy(
             decisionNumber = 1,
@@ -878,7 +879,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val activated = oldDecision.copy(
             decisionNumber = 1,
@@ -912,7 +913,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         assertEquals(200, res.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val (_, _, result) = http.get("/decisions/${draft.id}")
             .asUser(user)
@@ -974,7 +975,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .response()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val (_, _, result) = http.get("/decisions/${draftWithFutureDates.id}")
             .asUser(user)
@@ -1515,7 +1516,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync(2)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
         val (_, _, result1) = http.get("/decisions/${decision.id}")
             .asUser(user)
@@ -1682,7 +1683,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
         assertEquals(200, response.statusCode)
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         return decision
     }
 

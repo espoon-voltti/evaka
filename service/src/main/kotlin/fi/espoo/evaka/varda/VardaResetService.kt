@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
@@ -58,12 +59,12 @@ class VardaResetService(
         }
     }
 
-    fun resetVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.ResetVardaChild) {
+    fun resetVardaChildByAsyncJob(db: Database.Connection, clock: EvakaClock, msg: VardaAsyncJob.ResetVardaChild) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
         resetVardaChild(db, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
     }
 
-    fun deleteVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.DeleteVardaChild) {
+    fun deleteVardaChildByAsyncJob(db: Database.Connection, clock: EvakaClock, msg: VardaAsyncJob.DeleteVardaChild) {
         logger.info("VardaUpdate: starting to delete child ${msg.vardaChildId}")
         deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
     }
