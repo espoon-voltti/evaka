@@ -483,17 +483,22 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 )
             }
-            val actionPeriod = testPeriod(1L to 7L)
-            tx.insertTestAssistanceAction(
-                DevAssistanceAction(
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    childId = testChild_1.id,
-                    startDate = actionPeriod.start,
-                    endDate = actionPeriod.end,
-                    measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
-                    actions = emptySet()
-                )
+            val assistanceActions = listOf(
+                testPeriod(1L to 3L),
+                testPeriod(4L to 7L)
             )
+            assistanceActions.forEach {
+                tx.insertTestAssistanceAction(
+                    DevAssistanceAction(
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        childId = testChild_1.id,
+                        startDate = it.start,
+                        endDate = it.end,
+                        measures = setOf(AssistanceMeasure.EXTENDED_COMPULSORY_EDUCATION),
+                        actions = emptySet()
+                    )
+                )
+            }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -503,6 +508,43 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 vaikeastiVammainen = listOf(Aikajakso.from(assistanceNeeds[1].first)),
                 pidennettyOppivelvollisuus = Aikajakso.from(testPeriod(4L to 7L)),
                 kuljetusetu = null,
+                erityisenTuenPäätökset = null
+            ),
+            koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+        )
+    }
+
+    @Test
+    fun `adjacent transport benefit ranges are sent as one joined range`() {
+        insertPlacement(testChild_1)
+        val assistanceActions = listOf(
+            testPeriod(1L to 1L),
+            testPeriod(2L to 2L),
+            testPeriod(3L to 4L),
+            testPeriod(6L to 7L)
+        )
+        db.transaction { tx ->
+            assistanceActions.forEach {
+                tx.insertTestAssistanceAction(
+                    DevAssistanceAction(
+                        updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        childId = testChild_1.id,
+                        startDate = it.start,
+                        endDate = it.end,
+                        measures = setOf(AssistanceMeasure.TRANSPORT_BENEFIT),
+                        actions = emptySet()
+                    )
+                )
+            }
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+        assertEquals(
+            Lisätiedot(
+                vammainen = null,
+                vaikeastiVammainen = null,
+                pidennettyOppivelvollisuus = null,
+                kuljetusetu = Aikajakso.from(testPeriod(1L to 4L)),
                 erityisenTuenPäätökset = null
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot

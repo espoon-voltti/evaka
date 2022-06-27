@@ -124,8 +124,8 @@ data class KoskiActiveDataRaw(
     val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
     val developmentalDisability1: List<FiniteDateRange> = emptyList(),
     val developmentalDisability2: List<FiniteDateRange> = emptyList(),
-    val extendedCompulsoryEducation: FiniteDateRange? = null,
-    val transportBenefit: FiniteDateRange? = null,
+    val extendedCompulsoryEducation: List<FiniteDateRange> = emptyList(),
+    val transportBenefit: List<FiniteDateRange> = emptyList(),
     val specialAssistanceDecisionWithGroup: List<FiniteDateRange> = emptyList(),
     val specialAssistanceDecisionWithoutGroup: List<FiniteDateRange> = emptyList(),
     val studyRightId: KoskiStudyRightId,
@@ -265,17 +265,20 @@ data class KoskiActiveDataRaw(
         // https://github.com/Opetushallitus/koski/blob/2b25eb7e16bb651e1eb09cce636a736e85811ad0/src/main/scala/fi/oph/koski/validation/KoskiValidator.scala#L579
         // https://github.com/Opetushallitus/koski/pull/1860
         // Since we don't have similar restrictions, adjust data to satisfy Koski requirements
-        val adjustedEce = extendedCompulsoryEducation?.let { ece ->
+        val adjustedEce = extendedCompulsoryEducation.let { ece ->
             val disabilities = Timeline.of(developmentalDisability1).addAll(developmentalDisability2)
             val overlaps = disabilities.intersection(Timeline.of(ece))
-            overlaps.ranges().maxByOrNull { it.durationInDays() }?.let { Aikajakso.from(it) }
+            // Koski only accepts one range
+            overlaps.ranges().maxByOrNull { it.durationInDays() }
         }
+        // Koski only accepts one range
+        val longestTransportBenefit = Timeline.of(transportBenefit).ranges().maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
             vammainen = developmentalDisability1.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() && adjustedEce != null },
             vaikeastiVammainen = developmentalDisability2.map { Aikajakso.from(it) }.takeIf { it.isNotEmpty() && adjustedEce != null },
-            pidennettyOppivelvollisuus = adjustedEce,
-            kuljetusetu = transportBenefit?.let { Aikajakso.from(it) },
+            pidennettyOppivelvollisuus = adjustedEce?.let { Aikajakso.from(it) },
+            kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
             erityisenTuenPäätökset = (
                 specialAssistanceDecisionWithGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = true) } +
                     specialAssistanceDecisionWithoutGroup.map { ErityisenTuenPäätös.from(it, erityisryhmässä = false) }
