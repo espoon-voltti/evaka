@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -57,7 +58,7 @@ class FinanceDecisionGenerator(
         )
     }
 
-    fun createRetroactiveValueDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
+    fun createRetroactiveValueDecisions(tx: Database.Transaction, clock: EvakaClock, headOfFamily: PersonId, from: LocalDate) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         families
             .flatMap { family -> family.children.map { it to family } }
@@ -70,6 +71,7 @@ class FinanceDecisionGenerator(
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
+                    clock,
                     from,
                     child,
                     families
@@ -77,20 +79,21 @@ class FinanceDecisionGenerator(
             }
     }
 
-    fun generateNewDecisionsForAdult(tx: Database.Transaction, personId: PersonId, from: LocalDate) {
+    fun generateNewDecisionsForAdult(tx: Database.Transaction, clock: EvakaClock, personId: PersonId, from: LocalDate) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
-        handleDecisionChangesForFamilies(tx, fromOrMinDate, families)
+        handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
     }
 
-    fun generateNewDecisionsForChild(tx: Database.Transaction, personId: ChildId, from: LocalDate) {
+    fun generateNewDecisionsForChild(tx: Database.Transaction, clock: EvakaClock, personId: ChildId, from: LocalDate) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByChild(personId, fromOrMinDate)
-        handleDecisionChangesForFamilies(tx, fromOrMinDate, families)
+        handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
     }
 
     private fun handleDecisionChangesForFamilies(
         tx: Database.Transaction,
+        clock: EvakaClock,
         from: LocalDate,
         families: List<FridgeFamily>
     ) {
@@ -128,6 +131,7 @@ class FinanceDecisionGenerator(
                     featureConfig,
                     jsonMapper,
                     incomeTypesProvider,
+                    clock,
                     from,
                     child,
                     families

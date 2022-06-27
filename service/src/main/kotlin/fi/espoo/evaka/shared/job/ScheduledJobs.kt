@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
@@ -140,7 +141,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun koskiUpdate(db: Database.Connection) {
-        koskiUpdateService.scheduleKoskiUploads(db, KoskiSearchParams())
+        koskiUpdateService.scheduleKoskiUploads(db, RealEvakaClock(), KoskiSearchParams())
     }
 
     fun vardaUpdate(db: Database.Connection) {

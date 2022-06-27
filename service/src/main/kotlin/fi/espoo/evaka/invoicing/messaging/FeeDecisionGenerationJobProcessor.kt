@@ -37,9 +37,9 @@ class FeeDecisionGenerationJobProcessor(
         db.transaction { tx ->
             when (msg.person) {
                 is AsyncJob.GenerateFinanceDecisions.Person.Adult ->
-                    generator.generateNewDecisionsForAdult(tx, msg.person.adultId, msg.dateRange.start)
+                    generator.generateNewDecisionsForAdult(tx, clock, msg.person.adultId, msg.dateRange.start)
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
-                    generator.generateNewDecisionsForChild(tx, msg.person.childId, msg.dateRange.start)
+                    generator.generateNewDecisionsForChild(tx, clock, msg.person.childId, msg.dateRange.start)
             }
         }
     }

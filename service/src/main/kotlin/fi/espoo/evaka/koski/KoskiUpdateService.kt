@@ -10,10 +10,9 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger { }
 
@@ -28,13 +27,13 @@ class KoskiUpdateService(
     private val env: EvakaEnv
 ) {
     init {
-        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, msg.params) }
+        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, clock, msg.params) }
     }
 
-    fun scheduleKoskiUploads(db: Database.Connection, params: KoskiSearchParams) {
+    fun scheduleKoskiUploads(db: Database.Connection, clock: EvakaClock, params: KoskiSearchParams) {
         if (env.koskiEnabled) {
             db.transaction { tx ->
-                val requests = tx.getPendingStudyRights(LocalDate.now(europeHelsinki), params)
+                val requests = tx.getPendingStudyRights(clock.today(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(tx, requests.map { AsyncJob.UploadToKoski(it) }, retryCount = 1)
             }

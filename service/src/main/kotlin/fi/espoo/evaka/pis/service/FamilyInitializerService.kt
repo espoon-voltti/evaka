@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
@@ -42,7 +41,7 @@ class FamilyInitializerService(
             ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
         val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
-        db.transaction { initFamilyFromApplication(it, RealEvakaClock(), members) }
+        db.transaction { initFamilyFromApplication(it, clock, members) }
     }
 
     private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, members: FridgeFamilyMembers) {
