@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-import { getAttendanceDepartureDeviationReasons } from 'employee-mobile-frontend/utils/staffAttendances'
+import { getAttendanceDepartureDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
@@ -21,7 +21,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -41,6 +40,8 @@ import { Actions, CustomTitle } from '../attendances/components'
 import { TimeWrapper } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
+
+import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 
 export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
@@ -113,7 +114,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const now = mockNow() ?? new Date()
   const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
 
-  const staffAttendanceDeviationReasons: StaffAttendanceType[] = useMemo(
+  const staffAttendanceDifferenceReasons: StaffAttendanceType[] = useMemo(
     () =>
       staffMember
         .map((staff) => {
@@ -123,7 +124,7 @@ export default React.memo(function StaffMarkDepartedPage() {
             LocalDate.todayInHelsinkiTz(),
             parsedTime
           )
-          return getAttendanceDepartureDeviationReasons(
+          return getAttendanceDepartureDifferenceReasons(
             staff.spanningPlan.end,
             departed
           )
@@ -191,9 +192,9 @@ export default React.memo(function StaffMarkDepartedPage() {
               !isValidTime(time) ||
               timeInFuture ||
               pinCode.join('').trim().length < 4 ||
-              (staffAttendanceDeviationReasons.length > 1 &&
+              (staffAttendanceDifferenceReasons.length > 1 &&
                 (!attendanceType ||
-                  !staffAttendanceDeviationReasons.includes(attendanceType)))
+                  !staffAttendanceDifferenceReasons.includes(attendanceType)))
 
             return (
               <>
@@ -231,27 +232,13 @@ export default React.memo(function StaffMarkDepartedPage() {
                     }
                   />
                   <Gap />
-                  {staffAttendanceDeviationReasons.length > 0 && (
-                    <>
-                      <CustomTitle>
-                        {i18n.attendances.staff.deviationReason}
-                      </CustomTitle>
-                      <Gap size="s" />
-                      <ChipWrapper margin="xs" $justifyContent="center">
-                        {staffAttendanceDeviationReasons.map((type) => (
-                          <ChoiceChip
-                            key={type}
-                            text={i18n.attendances.staffTypes[type]}
-                            selected={attendanceType === type}
-                            onChange={() =>
-                              attendanceType === type
-                                ? setAttendanceType(undefined)
-                                : setAttendanceType(type)
-                            }
-                          />
-                        ))}
-                      </ChipWrapper>
-                    </>
+                  {staffAttendanceDifferenceReasons.length > 0 && (
+                    <StaffAttendanceTypeSelection
+                      i18n={i18n}
+                      types={staffAttendanceDifferenceReasons}
+                      selectedType={attendanceType}
+                      setSelectedType={setAttendanceType}
+                    />
                   )}
                 </TimeWrapper>
                 <Gap size="xs" />

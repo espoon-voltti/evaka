@@ -42,7 +42,7 @@ export function staffAttendanceForGroupOrUnit(
   }
 }
 
-export function getAttendanceArrivalDeviationReasons(
+export function getAttendanceArrivalDifferenceReasons(
   plannedStart: HelsinkiDateTime,
   arrival: HelsinkiDateTime
 ): StaffAttendanceType[] {
@@ -60,7 +60,7 @@ export function getAttendanceArrivalDeviationReasons(
   return []
 }
 
-export function getAttendanceDepartureDeviationReasons(
+export function getAttendanceDepartureDifferenceReasons(
   plannedEnd: HelsinkiDateTime,
   departure: HelsinkiDateTime
 ): StaffAttendanceType[] {

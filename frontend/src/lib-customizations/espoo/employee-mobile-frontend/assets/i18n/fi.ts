@@ -235,7 +235,10 @@ export const fi = {
       pinNotSet: 'Aseta itsellesi PIN-koodi',
       pinLocked: 'Vaihda lukkiutunut PIN-koodi',
       plannedAttendance: 'Työvuoro tänään',
-      deviationReason: 'Kirjaa syy'
+      differenceReason: 'Kirjaa syy',
+      differenceInfo:
+        'Saavut työvuorostasi poikkeavaan aikaan. Valitse syykoodi.',
+      differenceInfoToggle: 'Poikkeaa työvuorostasi'
     }
   },
   childInfo: {
