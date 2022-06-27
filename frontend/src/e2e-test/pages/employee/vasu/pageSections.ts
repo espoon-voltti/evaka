@@ -91,8 +91,12 @@ export class SpecialSupportSection extends SimpleTextAreaSection {
       previousSpecialSupportInput: new TextInput(this.textareas.nth(0)),
       currentSpecialSupportInput: new TextInput(this.textareas.nth(1)),
       staffResponsibilitiesInput: new TextInput(this.textareas.nth(2)),
-      carerChildCooperationInput: new TextInput(this.textareas.nth(3)),
+      carerChildCooperationInput: new TextInput(this.textareas.nth(3))
+    }
+  }
 
+  get optionalFieldValues() {
+    return {
       previousSpecialSupport: this.values.nth(1).innerText,
       currentSpecialSupport: this.values.nth(2).innerText,
       staffResponsibilities: this.values.nth(3).innerText,

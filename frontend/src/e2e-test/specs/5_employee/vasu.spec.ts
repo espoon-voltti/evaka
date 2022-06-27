@@ -212,7 +212,6 @@ describe('Vasu document page', () => {
       const specialSupport = vasuEditPage.specialSupportSection
 
       await specialSupport.specialSupportEnabledInput.click()
-
       await specialSupport.optionalFields.previousSpecialSupportInput.type(
         'An environment with less...'
       )
@@ -242,26 +241,30 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(
         () =>
-          vasuPage.specialSupportSection.optionalFields.previousSpecialSupport,
+          vasuPage.specialSupportSection.optionalFieldValues
+            .previousSpecialSupport,
         'An environment with less...'
       )
       await waitUntilEqual(
         () =>
-          vasuPage.specialSupportSection.optionalFields.currentSpecialSupport,
+          vasuPage.specialSupportSection.optionalFieldValues
+            .currentSpecialSupport,
         'An environment that is...'
       )
       await waitUntilEqual(
         () =>
-          vasuPage.specialSupportSection.optionalFields.staffResponsibilities,
+          vasuPage.specialSupportSection.optionalFieldValues
+            .staffResponsibilities,
         'Staff should monitor...'
       )
       await waitUntilEqual(
         () =>
-          vasuPage.specialSupportSection.optionalFields.carerChildCooperation,
+          vasuPage.specialSupportSection.optionalFieldValues
+            .carerChildCooperation,
         'Worked together to find...'
       )
       await waitUntilEqual(
-        () => vasuPage.specialSupportSection.optionalFields.supportLevel,
+        () => vasuPage.specialSupportSection.optionalFieldValues.supportLevel,
         'Tukipalvelut ajalla 02.03.2020–11.05.2021'
       )
     })
@@ -313,7 +316,7 @@ describe('Vasu document page', () => {
         'Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa'
       )
       await waitUntilEqual(
-        () => vasuPage.specialSupportSection.optionalFields.supportLevel,
+        () => vasuPage.specialSupportSection.optionalFieldValues.supportLevel,
         'Yleinen tuki'
       )
     })
