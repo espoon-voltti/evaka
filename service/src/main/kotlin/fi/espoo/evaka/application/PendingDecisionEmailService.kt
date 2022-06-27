@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
@@ -42,7 +43,7 @@ class PendingDecisionEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun doSendPendingDecisionsEmail(db: Database.Connection, msg: AsyncJob.SendPendingDecisionEmail) {
+    fun doSendPendingDecisionsEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
         sendPendingDecisionEmail(db, msg)
     }

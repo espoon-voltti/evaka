@@ -5,7 +5,9 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
@@ -30,10 +32,10 @@ import kotlin.reflect.KClass
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private data class Registration<T : AsyncJobPayload>(val handler: (db: Database, msg: T) -> Unit) {
-    fun run(db: Database, msg: AsyncJobPayload) =
+private data class Registration<T : AsyncJobPayload>(val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit) {
+    fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
         @Suppress("UNCHECKED_CAST")
-        handler(db, msg as T)
+        handler(db, clock, msg as T)
 }
 
 data class AsyncJobRunnerConfig(
@@ -66,10 +68,10 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
     val isBusy: Boolean
         get() = runningCount.get() > 0
 
-    inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, msg: P) -> Unit) =
-        registerHandler(AsyncJobType(P::class)) { db, msg -> db.connect { handler(it, msg) } }
+    inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit) =
+        registerHandler(AsyncJobType(P::class)) { db, clock, msg -> db.connect { handler(it, clock, msg) } }
 
-    fun <P : T> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, msg: P) -> Unit): Unit = handlersLock.withLock {
+    fun <P : T> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, clock: EvakaClock, msg: P) -> Unit): Unit = handlersLock.withLock {
         require(!handlers.containsKey(jobType)) { "handler for $jobType has already been registered" }
         val ambiguousKey = handlers.keys.find { it.name == jobType.name }
         require(ambiguousKey == null) { "handlers for $jobType and $ambiguousKey have a name conflict" }
@@ -98,7 +100,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
 
     fun start(pollingInterval: Duration) {
         val newRunner = this.executor.scheduleWithFixedDelay(
-            { this.runPendingJobs() },
+            { this.runPendingJobs(RealEvakaClock()) },
             0,
             pollingInterval.toNanos(),
             TimeUnit.NANOSECONDS
@@ -108,12 +110,12 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
 
     fun wakeUp() {
         if (isStarted) {
-            executor.execute { this.runPendingJobs() }
+            executor.execute { this.runPendingJobs(RealEvakaClock()) }
         }
     }
 
-    fun runPendingJobsSync(maxCount: Int = 1_000) {
-        this.executor.submit { this.runPendingJobs(maxCount) }.get()
+    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000) {
+        this.executor.submit { this.runPendingJobs(clock, maxCount) }.get()
     }
 
     fun getPendingJobCount(): Int =
@@ -128,13 +130,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(maxCount: Int = 1_000) {
+    private fun runPendingJobs(clock: EvakaClock, maxCount: Int = 1_000) {
         Database(jdbi).connect { db ->
             var remaining = maxCount
             do {
                 val job = db.transaction { it.claimJob(handlers.keys) }
                 if (job != null) {
-                    runPendingJob(db, job)
+                    runPendingJob(db, clock, job)
                 }
                 remaining -= 1
                 config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
@@ -142,7 +144,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         }
     }
 
-    private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef<out T>) {
+    private fun runPendingJob(db: Database.Connection, clock: EvakaClock, job: ClaimedJobRef<out T>) {
         val logMeta = mapOf(
             "jobId" to job.jobId,
             "jobType" to job.jobType.name,
@@ -161,7 +163,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
                         MdcKey.USER_ID.set(it.rawId().toString())
                         MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                     }
-                    registration.run(Database(jdbi), msg)
+                    registration.run(Database(jdbi), clock, msg)
                     tx.completeJob(job)
                     true
                 } ?: false

@@ -28,7 +28,7 @@ class KoskiUpdateService(
     private val env: EvakaEnv
 ) {
     init {
-        asyncJobRunner.registerHandler { db, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, msg.params) }
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, msg.params) }
     }
 
     fun scheduleKoskiUploads(db: Database.Connection, params: KoskiSearchParams) {

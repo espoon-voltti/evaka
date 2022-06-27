@@ -46,7 +46,7 @@ class KoskiClient(
         .build()
 
     init {
-        asyncJobRunner?.registerHandler { db, msg: AsyncJob.UploadToKoski ->
+        asyncJobRunner?.registerHandler { db, _, msg: AsyncJob.UploadToKoski ->
             uploadToKoski(
                 db, msg,
                 today = LocalDate.now(

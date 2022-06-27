@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.varda.VardaResetService
@@ -62,7 +63,7 @@ class ScheduledJobs(
 ) {
 
     init {
-        asyncJobRunner.registerHandler { db, msg: AsyncJob.RunScheduledJob ->
+        asyncJobRunner.registerHandler { db, _: EvakaClock, msg: AsyncJob.RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
             msg.job.fn(this, db)

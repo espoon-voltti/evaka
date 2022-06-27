@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -549,7 +550,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             decision.id
         }
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
     }

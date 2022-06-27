@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -45,7 +46,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun clean() {
         asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig())
-        asyncJobRunner.registerHandler { _, msg: TestJob ->
+        asyncJobRunner.registerHandler { _, _, msg: TestJob ->
             currentCallback.get()(msg)
         }
     }
@@ -74,7 +75,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(AuthenticatedUser.SystemInternalUser.rawIdHash.toString(), MdcKey.USER_ID_HASH.get())
         }
         db.transaction { asyncJobRunner.plan(it, listOf(job)) }
-        asyncJobRunner.runPendingJobsSync(1)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
         future.get(0, TimeUnit.SECONDS)
     }
 
@@ -83,7 +84,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         db.transaction { asyncJobRunner.plan(it, listOf(job)) }
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         future.get(0, TimeUnit.SECONDS)
     }
 
@@ -111,14 +112,14 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
         db.transaction { asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO) }
-        asyncJobRunner.runPendingJobsSync(1)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
         assertTrue(exception.cause is LetsRollbackException)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        asyncJobRunner.runPendingJobsSync(1)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
         future.get(10, TimeUnit.SECONDS)
         assertEquals(0, asyncJobRunner.getPendingJobCount())
     }

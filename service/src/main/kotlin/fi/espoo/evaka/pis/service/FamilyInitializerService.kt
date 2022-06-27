@@ -36,7 +36,7 @@ class FamilyInitializerService(
         asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
-    fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: AsyncJob.InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.InitializeFamilyFromApplication) {
         val user = msg.user
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
             ?: error("Could not initialize family, application ${msg.applicationId} not found")

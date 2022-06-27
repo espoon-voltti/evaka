@@ -14,7 +14,7 @@ class SfiAsyncJobs(
     asyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 ) {
     init {
-        asyncJobRunner.registerHandler { _, payload: SuomiFiAsyncJob.SendMessage ->
+        asyncJobRunner.registerHandler { _, _, payload: SuomiFiAsyncJob.SendMessage ->
             sendMessagePDF(payload.message)
         }
     }

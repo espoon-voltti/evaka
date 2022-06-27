@@ -18,7 +18,7 @@ class PatuAsyncJobProcessor(
     private val patuIntegrationClient: PatuIntegrationClient
 ) {
     init {
-        asyncJobRunner.registerHandler(::runSendPatuReport)
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendPatuReport -> runSendPatuReport(db, msg) }
     }
 
     fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {

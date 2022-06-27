@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -89,7 +90,7 @@ class VardaUpdateService(
         }
     }
 
-    fun updateVardaChildByAsyncJob(db: Database.Connection, msg: VardaAsyncJob.UpdateVardaChild) {
+    fun updateVardaChildByAsyncJob(db: Database.Connection, clock: EvakaClock, msg: VardaAsyncJob.UpdateVardaChild) {
         logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
         updateVardaChild(db, client, msg.serviceNeedDiffByChild, feeDecisionMinDate, ophMunicipalityOid)
         logger.info("VardaUpdate: successfully updated child ${msg.serviceNeedDiffByChild.childId}")

@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -176,7 +177,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             decision
         }
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         return decision
     }

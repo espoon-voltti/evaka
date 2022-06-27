@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -360,7 +361,7 @@ WHERE id = :unitId
             .response()
         assertTrue(res.isSuccessful)
 
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).list() }
         rows.forEach { row ->

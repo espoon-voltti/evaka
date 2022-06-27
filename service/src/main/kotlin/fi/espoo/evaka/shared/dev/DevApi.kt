@@ -197,9 +197,9 @@ class DevApi(
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
-    private fun runAllAsyncJobs() {
+    private fun runAllAsyncJobs(clock: EvakaClock) {
         listOf(asyncJobRunner, vardaAsyncJobRunner, suomiFiAsyncJobRunner).forEach {
-            it.runPendingJobsSync()
+            it.runPendingJobsSync(clock)
             it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
         }
     }
@@ -210,9 +210,9 @@ class DevApi(
     }
 
     @PostMapping("/reset-db")
-    fun resetDatabase(db: Database) {
+    fun resetDatabase(db: Database, clock: EvakaClock) {
         // Run async jobs before database reset to avoid database locks/deadlocks
-        runAllAsyncJobs()
+        runAllAsyncJobs(clock)
 
         db.connect { dbc ->
             dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
@@ -227,8 +227,8 @@ class DevApi(
     }
 
     @PostMapping("/run-jobs")
-    fun runJobs() {
-        runAllAsyncJobs()
+    fun runJobs(clock: EvakaClock) {
+        runAllAsyncJobs(clock)
     }
 
     @PostMapping("/care-areas")

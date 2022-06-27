@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -27,14 +28,14 @@ class InvoicingAsyncJobs(
         asyncJobRunner.registerHandler(::runSendVoucherValueDecisionPdf)
     }
 
-    fun runCreateFeeDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyFeeDecisionApproved) = db.transaction { tx ->
+    fun runCreateFeeDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeDecisionApproved) = db.transaction { tx ->
         val decisionId = msg.decisionId
         feeService.createFeeDecisionPdf(tx, decisionId)
         logger.info { "Successfully created fee decision pdf (id: $decisionId)." }
         asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeDecisionPdfGenerated(decisionId)))
     }
 
-    fun runSendFeeDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyFeeDecisionPdfGenerated) = db.transaction { tx ->
+    fun runSendFeeDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
         feeService.sendDecision(tx, decisionId).let { sent ->
             logger.info {
@@ -44,14 +45,14 @@ class InvoicingAsyncJobs(
         }
     }
 
-    fun runCreateVoucherValueDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyVoucherValueDecisionApproved) = db.transaction { tx ->
+    fun runCreateVoucherValueDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyVoucherValueDecisionApproved) = db.transaction { tx ->
         val decisionId = msg.decisionId
         valueDecisionService.createDecisionPdf(tx, decisionId)
         logger.info { "Successfully created voucher value decision pdf (id: $decisionId)." }
         asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyVoucherValueDecisionPdfGenerated(decisionId)))
     }
 
-    fun runSendVoucherValueDecisionPdf(db: Database.Connection, msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated) = db.transaction { tx ->
+    fun runSendVoucherValueDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
         valueDecisionService.sendDecision(tx, decisionId).let { sent ->
             logger.info {

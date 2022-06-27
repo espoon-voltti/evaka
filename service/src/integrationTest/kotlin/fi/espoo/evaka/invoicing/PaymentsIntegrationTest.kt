@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -308,7 +309,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             decision.id
         }
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
     }
 
     private fun searchPayments(params: SearchPaymentsRequest): Paged<Payment> {

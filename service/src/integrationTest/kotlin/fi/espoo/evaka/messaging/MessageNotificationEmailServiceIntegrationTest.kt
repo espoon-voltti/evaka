@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
@@ -114,7 +115,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
             recipients = personAccounts,
             user = employee,
         )
-        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         assertEquals(
             testAddresses.toSet(),

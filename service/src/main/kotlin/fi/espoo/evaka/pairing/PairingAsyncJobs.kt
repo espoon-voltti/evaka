@@ -14,7 +14,7 @@ class PairingAsyncJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
-        asyncJobRunner.registerHandler(::runGarbageCollectPairing)
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.GarbageCollectPairing -> runGarbageCollectPairing(db, msg) }
     }
 
     private fun runGarbageCollectPairing(db: Database.Connection, msg: AsyncJob.GarbageCollectPairing) {
