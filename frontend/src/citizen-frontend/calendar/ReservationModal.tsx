@@ -237,7 +237,12 @@ export default React.memo(function ReservationModal({
               scrollIntoViewSoftKeyboard(ev.target, 'start')
             }}
             minDate={minDate}
-            maxDate={maxDate}
+            maxDate={
+              formData.endDate &&
+              (!maxDate || formData.endDate.isBefore(maxDate))
+                ? formData.endDate
+                : maxDate
+            }
             errorTexts={i18n.validationErrors}
           />
           <DatePickerSpacer />
@@ -256,7 +261,12 @@ export default React.memo(function ReservationModal({
             onFocus={(ev) => {
               scrollIntoViewSoftKeyboard(ev.target, 'start')
             }}
-            minDate={minDate}
+            minDate={
+              formData.startDate &&
+              (!minDate || formData.startDate.isAfter(minDate))
+                ? formData.startDate
+                : minDate
+            }
             maxDate={maxDate}
             errorTexts={i18n.validationErrors}
           />
