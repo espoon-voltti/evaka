@@ -1810,7 +1810,7 @@ const sv: Translations = {
   childDocuments: {
     title: 'Tillväxt och inlärning',
     description:
-      'Hit samlas dokument och bilder angående barnets/barnens tillväxt och inlärning.'
+      'På denna sida publiceras barnets plan för lärande samt bilder och andra dokument som berör utveckling, välbefinnande och vardagen inom enheten.'
   },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',
@@ -1823,45 +1823,46 @@ const sv: Translations = {
     toggleExpandText: 'Visa eller göm texten'
   },
   vasu: {
-    title: 'Dokument relaterade till barnets dagliga liv',
-    lastModified: 'Senaste ändringsdatum',
-    lastPublished: 'Senast publicerad av målsman',
-    leavePage: 'Utgång',
-    edited: 'anpassas',
+    title: 'Dokument som omfattar barnets vardag',
+    lastModified: 'Senaste redigeringsdatum',
+    lastPublished: 'Senaste publicering för vårdnadshavare',
+    leavePage: 'Lämna sidan',
+    edited: 'Redigerad',
     eventTypes: {
-      PUBLISHED: 'Publicerad till en vårdnadshavare',
-      MOVED_TO_READY: 'Publicerad i utkastläge',
-      RETURNED_TO_READY: 'Återvänd till färdigställt tillstånd',
-      MOVED_TO_REVIEWED: 'Publicerad i rated',
-      RETURNED_TO_REVIEWED: 'Återvänd till betyg',
-      MOVED_TO_CLOSED: 'Färdiga'
+      PUBLISHED: 'Publicerad till vårdnadshavare',
+      MOVED_TO_READY: 'Publicerat i Behandlad-läge',
+      RETURNED_TO_READY: 'Återställt från Behandlad-läge',
+      MOVED_TO_REVIEWED: 'Publicerat i Granskad-läge',
+      RETURNED_TO_REVIEWED: 'Återställt från Granskad-läge',
+      MOVED_TO_CLOSED: 'Avslutad'
     },
     states: {
-      DRAFT: 'Förslag',
-      READY: 'Beredd',
-      REVIEWED: 'Beräknad',
-      CLOSED: 'Färdiga'
+      DRAFT: 'Utkast',
+      READY: 'Behandlad',
+      REVIEWED: 'Granskad',
+      CLOSED: 'Avslutad'
     },
-    state: 'Status för planen',
+    state: 'Planens läge',
     events: {
-      DAYCARE: 'Evenemang för tidig barndomsutbildning',
-      PRESCHOOL: 'Barn förskola lärande plan händelser'
+      DAYCARE: 'Händelser gällande barnets plan för småbarnspedagogik',
+      PRESCHOOL:
+        'Händelser gällande plan för barnets lärande inom förskoleundervisning'
     },
-    noRecord: 'Ingen ingång',
+    noRecord: 'Inga anmärkningar',
     givePermissionToShareTitleVasu:
-      'Bekräftelse av överföringen av planen för förskoleundervisning till andra mottagare',
+      'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
     givePermissionToShareTitleLeops:
-      'Bekräftelse av överföring av förskolans lärandeplan till andra mottagare',
+      'Bekräftelse att överföra plan för barnets lärande inom förskoleundervisning till övriga mottagare',
     givePermissionToShareVasu:
-      'Jag bekräftar att barnets förskoleplan kan överlämnas till de parter som nämns i avsnittet "Mottagare".',
+      'Jag bekräftar att barnets plan för småbarnspedagogik får överföras till de parter som nämns i avsnittet ”Mottagare”.',
     givePermissionToShareLeops:
-      'Jag bekräftar att barnets lärandeplan för förskolan kan komma att överlämnas till de parter som nämns i avsnittet ”Informationsmottagare”.',
+      'Jag bekräftar att barnets plan för lärande inom förskoleundervisning får överförs till de parter som nämns i avsnittet ”Mottagare”.',
     givePermissionToShareInfoVasu:
-      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. När ett barn byter till en annan förskoleenhet i Esbo stad, överförs planen för förskoleundervisningen och andra förskoleundervisningsdokument till den nya enheten (gäller även förskoleutbildning som anordnas av Esbo som inköpstjänst). Vårdnadshavaren kommer att informeras om överföringen i förväg. Vi ber vårdnadshavaren om tillstånd att lämna över förskoleplanen till en utomstående. Om ett barn går in i privat eller annan kommuns förskoleundervisning, ska förskoleplanen lämnas till den nya förskoleanordnaren även utan tillstånd, om uppgifterna är nödvändiga för att ordna barnets förskoleundervisning (41 § 3 st. ) i lagen om förskoleundervisning). Dessutom ska planen för förskoleundervisningen lämnas till den som anordnar för- eller grundutbildningen om det behövs för att organisera barnets utbildning (41 § 4 mom. lagen om grundläggande utbildning). Vårdnadshavaren kommer att informeras om överföringen i förväg.',
+      'Var i kontakt med personalen på barnets enhet om du vill göra ändringar i de mottagare som nämns i planen. Då ett barn byter till en annan enhet inom Esbo stad överförs barnets plan för småbarnspedagogik och andra dokument till den nya enheten (gäller även småbarnspedagogik som ordnas som köpavtalstjänst i Esbo). Vårdnadshavaren får information om överföringen på förhand. Ifall barnets plan för småbarnspedagogik måste överföras till en utomstående part ska vårdnadshavarna ge sitt samtycke. Om ett barn deltar i privat småbarnspedagogik eller i småbarnspedagogik i en annan kommun ska barnets plan för småbarnspedagogik överföras till den nya enheten. Planen kan överföras även utan tillstånd ifall informationen är nödvändig för att enheten ska kunna ordna småbarnspedagogik för barnet (Lag om småbarnspedagogik 41 § 3 st.). Planen för småbarnspedagogik kan överföras till anordnaren av förskole- eller grundläggande utbildning ifall det är nödvändigt för att anordnaren ska kunna ordna undervisning eller utbildning för barnet (lLag om grundläggande utbildning 41 § 4 mom.). Vårdnadshavarna informeras om överföringen på förhand.',
     givePermissionToShareInfoLeops:
-      'Om du vill ändra de mottagare som nämns i planen, kontakta personalen på ditt barns förskoleenhet. Förskolans lärandeplan får överlämnas till en ny anordnare av förskoleundervisning, förskoleutbildning eller grundläggande utbildning även utan vårdnadshavarens tillstånd, om det är nödvändigt för att anordna förskoleundervisning, förskoleutbildning eller grundutbildning (§ 41 40 och 41 §§ lagen om grundläggande utbildning).',
+      'Var i kontakt med personalen på barnets enhet om du vill göra ändringar i de mottagare som nämns i planen. Barnets plan för lärande inom förskoleundervisning kan överföras till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning även utan vårdnadshavarnas samtycke, ifall det är nödvändigt för att ordna småbarnspedagogik, förskoleundervisning eller grundutbildning för barnet (Lag om grundläggande utbildning (§ 41 40 och 41 §§).',
     givePermissionToShareReminder:
-      'Bekräfta de mottagare som planen kan lämnas ut till'
+      'Bekräfta mottagarna planen kan överföras till'
   },
   placement: {
     type: {
