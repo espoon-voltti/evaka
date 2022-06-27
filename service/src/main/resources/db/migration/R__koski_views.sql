@@ -40,7 +40,7 @@ TABLE (
     oph_unit_oid text, oph_organizer_oid text,
     full_range daterange, placement_ranges daterange[], all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
-    extended_compulsory_education daterange, transport_benefit daterange,
+    extended_compulsory_education daterange[], transport_benefit daterange[],
     special_assistance_decision_with_group daterange[], special_assistance_decision_without_group daterange[]
 ) AS $$
     SELECT
@@ -91,16 +91,12 @@ TABLE (
     ) an ON true
     JOIN LATERAL (
         SELECT
-            nullif(daterange(
-                min(start_date) FILTER (WHERE 'EXTENDED_COMPULSORY_EDUCATION' = ANY(measures)),
-                max(end_date) FILTER (WHERE 'EXTENDED_COMPULSORY_EDUCATION' = ANY(measures)),
-                '[]'
-            ), daterange(null, null)) AS extended_compulsory_education,
-            nullif(daterange(
-                min(start_date) FILTER (WHERE 'TRANSPORT_BENEFIT' = ANY(measures)),
-                max(end_date) FILTER (WHERE 'TRANSPORT_BENEFIT' = ANY(measures)),
-                '[]'
-            ), daterange(null, null)) AS transport_benefit,
+            array_agg(date_interval) FILTER (
+                WHERE 'EXTENDED_COMPULSORY_EDUCATION' = ANY(measures)
+            ) AS extended_compulsory_education,
+            array_agg(date_interval) FILTER (
+                WHERE 'TRANSPORT_BENEFIT' = ANY(measures)
+            ) AS transport_benefit,
             array_agg(date_interval) FILTER (
                 WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' = ANY(actions)
             ) AS special_assistance_decision_with_group,
