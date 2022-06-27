@@ -18,7 +18,9 @@ import {
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
+  daycareFixture,
   daycareGroupFixture,
+  familyWithTwoGuardians,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -26,6 +28,7 @@ import { EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
   AssistanceNeedSection
 } from '../../pages/employee/child-information'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -34,6 +37,7 @@ let childInformationPage: ChildInformationPage
 let assistanceNeeds: AssistanceNeedSection
 let childId: UUID
 let unitId: UUID
+let admin: EmployeeDetail
 
 beforeEach(async () => {
   await resetDatabase()
@@ -45,6 +49,7 @@ beforeEach(async () => {
   unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   page = await Page.open()
+  admin = (await Fixture.employeeAdmin().save()).data
 })
 
 const setupPlacement = async (childPlacementType: PlacementType) => {
@@ -127,7 +132,6 @@ describe('Child Information assistance need functionality for employees', () => 
 
   test('assistance need before preschool for a child in preschool is shown for admin', async () => {
     await setupPlacement('PRESCHOOL')
-    const admin = (await Fixture.employeeAdmin().save()).data
     await Fixture.assistanceNeed()
       .with({
         childId: childId,
@@ -171,5 +175,93 @@ describe('Child Information assistance need functionality for employees', () => 
 
     await logUserIn(specialEducationTeacher)
     await assistanceNeeds.assertAssistanceNeedCount(2)
+  })
+})
+
+describe('Child assistance need decisions for employees', () => {
+  test('Shows an empty draft in the list', async () => {
+    await Fixture.assistanceNeedDecision().withChild(childId).save()
+
+    await logUserIn(admin)
+    await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
+
+    const decision = assistanceNeeds.assistanceNeedDecisions(0)
+
+    await waitUntilEqual(() => decision.date, '-')
+    await waitUntilEqual(() => decision.unitName, '-')
+    await waitUntilEqual(() => decision.sentDate, '-')
+    await waitUntilEqual(() => decision.decisionMadeDate, '-')
+    await waitUntilEqual(() => decision.status, 'DRAFT')
+    await waitUntilEqual(() => decision.actionCount, 2)
+  })
+
+  test('Shows a filled in draft in the list', async () => {
+    const serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+    await Fixture.preFilledAssistanceNeedDecision()
+      .withChild(childId)
+      .with({
+        selectedUnit: { id: daycareFixture.id },
+        decisionMaker: {
+          employeeId: serviceWorker.id,
+          title: 'head teacher'
+        },
+        preparedBy1: {
+          employeeId: serviceWorker.id,
+          title: 'teacher',
+          phoneNumber: '010202020202'
+        },
+        guardianInfo: [
+          {
+            id: null,
+            personId: familyWithTwoGuardians.guardian.id,
+            isHeard: true,
+            name: '',
+            details: 'Guardian 1 details'
+          }
+        ],
+        sentForDecision: LocalDate.of(2020, 5, 11),
+        startDate: LocalDate.of(2020, 7, 1),
+        endDate: LocalDate.of(2020, 12, 11),
+        decisionMade: LocalDate.of(2020, 6, 2)
+      })
+      .save()
+
+    await logUserIn(admin)
+    await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
+
+    const decision = assistanceNeeds.assistanceNeedDecisions(0)
+
+    await waitUntilEqual(() => decision.date, '01.07.2020 – 11.12.2020')
+    await waitUntilEqual(() => decision.unitName, daycareFixture.name)
+    await waitUntilEqual(() => decision.sentDate, '11.05.2020')
+    await waitUntilEqual(() => decision.decisionMadeDate, '02.06.2020')
+    await waitUntilEqual(() => decision.status, 'DRAFT')
+    await waitUntilEqual(() => decision.actionCount, 2)
+  })
+
+  test('Hides edit and delete actions for non-draft/non-workable decisions', async () => {
+    await Fixture.preFilledAssistanceNeedDecision()
+      .withChild(childId)
+      .with({
+        status: 'ACCEPTED'
+      })
+      .save()
+    await Fixture.preFilledAssistanceNeedDecision()
+      .withChild(childId)
+      .with({
+        status: 'REJECTED'
+      })
+      .save()
+
+    await logUserIn(admin)
+    await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
+
+    const acceptedDecision = assistanceNeeds.assistanceNeedDecisions(0)
+    await waitUntilEqual(() => acceptedDecision.status, 'ACCEPTED')
+    await waitUntilEqual(() => acceptedDecision.actionCount, 0)
+
+    const rejectedDecision = assistanceNeeds.assistanceNeedDecisions(1)
+    await waitUntilEqual(() => rejectedDecision.status, 'REJECTED')
+    await waitUntilEqual(() => rejectedDecision.actionCount, 0)
   })
 })

@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { UUID } from '../../types'
@@ -193,6 +194,28 @@ export interface AssistanceNeedRequest {
 export interface AssistanceNeedResponse {
   need: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.CompactAssistanceNeedDecision
+*/
+export interface CompactAssistanceNeedDecision {
+  created: HelsinkiDateTime
+  decisionMade: LocalDate | null
+  endDate: LocalDate | null
+  id: UUID
+  selectedUnit: CompactUnitInfo | null
+  sentForDecision: LocalDate | null
+  startDate: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.CompactUnitInfo
+*/
+export interface CompactUnitInfo {
+  id: UUID | null
+  name: string | null
 }
 
 /**

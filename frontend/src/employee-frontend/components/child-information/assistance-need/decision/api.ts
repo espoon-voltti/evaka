@@ -6,8 +6,10 @@ import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AssistanceNeedDecision,
-  AssistanceNeedDecisionForm
+  AssistanceNeedDecisionForm,
+  CompactAssistanceNeedDecision
 } from 'lib-common/generated/api-types/assistanceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -32,6 +34,17 @@ const mapToAssistanceNeedDecision = (
   sentForDecision: parseDate(data.sentForDecision)
 })
 
+const mapToCompactAssistanceNeedDecision = (
+  data: JsonOf<CompactAssistanceNeedDecision>
+): CompactAssistanceNeedDecision => ({
+  ...data,
+  startDate: parseDate(data.startDate),
+  endDate: parseDate(data.endDate),
+  decisionMade: parseDate(data.decisionMade),
+  sentForDecision: parseDate(data.sentForDecision),
+  created: HelsinkiDateTime.parseIso(data.created)
+})
+
 export function getAssistanceNeedDecision(
   childId: UUID,
   id: UUID
@@ -53,6 +66,40 @@ export function putAssistanceNeedDecision(
     .put(`/children/${childId}/assistance-needs/decision/${id}`, {
       decision: data
     })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAssistanceNeedDecisions(
+  childId: UUID
+): Promise<Result<CompactAssistanceNeedDecision[]>> {
+  return client
+    .get<JsonOf<CompactAssistanceNeedDecision[]>>(
+      `/children/${childId}/assistance-needs/decisions`
+    )
+    .then((res) => Success.of(res.data.map(mapToCompactAssistanceNeedDecision)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function createAssistanceNeedDecision(
+  childId: UUID,
+  decision: AssistanceNeedDecisionForm
+): Promise<Result<AssistanceNeedDecision>> {
+  return client
+    .post<JsonOf<AssistanceNeedDecision>>(
+      `/children/${childId}/assistance-needs/decision`,
+      { decision }
+    )
+    .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deleteAssistanceNeedDecision(
+  childId: UUID,
+  decisionId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/children/${childId}/assistance-needs/decision/${decisionId}`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

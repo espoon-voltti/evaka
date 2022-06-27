@@ -221,7 +221,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             preparer_2_employee_id = :preparer2EmployeeId,
             preparer_2_title = :preparer2Title,
             preparer_2_phone_number = :preparer2PhoneNumber 
-        WHERE id = :id AND child_id = :childId
+        WHERE id = :id AND child_id = :childId AND status IN ('DRAFT', 'NEEDS_WORK')
         """.trimIndent()
     createUpdate(sql)
         .bindKotlin(data)
@@ -265,4 +265,35 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             .add()
     }
     batch.execute()
+}
+
+fun Database.Read.getAssistanceNeedDecisionsByChildId(childId: ChildId): List<CompactAssistanceNeedDecision> {
+    //language=sql
+    val sql =
+        """
+        SELECT ad.id, start_date, end_date, status, decision_made, sent_for_decision, ad.created,
+            selected_unit selected_unit_id, unit.name selected_unit_name
+        FROM assistance_need_decision ad
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE child_id = :childId;
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("childId", childId)
+        .mapTo<CompactAssistanceNeedDecision>()
+        .list()
+}
+
+fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId, childId: ChildId): Boolean {
+    //language=sql
+    val sql =
+        """
+        DELETE FROM assistance_need_decision
+        WHERE id = :id AND child_id = :childId AND status IN ('DRAFT', 'NEEDS_WORK')
+        RETURNING id;
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("id", id)
+        .bind("childId", childId)
+        .mapTo<AssistanceNeedDecisionId>()
+        .firstOrNull() != null
 }

@@ -13,6 +13,8 @@ import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 
+import AssistanceNeedDecision from './AssistanceNeedDecision'
+
 export interface Props {
   id: UUID
   startOpen: boolean
@@ -40,6 +42,12 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         <div className="separator large" />
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
           <AssistanceAction id={id} />
+        )}
+        {permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
+          <>
+            <div className="separator large" />
+            <AssistanceNeedDecision id={id} />
+          </>
         )}
       </CollapsibleContentArea>
     </div>

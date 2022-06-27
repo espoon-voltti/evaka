@@ -9,8 +9,10 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -86,6 +88,39 @@ class AssistanceNeedDecisionController(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateAssistanceNeedDecision(id, childId, body.decision)
+            }
+        }
+    }
+
+    @GetMapping("/children/{childId}/assistance-needs/decisions")
+    fun getAssistanceNeedDecisions(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId
+    ): List<CompactAssistanceNeedDecision> {
+        Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getAssistanceNeedDecisionsByChildId(childId)
+            }
+        }
+    }
+
+    @DeleteMapping("/children/{childId}/assistance-needs/decision/{id}")
+    fun deleteAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id, objectId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.DELETE_ASSISTANCE_NEED_DECISION, childId)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (!tx.deleteAssistanceNeedDecision(id, childId)) {
+                    throw NotFound("Assistance need decision $id cannot found or cannot be deleted", "DECISION_NOT_FOUND")
+                }
             }
         }
     }

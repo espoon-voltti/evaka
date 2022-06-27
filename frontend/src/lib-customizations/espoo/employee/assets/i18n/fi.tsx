@@ -53,6 +53,7 @@ export const fi = {
     clear: 'Tyhjennä',
     create: 'Luo',
     remove: 'Poista',
+    doNotRemove: 'Älä poista',
     cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',
@@ -680,6 +681,24 @@ export const fi = {
       }
     },
     assistanceNeedDecision: {
+      sectionTitle: 'Tuen tarpeen päätökset',
+      description:
+        'Hyväksytyt ja hylätyt päätökset tuen tarpeesta näkyvät huoltajalle eVakassa.',
+      table: {
+        form: 'Lomake',
+        inEffect: 'Voimassa',
+        unit: 'Yksikkö',
+        sentToDecisionMaker: 'Lähetetty päättäjälle',
+        decisionMadeOn: 'Päätös tehty',
+        status: 'Tila'
+      },
+      create: 'Luo uusi päätös',
+      modal: {
+        delete: 'Poista päätös',
+        title: 'Poistetaanko päätös?',
+        description:
+          'Haluatko varmasti poistaa päätöspohjan? Kaikki päätöspohjaan täydennetyt tiedot menetetään.'
+      },
       genericPlaceholder: 'Kirjoita',
       formLanguage: 'Lomakkeen kieli',
       neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',

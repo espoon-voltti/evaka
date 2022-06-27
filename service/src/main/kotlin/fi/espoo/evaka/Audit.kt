@@ -59,6 +59,7 @@ enum class Audit(
     ChildAssistanceNeedDecisionDelete("evaka.child.assistance-need.delete"),
     ChildAssistanceNeedDecisionRead("evaka.child.assistance-need.read"),
     ChildAssistanceNeedDecisionUpdate("evaka.child.assistance-need.update"),
+    ChildAssistanceNeedDecisionsList("evaka.child.assistance-need.list"),
     ChildAttendancesRead("evaka.child-attendances.read"),
     ChildAttendancesUpsert("evaka.child-attendances.upsert"),
     ChildAttendancesArrivalCreate("evaka.child-attendances.arrival.create"),
