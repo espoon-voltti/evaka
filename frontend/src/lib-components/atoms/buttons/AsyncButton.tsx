@@ -127,16 +127,18 @@ function AsyncButton<T>({
               handleSuccess(result.value)
             }
           })
-          .catch((originalErr: Error) => {
+          .catch((originalErr: unknown) => {
             handleFailure(undefined)
-            if ('message' in originalErr && 'stack' in originalErr) {
-              const err = new Error(
-                `AsyncButton promise was rejected: ${originalErr.message}`
-              )
-              err.stack = originalErr.stack
-              Sentry.captureException(err)
-            } else {
-              Sentry.captureException(originalErr)
+            if (originalErr instanceof Error) {
+              if ('message' in originalErr && 'stack' in originalErr) {
+                const err = new Error(
+                  `AsyncButton promise was rejected: ${originalErr.message}`
+                )
+                err.stack = originalErr.stack
+                Sentry.captureException(err)
+              } else {
+                Sentry.captureException(originalErr)
+              }
             }
           })
       }
