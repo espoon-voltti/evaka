@@ -6,7 +6,6 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatTime } from 'lib-common/date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -14,10 +13,10 @@ import Spinner from 'lib-components/atoms/state/Spinner'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import StickyFooter from 'lib-components/layout/StickyFooter'
-import { Dimmed } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import AutosaveStatusIndicator from '../common/AutosaveStatusIndicator'
 
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
 import { VasuContainer } from './components/VasuContainer'
@@ -25,7 +24,7 @@ import { BasicsSection } from './sections/BasicsSection'
 import { DynamicSections } from './sections/DynamicSections'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
-import { useVasu, VasuStatus } from './use-vasu'
+import { useVasu } from './use-vasu'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -63,25 +62,6 @@ export default React.memo(function VasuEditPage() {
     permittedFollowupActions
   } = useVasu(id)
 
-  function formatVasuStatus(status: VasuStatus): string | null {
-    switch (status.state) {
-      case 'loading-error':
-        return i18n.common.error.unknown
-      case 'save-error':
-        return i18n.common.error.saveFailed
-      case 'loading':
-      case 'loading-dirty':
-      case 'saving':
-      case 'saving-dirty':
-      case 'dirty':
-      case 'clean':
-        return status.savedAt
-          ? `${i18n.common.saved} ${formatTime(status.savedAt)}`
-          : null
-    }
-  }
-
-  const textualVasuStatus = formatVasuStatus(status)
   const showSpinner = status.state === 'saving'
 
   const dynamicSectionsOffset = 1
@@ -125,7 +105,7 @@ export default React.memo(function VasuEditPage() {
       <StickyFooter>
         <FooterContainer>
           <StatusContainer>
-            <Dimmed>{textualVasuStatus}</Dimmed>
+            <AutosaveStatusIndicator status={status} />
             {showSpinner && <Spinner />}
           </StatusContainer>
           {vasu && (

@@ -7,6 +7,7 @@ package fi.espoo.evaka.assistanceneed.decision
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 
@@ -157,4 +158,93 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
         .bind("id", id)
         .mapTo<AssistanceNeedDecision>()
         .one()
+}
+
+fun Database.Transaction.updateAssistanceNeedDecision(
+    id: AssistanceNeedDecisionId,
+    data: AssistanceNeedDecision
+) {
+    //language=sql
+    val sql =
+        """
+        UPDATE assistance_need_decision
+        SET 
+            start_date = :startDate,
+            end_date = :endDate, 
+            status = :status,
+            language = :language,
+            decision_made = :decisionMade,
+            sent_for_decision = :sentForDecision,
+            selected_unit = :selectedUnit,
+            pedagogical_motivation = :pedagogicalMotivation,
+            structural_motivation_opt_smaller_group = :structuralMotivationOptSmallerGroup,
+            structural_motivation_opt_special_group = :structuralMotivationOptSpecialGroup,
+            structural_motivation_opt_small_group = :structuralMotivationOptSmallGroup,
+            structural_motivation_opt_group_assistant = :structuralMotivationOptGroupAssistant,
+            structural_motivation_opt_child_assistant = :structuralMotivationOptChildAssistant,
+            structural_motivation_opt_additional_staff = :structuralMotivationOptAdditionalStaff,
+            structural_motivation_description = :structuralMotivationDescription,
+            care_motivation = :careMotivation,
+            service_opt_consultation_special_ed=:serviceOptConsultationSpecialEd,
+            service_opt_part_time_special_ed = :serviceOptPartTimeSpecialEd,
+            service_opt_full_time_special_ed = :serviceOptFullTimeSpecialEd,
+            service_opt_interpretation_and_assistance_services = :serviceOptInterpretationAndAssistanceServices ,
+            service_opt_special_aides = :serviceOptSpecialAides ,
+            services_motivation = :servicesMotivation ,
+            expert_responsibilities = :expertResponsibilities ,
+            guardians_heard_on = :guardiansHeardOn ,
+            view_of_guardians = :viewOfGuardians ,
+            other_representative_heard = :otherRepresentativeHeard ,
+            other_representative_details = :otherRepresentativeDetails ,
+            assistance_level = :assistanceLevel ,
+            assistance_service_start = :assistanceServiceStart ,
+            assistance_service_end = :assistanceServiceEnd ,
+            motivation_for_decision = :motivationForDecision ,
+            decision_maker_employee_id = :decisionMakerEmployeeId ,
+            decision_maker_title = :decisionMakerTitle ,
+            preparer_1_employee_id = :preparer1EmployeeId ,
+            preparer_1_title = :preparer1Title ,
+            preparer_2_employee_id = :preparer2EmployeeId ,
+            preparer_2_title = :preparer2Title 
+        WHERE id = :id
+        """.trimIndent()
+    createUpdate(sql)
+        .bindKotlin(data)
+        .bind("id", id)
+        .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
+        .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
+        .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
+        .bind("structuralMotivationOptGroupAssistant", data.structuralMotivationOptions.groupAssistant)
+        .bind("structuralMotivationOptChildAssistant", data.structuralMotivationOptions.childAssistant)
+        .bind("structuralMotivationOptAdditionalStaff", data.structuralMotivationOptions.additionalStaff)
+        .bind("serviceOptConsultationSpecialEd", data.serviceOptions.consultationSpecialEd)
+        .bind("serviceOptPartTimeSpecialEd", data.serviceOptions.partTimeSpecialEd)
+        .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
+        .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
+        .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
+        .bind("assistanceServiceStart", data.assistanceServicesTime?.start)
+        .bind("assistanceServiceEnd", data.assistanceServicesTime?.end)
+        .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
+        .bind("decisionMakerTitle", data.decisionMaker?.title)
+        .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
+        .bind("preparer1Title", data.preparedBy1?.title)
+        .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
+        .bind("preparer2Title", data.preparedBy2?.title)
+        .updateExactlyOne()
+
+    //language=sql
+    val guardianSql =
+        """
+        UPDATE assistance_need_decision_guardian SET 
+            is_heard = :isHeard,
+            details = :details
+        WHERE id = :id
+        """.trimIndent()
+    val batch = prepareBatch(guardianSql)
+    data.guardianInfo.forEach { guardian ->
+        batch
+            .bindKotlin(guardian)
+            .add()
+    }
+    batch.execute()
 }

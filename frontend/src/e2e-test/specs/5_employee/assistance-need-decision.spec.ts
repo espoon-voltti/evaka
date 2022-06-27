@@ -76,4 +76,11 @@ describe('Assistance Need Decisions - Edit page', () => {
       assistanceNeedDecision.decisionNumber
     )
   })
+
+  test('Autosave works', async () => {
+    await assistanceNeedDecisionEditPage.pedagogicalMotivationInput.fill(
+      'this is a motivation'
+    )
+    await assistanceNeedDecisionEditPage.waitUntilSaved()
+  })
 })

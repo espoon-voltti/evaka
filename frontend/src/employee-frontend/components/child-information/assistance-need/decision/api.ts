@@ -40,3 +40,16 @@ export function getAssistanceNeedDecision(
     .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
     .catch((e) => Failure.fromError(e))
 }
+
+export function putAssistanceNeedDecision(
+  childId: UUID,
+  id: UUID,
+  data: AssistanceNeedDecision
+): Promise<Result<void>> {
+  return client
+    .put(`/children/${childId}/assistance-needs/decision/${id}`, {
+      decision: data
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

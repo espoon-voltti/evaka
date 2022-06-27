@@ -2,47 +2,61 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { SetStateAction, useEffect, useState } from 'react'
+import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
+import {
+  AutosaveStatus,
+  useAutosave
+} from 'employee-frontend/utils/use-autosave'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getAssistanceNeedDecision } from './api'
+import { getAssistanceNeedDecision, putAssistanceNeedDecision } from './api'
 
 export type AssistanceNeedDecisionInfo = {
-  assistanceNeedDecision: Result<AssistanceNeedDecision>
-  reloadAssistanceNeedDecision: () => void
   formState: AssistanceNeedDecision | undefined
   setFormState: React.Dispatch<
     SetStateAction<AssistanceNeedDecision | undefined>
   >
+  status: AutosaveStatus
 }
 
 export function useAssistanceNeedDecision(
   childId: UUID,
   id: UUID
 ): AssistanceNeedDecisionInfo {
-  const [assistanceNeedDecision, reloadAssistanceNeedDecision] = useApiState(
+  const [formState, setFormState] = useState<AssistanceNeedDecision>()
+
+  const getSaveParameters = useCallback(
+    () =>
+      [childId, id, formState] as [
+        childId: string,
+        id: string,
+        data: AssistanceNeedDecision
+      ],
+    [childId, id, formState]
+  )
+
+  const loadDecision = useCallback(
     () => getAssistanceNeedDecision(childId, id),
     [childId, id]
   )
 
-  const [formState, setFormState] = useState<AssistanceNeedDecision>()
+  const { status, setDirty } = useAutosave({
+    load: loadDecision,
+    onLoaded: setFormState,
+    save: putAssistanceNeedDecision,
+    getSaveParameters
+  })
 
+  // set dirty whenever formState changes
   useEffect(() => {
-    assistanceNeedDecision.mapAll({
-      loading: () => null,
-      failure: () => null,
-      success: (result) => setFormState(result)
-    })
-  }, [assistanceNeedDecision])
+    setDirty()
+  }, [setDirty, formState])
 
   return {
-    assistanceNeedDecision,
-    reloadAssistanceNeedDecision,
     formState,
-    setFormState
+    setFormState,
+    status
   }
 }

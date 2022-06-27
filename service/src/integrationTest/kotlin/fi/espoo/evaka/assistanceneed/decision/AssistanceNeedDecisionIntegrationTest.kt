@@ -8,6 +8,8 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -35,7 +37,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         selectedUnit = testDaycare.id,
         preparedBy1 = AssistanceNeedDecisionEmployee(employeeId = assistanceWorker.id, title = "worker"),
         preparedBy2 = AssistanceNeedDecisionEmployee(employeeId = null, title = null),
-        decisionMaker = AssistanceNeedDecisionEmployee(employeeId = testDecisionMaker_2.id, title = "Decider of everything"),
+        decisionMaker = AssistanceNeedDecisionEmployee(
+            employeeId = testDecisionMaker_2.id,
+            title = "Decider of everything"
+        ),
 
         pedagogicalMotivation = "Pedagogical motivation",
         structuralMotivationOptions = StructuralMotivationOptions(
@@ -86,7 +91,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `post and get an assistance need decision`() {
         val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
-            PostAssistanceNeedDecisionRequest(
+            AssistanceNeedDecisionRequest(
                 decision = testDecision
             )
         )
@@ -105,7 +110,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         assertEquals(testDecision.pedagogicalMotivation, assistanceNeedDecision.pedagogicalMotivation)
         assertEquals(testDecision.structuralMotivationOptions, assistanceNeedDecision.structuralMotivationOptions)
-        assertEquals(testDecision.structuralMotivationDescription, assistanceNeedDecision.structuralMotivationDescription)
+        assertEquals(
+            testDecision.structuralMotivationDescription,
+            assistanceNeedDecision.structuralMotivationDescription
+        )
         assertEquals(testDecision.careMotivation, assistanceNeedDecision.careMotivation)
         assertEquals(testDecision.serviceOptions, assistanceNeedDecision.serviceOptions)
         assertEquals(testDecision.servicesMotivation, assistanceNeedDecision.servicesMotivation)
@@ -132,9 +140,80 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.motivationForDecision, assistanceNeedDecision.motivationForDecision)
     }
 
-    private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: PostAssistanceNeedDecisionRequest): AssistanceNeedDecision {
+    @Test
+    fun `posting without guardians adds guardians before saving`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+        }
+        val testDecisionWithoutGuardian = testDecision.copy(guardianInfo = setOf())
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecisionWithoutGuardian
+            )
+        )
+        val firstGuardian = assistanceNeedDecision.guardianInfo.first()
+        assertEquals(testAdult_1.id, firstGuardian.personId)
+        assertEquals("${testAdult_1.lastName} ${testAdult_1.firstName}", firstGuardian.name)
+    }
+
+    @Test
+    fun `Updating a decision stores the new information`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+        val updatedDecision = assistanceNeedDecision.copy(
+            pedagogicalMotivation = "Such Pedagogical motivation",
+            structuralMotivationOptions = assistanceNeedDecision.structuralMotivationOptions,
+            structuralMotivationDescription = "Very Structural motivation",
+            careMotivation = "wow",
+            guardianInfo = assistanceNeedDecision.guardianInfo.map {
+                AssistanceNeedDecisionGuardian(
+                    id = it.id,
+                    personId = it.personId,
+                    name = it.name,
+                    isHeard = true,
+                    details = "Updated details"
+                )
+            }.toSet()
+        )
+
+        whenPutAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = updatedDecision
+            )
+        )
+
+        val finalDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(updatedDecision.id)
+
+        assertEquals(updatedDecision.pedagogicalMotivation, finalDecision.pedagogicalMotivation)
+        assertEquals(updatedDecision.structuralMotivationDescription, finalDecision.structuralMotivationDescription)
+        assertEquals(updatedDecision.careMotivation, finalDecision.careMotivation)
+        assertEquals(updatedDecision.guardianInfo, finalDecision.guardianInfo)
+    }
+
+    private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
         val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs/decision")
             .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(assistanceWorker)
+            .responseObject<AssistanceNeedDecision>(jsonMapper)
+
+        assertEquals(200, res.statusCode)
+        return result.get()
+    }
+
+    private fun whenPutAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest) {
+        val (_, res) = http.put("/children/${testChild_1.id}/assistance-needs/decision/${request.decision.id}")
+            .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(assistanceWorker)
+            .response()
+
+        assertEquals(200, res.statusCode)
+    }
+
+    private fun whenGetAssistanceNeedDecisionThenExpectSuccess(id: AssistanceNeedDecisionId?): AssistanceNeedDecision {
+        val (_, res, result) = http.get("/children/${testChild_1.id}/assistance-needs/decision/$id")
             .asUser(assistanceWorker)
             .responseObject<AssistanceNeedDecision>(jsonMapper)
 
