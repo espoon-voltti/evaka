@@ -11,6 +11,7 @@ import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
+import Main from 'lib-components/atoms/Main'
 import ResponsiveAddButton from 'lib-components/atoms/buttons/ResponsiveAddButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -155,72 +156,75 @@ export default React.memo(function IncomeStatements() {
 
   return (
     <>
-      <Container>
-        <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.income.title}</H1>
-          {t.income.description}
-        </ContentArea>
-        <Gap size="s" />
-        <ContentArea opaque paddingVertical="L">
-          <HeadingContainer>
-            <H2>{t.income.table.title}</H2>
-            <ResponsiveAddButton
-              onClick={() => navigate('/income/new/edit')}
-              text={t.income.addNew}
-              data-qa="new-income-statement-btn"
-            />
-          </HeadingContainer>
-          {renderResult(incomeStatements, ({ data, pages }) => (
-            <>
-              <IncomeStatementsTable
-                items={data}
-                onRemoveIncomeStatement={(id) =>
-                  setDeletionState({
-                    status: 'confirming',
-                    rowToDelete: id
-                  })
-                }
+      <Main>
+        <Container>
+          <Gap size="s" />
+          <ContentArea opaque paddingVertical="L">
+            <H1 noMargin>{t.income.title}</H1>
+            {t.income.description}
+          </ContentArea>
+          <Gap size="s" />
+          <ContentArea opaque paddingVertical="L">
+            <HeadingContainer>
+              <H2>{t.income.table.title}</H2>
+              <ResponsiveAddButton
+                onClick={() => navigate('/income/new/edit')}
+                text={t.income.addNew}
+                data-qa="new-income-statement-btn"
               />
-              <Gap />
-              <Pagination
-                pages={pages}
-                currentPage={page}
-                setPage={setPage}
-                label={t.common.page}
-                hideIfOnlyOnePage={true}
+            </HeadingContainer>
+            {renderResult(incomeStatements, ({ data, pages }) => (
+              <>
+                <IncomeStatementsTable
+                  items={data}
+                  onRemoveIncomeStatement={(id) =>
+                    setDeletionState({
+                      status: 'confirming',
+                      rowToDelete: id
+                    })
+                  }
+                />
+                <Gap />
+                <Pagination
+                  pages={pages}
+                  currentPage={page}
+                  setPage={setPage}
+                  label={t.common.page}
+                  hideIfOnlyOnePage={true}
+                />
+              </>
+            ))}
+
+            {deletionState.status !== 'row-not-selected' && (
+              <InfoModal
+                type="warning"
+                title={t.income.table.deleteConfirm}
+                text={t.income.table.deleteDescription}
+                icon={faQuestion}
+                reject={{
+                  action: () =>
+                    setDeletionState({ status: 'row-not-selected' }),
+                  label: t.common.return
+                }}
+                resolve={{
+                  action: () => onDelete(deletionState.rowToDelete),
+                  label: t.common.delete,
+                  disabled: deletionState.status === 'deleting'
+                }}
+              />
+            )}
+          </ContentArea>
+          <Gap size="s" />
+          {renderResult(children, (children) => (
+            <>
+              <ChildrenIncomeStatements
+                childInfo={children}
+                onRemoveIncomeStatement={fetchChildren}
               />
             </>
           ))}
-
-          {deletionState.status !== 'row-not-selected' && (
-            <InfoModal
-              type="warning"
-              title={t.income.table.deleteConfirm}
-              text={t.income.table.deleteDescription}
-              icon={faQuestion}
-              reject={{
-                action: () => setDeletionState({ status: 'row-not-selected' }),
-                label: t.common.return
-              }}
-              resolve={{
-                action: () => onDelete(deletionState.rowToDelete),
-                label: t.common.delete,
-                disabled: deletionState.status === 'deleting'
-              }}
-            />
-          )}
-        </ContentArea>
-        <Gap size="s" />
-        {renderResult(children, (children) => (
-          <>
-            <ChildrenIncomeStatements
-              childInfo={children}
-              onRemoveIncomeStatement={fetchChildren}
-            />
-          </>
-        ))}
-      </Container>
+        </Container>
+      </Main>
       <Footer />
     </>
   )

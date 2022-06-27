@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -78,23 +79,25 @@ export default React.memo(function VasuPage() {
               <DownloadButton label={t.common.download} />
             </MobileDownloadButtonContainer>
           </ButtonContainer>
-          <CitizenVasuHeader document={vasu} />
-          <CitizenBasicsSection
-            sectionIndex={0}
-            type={vasu.type}
-            basics={vasu.basics}
-            childLanguage={vasu.basics.childLanguage}
-            templateRange={vasu.templateRange}
-            translations={translations}
-          />
-          <CitizenDynamicSections
-            sections={content.sections}
-            sectionIndex={dynamicSectionsOffset}
-            state={vasu.documentState}
-            translations={translations}
-          />
-          <Gap size="s" />
-          <CitizenVasuEvents document={vasu} content={content} />
+          <Main>
+            <CitizenVasuHeader document={vasu} />
+            <CitizenBasicsSection
+              sectionIndex={0}
+              type={vasu.type}
+              basics={vasu.basics}
+              childLanguage={vasu.basics.childLanguage}
+              templateRange={vasu.templateRange}
+              translations={translations}
+            />
+            <CitizenDynamicSections
+              sections={content.sections}
+              sectionIndex={dynamicSectionsOffset}
+              state={vasu.documentState}
+              translations={translations}
+            />
+            <Gap size="s" />
+            <CitizenVasuEvents document={vasu} content={content} />
+          </Main>
         </>
       )}
       {vasu && !guardianHasGivenPermissionToShare && (

@@ -19,6 +19,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -57,31 +58,33 @@ export default React.memo(function IncomeStatementView() {
   return renderResult(result, (incomeStatement) => (
     <Container>
       <ReturnButton label={t.common.return} />
-      <ContentArea opaque>
-        <FixedSpaceRow spacing="L">
-          <H1>{t.income.view.title}</H1>
-          {!incomeStatement.handled && (
-            <EditButtonContainer>
-              <ResponsiveInlineButton
-                text={t.common.edit}
-                icon={faPen}
-                onClick={handleEdit}
-              />
-            </EditButtonContainer>
+      <Main>
+        <ContentArea opaque>
+          <FixedSpaceRow spacing="L">
+            <H1>{t.income.view.title}</H1>
+            {!incomeStatement.handled && (
+              <EditButtonContainer>
+                <ResponsiveInlineButton
+                  text={t.common.edit}
+                  icon={faPen}
+                  onClick={handleEdit}
+                />
+              </EditButtonContainer>
+            )}
+          </FixedSpaceRow>
+          <Row
+            label={t.income.view.startDate}
+            value={incomeStatement.startDate.format()}
+          />
+          <Row
+            label={t.income.view.feeBasis}
+            value={t.income.view.statementTypes[incomeStatement.type]}
+          />
+          {incomeStatement.type === 'INCOME' && (
+            <IncomeInfo incomeStatement={incomeStatement} />
           )}
-        </FixedSpaceRow>
-        <Row
-          label={t.income.view.startDate}
-          value={incomeStatement.startDate.format()}
-        />
-        <Row
-          label={t.income.view.feeBasis}
-          value={t.income.view.statementTypes[incomeStatement.type]}
-        />
-        {incomeStatement.type === 'INCOME' && (
-          <IncomeInfo incomeStatement={incomeStatement} />
-        )}
-      </ContentArea>
+        </ContentArea>
+      </Main>
     </Container>
   ))
 })

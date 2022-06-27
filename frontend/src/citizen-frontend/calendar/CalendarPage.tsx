@@ -13,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   Desktop,
@@ -321,7 +322,9 @@ const DesktopOnly = styled(Desktop)`
 export default React.memo(function CalendarPageWrapper() {
   return (
     <>
-      <CalendarPage />
+      <Main>
+        <CalendarPage />
+      </Main>
       <Footer />
     </>
   )

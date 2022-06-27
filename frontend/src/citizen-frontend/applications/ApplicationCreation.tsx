@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -78,108 +79,110 @@ export default React.memo(function ApplicationCreation() {
     <>
       <Container>
         <ReturnButton label={t.common.return} />
-        <ContentArea
-          opaque
-          paddingVertical="L"
-          data-qa="application-options-area"
-        >
-          <H1 noMargin>{t.applications.creation.title}</H1>
-          <Gap size="m" />
-          <H2 noMargin>
-            {child.firstName} {child.lastName}
-          </H2>
-          <Gap size="XL" />
-          <ExpandingInfo
-            data-qa="daycare-expanding-info"
-            info={t.applications.creation.daycareInfo}
-            ariaLabel={t.common.openExpandingInfo}
+        <Main>
+          <ContentArea
+            opaque
+            paddingVertical="L"
+            data-qa="application-options-area"
           >
-            <Radio
-              checked={selectedType === 'DAYCARE'}
-              onChange={() => setSelectedType('DAYCARE')}
-              label={t.applications.creation.daycareLabel}
-              data-qa="type-radio-DAYCARE"
-            />
-          </ExpandingInfo>
-          <Gap size="s" />
-          {featureFlags.preschoolEnabled && (
-            <>
-              <ExpandingInfo
-                info={t.applications.creation.preschoolInfo}
-                ariaLabel={t.common.openExpandingInfo}
-              >
-                <Radio
-                  checked={selectedType === 'PRESCHOOL'}
-                  onChange={() => setSelectedType('PRESCHOOL')}
-                  label={t.applications.creation.preschoolLabel}
-                  data-qa="type-radio-PRESCHOOL"
+            <H1 noMargin>{t.applications.creation.title}</H1>
+            <Gap size="m" />
+            <H2 noMargin>
+              {child.firstName} {child.lastName}
+            </H2>
+            <Gap size="XL" />
+            <ExpandingInfo
+              data-qa="daycare-expanding-info"
+              info={t.applications.creation.daycareInfo}
+              ariaLabel={t.common.openExpandingInfo}
+            >
+              <Radio
+                checked={selectedType === 'DAYCARE'}
+                onChange={() => setSelectedType('DAYCARE')}
+                label={t.applications.creation.daycareLabel}
+                data-qa="type-radio-DAYCARE"
+              />
+            </ExpandingInfo>
+            <Gap size="s" />
+            {featureFlags.preschoolEnabled && (
+              <>
+                <ExpandingInfo
+                  info={t.applications.creation.preschoolInfo}
+                  ariaLabel={t.common.openExpandingInfo}
+                >
+                  <Radio
+                    checked={selectedType === 'PRESCHOOL'}
+                    onChange={() => setSelectedType('PRESCHOOL')}
+                    label={t.applications.creation.preschoolLabel}
+                    data-qa="type-radio-PRESCHOOL"
+                  />
+                </ExpandingInfo>
+                <PreschoolDaycareInfo>
+                  {t.applications.creation.preschoolDaycareInfo}
+                </PreschoolDaycareInfo>
+                <Gap size="s" />
+              </>
+            )}
+            <ExpandingInfo
+              data-qa="club-expanding-info"
+              info={t.applications.creation.clubInfo}
+              ariaLabel={t.common.openExpandingInfo}
+            >
+              <Radio
+                checked={selectedType === 'CLUB'}
+                onChange={() => setSelectedType('CLUB')}
+                label={t.applications.creation.clubLabel}
+                data-qa="type-radio-CLUB"
+              />
+            </ExpandingInfo>
+            {duplicateExists ? (
+              <>
+                <Gap size="L" />
+                <AlertBox
+                  thin
+                  data-qa="duplicate-application-notification"
+                  message={t.applications.creation.duplicateWarning}
                 />
-              </ExpandingInfo>
-              <PreschoolDaycareInfo>
-                {t.applications.creation.preschoolDaycareInfo}
-              </PreschoolDaycareInfo>
-              <Gap size="s" />
-            </>
-          )}
-          <ExpandingInfo
-            data-qa="club-expanding-info"
-            info={t.applications.creation.clubInfo}
-            ariaLabel={t.common.openExpandingInfo}
-          >
-            <Radio
-              checked={selectedType === 'CLUB'}
-              onChange={() => setSelectedType('CLUB')}
-              label={t.applications.creation.clubLabel}
-              data-qa="type-radio-CLUB"
-            />
-          </ExpandingInfo>
-          {duplicateExists ? (
-            <>
-              <Gap size="L" />
-              <AlertBox
-                thin
-                data-qa="duplicate-application-notification"
-                message={t.applications.creation.duplicateWarning}
-              />
-            </>
-          ) : null}
-          {!duplicateExists && shouldUseTransferApplication && (
-            <>
-              <Gap size="L" />
-              <InfoBox
-                thin
-                data-qa="transfer-application-notification"
-                message={
-                  t.applications.creation.transferApplicationInfo[
-                    selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'
-                  ]
+              </>
+            ) : null}
+            {!duplicateExists && shouldUseTransferApplication && (
+              <>
+                <Gap size="L" />
+                <InfoBox
+                  thin
+                  data-qa="transfer-application-notification"
+                  message={
+                    t.applications.creation.transferApplicationInfo[
+                      selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'
+                    ]
+                  }
+                />
+              </>
+            )}
+            <Gap size="s" />
+            {t.applications.creation.applicationInfo}
+          </ContentArea>
+          <ContentArea opaque={false} paddingVertical="L">
+            <ButtonContainer justify="center">
+              <AsyncButton
+                primary
+                text={t.applications.creation.create}
+                disabled={selectedType === undefined || duplicateExists}
+                onClick={() =>
+                  selectedType !== undefined
+                    ? createApplication(childId, selectedType)
+                    : undefined
                 }
+                onSuccess={(id) => navigate(`/applications/${id}/edit`)}
+                data-qa="submit"
               />
-            </>
-          )}
-          <Gap size="s" />
-          {t.applications.creation.applicationInfo}
-        </ContentArea>
-        <ContentArea opaque={false} paddingVertical="L">
-          <ButtonContainer justify="center">
-            <AsyncButton
-              primary
-              text={t.applications.creation.create}
-              disabled={selectedType === undefined || duplicateExists}
-              onClick={() =>
-                selectedType !== undefined
-                  ? createApplication(childId, selectedType)
-                  : undefined
-              }
-              onSuccess={(id) => navigate(`/applications/${id}/edit`)}
-              data-qa="submit"
-            />
-            <Button
-              text={t.common.cancel}
-              onClick={() => navigate('/applying/applications')}
-            />
-          </ButtonContainer>
-        </ContentArea>
+              <Button
+                text={t.common.cancel}
+                onClick={() => navigate('/applying/applications')}
+              />
+            </ButtonContainer>
+          </ContentArea>
+        </Main>
       </Container>
       <Footer />
     </>

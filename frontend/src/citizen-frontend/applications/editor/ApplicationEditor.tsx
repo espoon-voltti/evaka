@@ -17,6 +17,7 @@ import { UUID } from 'lib-common/types'
 import useBetterParams from 'lib-common/useNonNullableParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Main from 'lib-components/atoms/Main'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton, {
@@ -398,11 +399,13 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         <ReturnButton label={t.common.return} />
       )}
 
-      {verifying ? renderVerificationView() : renderEditor()}
+      <Main>
+        {verifying ? renderVerificationView() : renderEditor()}
 
-      <Gap size="m" />
+        <Gap size="m" />
 
-      {renderActions()}
+        {renderActions()}
+      </Main>
     </Container>
   )
 })

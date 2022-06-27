@@ -4,6 +4,8 @@
 
 import React from 'react'
 
+import Footer from 'citizen-frontend/Footer'
+import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -18,26 +20,30 @@ export default React.memo(function ChildDocuments() {
   const t = useTranslation()
   return (
     <>
-      <Container>
-        <Gap size="s" />
+      <Main>
+        <Container>
+          <Gap size="s" />
 
-        <ContentArea opaque paddingVertical="L">
-          <H1 noMargin>{t.childDocuments.title}</H1>
-          <p>{t.childDocuments.description}</p>
-        </ContentArea>
+          <ContentArea opaque paddingVertical="L">
+            <H1 noMargin>{t.childDocuments.title}</H1>
+            <p>{t.childDocuments.description}</p>
+          </ContentArea>
 
-        <Gap size="s" />
+          <Gap size="s" />
 
-        {featureFlags.experimental?.citizenVasu && (
-          <>
-            <CitizenVasuAndLeops />
+          {featureFlags.experimental?.citizenVasu && (
+            <>
+              <CitizenVasuAndLeops />
 
-            <Gap size="s" />
-          </>
-        )}
+              <Gap size="s" />
+            </>
+          )}
 
-        <PedagogicalDocuments />
-      </Container>
+          <PedagogicalDocuments />
+        </Container>
+      </Main>
+
+      <Footer />
     </>
   )
 })

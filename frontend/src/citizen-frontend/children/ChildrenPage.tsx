@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import Footer from 'citizen-frontend/Footer'
 import { Child } from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import Main from 'lib-components/atoms/Main'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -120,23 +121,25 @@ export default React.memo(function ChildrenPage() {
 
   return (
     <>
-      <Container>
-        <Gap size="s" />
-        <ContentArea opaque>
-          <H1 noMargin>{t.children.title}</H1>
-          <P>{t.children.pageDescription}</P>
-        </ContentArea>
-        <Gap size="s" />
-        {renderResult(childrenResponse, ({ children }) => (
-          <Children>
-            {children.length > 0 ? (
-              children.map((c) => <ChildItem key={c.id} child={c} />)
-            ) : (
-              <P>{t.children.noChildren}</P>
-            )}
-          </Children>
-        ))}
-      </Container>
+      <Main>
+        <Container>
+          <Gap size="s" />
+          <ContentArea opaque>
+            <H1 noMargin>{t.children.title}</H1>
+            <P>{t.children.pageDescription}</P>
+          </ContentArea>
+          <Gap size="s" />
+          {renderResult(childrenResponse, ({ children }) => (
+            <Children>
+              {children.length > 0 ? (
+                children.map((c) => <ChildItem key={c.id} child={c} />)
+              ) : (
+                <P>{t.children.noChildren}</P>
+              )}
+            </Children>
+          ))}
+        </Container>
+      </Main>
       <Footer />
     </>
   )

@@ -2040,7 +2040,11 @@ const sv: Translations = {
         Öppet mån.– fre. kl. 8.00–16.15
       </P>
     </>
-  )
+  ),
+  skipLinks: {
+    mainContent: 'Hoppa till innehållet',
+    applyingSubNav: 'Hoppa till ansökningsnavigationen'
+  }
 }
 
 export default sv

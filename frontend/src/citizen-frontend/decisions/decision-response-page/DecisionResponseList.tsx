@@ -9,6 +9,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Main from 'lib-components/atoms/Main'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -70,66 +71,68 @@ export default React.memo(function DecisionResponseList() {
           icon={faChevronLeft}
         />
         <Gap size="s" />
-        <ContentArea opaque>
-          <H1>{t.decisions.title}</H1>
-          {renderResult(decisionsRequest, (decisions) => (
-            <div>
-              <P width="800px">{t.decisions.applicationDecisions.summary}</P>
-              {unconfirmedDecisionsCount > 0 ? (
-                <AlertBox
-                  message={t.decisions.unconfirmedDecisions(
-                    unconfirmedDecisionsCount
-                  )}
-                  data-qa="alert-box-unconfirmed-decisions-count"
-                />
-              ) : null}
-              <Gap size="L" />
-              {sortDecisions(decisions).map((decision, i) => (
-                <React.Fragment key={decision.id}>
-                  <DecisionResponse
-                    decision={decision}
-                    blocked={isDecisionBlocked(decision, decisions)}
-                    rejectCascade={isRejectCascaded(decision, decisions)}
-                    refreshDecisionList={loadDecisions}
-                    handleReturnToPreviousPage={handleReturnToPreviousPage}
+        <Main>
+          <ContentArea opaque>
+            <H1>{t.decisions.title}</H1>
+            {renderResult(decisionsRequest, (decisions) => (
+              <div>
+                <P width="800px">{t.decisions.applicationDecisions.summary}</P>
+                {unconfirmedDecisionsCount > 0 ? (
+                  <AlertBox
+                    message={t.decisions.unconfirmedDecisions(
+                      unconfirmedDecisionsCount
+                    )}
+                    data-qa="alert-box-unconfirmed-decisions-count"
                   />
-                  {i < decisions.length - 1 ? <HorizontalLine /> : null}
-                </React.Fragment>
-              ))}
-            </div>
-          ))}
-          <Gap size="m" />
-        </ContentArea>
-        {displayDecisionWithNoResponseWarning && (
-          <InfoModal
-            title={
-              t.decisions.applicationDecisions.warnings
-                .decisionWithNoResponseWarning.title
-            }
-            icon={faExclamation}
-            type="warning"
-            text={
-              t.decisions.applicationDecisions.warnings
-                .decisionWithNoResponseWarning.text
-            }
-            resolve={{
-              label:
+                ) : null}
+                <Gap size="L" />
+                {sortDecisions(decisions).map((decision, i) => (
+                  <React.Fragment key={decision.id}>
+                    <DecisionResponse
+                      decision={decision}
+                      blocked={isDecisionBlocked(decision, decisions)}
+                      rejectCascade={isRejectCascaded(decision, decisions)}
+                      refreshDecisionList={loadDecisions}
+                      handleReturnToPreviousPage={handleReturnToPreviousPage}
+                    />
+                    {i < decisions.length - 1 ? <HorizontalLine /> : null}
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
+            <Gap size="m" />
+          </ContentArea>
+          {displayDecisionWithNoResponseWarning && (
+            <InfoModal
+              title={
                 t.decisions.applicationDecisions.warnings
-                  .decisionWithNoResponseWarning.resolveLabel,
-              action: () => {
-                navigate('/applying/decisions')
+                  .decisionWithNoResponseWarning.title
               }
-            }}
-            reject={{
-              label:
+              icon={faExclamation}
+              type="warning"
+              text={
                 t.decisions.applicationDecisions.warnings
-                  .decisionWithNoResponseWarning.rejectLabel,
-              action: () => {
-                setDisplayDecisionWithNoResponseWarning(false)
+                  .decisionWithNoResponseWarning.text
               }
-            }}
-          />
-        )}
+              resolve={{
+                label:
+                  t.decisions.applicationDecisions.warnings
+                    .decisionWithNoResponseWarning.resolveLabel,
+                action: () => {
+                  navigate('/applying/decisions')
+                }
+              }}
+              reject={{
+                label:
+                  t.decisions.applicationDecisions.warnings
+                    .decisionWithNoResponseWarning.rejectLabel,
+                action: () => {
+                  setDisplayDecisionWithNoResponseWarning(false)
+                }
+              }}
+            />
+          )}
+        </Main>
       </Container>
       <Footer />
     </>
