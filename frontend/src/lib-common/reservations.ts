@@ -66,14 +66,15 @@ export function validateForm(
     errors['selectedChildren'] = 'required'
   }
 
-  if (
-    startDate === null ||
-    !reservableDays.some((r) => r.includes(startDate))
-  ) {
+  if (startDate === null) {
+    errors['startDate'] = 'required'
+  } else if (!reservableDays.some((r) => r.includes(startDate))) {
     errors['startDate'] = 'validDate'
   }
 
-  if (endDate === null || !reservableDays.some((r) => r.includes(endDate))) {
+  if (endDate === null) {
+    errors['endDate'] = 'required'
+  } else if (!reservableDays.some((r) => r.includes(endDate))) {
     errors['endDate'] = 'validDate'
   } else if (startDate && endDate.isBefore(startDate)) {
     errors['endDate'] = 'dateTooEarly'

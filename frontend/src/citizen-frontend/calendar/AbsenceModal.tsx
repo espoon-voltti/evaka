@@ -14,14 +14,10 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
-import {
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
+import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -131,35 +127,24 @@ export default React.memo(function AbsenceModal({
         </FixedSpaceFlexWrap>
         <Gap size="m" />
         <Label>{i18n.calendar.absenceModal.dateRange}</Label>
-        <FixedSpaceRow alignItems="flex-start" spacing="xs">
-          <DatePicker
-            date={form.startDate}
-            onChange={(date) => updateForm({ startDate: date })}
-            locale={lang}
-            minDate={LocalDate.todayInSystemTz()}
-            info={
-              errors &&
-              errorToInputInfo(errors.startDate, i18n.validationErrors)
-            }
-            hideErrorsBeforeTouched={!showAllErrors}
-            data-qa="start-date"
-            errorTexts={i18n.validationErrors}
-          />
-          <DatePickerSpacer />
-          <DatePicker
-            date={form.endDate}
-            onChange={(date) => updateForm({ endDate: date })}
-            locale={lang}
-            minDate={LocalDate.todayInSystemTz()}
-            info={
-              errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
-            }
-            hideErrorsBeforeTouched={!showAllErrors}
-            initialMonth={form.startDate ?? LocalDate.todayInSystemTz()}
-            data-qa="end-date"
-            errorTexts={i18n.validationErrors}
-          />
-        </FixedSpaceRow>
+        <DateRangePicker
+          start={form.startDate}
+          end={form.endDate}
+          onChange={(startDate, endDate) => updateForm({ startDate, endDate })}
+          locale={lang}
+          errorTexts={i18n.validationErrors}
+          hideErrorsBeforeTouched={!showAllErrors}
+          onFocus={(ev) => {
+            scrollIntoViewSoftKeyboard(ev.target, 'start')
+          }}
+          startInfo={
+            errors && errorToInputInfo(errors.startDate, i18n.validationErrors)
+          }
+          endInfo={
+            errors && errorToInputInfo(errors.endDate, i18n.validationErrors)
+          }
+          minDate={LocalDate.todayInSystemTz()}
+        />
         <Gap size="m" />
         <Label>{i18n.calendar.absenceModal.absenceType}</Label>
         <Gap size="s" />
