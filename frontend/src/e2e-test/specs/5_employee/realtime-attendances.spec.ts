@@ -22,6 +22,7 @@ import {
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitAttendancesPage } from '../../pages/employee/units/unit-attendances-page'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -33,6 +34,7 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 let staff: EmployeeDetail[]
+let groupStaff: EmployeeDetail
 
 const mockedToday = LocalDate.of(2022, 3, 28)
 const placementStartDate = mockedToday.subWeeks(4)
@@ -88,20 +90,19 @@ beforeEach(async () => {
     })
     .save()
 
-  staff = [
-    (await Fixture.employeeStaff(daycare.id).save()).data,
-    (
-      await Fixture.employee()
-        .with({
-          email: 'kalle.kasvattaja@evaka.test',
-          firstName: 'Kalle',
-          lastName: 'Kasvattaja',
-          roles: []
-        })
-        .withDaycareAcl(daycare.id, 'STAFF')
-        .save()
-    ).data
-  ]
+  groupStaff = (
+    await Fixture.employee()
+      .with({
+        email: 'kalle.kasvattaja@evaka.test',
+        firstName: 'Kalle',
+        lastName: 'Kasvattaja',
+        roles: []
+      })
+      .withDaycareAcl(daycare.id, 'STAFF')
+      .withGroupAcl(groupId)
+      .save()
+  ).data
+  staff = [(await Fixture.employeeStaff(daycare.id).save()).data, groupStaff]
   await Fixture.staffOccupancyCoefficient(daycare.id, staff[1].id).save()
 
   await insertStaffRealtimeAttendance({
@@ -136,6 +137,12 @@ const openAttendancesPage = async (): Promise<UnitAttendancesPage> => {
 }
 
 describe('Realtime staff attendances', () => {
+  test('Occupancy graph', async () => {
+    calendarPage = await openAttendancesPage()
+    await calendarPage.occupancies.assertGraphIsVisible()
+    await calendarPage.setFilterStartDate(LocalDate.of(2022, 3, 1))
+    await calendarPage.occupancies.assertGraphHasNoData()
+  })
   describe('Group selection: staff', () => {
     beforeEach(async () => {
       calendarPage = await openAttendancesPage()
@@ -143,8 +150,9 @@ describe('Realtime staff attendances', () => {
     })
 
     test('The staff attendances table shows all unit staff', async () => {
-      await calendarPage.assertStaffInAttendanceTable(
-        staff.map((s) => `${s.lastName} ${s.firstName}`)
+      await waitUntilEqual(
+        () => calendarPage.staffInAttendanceTable(),
+        staff.map(staffName)
       )
     })
 
@@ -154,7 +162,6 @@ describe('Realtime staff attendances', () => {
     })
 
     test('It is not possible to create new entries', async () => {
-      await calendarPage.selectGroup('staff')
       await calendarPage.assertNoTimeInputsVisible()
       await calendarPage.clickEditOnRow(0)
       await calendarPage.assertNoTimeInputsVisible()
@@ -162,7 +169,6 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Sunday entries are shown in the calendar', async () => {
-      await calendarPage.selectGroup('staff')
       await calendarPage.navigateToPreviousWeek()
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,
@@ -173,32 +179,96 @@ describe('Realtime staff attendances', () => {
     })
 
     describe('With one attendance entry', () => {
-      test('Existing entries can be edited', async () => {
-        await calendarPage.selectGroup('staff')
+      beforeEach(async () => {
         await calendarPage.assertNoTimeInputsVisible()
+      })
+      test('Existing entries can be edited', async () => {
         await calendarPage.clickEditOnRow(1)
         await calendarPage.assertCountTimeInputsVisible(1)
       })
 
       test('Editing an existing entry updates it', async () => {
-        await calendarPage.selectGroup('staff')
-        await calendarPage.assertNoTimeInputsVisible()
+        const rowIx = 1
+        const nth = 0
         await calendarPage.assertArrivalDeparture({
-          rowIx: 1,
-          nth: 0,
+          rowIx,
+          nth,
           arrival: '07:00',
           departure: '-'
         })
-        await calendarPage.clickEditOnRow(1)
-        await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+        await calendarPage.clickEditOnRow(rowIx)
+        await calendarPage.setNthArrivalDeparture(nth, '07:00', '15:00')
         await calendarPage.closeInlineEditor()
         await calendarPage.assertArrivalDeparture({
-          rowIx: 1,
-          nth: 0,
+          rowIx,
+          nth,
           arrival: '07:00',
           departure: '15:00'
         })
       })
     })
   })
+  describe('Group selection: group', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+      await calendarPage.selectGroup(groupId)
+      await waitUntilEqual(
+        () => calendarPage.staffInAttendanceTable(),
+        [staffName(groupStaff)]
+      )
+    })
+    test('A new entry can be added', async () => {
+      const rowIx = 0
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
+      })
+    })
+    test('An overnight entry can be added', async () => {
+      const rowIx = 0
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(2, '', '15:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 0,
+        arrival: '07:00',
+        departure: '→'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 1,
+        arrival: '→',
+        departure: '→'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 2,
+        arrival: '→',
+        departure: '15:00'
+      })
+    })
+    test('Existing entries can be deleted by entering empty values', async () => {
+      const rowIx = 0
+      const nth = 0
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(nth, '', '')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 0,
+        arrival: '-',
+        departure: '-'
+      })
+    })
+  })
 })
+
+function staffName(employeeDetail: EmployeeDetail): string {
+  return `${employeeDetail.lastName} ${employeeDetail.firstName}`
+}

@@ -7,6 +7,7 @@ import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../../utils'
 import {
+  DatePickerDeprecated,
   Element,
   Modal,
   Page,
@@ -30,6 +31,19 @@ export class UnitAttendancesPage {
   occupancies = new UnitOccupanciesSection(
     this.page.find('[data-qa="occupancies"]')
   )
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="unit-attendances"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
+  async setFilterStartDate(date: LocalDate) {
+    await new DatePickerDeprecated(
+      this.page.find('[data-qa="unit-filter-start-date"]')
+    ).fill(date.format())
+    await this.waitUntilLoaded()
+  }
 
   async selectMode(mode: 'week' | 'month') {
     const foo = new SelectionChip(
@@ -118,16 +132,15 @@ export class UnitAttendancesPage {
       .click()
   }
 
-  async selectGroup(groupId: string): Promise<void> {
+  async selectGroup(groupId: UUID | 'no-group' | 'staff'): Promise<void> {
     const select = new Select(
       this.page.findByDataQa('attendances-group-select')
     )
     await select.selectOption(groupId)
   }
 
-  async assertStaffInAttendanceTable(names: string[]): Promise<void> {
-    const staffNames = this.page.findAllByDataQa('staff-attendance-name')
-    await waitUntilEqual(() => staffNames.allInnerTexts(), names)
+  async staffInAttendanceTable(): Promise<string[]> {
+    return this.page.findAllByDataQa('staff-attendance-name').allInnerTexts()
   }
 
   async assertPositiveOccupancyCoefficientCount(
@@ -285,10 +298,21 @@ export class ReservationModal extends Modal {
 }
 
 export class UnitOccupanciesSection extends Element {
+  #graph = this.find('canvas')
+  #noDataPlaceholder = this.findByDataQa('no-data-placeholder')
+
   #elem = (
     which: 'minimum' | 'maximum' | 'no-valid-values',
     type: 'confirmed' | 'planned'
   ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
+
+  async assertGraphIsVisible() {
+    await this.#graph.waitUntilVisible()
+  }
+
+  async assertGraphHasNoData() {
+    await this.#noDataPlaceholder.waitUntilVisible()
+  }
 
   async assertNoValidValues() {
     await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()

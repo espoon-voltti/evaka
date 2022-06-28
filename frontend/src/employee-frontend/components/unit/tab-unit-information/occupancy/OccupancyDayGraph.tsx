@@ -42,7 +42,9 @@ interface Props {
 export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
   const { i18n } = useTranslation()
   return occupancy.occupancySeries.length === 0 ? (
-    <GraphPlaceholder>{i18n.unit.occupancy.realtime.noData}</GraphPlaceholder>
+    <GraphPlaceholder data-qa="no-data-placeholder">
+      {i18n.unit.occupancy.realtime.noData}
+    </GraphPlaceholder>
   ) : (
     <Graph occupancy={occupancy} />
   )
