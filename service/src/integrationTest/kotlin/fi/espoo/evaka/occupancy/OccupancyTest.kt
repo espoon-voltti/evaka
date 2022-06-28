@@ -31,11 +31,14 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -168,7 +171,48 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val occupancy = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies[today]!!
             assertEquals(3.0, occupancy.caretakers)
             assertEquals(1, occupancy.headcount)
-            assertEquals(4.8, occupancy.percentage)
+        }
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(7))
+                .arriving(HelsinkiDateTime.of(today, LocalTime.of(8, 0)))
+                .departing(HelsinkiDateTime.of(today, LocalTime.of(15, 45)))
+                .save()
+        }
+
+        db.read { tx ->
+            val occupancyValues =
+                tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(today, today),
+                    OccupancyType.REALIZED,
+                    AclAuthorization.All,
+                    unitId = daycareInArea1
+                )
+
+            assertEquals(2, occupancyValues.size)
+            assertEquals(1, occupancyValues.filter { it.key.groupId == daycareGroup1 }.size)
+            val occupancy = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies[today]!!
+            assertEquals(1.0, occupancy.caretakers)
+            assertEquals(1, occupancy.headcount)
         }
     }
 
