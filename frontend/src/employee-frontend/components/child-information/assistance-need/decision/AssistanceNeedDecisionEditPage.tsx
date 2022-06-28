@@ -33,10 +33,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const { i18n } = useTranslation()
 
-  const { formState, setFormState, status } = useAssistanceNeedDecision(
-    childId,
-    id
-  )
+  const { formState, setFormState, status } = useAssistanceNeedDecision(id)
 
   const languageOptions = useMemo<SelectOption[]>(
     () => [

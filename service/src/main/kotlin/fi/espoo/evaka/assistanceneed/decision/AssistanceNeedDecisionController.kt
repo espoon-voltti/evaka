@@ -59,35 +59,36 @@ class AssistanceNeedDecisionController(
         }
     }
 
-    @GetMapping("/children/{childId}/assistance-needs/decision/{id}")
+    @GetMapping("/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId
-    ): AssistanceNeedDecision {
+    ): AssistanceNeedDecisionResponse {
         Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getAssistanceNeedDecisionById(id, childId)
+                AssistanceNeedDecisionResponse(
+                    decision = tx.getAssistanceNeedDecisionById(id),
+                    permittedActions = accessControl.getPermittedActions(tx, user, id)
+                )
             }
         }
     }
 
-    @PutMapping("/children/{childId}/assistance-needs/decision/{id}")
+    @PutMapping("/assistance-need-decision/{id}")
     fun updateAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateAssistanceNeedDecision(id, childId, body.decision)
+                tx.updateAssistanceNeedDecision(id, body.decision)
             }
         }
     }
@@ -97,31 +98,48 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): List<CompactAssistanceNeedDecision> {
+    ): List<AssistanceNeedDecisionBasicsResponse> {
         Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getAssistanceNeedDecisionsByChildId(childId)
+                val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
+                val permittedActions = accessControl.getPermittedActions<AssistanceNeedDecisionId, Action.AssistanceNeedDecision>(
+                    tx,
+                    user,
+                    decisions.map { it.id }
+                )
+                decisions.map {
+                    AssistanceNeedDecisionBasicsResponse(decision = it, permittedActions = permittedActions[it.id]!!)
+                }
             }
         }
     }
 
-    @DeleteMapping("/children/{childId}/assistance-needs/decision/{id}")
+    @DeleteMapping("/assistance-need-decision/{id}")
     fun deleteAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id, objectId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_ASSISTANCE_NEED_DECISION, childId)
+        Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                if (!tx.deleteAssistanceNeedDecision(id, childId)) {
+                if (!tx.deleteAssistanceNeedDecision(id)) {
                     throw NotFound("Assistance need decision $id cannot found or cannot be deleted", "DECISION_NOT_FOUND")
                 }
             }
         }
     }
+
+    data class AssistanceNeedDecisionBasicsResponse(
+        val decision: AssistanceNeedDecisionBasics,
+        val permittedActions: Set<Action.AssistanceNeedDecision>
+    )
+
+    data class AssistanceNeedDecisionResponse(
+        val decision: AssistanceNeedDecision,
+        val permittedActions: Set<Action.AssistanceNeedDecision>
+    )
 }

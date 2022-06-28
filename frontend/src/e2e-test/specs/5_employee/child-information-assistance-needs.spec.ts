@@ -28,7 +28,6 @@ import { EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
   AssistanceNeedSection
 } from '../../pages/employee/child-information'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -185,14 +184,14 @@ describe('Child assistance need decisions for employees', () => {
     await logUserIn(admin)
     await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
 
-    const decision = assistanceNeeds.assistanceNeedDecisions(0)
+    const decision = await assistanceNeeds.assistanceNeedDecisions(0)
 
-    await waitUntilEqual(() => decision.date, '-')
-    await waitUntilEqual(() => decision.unitName, '-')
-    await waitUntilEqual(() => decision.sentDate, '-')
-    await waitUntilEqual(() => decision.decisionMadeDate, '-')
-    await waitUntilEqual(() => decision.status, 'DRAFT')
-    await waitUntilEqual(() => decision.actionCount, 2)
+    expect(decision.date).toEqual('-')
+    expect(decision.unitName).toEqual('-')
+    expect(decision.sentDate).toEqual('-')
+    expect(decision.decisionMadeDate).toEqual('-')
+    expect(decision.status).toEqual('DRAFT')
+    expect(decision.actionCount).toEqual(2)
   })
 
   test('Shows a filled in draft in the list', async () => {
@@ -229,14 +228,14 @@ describe('Child assistance need decisions for employees', () => {
     await logUserIn(admin)
     await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
 
-    const decision = assistanceNeeds.assistanceNeedDecisions(0)
+    const decision = await assistanceNeeds.assistanceNeedDecisions(0)
 
-    await waitUntilEqual(() => decision.date, '01.07.2020 – 11.12.2020')
-    await waitUntilEqual(() => decision.unitName, daycareFixture.name)
-    await waitUntilEqual(() => decision.sentDate, '11.05.2020')
-    await waitUntilEqual(() => decision.decisionMadeDate, '02.06.2020')
-    await waitUntilEqual(() => decision.status, 'DRAFT')
-    await waitUntilEqual(() => decision.actionCount, 2)
+    expect(decision.date).toEqual('01.07.2020 – 11.12.2020')
+    expect(decision.unitName).toEqual(daycareFixture.name)
+    expect(decision.sentDate).toEqual('11.05.2020')
+    expect(decision.decisionMadeDate).toEqual('02.06.2020')
+    expect(decision.status).toEqual('DRAFT')
+    expect(decision.actionCount).toEqual(2)
   })
 
   test('Hides edit and delete actions for non-draft/non-workable decisions', async () => {
@@ -256,12 +255,12 @@ describe('Child assistance need decisions for employees', () => {
     await logUserIn(admin)
     await assistanceNeeds.waitUntilAssistanceNeedDecisionsLoaded()
 
-    const acceptedDecision = assistanceNeeds.assistanceNeedDecisions(0)
-    await waitUntilEqual(() => acceptedDecision.status, 'ACCEPTED')
-    await waitUntilEqual(() => acceptedDecision.actionCount, 0)
+    const acceptedDecision = await assistanceNeeds.assistanceNeedDecisions(0)
+    expect(acceptedDecision.status).toEqual('ACCEPTED')
+    expect(acceptedDecision.actionCount).toEqual(0)
 
-    const rejectedDecision = assistanceNeeds.assistanceNeedDecisions(1)
-    await waitUntilEqual(() => rejectedDecision.status, 'REJECTED')
-    await waitUntilEqual(() => rejectedDecision.actionCount, 0)
+    const rejectedDecision = await assistanceNeeds.assistanceNeedDecisions(1)
+    expect(rejectedDecision.status).toEqual('REJECTED')
+    expect(rejectedDecision.actionCount).toEqual(0)
   })
 })

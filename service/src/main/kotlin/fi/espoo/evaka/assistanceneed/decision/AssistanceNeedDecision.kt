@@ -126,7 +126,7 @@ data class AssistanceNeedDecisionForm(
     val motivationForDecision: String?
 )
 
-data class CompactAssistanceNeedDecision(
+data class AssistanceNeedDecisionBasics(
     val id: AssistanceNeedDecisionId,
     val startDate: LocalDate?,
     val endDate: LocalDate?,
@@ -135,7 +135,7 @@ data class CompactAssistanceNeedDecision(
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit")
-    val selectedUnit: CompactUnitInfo?,
+    val selectedUnit: UnitInfoBasics?,
 
     val created: HelsinkiDateTime
 )
@@ -225,7 +225,7 @@ data class UnitIdInfo(
     val id: DaycareId?
 )
 
-data class CompactUnitInfo(
+data class UnitInfoBasics(
     @PropagateNull
     val id: DaycareId?,
     val name: String? = null

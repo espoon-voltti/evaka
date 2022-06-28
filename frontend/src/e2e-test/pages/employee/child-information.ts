@@ -576,24 +576,25 @@ export class AssistanceNeedSection extends Section {
       .waitUntilVisible()
   }
 
-  assistanceNeedDecisions(nth: number) {
+  async assistanceNeedDecisions(nth: number) {
     const row = this.page
       .findByDataQa('table-of-assistance-need-decisions')
       .findAllByDataQa('table-assistance-need-decision-row')
       .nth(nth)
 
     return {
-      date: row.findByDataQa('assistance-need-decision-date').innerText,
-      unitName: row.findByDataQa('assistance-need-decision-unit-name')
+      date: await row.findByDataQa('assistance-need-decision-date').innerText,
+      unitName: await row.findByDataQa('assistance-need-decision-unit-name')
         .innerText,
-      sentDate: row.findByDataQa('assistance-need-decision-sent-date')
+      sentDate: await row.findByDataQa('assistance-need-decision-sent-date')
         .innerText,
-      decisionMadeDate: row.findByDataQa('assistance-need-decision-made-date')
-        .innerText,
-      status: row
+      decisionMadeDate: await row.findByDataQa(
+        'assistance-need-decision-made-date'
+      ).innerText,
+      status: await row
         .findByDataQa('decision-status')
         .getAttribute('data-qa-status'),
-      actionCount: row
+      actionCount: await row
         .findByDataQa('assistance-need-decision-actions')
         .findAll('button')
         .count()

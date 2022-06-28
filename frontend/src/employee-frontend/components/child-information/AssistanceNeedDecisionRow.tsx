@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ChildContext } from 'employee-frontend/state'
-import { ChildState } from 'employee-frontend/state/child'
-import { CompactAssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -16,19 +14,17 @@ import { faFileAlt, faPen, faTrash } from 'lib-icons'
 import { AssistanceNeedDecisionStatusChip } from './assistance-need/decision/common'
 
 interface Props {
-  decision: CompactAssistanceNeedDecision
+  decision: AssistanceNeedDecisionBasicsResponse
   childId: string
   onDelete: () => void
 }
 
 export default React.memo(function AssistanceNeedDecisionRow({
-  decision,
+  decision: { decision, permittedActions },
   childId,
   onDelete
 }: Props) {
   const navigate = useNavigate()
-
-  const { permittedActions } = useContext<ChildState>(ChildContext)
 
   return (
     <Tr data-qa="table-assistance-need-decision-row">
@@ -71,7 +67,7 @@ export default React.memo(function AssistanceNeedDecisionRow({
       <Td data-qa="assistance-need-decision-actions">
         {(decision.status === 'DRAFT' || decision.status === 'NEEDS_WORK') && (
           <FixedSpaceRow justifyContent="flex-end">
-            {permittedActions.has('UPDATE_ASSISTANCE_NEED_DECISION') && (
+            {permittedActions.includes('UPDATE') && (
               <IconButton
                 icon={faPen}
                 onClick={() =>
@@ -83,7 +79,7 @@ export default React.memo(function AssistanceNeedDecisionRow({
                 }
               />
             )}
-            {permittedActions.has('DELETE_ASSISTANCE_NEED_DECISION') && (
+            {permittedActions.includes('DELETE') && (
               <IconButton icon={faTrash} onClick={onDelete} />
             )}
           </FixedSpaceRow>

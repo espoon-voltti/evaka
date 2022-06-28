@@ -76,6 +76,28 @@ export interface AssistanceNeedDecision {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionBasics
+*/
+export interface AssistanceNeedDecisionBasics {
+  created: HelsinkiDateTime
+  decisionMade: LocalDate | null
+  endDate: LocalDate | null
+  id: UUID
+  selectedUnit: UnitInfoBasics | null
+  sentForDecision: LocalDate | null
+  startDate: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AssistanceNeedDecisionBasicsResponse
+*/
+export interface AssistanceNeedDecisionBasicsResponse {
+  decision: AssistanceNeedDecisionBasics
+  permittedActions: Action.AssistanceNeedDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {
@@ -170,6 +192,14 @@ export interface AssistanceNeedDecisionRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AssistanceNeedDecisionResponse
+*/
+export interface AssistanceNeedDecisionResponse {
+  decision: AssistanceNeedDecision
+  permittedActions: Action.AssistanceNeedDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 */
 export type AssistanceNeedDecisionStatus =
@@ -194,28 +224,6 @@ export interface AssistanceNeedRequest {
 export interface AssistanceNeedResponse {
   need: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
-}
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.decision.CompactAssistanceNeedDecision
-*/
-export interface CompactAssistanceNeedDecision {
-  created: HelsinkiDateTime
-  decisionMade: LocalDate | null
-  endDate: LocalDate | null
-  id: UUID
-  selectedUnit: CompactUnitInfo | null
-  sentForDecision: LocalDate | null
-  startDate: LocalDate | null
-  status: AssistanceNeedDecisionStatus
-}
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.decision.CompactUnitInfo
-*/
-export interface CompactUnitInfo {
-  id: UUID | null
-  name: string | null
 }
 
 /**
@@ -257,4 +265,12 @@ export interface UnitInfo {
   postOffice: string | null
   postalCode: string | null
   streetAddress: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfoBasics
+*/
+export interface UnitInfoBasics {
+  id: UUID | null
+  name: string | null
 }

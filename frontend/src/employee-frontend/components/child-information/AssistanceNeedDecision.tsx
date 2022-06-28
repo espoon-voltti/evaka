@@ -186,14 +186,16 @@ export default React.memo(function AssistanceNeedDecision({ id }: Props) {
               </Tr>
             </Thead>
             <Tbody>
-              {orderBy(decisions, (d) => d.created).map((decision) => (
-                <AssistanceNeedDecisionRow
-                  key={decision.id}
-                  decision={decision}
-                  childId={id}
-                  onDelete={() => setRemovingDecision(decision.id)}
-                />
-              ))}
+              {orderBy(decisions, ({ decision }) => decision.created).map(
+                (res) => (
+                  <AssistanceNeedDecisionRow
+                    key={res.decision.id}
+                    decision={res}
+                    childId={id}
+                    onDelete={() => setRemovingDecision(res.decision.id)}
+                  />
+                )
+              )}
             </Tbody>
           </Table>
         )
@@ -203,7 +205,6 @@ export default React.memo(function AssistanceNeedDecision({ id }: Props) {
 })
 
 const DeleteDecisionModal = React.memo(function DeleteAbsencesModal({
-  childId,
   decisionId,
   onClose
 }: {
@@ -224,7 +225,7 @@ const DeleteDecisionModal = React.memo(function DeleteAbsencesModal({
       }}
       resolve={{
         async action() {
-          await deleteAssistanceNeedDecision(childId, decisionId)
+          await deleteAssistanceNeedDecision(decisionId)
           onClose(true)
         },
         label: i18n.childInformation.assistanceNeedDecision.modal.delete
