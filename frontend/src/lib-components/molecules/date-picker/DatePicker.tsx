@@ -132,7 +132,7 @@ const checkDateInputSupport = () => {
   )
 }
 
-const nativeDatePickerEnabled = checkDateInputSupport()
+export const nativeDatePickerEnabled = checkDateInputSupport()
 
 export default React.memo(function DatePicker({
   date,

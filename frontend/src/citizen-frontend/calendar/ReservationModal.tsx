@@ -29,9 +29,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -97,11 +95,7 @@ export default React.memo(function ReservationModal({
   const shiftCareRange = useMemo(() => {
     if (formData.repetition !== 'IRREGULAR') return
 
-    if (
-      !formData.startDate ||
-      !formData.endDate ||
-      formData.endDate.isBefore(formData.endDate)
-    ) {
+    if (!formData.startDate || !formData.endDate) {
       return
     }
 
@@ -221,56 +215,28 @@ export default React.memo(function ReservationModal({
         >
           <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
         </ExpandingInfo>
-        <FixedSpaceRow>
-          <DatePicker
-            date={formData.startDate}
-            onChange={(date) => updateForm({ startDate: date })}
-            locale={lang}
-            isInvalidDate={isInvalidDate}
-            info={errorToInputInfo(
-              validationResult.errors?.startDate,
-              i18n.validationErrors
-            )}
-            hideErrorsBeforeTouched={!showAllErrors}
-            data-qa="start-date"
-            onFocus={(ev) => {
-              scrollIntoViewSoftKeyboard(ev.target, 'start')
-            }}
-            minDate={minDate}
-            maxDate={
-              formData.endDate &&
-              (!maxDate || formData.endDate.isBefore(maxDate))
-                ? formData.endDate
-                : maxDate
-            }
-            errorTexts={i18n.validationErrors}
-          />
-          <DatePickerSpacer />
-          <DatePicker
-            date={formData.endDate}
-            onChange={(date) => updateForm({ endDate: date })}
-            locale={lang}
-            isInvalidDate={isInvalidDate}
-            info={errorToInputInfo(
-              validationResult.errors?.endDate,
-              i18n.validationErrors
-            )}
-            hideErrorsBeforeTouched={!showAllErrors}
-            initialMonth={formData.startDate ?? reservableDays[0]?.start}
-            data-qa="end-date"
-            onFocus={(ev) => {
-              scrollIntoViewSoftKeyboard(ev.target, 'start')
-            }}
-            minDate={
-              formData.startDate &&
-              (!minDate || formData.startDate.isAfter(minDate))
-                ? formData.startDate
-                : minDate
-            }
-            maxDate={maxDate}
-            errorTexts={i18n.validationErrors}
-          />
-        </FixedSpaceRow>
+        <DateRangePicker
+          start={formData.startDate}
+          end={formData.endDate}
+          onChange={(startDate, endDate) => updateForm({ startDate, endDate })}
+          locale={lang}
+          errorTexts={i18n.validationErrors}
+          isInvalidDate={isInvalidDate}
+          minDate={minDate}
+          maxDate={maxDate}
+          hideErrorsBeforeTouched={!showAllErrors}
+          onFocus={(ev) => {
+            scrollIntoViewSoftKeyboard(ev.target, 'start')
+          }}
+          startInfo={errorToInputInfo(
+            validationResult.errors?.startDate,
+            i18n.validationErrors
+          )}
+          endInfo={errorToInputInfo(
+            validationResult.errors?.endDate,
+            i18n.validationErrors
+          )}
+        />
         <Gap size="m" />
 
         <TimeInputGrid>
