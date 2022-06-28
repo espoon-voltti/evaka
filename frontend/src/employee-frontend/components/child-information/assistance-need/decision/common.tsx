@@ -17,7 +17,8 @@ export const FooterContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: ${defaultMargins.s};
+  padding: ${defaultMargins.s} 0;
+  gap: ${defaultMargins.m};
 `
 
 export const AssistanceNeedDecisionStatusChip = React.memo(

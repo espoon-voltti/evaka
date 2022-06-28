@@ -115,6 +115,26 @@ describe('Assistance Need Decisions - Edit page', () => {
     )
     await assistanceNeedDecisionEditPage.waitUntilSaved()
   })
+
+  test('Clicking the preview button opens the decision in preview mode', async () => {
+    await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
+    await assistanceNeedDecisionEditPage.clickPreviewButton()
+
+    expect(page.url).toBe(
+      `${
+        config.employeeUrl
+      }/child-information/${childId}/assistance-need-decision/${
+        assistanceNeedDecision?.id ?? ''
+      }`
+    )
+  })
+
+  test('Clicking the leave page button opens the child info page', async () => {
+    await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
+    await assistanceNeedDecisionEditPage.clickLeavePageButton()
+
+    expect(page.url).toBe(`${config.employeeUrl}/child-information/${childId}`)
+  })
 })
 
 describe('Assistance Need Decisions - Preview page', () => {

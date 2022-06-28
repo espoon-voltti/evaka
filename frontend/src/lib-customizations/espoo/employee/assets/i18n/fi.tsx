@@ -777,6 +777,7 @@ export const fi = {
       lawReference: 'Varhaiskasvatuslaki 15 §',
       noRecord: 'Ei merkintää',
       leavePage: 'Poistu',
+      preview: 'Esikatsele',
       modifyDecision: 'Muokkaa',
       sendToDecisionMaker: 'Lähetä päättäjälle',
       sentToDecisionMaker: 'Lähetetty päättäjälle',
