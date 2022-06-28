@@ -325,18 +325,22 @@ fun Database.Read.fetchAttendanceReservations(
     now: HelsinkiDateTime
 ): Map<ChildId, List<AttendanceReservation>> = createQuery(
     """
+    WITH placed_children AS (
+        SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+        UNION
+        SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+    )
     SELECT
         child.id AS child_id,
         coalesce(real_start.date, res.date) AS start_date,
         coalesce(real_start.start_time, res.start_time) AS start_time,
         coalesce(real_end.date, res.date) AS end_date,
         coalesce(real_end.end_time, res.end_time) AS end_time
-    FROM attendance_reservation res
+    FROM placed_children pc
+    JOIN attendance_reservation res ON res.child_id = pc.child_id AND res.date = :date
     JOIN person child ON res.child_id = child.id
-    JOIN placement ON child.id = placement.child_id AND res.date BETWEEN placement.start_date AND placement.end_date
     LEFT JOIN attendance_reservation real_start ON res.start_time = '00:00'::time AND res.child_id = real_start.child_id AND real_start.end_time = '23:59'::time AND res.date = real_start.date + 1
     LEFT JOIN attendance_reservation real_end ON res.end_time = '23:59'::time AND res.child_id = real_end.child_id AND real_end.start_time = '00:00'::time AND res.date = real_end.date - 1
-    WHERE res.date = :date AND placement.unit_id = :unitId
     """.trimIndent()
 )
     .bind("unitId", unitId)
