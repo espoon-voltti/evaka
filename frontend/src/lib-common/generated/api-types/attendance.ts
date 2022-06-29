@@ -110,7 +110,7 @@ export interface Child {
   dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimes | null
   firstName: string
-  groupId: UUID
+  groupId: UUID | null
   id: UUID
   imageUrl: string | null
   lastName: string

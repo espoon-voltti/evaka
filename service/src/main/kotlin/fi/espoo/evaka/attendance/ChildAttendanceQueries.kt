@@ -110,7 +110,7 @@ data class ChildBasics(
     val dateOfBirth: LocalDate,
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val backup: Boolean,
     val attendance: AttendanceTimes?,
     val absences: List<ChildAbsence>,
@@ -167,20 +167,21 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             UNION ALL
 
             SELECT
-                coalesce(bc.group_id, gp.daycare_group_id) as group_id,
+                (CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE gp.daycare_group_id END) as group_id,
                 ca.child_id,
                 p.type as placement_type,
-                bc.group_id IS NOT NULL as backup
+                bc.id IS NOT NULL as backup
             FROM child_attendance ca
             JOIN placement p
                 ON ca.child_id = p.child_id
                 AND daterange(p.start_date, p.end_date, '[]') @> ca.date
-            JOIN daycare_group_placement gp
+            LEFT JOIN daycare_group_placement gp
                 ON gp.daycare_placement_id = p.id
                 AND daterange(gp.start_date, gp.end_date, '[]') @> ca.date
             LEFT JOIN backup_care bc
                 ON ca.child_id = bc.child_id
                 AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
+                AND bc.unit_id = ca.unit_id
             WHERE ca.end_time IS NULL AND ca.unit_id = :unitId
         )
         SELECT

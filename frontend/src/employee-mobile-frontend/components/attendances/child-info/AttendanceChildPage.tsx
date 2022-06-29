@@ -115,7 +115,7 @@ export default React.memo(function AttendanceChildPage() {
           data-qa="back-btn"
         />
         {renderResult(childInfoResult, ({ child, group, hasGroupNote }) =>
-          child && group ? (
+          child ? (
             <>
               <Shadow>
                 <Zindex>
@@ -148,7 +148,9 @@ export default React.memo(function AttendanceChildPage() {
                         </CustomTitle>
                       )}
 
-                      <GroupName>{group.name}</GroupName>
+                      <GroupName>
+                        {group?.name ?? i18n.attendances.noGroup}
+                      </GroupName>
 
                       <ChildStatus>
                         <StaticChip

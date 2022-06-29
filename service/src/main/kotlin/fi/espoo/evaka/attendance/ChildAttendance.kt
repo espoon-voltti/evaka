@@ -39,7 +39,7 @@ data class Child(
     val lastName: String,
     val preferredName: String?,
     val placementType: PlacementType,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val backup: Boolean,
     val status: AttendanceStatus,
     val attendance: AttendanceTimes?,
