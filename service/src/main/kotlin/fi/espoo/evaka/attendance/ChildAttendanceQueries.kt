@@ -110,7 +110,7 @@ data class ChildBasics(
     val dateOfBirth: LocalDate,
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val backup: Boolean,
     val attendance: AttendanceTimes?,
     val absences: List<ChildAbsence>,

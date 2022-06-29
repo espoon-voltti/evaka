@@ -159,6 +159,7 @@ export const fi = {
     timeError: 'Virheellinen aika',
     arrived: 'Saapui',
     departed: 'Lähti',
+    noGroup: 'Ei ryhmää',
     serviceTime: {
       reservation: 'Varaus',
       reservations: 'Varaukset',
