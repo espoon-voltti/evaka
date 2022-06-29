@@ -16,10 +16,13 @@ import {
   min,
   roundToNearestMinutes,
   setHours,
-  setMinutes
+  setMinutes,
+  subHours
 } from 'date-fns'
 import { fi } from 'date-fns/locale'
 import ceil from 'lodash/ceil'
+import first from 'lodash/first'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo, useCallback, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
@@ -37,20 +40,24 @@ type DatePoint = { x: Date; y: number | null }
 
 interface Props {
   occupancy: RealtimeOccupancy
+  shiftCareUnit: boolean
 }
 
-export default React.memo(function OccupancyDayGraph({ occupancy }: Props) {
+export default React.memo(function OccupancyDayGraph({
+  occupancy,
+  shiftCareUnit
+}: Props) {
   const { i18n } = useTranslation()
   return occupancy.occupancySeries.length === 0 ? (
     <GraphPlaceholder data-qa="no-data-placeholder">
       {i18n.unit.occupancy.realtime.noData}
     </GraphPlaceholder>
   ) : (
-    <Graph occupancy={occupancy} />
+    <Graph occupancy={occupancy} shiftCareUnit={shiftCareUnit} />
   )
 })
 
-const Graph = React.memo(function Graph({ occupancy }: Props) {
+const Graph = React.memo(function Graph({ occupancy, shiftCareUnit }: Props) {
   const { i18n } = useTranslation()
   const [tooltipData, setTooltipData] = useState<ChartTooltipData>({
     children: <span></span>
@@ -136,11 +143,23 @@ const Graph = React.memo(function Graph({ occupancy }: Props) {
   )
 
   const { data, graphOptions } = useMemo(
-    () => graphData(new Date(currentMinute), occupancy, i18n, tooltipHandler),
-    [occupancy, currentMinute, i18n, tooltipHandler]
+    () =>
+      graphData(
+        new Date(currentMinute),
+        occupancy,
+        i18n,
+        tooltipHandler,
+        shiftCareUnit
+      ),
+    [currentMinute, occupancy, i18n, tooltipHandler, shiftCareUnit]
   )
 
-  if (occupancy.occupancySeries.length === 0) return null
+  if (data.datasets.length === 0)
+    return (
+      <GraphPlaceholder data-qa="no-data-placeholder">
+        {i18n.unit.occupancy.realtime.noData}
+      </GraphPlaceholder>
+    )
 
   return (
     <div onMouseOver={showTooltip} onMouseOut={hideTooltip}>
@@ -157,33 +176,71 @@ function graphData(
   tooltipHandler: (args: {
     chart: Chart<'line', DatePoint[]>
     tooltip: TooltipModel<'line'>
-  }) => void
+  }) => void,
+  shiftCareUnit: boolean
 ): {
   data: ChartData<'line', DatePoint[]>
   graphOptions: ChartOptions<'line'>
 } {
-  const childData = occupancy.occupancySeries.map((p) => ({
+  const shiftCareMinTime = subHours(now, 16)
+  const filterData = (p: { time: Date }) =>
+    !isBefore(p.time, shiftCareUnit ? shiftCareMinTime : setTime(now, 0, 0))
+
+  const childData = occupancy.occupancySeries.filter(filterData).map((p) => ({
     x: p.time,
     y: p.childCapacity
   }))
 
-  const staffData = occupancy.occupancySeries.map((p) => ({
+  const staffData = occupancy.occupancySeries.filter(filterData).map((p) => ({
     x: p.time,
     y: p.staffCapacity
   }))
 
+  if (shiftCareUnit) {
+    const lastDataPointBeforeMin = first(
+      sortBy(
+        occupancy.occupancySeries.filter(({ time }) =>
+          isBefore(time, shiftCareMinTime)
+        ),
+        ({ time }) => -1 * time.getTime()
+      )
+    )
+    if (lastDataPointBeforeMin) {
+      staffData.splice(0, 0, {
+        x: shiftCareMinTime,
+        y: lastDataPointBeforeMin.staffCapacity
+      })
+      childData.splice(0, 0, {
+        x: shiftCareMinTime,
+        y: lastDataPointBeforeMin.childCapacity
+      })
+    }
+  }
+
   const firstStaffAttendance = staffData[0]
   const lastStaffAttendance = staffData[staffData.length - 1]
   const lastChildAttendance = childData[childData.length - 1]
-
-  const sixAm = setTime(firstStaffAttendance.x, 6, 0)
-  const sixPm = setTime(lastStaffAttendance.x, 18, 0)
 
   // If staff is still present, extend the graph up to current time
   if (lastStaffAttendance.y > 0 && isBefore(lastStaffAttendance.x, now)) {
     staffData.push({ ...lastStaffAttendance, x: new Date(now) })
     childData.push({ ...lastChildAttendance, x: new Date(now) })
   }
+
+  const xMin = shiftCareUnit
+    ? firstStaffAttendance.x.getTime()
+    : min([
+        // 6 AM
+        setTime(new Date(), 6, 0),
+        staffData[0].x
+      ]).getTime()
+  const xMax = shiftCareUnit
+    ? staffData[staffData.length - 1].x.getTime()
+    : max([
+        // 6 PM
+        setTime(new Date(), 18, 0),
+        now
+      ]).getTime()
 
   const data: ChartData<'line', DatePoint[]> = {
     datasets: [
@@ -204,8 +261,8 @@ function graphData(
     scales: {
       x: {
         type: 'time',
-        min: min([sixAm, firstStaffAttendance.x]).getTime(),
-        max: max([sixPm, lastStaffAttendance.x]).getTime(),
+        min: xMin,
+        max: xMax,
         time: {
           displayFormats: {
             hour: 'HH:00'

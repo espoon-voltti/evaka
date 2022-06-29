@@ -8,9 +8,8 @@ import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.OffsetDateTime
 
 data class RealtimeOccupancy(
@@ -105,7 +104,10 @@ data class OccupancyPoint(
         }
 }
 
-fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDate): List<ChildOccupancyAttendance> = createQuery(
+fun Database.Read.getChildOccupancyAttendances(
+    unitId: DaycareId,
+    timeRange: HelsinkiDateTimeRange
+): List<ChildOccupancyAttendance> = createQuery(
     """
     SELECT 
         (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
@@ -123,32 +125,33 @@ fun Database.Read.getChildOccupancyAttendances(unitId: DaycareId, date: LocalDat
     LEFT JOIN service_need_option sno on sn.option_id = sno.id
     LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
     LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date
-    WHERE ca.unit_id = :unitId AND ca.date = :date
+    WHERE ca.unit_id = :unitId AND tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .bind("date", date)
+    .bind("timeRange", timeRange)
     .mapTo<ChildOccupancyAttendance>()
     .list()
 
-fun Database.Read.getStaffOccupancyAttendances(unitId: DaycareId, date: LocalDate): List<StaffOccupancyAttendance> = createQuery(
+fun Database.Read.getStaffOccupancyAttendances(
+    unitId: DaycareId,
+    timeRange: HelsinkiDateTimeRange
+): List<StaffOccupancyAttendance> = createQuery(
     """
     SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
-    WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:dayStart, :dayEnd)
+    WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && :timeRange
     
     UNION ALL
     
     SELECT sae.arrived, sae.departed, sae.occupancy_coefficient AS capacity
     FROM staff_attendance_external sae
     JOIN daycare_group dg ON dg.id = sae.group_id
-    WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:dayStart, :dayEnd)
+    WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && :timeRange
     """.trimIndent()
 )
     .bind("unitId", unitId)
-    .bind("date", date)
-    .bind("dayStart", HelsinkiDateTime.of(date, LocalTime.MIN))
-    .bind("dayEnd", HelsinkiDateTime.of(date, LocalTime.MAX))
+    .bind("timeRange", timeRange)
     .mapTo<StaffOccupancyAttendance>()
     .list()

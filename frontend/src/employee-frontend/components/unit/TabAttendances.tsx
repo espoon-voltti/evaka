@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
-import { isLoading, Result } from 'lib-common/api'
+import { combine, isLoading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -125,14 +125,17 @@ export default React.memo(function TabAttendances() {
           </div>
         </DataList>
         <Gap />
-        {renderResult(unitData, (unitData) =>
-          unitData.unitOccupancies ? (
-            <Occupancy
-              filters={filters}
-              occupancies={unitData.unitOccupancies}
-              realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-            />
-          ) : null
+        {renderResult(
+          combine(unitData, unitInformation),
+          ([unitData, unitInformation]) =>
+            unitData.unitOccupancies ? (
+              <Occupancy
+                filters={filters}
+                occupancies={unitData.unitOccupancies}
+                realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+                shiftCareUnit={unitInformation.daycare.roundTheClock}
+              />
+            ) : null
         )}
       </ContentArea>
       <Gap size="s" />
