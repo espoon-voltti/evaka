@@ -7,12 +7,14 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testRoundTheClockDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -104,6 +106,81 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 unitId = testDaycare.id,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(1),
+            )
+        }
+
+        scheduledJobs.endOfDayAttendanceUpkeep(db)
+
+        val attendanceEndTimes = getAttendanceEndTimes()
+        assertEquals(1, attendanceEndTimes.size)
+        assertEquals(LocalTime.of(23, 59), attendanceEndTimes.first())
+    }
+
+    @Test
+    fun `attendances are not ended in round the clock units if a backup placement is still active`() {
+        val arrived = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(9, 0))
+
+        db.transaction {
+            // Placement to another unit is active
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = LocalDate.now().minusDays(2),
+                endDate = LocalDate.now().plusDays(1),
+            )
+            // Backup placement to attendance's unit is active
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = testRoundTheClockDaycare.id,
+                startDate = LocalDate.now().minusDays(2),
+                endDate = LocalDate.now().plusDays(1),
+            )
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testRoundTheClockDaycare.id,
+                arrived = arrived,
+                departed = null
+            )
+        }
+
+        scheduledJobs.endOfDayAttendanceUpkeep(db)
+
+        val attendanceEndTimes = getAttendanceEndTimes()
+        assertEquals(1, attendanceEndTimes.size)
+        assertEquals(null, attendanceEndTimes.first())
+    }
+
+    @Test
+    fun `null departures are set to 2359 of arrival day in round the clock units if backup placement to attendance unit has ended`() {
+        val arrived = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(9, 0))
+
+        db.transaction {
+            // Placement to another unit is active
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = LocalDate.now().minusDays(2),
+                endDate = LocalDate.now().plusDays(1),
+            )
+            // Backup placement to attendance's unit has ended
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = testRoundTheClockDaycare.id,
+                startDate = LocalDate.now().minusDays(2),
+                endDate = LocalDate.now().minusDays(1),
+            )
+            // Backup placement to another unit has ended
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = testDaycare2.id,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(1),
+            )
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testRoundTheClockDaycare.id,
+                arrived = arrived,
+                departed = null
             )
         }
 
