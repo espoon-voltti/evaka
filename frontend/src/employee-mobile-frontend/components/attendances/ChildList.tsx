@@ -56,7 +56,9 @@ export default React.memo(function ChildList({
                 key={ac.id}
                 child={ac}
                 groupNote={getGroupNote(ac)}
-                childAttendanceUrl={`/units/${unitId}/groups/${ac.groupId}/child-attendance/${ac.id}`}
+                childAttendanceUrl={`/units/${unitId}/groups/${
+                  ac.groupId ?? 'all'
+                }/child-attendance/${ac.id}`}
               />
             </Li>
           ))
