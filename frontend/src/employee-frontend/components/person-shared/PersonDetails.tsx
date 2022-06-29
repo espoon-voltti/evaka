@@ -207,7 +207,7 @@ export default React.memo(function PersonDetails({
           uiMode != 'person-details-editing' ? (
             <ButtonSpacer>
               {vtjUpdateOngoing ? (
-                <SpinnerSegment size="xxs" />
+                <SpinnerSegment margin="xxs" />
               ) : (
                 <InlineButton
                   icon={faSync}

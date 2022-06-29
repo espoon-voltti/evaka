@@ -1384,7 +1384,7 @@ export class Fixture {
         phoneNumber: null
       },
       selectedUnit: null,
-      sentForDecision: LocalDate.of(2020, 5, 11),
+      sentForDecision: null,
       serviceOptions: {
         consultationSpecialEd: false,
         fullTimeSpecialEd: false,

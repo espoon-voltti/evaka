@@ -11,6 +11,8 @@ import {
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
 
+import { SpacingSize } from './white-space'
+
 export type RenderResultFn<T> = (
   value: T,
   isReloading: boolean
@@ -21,6 +23,11 @@ export interface UnwrapResultProps<T> {
   loading?: () => React.ReactElement | null
   failure?: () => React.ReactElement | null
   children?: RenderResultFn<T>
+}
+
+export interface SpinnerOptions {
+  size?: SpacingSize
+  margin?: SpacingSize
 }
 
 export function makeHelpers(useFailureMessage: () => string) {
@@ -55,14 +62,22 @@ export function makeHelpers(useFailureMessage: () => string) {
   interface RenderResultProps<T> {
     result: Result<T>
     renderer: RenderResultFn<T>
+    spinnerOptions?: SpinnerOptions
   }
 
-  function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
+  function RenderResult<T>({
+    result,
+    renderer,
+    spinnerOptions = {}
+  }: RenderResultProps<T>) {
     const failureMessage = useFailureMessage()
     return useMemo(
       () =>
         result.isLoading ? (
-          <SpinnerSegment />
+          <SpinnerSegment
+            size={spinnerOptions.size}
+            margin={spinnerOptions.margin}
+          />
         ) : (
           <LoadableContent loading={result.isSuccess && result.isReloading}>
             {result.isFailure ? (
@@ -72,12 +87,22 @@ export function makeHelpers(useFailureMessage: () => string) {
             ) : null}
           </LoadableContent>
         ),
-      [result, renderer, failureMessage]
+      [result, renderer, failureMessage, spinnerOptions]
     )
   }
 
-  function renderResult<T>(result: Result<T>, renderer: RenderResultFn<T>) {
-    return <RenderResult result={result} renderer={renderer} />
+  function renderResult<T>(
+    result: Result<T>,
+    renderer: RenderResultFn<T>,
+    spinnerOptions?: SpinnerOptions
+  ) {
+    return (
+      <RenderResult
+        result={result}
+        renderer={renderer}
+        spinnerOptions={spinnerOptions}
+      />
+    )
   }
 
   return { UnwrapResult, renderResult }

@@ -113,3 +113,10 @@ export function deleteAssistanceNeedDecision(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
+
+export function sendAssistanceNeedDecision(id: UUID): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/send`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

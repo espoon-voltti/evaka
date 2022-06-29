@@ -15,6 +15,7 @@ import { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content, { ContentArea } from 'lib-components/layout/Container'
@@ -27,7 +28,7 @@ import {
 import { H1, H2, InformationText, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getAssistanceNeedDecision } from './api'
+import { getAssistanceNeedDecision, sendAssistanceNeedDecision } from './api'
 import { DecisionInfoHeader } from './common'
 
 const StickyFooterContainer = styled.div`
@@ -104,7 +105,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
   const navigate = useNavigate()
 
-  const [assistanceNeedDecision] = useApiState(
+  const [assistanceNeedDecision, reloadDecision] = useApiState(
     () => getAssistanceNeedDecision(id),
     [id]
   )
@@ -134,6 +135,14 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   )
 
   const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
+
+  const canBeEdited = assistanceNeedDecision
+    .map(
+      ({ decision }) =>
+        decision.status === 'NEEDS_WORK' ||
+        (decision.status === 'DRAFT' && decision.sentForDecision === null)
+    )
+    .getOrElse(false)
 
   return (
     <>
@@ -384,6 +393,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           `/child-information/${childId}/assistance-need-decision/${id}/edit`
                         )
                       }
+                      disabled={!canBeEdited}
                     >
                       {t.modifyDecision}
                     </Button>
@@ -402,10 +412,21 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                       </InformationText>
                     </FixedSpaceColumn>
                   )}
-                  <Button primary>{t.sendToDecisionMaker}</Button>
+
+                  {permittedActions.includes('SEND') && (
+                    <AsyncButton
+                      primary
+                      text={t.sendToDecisionMaker}
+                      onClick={() => sendAssistanceNeedDecision(id)}
+                      onSuccess={reloadDecision}
+                      disabled={!canBeEdited}
+                      data-qa="send-decision"
+                    />
+                  )}
                 </FixedSpaceRow>
               </FixedSpaceRow>
-            )
+            ),
+            { size: 'L', margin: 'zero' }
           )}
         </StickyFooterContainer>
       </StickyFooter>
