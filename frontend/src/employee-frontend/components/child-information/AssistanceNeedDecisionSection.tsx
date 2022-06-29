@@ -20,7 +20,7 @@ import { faQuestion } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import AssistanceNeedDecisionRow from './AssistanceNeedDecisionRow'
+import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
 import {
   createAssistanceNeedDecision,
   deleteAssistanceNeedDecision,
@@ -42,7 +42,9 @@ export interface Props {
   id: UUID
 }
 
-export default React.memo(function AssistanceNeedDecision({ id }: Props) {
+export default React.memo(function AssistanceNeedDecisionSection({
+  id
+}: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
   const refSectionTop = useRef(null)
@@ -188,7 +190,7 @@ export default React.memo(function AssistanceNeedDecision({ id }: Props) {
             <Tbody>
               {orderBy(decisions, ({ decision }) => decision.created).map(
                 (res) => (
-                  <AssistanceNeedDecisionRow
+                  <AssistanceNeedDecisionSectionRow
                     key={res.decision.id}
                     decision={res}
                     childId={id}

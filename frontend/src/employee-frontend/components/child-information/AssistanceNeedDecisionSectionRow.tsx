@@ -19,7 +19,7 @@ interface Props {
   onDelete: () => void
 }
 
-export default React.memo(function AssistanceNeedDecisionRow({
+export default React.memo(function AssistanceNeedDecisionSectionRow({
   decision: { decision, permittedActions },
   childId,
   onDelete
