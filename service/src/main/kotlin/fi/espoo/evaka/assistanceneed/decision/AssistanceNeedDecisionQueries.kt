@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 
@@ -128,10 +129,10 @@ fun Database.Transaction.insertAssistanceNeedDecision(
     }
     batch.execute()
 
-    return getAssistanceNeedDecisionById(id, childId)
+    return getAssistanceNeedDecisionById(id)
 }
 
-fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId, childId: ChildId): AssistanceNeedDecision {
+fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
     //language=sql
     val sql =
         """
@@ -163,19 +164,17 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId, ch
         LEFT JOIN employee p1 ON p1.id = ad.preparer_1_employee_id
         LEFT JOIN employee p2 ON p2.id = ad.preparer_2_employee_id
         LEFT JOIN employee dm ON dm.id = ad.decision_maker_employee_id
-        WHERE ad.id = :id AND ad.child_id = :childId
+        WHERE ad.id = :id
         GROUP BY ad.id, child_id, start_date, end_date, unit.id, p1.id, p2.id, dm.id;
         """.trimIndent()
     return createQuery(sql)
         .bind("id", id)
-        .bind("childId", childId)
         .mapTo<AssistanceNeedDecision>()
-        .one()
+        .firstOrNull() ?: throw NotFound("Assistance need decision $id not found")
 }
 
 fun Database.Transaction.updateAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
-    childId: ChildId,
     data: AssistanceNeedDecisionForm
 ) {
     //language=sql
@@ -221,12 +220,11 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             preparer_2_employee_id = :preparer2EmployeeId,
             preparer_2_title = :preparer2Title,
             preparer_2_phone_number = :preparer2PhoneNumber 
-        WHERE id = :id AND child_id = :childId
+        WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """.trimIndent()
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
-        .bind("childId", childId)
         .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
         .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
         .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
@@ -265,4 +263,34 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             .add()
     }
     batch.execute()
+}
+
+fun Database.Read.getAssistanceNeedDecisionsByChildId(childId: ChildId): List<AssistanceNeedDecisionBasics> {
+    //language=sql
+    val sql =
+        """
+        SELECT ad.id, start_date, end_date, status, decision_made, sent_for_decision, ad.created,
+            selected_unit selected_unit_id, unit.name selected_unit_name
+        FROM assistance_need_decision ad
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE child_id = :childId;
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("childId", childId)
+        .mapTo<AssistanceNeedDecisionBasics>()
+        .list()
+}
+
+fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
+    //language=sql
+    val sql =
+        """
+        DELETE FROM assistance_need_decision
+        WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
+        RETURNING id;
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<AssistanceNeedDecisionId>()
+        .firstOrNull() != null
 }

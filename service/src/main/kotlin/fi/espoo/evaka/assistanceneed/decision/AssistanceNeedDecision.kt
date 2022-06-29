@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -125,6 +126,20 @@ data class AssistanceNeedDecisionForm(
     val motivationForDecision: String?
 )
 
+data class AssistanceNeedDecisionBasics(
+    val id: AssistanceNeedDecisionId,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+
+    val decisionMade: LocalDate?,
+    val sentForDecision: LocalDate?,
+    @Nested("selected_unit")
+    val selectedUnit: UnitInfoBasics?,
+
+    val created: HelsinkiDateTime
+)
+
 enum class AssistanceNeedDecisionStatus {
     DRAFT, NEEDS_WORK, ACCEPTED, REJECTED
 }
@@ -208,4 +223,10 @@ data class UnitInfo(
 
 data class UnitIdInfo(
     val id: DaycareId?
+)
+
+data class UnitInfoBasics(
+    @PropagateNull
+    val id: DaycareId?,
+    val name: String? = null
 )

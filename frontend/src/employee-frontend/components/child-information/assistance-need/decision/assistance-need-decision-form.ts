@@ -23,27 +23,24 @@ export type AssistanceNeedDecisionInfo = {
 }
 
 export function useAssistanceNeedDecision(
-  childId: UUID,
   id: UUID
 ): AssistanceNeedDecisionInfo {
   const [formState, setFormState] = useState<AssistanceNeedDecisionForm>()
 
   const getSaveParameters = useCallback(
-    () =>
-      [childId, id, formState] as [
-        childId: string,
-        id: string,
-        data: AssistanceNeedDecisionForm
-      ],
-    [childId, id, formState]
+    () => [id, formState] as [id: string, data: AssistanceNeedDecisionForm],
+    [id, formState]
   )
 
   const loadDecision = useCallback(
     () =>
-      getAssistanceNeedDecision(childId, id).then(
-        (d) => d as Result<AssistanceNeedDecisionForm>
+      getAssistanceNeedDecision(id).then(
+        (d) =>
+          d.map(
+            ({ decision }) => decision
+          ) as Result<AssistanceNeedDecisionForm>
       ),
-    [childId, id]
+    [id]
   )
 
   const { status, setDirty } = useAutosave({

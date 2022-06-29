@@ -41,6 +41,7 @@ export const AssistanceNeedDecisionStatusChip = React.memo(
         color={statusColor[decisionStatus]}
         fitContent
         data-qa={dataQa}
+        data-qa-status={decisionStatus}
       >
         {i18n.childInformation.assistanceNeedDecision.statuses[decisionStatus]}
       </StaticChip>

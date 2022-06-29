@@ -28,6 +28,7 @@ interface ThProps {
   top?: string
   hidden?: boolean
   align?: 'left' | 'right' | 'center'
+  minimalWidth?: boolean
 }
 
 export const Th = styled.th<ThProps>`
@@ -45,6 +46,13 @@ export const Th = styled.th<ThProps>`
   position: ${(p) => (p.sticky ? 'sticky' : 'static')};
   top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
   background: ${(p) => (p.sticky ? p.theme.colors.grayscale.g0 : 'none')};
+  ${(p) =>
+    p.minimalWidth
+      ? `
+          width: 0;
+          white-space: nowrap;
+        `
+      : ''}
 `
 
 export const Td = styled.td<{

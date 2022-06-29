@@ -105,8 +105,8 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   const navigate = useNavigate()
 
   const [assistanceNeedDecision] = useApiState(
-    () => getAssistanceNeedDecision(childId, id),
-    [childId, id]
+    () => getAssistanceNeedDecision(id),
+    [id]
   )
   const [child] = useApiState(() => getPerson(childId), [childId])
 
@@ -125,7 +125,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       } ${
         assistanceNeedDecision
           .getOrElse(undefined)
-          ?.assistanceServicesTime?.format() ?? ''
+          ?.decision.assistanceServicesTime?.format() ?? ''
       }`,
       ENHANCED_ASSISTANCE: t.assistanceLevel.enhancedAssistance,
       SPECIAL_ASSISTANCE: t.assistanceLevel.specialAssistance
@@ -143,7 +143,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
         <ContentArea opaque>
           {renderResult(
             combine(child, assistanceNeedDecision),
-            ([child, decision]) => (
+            ([child, { decision }]) => (
               <>
                 <FixedSpaceRow
                   alignItems="flex-start"
@@ -367,26 +367,30 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       <Gap size="m" />
       <StickyFooter>
         <StickyFooterContainer>
-          <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
-            <FixedSpaceRow spacing="s">
-              <Button onClick={() => navigate(`/child-information/${childId}`)}>
-                {t.leavePage}
-              </Button>
-              <Button
-                onClick={() =>
-                  navigate(
-                    `/child-information/${childId}/assistance-need-decision/${id}/edit`
-                  )
-                }
-              >
-                {t.modifyDecision}
-              </Button>
-            </FixedSpaceRow>
-            <FixedSpaceRow spacing="m">
-              {renderResult(
-                assistanceNeedDecision,
-                (decision) =>
-                  decision.sentForDecision && (
+          {renderResult(
+            assistanceNeedDecision,
+            ({ decision, permittedActions }) => (
+              <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
+                <FixedSpaceRow spacing="s">
+                  <Button
+                    onClick={() => navigate(`/child-information/${childId}`)}
+                  >
+                    {t.leavePage}
+                  </Button>
+                  {permittedActions.includes('UPDATE') && (
+                    <Button
+                      onClick={() =>
+                        navigate(
+                          `/child-information/${childId}/assistance-need-decision/${id}/edit`
+                        )
+                      }
+                    >
+                      {t.modifyDecision}
+                    </Button>
+                  )}
+                </FixedSpaceRow>
+                <FixedSpaceRow spacing="m">
+                  {decision.sentForDecision && (
                     <FixedSpaceColumn
                       justifyContent="center"
                       alignItems="flex-end"
@@ -397,11 +401,12 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                         {decision.sentForDecision.format()}
                       </InformationText>
                     </FixedSpaceColumn>
-                  )
-              )}
-              <Button primary>{t.sendToDecisionMaker}</Button>
-            </FixedSpaceRow>
-          </FixedSpaceRow>
+                  )}
+                  <Button primary>{t.sendToDecisionMaker}</Button>
+                </FixedSpaceRow>
+              </FixedSpaceRow>
+            )
+          )}
         </StickyFooterContainer>
       </StickyFooter>
     </>

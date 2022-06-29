@@ -9,8 +9,10 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -57,36 +59,87 @@ class AssistanceNeedDecisionController(
         }
     }
 
-    @GetMapping("/children/{childId}/assistance-needs/decision/{id}")
+    @GetMapping("/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId
-    ): AssistanceNeedDecision {
+    ): AssistanceNeedDecisionResponse {
         Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getAssistanceNeedDecisionById(id, childId)
+                AssistanceNeedDecisionResponse(
+                    decision = tx.getAssistanceNeedDecisionById(id),
+                    permittedActions = accessControl.getPermittedActions(tx, user, id)
+                )
             }
         }
     }
 
-    @PutMapping("/children/{childId}/assistance-needs/decision/{id}")
+    @PutMapping("/assistance-need-decision/{id}")
     fun updateAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable childId: ChildId,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateAssistanceNeedDecision(id, childId, body.decision)
+                tx.updateAssistanceNeedDecision(id, body.decision)
             }
         }
     }
+
+    @GetMapping("/children/{childId}/assistance-needs/decisions")
+    fun getAssistanceNeedDecisions(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId
+    ): List<AssistanceNeedDecisionBasicsResponse> {
+        Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
+        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
+                val permittedActions = accessControl.getPermittedActions<AssistanceNeedDecisionId, Action.AssistanceNeedDecision>(
+                    tx,
+                    user,
+                    decisions.map { it.id }
+                )
+                decisions.map {
+                    AssistanceNeedDecisionBasicsResponse(decision = it, permittedActions = permittedActions[it.id]!!)
+                }
+            }
+        }
+    }
+
+    @DeleteMapping("/assistance-need-decision/{id}")
+    fun deleteAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.DELETE, id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (!tx.deleteAssistanceNeedDecision(id)) {
+                    throw NotFound("Assistance need decision $id cannot found or cannot be deleted", "DECISION_NOT_FOUND")
+                }
+            }
+        }
+    }
+
+    data class AssistanceNeedDecisionBasicsResponse(
+        val decision: AssistanceNeedDecisionBasics,
+        val permittedActions: Set<Action.AssistanceNeedDecision>
+    )
+
+    data class AssistanceNeedDecisionResponse(
+        val decision: AssistanceNeedDecision,
+        val permittedActions: Set<Action.AssistanceNeedDecision>
+    )
 }

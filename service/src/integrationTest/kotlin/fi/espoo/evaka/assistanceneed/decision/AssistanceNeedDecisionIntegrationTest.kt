@@ -203,6 +203,19 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(updatedDecision.guardianInfo, finalDecision.guardianInfo)
     }
 
+    @Test
+    fun `Deleting a decision removes it`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        whenDeleteAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        whenGetAssistanceNeedDecisionThenExpectNotFound(assistanceNeedDecision.id)
+    }
+
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
         val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs/decision")
             .jsonBody(jsonMapper.writeValueAsString(request))
@@ -214,7 +227,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     private fun whenPutAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest, decisionId: AssistanceNeedDecisionId) {
-        val (_, res) = http.put("/children/${testChild_1.id}/assistance-needs/decision/$decisionId")
+        val (_, res) = http.put("/assistance-need-decision/$decisionId")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
             .response()
@@ -223,11 +236,27 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     private fun whenGetAssistanceNeedDecisionThenExpectSuccess(id: AssistanceNeedDecisionId?): AssistanceNeedDecision {
-        val (_, res, result) = http.get("/children/${testChild_1.id}/assistance-needs/decision/$id")
+        val (_, res, result) = http.get("/assistance-need-decision/$id")
             .asUser(assistanceWorker)
-            .responseObject<AssistanceNeedDecision>(jsonMapper)
+            .responseObject<AssistanceNeedDecisionController.AssistanceNeedDecisionResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get()
+        return result.get().decision
+    }
+
+    private fun whenGetAssistanceNeedDecisionThenExpectNotFound(id: AssistanceNeedDecisionId?) {
+        val (_, res) = http.get("/assistance-need-decision/$id")
+            .asUser(assistanceWorker)
+            .response()
+
+        assertEquals(404, res.statusCode)
+    }
+
+    private fun whenDeleteAssistanceNeedDecisionThenExpectSuccess(id: AssistanceNeedDecisionId?) {
+        val (_, res) = http.delete("/assistance-need-decision/$id")
+            .asUser(assistanceWorker)
+            .response()
+
+        assertEquals(200, res.statusCode)
     }
 }

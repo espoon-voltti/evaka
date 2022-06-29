@@ -7,11 +7,14 @@ import React, { useContext, useState } from 'react'
 import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 
 import AssistanceAction from '../../components/child-information/AssistanceAction'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
+
+import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
 
 export interface Props {
   id: UUID
@@ -41,6 +44,13 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
           <AssistanceAction id={id} />
         )}
+        {featureFlags.experimental?.specialNeedsDecisions &&
+          permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
+            <>
+              <div className="separator large" />
+              <AssistanceNeedDecisionSection id={id} />
+            </>
+          )}
       </CollapsibleContentArea>
     </div>
   )

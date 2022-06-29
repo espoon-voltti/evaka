@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
@@ -157,6 +158,26 @@ JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND an.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementUnitOfChildOfAssistanceNeedDecision() = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedDecisionId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT ad.id, role, enabled_pilot_features AS unit_features
+FROM assistance_need_decision ad
+JOIN employee_child_daycare_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = :userId
+AND ad.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())

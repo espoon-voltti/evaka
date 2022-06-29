@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { UUID } from '../../types'
@@ -72,6 +73,28 @@ export interface AssistanceNeedDecision {
   structuralMotivationDescription: string | null
   structuralMotivationOptions: StructuralMotivationOptions
   viewOfGuardians: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionBasics
+*/
+export interface AssistanceNeedDecisionBasics {
+  created: HelsinkiDateTime
+  decisionMade: LocalDate | null
+  endDate: LocalDate | null
+  id: UUID
+  selectedUnit: UnitInfoBasics | null
+  sentForDecision: LocalDate | null
+  startDate: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AssistanceNeedDecisionBasicsResponse
+*/
+export interface AssistanceNeedDecisionBasicsResponse {
+  decision: AssistanceNeedDecisionBasics
+  permittedActions: Action.AssistanceNeedDecision[]
 }
 
 /**
@@ -169,6 +192,14 @@ export interface AssistanceNeedDecisionRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.AssistanceNeedDecisionResponse
+*/
+export interface AssistanceNeedDecisionResponse {
+  decision: AssistanceNeedDecision
+  permittedActions: Action.AssistanceNeedDecision[]
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 */
 export type AssistanceNeedDecisionStatus =
@@ -234,4 +265,12 @@ export interface UnitInfo {
   postOffice: string | null
   postalCode: string | null
   streetAddress: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnitInfoBasics
+*/
+export interface UnitInfoBasics {
+  id: UUID | null
+  name: string | null
 }

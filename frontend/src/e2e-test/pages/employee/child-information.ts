@@ -569,6 +569,37 @@ export class AssistanceNeedSection extends Section {
   async assertAssistanceNeedCount(expectedCount: number) {
     await waitUntilEqual(() => this.#assistanceNeedRow.count(), expectedCount)
   }
+
+  async waitUntilAssistanceNeedDecisionsLoaded() {
+    await this.page
+      .findByDataQa('table-of-assistance-need-decisions')
+      .waitUntilVisible()
+  }
+
+  async assistanceNeedDecisions(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-assistance-need-decisions')
+      .findAllByDataQa('table-assistance-need-decision-row')
+      .nth(nth)
+
+    return {
+      date: await row.findByDataQa('assistance-need-decision-date').innerText,
+      unitName: await row.findByDataQa('assistance-need-decision-unit-name')
+        .innerText,
+      sentDate: await row.findByDataQa('assistance-need-decision-sent-date')
+        .innerText,
+      decisionMadeDate: await row.findByDataQa(
+        'assistance-need-decision-made-date'
+      ).innerText,
+      status: await row
+        .findByDataQa('decision-status')
+        .getAttribute('data-qa-status'),
+      actionCount: await row
+        .findByDataQa('assistance-need-decision-actions')
+        .findAll('button')
+        .count()
+    }
+  }
 }
 
 class MessageBlocklistSection extends Section {
