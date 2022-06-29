@@ -362,6 +362,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `guardian can send a message only to group, not group staff`() {
+        db.transaction {
+            it.createDaycareGroupMessageAccount(groupId)
+        }
+        // Group account and the employee personal account
+        assertEquals(getCitizenReceivers(person1).size, 2)
+
+        // When a supervisor works as staff, her account is deactivated
+        db.transaction {
+            it.deactivateEmployeeMessageAccount(employee1Id)
+        }
+        assertEquals(getCitizenReceivers(person1).size, 1)
+    }
+
+    @Test
     fun `a message is split to several threads by guardianship`() {
         // given
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
@@ -797,6 +812,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     )
         .asUser(user)
         .responseObject<List<MessageReceiversResponse>>(jsonMapper).third.get()
+
+    private fun getCitizenReceivers(user: AuthenticatedUser): List<MessageAccount> = http.get(
+        "/citizen/messages/receivers"
+    )
+        .asUser(user)
+        .responseObject<List<MessageAccount>>(jsonMapper).third.get()
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }

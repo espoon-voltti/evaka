@@ -622,7 +622,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction { tx ->
                 tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
                 tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
-                tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
+                tx.execute("INSERT INTO message_account (employee_id) SELECT employee_id FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING")
             }
         }
     }

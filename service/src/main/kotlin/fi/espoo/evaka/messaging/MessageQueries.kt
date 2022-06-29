@@ -409,6 +409,7 @@ personal_accounts AS (
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_name_view acc_name ON acc_name.id = acc.id
+    WHERE active IS TRUE
 ),
 group_accounts AS (
     SELECT acc.id, g.name, 'GROUP' AS type
