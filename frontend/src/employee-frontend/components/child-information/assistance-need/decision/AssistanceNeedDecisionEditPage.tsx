@@ -3,15 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
-import { ChildContextProvider } from 'employee-frontend/state/child'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Button from 'lib-components/atoms/buttons/Button'
 import Content, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -32,6 +34,8 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
   const [child] = useApiState(() => getPerson(childId), [childId])
 
   const { i18n } = useTranslation()
+
+  const navigate = useNavigate()
 
   const { formState, setFormState, status } = useAssistanceNeedDecision(id)
 
@@ -54,7 +58,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
   }, [])
 
   return (
-    <ChildContextProvider id={childId}>
+    <>
       <Content>
         <ContentArea opaque>
           {renderResult(child, (child) => (
@@ -95,12 +99,34 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
             </>
           ))}
         </ContentArea>
-        <StickyFooter>
-          <FooterContainer>
-            <AutosaveStatusIndicator status={status} />
-          </FooterContainer>
-        </StickyFooter>
       </Content>
-    </ChildContextProvider>
+      <StickyFooter>
+        <FooterContainer>
+          <Button
+            onClick={() => navigate(`/child-information/${childId}`)}
+            data-qa="leave-page-button"
+          >
+            {i18n.childInformation.assistanceNeedDecision.leavePage}
+          </Button>
+          <AutosaveStatusIndicator status={status} />
+          <FlexGap />
+          <Button
+            primary
+            onClick={() =>
+              navigate(
+                `/child-information/${childId}/assistance-need-decision/${id}`
+              )
+            }
+            data-qa="preview-button"
+          >
+            {i18n.childInformation.assistanceNeedDecision.preview}
+          </Button>
+        </FooterContainer>
+      </StickyFooter>
+    </>
   )
 })
+
+const FlexGap = styled.div`
+  flex: 1;
+`

@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { formatTime } from 'lib-common/date'
-import { Dimmed } from 'lib-components/typography'
+import { fontWeights, P } from 'lib-components/typography'
+import { theme } from 'lib-customizations/common'
 
 export default React.memo(function AutosaveStatusIndicator({
   status
@@ -29,14 +31,24 @@ export default React.memo(function AutosaveStatusIndicator({
       case 'dirty':
       case 'clean':
         return status.savedAt
-          ? `${i18n.common.saved} ${formatTime(status.savedAt)}`
+          ? `${i18n.common.saved}\n${formatTime(status.savedAt)}`
           : null
     }
   }
 
   return (
-    <Dimmed data-status={status.state} data-qa="autosave-indicator">
+    <Indicator
+      preserveWhiteSpace
+      noMargin
+      color={theme.colors.grayscale.g70}
+      data-status={status.state}
+      data-qa="autosave-indicator"
+    >
       {formatStatus(status)}
-    </Dimmed>
+    </Indicator>
   )
 })
+
+const Indicator = styled(P)`
+  font-weight: ${fontWeights.bold};
+`

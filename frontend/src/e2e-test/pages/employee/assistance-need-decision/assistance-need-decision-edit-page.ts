@@ -43,4 +43,12 @@ export default class AssistanceNeedDecisionEditPage {
       'clean'
     )
   }
+
+  async clickPreviewButton(): Promise<void> {
+    await this.page.findByDataQa('preview-button').click()
+  }
+
+  async clickLeavePageButton(): Promise<void> {
+    await this.page.findByDataQa('leave-page-button').click()
+  }
 }
