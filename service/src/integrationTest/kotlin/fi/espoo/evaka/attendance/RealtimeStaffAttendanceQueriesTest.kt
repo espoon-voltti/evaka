@@ -29,6 +29,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     private val group3 = DevDaycareGroup(daycareId = testDaycare.id, name = "Tyhjät")
     private val group4 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kookoskalmarit")
 
+    private lateinit var employee1Fixture: FixtureBuilder.EmployeeFixture
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -42,6 +43,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 .withGroupAccess(testDaycare.id, group1.id)
                 .withScopedRole(UserRole.STAFF, testDaycare.id)
                 .saveAnd {
+                    employee1Fixture = this
                     employee1Id = employeeId
                 }
                 .addEmployee()
@@ -116,5 +118,95 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         assertEquals("Foo Present", externalAttendances[0].name)
         assertEquals(group1.id, externalAttendances[0].groupId)
         assertEquals(now.minusDays(1), externalAttendances[0].arrived)
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds departures for yesterday's arrivals without a plan`() {
+        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, now.minusDays(1).minusMinutes(1), BigDecimal(7.0)).let {
+            }
+            tx.markStaffArrival(employee2Id, group1.id, now, BigDecimal(0)).let {
+            }
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(2, staffAttendances.size)
+            assertEquals(now, staffAttendances.first { it.employeeId == employee1Id }.departed)
+            assertEquals(null, staffAttendances.first { it.employeeId == employee2Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds departure for today's arrival with a planned departure in the past`() {
+        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val arrival = now.atStartOfDay().plusHours(8)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0)).let {
+            }
+
+            employee1Fixture
+                .addStaffAttendancePlan()
+                .startTime(arrival)
+                .endTime(plannedDeparture)
+                .type(StaffAttendanceType.PRESENT)
+                .save()
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(plannedDeparture, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure for overnight planned attendance`() {
+        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val arrival = now.atStartOfDay().minusHours(4)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0)).let {
+            }
+
+            employee1Fixture
+                .addStaffAttendancePlan()
+                .startTime(arrival)
+                .endTime(plannedDeparture)
+                .type(StaffAttendanceType.PRESENT)
+                .save()
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(plannedDeparture, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture won't add a departure for today's arrival with a planned departure in the future`() {
+        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val arrival = now.atStartOfDay().plusHours(8)
+        val plannedDeparture = arrival.plusHours(10)
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0)).let {
+            }
+
+            employee1Fixture
+                .addStaffAttendancePlan()
+                .startTime(arrival)
+                .endTime(plannedDeparture)
+                .type(StaffAttendanceType.PRESENT)
+                .save()
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(null, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
     }
 }

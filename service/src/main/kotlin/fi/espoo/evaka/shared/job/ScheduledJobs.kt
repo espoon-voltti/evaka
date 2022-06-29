@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
@@ -101,45 +102,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun endOfDayStaffAttendanceUpkeep(db: Database.Connection) {
         db.transaction {
-            it.createUpdate(
-                // language=SQL
-                """ 
-                    WITH missing_planned_departures AS (
-                        SELECT realtime.id, plan.end_time AS planned_departure
-                        FROM staff_attendance_realtime realtime
-                              JOIN staff_attendance_plan plan ON realtime.employee_id = plan.employee_id
-                                    AND realtime.departed IS NULL
-                                    AND realtime.arrived BETWEEN plan.start_time AND plan.end_time
-                                    AND plan.end_time < :now 
-                    )
-                    UPDATE staff_attendance_realtime realtime
-                    SET departed = missing_planned_departures.planned_departure
-                    FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
-                """.trimIndent()
-            )
-                .bind("now", HelsinkiDateTime.now())
-                .execute()
-
-            it.createUpdate(
-                // language=SQL
-                """
-                    UPDATE staff_attendance_realtime
-                    SET departed = :now
-                    WHERE departed IS NULL AND arrived + interval '1 day' < :now
-                """.trimIndent()
-            )
-                .bind("now", HelsinkiDateTime.now())
-                .execute()
-
-            it.createUpdate(
-                // language=SQL
-                """
-                    UPDATE staff_attendance_external
-                    SET departed = :now
-                    WHERE departed IS NULL AND arrived + interval '1 day' < :now
-                """.trimIndent()
-            ).bind("now", HelsinkiDateTime.now())
-                .execute()
+            it.addMissingStaffAttendanceDepartures(HelsinkiDateTime.now())
         }
     }
 
