@@ -197,11 +197,9 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         coalesce(attendances.attendances, '[]') AS attendances,
         ab.absence_type
     FROM generate_series(:start, :end, '1 day') t
-    JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
-    JOIN person p ON p.id = pl.child_id
-    LEFT JOIN backup_care bc ON t::date BETWEEN bc.start_date AND bc.end_date AND p.id = bc.child_id
-    LEFT JOIN daycare_group_placement dgp on dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
-    LEFT JOIN daycare_group dg ON dg.id = coalesce(bc.group_id, dgp.daycare_group_id)
+    JOIN realized_placement_one(t::date) rp ON true
+    JOIN person p ON rp.child_id = p.id
+    LEFT JOIN daycare_group dg ON rp.group_id = dg.id
     LEFT JOIN LATERAL (
         SELECT
             jsonb_agg(
@@ -228,7 +226,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         WHERE absence.date = t::date AND absence.child_id = p.id
         LIMIT 1
     ) ab ON true
-    WHERE coalesce(bc.unit_id, pl.unit_id) = :unitId
+    WHERE rp.unit_id = :unitId
     """.trimIndent()
 )
     .bind("unitId", unitId)
