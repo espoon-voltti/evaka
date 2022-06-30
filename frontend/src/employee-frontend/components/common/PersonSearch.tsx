@@ -85,7 +85,7 @@ function PersonSearch({
 
   const searchPeople = useRestApi(searchFn, setPersons)
   useEffect(() => {
-    searchPeople(debouncedQuery)
+    void searchPeople(debouncedQuery)
   }, [searchPeople, debouncedQuery])
 
   const filterPeople = (people: PersonSummary[]) =>

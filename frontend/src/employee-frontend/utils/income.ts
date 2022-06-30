@@ -21,7 +21,7 @@ export function useIncomeTypeOptions() {
     setIncomeTypeOptions
   )
   useEffect(() => {
-    loadIncomeTypeOptions()
+    void loadIncomeTypeOptions()
   }, [loadIncomeTypeOptions])
 
   return incomeTypeOptions

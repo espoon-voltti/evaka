@@ -51,7 +51,9 @@ export default React.memo(function FamilyContacts({
   const { permittedActions } = useContext(ChildContext)
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
-  useEffect(() => loadContacts(id), [id, loadContacts])
+  useEffect(() => {
+    void loadContacts(id)
+  }, [id, loadContacts])
 
   const contactPriorityOptions = result
     .map((contacts) => {
@@ -67,7 +69,7 @@ export default React.memo(function FamilyContacts({
     .getOrElse([1])
 
   function onCancel() {
-    loadContacts(id)
+    void loadContacts(id)
   }
 
   function onSubmit(personId: UUID) {
@@ -83,7 +85,7 @@ export default React.memo(function FamilyContacts({
             phone: person.phone ?? null,
             backupPhone: person.backupPhone ?? null
           }).then(() => {
-            loadContacts(id)
+            void loadContacts(id)
           })
         })
     })
@@ -228,7 +230,7 @@ export default React.memo(function FamilyContacts({
                               contactPersonId: row.id,
                               priority: value ? Number(value) : null
                             }).then(() => {
-                              loadContacts(id)
+                              void loadContacts(id)
                             })
                           }}
                           placeholder="-"

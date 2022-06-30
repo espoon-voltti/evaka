@@ -35,7 +35,7 @@ export default React.memo(function EmployeePage() {
   const loadEmployee = useRestApi(getEmployeeDetails, setEmployee)
 
   useEffect(() => {
-    loadEmployee(id)
+    void loadEmployee(id)
   }, [loadEmployee, id])
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default React.memo(function EmployeePage() {
               text={i18n.common.save}
               onClick={() => updateEmployee(id, form.globalRoles)}
               onSuccess={() => {
-                loadEmployee(id)
+                void loadEmployee(id)
                 setForm(null)
               }}
             />

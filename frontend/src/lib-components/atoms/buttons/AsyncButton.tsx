@@ -52,6 +52,7 @@ export interface Props<T> {
   disabled?: boolean
   className?: string
   'data-qa'?: string
+  hideSuccess?: boolean
 }
 
 function AsyncButton<T>({
@@ -66,6 +67,7 @@ function AsyncButton<T>({
   onClick,
   onSuccess,
   onFailure,
+  hideSuccess = false,
   ...props
 }: Props<T>) {
   const { colors } = useTheme()
@@ -176,12 +178,14 @@ function AsyncButton<T>({
 
   const showIcon = buttonState.state !== 'idle'
 
-  const container = useSpring<{ x: number }>({ x: showIcon ? 1 : 0 })
+  const container = useSpring<{ x: number }>({
+    x: !hideSuccess && showIcon ? 1 : 0
+  })
   const spinner = useSpring<{ opacity: number }>({
     opacity: isInProgress ? 1 : 0
   })
   const checkmark = useSpring<{ opacity: number }>({
-    opacity: isSuccess ? 1 : 0
+    opacity: !hideSuccess && isSuccess ? 1 : 0
   })
   const cross = useSpring<{ opacity: number }>({
     opacity: isFailure ? 1 : 0

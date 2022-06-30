@@ -90,7 +90,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
   const loadUnits = useRestApi(getDaycares, setUnits)
 
-  useEffect(loadUnits, [loadUnits])
+  useEffect(() => {
+    void loadUnits()
+  }, [loadUnits])
 
   const submitForm = () => {
     if (!form.unit?.id) return

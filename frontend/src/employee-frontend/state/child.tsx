@@ -80,7 +80,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     []
   )
   const loadChild = useRestApi(getChildDetails, setFullChildResponse)
-  useEffect(() => loadChild(id), [loadChild, id])
+  useEffect(() => {
+    void loadChild(id)
+  }, [loadChild, id])
 
   const person = useMemo(
     () => childResponse.map((response) => response.person),

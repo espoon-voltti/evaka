@@ -38,7 +38,9 @@ export default React.memo(function VasuTemplatesPage() {
   const [templateToEdit, setTemplateToEdit] = useState<VasuTemplateSummary>()
 
   const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
-  useEffect(loadTemplates, [loadTemplates])
+  useEffect(() => {
+    void loadTemplates()
+  }, [loadTemplates])
 
   return (
     <Container>
@@ -107,7 +109,7 @@ export default React.memo(function VasuTemplatesPage() {
               if (createModalOpen) {
                 navigate(`/vasu-templates/${id}`)
               } else {
-                loadTemplates()
+                void loadTemplates()
                 setTemplateToEdit(undefined)
               }
             }}

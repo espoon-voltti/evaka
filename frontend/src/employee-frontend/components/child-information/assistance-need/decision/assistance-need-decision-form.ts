@@ -20,6 +20,7 @@ export type AssistanceNeedDecisionInfo = {
     SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
   status: AutosaveStatus
+  forceSave: () => Promise<Result<void>>
 }
 
 export function useAssistanceNeedDecision(
@@ -43,7 +44,7 @@ export function useAssistanceNeedDecision(
     [id]
   )
 
-  const { status, setDirty } = useAutosave({
+  const { status, setDirty, forceSave } = useAutosave({
     load: loadDecision,
     onLoaded: setFormState,
     save: putAssistanceNeedDecision,
@@ -58,6 +59,7 @@ export function useAssistanceNeedDecision(
   return {
     formState,
     setFormState,
-    status
+    status,
+    forceSave
   }
 }

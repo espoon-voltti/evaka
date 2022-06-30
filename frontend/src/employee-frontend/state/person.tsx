@@ -74,7 +74,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     []
   )
   const loadPerson = useRestApi(getPersonDetails, setFullPersonResponse)
-  useEffect(() => loadPerson(id), [loadPerson, id])
+  useEffect(() => {
+    void loadPerson(id)
+  }, [loadPerson, id])
 
   const [family, reloadFamily] = useApiState(() => getFamilyOverview(id), [id])
 

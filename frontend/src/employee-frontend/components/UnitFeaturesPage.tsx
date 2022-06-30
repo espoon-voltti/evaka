@@ -46,7 +46,9 @@ export default React.memo(function UnitFeaturesPage() {
   )
 
   const load = useRestApi(getUnitFeatures, setUnitsResult)
-  useEffect(load, [load])
+  useEffect(() => {
+    void load()
+  }, [load])
 
   // editable live copy of data
   const [units, setUnits] = useState<Result<UnitFeatures[]>>(Loading.of())
@@ -76,7 +78,7 @@ export default React.memo(function UnitFeaturesPage() {
           )
         )
       } else {
-        load()
+        void load()
       }
     })
   }

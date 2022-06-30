@@ -50,7 +50,9 @@ export default React.memo(function SettingsPage() {
 
   const [settings, setSettings] = useState<Result<Settings>>(Loading.of())
   const loadSettings = useRestApi(getSettings, setSettings)
-  useEffect(loadSettings, [loadSettings])
+  useEffect(() => {
+    void loadSettings()
+  }, [loadSettings])
 
   const submit = useCallback(() => {
     if (!settings.isSuccess) return

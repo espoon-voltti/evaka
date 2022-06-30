@@ -66,7 +66,7 @@ export default React.memo(function EmployeesPage() {
   const loadEmployees = useRestApi(searchEmployees, setEmployeesResult)
 
   useEffect(() => {
-    loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)
+    void loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)
   }, [loadEmployees, page, debouncedSearchTerm])
 
   useEffect(() => setPage(1), [searchTerm])

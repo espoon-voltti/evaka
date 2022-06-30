@@ -202,13 +202,13 @@ export const MessageContextProvider = React.memo(
       }
       switch (selectedAccount.view) {
         case 'RECEIVED':
-          loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
+          void loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
           break
         case 'SENT':
-          loadSentMessages(selectedAccount.account.id, page, PAGE_SIZE)
+          void loadSentMessages(selectedAccount.account.id, page, PAGE_SIZE)
           break
         case 'DRAFTS':
-          loadMessageDrafts(selectedAccount.account.id)
+          void loadMessageDrafts(selectedAccount.account.id)
       }
     }, [
       loadMessageDrafts,

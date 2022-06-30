@@ -53,7 +53,9 @@ function BackupPickup({ id }: BackupPickupProps) {
   >(undefined)
 
   const loadBackupPickups = useRestApi(getChildBackupPickups, setResult)
-  useEffect(() => loadBackupPickups(id), [id, loadBackupPickups])
+  useEffect(() => {
+    void loadBackupPickups(id)
+  }, [id, loadBackupPickups])
 
   const openEditBackupPickupModal = (pickup: ChildBackupPickup) => {
     setBackupPickup(pickup)
@@ -69,7 +71,7 @@ function BackupPickup({ id }: BackupPickupProps) {
     if (result.isSuccess && backupPickup) {
       await removeBackupPickup(backupPickup.id)
       setBackupPickup(undefined)
-      loadBackupPickups(id)
+      void loadBackupPickups(id)
       clearUiMode()
     }
   }
@@ -81,7 +83,7 @@ function BackupPickup({ id }: BackupPickupProps) {
     async function saveBackupPickup() {
       if (name !== '' && phone !== '') {
         await createBackupPickup(id, { name, phone })
-        loadBackupPickups(id)
+        void loadBackupPickups(id)
         setBackupPickup(undefined)
         clearUiMode()
       }
@@ -131,7 +133,7 @@ function BackupPickup({ id }: BackupPickupProps) {
           name: name !== '' ? name : backupPickup.name,
           phone: phone !== '' ? phone : backupPickup.phone
         })
-        loadBackupPickups(id)
+        void loadBackupPickups(id)
         setBackupPickup(undefined)
         clearUiMode()
       }

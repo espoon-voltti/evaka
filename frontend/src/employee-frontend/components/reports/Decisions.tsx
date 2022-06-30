@@ -59,7 +59,7 @@ export default React.memo(function Decisions() {
   const loadReport = useRestApi(getDecisionsReport, setRows)
 
   useEffect(() => {
-    loadReport(filters)
+    void loadReport(filters)
   }, [loadReport, filters])
 
   const filteredRows: DecisionsReportRow[] = useMemo(

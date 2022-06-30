@@ -7,16 +7,21 @@ import { DependencyList, useCallback, useEffect, useRef, useState } from 'react'
 import {
   ApiFunction,
   ApiResultOf,
+  Failure,
   isCancelled,
   Loading,
   Result,
   withStaleCancellation
 } from '../api'
 
+type APICallFn<F extends ApiFunction> = (
+  ...args: Parameters<F>
+) => Promise<Result<ApiResultOf<F>>>
+
 export function useRestApi<F extends ApiFunction>(
   f: F,
   setState: (result: Result<ApiResultOf<F>>) => void
-): (...args: Parameters<F>) => void {
+): APICallFn<F> {
   const [api] = useState(() => withStaleCancellation(f))
   const mountedRef = useRef(true)
 
@@ -27,13 +32,21 @@ export function useRestApi<F extends ApiFunction>(
     []
   )
 
-  return useCallback(
-    (...args: Parameters<F>) => {
+  return useCallback<APICallFn<F>>(
+    async (...args) => {
       setState(Loading.of())
-      void api(...args).then((result) => {
-        if (!mountedRef.current || isCancelled(result)) return
-        setState(result)
-      })
+
+      const result = await api(...args)
+
+      if (!mountedRef.current || isCancelled(result)) {
+        return Failure.of({
+          message: 'Cancelled or mountedRef does not exist'
+        })
+      }
+
+      setState(result)
+
+      return result
     },
     [api, setState]
   )

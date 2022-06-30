@@ -166,7 +166,7 @@ export default React.memo(function ApplicationPage() {
 
   useEffect(() => {
     if (shouldLoadServiceNeedOptions) {
-      loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
+      void loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
