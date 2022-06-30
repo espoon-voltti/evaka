@@ -393,13 +393,12 @@ private fun Database.Read.fetchChildPlacementBasics(childId: ChildId, unitId: Da
     // language=sql
     val sql =
         """
-        SELECT p.type AS placement_type, c.date_of_birth
+        SELECT rp.placement_type, c.date_of_birth
         FROM person c 
-        JOIN placement p 
-            ON p.child_id = c.id AND daterange(p.start_date, p.end_date, '[]') @> :today
-        LEFT JOIN backup_care bc
-            ON bc.child_id = c.id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
-        WHERE c.id = :childId AND (p.unit_id = :unitId OR bc.unit_id = :unitId)
+        JOIN realized_placement_all(:today) rp
+        ON c.id = rp.child_id
+        WHERE c.id = :childId AND rp.unit_id = :unitId
+        LIMIT 1
         """.trimIndent()
 
     return createQuery(sql)
@@ -425,12 +424,10 @@ private fun Database.Read.fetchChildPlacementTypeDates(
 
     // language=sql
     val sql = """
-        SELECT DISTINCT d::date AS date, p.type AS placement_type
+        SELECT DISTINCT d::date AS date, placement_type
         FROM generate_series(:startDate, :endDate, '1 day') d
-        JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> d::date
-        LEFT JOIN backup_care bc
-            ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> d::date
-        WHERE p.child_id = :childId AND (p.unit_id = :unitId OR bc.unit_id = :unitId)
+        JOIN realized_placement_all(d::date) rp ON true
+        WHERE rp.child_id = :childId AND rp.unit_id = :unitId
     """.trimIndent()
 
     return createQuery(sql)
