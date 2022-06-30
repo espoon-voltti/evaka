@@ -210,7 +210,7 @@ describe('Assistance Need Decisions - Preview page', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.selectedUnit,
-      `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina järjestämispaikka saattaa vaihtua.`
+      `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.motivationForDecision,
