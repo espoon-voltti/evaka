@@ -26,6 +26,7 @@ import kotlin.test.assertEquals
 
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val decisionMaker = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
 
     private val testDecision = AssistanceNeedDecisionForm(
         startDate = LocalDate.of(2022, 1, 1),
@@ -38,7 +39,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         preparedBy1 = AssistanceNeedDecisionEmployeeForm(employeeId = assistanceWorker.id, title = "worker", phoneNumber = "01020405060"),
         preparedBy2 = null,
         decisionMaker = AssistanceNeedDecisionMakerForm(
-            employeeId = testDecisionMaker_2.id,
+            employeeId = decisionMaker.id,
             title = "Decider of everything"
         ),
 
@@ -96,7 +97,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
 
-        assertEquals(testChild_1.id, assistanceNeedDecision.childId)
+        assertEquals(testChild_1.id, assistanceNeedDecision.child?.id)
         assertEquals(testDecision.startDate, assistanceNeedDecision.startDate)
         assertEquals(testDecision.endDate, assistanceNeedDecision.endDate)
         assertEquals(testDecision.status, assistanceNeedDecision.status)
@@ -280,6 +281,76 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(AssistanceNeedDecisionStatus.DRAFT, assistanceNeedDecision.status)
     }
 
+    @Test
+    fun `Decision maker can mark decision as opened`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK)
+        whenMarkAssistanceNeedDecisionOpenedThenExpectStatus(assistanceNeedDecision.id, HttpStatus.FORBIDDEN, assistanceWorker)
+        whenMarkAssistanceNeedDecisionOpenedThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK, decisionMaker)
+    }
+
+    @Test
+    fun `Decision maker can make a decision`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        // must be sent before a decision can be made
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+            HttpStatus.FORBIDDEN
+        )
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK)
+        // only the decision-maker can make the decision
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            assistanceWorker,
+            HttpStatus.FORBIDDEN
+        )
+        // the decision cannot be DRAFT
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.DRAFT
+            ),
+            decisionMaker,
+            HttpStatus.BAD_REQUEST
+        )
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+            HttpStatus.OK
+        )
+        val decision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        assertEquals(LocalDate.now(), decision.decisionMade)
+        // decisions cannot be re-decided
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.REJECTED
+            ),
+            decisionMaker,
+            HttpStatus.BAD_REQUEST
+        )
+    }
+
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
         val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs/decision")
             .jsonBody(jsonMapper.writeValueAsString(request))
@@ -339,5 +410,31 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             .response()
 
         assertEquals(403, res.statusCode)
+    }
+
+    private fun whenMarkAssistanceNeedDecisionOpenedThenExpectStatus(
+        id: AssistanceNeedDecisionId?,
+        statusCode: HttpStatus,
+        user: AuthenticatedUser
+    ) {
+        val (_, res) = http.post("/assistance-need-decision/$id/mark-as-opened")
+            .asUser(user)
+            .response()
+
+        assertEquals(statusCode.value(), res.statusCode)
+    }
+
+    private fun whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+        id: AssistanceNeedDecisionId?,
+        request: AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest,
+        user: AuthenticatedUser,
+        statusCode: HttpStatus
+    ) {
+        val (_, res) = http.post("/assistance-need-decision/$id/decide")
+            .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(user)
+            .response()
+
+        assertEquals(statusCode.value(), res.statusCode)
     }
 }

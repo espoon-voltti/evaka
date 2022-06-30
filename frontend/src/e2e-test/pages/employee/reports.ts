@@ -233,3 +233,44 @@ export class VardaErrorsReport {
     await waitUntilEqual(() => this.#errorRows.count(), expected)
   }
 }
+
+export class AssistanceNeedDecisionsReport {
+  constructor(private page: Page) {}
+
+  async row(nth: number) {
+    const row = this.page
+      .findAllByDataQa('assistance-need-decision-row')
+      .nth(nth)
+
+    return {
+      sentForDecision: await row.findByDataQa('sent-for-decision').innerText,
+      childName: await row.findByDataQa('child-name').innerText,
+      careAreaName: await row.findByDataQa('care-area-name').innerText,
+      unitName: await row.findByDataQa('unit-name').innerText,
+      decisionMade: await row.findByDataQa('decision-made').innerText,
+      status: await row
+        .findByDataQa('decision-chip')
+        .getAttribute('data-qa-status'),
+      isUnopened:
+        (await row.locator
+          .locator('[data-qa="unopened-indicator"]')
+          .count()) === 1
+    }
+  }
+}
+
+export class AssistanceNeedDecisionsReportDecision {
+  constructor(private page: Page) {}
+
+  readonly decisionMaker = this.page.findByDataQa(
+    'labelled-value-decision-maker'
+  ).innerText
+  decisionStatus = () =>
+    this.page.findByDataQa('decision-status').getAttribute('data-qa-status')
+  readonly returnForEditBtn = this.page.findByDataQa('return-for-edit')
+  get returnForEditModal() {
+    return {
+      okBtn: this.page.findByDataQa('modal-okBtn')
+    }
+  }
+}

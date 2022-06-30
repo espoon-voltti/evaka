@@ -27,6 +27,7 @@ import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 
 import { MessageContext } from './messages/MessageContext'
+import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
 
 export const headerHeight = '80px'
 
@@ -210,6 +211,10 @@ export default React.memo(function Header() {
     [accounts, unreadCountsByAccount]
   )
 
+  const { assistanceNeedDecisionCounts } = useContext(
+    AssistanceNeedDecisionReportContext
+  )
+
   const path = location.pathname
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
@@ -288,6 +293,13 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
+                  {featureFlags.experimental?.specialNeedsDecisions &&
+                    assistanceNeedDecisionCounts
+                      .map(
+                        (unread) =>
+                          unread > 0 && <UnreadCount>{unread}</UnreadCount>
+                      )
+                      .getOrElse(null)}
                 </NavLinkWrapper>
               </NavbarLink>
             )}

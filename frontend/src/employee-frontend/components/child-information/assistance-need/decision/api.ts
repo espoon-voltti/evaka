@@ -8,7 +8,8 @@ import {
   AssistanceNeedDecision,
   AssistanceNeedDecisionBasicsResponse,
   AssistanceNeedDecisionForm,
-  AssistanceNeedDecisionResponse
+  AssistanceNeedDecisionResponse,
+  AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -117,6 +118,25 @@ export function deleteAssistanceNeedDecision(
 export function sendAssistanceNeedDecision(id: UUID): Promise<Result<void>> {
   return client
     .post(`/assistance-need-decision/${id}/send`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function decideAssistanceNeedDecision(
+  id: UUID,
+  status: Exclude<AssistanceNeedDecisionStatus, 'DRAFT'>
+): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/decide`, { status })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function markAssistanceNeedDecisionAsOpened(
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/mark-as-opened`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

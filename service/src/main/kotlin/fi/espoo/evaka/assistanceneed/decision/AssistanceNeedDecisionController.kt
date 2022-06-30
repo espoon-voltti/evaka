@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -135,7 +136,8 @@ class AssistanceNeedDecisionController(
                     decision.copy(
                         sentForDecision = LocalDate.now(),
                         status = AssistanceNeedDecisionStatus.DRAFT
-                    ).toForm()
+                    ).toForm(),
+                    false
                 )
             }
         }
@@ -181,6 +183,55 @@ class AssistanceNeedDecisionController(
         }
     }
 
+    @PostMapping("/assistance-need-decision/{id}/decide")
+    fun decideAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId,
+        @RequestBody body: DecideAssistanceNeedDecisionRequest
+    ) {
+        Audit.ChildAssistanceNeedDecisionDecide.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.DECIDE, id)
+
+        if (body.status == AssistanceNeedDecisionStatus.DRAFT) {
+            throw BadRequest("Assistance need decisions cannot be decided to be a draft")
+        }
+
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (decision.status == AssistanceNeedDecisionStatus.ACCEPTED || decision.status == AssistanceNeedDecisionStatus.REJECTED) {
+                    throw BadRequest("Already-decided decisions cannot be decided again")
+                }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision.copy(
+                        status = body.status,
+                        decisionMade = if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now()
+                    ).toForm()
+                )
+            }
+        }
+    }
+
+    @PostMapping("/assistance-need-decision/{id}/mark-as-opened")
+    fun markAssistanceNeedDecisionAsOpened(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.MARK_AS_OPENED, id)
+
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.markAssistanceNeedDecisionAsOpened(id)
+            }
+        }
+    }
+
     data class AssistanceNeedDecisionBasicsResponse(
         val decision: AssistanceNeedDecisionBasics,
         val permittedActions: Set<Action.AssistanceNeedDecision>
@@ -189,5 +240,9 @@ class AssistanceNeedDecisionController(
     data class AssistanceNeedDecisionResponse(
         val decision: AssistanceNeedDecision,
         val permittedActions: Set<Action.AssistanceNeedDecision>
+    )
+
+    data class DecideAssistanceNeedDecisionRequest(
+        val status: AssistanceNeedDecisionStatus
     )
 }

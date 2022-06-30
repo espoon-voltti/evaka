@@ -38,9 +38,9 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `admin searches employees`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 3, searchTerm = null))
+        val body = controller.searchEmployees(Database(jdbi), user, SearchEmployeeRequest(page = 1, pageSize = 4, searchTerm = null))
 
-        assertEquals(3, body.total)
+        assertEquals(4, body.total)
         assertEquals(1, body.pages)
 
         val decisionMaker = body.data.find { it.id == testDecisionMaker_1.id } ?: fail("decisionMaker not found")
