@@ -8,6 +8,7 @@ import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ApplicationsReportRow,
+  AssistanceNeedDecisionsReportRow,
   AssistanceNeedsAndActionsReport,
   ChildAgeLanguageReportRow,
   ChildrenInDifferentAddressReportRow,
@@ -504,5 +505,35 @@ export async function sendPatuReport(
       `/patu-report?from=${filters.from.formatIso()}&to=${filters.to.formatIso()}`
     )
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceNeedDecisionsReport(): Promise<
+  Result<AssistanceNeedDecisionsReportRow[]>
+> {
+  return client
+    .get<JsonOf<AssistanceNeedDecisionsReportRow[]>>(
+      '/reports/assistance-need-decisions'
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((row) => ({
+          ...row,
+          sentForDecision: LocalDate.parseIso(row.sentForDecision),
+          decisionMade: row.decisionMade
+            ? LocalDate.parseIso(row.decisionMade)
+            : null
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceNeedDecisionUnreadCount(): Promise<
+  Result<number>
+> {
+  return client
+    .get<JsonOf<number>>('/reports/assistance-need-decisions/unread-count')
+    .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

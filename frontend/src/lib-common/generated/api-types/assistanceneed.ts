@@ -48,7 +48,7 @@ export interface AssistanceNeedDecision {
   assistanceLevel: AssistanceLevel | null
   assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
-  childId: UUID
+  child: AssistanceNeedDecisionChild | null
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMaker | null
   decisionNumber: number | null
@@ -95,6 +95,14 @@ export interface AssistanceNeedDecisionBasics {
 export interface AssistanceNeedDecisionBasicsResponse {
   decision: AssistanceNeedDecisionBasics
   permittedActions: Action.AssistanceNeedDecision[]
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionChild
+*/
+export interface AssistanceNeedDecisionChild {
+  id: UUID | null
+  name: string | null
 }
 
 /**
@@ -224,6 +232,13 @@ export interface AssistanceNeedRequest {
 export interface AssistanceNeedResponse {
   need: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest
+*/
+export interface DecideAssistanceNeedDecisionRequest {
+  status: AssistanceNeedDecisionStatus
 }
 
 /**

@@ -4,6 +4,8 @@
 
 import React from 'react'
 
+import { AssistanceNeedDecisionReportContextProvider } from 'employee-frontend/components/reports/AssistanceNeedDecisionReportContext'
+
 import { MessageContextProvider } from '../components/messages/MessageContext'
 
 import { ApplicationUIContextProvider } from './application-ui'
@@ -26,7 +28,9 @@ const StateProvider = React.memo(function StateProvider({
             <MessageContextProvider>
               <TitleContextProvider>
                 <ApplicationUIContextProvider>
-                  {children}
+                  <AssistanceNeedDecisionReportContextProvider>
+                    {children}
+                  </AssistanceNeedDecisionReportContextProvider>
                 </ApplicationUIContextProvider>
               </TitleContextProvider>
             </MessageContextProvider>

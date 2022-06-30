@@ -11,6 +11,7 @@ import { AbsenceType } from './daycare'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
 import { AssistanceMeasure } from './assistanceaction'
+import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { OccupancyValues } from './occupancy'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
@@ -29,6 +30,20 @@ export interface ApplicationsReportRow {
   unitId: UUID
   unitName: string
   unitProviderType: ProviderType
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReportRow
+*/
+export interface AssistanceNeedDecisionsReportRow {
+  careAreaName: string
+  childName: string
+  decisionMade: LocalDate | null
+  id: UUID
+  isOpened: boolean | null
+  sentForDecision: LocalDate
+  status: AssistanceNeedDecisionStatus
+  unitName: string
 }
 
 /**
