@@ -127,7 +127,8 @@ interface BaseFeatureFlags {
     leops?: boolean
     citizenVasu?: boolean
     voucherUnitPayments?: boolean
-    specialNeedsDecisions?: boolean
+    assistanceNeedDecisions?: boolean
+    assistanceNeedDecisionsLanguageSelect?: boolean
     staffAttendanceTypes?: boolean
   }
 }

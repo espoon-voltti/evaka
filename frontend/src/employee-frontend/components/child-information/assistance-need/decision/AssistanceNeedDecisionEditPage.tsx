@@ -29,6 +29,7 @@ import {
 import Select, { SelectOption } from 'lib-components/molecules/Select'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { getPerson } from '../../../../api/person'
 
@@ -96,22 +97,30 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
         <ContentArea opaque>
           {renderResult(child, (child) => (
             <>
-              <FixedSpaceRow alignItems="baseline">
-                <Label>
-                  {i18n.childInformation.assistanceNeedDecision.formLanguage}
-                </Label>
-                <Select
-                  items={languageOptions}
-                  selectedItem={
-                    languageOptions.find(
-                      (l) => l.value === formState?.language
-                    ) ?? languageOptions[0]
-                  }
-                  onChange={selectLanguage}
-                  data-qa="language-select"
-                />
-              </FixedSpaceRow>
-              <HorizontalLine />
+              {featureFlags.experimental
+                ?.assistanceNeedDecisionsLanguageSelect && (
+                <>
+                  <FixedSpaceRow alignItems="baseline">
+                    <Label>
+                      {
+                        i18n.childInformation.assistanceNeedDecision
+                          .formLanguage
+                      }
+                    </Label>
+                    <Select
+                      items={languageOptions}
+                      selectedItem={
+                        languageOptions.find(
+                          (l) => l.value === formState?.language
+                        ) ?? languageOptions[0]
+                      }
+                      onChange={selectLanguage}
+                      data-qa="language-select"
+                    />
+                  </FixedSpaceRow>
+                  <HorizontalLine />
+                </>
+              )}
               <I18nContext.Provider value={formLanguageState}>
                 <DecisionContents
                   child={child}
