@@ -307,7 +307,8 @@ sealed interface Action {
         ),
         SEND(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()),
         DECIDE(HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision()),
-        MARK_AS_OPENED(HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision());
+        MARK_AS_OPENED(HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision()),
+        UPDATE_DECISION_MAKER(HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

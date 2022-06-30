@@ -18,6 +18,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.testDecisionMaker_3
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -27,6 +28,7 @@ import kotlin.test.assertEquals
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
+    private val decisionMaker2 = AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.DIRECTOR))
 
     private val testDecision = AssistanceNeedDecisionForm(
         startDate = LocalDate.of(2022, 1, 1),
@@ -351,6 +353,37 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
+    @Test
+    fun `Decision maker can be changed`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        val request = AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest(
+            title = "regional manager"
+        )
+
+        whenUpdateDecisionMakerForAssistanceNeedDecisionThenExpectStatus(
+            assistanceNeedDecision.id,
+            request,
+            decisionMaker2,
+            HttpStatus.FORBIDDEN
+        )
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK)
+        whenUpdateDecisionMakerForAssistanceNeedDecisionThenExpectStatus(
+            assistanceNeedDecision.id,
+            request,
+            decisionMaker2,
+            HttpStatus.OK
+        )
+
+        val updatedDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+
+        assertEquals(decisionMaker2.id, updatedDecision.decisionMaker?.employeeId)
+    }
+
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
         val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs/decision")
             .jsonBody(jsonMapper.writeValueAsString(request))
@@ -431,6 +464,20 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         statusCode: HttpStatus
     ) {
         val (_, res) = http.post("/assistance-need-decision/$id/decide")
+            .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(user)
+            .response()
+
+        assertEquals(statusCode.value(), res.statusCode)
+    }
+
+    private fun whenUpdateDecisionMakerForAssistanceNeedDecisionThenExpectStatus(
+        id: AssistanceNeedDecisionId?,
+        request: AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest,
+        user: AuthenticatedUser,
+        statusCode: HttpStatus
+    ) {
+        val (_, res) = http.post("/assistance-need-decision/$id/update-decision-maker")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(user)
             .response()

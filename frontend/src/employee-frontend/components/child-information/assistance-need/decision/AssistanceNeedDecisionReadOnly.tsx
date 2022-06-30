@@ -81,9 +81,11 @@ const someBoolObj = <K extends string>(obj: Record<K, boolean>) =>
   some(obj, (v) => v)
 
 export default React.memo(function AssistanceNeedDecisionReadOnly({
-  decision
+  decision,
+  decisionMakerWarning
 }: {
   decision: AssistanceNeedDecision
+  decisionMakerWarning?: React.ReactNode
 }) {
   const {
     i18n: {
@@ -304,6 +306,10 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             }
             data-qa="decision-maker"
           />
+
+          {decisionMakerWarning}
+
+          <P>{t.disclaimer}</P>
         </div>
       </FixedSpaceColumn>
     </>

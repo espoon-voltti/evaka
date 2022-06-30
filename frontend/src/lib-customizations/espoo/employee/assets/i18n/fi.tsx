@@ -2612,7 +2612,28 @@ export const fi = {
       status: 'Tila',
       returnForEditModal: {
         title: 'Palautetaanko päätös korjattavaksi?',
-        returnForEdit: 'Palauta korjattavaksi'
+        okBtn: 'Palauta korjattavaksi',
+        text: 'Päätösesitystä ei lähetetä kuntalaiselle.'
+      },
+      rejectModal: {
+        title: 'Hylätäänkö päätös?',
+        okBtn: 'Hylkää päätös',
+        text: 'Haluatko varmasti tehdä hylätyn päätöksen? Hylätty päätös lähetetään kuntalaisen nähtäväksi eVakaan.'
+      },
+      approveModal: {
+        title: 'Hyväksytäänkö päätös?',
+        okBtn: 'Hyväksy päätös',
+        text: 'Haluatko varmasti hyväksyä päätöksen? Hyväksytty päätös lähetetään kuntalaisen nähtäväksi eVakaan.'
+      },
+      mismatchDecisionMakerWarning: {
+        text: 'Et ole tämän päätöksen päättäjä, joten et voi tehdä päätöstä.',
+        link: 'Vaihda itsesi päättäjäksi.'
+      },
+      mismatchDecisionMakerModal: {
+        title: 'Vaihda itsesi päättäjäksi',
+        text: 'Päättäjää muuttamalla voit palauttaa päätöksen korjattavaksi tai hylätä tai hyväksyä päätöksen. Nimesi ja tittelisi muutetaan päätökseen.',
+        titlePlaceholder: 'Titteli',
+        okBtn: 'Vaihda päättäjä'
       }
     },
     duplicatePeople: {
