@@ -370,8 +370,40 @@ fun Database.Read.getMessage(id: MessageId): Message {
 fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): List<MessageAccount> {
     // language=SQL
     val sql = """
-WITH all_placements AS (
-    SELECT p.id, p.unit_id
+WITH backup_care_placements AS (
+    SELECT p.id, p.unit_id, p.child_id, p.group_id
+    FROM guardian g
+    JOIN backup_care p ON p.child_id = g.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE guardian_id = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
+    AND NOT EXISTS (
+        SELECT 1 FROM messaging_blocklist b
+        WHERE b.child_id = p.child_id
+        AND b.blocked_recipient = g.guardian_id
+    )
+    AND EXISTS (
+        SELECT 1 FROM daycare u
+        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
+    )
+
+    UNION
+
+    SELECT p.id, p.unit_id, p.child_id, null
+    FROM fridge_child fg
+    JOIN backup_care p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
+    AND fg.head_of_child = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
+    AND fg.conflict = false
+    AND NOT EXISTS (
+        SELECT 1 FROM messaging_blocklist b
+        WHERE b.child_id = p.child_id
+        AND b.blocked_recipient = fg.head_of_child
+    )
+    AND EXISTS (
+        SELECT 1 FROM daycare u
+        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
+    )
+), placements AS (
+    SELECT p.id, p.unit_id, p.child_id
     FROM guardian g
     JOIN placement p ON p.child_id = g.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
     WHERE guardian_id = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
@@ -380,10 +412,18 @@ WITH all_placements AS (
         WHERE b.child_id = p.child_id
         AND b.blocked_recipient = g.guardian_id
     )
+    AND NOT EXISTS (
+        SELECT 1 FROM backup_care_placements bc
+        WHERE bc.child_id = p.child_id
+    )
+    AND EXISTS (
+        SELECT 1 FROM daycare u
+        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
+    )
 
     UNION
 
-    SELECT p.id, p.unit_id
+    SELECT p.id, p.unit_id, p.child_id
     FROM fridge_child fg
     JOIN placement p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
     WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
@@ -394,14 +434,23 @@ WITH all_placements AS (
         WHERE b.child_id = p.child_id
         AND b.blocked_recipient = fg.head_of_child
     )
+    AND NOT EXISTS (
+        SELECT 1 FROM backup_care_placements bc
+        WHERE bc.child_id = p.child_id
+    )
+    AND EXISTS (
+        SELECT 1 FROM daycare u
+        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
+    )    
 ),
 relevant_placements AS (
     SELECT p.id, p.unit_id
-    FROM all_placements p
-    WHERE EXISTS (
-        SELECT 1 FROM daycare u
-        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
-    )
+    FROM placements p
+    
+    UNION 
+    
+    SELECT bc.id, bc.unit_id
+    FROM backup_care_placements bc
 ),
 personal_accounts AS (
     SELECT acc.id, acc_name.account_name AS name, 'PERSONAL' AS type
@@ -417,6 +466,13 @@ group_accounts AS (
     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND :today BETWEEN dgp.start_date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
+    
+    UNION ALL
+
+         SELECT acc.id, g.name, 'GROUP' AS type
+         FROM backup_care_placements p
+                  JOIN daycare_group g ON g.id = p.group_id
+                  JOIN message_account acc on g.id = acc.daycare_group_id
 ),
 mixed_accounts AS (
     SELECT id, name, type FROM personal_accounts
