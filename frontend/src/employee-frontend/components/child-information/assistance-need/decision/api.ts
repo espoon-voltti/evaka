@@ -140,3 +140,13 @@ export function markAssistanceNeedDecisionAsOpened(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
+
+export function updateAssistanceNeedDecisionDecisionMaker(
+  id: UUID,
+  title: string
+): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/update-decision-maker`, { title })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}

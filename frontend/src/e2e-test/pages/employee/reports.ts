@@ -6,7 +6,13 @@ import LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Combobox, DatePickerDeprecated, Page, Select } from '../../utils/page'
+import {
+  Combobox,
+  DatePickerDeprecated,
+  Page,
+  Select,
+  TextInput
+} from '../../utils/page'
 
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
@@ -262,14 +268,25 @@ export class AssistanceNeedDecisionsReport {
 export class AssistanceNeedDecisionsReportDecision {
   constructor(private page: Page) {}
 
-  readonly decisionMaker = this.page.findByDataQa(
-    'labelled-value-decision-maker'
-  ).innerText
+  decisionMaker = () =>
+    this.page.findByDataQa('labelled-value-decision-maker').innerText
   decisionStatus = () =>
     this.page.findByDataQa('decision-status').getAttribute('data-qa-status')
   readonly returnForEditBtn = this.page.findByDataQa('return-for-edit')
   get returnForEditModal() {
     return {
+      okBtn: this.page.findByDataQa('modal-okBtn')
+    }
+  }
+
+  readonly approveBtn = this.page.findByDataQa('approve-button')
+  readonly rejectBtn = this.page.findByDataQa('reject-button')
+  readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
+
+  readonly mismatchModalLink = this.page.findByDataQa('mismatch-modal-link')
+  get mismatchModal() {
+    return {
+      titleInput: new TextInput(this.page.findByDataQa('title-input')),
       okBtn: this.page.findByDataQa('modal-okBtn')
     }
   }

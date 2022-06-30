@@ -7,6 +7,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -232,6 +233,41 @@ class AssistanceNeedDecisionController(
         }
     }
 
+    @PostMapping("/assistance-need-decision/{id}/update-decision-maker")
+    fun updateAssistanceNeedDecisionDecisionMaker(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId,
+        @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
+    ) {
+        Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER, id)
+
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
+                    decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                    decision.sentForDecision == null
+                ) {
+                    throw BadRequest("Decision maker cannot be changed for already-decided or unsent decisions")
+                }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision.copy(
+                        decisionMaker = AssistanceNeedDecisionMaker(
+                            employeeId = EmployeeId(user.rawId()),
+                            title = body.title
+                        )
+                    ).toForm(),
+                    true
+                )
+            }
+        }
+    }
+
     data class AssistanceNeedDecisionBasicsResponse(
         val decision: AssistanceNeedDecisionBasics,
         val permittedActions: Set<Action.AssistanceNeedDecision>
@@ -244,5 +280,9 @@ class AssistanceNeedDecisionController(
 
     data class DecideAssistanceNeedDecisionRequest(
         val status: AssistanceNeedDecisionStatus
+    )
+
+    data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(
+        val title: String
     )
 }

@@ -206,7 +206,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
   )
 })
 
-const DeleteDecisionModal = React.memo(function DeleteAbsencesModal({
+const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
   decisionId,
   onClose
 }: {
