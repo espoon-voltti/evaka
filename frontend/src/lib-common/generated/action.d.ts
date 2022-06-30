@@ -125,6 +125,7 @@ export type AssistanceNeed =
 export type AssistanceNeedDecision =
   | 'DELETE'
   | 'READ'
+  | 'SEND'
   | 'UPDATE'
 
 export type BackupCare =

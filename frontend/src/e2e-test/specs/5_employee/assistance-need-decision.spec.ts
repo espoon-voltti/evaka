@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -225,5 +226,17 @@ describe('Assistance Need Decisions - Preview page', () => {
       () => assistanceNeedDecisionPreviewPage.decisionMaker,
       `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
     )
+  })
+
+  test('Decision can be sent to the decision maker', async () => {
+    await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
+    expect(
+      await assistanceNeedDecisionPreviewPage.decisionSentAt.innerText
+    ).toEqual(LocalDate.todayInSystemTz().format())
+    expect(
+      await assistanceNeedDecisionPreviewPage.sendDecisionButton.getAttribute(
+        'disabled'
+      )
+    ).toEqual('')
   })
 })

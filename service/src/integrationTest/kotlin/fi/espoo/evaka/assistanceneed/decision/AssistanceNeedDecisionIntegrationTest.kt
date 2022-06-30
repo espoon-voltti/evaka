@@ -20,6 +20,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
@@ -32,7 +33,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         status = AssistanceNeedDecisionStatus.DRAFT,
         language = AssistanceNeedDecisionLanguage.FI,
         decisionMade = LocalDate.of(2021, 12, 31),
-        sentForDecision = LocalDate.of(2021, 12, 1),
+        sentForDecision = null,
         selectedUnit = UnitIdInfo(id = testDaycare.id),
         preparedBy1 = AssistanceNeedDecisionEmployeeForm(employeeId = assistanceWorker.id, title = "worker", phoneNumber = "01020405060"),
         preparedBy2 = null,
@@ -192,7 +193,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionRequest(
                 decision = updatedDecision
             ),
-            assistanceNeedDecision.id!!
+            assistanceNeedDecision.id
         )
 
         val finalDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
@@ -214,6 +215,69 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
         whenDeleteAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
         whenGetAssistanceNeedDecisionThenExpectNotFound(assistanceNeedDecision.id)
+    }
+
+    @Test
+    fun `Sending a decision marks the sent date and disables editing and re-sending`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK)
+
+        val sentDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        assertEquals(LocalDate.now(), sentDecision.sentForDecision)
+
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.FORBIDDEN)
+        whenPutAssistanceNeedDecisionThenExpectForbidden(
+            AssistanceNeedDecisionRequest(
+                decision = assistanceNeedDecision.copy(
+                    pedagogicalMotivation = "Test"
+                ).toForm()
+            ),
+            assistanceNeedDecision.id
+        )
+    }
+
+    @Test
+    fun `Sent for decision and status cannot be changed using PUT`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenPutAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = assistanceNeedDecision.copy(
+                    sentForDecision = LocalDate.of(2019, 1, 4),
+                    status = AssistanceNeedDecisionStatus.ACCEPTED
+                ).toForm()
+            ),
+            assistanceNeedDecision.id
+        )
+
+        val updatedDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+
+        assertEquals(assistanceNeedDecision.sentForDecision, updatedDecision.sentForDecision)
+        assertEquals(assistanceNeedDecision.status, updatedDecision.status)
+    }
+
+    @Test
+    fun `Newly created decisions have a draft status and don't have a sent for decision date`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision.copy(
+                    sentForDecision = LocalDate.of(2019, 1, 4),
+                    status = AssistanceNeedDecisionStatus.ACCEPTED
+                )
+            )
+        )
+
+        assertEquals(null, assistanceNeedDecision.sentForDecision)
+        assertEquals(AssistanceNeedDecisionStatus.DRAFT, assistanceNeedDecision.status)
     }
 
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
@@ -258,5 +322,22 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             .response()
 
         assertEquals(200, res.statusCode)
+    }
+
+    private fun whenSendAssistanceNeedDecisionThenExpectStatus(id: AssistanceNeedDecisionId?, statusCode: HttpStatus) {
+        val (_, res) = http.post("/assistance-need-decision/$id/send")
+            .asUser(assistanceWorker)
+            .response()
+
+        assertEquals(statusCode.value(), res.statusCode)
+    }
+
+    private fun whenPutAssistanceNeedDecisionThenExpectForbidden(request: AssistanceNeedDecisionRequest, decisionId: AssistanceNeedDecisionId) {
+        val (_, res) = http.put("/assistance-need-decision/$decisionId")
+            .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(assistanceWorker)
+            .response()
+
+        assertEquals(403, res.statusCode)
     }
 }

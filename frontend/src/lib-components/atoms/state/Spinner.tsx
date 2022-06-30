@@ -9,12 +9,10 @@ import styled from 'styled-components'
 import { spinnerOverlayZIndex } from '../../layout/z-helpers'
 import { defaultMargins, SpacingSize } from '../../white-space'
 
-const spinnerSize = '50px'
-
-export const Spinner = styled.div<{ zIndex?: number }>`
+export const Spinner = styled.div<{ zIndex?: number; size?: string }>`
   border-radius: 50%;
-  width: ${spinnerSize};
-  height: ${spinnerSize};
+  width: ${(p) => p.size ?? defaultMargins.XXL};
+  height: ${(p) => p.size ?? defaultMargins.XXL};
   ${({ zIndex }) => (zIndex ? `z-index: ${zIndex};` : '')}
 
   border: 5px solid ${(p) => transparentize(0.8, p.theme.colors.main.m2)};
@@ -23,8 +21,8 @@ export const Spinner = styled.div<{ zIndex?: number }>`
 
   &:after {
     border-radius: 50%;
-    width: ${spinnerSize};
-    height: ${spinnerSize};
+    width: ${(p) => p.size ?? defaultMargins.XXL};
+    height: ${(p) => p.size ?? defaultMargins.XXL};
   }
 
   @keyframes spin {
@@ -38,11 +36,11 @@ export const Spinner = styled.div<{ zIndex?: number }>`
 `
 
 interface SpinnerWrapperProps {
-  size: string
+  margin: string
 }
 
 const SpinnerWrapper = styled.div<SpinnerWrapperProps>`
-  margin: ${(p) => p.size} 0;
+  margin: ${(p) => p.margin} 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -50,14 +48,16 @@ const SpinnerWrapper = styled.div<SpinnerWrapperProps>`
 
 interface SpinnerSegmentProps {
   size?: SpacingSize
+  margin?: SpacingSize
 }
 
 export const SpinnerSegment = React.memo(function SpinnerSegment({
-  size = 'm'
+  margin = 'm',
+  size = 'XXL'
 }: SpinnerSegmentProps) {
   return (
-    <SpinnerWrapper size={defaultMargins[size]}>
-      <Spinner />
+    <SpinnerWrapper margin={defaultMargins[margin]}>
+      <Spinner size={defaultMargins[size]} />
     </SpinnerWrapper>
   )
 })

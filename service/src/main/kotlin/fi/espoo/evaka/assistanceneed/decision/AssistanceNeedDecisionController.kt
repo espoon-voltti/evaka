@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 data class AssistanceNeedDecisionRequest(
     val decision: AssistanceNeedDecisionForm
@@ -39,7 +41,10 @@ class AssistanceNeedDecisionController(
         accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                var decision: AssistanceNeedDecisionForm = body.decision
+                var decision: AssistanceNeedDecisionForm = body.decision.copy(
+                    status = AssistanceNeedDecisionStatus.DRAFT,
+                    sentForDecision = null
+                )
                 if (decision.guardianInfo.isEmpty()) {
                     val guardianIds = tx.getChildGuardians(childId)
                     decision = body.decision.copy(
@@ -88,7 +93,50 @@ class AssistanceNeedDecisionController(
         accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateAssistanceNeedDecision(id, body.decision)
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                    (decision.status != AssistanceNeedDecisionStatus.DRAFT || decision.sentForDecision != null)
+                ) {
+                    throw Forbidden("Only non-sent draft or workable decisions can be edited", "UNEDITABLE_DECISION")
+                }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    body.decision.copy(
+                        sentForDecision = decision.sentForDecision,
+                        status = decision.status
+                    )
+                )
+            }
+        }
+    }
+
+    @PostMapping("/assistance-need-decision/{id}/send")
+    fun sendAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        Audit.ChildAssistanceNeedDecisionSend.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.SEND, id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                    (decision.status != AssistanceNeedDecisionStatus.DRAFT || decision.sentForDecision != null)
+                ) {
+                    throw Forbidden("Only non-sent draft or workable decisions can be sent", "UNSENDABLE_DECISION")
+                }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision.copy(
+                        sentForDecision = LocalDate.now(),
+                        status = AssistanceNeedDecisionStatus.DRAFT
+                    ).toForm()
+                )
             }
         }
     }

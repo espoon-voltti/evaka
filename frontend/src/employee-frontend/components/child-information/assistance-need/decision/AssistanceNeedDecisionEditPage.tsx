@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -35,9 +35,9 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const { i18n } = useTranslation()
 
-  const navigate = useNavigate()
-
   const { formState, setFormState, status } = useAssistanceNeedDecision(id)
+
+  const navigate = useNavigate()
 
   const languageOptions = useMemo<SelectOption[]>(
     () => [
@@ -56,6 +56,16 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
   const selectLanguage = useCallback((o: SelectOption | null) => {
     o !== null && setLanguage(o)
   }, [])
+
+  useEffect(() => {
+    if (
+      formState &&
+      formState.status !== 'NEEDS_WORK' &&
+      (formState.status !== 'DRAFT' || formState.sentForDecision !== null)
+    ) {
+      navigate(`/child-information/${childId}/assistance-need-decision/${id}`)
+    }
+  }, [formState, childId, id, navigate])
 
   return (
     <>

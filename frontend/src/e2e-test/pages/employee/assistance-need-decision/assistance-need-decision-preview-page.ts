@@ -47,4 +47,9 @@ export default class AssistanceNeedDecisionPreviewPage {
   )
   readonly preparedBy1 = this.getLabelledValue('prepared-by-1')
   readonly decisionMaker = this.getLabelledValue('decision-maker')
+
+  readonly sendDecisionButton = this.page.findByDataQa('send-decision')
+  get decisionSentAt() {
+    return this.page.findByDataQa('decision-sent-at')
+  }
 }
