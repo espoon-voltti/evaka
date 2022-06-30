@@ -115,7 +115,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         """
         WITH child AS (
             SELECT
-                dgp.daycare_group_id as group_id,
+                pl.group_id,
                 SUM(COALESCE(an.capacity_factor, 1) * CASE
                     WHEN dc.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
                     WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
@@ -124,14 +124,26 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             FROM child_attendance ca
                 JOIN daycare dc ON dc.id = ca.unit_id
                 JOIN person ch ON ch.id = ca.child_id
-                JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :date
-                LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
+                JOIN (
+                    SELECT bc.unit_id, child_id, group_id, pl.id AS placement_id, pl.type AS placement_type
+                    FROM backup_care bc
+                    JOIN placement pl USING (child_id)
+                    WHERE daterange(bc.start_date, bc.end_date, '[]') @> :date
+                    AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+
+                    UNION ALL
+
+                    SELECT pl.unit_id, pl.child_id, dgp.daycare_group_id AS group_id, pl.id AS placement_id, pl.type AS placement_type
+                    FROM placement pl
+                    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :date
+                    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date
+                ) pl USING (unit_id, child_id)
+                LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
                 LEFT JOIN service_need_option sno on sn.option_id = sno.id
-                LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+                LEFT JOIN service_need_option default_sno on placement_type = default_sno.valid_placement_type AND default_sno.default_option
                 LEFT JOIN assistance_need an on an.child_id = ca.child_id AND daterange(an.start_date, an.end_date, '[]') @> :date
-                JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :date
             WHERE ca.unit_id = :unitId AND ca.end_time IS NULL
-            GROUP BY dgp.daycare_group_id
+            GROUP BY pl.group_id
         ), staff AS (
             SELECT sa.group_id as group_id, SUM(sa.capacity) AS capacity
             FROM daycare_group g
