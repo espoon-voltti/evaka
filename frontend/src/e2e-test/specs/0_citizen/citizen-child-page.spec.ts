@@ -66,7 +66,8 @@ describe('Citizen children page', () => {
   async function createDaycarePlacement(
     endDate: LocalDate,
     unitId = fixtures.daycareFixture.id,
-    type: PlacementType = 'DAYCARE'
+    type: PlacementType = 'DAYCARE',
+    startDate: LocalDate = LocalDate.todayInSystemTz().subMonths(2)
   ) {
     await insertDaycarePlacementFixtures([
       {
@@ -74,7 +75,7 @@ describe('Citizen children page', () => {
         type,
         childId: fixtures.enduserChildFixtureKaarina.id,
         unitId,
-        startDate: LocalDate.todayInSystemTz().subMonths(2).formatIso(),
+        startDate: startDate.formatIso(),
         endDate: endDate.formatIso()
       }
     ])
@@ -118,7 +119,27 @@ describe('Citizen children page', () => {
 
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
       const endDate = LocalDate.todayInSystemTz().addYears(2)
-      await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
+      await createDaycarePlacement(endDate)
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+
+      await childPage.assertTerminatedPlacementCount(0)
+      await childPage.assertTerminatablePlacementCount(0)
+      await assertNonTerminatablePlacements([
+        `Alkuräjähdyksen kerho, voimassa ${endDate.format()}`
+      ])
+    })
+
+    test('Daycare placement cannot be terminated if placement is in the future', async () => {
+      const startDate = LocalDate.todayInSystemTz().addDays(1)
+      const endDate = startDate
+      await createDaycarePlacement(
+        endDate,
+        fixtures.daycareFixture.id,
+        'DAYCARE',
+        startDate
+      )
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
       await childPage.openTerminationCollapsible()
