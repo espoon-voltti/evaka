@@ -681,6 +681,7 @@ export const fi = {
       }
     },
     assistanceNeedDecision: {
+      pageTitle: 'Päätös tuen tarpeesta',
       sectionTitle: 'Tuen tarpeen päätökset',
       description:
         'Hyväksytyt ja hylätyt päätökset tuen tarpeesta näkyvät huoltajalle eVakassa.',

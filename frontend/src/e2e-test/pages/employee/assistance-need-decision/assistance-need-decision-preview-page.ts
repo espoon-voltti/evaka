@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { waitUntilEqual } from '../../../utils'
 import { Page } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionPreviewPage {
@@ -51,5 +52,12 @@ export default class AssistanceNeedDecisionPreviewPage {
   readonly sendDecisionButton = this.page.findByDataQa('send-decision')
   get decisionSentAt() {
     return this.page.findByDataQa('decision-sent-at')
+  }
+
+  async assertPageTitle(title: string): Promise<void> {
+    await waitUntilEqual(
+      () => this.page.findByDataQa('page-title').innerText,
+      title
+    )
   }
 }
