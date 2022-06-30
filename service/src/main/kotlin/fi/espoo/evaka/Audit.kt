@@ -206,7 +206,6 @@ enum class Audit(
     NoteDelete("evaka.note.delete"),
     NoteRead("evaka.note.read"),
     NoteUpdate("evaka.note.update"),
-    NotesByChildRead("evaka.note.child.read"),
     NotesByGroupRead("evaka.note.group.read"),
     OccupancyRead("evaka.occupancy.read"),
     OccupancyReportRead("evaka.occupancy-report.read"),

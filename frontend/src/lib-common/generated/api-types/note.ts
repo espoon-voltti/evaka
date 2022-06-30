@@ -96,15 +96,6 @@ export interface GroupNoteBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.NotesController.NotesByChildResponse
-*/
-export interface NotesByChildResponse {
-  childDailyNote: ChildDailyNote | null
-  childStickyNotes: ChildStickyNote[]
-  groupNotes: GroupNote[]
-}
-
-/**
 * Generated from fi.espoo.evaka.note.NotesController.NotesByGroupResponse
 */
 export interface NotesByGroupResponse {
