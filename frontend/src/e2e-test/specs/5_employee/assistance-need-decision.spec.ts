@@ -121,7 +121,7 @@ describe('Assistance Need Decisions - Edit page', () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
     await assistanceNeedDecisionEditPage.clickPreviewButton()
 
-    expect(page.url).toBe(
+    await page.page.waitForURL(
       `${
         config.employeeUrl
       }/child-information/${childId}/assistance-need-decision/${
@@ -134,7 +134,9 @@ describe('Assistance Need Decisions - Edit page', () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
     await assistanceNeedDecisionEditPage.clickLeavePageButton()
 
-    expect(page.url).toBe(`${config.employeeUrl}/child-information/${childId}`)
+    await page.page.waitForURL(
+      `${config.employeeUrl}/child-information/${childId}`
+    )
   })
 })
 

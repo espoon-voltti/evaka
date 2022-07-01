@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -14,14 +14,13 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Content, { ContentArea } from 'lib-components/layout/Container'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H2, InformationText } from 'lib-components/typography'
+import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import AssistanceNeedDecisionReadOnly from './AssistanceNeedDecisionReadOnly'
@@ -47,8 +46,6 @@ export default React.memo(function AssistanceNeedDecisionPage() {
     }
   } = useTranslation()
 
-  const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
-
   const canBeEdited = assistanceNeedDecision
     .map(
       ({ decision }) =>
@@ -62,27 +59,16 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       <Content>
         <ReturnButton label={i18n.common.goBack} />
 
-        <ContentArea opaque>
-          {renderResult(assistanceNeedDecision, ({ decision }) => (
-            <I18nContext.Provider
-              value={{
-                lang: decision.language.toLowerCase() as Lang,
-                setLang: () => undefined
-              }}
-            >
-              <AssistanceNeedDecisionReadOnly decision={decision} />
-            </I18nContext.Provider>
-          ))}
-        </ContentArea>
-        <Gap size="m" />
-        <CollapsibleContentArea
-          title={<H2 noMargin>{t.appealInstructionsTitle}</H2>}
-          open={appealInstructionsOpen}
-          toggleOpen={() => setAppealInstructionsOpen(!appealInstructionsOpen)}
-          opaque
-        >
-          {t.appealInstructions}
-        </CollapsibleContentArea>
+        {renderResult(assistanceNeedDecision, ({ decision }) => (
+          <I18nContext.Provider
+            value={{
+              lang: decision.language.toLowerCase() as Lang,
+              setLang: () => undefined
+            }}
+          >
+            <AssistanceNeedDecisionReadOnly decision={decision} />
+          </I18nContext.Provider>
+        ))}
       </Content>
       <Gap size="m" />
       <StickyFooter>

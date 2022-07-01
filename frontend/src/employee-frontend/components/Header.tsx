@@ -293,7 +293,7 @@ export default React.memo(function Header() {
               >
                 <NavLinkWrapper>
                   <NavLinkText>{i18n.header.reports}</NavLinkText>
-                  {featureFlags.experimental?.specialNeedsDecisions &&
+                  {featureFlags.experimental?.assistanceNeedDecisions &&
                     assistanceNeedDecisionCounts
                       .map(
                         (unread) =>

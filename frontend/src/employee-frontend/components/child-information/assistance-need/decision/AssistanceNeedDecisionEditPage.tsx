@@ -85,7 +85,9 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       formState.status !== 'NEEDS_WORK' &&
       (formState.status !== 'DRAFT' || formState.sentForDecision !== null)
     ) {
-      navigate(`/child-information/${childId}/assistance-need-decision/${id}`)
+      navigate(`/child-information/${childId}/assistance-need-decision/${id}`, {
+        replace: true
+      })
     }
   }, [formState, childId, id, navigate])
 

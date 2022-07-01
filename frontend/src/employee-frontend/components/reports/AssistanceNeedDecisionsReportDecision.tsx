@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from 'employee-frontend/state/user'
 import { Failure } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
@@ -17,12 +17,10 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Content, { ContentArea } from 'lib-components/layout/Container'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
@@ -86,8 +84,6 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
     }
   } = useTranslation()
 
-  const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
-
   const [returnForEdit, setReturnForEdit] = useState(false)
 
   return (
@@ -107,20 +103,16 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
       <Content>
         <ReturnButton label={i18n.common.goBack} />
 
-        <ContentArea opaque>
-          {renderResult(assistanceNeedDecision, ({ decision }) => (
+        {renderResult(assistanceNeedDecision, ({ decision }) => (
+          <I18nContext.Provider
+            value={{
+              lang: decision.language.toLowerCase() as Lang,
+              setLang: () => undefined
+            }}
+          >
             <AssistanceNeedDecisionReadOnly decision={decision} />
-          ))}
-        </ContentArea>
-        <Gap size="m" />
-        <CollapsibleContentArea
-          title={<H2 noMargin>{t.appealInstructionsTitle}</H2>}
-          open={appealInstructionsOpen}
-          toggleOpen={() => setAppealInstructionsOpen(!appealInstructionsOpen)}
-          opaque
-        >
-          {t.appealInstructions}
-        </CollapsibleContentArea>
+          </I18nContext.Provider>
+        ))}
       </Content>
       <Gap size="m" />
       <StickyFooter>
@@ -139,21 +131,26 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                 !permittedActions.includes('DECIDE') ? null : (
                   <FixedSpaceRow spacing="m">
                     <DangerAsyncButton
-                      text="Hylkää päätös"
+                      text={i18n.reports.assistanceNeedDecisions.rejectDecision}
                       onClick={() =>
                         Promise.resolve(Failure.of({ message: '' }))
                       }
                       onSuccess={() => reloadDecision()}
                     />
                     <AsyncButton
-                      text="Palauta korjattavaksi"
+                      text={
+                        i18n.reports.assistanceNeedDecisions
+                          .returnDecisionForEditing
+                      }
                       onClick={() => setReturnForEdit(true)}
                       onSuccess={() => reloadDecision()}
                       data-qa="return-for-edit"
                     />
                     <AsyncButton
                       primary
-                      text="Hyväksy päätös"
+                      text={
+                        i18n.reports.assistanceNeedDecisions.approveDecision
+                      }
                       onClick={() =>
                         Promise.resolve(Failure.of({ message: '' }))
                       }

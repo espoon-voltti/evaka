@@ -2619,7 +2619,10 @@ export const fi = {
       returnForEditModal: {
         title: 'Palautetaanko päätös korjattavaksi?',
         returnForEdit: 'Palauta korjattavaksi'
-      }
+      },
+      rejectDecision: 'Hylkää päätös',
+      returnDecisionForEditing: 'Palauta korjattavaksi',
+      approveDecision: 'Hyväksy päätös'
     },
     duplicatePeople: {
       title: 'Monistuneet kuntalaiset',

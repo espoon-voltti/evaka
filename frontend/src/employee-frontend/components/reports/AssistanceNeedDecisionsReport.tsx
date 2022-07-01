@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -55,15 +55,8 @@ const RelativeTr = styled(Tr)`
 
 export default React.memo(function AssistanceNeedDecisionsReport() {
   const { i18n } = useTranslation()
-  const [report, setReport] = useState<
-    Result<AssistanceNeedDecisionsReportRow[]>
-  >(Loading.of())
+  const [report] = useApiState(getAssistanceNeedDecisionsReport, [])
   const [careAreaFilter, setCareAreaFilter] = useState<string>()
-
-  useEffect(() => {
-    setReport(Loading.of())
-    void getAssistanceNeedDecisionsReport().then(setReport)
-  }, [])
 
   const [sortColumn, setSortColumn] =
     useState<keyof AssistanceNeedDecisionsReportRow>('sentForDecision')
@@ -111,11 +104,13 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
               items={[
                 { value: '', label: i18n.common.all },
                 ...report
-                  .map((rs) =>
-                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
-                      value: s,
-                      label: s
-                    }))
+                  .map((reportRows) =>
+                    distinct(reportRows.map((row) => row.careAreaName)).map(
+                      (s) => ({
+                        value: s,
+                        label: s
+                      })
+                    )
                   )
                   .getOrElse([])
               ]}
