@@ -741,7 +741,7 @@ export const fi = {
       guardiansHeardAt: 'Huoltajien kuulemisen päivämäärä',
       guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
       guardiansHeardInfo:
-        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.<br/>Kaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
+        'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
       viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
       viewOfTheGuardiansInfo:
         'Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.',
@@ -759,7 +759,8 @@ export const fi = {
       startDateInfo:
         'Päätös on voimassa toistaiseksi alkamispäivästä alkaen. Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
       selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
-      unitMayChange: 'Loma-aikoina järjestämispaikka saattaa vaihtua.',
+      unitMayChange:
+        'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
       motivationForDecision: 'Perustelut päätökselle',
       personsResponsible: 'Vastuuhenkilöt',
       preparator: 'Päätöksen valmistelija',
@@ -801,15 +802,19 @@ export const fi = {
             päätoimipaikka).
           </P>
           <P>
-            Länsi- ja Sisä-Suomen aluehallintovirasto
+            Etelä-Suomen aluehallintovirasto
             <br />
-            Wolffintie 35
+            Käyntiosoite: Wähäjärvenkatu 6, 13200 Hämeenlinna
             <br />
-            PL 200, 65101 Vaasa
+            Virastoaika: ma-pe 8.00–16.15
             <br />
-            faksi 06 317 4817
+            Postiosoite: PL 1, 13035 AVI
             <br />
-            sähköposti: kirjaamo.lansi@avi.fi
+            Sähköposti: kirjaamo.etela@avi.fi
+            <br />
+            Fax: 0295 016 661
+            <br />
+            Puhelin: 0295 016 000
           </P>
           <H2>Oikaisuvaatimusaika</H2>
           <P>
