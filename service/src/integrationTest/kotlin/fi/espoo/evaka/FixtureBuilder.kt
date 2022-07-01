@@ -5,6 +5,7 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
@@ -453,6 +454,7 @@ class FixtureBuilder(
         val employeeId: EmployeeId
     ) {
         fun addRealtimeAttendance() = StaffAttendanceBuilder(tx, today, this)
+        fun addStaffAttendancePlan() = StaffAttendancePlanBuilder(tx, this)
     }
 
     class StaffAttendanceBuilder(
@@ -489,6 +491,37 @@ class FixtureBuilder(
                 .bind("arrived", from ?: error("arrival time must be set"))
                 .bindNullable("departed", to)
                 .bind("coefficient", coefficient ?: error("occupancyCoefficient time must be set"))
+                .updateExactlyOne()
+
+            return employeeFixture
+        }
+    }
+
+    class StaffAttendancePlanBuilder(
+        private val tx: Database.Transaction,
+        private val employeeFixture: EmployeeFixture
+    ) {
+        private var startTime: HelsinkiDateTime? = null
+        private var endTime: HelsinkiDateTime? = null
+        private var type: StaffAttendanceType? = null
+        private var description: String? = null
+
+        fun startTime(time: HelsinkiDateTime) = this.apply { this.startTime = time }
+        fun endTime(time: HelsinkiDateTime) = this.apply { this.endTime = time }
+        fun type(type: StaffAttendanceType) = this.apply { this.type = type }
+        fun description(description: String) = this.apply { this.description = description }
+        fun save(): EmployeeFixture {
+            tx.createUpdate(
+                """
+                INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
+                VALUES (:employeeId, :type, :startTime, :endTime, :description)
+                """.trimIndent()
+            )
+                .bind("employeeId", employeeFixture.employeeId)
+                .bind("type", type ?: error("type must be set"))
+                .bind("startTime", startTime ?: error("start time must be set"))
+                .bind("endTime", endTime ?: error("end time must be set"))
+                .bindNullable("description", description)
                 .updateExactlyOne()
 
             return employeeFixture
