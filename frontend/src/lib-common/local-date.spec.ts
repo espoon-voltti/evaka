@@ -27,6 +27,17 @@ describe('LocalDate', () => {
       date: '2020-02-01'
     })
   })
+  it('can be formatted to default format', () => {
+    const date = LocalDate.of(2022, 2, 1)
+    expect(date.format()).toStrictEqual('01.02.2022')
+  })
+  it('can be parsed from default format', () => {
+    const expected = LocalDate.of(2022, 2, 1)
+    expect(
+      LocalDate.parseFiOrNull('01.02.2022')?.isEqual(expected)
+    ).toBeTruthy()
+    expect(LocalDate.parseFiOrNull('1.2.2022')?.isEqual(expected)).toBeTruthy()
+  })
   it('considers non-existing dates invalid', () => {
     expect(LocalDate.tryParseIso('2020-00-01')).toBeUndefined()
     expect(() => LocalDate.of(2020, 0, 1)).toThrow()
