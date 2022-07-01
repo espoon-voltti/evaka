@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import { useTranslation } from 'employee-frontend/state/i18n'
+import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from 'employee-frontend/state/user'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
@@ -18,14 +18,12 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
-import Content, { ContentArea } from 'lib-components/layout/Container'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { ModalType } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion, faTimes } from 'lib-icons'
 
@@ -112,8 +110,6 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
     }
   } = useTranslation()
 
-  const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
-
   const [decisionModalStatus, setDecisionModalStatus] =
     useState<DecisionStatus>()
 
@@ -157,10 +153,15 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
       <Content>
         <ReturnButton label={i18n.common.goBack} />
 
-        <ContentArea opaque>
-          {renderResult(
-            assistanceNeedDecision,
-            ({ decision, permittedActions }) => (
+        {renderResult(
+          assistanceNeedDecision,
+          ({ decision, permittedActions }) => (
+            <I18nContext.Provider
+              value={{
+                lang: decision.language.toLowerCase() as Lang,
+                setLang: () => undefined
+              }}
+            >
               <AssistanceNeedDecisionReadOnly
                 decision={decision}
                 decisionMakerWarning={
@@ -190,18 +191,9 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                   )
                 }
               />
-            )
-          )}
-        </ContentArea>
-        <Gap size="m" />
-        <CollapsibleContentArea
-          title={<H2 noMargin>{t.appealInstructionsTitle}</H2>}
-          open={appealInstructionsOpen}
-          toggleOpen={() => setAppealInstructionsOpen(!appealInstructionsOpen)}
-          opaque
-        >
-          {t.appealInstructions}
-        </CollapsibleContentArea>
+            </I18nContext.Provider>
+          )
+        )}
       </Content>
       <Gap size="m" />
       <StickyFooter>
@@ -216,14 +208,16 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
             </FixedSpaceRow>
             <FixedSpaceRow spacing="m">
               <DangerAsyncButton
-                text="Hylkää päätös"
+                text={i18n.reports.assistanceNeedDecisions.rejectDecision}
                 onClick={() => setDecisionModalStatus('REJECTED')}
                 onSuccess={() => reloadDecision()}
                 data-qa="reject-button"
                 disabled={!canBeDecided}
               />
               <AsyncButton
-                text="Palauta korjattavaksi"
+                text={
+                  i18n.reports.assistanceNeedDecisions.returnDecisionForEditing
+                }
                 onClick={() => setDecisionModalStatus('NEEDS_WORK')}
                 onSuccess={() => reloadDecision()}
                 data-qa="return-for-edit"
@@ -231,7 +225,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
               />
               <AsyncButton
                 primary
-                text="Hyväksy päätös"
+                text={i18n.reports.assistanceNeedDecisions.approveDecision}
                 onClick={() => setDecisionModalStatus('ACCEPTED')}
                 onSuccess={() => reloadDecision()}
                 data-qa="approve-button"

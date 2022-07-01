@@ -407,7 +407,7 @@ export default React.memo(function Reports() {
               <Description>{i18n.reports.raw.description}</Description>
             </ReportItem>
           )}
-          {featureFlags.experimental?.specialNeedsDecisions &&
+          {featureFlags.experimental?.assistanceNeedDecisions &&
             user?.permittedGlobalActions.has(
               'READ_ASSISTANCE_NEED_DECISIONS_REPORT'
             ) && (

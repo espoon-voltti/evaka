@@ -144,7 +144,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
                   navigate(
                     `/child-information/${id}/assistance-need-decision/${
                       decisionId ?? ''
-                    }`
+                    }/edit`
                   )
                 )
               })

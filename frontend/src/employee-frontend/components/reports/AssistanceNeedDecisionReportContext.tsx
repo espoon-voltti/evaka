@@ -34,7 +34,7 @@ export const AssistanceNeedDecisionReportContextProvider = React.memo(
     const [assistanceNeedDecisionCounts, refreshAssistanceNeedDecisionCounts] =
       useApiState(
         () =>
-          featureFlags.experimental?.specialNeedsDecisions &&
+          featureFlags.experimental?.assistanceNeedDecisions &&
           user?.permittedGlobalActions.has(
             'READ_ASSISTANCE_NEED_DECISIONS_REPORT'
           )

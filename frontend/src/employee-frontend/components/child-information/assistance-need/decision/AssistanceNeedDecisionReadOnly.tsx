@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import some from 'lodash/some'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -11,6 +11,10 @@ import {
   AssistanceLevel,
   AssistanceNeedDecision
 } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  CollapsibleContentArea,
+  ContentArea
+} from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -106,212 +110,228 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
     [t, decision]
   )
 
+  const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
+
   return (
     <>
-      <FixedSpaceRow
-        alignItems="flex-start"
-        justifyContent="space-between"
-        fullWidth
-      >
-        <FixedSpaceColumn>
-          <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
-          <H2 noMargin>{decision.child?.name}</H2>
-        </FixedSpaceColumn>
-        <DecisionInfoHeader
-          decisionNumber={decision.decisionNumber || 0}
-          decisionStatus={decision.status || 'DRAFT'}
-        />
-      </FixedSpaceRow>
-      <Gap size="s" />
-      <FixedSpaceColumn spacing={defaultMargins.s}>
-        <H2>{t.neededTypesOfAssistance}</H2>
-
-        <div>
-          <OptionalLabelledValue
-            label={t.pedagogicalMotivation}
-            value={decision.pedagogicalMotivation}
-            data-qa="pedagogical-motivation"
+      <ContentArea opaque>
+        <FixedSpaceRow
+          alignItems="flex-start"
+          justifyContent="space-between"
+          fullWidth
+        >
+          <FixedSpaceColumn>
+            <H1 noMargin>{i18n.titles.assistanceNeedDecision}</H1>
+            <H2 noMargin>{decision.child?.name}</H2>
+          </FixedSpaceColumn>
+          <DecisionInfoHeader
+            decisionNumber={decision.decisionNumber || 0}
+            decisionStatus={decision.status || 'DRAFT'}
           />
+        </FixedSpaceRow>
+        <Gap size="s" />
+        <FixedSpaceColumn spacing={defaultMargins.s}>
+          <H2>{t.neededTypesOfAssistance}</H2>
 
-          {(someBoolObj(decision.structuralMotivationOptions) ||
-            !!decision.structuralMotivationDescription) && (
-            <LabelContainer data-qa="structural-motivation-section">
-              <Label>{t.structuralMotivation}</Label>
-              <BoolObjectList
-                obj={decision.structuralMotivationOptions}
-                texts={t.structuralMotivationOptions}
-              />
-              {!!decision.structuralMotivationDescription && (
-                <P
-                  noMargin
-                  preserveWhiteSpace
-                  data-qa="structural-motivation-description"
-                >
-                  {decision.structuralMotivationDescription}
-                </P>
-              )}
-            </LabelContainer>
-          )}
+          <div>
+            <OptionalLabelledValue
+              label={t.pedagogicalMotivation}
+              value={decision.pedagogicalMotivation}
+              data-qa="pedagogical-motivation"
+            />
 
-          <OptionalLabelledValue
-            label={t.careMotivation}
-            value={decision.careMotivation}
-            data-qa="care-motivation"
-          />
-
-          {(someBoolObj(decision.serviceOptions) ||
-            !!decision.servicesMotivation) && (
-            <div data-qa="services-section">
-              <Label>{t.services}</Label>
-              <BoolObjectList
-                obj={decision.serviceOptions}
-                texts={t.serviceOptions}
-              />
-              {!!decision.servicesMotivation && (
-                <P noMargin preserveWhiteSpace>
-                  {decision.servicesMotivation}
-                </P>
-              )}
-            </div>
-          )}
-        </div>
-
-        <H2>{t.collaborationWithGuardians}</H2>
-
-        <div>
-          <OptionalLabelledValue
-            label={t.guardiansHeardAt}
-            value={decision.guardiansHeardOn?.format()}
-            data-qa="guardians-heard-at"
-          />
-
-          {(some(decision.guardianInfo, (i) => i.isHeard) ||
-            decision.otherRepresentativeHeard) && (
-            <LabelContainer data-qa="guardians-heard-section">
-              <Label>{t.guardiansHeard}</Label>
-              <List>
-                {decision.guardianInfo
-                  .filter((g) => g.id !== null && g.isHeard)
-                  .map((guardian) => (
-                    <li
-                      key={guardian.personId}
-                      data-qa={`guardian-${guardian.personId ?? ''}`}
-                    >
-                      {guardian.name}: {guardian.details}
-                    </li>
-                  ))}
-                {decision.otherRepresentativeHeard && (
-                  <li data-qa="other-representative-details">
-                    {decision.otherRepresentativeDetails}
-                  </li>
+            {(someBoolObj(decision.structuralMotivationOptions) ||
+              !!decision.structuralMotivationDescription) && (
+              <LabelContainer data-qa="structural-motivation-section">
+                <Label>{t.structuralMotivation}</Label>
+                <BoolObjectList
+                  obj={decision.structuralMotivationOptions}
+                  texts={t.structuralMotivationOptions}
+                />
+                {!!decision.structuralMotivationDescription && (
+                  <P
+                    noMargin
+                    preserveWhiteSpace
+                    data-qa="structural-motivation-description"
+                  >
+                    {decision.structuralMotivationDescription}
+                  </P>
                 )}
-              </List>
-            </LabelContainer>
-          )}
+              </LabelContainer>
+            )}
 
-          <OptionalLabelledValue
-            label={t.viewOfTheGuardians}
-            value={decision.viewOfGuardians}
-            data-qa="view-of-the-guardians"
-          />
-        </div>
+            <OptionalLabelledValue
+              label={t.careMotivation}
+              value={decision.careMotivation}
+              data-qa="care-motivation"
+            />
 
-        <H2>{t.decisionAndValidity}</H2>
+            {(someBoolObj(decision.serviceOptions) ||
+              !!decision.servicesMotivation) && (
+              <div data-qa="services-section">
+                <Label>{t.services}</Label>
+                <BoolObjectList
+                  obj={decision.serviceOptions}
+                  texts={t.serviceOptions}
+                />
+                {!!decision.servicesMotivation && (
+                  <P noMargin preserveWhiteSpace>
+                    {decision.servicesMotivation}
+                  </P>
+                )}
+              </div>
+            )}
+          </div>
 
-        <div>
-          <OptionalLabelledValue
-            label={t.futureLevelOfAssistance}
-            value={
-              decision.assistanceLevel &&
-              assistanceLevelTexts[decision.assistanceLevel]
-            }
-            data-qa="future-level-of-assistance"
-          />
+          <H2>{t.collaborationWithGuardians}</H2>
 
-          <OptionalLabelledValue
-            label={t.startDate}
-            value={decision.startDate?.format()}
-            data-qa="start-date"
-          />
+          <div>
+            <OptionalLabelledValue
+              label={t.guardiansHeardAt}
+              value={decision.guardiansHeardOn?.format()}
+              data-qa="guardians-heard-at"
+            />
 
-          <OptionalLabelledValue
-            label={t.selectedUnit}
-            value={
-              !!decision.selectedUnit?.id && (
-                <LabelContainer>
-                  <div>{decision.selectedUnit?.name}</div>
-                  <div>{decision.selectedUnit?.streetAddress}</div>
-                  <div>
-                    {decision.selectedUnit?.postalCode}{' '}
-                    {decision.selectedUnit?.postOffice}
-                  </div>
-                  <Gap size="s" />
-                  <div>{t.unitMayChange}</div>
-                </LabelContainer>
-              )
-            }
-            data-qa="selected-unit"
-          />
+            {(some(decision.guardianInfo, (i) => i.isHeard) ||
+              decision.otherRepresentativeHeard) && (
+              <LabelContainer data-qa="guardians-heard-section">
+                <Label>{t.guardiansHeard}</Label>
+                <List>
+                  {decision.guardianInfo
+                    .filter((g) => g.id !== null && g.isHeard)
+                    .map((guardian) => (
+                      <li
+                        key={guardian.personId}
+                        data-qa={`guardian-${guardian.personId ?? ''}`}
+                      >
+                        {guardian.name}: {guardian.details}
+                      </li>
+                    ))}
+                  {decision.otherRepresentativeHeard && (
+                    <li data-qa="other-representative-details">
+                      {decision.otherRepresentativeDetails}
+                    </li>
+                  )}
+                </List>
+              </LabelContainer>
+            )}
 
-          <OptionalLabelledValue
-            label={t.motivationForDecision}
-            value={decision.motivationForDecision}
-            data-qa="motivation-for-decision"
-          />
-        </div>
+            <OptionalLabelledValue
+              label={t.viewOfTheGuardians}
+              value={decision.viewOfGuardians}
+              data-qa="view-of-the-guardians"
+            />
+          </div>
 
-        <H2>{t.personsResponsible}</H2>
+          <H2>{t.decisionAndValidity}</H2>
 
-        <div>
-          <OptionalLabelledValue
-            label={t.preparator}
-            value={
-              !!decision.preparedBy1?.employeeId && (
-                <LabelContainer>
-                  <div>
-                    {decision.preparedBy1.name}, {decision.preparedBy1.title}
-                  </div>
-                  <div>{decision.preparedBy1.email}</div>
-                  <div>{decision.preparedBy1.phoneNumber}</div>
-                </LabelContainer>
-              )
-            }
-            data-qa="prepared-by-1"
-          />
+          <div>
+            <OptionalLabelledValue
+              label={t.futureLevelOfAssistance}
+              value={
+                decision.assistanceLevel &&
+                assistanceLevelTexts[decision.assistanceLevel]
+              }
+              data-qa="future-level-of-assistance"
+            />
 
-          <OptionalLabelledValue
-            label={t.preparator}
-            value={
-              !!decision.preparedBy2?.employeeId && (
-                <LabelContainer>
-                  <div>
-                    {decision.preparedBy2.name}, {decision.preparedBy2.title}
-                  </div>
-                  <div>{decision.preparedBy2.email}</div>
-                  <div>{decision.preparedBy2.phoneNumber}</div>
-                </LabelContainer>
-              )
-            }
-            data-qa="prepared-by-2"
-          />
+            <OptionalLabelledValue
+              label={t.startDate}
+              value={decision.startDate?.format()}
+              data-qa="start-date"
+            />
 
-          <OptionalLabelledValue
-            label={t.decisionMaker}
-            value={
-              !!decision.decisionMaker?.employeeId && (
-                <LabelContainer>
-                  {decision.decisionMaker.name}, {decision.decisionMaker.title}
-                </LabelContainer>
-              )
-            }
-            data-qa="decision-maker"
-          />
+            <OptionalLabelledValue
+              label={t.selectedUnit}
+              value={
+                !!decision.selectedUnit?.id && (
+                  <LabelContainer>
+                    <div>{decision.selectedUnit?.name}</div>
+                    <div>{decision.selectedUnit?.streetAddress}</div>
+                    <div>
+                      {decision.selectedUnit?.postalCode}{' '}
+                      {decision.selectedUnit?.postOffice}
+                    </div>
+                    <Gap size="s" />
+                    <div>{t.unitMayChange}</div>
+                  </LabelContainer>
+                )
+              }
+              data-qa="selected-unit"
+            />
 
-          {decisionMakerWarning}
+            <OptionalLabelledValue
+              label={t.motivationForDecision}
+              value={decision.motivationForDecision}
+              data-qa="motivation-for-decision"
+            />
+          </div>
 
-          <P>{t.disclaimer}</P>
-        </div>
-      </FixedSpaceColumn>
+          <H2>{t.personsResponsible}</H2>
+
+          <div>
+            <OptionalLabelledValue
+              label={t.preparator}
+              value={
+                !!decision.preparedBy1?.employeeId && (
+                  <LabelContainer>
+                    <div>
+                      {decision.preparedBy1.name}, {decision.preparedBy1.title}
+                    </div>
+                    <div>{decision.preparedBy1.email}</div>
+                    <div>{decision.preparedBy1.phoneNumber}</div>
+                  </LabelContainer>
+                )
+              }
+              data-qa="prepared-by-1"
+            />
+
+            <OptionalLabelledValue
+              label={t.preparator}
+              value={
+                !!decision.preparedBy2?.employeeId && (
+                  <LabelContainer>
+                    <div>
+                      {decision.preparedBy2.name}, {decision.preparedBy2.title}
+                    </div>
+                    <div>{decision.preparedBy2.email}</div>
+                    <div>{decision.preparedBy2.phoneNumber}</div>
+                  </LabelContainer>
+                )
+              }
+              data-qa="prepared-by-2"
+            />
+
+            <OptionalLabelledValue
+              label={t.decisionMaker}
+              value={
+                !!decision.decisionMaker?.employeeId && (
+                  <LabelContainer>
+                    {decision.decisionMaker.name},{' '}
+                    {decision.decisionMaker.title}
+                  </LabelContainer>
+                )
+              }
+              data-qa="decision-maker"
+            />
+
+            {decisionMakerWarning}
+
+            <P>{t.disclaimer}</P>
+          </div>
+        </FixedSpaceColumn>
+      </ContentArea>
+
+      <Gap size="m" />
+
+      <CollapsibleContentArea
+        title={<H2 noMargin>{t.appealInstructionsTitle}</H2>}
+        open={appealInstructionsOpen}
+        toggleOpen={() => setAppealInstructionsOpen(!appealInstructionsOpen)}
+        opaque
+      >
+        {t.appealInstructions}
+      </CollapsibleContentArea>
     </>
   )
 })
