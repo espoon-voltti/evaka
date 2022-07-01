@@ -164,6 +164,9 @@ export default class LocalDate {
   toString(): string {
     return this.formatIso()
   }
+  valueOf(): string {
+    return this.formatIso()
+  }
   formatIso(): string {
     const month = this.month.toString().padStart(2, '0')
     const date = this.date.toString().padStart(2, '0')
