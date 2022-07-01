@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.assistanceneed.decision.filterPermittedAssistanceNeedDecisionsForDecisionMaker
+import fi.espoo.evaka.assistanceneed.decision.filterSentAssistanceNeedDecisions
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -58,6 +61,23 @@ AND evaka_user.type = 'EMPLOYEE'
             )
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
+        }
+    )
+
+    fun andIsDecisionMakerForAssistanceNeedDecision() = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedDecisionId> { tx, employee, _, ids ->
+            tx.filterPermittedAssistanceNeedDecisionsForDecisionMaker(
+                employee,
+                ids
+            )
+        }
+    )
+
+    fun andAssistanceNeedDecisionHasBeenSent() = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedDecisionId> { tx, _, _, ids ->
+            tx.filterSentAssistanceNeedDecisions(ids)
         }
     )
 }

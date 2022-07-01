@@ -12,6 +12,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChild,
   faClock,
@@ -33,6 +34,8 @@ import {
 
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
+
+import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -62,9 +65,27 @@ const Description = styled.p`
   width: 70%;
 `
 
+const UnreadCount = styled.span`
+  color: ${colors.main.m2};
+  font-size: 0.9rem;
+  font-weight: ${fontWeights.semibold};
+  margin-left: ${defaultMargins.xs};
+  border: 1.5px solid ${colors.main.m2};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 100%;
+  width: ${defaultMargins.m};
+  height: ${defaultMargins.m};
+`
+
 export default React.memo(function Reports() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
+  const { assistanceNeedDecisionCounts } = useContext(
+    AssistanceNeedDecisionReportContext
+  )
 
   return (
     <Container>
@@ -386,6 +407,32 @@ export default React.memo(function Reports() {
               <Description>{i18n.reports.raw.description}</Description>
             </ReportItem>
           )}
+          {featureFlags.experimental?.assistanceNeedDecisions &&
+            user?.permittedGlobalActions.has(
+              'READ_ASSISTANCE_NEED_DECISIONS_REPORT'
+            ) && (
+              <ReportItem>
+                <TitleRow>
+                  <RoundIcon
+                    size="L"
+                    color={colors.main.m2}
+                    content={faHandHolding}
+                  />
+                  <LinkTitle to="/reports/assistance-need-decisions">
+                    {i18n.reports.assistanceNeedDecisions.title}
+                  </LinkTitle>
+                  {assistanceNeedDecisionCounts
+                    .map(
+                      (unread) =>
+                        unread > 0 && <UnreadCount>{unread}</UnreadCount>
+                    )
+                    .getOrElse(null)}
+                </TitleRow>
+                <Description>
+                  {i18n.reports.assistanceNeedDecisions.description}
+                </Description>
+              </ReportItem>
+            )}
           {user?.permittedGlobalActions.has(
             'READ_PLACEMENT_SKETCHING_REPORT'
           ) && (

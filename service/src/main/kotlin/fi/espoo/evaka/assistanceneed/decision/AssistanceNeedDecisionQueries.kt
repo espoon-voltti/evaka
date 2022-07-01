@@ -136,8 +136,8 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
     //language=sql
     val sql =
         """
-        SELECT ad.id, decision_number, child_id, start_date, end_date, status, ad.language, decision_made, sent_for_decision,
-          pedagogical_motivation, structural_motivation_opt_smaller_group,
+        SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, start_date, end_date, status,
+          ad.language, decision_made, sent_for_decision, pedagogical_motivation, structural_motivation_opt_smaller_group,
           structural_motivation_opt_special_group, structural_motivation_opt_small_group,
           structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
           structural_motivation_opt_additional_staff, structural_motivation_description, care_motivation,
@@ -164,8 +164,9 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
         LEFT JOIN employee p1 ON p1.id = ad.preparer_1_employee_id
         LEFT JOIN employee p2 ON p2.id = ad.preparer_2_employee_id
         LEFT JOIN employee dm ON dm.id = ad.decision_maker_employee_id
+        LEFT JOIN person child ON child.id = ad.child_id
         WHERE ad.id = :id
-        GROUP BY ad.id, child_id, start_date, end_date, unit.id, p1.id, p2.id, dm.id;
+        GROUP BY ad.id, child_id, start_date, end_date, unit.id, p1.id, p2.id, dm.id, child.id;
         """.trimIndent()
     return createQuery(sql)
         .bind("id", id)
@@ -175,7 +176,8 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
 
 fun Database.Transaction.updateAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
-    data: AssistanceNeedDecisionForm
+    data: AssistanceNeedDecisionForm,
+    decisionMakerHasOpened: Boolean? = null
 ) {
     //language=sql
     val sql =
@@ -219,7 +221,8 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             preparer_1_phone_number = :preparer1PhoneNumber,
             preparer_2_employee_id = :preparer2EmployeeId,
             preparer_2_title = :preparer2Title,
-            preparer_2_phone_number = :preparer2PhoneNumber 
+            preparer_2_phone_number = :preparer2PhoneNumber,
+            decision_maker_has_opened = COALESCE(:decisionMakerHasOpened, decision_maker_has_opened)
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """.trimIndent()
     createUpdate(sql)
@@ -246,6 +249,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
         .bind("preparer2Title", data.preparedBy2?.title)
         .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
         .bind("selectedUnit", data.selectedUnit?.id)
+        .bind("decisionMakerHasOpened", decisionMakerHasOpened)
         .updateExactlyOne()
 
     //language=sql
@@ -293,4 +297,20 @@ fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecision
         .bind("id", id)
         .mapTo<AssistanceNeedDecisionId>()
         .firstOrNull() != null
+}
+
+fun Database.Transaction.markAssistanceNeedDecisionAsOpened(
+    id: AssistanceNeedDecisionId
+) {
+    //language=sql
+    val sql =
+        """
+        UPDATE assistance_need_decision
+        SET decision_maker_has_opened = TRUE
+        WHERE id = :id
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .updateExactlyOne()
 }

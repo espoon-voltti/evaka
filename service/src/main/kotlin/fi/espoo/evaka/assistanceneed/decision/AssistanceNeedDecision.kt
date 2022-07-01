@@ -20,7 +20,8 @@ import java.time.LocalDate
 data class AssistanceNeedDecision(
     val id: AssistanceNeedDecisionId,
     val decisionNumber: Long? = null,
-    val childId: ChildId,
+    @Nested("child")
+    val child: AssistanceNeedDecisionChild?,
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val status: AssistanceNeedDecisionStatus,
@@ -229,4 +230,10 @@ data class UnitInfoBasics(
     @PropagateNull
     val id: DaycareId?,
     val name: String? = null
+)
+
+data class AssistanceNeedDecisionChild(
+    @PropagateNull
+    val id: ChildId?,
+    val name: String?
 )

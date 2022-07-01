@@ -2572,7 +2572,8 @@ export const fi = {
       date: 'Päivämäärä',
       startDate: 'Alkaen',
       endDate: 'Päättyen',
-      childName: 'Lapsen nimi'
+      childName: 'Lapsen nimi',
+      child: 'Lapsi'
     },
     applications: {
       title: 'Saapuneet hakemukset',
@@ -2608,6 +2609,20 @@ export const fi = {
       title: 'Raakaraportti',
       description:
         'Vähemmän pitkälle jalostettu laaja tietoaineisto, josta voi itse muodostaa erilaisia raportteja.'
+    },
+    assistanceNeedDecisions: {
+      title: 'Tuen tarpeen päätökset',
+      description: 'Päättäjälle lähetetyt tuen tarpeen päätökset.',
+      sentToDecisionMaker: 'Lähetetty päättäjälle',
+      decisionMade: 'Päätös tehty',
+      status: 'Tila',
+      returnForEditModal: {
+        title: 'Palautetaanko päätös korjattavaksi?',
+        returnForEdit: 'Palauta korjattavaksi'
+      },
+      rejectDecision: 'Hylkää päätös',
+      returnDecisionForEditing: 'Palauta korjattavaksi',
+      approveDecision: 'Hyväksy päätös'
     },
     duplicatePeople: {
       title: 'Monistuneet kuntalaiset',

@@ -1,0 +1,1 @@
+ALTER TABLE assistance_need_decision ADD COLUMN decision_maker_has_opened BOOLEAN NOT NULL DEFAULT FALSE;

@@ -59,6 +59,8 @@ import InvoicePage from './components/invoice/InvoicePage'
 import MessagesPage from './components/messages/MessagesPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
 import ReportApplications from './components/reports/Applications'
+import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
+import AssistanceNeedDecisionsReportDecision from './components/reports/AssistanceNeedDecisionsReportDecision'
 import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
 import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
@@ -503,6 +505,22 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <ReportRaw />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/assistance-need-decisions/:id"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <AssistanceNeedDecisionsReportDecision />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/assistance-need-decisions"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <AssistanceNeedDecisionsReport />
                       </EmployeeRoute>
                     }
                   />

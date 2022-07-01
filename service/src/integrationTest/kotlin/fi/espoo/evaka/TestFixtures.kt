@@ -92,6 +92,12 @@ val testDecisionMaker_2 = DevEmployee(
     lastName = "Maker2"
 )
 
+val testDecisionMaker_3 = DevEmployee(
+    id = EmployeeId(UUID.randomUUID()),
+    firstName = "Decision3",
+    lastName = "Maker3"
+)
+
 val unitSupervisorOfTestDaycare = DevEmployee(
     id = EmployeeId(UUID.randomUUID()),
     firstName = "Sammy",
@@ -404,7 +410,7 @@ val testChildWithNamelessGuardian = DevPerson(
     restrictedDetailsEnabled = false
 )
 
-val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2)
+val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2, testDecisionMaker_3)
 val allAdults = setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
 val allChildren = setOf(
     testChild_1,
@@ -436,6 +442,16 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     testDecisionMaker_2.let {
+        insertTestEmployee(
+            DevEmployee(
+                id = it.id,
+                firstName = it.firstName,
+                lastName = it.lastName
+            )
+        )
+    }
+
+    testDecisionMaker_3.let {
         insertTestEmployee(
             DevEmployee(
                 id = it.id,
