@@ -4,39 +4,12 @@
 
 package fi.espoo.evaka.note.group
 
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.LocalDate
-
-fun Database.Read.getGroupNotesForChild(childId: ChildId, today: LocalDate): List<GroupNote> = createQuery(
-    """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
-    FROM group_note gn
-    WHERE group_id = (
-        SELECT (
-            CASE 
-                WHEN bc.id IS NOT NULL THEN bc.group_id
-                ELSE gpl.daycare_group_id
-            END 
-        ) AS group_id
-        FROM person ch
-        JOIN placement pl ON pl.child_id = ch.id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
-        JOIN daycare_group_placement gpl ON gpl.daycare_placement_id = pl.id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :today
-        LEFT JOIN backup_care bc ON bc.child_id = ch.id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
-        WHERE ch.id = :childId
-    )
-    ORDER BY gn.created
-    """.trimIndent()
-)
-    .bind("childId", childId)
-    .bind("today", today)
-    .mapTo<GroupNote>()
-    .list()
 
 fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
     return getGroupNotesForGroups(listOf(groupId))
