@@ -12,6 +12,7 @@ import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './espoo/employee/assets/i18n/fi'
+import { sv } from './espoo/employee/assets/i18n/sv'
 import { fi as vasuFI } from './espoo/employee/assets/i18n/vasu/fi'
 import { sv as vasuSV } from './espoo/employee/assets/i18n/vasu/sv'
 import type { EmployeeCustomizations } from './types'
@@ -58,12 +59,13 @@ export {
   voucherValueDecisionTypes
 }
 
-export type Lang = 'fi'
+export type Lang = 'fi' | 'sv'
 
 export type Translations = typeof fi
 
 export const translations: { [K in Lang]: Translations } = {
-  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer)
+  fi: mergeWith({}, fi, customizations.translations.fi, mergeCustomizer),
+  sv: mergeWith({}, sv, customizations.translations.sv, mergeCustomizer)
 }
 
 export type VasuLang = 'FI' | 'SV'

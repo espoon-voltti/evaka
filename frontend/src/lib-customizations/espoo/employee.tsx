@@ -26,7 +26,8 @@ const customizations: EmployeeCustomizations = {
             'Kuvaillaan huoltajalle, mikä tilanteessa oli lapselle merkityksellistä oppimisen ja kehityksen näkökulmasta. Voit myös linkittää toiminnan vasun sisältöihin'
         }
       }
-    }
+    },
+    sv: {}
   },
   vasuTranslations: {
     FI: {},

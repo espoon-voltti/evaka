@@ -34,7 +34,7 @@ let childId: UUID
 let assistanceNeedDecision: AssistanceNeedDecision
 let preFilledAssistanceNeedDecision: AssistanceNeedDecision
 
-beforeAll(async () => {
+beforeEach(async () => {
   await resetDatabase()
 
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
@@ -135,6 +135,43 @@ describe('Assistance Need Decisions - Edit page', () => {
     await assistanceNeedDecisionEditPage.clickLeavePageButton()
 
     expect(page.url).toBe(`${config.employeeUrl}/child-information/${childId}`)
+  })
+})
+
+describe('Assistance Need Decisions - Language', () => {
+  beforeEach(async () => {
+    page = await Page.open()
+    await employeeLogin(page, serviceWorker)
+    await page.goto(
+      `${
+        config.employeeUrl
+      }/child-information/${childId}/assistance-need-decision/${
+        preFilledAssistanceNeedDecision?.id ?? ''
+      }/edit`
+    )
+    assistanceNeedDecisionEditPage = new AssistanceNeedDecisionEditPage(page)
+  })
+
+  test('Change language to swedish', async () => {
+    await assistanceNeedDecisionEditPage.assertPageTitle(
+      'Päätös tuen tarpeesta'
+    )
+    await assistanceNeedDecisionEditPage.selectLanguage('Ruotsi')
+    await assistanceNeedDecisionEditPage.assertPageTitle('Beslut om stödbehov')
+    await assistanceNeedDecisionEditPage.waitUntilSaved()
+
+    await page.goto(
+      `${
+        config.employeeUrl
+      }/child-information/${childId}/assistance-need-decision/${
+        preFilledAssistanceNeedDecision?.id ?? ''
+      }`
+    )
+    const assistanceNeedDecisionPreviewPage =
+      new AssistanceNeedDecisionPreviewPage(page)
+    await assistanceNeedDecisionPreviewPage.assertPageTitle(
+      'Beslut om stödbehov'
+    )
   })
 })
 

@@ -33,7 +33,8 @@ const features: Features = {
       leops: true,
       citizenVasu: true,
       voucherUnitPayments: true,
-      specialNeedsDecisions: true,
+      assistanceNeedDecisions: true,
+      assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true
     }
   },
@@ -56,7 +57,8 @@ const features: Features = {
       mobileMessages: true,
       leops: true,
       citizenVasu: true,
-      specialNeedsDecisions: true,
+      assistanceNeedDecisions: true,
+      assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: true
     }
   },
@@ -79,7 +81,8 @@ const features: Features = {
       mobileMessages: false,
       leops: false,
       citizenVasu: false,
-      specialNeedsDecisions: false,
+      assistanceNeedDecisions: false,
+      assistanceNeedDecisionsLanguageSelect: false,
       staffAttendanceTypes: false
     }
   }

@@ -44,7 +44,7 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
           <AssistanceAction id={id} />
         )}
-        {featureFlags.experimental?.specialNeedsDecisions &&
+        {featureFlags.experimental?.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>
               <div className="separator large" />

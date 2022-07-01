@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, TextInput } from '../../../utils/page'
+import { Page, TextInput, Combobox } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
   constructor(private readonly page: Page) {}
@@ -50,5 +50,18 @@ export default class AssistanceNeedDecisionEditPage {
 
   async clickLeavePageButton(): Promise<void> {
     await this.page.findByDataQa('leave-page-button').click()
+  }
+
+  async selectLanguage(lang: string): Promise<void> {
+    await new Combobox(
+      this.page.findByDataQa('language-select')
+    ).fillAndSelectFirst(lang)
+  }
+
+  async assertPageTitle(title: string): Promise<void> {
+    await waitUntilEqual(
+      () => this.page.findByDataQa('page-title').innerText,
+      title
+    )
   }
 }
