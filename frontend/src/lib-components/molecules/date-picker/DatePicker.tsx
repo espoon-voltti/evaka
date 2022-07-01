@@ -170,7 +170,7 @@ export default React.memo(function DatePicker({
   useEffect(() => {
     setInternalError(undefined)
 
-    if (parentDate !== internalDate) {
+    if (parentDate?.formatIso() !== internalDate?.formatIso()) {
       if (internalDate === null) {
         onChange(null)
       } else if (minDate && internalDate.isBefore(minDate)) {

@@ -29,7 +29,7 @@ import {
   subYears
 } from 'date-fns'
 
-import { DateFormat, DateFormatWithWeekday, formatDate, locales } from './date'
+import { DateFormat, DateFormatWithWeekday, locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
 import LocalTime from './local-time'
 import { isAutomatedTest, mockNow } from './utils/helpers'
@@ -147,11 +147,15 @@ export default class LocalDate {
     return differenceInDays(this.toSystemTzDate(), other.toSystemTzDate())
   }
   format<T extends DateFormat | DateFormatWithWeekday>(
-    ...params: T extends DateFormatWithWeekday
+    ...[dateFormat, locale]: T extends DateFormatWithWeekday
       ? [DateFormatWithWeekday, Lang]
       : [DateFormat?]
   ): string {
-    return formatDate(this.toSystemTzDate(), ...params)
+    return format(
+      this.toSystemTzDate(),
+      dateFormat ?? 'dd.MM.yyyy',
+      locale ? { locale: locales[locale] } : undefined
+    )
   }
   /**
    * <a href="https://date-fns.org/docs/format">date-fns format()</a>
@@ -162,6 +166,9 @@ export default class LocalDate {
     })
   }
   toString(): string {
+    return this.formatIso()
+  }
+  valueOf(): string {
     return this.formatIso()
   }
   formatIso(): string {

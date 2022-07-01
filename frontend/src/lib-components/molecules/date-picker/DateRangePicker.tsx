@@ -61,7 +61,10 @@ export default React.memo(function DateRangePicker({
       return
     }
 
-    if (start !== internalStart || end !== internalEnd) {
+    if (
+      start?.formatIso() !== internalStart?.formatIso() ||
+      end?.formatIso() !== internalEnd?.formatIso()
+    ) {
       onChange(internalStart, internalEnd)
     }
   }, [internalStart, internalEnd, onChange, errorTexts, start, end])
