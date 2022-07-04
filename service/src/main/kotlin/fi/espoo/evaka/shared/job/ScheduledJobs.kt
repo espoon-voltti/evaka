@@ -86,9 +86,10 @@ WITH attendances_to_end AS (
         -- No placement to this unit anymore, as of today
         NOT EXISTS (
             SELECT 1 FROM placement p
+            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND current_date BETWEEN bc.start_date AND bc.end_date
             WHERE
                 p.child_id = ca.child_id AND
-                p.unit_id = ca.unit_id AND
+                (p.unit_id = ca.unit_id OR bc.unit_id = ca.unit_id) AND
                 current_date BETWEEN p.start_date AND p.end_date
         )
     )
