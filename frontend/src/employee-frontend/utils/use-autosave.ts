@@ -78,7 +78,16 @@ export function useAutosave<T, F extends ApiFunction>({
       loading: () => null,
       failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
       success: () => {
-        setStatus({ state: 'clean', savedAt: new Date() })
+        setStatus((prev) => {
+          if (prev.state === 'saving-dirty') {
+            return {
+              ...prev,
+              state: 'dirty'
+            }
+          }
+
+          return { state: 'clean', savedAt: new Date() }
+        })
       }
     })
   }, [])
