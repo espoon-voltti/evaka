@@ -18,7 +18,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -43,7 +43,8 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const { i18n } = useTranslation()
 
-  const { formState, setFormState, status } = useAssistanceNeedDecision(id)
+  const { formState, setFormState, status, forceSave } =
+    useAssistanceNeedDecision(id)
 
   const navigate = useNavigate()
 
@@ -137,25 +138,28 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       <Gap size="m" />
       <StickyFooter>
         <FooterContainer>
-          <Button
-            onClick={() => navigate(`/child-information/${childId}`)}
+          <AsyncButton
+            primary
+            text={i18n.childInformation.assistanceNeedDecision.leavePage}
+            onClick={forceSave}
+            onSuccess={() => navigate(`/child-information/${childId}`)}
             data-qa="leave-page-button"
-          >
-            {i18n.childInformation.assistanceNeedDecision.leavePage}
-          </Button>
+            hideSuccess
+          />
           <AutosaveStatusIndicator status={status} />
           <FlexGap />
-          <Button
+          <AsyncButton
             primary
-            onClick={() =>
+            text={i18n.childInformation.assistanceNeedDecision.preview}
+            onClick={forceSave}
+            onSuccess={() =>
               navigate(
                 `/child-information/${childId}/assistance-need-decision/${id}`
               )
             }
             data-qa="preview-button"
-          >
-            {i18n.childInformation.assistanceNeedDecision.preview}
-          </Button>
+            hideSuccess
+          />
         </FooterContainer>
       </StickyFooter>
     </>

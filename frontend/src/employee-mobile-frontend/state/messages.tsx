@@ -166,7 +166,7 @@ export const MessageContextProvider = React.memo(
 
     useEffect(() => {
       if (selectedAccount && !selectedThread) {
-        loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
+        void loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
         reloadUnreadCounts()
       }
     }, [

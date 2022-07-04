@@ -30,6 +30,7 @@ export type Autosave = {
   status: AutosaveStatus
   setStatus: React.Dispatch<React.SetStateAction<AutosaveStatus>>
   setDirty: () => void
+  forceSave: () => Promise<Result<void>>
 }
 
 export type AutosaveParams<T, F extends ApiFunction> = {
@@ -96,7 +97,9 @@ export function useAutosave<T, F extends ApiFunction>({
 
   const saveNow = useCallback(() => {
     setStatus((prev) => ({ ...prev, state: 'saving' }))
-    internalSave(...getSaveParameters())
+    return internalSave(...getSaveParameters()).then((res) =>
+      res.map(() => undefined)
+    )
   }, [internalSave, getSaveParameters])
 
   const [debouncedSave] = useDebouncedCallback(saveNow, debounceInterval)
@@ -127,6 +130,7 @@ export function useAutosave<T, F extends ApiFunction>({
   return {
     status,
     setStatus,
-    setDirty
+    setDirty,
+    forceSave: saveNow
   }
 }

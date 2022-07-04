@@ -77,7 +77,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
       endDate: searchFilters.endDate,
       searchByStartDate: searchFilters.searchByStartDate
     }
-    reloadDecisions(page, pageSize, sortBy, sortDirection, params)
+    void reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [
     page,
     sortBy,

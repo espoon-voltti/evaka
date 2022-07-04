@@ -88,7 +88,9 @@ export default React.memo(function VasuTemplateEditor() {
     useState<[number, number, VasuSection]>() // [section, question]
 
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
-  useEffect(() => loadTemplate(id), [id, loadTemplate])
+  useEffect(() => {
+    void loadTemplate(id)
+  }, [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
   usePrompt(i18n.vasuTemplates.unsavedWarning, dirty)
 

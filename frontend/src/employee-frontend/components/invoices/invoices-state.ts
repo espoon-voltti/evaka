@@ -148,7 +148,7 @@ export function useInvoicesState() {
       periodStart: searchFilters.startDate,
       periodEnd: searchFilters.endDate
     }
-    loadInvoices(
+    void loadInvoices(
       state.page,
       pageSize,
       state.sortBy,

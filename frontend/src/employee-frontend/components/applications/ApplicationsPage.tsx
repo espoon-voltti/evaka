@@ -110,7 +110,7 @@ export default React.memo(function ApplicationsPage() {
       voucherApplications: debouncedApplicationSearchFilters.voucherApplications
     }
 
-    reloadApplications(page, pageSize, sortBy, sortDirection, params)
+    void reloadApplications(page, pageSize, sortBy, sortDirection, params)
   }, [
     page,
     sortBy,

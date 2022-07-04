@@ -53,7 +53,7 @@ export function useDraft({
   useEffect(() => {
     if (!id && saveState === 'dirty' && !initializing && draft) {
       setInitializing(true)
-      initDraft(draft.accountId)
+      void initDraft(draft.accountId)
     }
   }, [id, initDraft, draft, saveState, initializing])
 
@@ -66,7 +66,7 @@ export function useDraft({
   const saveNow = useCallback(
     (params: SaveDraftParams) => {
       setSaveState('saving')
-      save(params)
+      void save(params)
     },
     [save]
   )

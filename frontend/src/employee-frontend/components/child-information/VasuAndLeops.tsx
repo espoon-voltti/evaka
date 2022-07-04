@@ -172,7 +172,7 @@ function VasuInitialization({
         filteredTemplates?.isSuccess &&
         filteredTemplates.value.length === 1
       ) {
-        createVasu(childId, filteredTemplates.value[0].id)
+        void createVasu(childId, filteredTemplates.value[0].id)
       }
     },
     [childId, createVasu, filteredTemplates]

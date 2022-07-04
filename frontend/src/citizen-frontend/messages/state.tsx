@@ -135,7 +135,7 @@ export const MessageContextProvider = React.memo(
     useEffect(() => {
       if (threads.currentPage > 0) {
         setThreads((state) => ({ ...state, loadingResult: Loading.of() }))
-        loadMessages(threads.currentPage, t.messages.staffAnnotation)
+        void loadMessages(threads.currentPage, t.messages.staffAnnotation)
       }
     }, [loadMessages, threads.currentPage, t.messages.staffAnnotation])
 
@@ -238,7 +238,7 @@ export const MessageContextProvider = React.memo(
         })
 
         void markThreadRead(selectedThread.id).then(() => {
-          refreshUnreadMessagesCount()
+          void refreshUnreadMessagesCount()
         })
       }
     }, [selectedThread, accountId, refreshUnreadMessagesCount])

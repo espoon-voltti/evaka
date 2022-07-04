@@ -140,7 +140,7 @@ export function usePaymentsState() {
 
   const loadPayments = useRestApi(getPayments, setPaymentsResult)
   const reloadPayments = useCallback(() => {
-    loadPayments({
+    void loadPayments({
       ...searchFilters,
       searchTerms: debouncedSearchTerms,
       page: state.page,
