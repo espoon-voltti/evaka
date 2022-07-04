@@ -5,7 +5,9 @@
 import React from 'react'
 
 import { MultiFieldQuestion } from 'lib-common/api-types/vasu'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
@@ -26,13 +28,30 @@ export default React.memo(function MultiFieldQuestion({
         {questionNumber} {question.name}
       </Label>
 
-      <ValueOrNoRecord
-        text={question.value
-          .map((v) => v.trim())
-          .join(' ')
-          .trim()}
-        translations={translations}
-      />
+      {question.separateRows ? (
+        <>
+          <Gap size="s" />
+          <FixedSpaceColumn spacing="s">
+            {question.keys.map((key, index) => (
+              <FixedSpaceColumn key={key.name} spacing="xxs">
+                <Label>{key.name}</Label>
+                <ValueOrNoRecord
+                  text={question.value[index]}
+                  translations={translations}
+                />
+              </FixedSpaceColumn>
+            ))}
+          </FixedSpaceColumn>
+        </>
+      ) : (
+        <ValueOrNoRecord
+          text={question.value
+            .map((v) => v.trim())
+            .join(' ')
+            .trim()}
+          translations={translations}
+        />
+      )}
     </div>
   )
 })

@@ -67,7 +67,7 @@ export default React.memo(function VasuPage() {
     setGuardianHasGivenPermissionToShare
   } = useVasu(id)
 
-  const dynamicSectionsOffset = 1
+  const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
 
   return (
     <VasuContainer gapSize="zero" data-qa="vasu-preview">
@@ -81,19 +81,22 @@ export default React.memo(function VasuPage() {
           </ButtonContainer>
           <Main>
             <CitizenVasuHeader document={vasu} />
-            <CitizenBasicsSection
-              sectionIndex={0}
-              type={vasu.type}
-              basics={vasu.basics}
-              childLanguage={vasu.basics.childLanguage}
-              templateRange={vasu.templateRange}
-              translations={translations}
-            />
+            {!content.hasDynamicFirstSection && (
+              <CitizenBasicsSection
+                sectionIndex={0}
+                type={vasu.type}
+                basics={vasu.basics}
+                childLanguage={vasu.basics.childLanguage}
+                templateRange={vasu.templateRange}
+                translations={translations}
+              />
+            )}
             <CitizenDynamicSections
               sections={content.sections}
               sectionIndex={dynamicSectionsOffset}
               state={vasu.documentState}
               translations={translations}
+              vasu={vasu}
             />
             <Gap size="s" />
             <CitizenVasuEvents document={vasu} content={content} />

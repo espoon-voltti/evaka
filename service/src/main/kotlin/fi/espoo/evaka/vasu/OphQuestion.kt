@@ -28,11 +28,33 @@ fun getDefaultTemplateContent(type: CurriculumType, lang: VasuLanguage) = when (
 }
 
 fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
+    hasDynamicFirstSection = true,
     sections = listOf(
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman laatijat"
-                VasuLanguage.SV -> "Uppgörande av barnets plan för småbarnspedagogik"
+                VasuLanguage.FI -> "Perustiedot"
+                VasuLanguage.SV -> ""
+            },
+            questions = listOf(
+                VasuQuestion.StaticInfoSubSection(),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Yhteydenpitoon liittyviä lisätietoja"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Yhteydenpitoon liittyvät lisätiedot voivat esimerkiksi olla yhteishuoltajuuteen tai turvakieltoon liittyviä asioita."
+                        VasuLanguage.SV -> ""
+                    },
+                    value = "",
+                    multiline = true
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman laatiminen"
+                VasuLanguage.SV -> ""
             },
             questions = listOf(
                 VasuQuestion.MultiField(
@@ -60,31 +82,27 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                             listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
                     },
                     value = listOf()
-                )
-            )
-        ),
-        VasuSection(
-            name = when (lang) {
-                VasuLanguage.FI -> "Näkemyksien huomioiminen"
-                VasuLanguage.SV -> "Barnets och vårdnadshavarnas delaktighet i uppgörandet av planen"
-            },
-            questions = listOf(
+                ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Miten lapsen näkökulma ja mielipiteet on otettu huomioon"
-                        VasuLanguage.SV -> "Hur har barnets perspektiv och synpunkter beaktats"
+                        VasuLanguage.FI -> "Miten lapsen näkökulma ja mielipiteet otetaan huomioon"
+                        VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Lapsen näkökulma on läsnä keskustelussa koko ajan. Lapsi voi myös osallistua keskusteluun osan ajasta: ikätason mukaan lapsen osallisuutta vasukeskusteluissa lisätään. Lapsi voi esimerkiksi esitellä mielipaikkojaan, muuta oppimisympäristöä tai lempilelujaan sisällä tai ulkona. Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa ”lokeroa” mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa."
-                        VasuLanguage.SV -> "Barnets perspektiv är ständigt närvarande i samtalet. Barnet kan också delta i samtalet en del av tiden: beroende på ålder ökas barnets deltagande i samtalen i anslutning till planen för småbarnspedagogik. Barnet kan till exempel visa sina favoritplatser, annan inlärningsmiljö eller sina favoritleksaker inomhus eller utomhus. Diskutera barnets perspektiv så att alla teammedlemmar uttrycker sina synpunkter baserade på observationer och pedagogisk dokumentation. Skriv en kort sammanfattning här. Om du inte hittar ett lämpligt ställe för ett ärende som ni tycker är viktigt, gå tillbaka till texten för planen för småbarnspedagogik eller prata med er chef/era medarbetare."
+                        VasuLanguage.FI -> "Tässä kuvataan, millaisten keskustelujen ja toiminnan kautta lapsi osallistuu oman varhaiskasvatuksensa suunnitteluun ja arviointiin. Lapsen varhaiskasvatussuunnitelmaa tehtäessä keskustellaan lapsen vahvuuksista, kiinnostuksen kohteista, osaamisesta ja yksilöllisistä tarpeista. Lapsen toiveita, mielipiteitä ja odotuksia selvitetään erilaisin tavoin lapsen ikä- ja kehitystaso huomioiden."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Miten huoltajien näkemykset otetaan huomioon ja miten yhteistyö on järjestetty"
-                        VasuLanguage.SV -> "Hur har vårdnadshavarnas synpunkter beaktats och hur samarbetet med vårdnadshavarna ordnats"
+                        VasuLanguage.FI -> "Miten huoltajien näkemykset otetaan huomioon ja yhteistyötä toteutetaan"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tässä kuvataan, miten huoltajien kanssa keskustellaan lapsen oppimisesta, kasvusta ja hyvinvoinnista toimintavuoden aikana. Huoltajien on mahdollista pohtia oman lapsensa varhaiskasvatukseen liittyviä toiveita ja odotuksia ennen vasu-keskustelua Lapsi kotioloissa -lomakkeen avulla. Lisäksi huoltajalla on mahdollisuus keskustella muiden huoltajien kanssa lasten oppimiseen, kasvuun ja hyvinvointiin liittyvistä asioista erilaisissa varhaiskasvatusyksikön tilaisuuksissa.\nTähän kohtaan voidaan kirjata perheen kielelliseen, kulttuuriseen tai katsomukselliseen taustaan liittyvät toiveet ja yhdessä sovitut asiat, kuten esimerkiksi kotikielet, tulkkauspalveluiden käyttö tai miten katsomuksellisista asioista keskustellaan."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
@@ -93,26 +111,74 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
         ),
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Aiemman varhaiskasvatussuunnitelman tavoitteet ja toimenpiteet"
-                VasuLanguage.SV -> "Mål och åtgärder i den föregående barnets plan för småbarnspedagogik"
+                VasuLanguage.FI -> "Monialainen yhteistyö"
+                VasuLanguage.SV -> ""
             },
             questions = listOf(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Tavoitteiden toteutuminen"
-                        VasuLanguage.SV -> "Genomförande av målen"
+                        VasuLanguage.FI -> "Yhteistyökumppanit ja yhteystiedot"
+                        VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Kirjoita tähän lyhyesti niistä asioista, joita edellisessä vasukeskustelussa, yhdessä huoltajien kanssa asetitte pedagogisen toiminnan tavoitteiksi. Jos jatkat toisen tekemää suunnitelmaa, mainitse siitä ja muista laittaa omat nimikirjaimesi tekstin perään."
-                        VasuLanguage.SV -> "Skriv här kortfattat om vad ni tillsammans med vårdnadshavarna satte som mål för den pedagogiska verksamheten i det föregående samtalet för barnets plan. Om du fortsätter en plan som utarbetats av någon annan, ange det och kom ihåg att skriva dina egna initialer efter texten."
+                        VasuLanguage.FI -> "Tähän kohtaan voidaan kirjata monialaisen yhteistyön toteuttaminen, esimerkiksi lastenneuvolan tai lastensuojelun kanssa. Lisäksi kirjataan monialaisten toimijoiden organisaatiot, nimet ja yhteystiedot."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Muut havainnot lapsen edellisestä vasusta"
-                        VasuLanguage.SV -> "Andra iakttagelser om föregående barnets plan för småbarnspedagogik"
+                        VasuLanguage.FI -> "Sovitut yhteistyötavat, vastuut ja palvelut"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kirjataan yhteisesti sovitut asiat. Mahdollisen tuen edellyttämän yhteistyön ja palvelujen näkökulmasta huomioidaan\n\n• yhteistyö lapsen ja huoltajan kanssa\n• lapsen tuen toteuttamisen vastuut \n• erityisasiantuntijoiden palvelujen käyttö \n• sosiaali- ja terveydenhuollon sekä muiden tarvittavien asiantuntijoiden antama ohjaus ja konsultaatio\n• mahdollisten kuljetusten järjestelyt ja vastuut."
+                        VasuLanguage.SV -> ""
+                    },
+                    multiline = true,
+                    value = ""
+                )
+            )
+        ),
+        VasuSection(
+            name = when (lang) {
+                VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman tavoitteiden ja toimenpiteiden toteutumisen arviointi"
+                VasuLanguage.SV -> ""
+            },
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutuminen"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Mitkä toiminnalle asetetut tavoitteet ja toimenpiteet ovat toteutuneet? Miten ne ovat toteutuneet? Mikä on edistänyt/estänyt tavoitteiden ja toimenpiteiden toteutumista? Arviointi kohdistuu toiminnan, järjestelyjen, oppimisympäristöjen ja pedagogiikan arviointiin, ei lapsen arviointiin. Arvioinnin yhteydessä henkilöstö sekä huoltaja ja lapsi pohtivat kuinka hyvin lapsen vasuun kirjatut kasvatukselle, opetukselle ja hoidolle asetetut tavoitteet ovat toteutuneet ja ovatko toimenpiteet olleet tarkoituksenmukaisia."
+                        VasuLanguage.SV -> ""
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Lapsen tuen arviointi"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Ovatko lapselle annettu tuki ja tukitoimenpiteet olleet toimivia ja riittäviä? Miten sovitut pedagogiset, rakenteelliset ja/tai hoidolliset tuen muodot ovat toteutuneet, ja mitkä ovat olleet niiden vaikutukset? Miten sovitut yhteistyökäytännöt ovat toteutuneet? Lapsen tuen tarvetta sekä tuen riittävyyttä, tarkoituksenmukaisuutta ja vaikuttavuutta on arvioitava ja seurattava sekä lapsen vasua päivitettävä aina tuen tarpeen muuttuessa. Tuen vaikuttavuuden arviointi pitää sisällään kuvauksen tukitoimista, niiden vaikuttavuuden arvioinnista ja kehittämisestä sekä perustelut siitä, millaisista tuen toimista lapsi hyötyy ja mitkä parhaiten toteuttavat yksilöllisesti lapsen etua. Jos lapsi saa tehostettua tai erityistä tukea, tai tukipalveluita osana yleistä tukea lapsen vasua päivitetään hallinnollisen päätöksen sisällön mukaisesti."
+                        VasuLanguage.SV -> ""
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muut havainnot lapselle aiemmin laaditusta varhaiskasvatussuunnitelmasta"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Lapsen vasu tulee arvioida ja tarkistaa vähintään kerran vuodessa tai useammin jos lapsen tarpeet sitä edellyttävät. Lapsen vasua arvioitaessa arviointi kohdistuu pedagogiikan toteutumiseen, oppimisympäristöihin ja toiminnan järjestelyihin sekä mahdolliseen tuen vaikuttavuuteen ja tukitoimien toteutumiseen. Lapsen vasun tarkistaminen perustuu lapsen vasun arviointiin yhdessä lapsen ja huoltajan kanssa. Tarkoituksena on varmistaa, että lapsen vasusta muodostuu jatkumo. Tässä osiossa tarkastellaan aiemmin laadittua lapsen vasua ja arvioidaan siihen kirjattujen tavoitteiden toteutumista. Mikäli lapsen vasua ollaan laatimassa ensimmäistä kertaa, tätä arviointia ei luonnollisesti tehdä. Lapsen vasun tavoitteita sekä niiden toteuttamista seurataan ja arvioidaan säännöllisesti."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
@@ -131,133 +197,178 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> "Barnets styrkor, intressen och behov samt hur man beaktar dem"
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Keskustelkaa tiimissä otsikossa mainituista asioista niin, että kaikki tiimin jäsenet tuovat ilmi oman näkemyksensä havaintojen ja pedagogisen dokumentoinnin perusteella. Kirjaa lyhyt yhteenveto tähän. Jos et löydä juuri sopivaa \"lokeroa\" mielestänne tärkeän asian kirjaamiselle, palatkaa vasutekstin äärelle tai jutelkaa esimiehenne/työkavereittenne kanssa. Luo huoltajien kanssa käytävään keskusteluun miellyttävä ilmapiiri. Valmistaudu niin, että myös hankalista asioista on mahdollista puhua."
-                        VasuLanguage.SV -> "Diskutera de frågor som nämns i rubriken så att alla teammedlemmar uttrycker sina synpunkter baserade på observationer och pedagogisk dokumentation. Skriv en kort sammanfattning här. Om du inte hittar ett lämpligt ställe för ett ärende som ni tycker är viktigt, gå tillbaka till texten för planen för småbarnspedagogik eller prata med er chef/era medarbetare. Skapa en trevlig atmosfär i samtalet med vårdnadshavarna. Förbered dig så att även svåra saker kan diskuteras."
+                        VasuLanguage.FI -> "Tähän kuvataan lapsen keskeiset vahvuudet ja kiinnostuksen kohteet sekä tarpeet tavoitteiden asettamisen ja toiminnan suunnittelun pohjaksi."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Tavoitteet henkilöstön pedagogiselle toiminnalle sekä toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
-                        VasuLanguage.SV -> "Mål för personalens pedagogiska verksamhet samt åtgärder och metoder för att uppnå målen"
+                        VasuLanguage.FI -> "Kieleen ja kulttuuriin liittyviä tarkentavia näkökulmia"
+                        VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Valitkaa yhdessä huoltajien kanssa 1-3 tavoitetta tulevalle pedagogiselle toiminnalle. Jotain sellaista, jolla on merkitystä juuri tämän lapsen kohdalla."
-                        VasuLanguage.SV -> "Välj tillsammans med vårdnadshavarna 1–3 mål för framtida pedagogisk verksamhet. Målen för den pedagogiska verksamheten ska ha betydelse för just detta barn."
+                        VasuLanguage.FI -> "Tässä kohdassa kirjataan, miten edistetään monipuolisesti vieraskielisten ja monikielisten lasten kielitaidon sekä kieli- ja kulttuuri-identiteettien ja itsetunnon kehittymistä. Huoltajien kanssa keskustellaan myös lapsen oman äidinkielen/äidinkielien tukemisesta."
+                        VasuLanguage.SV -> ""
+                    },
+                    multiline = true,
+                    value = ""
+                ),
+                VasuQuestion.MultiField(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Mahdolliset lapsen kehityksen, oppimisen ja hyvinvoinnin tukeen liittyvät tarpeet sekä lapsen tuen toteuttamiseen liittyvät tuen muodot (pedagogiset, rakenteelliset ja hoidolliset)"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kohtaan kirjataan lapsen tukeen liittyvät mahdolliset muut tarpeet sekä lapsen tuen toteuttamiseen liittyvät pedagogiset, rakenteelliset ja hoidolliset tuen muodot. Tähän kirjataan myös mahdolliset lapselle annettavat tukipalvelut. Lapsen vasua hyödynnetään tehtäessä hallinnollista päätöstä annettavasta tehostetusta tai erityisestä tuesta tai yleisen tuen tukipalveluista. Mikäli lapsen tuen tarvetta on arvioitu lapsen vasussa, tulee arviointi huomioida annettaessa tehostetun tai erityisen tuen hallinnollista päätöstä tai päätöstä yleisen tuen tukipalveluista. Lapsen vasua päivitetään hallintopäätöksen sisällön mukaisesti. Lisäksi lapsen vasuun kirjataan mahdolliset sosiaali- ja terveyspalvelut, kuten lapsen saama kuntoutus, jos se on olennaista lapsen varhaiskasvatuksen järjestämisen näkökulmasta."
+                        VasuLanguage.SV -> ""
+                    },
+                    keys = when (lang) {
+                        VasuLanguage.FI ->
+                            listOf(
+                                Field(
+                                    name = "Pedagogiset tuen muodot",
+                                    info = "• varhaiskasvatuspäivän rakenteeseen ja päivärytmiin liittyvät ratkaisut \n" +
+                                        "• oppimisympäristöihin liittyvät ratkaisut \n" +
+                                        "• tarvittavat erityispedagogiset menetelmät \n" +
+                                        "• vuorovaikutus- ja kommunikointitavat, esimerkiksi viittomien ja kuvien käyttö \n" +
+                                        "• käytännöt, miten lapsi pääsee osalliseksi vertaisryhmän toimintaa, esimerkiksi esteettömyyden huomiointi."
+                                ),
+                                Field(
+                                    name = "Rakenteelliset tuen muodot",
+                                    info = "• tuen toteuttamiseen liittyvän osaamisen ja erityispedagogisen osaamisen vahvistaminen \n" +
+                                        "• henkilöstön mitoitukseen ja rakenteeseen liittyvät ratkaisut \n" +
+                                        "• lapsiryhmän kokoon ja ryhmärakenteeseen liittyvät ratkaisut \n" +
+                                        "• tulkitsemis- ja avustamispalvelut sekä apuvälineiden käyttö \n" +
+                                        "• pien- tai erityisryhmä tai muu tarvittava ryhmämuoto \n" +
+                                        "• varhaiskasvatuksen erityisopettajan osa- tai kokoaikainen opetus tai konsultaatio."
+                                ),
+                                Field(
+                                    name = "Hoidolliset tuen muodot",
+                                    info = "• perushoitoon, hoivaan ja avustamiseen liittyvät menetelmät \n" +
+                                        "• terveydenhoidolliset tarpeet, esimerkiksi lapsen pitkäaikaissairauksien hoitoon, lääkitykseen, ruokavalioon ja liikkumiseen liittyvä avustaminen ja apuvälineet.\n"
+                                )
+                            )
+                        VasuLanguage.SV ->
+                            listOf(Field(""), Field(""), Field(""))
+                    },
+                    value = listOf("", "", ""),
+                    separateRows = true
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Tavoitteet henkilöstön pedagogiselle toiminnalle"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kirjataan keskeiset tavoitteet henkilöstön pedagogiselle toiminnalle. Tavoitteiden asettamisessa tulee hyödyntää lapsen vahvuuksia, kiinnostuksen kohteita ja tarpeita. Tässä osassa huomioidaan lapsen orastavat taidot ja se, miten niitä voidaan edistää pedagogisella toiminnalla. Olennaista on kirjata tavoitteet lapsen kasvatukselle, opetukselle ja hoidolle. Tässä huomioidaan myös laaja-alaisen osaamisen osa-alueita ja oppimisen alueita. Lisäksi tähän kirjataan mahdolliset kehityksen, oppimisen ja hyvinvoinnin tuen kannalta merkitykselliset tavoitteet. Tavoitteita asetettaessa otetaan huomioon lapsiryhmä ja ryhmän kokonaistilanne, tavoitteiden konkreettisuus ja arvioitavuus."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Mahdolliset muut kehityksen ja oppimisen tukeen liittyvät tarpeet sekä tuen toteuttamiseen liittyvät tavoitteet ja sovitut järjestelyt"
-                        VasuLanguage.SV -> "Eventuella andra behov som rör stöd för utveckling och lärande samt mål och överenskomna arrangemang för genomförandet av stödet"
+                        VasuLanguage.FI -> "Toimenpiteet ja menetelmät tavoitteiden saavuttamiseksi"
+                        VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Tähän kirjoitetaan rakenteelliset tukitoimet ja muu sellainen lapsen hyvinvointiin liittyvä tuki, joka ei käy ilmi pedagogisen toiminnan kuvauksessa."
-                        VasuLanguage.SV -> "Strukturella stödåtgärder och annat stöd som rör barnets välbefinnande och som inte framgår av beskrivningen av den pedagogiska verksamheten skrivs här."
+                        VasuLanguage.FI -> "Tässä kirjataan konkreettiset pedagogiset toimenpiteet ja menetelmät pedagogiselle toiminnalle asetettujen tavoitteiden saavuttamiseksi. Menetelmät tulee kirjata niin konkreettisina, että niiden toteutumisen arviointi on mahdollista."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
-                ),
-                VasuQuestion.Followup(
-                    title = when (lang) {
-                        VasuLanguage.FI -> "Täydennykset ja jatkuva arviointi toimintakauden aikana"
-                        VasuLanguage.SV -> ""
-                    },
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointia ja tarkennuksia toimintakauden aikana lapsen tarpeiden mukaan sekä mahdollinen huoltajien kanssa tehty yhteistyö"
-                        VasuLanguage.SV -> ""
-                    },
-                    info = when (lang) {
-                        VasuLanguage.FI -> "Laadittu-tilassa olevaa varhaiskasvatussuunnitelmaa päivitetään pääasiassa lisäämällä uutta tekstiä Täydennykset ja jatkuva arviointi -osioon. Sinne voidaan mm. lisätä huomioita koskien lapsen kehitystä, arjen tapahtumia sekä huoltajien kanssa käytyjä keskusteluja."
-                        VasuLanguage.SV -> ""
-                    },
-                    value = emptyList()
-                )
-            )
-        ),
-        VasuSection(
-            name = "Tehostetun tai erityisen tuen tarve ja tukitoimet",
-            questions = listOf(
-                VasuQuestion.Paragraph(
-                    title = "",
-                    paragraph = "Täytetään, kun lapsella on tarve tuelle, josta tehdään hallintopäätös. Tuen tarvetta seurataan ja arvioidaan toimintakauden aikana."
-                ),
-                VasuQuestion.CheckboxQuestion(
-                    label = "Onko lapsella tehostetun tai erityisen tuen tarve, tai onko tuen taso muuttumassa?",
-                    name = "Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa",
-                    value = false,
-                    id = "special-support"
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Mahdolliset aiemmin toteutetut tukitoimet sekä niiden vaikuttavuuden arviointi",
-                    value = "",
-                    multiline = false,
-                    dependsOn = listOf("special-support")
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Arvio lapsen tarvitsemasta tuesta jatkossa sekä hänelle kohdennettujen tuen muotojen ja mahdollisten tukipalveluiden kuvaus",
-                    value = "",
-                    multiline = false,
-                    dependsOn = listOf("special-support")
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Henkilöstön ja tarvittavien muiden asiantuntijoiden vastuut ja työnjako lapsen tukeen liittyen",
-                    value = "",
-                    multiline = false,
-                    dependsOn = listOf("special-support")
-                ),
-                VasuQuestion.TextQuestion(
-                    name = "Kuvaus lapsen ja huoltajien kanssa tehdystä yhteistyöstä",
-                    value = "",
-                    multiline = false,
-                    dependsOn = listOf("special-support")
                 ),
                 VasuQuestion.RadioGroupQuestion(
                     name = "Lapsen tuen taso jatkossa",
                     options = listOf(
                         QuestionOption(
                             key = "general",
-                            name = "Yleinen tuki"
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Yleinen tuki"
+                                VasuLanguage.SV -> ""
+                            }
+                        ),
+                        QuestionOption(
+                            key = "",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Lapsen tuen toteuttamista koskeva hallintopäätös"
+                                VasuLanguage.SV -> ""
+                            },
+                            isIntervention = true,
+                            info = when (lang) {
+                                VasuLanguage.FI -> "Tämä kohta kirjataan, jos lapsen tuesta on annettu hallintopäätös. Lapsen vasuun kirjataan myös päivämäärä, jos hallintopäätös kumotaan. Muihin huomioihin voidaan kirjata hallintopäätökseen liittyviä tarkentavia näkökulmia."
+                                VasuLanguage.SV -> ""
+                            }
                         ),
                         QuestionOption(
                             key = "during_range",
-                            name = "Tukipalvelut ajalla",
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Tukipalvelut ajalla"
+                                VasuLanguage.SV -> ""
+                            },
                             dateRange = true
                         ),
                         QuestionOption(
                             key = "intensified",
-                            name = "Tehostettu tuki"
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Tehostettu tuki"
+                                VasuLanguage.SV -> ""
+                            }
                         ),
                         QuestionOption(
                             key = "special",
-                            name = "Erityinen tuki"
+                            name = when (lang) {
+                                VasuLanguage.FI -> "Erityinen tuki"
+                                VasuLanguage.SV -> ""
+                            }
                         )
                     ),
-                    value = null,
-                    dependsOn = listOf("special-support")
+                    value = null
+                ),
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Muita huomioita"
+                        VasuLanguage.SV -> ""
+                    },
+                    multiline = true,
+                    value = ""
                 ),
                 VasuQuestion.Followup(
-                    title = "Tuen tarpeen ja toteutumisen arviointi toimintakauden aikana",
-                    name = "Tuen tarpeen ja tukitoimenpiteiden toteutumisen seurantaa ja arviointia toimintakauden aikana",
-                    value = listOf(),
-                    continuesNumbering = true,
-                    dependsOn = listOf("special-support")
+                    title = when (lang) {
+                        VasuLanguage.FI -> "Tarkennuksia toimintavuoden aikana lapsen tarpeiden mukaan"
+                        VasuLanguage.SV -> ""
+                    },
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Päivämäärä ja kirjaus"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tämän kohdan tarkoituksena on varmistaa lapsen vasuun kirjattujen tavoitteiden ja toimenpiteiden toteutumisen jatkuva arviointi. Jatkuvalla arvioinnilla tarkoitetaan havainnoinnin ja pedagogisen dokumentoinnin avulla tarkennettavia tavoitteita ja toimenpiteitä. Näistä keskustellaan huoltajien kanssa päivittäisissä kohtaamisissa. Jatkuvan arvioinnin avulla lapsen vasu pysyy ajan tasalla."
+                        VasuLanguage.SV -> ""
+                    },
+                    value = emptyList(),
+                    continuesNumbering = true
                 )
             )
         ),
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Lapsen hyvinvoinnin tukemiseen liittyvät muut huomioitavat asiat"
-                VasuLanguage.SV -> "Andra frågor som ska beaktas i samband med stöd för barnets välbefinnande"
+                VasuLanguage.FI -> "Muut mahdolliset lapsen varhaiskasvatuksessa huomioitavat asiat"
+                VasuLanguage.SV -> ""
             },
             questions = listOf(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Esimerkiksi päiväuniin, ruokailuun tai ulkoiluun liittyvät asiat"
-                        VasuLanguage.SV -> "Frågor som rör bland annat vila, måltider eller utevistelse"
+                        VasuLanguage.FI -> "Muita huomioita"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI ->
+                            "Tähän osioon kirjataan muita huomioitavia asioita, kuten esimerkiksi lepoon, ruokailuun tai pukemiseen liittyvät asiat.\n" +
+                                "Keskustele tarvittaessa huoltajien ajatuksista tyttöjen ympärileikkauksesta, ks. erillinen ohje Tyttöjen sukuelinten silpomisen estäminen. Tähän kirjataan huoltajien ajatukset asiasta. Jos huoli herää, toimi em. ohjeistuksen mukaan."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
@@ -266,14 +377,18 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
         ),
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Muut asiakirjat ja suunnitelmat"
-                VasuLanguage.SV -> "Övriga handlingar och planer"
+                VasuLanguage.FI -> "Laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat "
+                VasuLanguage.SV -> ""
             },
             questions = listOf(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Varhaiskasvatussuunnitelman laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
-                        VasuLanguage.SV -> "Eventuella övriga handlingar och planer som använts vid uppgörande av barnets plan för småbarnspedagogik"
+                        VasuLanguage.FI -> "Muut asiakirjat ja suunnitelmat"
+                        VasuLanguage.SV -> ""
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Lapsen vasun laatimisessa voidaan hyödyntää muita mahdollisia suunnitelmia kuten esimerkiksi lapsen vasun liitteenä oleva lääkehoitosuunnitelma ja Hyve4-lomakkeet."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
@@ -283,13 +398,13 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
         VasuSection(
             name = when (lang) {
                 VasuLanguage.FI -> "Tiedonsaajatahot"
-                VasuLanguage.SV -> "Barnets plan för småbarnspedagogik delges till följande:"
+                VasuLanguage.SV -> "Barnets plan för småbarnspedagogik delges till följande"
             },
             questions = listOf(
                 VasuQuestion.MultiSelectQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla:"
-                        VasuLanguage.SV -> "Barnets plan överlämnas med vårdnadshavarnas tillstånd till:"
+                        VasuLanguage.FI -> "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla"
+                        VasuLanguage.SV -> "Barnets plan överlämnas med vårdnadshavarnas tillstånd till"
                     },
                     options = listOf(
                         QuestionOption(
@@ -338,22 +453,6 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
         ),
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Lisätietoja"
-                VasuLanguage.SV -> "Ytterligare information"
-            },
-            questions = listOf(
-                VasuQuestion.TextQuestion(
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Lisätietoja suunnitelmaan, sen laatimiseen tai keskusteluihin liittyen"
-                        VasuLanguage.SV -> "Ytterligare information om planen, dess uppgörandet eller samtalen"
-                    },
-                    multiline = true,
-                    value = ""
-                )
-            )
-        ),
-        VasuSection(
-            name = when (lang) {
                 VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelmakeskustelu"
                 VasuLanguage.SV -> "Samtal om barnets plan för småbarnspedagogik"
             },
@@ -371,7 +470,10 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> "Datum för samtalet om barnets plan för småbarnspedagogik"
                     },
                     trackedInEvents = true,
-                    nameInEvents = "Varhaiskasvatussuunnitelmakeskustelu",
+                    nameInEvents = when (lang) {
+                        VasuLanguage.FI -> "Varhaiskasvatussuunnitelmakeskustelu"
+                        VasuLanguage.SV -> ""
+                    },
                     value = null
                 ),
                 VasuQuestion.TextQuestion(
@@ -394,47 +496,18 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
         ),
         VasuSection(
             name = when (lang) {
-                VasuLanguage.FI -> "Toteutumisen arviointi"
-                VasuLanguage.SV -> "Utvärdering av genomförandet"
+                VasuLanguage.FI -> "Seuranta- ja arviointiajankohdat"
+                VasuLanguage.SV -> ""
             },
-            hideBeforeReady = true,
-            questions = listOfNotNull(
-                VasuQuestion.Paragraph(
-                    title = when (lang) {
-                        VasuLanguage.FI -> "Lapsen varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa"
+            questions = listOf(
+                VasuQuestion.TextQuestion(
+                    name = when (lang) {
+                        VasuLanguage.FI -> "Ajankohdat ja kuvaus"
                         VasuLanguage.SV -> ""
                     },
-                    paragraph = ""
-                ),
-                VasuQuestion.DateQuestion(
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Arviointikeskustelun päivämäärä"
-                        VasuLanguage.SV -> "Datum för utvärderingssamtalet"
-                    },
-                    trackedInEvents = true,
-                    nameInEvents = "Arviointikeskustelu",
-                    value = null
-                ),
-                VasuQuestion.TextQuestion(
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Arviointikeskusteluun osallistuneet huoltajat"
-                        VasuLanguage.SV -> "Vårdnadshavare som deltog i utvärderingssamtalet"
-                    },
-                    multiline = true,
-                    value = ""
-                ),
-                VasuQuestion.TextQuestion(
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
-                        VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
-                    },
-                    multiline = true,
-                    value = ""
-                ),
-                VasuQuestion.TextQuestion(
-                    name = when (lang) {
-                        VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutumisen arviointi"
-                        VasuLanguage.SV -> "Utvärdering av hur målen och åtgärderna har genomförts"
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kohtaan kirjataan huoltajan kanssa yhdessä sovittu jatkosuunnitelma ja milloin suunnitelmaa seuraavan kerran arvioidaan."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""

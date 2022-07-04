@@ -93,14 +93,15 @@ export const ThreadView = React.memo(function ThreadView({
       <div ref={endOfMessagesRef} />
       <ThreadViewReplyContainer>
         <ThreadViewReply>
-          <TextArea
-            value={replyContent}
-            onChange={onUpdateContent}
-            className="thread-view-input"
-            wrapperClassName="thread-view-input-wrapper"
-            placeholder={i18n.messages.inputPlaceholder}
-            data-qa="thread-reply-input"
-          />
+          <div className="thread-view-input-wrapper">
+            <TextArea
+              value={replyContent}
+              onChange={onUpdateContent}
+              className="thread-view-input"
+              placeholder={i18n.messages.inputPlaceholder}
+              data-qa="thread-reply-input"
+            />
+          </div>
           <RoundIconButton
             onClick={onSubmitReply}
             disabled={replyContent.length === 0}

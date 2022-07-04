@@ -24,7 +24,9 @@ import MultiFieldQuestionElem from '../components/MultiFieldQuestion'
 import { MultiSelectQuestion as MultiSelectQuestionElem } from '../components/MultiSelectQuestion'
 import ParagraphElem from '../components/Paragraph'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
+import StaticInfoSubsection from '../components/StaticInfoSubsection'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
+import { CitizenVasuMetadata } from '../use-vasu'
 import {
   getQuestionNumber,
   isCheckboxQuestion,
@@ -35,6 +37,7 @@ import {
   isMultiSelectQuestion,
   isParagraph,
   isRadioGroupQuestion,
+  isStaticInfoSubsection,
   isTextQuestion
 } from '../vasu-content'
 
@@ -43,13 +46,15 @@ interface Props {
   sectionIndex: number
   state: VasuDocumentState
   translations: VasuTranslations
+  vasu: CitizenVasuMetadata
 }
 
 export function CitizenDynamicSections({
   sections,
   sectionIndex: sectionOffset,
   state,
-  translations
+  translations,
+  vasu
 }: Props) {
   const content = sections.map((section, sectionIndex) => {
     if (section.hideBeforeReady && state === 'DRAFT') {
@@ -160,6 +165,13 @@ export function CitizenDynamicSections({
                     />
                   ) : isParagraph(question) ? (
                     <ParagraphElem question={question} />
+                  ) : isStaticInfoSubsection(question) ? (
+                    <StaticInfoSubsection
+                      type={vasu.type}
+                      basics={vasu.basics}
+                      templateRange={vasu.templateRange}
+                      translations={translations}
+                    />
                   ) : undefined}
                 </Fragment>
               )

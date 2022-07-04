@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import LocalDate from '../local-date'
 
@@ -14,7 +14,8 @@ export const vasuQuestionTypes = [
   'MULTI_FIELD',
   'MULTI_FIELD_LIST',
   'DATE',
-  'FOLLOWUP'
+  'FOLLOWUP',
+  'STATIC_INFO_SUBSECTION'
 ] as const
 
 export type VasuQuestionType = typeof vasuQuestionTypes[number] | 'PARAGRAPH'
@@ -64,6 +65,8 @@ export interface QuestionOption {
   name: string
   textAnswer?: boolean
   dateRange?: boolean
+  isIntervention?: boolean
+  info?: string
 }
 
 export interface TextValueMap {
@@ -74,6 +77,7 @@ export interface MultiFieldQuestion extends VasuQuestionCommon {
   type: 'MULTI_FIELD'
   keys: Field[]
   value: string[]
+  separateRows: boolean
 }
 
 export interface MultiFieldListQuestion extends VasuQuestionCommon {
@@ -103,6 +107,7 @@ export interface FollowupEntry {
   id?: string
   authorId?: string
   edited?: FollowupEntryEditDetails
+  createdDate?: HelsinkiDateTime
 }
 
 export interface FollowupEntryEditDetails {
@@ -117,6 +122,10 @@ export interface Paragraph extends VasuQuestionCommon {
   paragraph: string
 }
 
+export interface StaticInfoSubsection extends VasuQuestionCommon {
+  type: 'STATIC_INFO_SUBSECTION'
+}
+
 export type VasuQuestion =
   | TextQuestion
   | CheckboxQuestion
@@ -127,16 +136,9 @@ export type VasuQuestion =
   | DateQuestion
   | Followup
   | Paragraph
-
-export type PermittedFollowupActions = {
-  [key: string]: string[]
-}
-
-export interface GetVasuDocumentResponse {
-  permittedFollowupActions: PermittedFollowupActions
-  vasu: VasuDocument
-}
+  | StaticInfoSubsection
 
 interface Field {
   name: string
+  info?: string
 }

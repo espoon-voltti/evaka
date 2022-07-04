@@ -9,7 +9,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import colors from 'lib-customizations/common'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
-  DRAFT: colors.accents.a5orangeLight,
+  DRAFT: colors.accents.a7mint,
   READY: colors.accents.a4violet,
   REVIEWED: colors.main.m1,
   CLOSED: colors.grayscale.g15

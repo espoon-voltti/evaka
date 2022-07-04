@@ -29,7 +29,7 @@ export interface CitizenVasuStatus {
   savedAt?: Date
 }
 
-type CitizenVasuMetadata = Omit<
+export type CitizenVasuMetadata = Omit<
   VasuDocument,
   | 'content'
   | 'authorsContent'
@@ -50,7 +50,10 @@ interface CitizenVasu {
 export function useVasu(id: string): CitizenVasu {
   const [status, setStatus] = useState<CitizenVasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<CitizenVasuMetadata>()
-  const [content, setContent] = useState<VasuContent>({ sections: [] })
+  const [content, setContent] = useState<VasuContent>({
+    sections: [],
+    hasDynamicFirstSection: false
+  })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
   const [
     guardianHasGivenPermissionToShare,

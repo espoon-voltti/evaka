@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { GetVasuDocumentResponse } from 'lib-common/api-types/vasu'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   UpdateDocumentRequest,
@@ -79,17 +78,10 @@ export async function getVasuDocumentSummaries(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuDocument(
-  id: UUID
-): Promise<Result<GetVasuDocumentResponse>> {
+export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
   return client
-    .get<JsonOf<GetVasuDocumentResponse>>(`/vasu/${id}`)
-    .then((res) =>
-      Success.of({
-        vasu: mapVasuDocumentResponse(res.data.vasu),
-        permittedFollowupActions: res.data.permittedFollowupActions
-      })
-    )
+    .get<JsonOf<VasuDocument>>(`/vasu/${id}`)
+    .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -123,24 +115,4 @@ export async function updateDocumentState({
     .post(`/vasu/${documentId}/update-state`, { eventType })
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
-}
-
-export interface EditFollowupEntryParams {
-  documentId: UUID
-  entryId?: UUID
-  text: string
-}
-export async function editFollowupEntry({
-  documentId,
-  entryId,
-  text
-}: EditFollowupEntryParams): Promise<Result<null>> {
-  return entryId
-    ? client
-        .post(`/vasu/${documentId}/edit-followup/${entryId}`, {
-          text
-        })
-        .then(() => Success.of(null))
-        .catch((e) => Failure.fromError(e))
-    : Failure.of({ message: 'cannot edit without entry ID' })
 }

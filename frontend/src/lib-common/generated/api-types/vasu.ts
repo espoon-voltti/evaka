@@ -7,7 +7,6 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { Action } from '../action'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 
@@ -84,21 +83,6 @@ export type CurriculumType =
   | 'PRESCHOOL'
 
 /**
-* Generated from fi.espoo.evaka.vasu.VasuController.EditFollowupEntryRequest
-*/
-export interface EditFollowupEntryRequest {
-  text: string
-}
-
-/**
-* Generated from fi.espoo.evaka.vasu.VasuController.GetVasuDocumentResponse
-*/
-export interface GetVasuDocumentResponse {
-  permittedFollowupActions: Record<string, Action.VasuDocumentFollowup[]>
-  vasu: VasuDocument
-}
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {
@@ -130,6 +114,7 @@ export interface VasuChild {
 * Generated from fi.espoo.evaka.vasu.VasuContent
 */
 export interface VasuContent {
+  hasDynamicFirstSection: boolean | null
   sections: VasuSection[]
 }
 

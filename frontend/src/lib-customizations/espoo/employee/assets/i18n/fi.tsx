@@ -1157,7 +1157,8 @@ export const fi = {
       PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
     },
     noRecord: 'Ei merkintää',
-    checkInPreview: 'Tarkista esikatselussa'
+    checkInPreview: 'Tarkista esikatselussa',
+    newFollowUpEntryPlaceholder: 'Kirjoita uusi kirjaus...'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',
@@ -3323,7 +3324,8 @@ export const fi = {
       id: 'Viitetunniste',
       dependsOn: 'Riippuvuudet',
       continuesNumbering: 'Jatkaa numerointia',
-      checkboxLabel: 'Erillinen rastin viereinen teksti'
+      checkboxLabel: 'Erillinen rastin viereinen teksti',
+      multifieldSeparateRows: 'Tekstikentät erillisillä riveillä'
     },
     questionTypes: {
       TEXT: 'Tekstimuotoinen',
@@ -3333,7 +3335,8 @@ export const fi = {
       MULTI_FIELD: 'Nimettyjä tekstikenttiä',
       MULTI_FIELD_LIST: 'Kasvava lista nimettyjä tekstikenttiä',
       DATE: 'Päivämäärä',
-      FOLLOWUP: 'Seuranta'
+      FOLLOWUP: 'Seuranta',
+      STATIC_INFO_SUBSECTION: 'Perustiedot'
     },
     errorCodes: {
       EXPIRED_START: 'Päättyneen pohjan alkupäivää ei voi muuttaa',

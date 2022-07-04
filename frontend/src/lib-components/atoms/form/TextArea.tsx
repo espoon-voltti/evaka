@@ -55,8 +55,7 @@ export default React.memo(function TextArea({
   'aria-describedby': ariaId,
   hideErrorsBeforeTouched,
   required,
-  inputRef,
-  wrapperClassName = undefined
+  inputRef
 }: TextAreaInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -75,7 +74,7 @@ export default React.memo(function TextArea({
   )
 
   return (
-    <div className={wrapperClassName}>
+    <>
       <StyledTextArea
         value={value}
         onChange={handleChange}
@@ -107,7 +106,7 @@ export default React.memo(function TextArea({
           <UnderRowStatusIcon status={info?.status} />
         </InputFieldUnderRow>
       )}
-    </div>
+    </>
   )
 })
 

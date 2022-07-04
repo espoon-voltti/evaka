@@ -93,11 +93,8 @@ class VasuControllerCitizen(
             dbc.read { tx ->
                 val doc = tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
                 CitizenGetVasuDocumentResponse(
-                    vasu = doc,
-                    guardianHasGivenPermissionToShare = doc.basics.guardians.find {
-                            g ->
-                        g.id.raw == user.rawId()
-                    }?.let { it.hasGivenPermissionToShare } ?: false
+                    vasu = doc.redact(),
+                    guardianHasGivenPermissionToShare = doc.basics.guardians.find { it.id.raw == user.rawId() }?.hasGivenPermissionToShare ?: false
                 )
             }
         }

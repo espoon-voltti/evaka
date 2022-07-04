@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -480,24 +479,6 @@ AND curriculum_document.id = ANY(:ids)
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
-        }
-    )
-
-    fun inPlacementUnitOfChildOfVasuDocumentFollowupEntry() = DatabaseActionRule(
-        this,
-        object : DatabaseActionRule.Query<VasuDocumentFollowupEntryId, HasUnitRole> {
-            override fun execute(
-                tx: Database.Read,
-                user: AuthenticatedUser,
-                now: HelsinkiDateTime,
-                targets: Set<VasuDocumentFollowupEntryId>
-            ): Map<VasuDocumentFollowupEntryId, DatabaseActionRule.Deferred<HasUnitRole>> {
-                val vasuDocuments =
-                    inPlacementUnitOfChildOfVasuDocument().query.execute(tx, user, now, targets.map { it.first }.toSet())
-                return targets.mapNotNull { target -> vasuDocuments[target.first]?.let { target to it } }.toMap()
-            }
-            override fun equals(other: Any?): Boolean = other?.javaClass == javaClass
-            override fun hashCode(): Int = this.javaClass.hashCode()
         }
     )
 

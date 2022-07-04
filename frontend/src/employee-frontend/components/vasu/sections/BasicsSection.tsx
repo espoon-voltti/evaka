@@ -21,6 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
+import StaticInfoSubsection from '../components/StaticInfoSubsection'
 import { ValueOrNoRecord } from '../components/ValueOrNoRecord'
 
 interface Props {
@@ -52,34 +53,12 @@ export function BasicsSection({
 
       <Gap size="m" />
 
-      <Label>{t.name}</Label>
-      <div>
-        {basics.child.firstName} {basics.child.lastName}
-      </div>
-
-      <Gap size="s" />
-
-      <Label>{t.dateOfBirth}</Label>
-      <div>{basics.child.dateOfBirth.format()}</div>
-
-      <Gap size="s" />
-
-      <Label>{t.placements[type]}</Label>
-      {basics.placements?.map((p) => (
-        <div key={p.range.start.formatIso()}>
-          {p.unitName} ({p.groupName}) {p.range.start.format()} -{' '}
-          {p.range.end.isAfter(templateRange.end) ? '' : p.range.end.format()}
-        </div>
-      ))}
-
-      <Gap size="s" />
-
-      <Label>{t.guardians}</Label>
-      {basics.guardians.map((g) => (
-        <div key={g.id}>
-          {g.firstName} {g.lastName}
-        </div>
-      ))}
+      <StaticInfoSubsection
+        type={type}
+        basics={basics}
+        templateRange={templateRange}
+        translations={translations}
+      />
 
       {childLanguage && (
         <>

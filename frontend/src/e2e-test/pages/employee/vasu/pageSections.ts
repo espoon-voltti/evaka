@@ -4,7 +4,26 @@
 
 import { TextInput, Element } from '../../../utils/page'
 
-export class AuthorsSection extends Element {
+class SimpleTextAreaSection extends Element {
+  protected readonly textareas = this.findAll('[data-qa="text-question-input"]')
+  protected readonly values = this.findAll('[data-qa="value-or-no-record"]')
+}
+
+export class BasicInfoSection extends SimpleTextAreaSection {
+  readonly childName = this.findByDataQa('vasu-basic-info-child-name').innerText
+  readonly childDateOfBirth = this.findByDataQa('vasu-basic-info-child-dob')
+    .innerText
+  placement = (nth: number) =>
+    this.findAllByDataQa('vasu-basic-info-placement').nth(nth).innerText
+  guardian = (nth: number) =>
+    this.findAllByDataQa('vasu-basic-info-guardian').nth(nth).innerText
+  readonly additionalContactInfoInput = new TextInput(this.textareas.nth(0))
+  get additionalContactInfo() {
+    return this.values.nth(0).innerText
+  }
+}
+
+export class AuthoringSection extends SimpleTextAreaSection {
   readonly #primaryInputs = this.findAll(
     '[data-qa="multi-field-question"] input'
   )
@@ -27,6 +46,9 @@ export class AuthorsSection extends Element {
   otherPhoneNumberInput = (ix: number) =>
     new TextInput(this.otherFieldsInputs(ix).nth(3))
 
+  childPOVInput = new TextInput(this.textareas.nth(4))
+  guardianPOVInput = new TextInput(this.textareas.nth(5))
+
   readonly #primaryValue = this.findAll(
     '[data-qa="multi-field-question"] [data-qa="value-or-no-record"]'
   ).first()
@@ -46,64 +68,53 @@ export class AuthorsSection extends Element {
   get otherValues(): Promise<string> {
     return this.#otherFieldsValues.innerText
   }
+
+  get childPOV() {
+    return this.values.nth(2).innerText
+  }
+
+  get guardianPOV() {
+    return this.values.nth(3).innerText
+  }
 }
 
-class SimpleTextAreaSection extends Element {
-  protected readonly textareas = this.findAll('[data-qa="text-question-input"]')
-  protected readonly values = this.findAll('[data-qa="value-or-no-record"]')
+export class CooperationSection extends SimpleTextAreaSection {
+  collaboratorsInput = new TextInput(this.textareas.nth(0))
+  methodsOfCooperationInput = new TextInput(this.textareas.nth(1))
+
+  collaborators = this.values.nth(0).innerText
+  methodsOfCooperation = this.values.nth(1).innerText
 }
 
-export class ConsiderationsSection extends SimpleTextAreaSection {
-  childsViewInput = new TextInput(this.textareas.nth(0))
-  guardiansViewInput = new TextInput(this.textareas.nth(1))
+export class VasuGoalsSection extends SimpleTextAreaSection {
+  goalsRealizationInput = new TextInput(this.textareas.nth(0))
+  specialNeedsEstimationInput = new TextInput(this.textareas.nth(1))
+  otherObservationsInput = new TextInput(this.textareas.nth(2))
 
-  childsView = this.values.nth(0).innerText
-  guardiansView = this.values.nth(1).innerText
-}
-
-export class PreviousVasuGoalsSection extends SimpleTextAreaSection {
-  goalsRealizedInput = new TextInput(this.textareas.nth(0))
-  otherObservationsInput = new TextInput(this.textareas.nth(1))
-
-  goalsRealized = this.values.nth(0).innerText
-  otherObservations = this.values.nth(1).innerText
+  goalsRealization = this.values.nth(0).innerText
+  specialNeedsEstimation = this.values.nth(1).innerText
+  otherObservations = this.values.nth(2).innerText
 }
 
 export class GoalsSection extends SimpleTextAreaSection {
   childsStrengthsInput = new TextInput(this.textareas.nth(0))
-  goalsForTeachersInput = new TextInput(this.textareas.nth(1))
-  otherInput = new TextInput(this.textareas.nth(2))
+  languageViewsInput = new TextInput(this.textareas.nth(1))
+  pedagogicalSupportInput = new TextInput(this.textareas.nth(2))
+  structuralSupportInput = new TextInput(this.textareas.nth(3))
+  therapeuticSupportInput = new TextInput(this.textareas.nth(4))
+  staffGoalsInput = new TextInput(this.textareas.nth(5))
+  actionsInput = new TextInput(this.textareas.nth(6))
+  otherInput = new TextInput(this.textareas.nth(7))
 
   childsStrengths = this.values.nth(0).innerText
-  goalsForTeachers = this.values.nth(1).innerText
-  other = this.values.nth(2).innerText
-}
-
-export class SpecialSupportSection extends SimpleTextAreaSection {
-  specialSupportEnabledInput = this.find('[data-qa="checkbox-question"]')
-
-  get specialSupportEnabled() {
-    return this.values.nth(0).innerText
-  }
-
-  get optionalFields() {
-    return {
-      previousSpecialSupportInput: new TextInput(this.textareas.nth(0)),
-      currentSpecialSupportInput: new TextInput(this.textareas.nth(1)),
-      staffResponsibilitiesInput: new TextInput(this.textareas.nth(2)),
-      carerChildCooperationInput: new TextInput(this.textareas.nth(3))
-    }
-  }
-
-  get optionalFieldValues() {
-    return {
-      previousSpecialSupport: this.values.nth(1).innerText,
-      currentSpecialSupport: this.values.nth(2).innerText,
-      staffResponsibilities: this.values.nth(3).innerText,
-      carerChildCooperation: this.values.nth(4).innerText,
-      supportLevel: this.values.nth(5).innerText
-    }
-  }
+  languageViews = this.values.nth(1).innerText
+  pedagogicalSupport = this.values.nth(2).innerText
+  structuralSupport = this.values.nth(3).innerText
+  therapeuticSupport = this.values.nth(4).innerText
+  staffGoals = this.values.nth(5).innerText
+  actions = this.values.nth(6).innerText
+  supportLevel = this.values.nth(7).innerText
+  other = this.values.nth(8).innerText
 
   supportLevelOptions = (key: string) =>
     this.findByDataQa(`radio-group-date-question-option-${key}`)
@@ -117,9 +128,9 @@ export class SpecialSupportSection extends SimpleTextAreaSection {
     )
 }
 
-export class WellnessSupportSection extends SimpleTextAreaSection {
-  wellnessInput = new TextInput(this.textareas.nth(0))
-  wellness = this.values.nth(0).innerText
+export class OtherSection extends SimpleTextAreaSection {
+  otherInput = new TextInput(this.textareas.nth(0))
+  other = this.values.nth(0).innerText
 }
 
 export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
@@ -132,13 +143,8 @@ export class InfoSharedToSection extends Element {
     this.find(`[data-qa="multi-select-question-option-${key}"]`)
   otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
 
-  recipients = this.find(`[data-qa="value-or-no-record-9.1"]`)
+  recipients = this.find(`[data-qa="value-or-no-record-8.1"]`)
   other = this.find(`[data-qa="value-or-no-record"]`)
-}
-
-export class AdditionalInfoSection extends SimpleTextAreaSection {
-  infoInput = new TextInput(this.textareas.nth(0))
-  info = this.values.nth(0).innerText
 }
 
 export class DiscussionSection extends SimpleTextAreaSection {
@@ -152,13 +158,7 @@ export class DiscussionSection extends SimpleTextAreaSection {
 }
 
 export class EvaluationSection extends SimpleTextAreaSection {
-  dateInput = new TextInput(this.find('[data-qa="date-question-picker"]'))
-  participantsInput = new TextInput(this.textareas.nth(0))
-  collaborationWithGuardiansInput = new TextInput(this.textareas.nth(1))
-  evaluationOfGoalsInput = new TextInput(this.textareas.nth(2))
+  descriptionInput = new TextInput(this.textareas.nth(0))
 
-  date = this.values.nth(0).innerText
-  participants = this.values.nth(1).innerText
-  collaborationWithGuardians = this.values.nth(2).innerText
-  evaluationOfGoals = this.values.nth(3).innerText
+  description = this.values.nth(0).innerText
 }

@@ -10,9 +10,10 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
-import ButtonContainer from 'lib-components/layout/ButtonContainer'
-import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
-import StickyFooter from 'lib-components/layout/StickyFooter'
+import StickyFooter, {
+  StickyFooterContainer
+} from 'lib-components/layout/StickyFooter'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -25,13 +26,6 @@ import { DynamicSections } from './sections/DynamicSections'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
-
-const FooterContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: ${defaultMargins.s};
-`
 
 const StatusContainer = styled.div`
   display: flex;
@@ -50,83 +44,69 @@ export default React.memo(function VasuEditPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const {
-    vasu,
-    content,
-    setContent,
-    childLanguage,
-    setChildLanguage,
-    status,
-    translations,
-    editFollowupEntry,
-    permittedFollowupActions
-  } = useVasu(id)
+  const { vasu, content, setContent, status, translations } = useVasu(id)
 
   const showSpinner = status.state === 'saving'
 
-  const dynamicSectionsOffset = 1
+  const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
 
   return (
-    <VasuContainer
-      gapSize="s"
-      data-qa="vasu-container"
-      data-status={status.state}
-    >
-      {vasu && (
-        <>
-          <VasuHeader document={vasu} />
-          <BasicsSection
-            sectionIndex={0}
-            type={vasu.type}
-            basics={vasu.basics}
-            childLanguage={childLanguage}
-            setChildLanguage={setChildLanguage}
-            templateRange={vasu.templateRange}
-            translations={translations}
-          />
-          <DynamicSections
-            sectionIndex={dynamicSectionsOffset}
-            sections={content.sections}
-            setContent={setContent}
-            editFollowupEntry={(entry) =>
-              editFollowupEntry({
-                documentId: vasu.id,
-                entryId: entry.id,
-                text: entry.text
-              })
-            }
-            state={vasu.documentState}
-            permittedFollowupActions={permittedFollowupActions}
-            translations={translations}
-          />
-          <VasuEvents document={vasu} content={content} />
-        </>
-      )}
+    <>
+      <VasuContainer
+        gapSize="s"
+        data-qa="vasu-container"
+        data-status={status.state}
+      >
+        {vasu && (
+          <>
+            <VasuHeader document={vasu} />
+            {!content.hasDynamicFirstSection && (
+              <BasicsSection
+                sectionIndex={0}
+                type={vasu.type}
+                basics={vasu.basics}
+                childLanguage={vasu.basics.childLanguage}
+                templateRange={vasu.templateRange}
+                translations={translations}
+              />
+            )}
+            <DynamicSections
+              sectionIndex={dynamicSectionsOffset}
+              sections={content.sections}
+              setContent={setContent}
+              state={vasu.documentState}
+              translations={translations}
+              vasu={vasu}
+            />
+            <VasuEvents document={vasu} content={content} />
+          </>
+        )}
+      </VasuContainer>
       <StickyFooter>
-        <FooterContainer>
-          <StatusContainer>
-            <AutosaveStatusIndicator status={status} />
-            {showSpinner && <Spinner />}
-          </StatusContainer>
+        <StickyFooterContainer>
           {vasu && (
-            <FullWidthDiv>
-              <ButtonContainer>
-                <Button
-                  text={i18n.vasu.checkInPreview}
-                  disabled={status.state != 'clean'}
-                  onClick={() => navigate(`/vasu/${vasu.id}`)}
-                  data-qa="vasu-preview-btn"
-                  primary
-                />
+            <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
+              <FixedSpaceRow spacing="s">
                 <LeaveVasuPageButton
                   disabled={status.state != 'clean'}
                   childId={vasu.basics.child.id}
                 />
-              </ButtonContainer>
-            </FullWidthDiv>
+                <StatusContainer>
+                  <AutosaveStatusIndicator status={status} />
+                  {showSpinner && <Spinner />}
+                </StatusContainer>
+              </FixedSpaceRow>
+              <Button
+                text={i18n.vasu.checkInPreview}
+                disabled={status.state != 'clean'}
+                onClick={() => navigate(`/vasu/${vasu.id}`)}
+                data-qa="vasu-preview-btn"
+                primary
+              />
+            </FixedSpaceRow>
           )}
-        </FooterContainer>
+        </StickyFooterContainer>
       </StickyFooter>
-    </VasuContainer>
+    </>
   )
 })
