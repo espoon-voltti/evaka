@@ -31,13 +31,14 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let decisionMaker: EmployeeDetail
+let director: EmployeeDetail
 let decisions: AssistanceNeedDecision[]
 
 beforeAll(async () => {
   await resetDatabase()
 
   decisionMaker = (await Fixture.employeeAdmin().save()).data
-  const director = (await Fixture.employeeAdmin().save()).data
+  director = (await Fixture.employeeDirector().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
@@ -83,6 +84,16 @@ beforeAll(async () => {
           },
           sentForDecision: LocalDate.of(2020, 1, 1),
           selectedUnit: { id: unitId }
+        }),
+      Fixture.assistanceNeedDecision()
+        .withChild(childId)
+        .with({
+          decisionMaker: {
+            employeeId: decisionMaker.id,
+            title: 'regional director'
+          },
+          sentForDecision: LocalDate.of(2019, 9, 6),
+          selectedUnit: { id: unitId }
         })
     ].map(async (d) => (await d.save()).data)
   )
@@ -93,7 +104,6 @@ beforeAll(async () => {
 describe('Assistance need decisions report', () => {
   beforeEach(async () => {
     page = await Page.open()
-    await employeeLogin(page, decisionMaker)
   })
 
   const baseReportRow = {
@@ -105,6 +115,7 @@ describe('Assistance need decisions report', () => {
   }
 
   test('Lists correct decisions', async () => {
+    await employeeLogin(page, decisionMaker)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
     const report = new AssistanceNeedDecisionsReport(page)
 
@@ -123,9 +134,15 @@ describe('Assistance need decisions report', () => {
       sentForDecision: '01.01.2020',
       isUnopened: false // different decision-maker's decision
     })
+    expect(await report.row(3)).toMatchObject({
+      ...baseReportRow,
+      sentForDecision: '06.09.2019',
+      isUnopened: true
+    })
   })
 
   test('Removes unopened indicator from decision after opening decision', async () => {
+    await employeeLogin(page, decisionMaker)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
     expect(await new AssistanceNeedDecisionsReport(page).row(0)).toMatchObject({
       ...baseReportRow,
@@ -139,9 +156,9 @@ describe('Assistance need decisions report', () => {
       }`
     )
 
-    expect(
-      await new AssistanceNeedDecisionsReportDecision(page).decisionMaker
-    ).toBe(
+    const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
+    await waitUntilEqual(
+      decisionPage.decisionMaker,
       `${decisionMaker.firstName} ${decisionMaker.lastName}, regional director`
     )
 
@@ -155,6 +172,7 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Returns decision for editing', async () => {
+    await employeeLogin(page, decisionMaker)
     await page.goto(
       `${config.employeeUrl}/reports/assistance-need-decisions/${
         decisions[1].id ?? ''
@@ -167,5 +185,66 @@ describe('Assistance need decisions report', () => {
     await decisionPage.returnForEditModal.okBtn.click()
 
     await waitUntilEqual(decisionPage.decisionStatus, 'NEEDS_WORK')
+  })
+
+  test('Decision can be rejected', async () => {
+    await employeeLogin(page, decisionMaker)
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-need-decisions/${
+        decisions[0].id ?? ''
+      }`
+    )
+
+    const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
+
+    await decisionPage.rejectBtn.click()
+    await decisionPage.modalOkBtn.click()
+
+    await waitUntilEqual(decisionPage.decisionStatus, 'REJECTED')
+  })
+
+  test('Decision can be accepted', async () => {
+    await employeeLogin(page, decisionMaker)
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-need-decisions/${
+        decisions[1].id ?? ''
+      }`
+    )
+
+    const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
+
+    await decisionPage.approveBtn.click()
+    await decisionPage.modalOkBtn.click()
+
+    await waitUntilEqual(decisionPage.decisionStatus, 'ACCEPTED')
+  })
+
+  test('Decision-maker can be changed', async () => {
+    await employeeLogin(page, director)
+    await page.goto(
+      `${config.employeeUrl}/reports/assistance-need-decisions/${
+        decisions[3].id ?? ''
+      }`
+    )
+
+    const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
+
+    await waitUntilEqual(
+      decisionPage.decisionMaker,
+      `${decisionMaker.firstName} ${decisionMaker.lastName}, regional director`
+    )
+
+    expect(await decisionPage.approveBtn.getAttribute('disabled')).toBe('')
+
+    await decisionPage.mismatchModalLink.click()
+    await decisionPage.mismatchModal.titleInput.type('director')
+    await decisionPage.mismatchModal.okBtn.click()
+
+    await waitUntilEqual(
+      decisionPage.decisionMaker,
+      `${director.firstName} ${director.lastName}, director`
+    )
+
+    expect(await decisionPage.approveBtn.getAttribute('disabled')).toBe(null)
   })
 })

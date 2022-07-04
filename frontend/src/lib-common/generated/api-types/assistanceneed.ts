@@ -289,3 +289,10 @@ export interface UnitInfoBasics {
   id: UUID | null
   name: string | null
 }
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest
+*/
+export interface UpdateDecisionMakerForAssistanceNeedDecisionRequest {
+  title: string
+}

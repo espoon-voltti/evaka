@@ -130,6 +130,7 @@ export type AssistanceNeedDecision =
   | 'READ'
   | 'SEND'
   | 'UPDATE'
+  | 'UPDATE_DECISION_MAKER'
 
 export type BackupCare =
   | 'DELETE'
