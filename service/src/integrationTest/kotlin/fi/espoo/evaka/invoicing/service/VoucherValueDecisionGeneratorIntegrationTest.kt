@@ -7,6 +7,8 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.AssistanceNeedRequest
 import fi.espoo.evaka.assistanceneed.insertAssistanceNeed
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -336,7 +338,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
-    fun `voucher value decisions with assistance capacity factor`() {
+    fun `assistance capacity factor does not affect voucher value decisions`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
@@ -352,7 +354,32 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(period.end, decision.validTo)
             assertEquals(testChild_2.id, decision.child.id)
             assertEquals(87000, decision.baseValue)
-            assertEquals(BigDecimal("3.00"), decision.capacityFactor)
+            assertEquals(BigDecimal("1.00"), decision.assistanceNeedCoefficient)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
+            assertEquals(87000, decision.voucherValue)
+            assertEquals(28900, decision.coPayment)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions with assistance need voucher coefficient`() {
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertAssistanceNeedCoefficient(testChild_2.id, period.asFiniteDateRange()!!, 3.0)
+
+        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(1, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(BigDecimal("3.00"), decision.assistanceNeedCoefficient)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(snDefaultDaycare.toValueDecisionServiceNeed(), decision.serviceNeed)
             assertEquals(261000, decision.voucherValue)
@@ -508,6 +535,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, roles = setOf()),
                 childId,
                 AssistanceNeedRequest(period.start, period.end, capacityFactor)
+            )
+        }
+    }
+
+    private fun insertAssistanceNeedCoefficient(
+        childId: ChildId,
+        period: FiniteDateRange,
+        coefficient: Double
+    ) {
+        db.transaction { tx ->
+            tx.insertAssistanceNeedVoucherCoefficient(
+                childId,
+                AssistanceNeedVoucherCoefficientRequest(coefficient, period)
             )
         }
     }

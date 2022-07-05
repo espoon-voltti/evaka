@@ -8,6 +8,7 @@ import fi.espoo.evaka.assistanceneed.decision.filterPermittedAssistanceNeedDecis
 import fi.espoo.evaka.assistanceneed.decision.filterSentAssistanceNeedDecisions
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -78,6 +79,23 @@ AND evaka_user.type = 'EMPLOYEE'
         this,
         Query<AssistanceNeedDecisionId> { tx, _, _, ids ->
             tx.filterSentAssistanceNeedDecisions(ids)
+        }
+    )
+
+    fun andChildHasServiceVoucherPlacement() = DatabaseActionRule(
+        this,
+        Query<ChildId> { tx, _, _, ids ->
+            tx.createQuery(
+                """
+SELECT p.child_id
+FROM placement p
+JOIN daycare pd ON pd.id = p.unit_id
+WHERE p.child_id = ANY(:ids)
+  AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
         }
     )
 }

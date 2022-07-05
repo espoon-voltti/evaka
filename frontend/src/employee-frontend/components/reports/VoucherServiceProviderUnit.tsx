@@ -253,7 +253,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         : '',
                     serviceNeedDescription: r.serviceNeedDescription,
                     assistanceNeedCapacityFactor: formatDecimal(
-                      r.assistanceNeedCapacityFactor
+                      r.assistanceNeedCoefficient
                     ),
                     serviceVoucherValue: formatCents(
                       r.serviceVoucherValue,
@@ -318,12 +318,12 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
                     key: 'serviceNeedDescription'
                   },
-                  ...(sortedReport.value.assistanceNeedCapacityFactorEnabled
+                  ...(sortedReport.value.assistanceNeedCoefficientEnabled
                     ? [
                         {
                           label:
                             i18n.reports.voucherServiceProviderUnit
-                              .capacityFactor,
+                              .assistanceNeed,
                           key: 'assistanceNeedCapacityFactor' as const
                         }
                       ]
@@ -371,9 +371,9 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  {sortedReport.value.assistanceNeedCapacityFactorEnabled ? (
+                  {sortedReport.value.assistanceNeedCoefficientEnabled ? (
                     <StyledTh>
-                      {i18n.reports.voucherServiceProviderUnit.capacityFactor}
+                      {i18n.reports.voucherServiceProviderUnit.assistanceNeed}
                     </StyledTh>
                   ) : null}
                   <StyledTh>
@@ -458,11 +458,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         </Tooltip>
                       </Td>
                       <Td>{row.serviceNeedDescription}</Td>
-                      {sortedReport.value
-                        .assistanceNeedCapacityFactorEnabled && (
-                        <Td>
-                          {formatDecimal(row.assistanceNeedCapacityFactor)}
-                        </Td>
+                      {sortedReport.value.assistanceNeedCoefficientEnabled && (
+                        <Td>{formatDecimal(row.assistanceNeedCoefficient)}</Td>
                       )}
                       <Td data-qa="voucher-value">
                         {formatCents(row.serviceVoucherValue, true)}

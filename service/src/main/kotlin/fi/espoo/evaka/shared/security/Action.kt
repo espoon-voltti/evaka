@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
@@ -312,6 +313,12 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+    enum class AssistanceNeedVoucherCoefficient(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedVoucherCoefficientId>) : ScopedAction<AssistanceNeedVoucherCoefficientId> {
+        UPDATE(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement()),
+        DELETE(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
     enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) : ScopedAction<AttachmentId> {
         READ_APPLICATION_ATTACHMENT(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         READ_INCOME_STATEMENT_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN), IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
@@ -372,6 +379,9 @@ sealed interface Action {
 
         CREATE_ASSISTANCE_NEED_DECISION(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
         READ_ASSISTANCE_NEED_DECISIONS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
+
+        READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS(HasGlobalRole(SERVICE_WORKER).andChildHasServiceVoucherPlacement(), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildWithServiceVoucherPlacement()),
+        CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT(HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildWithServiceVoucherPlacement()),
 
         CREATE_ATTENDANCE_RESERVATION(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
 

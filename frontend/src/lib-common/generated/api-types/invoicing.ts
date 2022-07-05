@@ -728,9 +728,9 @@ export interface UnitData {
 export interface VoucherValueDecision {
   approvedAt: Date | null
   approvedById: UUID | null
+  assistanceNeedCoefficient: number
   baseCoPayment: number
   baseValue: number
-  capacityFactor: number
   child: ChildWithDateOfBirth
   childIncome: DecisionIncome | null
   coPayment: number
@@ -764,9 +764,9 @@ export interface VoucherValueDecision {
 export interface VoucherValueDecisionDetailed {
   approvedAt: Date | null
   approvedBy: EmployeeWithName | null
+  assistanceNeedCoefficient: number
   baseCoPayment: number
   baseValue: number
-  capacityFactor: number
   child: PersonDetailed
   childAge: number
   childIncome: DecisionIncome | null

@@ -33,6 +33,7 @@ export interface ChildState {
   backupCares: Result<ChildBackupCareResponse[]>
   setBackupCares: (request: Result<ChildBackupCareResponse[]>) => void
   guardians: Result<PersonJSON[]>
+  reloadPermittedActions: () => void
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -46,7 +47,8 @@ const defaultState: ChildState = {
   parentships: Loading.of(),
   backupCares: Loading.of(),
   setBackupCares: () => undefined,
-  guardians: Loading.of()
+  guardians: Loading.of(),
+  reloadPermittedActions: () => undefined
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -65,7 +67,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     Set<Action.Child | Action.Person>
   >(emptyPermittedActions)
 
-  const setFullChildResponse = useCallback(
+  const updatePermittedActions = useCallback(
     (response: Result<ChildResponse>) => {
       setPermittedActions(
         response
@@ -75,14 +77,25 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
           )
           .getOrElse(emptyPermittedActions)
       )
-      setChildResponse(response)
     },
     []
+  )
+
+  const setFullChildResponse = useCallback(
+    (response: Result<ChildResponse>) => {
+      updatePermittedActions(response)
+      setChildResponse(response)
+    },
+    [updatePermittedActions]
   )
   const loadChild = useRestApi(getChildDetails, setFullChildResponse)
   useEffect(() => {
     void loadChild(id)
   }, [loadChild, id])
+
+  const reloadPermittedActions = useCallback(() => {
+    void getChildDetails(id).then(updatePermittedActions)
+  }, [id, updatePermittedActions])
 
   const person = useMemo(
     () => childResponse.map((response) => response.person),
@@ -125,7 +138,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       setBackupCares,
-      guardians
+      guardians,
+      reloadPermittedActions
     }),
     [
       person,
@@ -135,7 +149,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       loadPlacements,
       parentships,
       backupCares,
-      guardians
+      guardians,
+      reloadPermittedActions
     ]
   )
 

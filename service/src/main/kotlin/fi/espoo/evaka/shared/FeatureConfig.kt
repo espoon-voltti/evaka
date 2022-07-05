@@ -5,12 +5,12 @@
 package fi.espoo.evaka.shared
 
 data class FeatureConfig(
-    /** Does capacity factor affect voucher value decisions?
+    /** Do assistance need voucher coefficients affect voucher value decisions?
      *
-     * If true, voucher value decision's value is multiplied by child's capacity factor.
+     * If true, voucher value decision's value is multiplied by the currently active assistance need voucher coefficient.
      * If false, value is not multiplied.
      */
-    val valueDecisionCapacityFactorEnabled: Boolean,
+    val valueDecisionAssistanceNeedCoefficientEnabled: Boolean,
 
     /** Whether to show service needs on application form */
     val daycareApplicationServiceNeedOptionsEnabled: Boolean,

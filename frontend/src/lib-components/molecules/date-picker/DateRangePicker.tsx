@@ -23,6 +23,7 @@ interface DateRangePickerProps {
   }
   startInfo?: InputInfo
   endInfo?: InputInfo
+  'data-qa'?: string
 }
 
 export default React.memo(function DateRangePicker({
@@ -30,6 +31,7 @@ export default React.memo(function DateRangePicker({
   end,
   onChange,
   errorTexts,
+  'data-qa': dataQa,
   ...datePickerProps
 }: DateRangePickerProps & Omit<DatePickerProps, 'date' | 'onChange'>) {
   const [internalStart, setInternalStart] = useState(start)
@@ -90,7 +92,7 @@ export default React.memo(function DateRangePicker({
   )
 
   return (
-    <FixedSpaceRow>
+    <FixedSpaceRow data-qa={dataQa}>
       <DatePicker
         date={internalStart}
         onChange={(date) => setInternalStart(date)}

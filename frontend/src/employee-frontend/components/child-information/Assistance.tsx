@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { UUID } from 'lib-common/types'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
@@ -15,6 +16,7 @@ import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 
 import AssistanceNeedDecisionSection from './AssistanceNeedDecisionSection'
+import AssistanceNeedVoucherCoefficientSection from './AssistanceNeedVoucherCoefficientSection'
 
 export interface Props {
   id: UUID
@@ -40,15 +42,24 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         {permittedActions.has('READ_ASSISTANCE_NEED') && (
           <AssistanceNeed id={id} />
         )}
-        <div className="separator large" />
         {permittedActions.has('READ_ASSISTANCE_ACTION') && (
-          <AssistanceAction id={id} />
+          <>
+            <HorizontalLine dashed slim />
+            <AssistanceAction id={id} />
+          </>
         )}
         {featureFlags.experimental?.assistanceNeedDecisions &&
           permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
             <>
-              <div className="separator large" />
+              <HorizontalLine dashed slim />
               <AssistanceNeedDecisionSection id={id} />
+            </>
+          )}
+        {featureFlags.experimental?.assistanceNeedVoucherCoefficients &&
+          permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
+            <>
+              <HorizontalLine dashed slim />
+              <AssistanceNeedVoucherCoefficientSection id={id} />
             </>
           )}
       </CollapsibleContentArea>

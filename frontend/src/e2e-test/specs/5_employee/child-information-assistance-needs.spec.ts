@@ -28,6 +28,7 @@ import { EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
   AssistanceNeedSection
 } from '../../pages/employee/child-information'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -36,6 +37,7 @@ let childInformationPage: ChildInformationPage
 let assistanceNeeds: AssistanceNeedSection
 let childId: UUID
 let unitId: UUID
+let voucherUnitId: UUID
 let admin: EmployeeDetail
 
 beforeEach(async () => {
@@ -46,17 +48,21 @@ beforeEach(async () => {
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   unitId = fixtures.daycareFixture.id
+  voucherUnitId = fixtures.daycareFixturePrivateVoucher.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   page = await Page.open()
   admin = (await Fixture.employeeAdmin().save()).data
 })
 
-const setupPlacement = async (childPlacementType: PlacementType) => {
+const setupPlacement = async (
+  childPlacementType: PlacementType,
+  voucher = false
+) => {
   await insertDaycarePlacementFixtures([
     createDaycarePlacementFixture(
       uuidv4(),
       childId,
-      unitId,
+      voucher ? voucherUnitId : unitId,
       LocalDate.todayInSystemTz().formatIso(),
       LocalDate.todayInSystemTz().formatIso(),
       childPlacementType
@@ -262,5 +268,200 @@ describe('Child assistance need decisions for employees', () => {
     const rejectedDecision = await assistanceNeeds.assistanceNeedDecisions(1)
     expect(rejectedDecision.status).toEqual('REJECTED')
     expect(rejectedDecision.actionCount).toEqual(0)
+  })
+})
+
+describe('Child assistance need voucher coefficients for employees', () => {
+  async function createVoucherCoefficient() {
+    await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
+    const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
+      assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
+    )
+    await form.coefficientInput.type('4,3')
+    await form.validityPeriod.startInput.clear()
+    await form.validityPeriod.startInput.type('04.02.2021')
+    await form.validityPeriod.endInput.clear()
+    await form.validityPeriod.endInput.type('01.09.2021')
+    await form.saveBtn.click()
+  }
+
+  test('assistance need voucher coefficient can be added', async () => {
+    await setupPlacement('DAYCARE', true)
+    await logUserIn(
+      (
+        await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
+      ).data
+    )
+    await createVoucherCoefficient()
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
+      {
+        coefficient: 'Palvelusetelikerroin 4,3',
+        validityPeriod: '04.02.2021 – 01.09.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+  })
+
+  test('new assistance need voucher coefficient cuts off previous one', async () => {
+    await setupPlacement('DAYCARE', true)
+    await logUserIn(
+      (
+        await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
+      ).data
+    )
+    await createVoucherCoefficient()
+    await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
+    const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
+      assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
+    )
+    await form.coefficientInput.type('1,2')
+    await form.validityPeriod.startInput.clear()
+    await form.validityPeriod.startInput.type('16.06.2021')
+    await form.validityPeriod.endInput.clear()
+    await form.validityPeriod.endInput.type('05.10.2021')
+    await form.saveBtn.click()
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
+      {
+        coefficient: 'Palvelusetelikerroin 1,2',
+        validityPeriod: '16.06.2021 – 05.10.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(1),
+      {
+        coefficient: 'Palvelusetelikerroin 4,3',
+        validityPeriod: '04.02.2021 – 15.06.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+  })
+
+  test('assistance need voucher coefficient can be edited', async () => {
+    await setupPlacement('DAYCARE', true)
+    await logUserIn(
+      (
+        await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
+      ).data
+    )
+    await createVoucherCoefficient()
+
+    await assistanceNeeds
+      .assistanceNeedVoucherCoefficientActions(0)
+      .editBtn.click()
+    const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
+      assistanceNeeds.editAssistanceNeedVoucherCoefficientForm
+    )
+    await form.coefficientInput.clear()
+    await form.coefficientInput.type('9,8')
+    await form.validityPeriod.startInput.clear()
+    await form.validityPeriod.startInput.type('10.02.2021')
+    await form.validityPeriod.endInput.clear()
+    await form.validityPeriod.endInput.type('21.11.2021')
+    await form.saveBtn.click()
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
+      {
+        coefficient: 'Palvelusetelikerroin 9,8',
+        validityPeriod: '10.02.2021 – 21.11.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+  })
+
+  test('assistance need voucher coefficient editing cuts off other coefficient', async () => {
+    await setupPlacement('DAYCARE', true)
+    await logUserIn(
+      (
+        await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
+      ).data
+    )
+    await createVoucherCoefficient()
+
+    await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
+    const creationForm = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
+      assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
+    )
+    await creationForm.coefficientInput.type('1,9')
+    await creationForm.validityPeriod.startInput.clear()
+    await creationForm.validityPeriod.startInput.type('29.11.2021')
+    await creationForm.validityPeriod.endInput.clear()
+    await creationForm.validityPeriod.endInput.type('30.12.2021')
+    await creationForm.saveBtn.click()
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
+      {
+        coefficient: 'Palvelusetelikerroin 1,9',
+        validityPeriod: '29.11.2021 – 30.12.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+
+    await assistanceNeeds
+      .assistanceNeedVoucherCoefficientActions(0)
+      .editBtn.click()
+    const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
+      assistanceNeeds.editAssistanceNeedVoucherCoefficientForm
+    )
+    await form.coefficientInput.clear()
+    await form.coefficientInput.type('9,8')
+    await form.validityPeriod.startInput.clear()
+    await form.validityPeriod.startInput.type('20.08.2021')
+    await form.validityPeriod.endInput.clear()
+    await form.validityPeriod.endInput.type('24.11.2021')
+    await form.saveBtn.click()
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
+      {
+        coefficient: 'Palvelusetelikerroin 9,8',
+        validityPeriod: '20.08.2021 – 24.11.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+
+    await waitUntilEqual(
+      async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(1),
+      {
+        coefficient: 'Palvelusetelikerroin 4,3',
+        validityPeriod: '04.02.2021 – 19.08.2021',
+        status: 'ENDED',
+        actionCount: 2
+      }
+    )
+  })
+
+  test('assistance need voucher coefficient can be deleted', async () => {
+    await setupPlacement('DAYCARE', true)
+    await logUserIn(
+      (
+        await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
+      ).data
+    )
+    await createVoucherCoefficient()
+
+    await assistanceNeeds
+      .assistanceNeedVoucherCoefficientActions(0)
+      .deleteBtn.click()
+
+    await assistanceNeeds.modalOkBtn.click()
+
+    await waitUntilEqual(
+      assistanceNeeds.assistanceNeedVoucherCoefficientCount,
+      0
+    )
   })
 })

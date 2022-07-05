@@ -21,7 +21,7 @@ export default React.memo(function VoucherValueDecisionValueSection({
   decision: {
     childAge,
     baseValue,
-    capacityFactor,
+    assistanceNeedCoefficient,
     placement,
     serviceNeed,
     voucherValue
@@ -36,10 +36,10 @@ export default React.memo(function VoucherValueDecisionValueSection({
   ].toLowerCase()} ${serviceNeed.voucherValueDescriptionFi} (${
     serviceNeed.voucherValueCoefficient * 100
   } %)${
-    capacityFactor !== 1
-      ? `, ${i18n.valueDecision.summary.capacityFactor} ${formatDecimal(
-          capacityFactor
-        )}`
+    assistanceNeedCoefficient !== 1
+      ? `, ${
+          i18n.valueDecision.summary.assistanceNeedCoefficient
+        } ${formatDecimal(assistanceNeedCoefficient)}`
       : ''
   }`
 

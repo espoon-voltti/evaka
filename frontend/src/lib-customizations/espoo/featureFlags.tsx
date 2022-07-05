@@ -35,6 +35,7 @@ const features: Features = {
       voucherUnitPayments: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
+      assistanceNeedVoucherCoefficients: true,
       staffAttendanceTypes: true
     }
   },
@@ -59,6 +60,7 @@ const features: Features = {
       citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
+      assistanceNeedVoucherCoefficients: true,
       staffAttendanceTypes: true
     }
   },
@@ -83,6 +85,7 @@ const features: Features = {
       citizenVasu: false,
       assistanceNeedDecisions: false,
       assistanceNeedDecisionsLanguageSelect: false,
+      assistanceNeedVoucherCoefficients: false,
       staffAttendanceTypes: false
     }
   }

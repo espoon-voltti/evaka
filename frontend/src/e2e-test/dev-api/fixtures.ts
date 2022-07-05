@@ -881,7 +881,7 @@ export const voucherValueDecisionsFixture = (
   feeAlterations: [],
   finalCoPayment: 28900,
   baseValue: 87000,
-  capacityFactor: 1.0,
+  assistanceNeedCoefficient: 1.0,
   voucherValue: 87000,
   sentAt,
   approvedAt: null,

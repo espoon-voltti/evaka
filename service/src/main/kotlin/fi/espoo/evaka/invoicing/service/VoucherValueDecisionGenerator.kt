@@ -5,8 +5,8 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import fi.espoo.evaka.assistanceneed.AssistanceNeedCapacityFactor
-import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.getAssistanceNeedVoucherCoefficientsForChild
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
@@ -64,8 +64,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val capacityFactors =
-        if (featureConfig.valueDecisionCapacityFactorEnabled) getCapacityFactorsByChild(child.id) else listOf()
+    val assistanceNeedCoefficients =
+        if (featureConfig.valueDecisionAssistanceNeedCoefficientEnabled) getAssistanceNeedVoucherCoefficientsForChild(child.id) else listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
@@ -80,7 +80,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             prices,
             voucherValues,
             incomes,
-            capacityFactors,
+            assistanceNeedCoefficients,
             feeAlterations,
             serviceVoucherUnits
         )
@@ -113,13 +113,13 @@ private fun generateNewValueDecisions(
     prices: List<FeeThresholds>,
     voucherValues: Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValue>>,
     incomes: List<Income>,
-    capacityFactors: List<AssistanceNeedCapacityFactor>,
+    assistanceNeedCoefficients: List<AssistanceNeedVoucherCoefficient>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = families.map { it.period } +
         incomes.map { DateRange(it.validFrom, it.validTo) } +
-        capacityFactors.map { it.dateRange } +
+        assistanceNeedCoefficients.map { it.validityPeriod.asDateRange() } +
         prices.map { it.validDuring } +
         voucherValues.flatMap { it.value.map { voucherValues -> voucherValues.validity } } +
         allPlacements.flatMap { (child, placements) ->
@@ -162,8 +162,8 @@ private fun generateNewValueDecisions(
                     ?.toDecisionIncome()
             }
 
-            val capacityFactor =
-                capacityFactors.find { it.dateRange.contains(period) }?.capacityFactor
+            val assistanceNeedCoefficient =
+                assistanceNeedCoefficients.find { it.validityPeriod.contains(period) }?.coefficient
                     ?: BigDecimal("1.00")
 
             val validPlacements = (family.children + family.fridgeSiblings)
@@ -259,8 +259,8 @@ private fun generateNewValueDecisions(
                     ),
                     finalCoPayment = finalCoPayment,
                     baseValue = voucherValue.baseValue,
-                    capacityFactor = capacityFactor,
-                    voucherValue = (BigDecimal(voucherValue.value) * capacityFactor).toInt()
+                    assistanceNeedCoefficient = assistanceNeedCoefficient,
+                    voucherValue = (BigDecimal(voucherValue.value) * assistanceNeedCoefficient).toInt()
                 )
             }
         }

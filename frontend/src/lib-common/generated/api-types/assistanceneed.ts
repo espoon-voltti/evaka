@@ -235,6 +235,32 @@ export interface AssistanceNeedResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
+*/
+export interface AssistanceNeedVoucherCoefficient {
+  childId: UUID
+  coefficient: number
+  id: UUID
+  validityPeriod: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+*/
+export interface AssistanceNeedVoucherCoefficientRequest {
+  coefficient: number
+  validityPeriod: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientResponse
+*/
+export interface AssistanceNeedVoucherCoefficientResponse {
+  permittedActions: Action.AssistanceNeedVoucherCoefficient[]
+  voucherCoefficient: AssistanceNeedVoucherCoefficient
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest
 */
 export interface DecideAssistanceNeedDecisionRequest {
