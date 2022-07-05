@@ -387,7 +387,7 @@ WITH backup_care_placements AS (
 
     UNION
 
-    SELECT p.id, p.unit_id, p.child_id, null
+    SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM fridge_child fg
     JOIN backup_care p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
     WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
