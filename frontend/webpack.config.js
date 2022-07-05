@@ -90,6 +90,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
       new SentryWebpackPlugin({
+        release: process.env.APP_COMMIT,
         project: `evaka-${name}`,
         include: path.resolve(__dirname, `dist/bundle/${name}`),
         urlPrefix: `~${publicPath}`,
