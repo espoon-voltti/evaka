@@ -195,6 +195,7 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.sha }}
             ICONS=pro
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
