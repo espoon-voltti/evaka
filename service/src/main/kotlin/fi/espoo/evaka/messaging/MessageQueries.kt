@@ -462,7 +462,7 @@ personal_accounts AS (
 ),
 group_accounts AS (
     SELECT acc.id, g.name, 'GROUP' AS type
-    FROM relevant_placements p
+    FROM placements p
     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND :today BETWEEN dgp.start_date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
