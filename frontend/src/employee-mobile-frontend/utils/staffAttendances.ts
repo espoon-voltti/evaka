@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 export interface AttendanceValues {
@@ -38,4 +40,40 @@ export function staffAttendanceForGroupOrUnit(
           updated: null
         }
   }
+}
+
+export function getAttendanceArrivalDifferenceReasons(
+  plannedStart: HelsinkiDateTime,
+  arrival: HelsinkiDateTime
+): StaffAttendanceType[] {
+  const arrivedBeforeMinThreshold = arrival.isBefore(
+    plannedStart.subMinutes(15)
+  )
+  const arrivedAfterMaxThreshold = arrival.isAfter(plannedStart.addMinutes(15))
+
+  if (arrivedBeforeMinThreshold) {
+    return ['OVERTIME', 'JUSTIFIED_CHANGE']
+  }
+  if (arrivedAfterMaxThreshold) {
+    return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
+  }
+  return []
+}
+
+export function getAttendanceDepartureDifferenceReasons(
+  plannedEnd: HelsinkiDateTime,
+  departure: HelsinkiDateTime
+): StaffAttendanceType[] {
+  const departedBeforeMinThreshold = departure.isBefore(
+    plannedEnd.subMinutes(15)
+  )
+  const depratedAfterMaxThreshold = departure.isAfter(plannedEnd.addMinutes(15))
+
+  if (departedBeforeMinThreshold) {
+    return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
+  }
+  if (depratedAfterMaxThreshold) {
+    return ['OVERTIME', 'JUSTIFIED_CHANGE']
+  }
+  return []
 }

@@ -53,21 +53,17 @@ export default React.memo(function StaffMemberPage() {
               <FixedSpaceColumn>
                 {featureFlags.experimental?.staffAttendanceTypes ? (
                   <>
-                    {staffMember.plannedAttendances.length > 0 && (
+                    {staffMember.spanningPlan && (
                       <TimeInfo>
                         <span>
                           {i18n.attendances.staff.plannedAttendance}{' '}
-                          {orderBy(
-                            staffMember.plannedAttendances,
-                            ({ start }) => start.formatIso()
-                          )
-                            .map(
-                              ({ start, end }) =>
-                                `${start.toLocalTime().format('HH:mm')}–${end
-                                  .toLocalTime()
-                                  .format('HH:mm')}`
-                            )
-                            .join(', ')}
+                          {staffMember.spanningPlan.start
+                            .toLocalTime()
+                            .format('HH:mm')}
+                          –
+                          {staffMember.spanningPlan.end
+                            .toLocalTime()
+                            .format('HH:mm')}
                         </span>
                       </TimeInfo>
                     )}

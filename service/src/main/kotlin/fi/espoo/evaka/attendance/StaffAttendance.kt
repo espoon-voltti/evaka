@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -25,6 +26,11 @@ enum class StaffAttendanceType : DatabaseEnum {
     ;
 
     override val sqlType: String = "staff_attendance_type"
+
+    fun presentInGroup() = when (this) {
+        OTHER_WORK, TRAINING -> false
+        else -> true
+    }
 }
 
 data class CurrentDayStaffAttendanceResponse(
@@ -52,7 +58,12 @@ data class StaffMember(
     val plannedAttendances: List<PlannedStaffAttendance>
 ) {
     val present: GroupId?
-        get() = latestCurrentDayAttendance?.takeIf { it.departed == null }?.groupId
+        get() = latestCurrentDayAttendance?.takeIf { it.departed == null && it.type.presentInGroup() }?.groupId
+
+    val spanningPlan: HelsinkiDateTimeRange?
+        get() =
+            if (plannedAttendances.isEmpty()) null
+            else HelsinkiDateTimeRange(plannedAttendances.minOf { it.start }, plannedAttendances.maxOf { it.end })
 }
 
 data class StaffMemberAttendance(

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
@@ -62,6 +63,14 @@ export interface EmployeeFeatures {
   unitFeatures: boolean
   units: boolean
   vasuTemplates: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+*/
+export interface HelsinkiDateTimeRange {
+  end: HelsinkiDateTime
+  start: HelsinkiDateTime
 }
 
 /**

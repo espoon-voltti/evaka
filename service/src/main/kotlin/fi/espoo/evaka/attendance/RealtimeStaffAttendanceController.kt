@@ -126,7 +126,8 @@ class RealtimeStaffAttendanceController(
                         it.groupId,
                         it.arrived,
                         it.departed,
-                        occupancyCoefficients[it.employeeId]
+                        occupancyCoefficients[it.employeeId],
+                        StaffAttendanceType.PRESENT
                     )
                 }
 

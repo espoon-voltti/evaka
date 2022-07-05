@@ -247,7 +247,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
 
           <FixedSpaceColumn spacing="s">
             <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-            <ChipWrapper noMargin>
+            <ChipWrapper margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <ChoiceChip
@@ -268,7 +268,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="s">
             <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-            <ChipWrapper noMargin>
+            <ChipWrapper margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
                   <ChoiceChip

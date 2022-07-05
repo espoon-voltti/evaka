@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isValid, parseJSON, set } from 'date-fns'
+import {
+  addHours,
+  addMinutes,
+  addSeconds,
+  isValid,
+  parseJSON,
+  set
+} from 'date-fns'
 import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 
 import LocalDate from './local-date'
@@ -109,6 +116,28 @@ export default class HelsinkiDateTime {
       this.second,
       millisToNanos(this.millisecond)
     )
+  }
+  addHours(hours: number): HelsinkiDateTime {
+    return HelsinkiDateTime.fromSystemTzDate(addHours(this.timestamp, hours))
+  }
+  addMinutes(minutes: number): HelsinkiDateTime {
+    return HelsinkiDateTime.fromSystemTzDate(
+      addMinutes(this.timestamp, minutes)
+    )
+  }
+  addSeconds(seconds: number): HelsinkiDateTime {
+    return HelsinkiDateTime.fromSystemTzDate(
+      addSeconds(this.timestamp, seconds)
+    )
+  }
+  subHours(hours: number): HelsinkiDateTime {
+    return this.addHours(-1 * hours)
+  }
+  subMinutes(minutes: number): HelsinkiDateTime {
+    return this.addMinutes(-1 * minutes)
+  }
+  subSeconds(seconds: number): HelsinkiDateTime {
+    return this.addSeconds(-1 * seconds)
   }
 
   static fromLocal(date: LocalDate, time: LocalTime): HelsinkiDateTime {

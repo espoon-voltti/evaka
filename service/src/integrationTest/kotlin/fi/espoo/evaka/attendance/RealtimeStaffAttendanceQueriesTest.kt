@@ -149,9 +149,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             employee1Fixture
                 .addStaffAttendancePlan()
-                .startTime(arrival)
-                .endTime(plannedDeparture)
-                .type(StaffAttendanceType.PRESENT)
+                .withTime(arrival, plannedDeparture)
                 .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
@@ -173,9 +171,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             employee1Fixture
                 .addStaffAttendancePlan()
-                .startTime(arrival)
-                .endTime(plannedDeparture)
-                .type(StaffAttendanceType.PRESENT)
+                .withTime(arrival, plannedDeparture)
                 .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
@@ -197,9 +193,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
             employee1Fixture
                 .addStaffAttendancePlan()
-                .startTime(arrival)
-                .endTime(plannedDeparture)
-                .type(StaffAttendanceType.PRESENT)
+                .withTime(arrival, plannedDeparture)
                 .save()
 
             tx.addMissingStaffAttendanceDepartures(now)

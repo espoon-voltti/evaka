@@ -14,6 +14,7 @@ import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimes } from '../../api-types/child/common'
 import { GroupNote } from './note'
+import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
@@ -264,6 +265,7 @@ export interface StaffArrivalRequest {
   groupId: UUID
   pinCode: string
   time: LocalTime
+  type: StaffAttendanceType | null
 }
 
 /**
@@ -288,8 +290,11 @@ export type StaffAttendanceType =
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
+  employeeId: UUID
+  groupId: UUID
   pinCode: string
   time: LocalTime
+  type: StaffAttendanceType | null
 }
 
 /**
@@ -304,6 +309,7 @@ export interface StaffMember {
   latestCurrentDayAttendance: StaffMemberAttendance | null
   plannedAttendances: PlannedStaffAttendance[]
   present: UUID | null
+  spanningPlan: HelsinkiDateTimeRange | null
 }
 
 /**

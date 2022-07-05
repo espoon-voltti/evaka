@@ -3,12 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter, parse } from 'date-fns'
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { getAttendanceArrivalDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine, Success } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -33,6 +43,8 @@ import { Actions, CustomTitle } from '../attendances/components'
 import { TimeWrapper } from '../attendances/components'
 import TopBar from '../common/TopBar'
 import { TallContentArea } from '../mobile/components'
+
+import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 
 export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
@@ -67,6 +79,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     groupId !== 'all' ? groupId : undefined
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
+  const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const groupOptions = useMemo(
     () =>
@@ -108,6 +121,46 @@ export default React.memo(function StaffMarkArrivedPage() {
     [i18n.common.back, staffMember]
   )
 
+  const staffAttendanceDifferenceReasons: StaffAttendanceType[] = useMemo(
+    () =>
+      staffMember
+        .map((staff) => {
+          const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+          if (!parsedTime || !staff?.spanningPlan) return []
+          const arrived = HelsinkiDateTime.fromLocal(
+            LocalDate.todayInHelsinkiTz(),
+            parsedTime
+          )
+          return getAttendanceArrivalDifferenceReasons(
+            staff.spanningPlan.start,
+            arrived
+          )
+        })
+        .getOrElse([]),
+    [staffMember, time]
+  )
+
+  const confirm = useCallback(() => {
+    if (!attendanceGroup) return undefined
+
+    return postStaffArrival({
+      employeeId,
+      groupId: attendanceGroup,
+      time: LocalTime.parse(time, 'HH:mm'),
+      pinCode: pinCode.join(''),
+      type: attendanceType ?? null
+    }).then((res) => {
+      if (res.isFailure) {
+        setErrorCode(res.errorCode)
+        if (res.errorCode === 'WRONG_PIN') {
+          setPinCode(EMPTY_PIN)
+          pinInputRef.current?.focus()
+        }
+      }
+      return res
+    })
+  }, [attendanceGroup, attendanceType, employeeId, pinCode, time])
+
   return (
     <TallContentArea
       opaque={false}
@@ -138,6 +191,16 @@ export default React.memo(function StaffMarkArrivedPage() {
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
             const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+            const confirmDisabled =
+              pinLocked ||
+              !pinSet ||
+              !isValidTime(time) ||
+              timeInFuture ||
+              pinCode.join('').trim().length < 4 ||
+              !attendanceGroup ||
+              (staffAttendanceDifferenceReasons.length > 1 &&
+                (!attendanceType ||
+                  !staffAttendanceDifferenceReasons.includes(attendanceType)))
 
             return (
               <>
@@ -174,6 +237,14 @@ export default React.memo(function StaffMarkArrivedPage() {
                         : undefined
                     }
                   />
+                  {staffAttendanceDifferenceReasons.length > 0 && (
+                    <StaffAttendanceTypeSelection
+                      i18n={i18n}
+                      types={staffAttendanceDifferenceReasons}
+                      selectedType={attendanceType}
+                      setSelectedType={setAttendanceType}
+                    />
+                  )}
                   {renderResult(groupOptions, (groupOptions) =>
                     groupOptions.length > 1 ? (
                       <>
@@ -207,33 +278,8 @@ export default React.memo(function StaffMarkArrivedPage() {
                     <AsyncButton
                       primary
                       text={i18n.common.confirm}
-                      disabled={
-                        pinLocked ||
-                        !pinSet ||
-                        !isValidTime(time) ||
-                        timeInFuture ||
-                        pinCode.join('').trim().length < 4 ||
-                        !attendanceGroup
-                      }
-                      onClick={() =>
-                        attendanceGroup
-                          ? postStaffArrival({
-                              employeeId,
-                              groupId: attendanceGroup,
-                              time: LocalTime.parse(time, 'HH:mm'),
-                              pinCode: pinCode.join('')
-                            }).then((res) => {
-                              if (res.isFailure) {
-                                setErrorCode(res.errorCode)
-                                if (res.errorCode === 'WRONG_PIN') {
-                                  setPinCode(EMPTY_PIN)
-                                  pinInputRef.current?.focus()
-                                }
-                              }
-                              return res
-                            })
-                          : undefined
-                      }
+                      disabled={confirmDisabled}
+                      onClick={confirm}
                       onSuccess={() => {
                         reloadStaffAttendance()
                         history.go(-1)
