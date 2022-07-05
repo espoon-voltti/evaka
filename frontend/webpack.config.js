@@ -90,13 +90,15 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
       new SentryWebpackPlugin({
+        org: process.env.SENTRY_ORG || undefined,
         release: process.env.APP_COMMIT,
         project: `evaka-${name}`,
         include: path.resolve(__dirname, `dist/bundle/${name}`),
         urlPrefix: `~${publicPath}`,
         setCommits: {
           repo: 'espoon-voltti/evaka',
-          auto: true
+          commit: process.env.APP_COMMIT,
+          auto: false
         }
       })
     )
