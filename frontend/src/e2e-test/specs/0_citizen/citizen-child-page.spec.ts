@@ -36,11 +36,13 @@ let header: CitizenHeader
 let childPage: CitizenChildPage
 let childrenPage: CitizenChildrenPage
 
+const mockedDate = LocalDate.of(2022, 3, 1)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   childPage = new CitizenChildPage(page)
@@ -67,7 +69,7 @@ describe('Citizen children page', () => {
     endDate: LocalDate,
     unitId = fixtures.daycareFixture.id,
     type: PlacementType = 'DAYCARE',
-    startDate: LocalDate = LocalDate.todayInSystemTz().subMonths(2)
+    startDate: LocalDate = mockedDate.subMonths(2)
   ) {
     await insertDaycarePlacementFixtures([
       {
@@ -95,7 +97,7 @@ describe('Citizen children page', () => {
       )
 
     test('Simple daycare placement can be terminated', async () => {
-      const endDate = LocalDate.todayInSystemTz().addYears(2)
+      const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
       await header.selectTab('children')
@@ -107,18 +109,18 @@ describe('Citizen children page', () => {
       await childPage.togglePlacement(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
       )
-      await childPage.fillTerminationDate(LocalDate.todayInSystemTz())
+      await childPage.fillTerminationDate(mockedDate)
       await childPage.submitTermination()
       await childPage.assertTerminatablePlacementCount(0)
 
       await childPage.assertTerminatedPlacementCount(1)
       await assertTerminatedPlacements(
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.todayInSystemTz().format()}`
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
       )
     })
 
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
-      const endDate = LocalDate.todayInSystemTz().addYears(2)
+      const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
@@ -132,7 +134,7 @@ describe('Citizen children page', () => {
     })
 
     test('Daycare placement cannot be terminated if placement is in the future', async () => {
-      const startDate = LocalDate.todayInSystemTz().addDays(1)
+      const startDate = mockedDate.addDays(1)
       const endDate = startDate
       await createDaycarePlacement(
         endDate,
@@ -152,7 +154,7 @@ describe('Citizen children page', () => {
     })
 
     test('Upcoming transfer application is deleted when placement is terminated', async () => {
-      const endDate = LocalDate.todayInSystemTz().addYears(2)
+      const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
       const application = applicationFixture(
@@ -164,7 +166,7 @@ describe('Citizen children page', () => {
         [fixtures.daycareFixture.id],
         true,
         'SENT',
-        LocalDate.todayInSystemTz(),
+        mockedDate,
         true
       )
       await insertApplications([application])
@@ -179,7 +181,7 @@ describe('Citizen children page', () => {
       await childPage.openTerminationCollapsible()
       const placementLabel = `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
       await childPage.togglePlacement(placementLabel)
-      await childPage.fillTerminationDate(LocalDate.todayInSystemTz())
+      await childPage.fillTerminationDate(mockedDate)
       await childPage.submitTermination()
       await childPage.assertTerminatablePlacementCount(0)
 
@@ -195,9 +197,10 @@ describe('Citizen children page', () => {
       It does test valuable things though, so this should be converted as several
       tests that test just one ongoing (set of) placement(s) at a time
     * */
-    test.skip('Daycare placements are grouped by type and unit, and invoiced daycare can be terminated separately', async () => {
-      const daycare1Start = LocalDate.todayInSystemTz().subMonths(2)
-      const daycare1End = LocalDate.todayInSystemTz().addMonths(3)
+    test('Daycare placements are grouped by type and unit, and invoiced daycare can be terminated separately', async () => {
+      const mockedDate = LocalDate.of(2022, 3, 1)
+      const daycare1Start = mockedDate.subMonths(2)
+      const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
       const daycare2end = daycare1End.addMonths(2)
       const preschool1Start = daycare2end.addDays(1)
@@ -265,7 +268,7 @@ describe('Citizen children page', () => {
       await assertTerminatablePlacements(Object.values(labels))
 
       await childPage.togglePlacement(labels.daycare1)
-      const daycare1FirstTermination = LocalDate.todayInSystemTz().addWeeks(1)
+      const daycare1FirstTermination = mockedDate.addWeeks(1)
       await childPage.fillTerminationDate(daycare1FirstTermination, 0)
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(4) // still 4 because not fully terminated
@@ -283,7 +286,7 @@ describe('Citizen children page', () => {
       await childPage.submitTermination(0)
       await childPage.assertTerminatablePlacementCount(3)
       await assertTerminatedPlacements(
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.todayInSystemTz().format()}`
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
       )
       await assertTerminatablePlacements(Object.values(labels).slice(1))
 
@@ -314,7 +317,7 @@ describe('Citizen children page', () => {
       await childPage.submitTermination(1)
 
       await assertTerminatedPlacements([
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.todayInSystemTz().format()}`,
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`,
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
           .subMonths(1)
           .format()}`
@@ -322,18 +325,18 @@ describe('Citizen children page', () => {
 
       // terminating preschool terminates daycare after preschool
       await childPage.togglePlacement(labels.preschool)
-      await childPage.fillTerminationDate(LocalDate.todayInSystemTz(), 1)
+      await childPage.fillTerminationDate(mockedDate, 1)
       await childPage.submitTermination(1)
 
       await assertTerminatablePlacements([labels.daycare2])
       await assertTerminatedPlacements([
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${LocalDate.todayInSystemTz().format()}`
+        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
         // preschool was in future and is cancelled -> deleted from db -> no sign of termination
       ])
     })
 
     test('Terminating paid daycare only is possible', async () => {
-      const endDate = LocalDate.todayInSystemTz().addYears(2)
+      const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(
         endDate,
         fixtures.preschoolFixture.id,
@@ -352,7 +355,7 @@ describe('Citizen children page', () => {
       await childPage.togglePlacement(
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${endDate.format()}`
       )
-      const terminationDate = LocalDate.todayInSystemTz().addMonths(1)
+      const terminationDate = mockedDate.addMonths(1)
       await childPage.fillTerminationDate(terminationDate)
       await childPage.submitTermination()
       await assertTerminatablePlacements([
