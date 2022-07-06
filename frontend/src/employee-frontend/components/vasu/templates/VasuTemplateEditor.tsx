@@ -322,7 +322,7 @@ export default React.memo(function VasuTemplateEditor() {
         <Checkbox
           checked={question.value}
           label={
-            question.label
+            question.label || question.notNumbered
               ? question.name
               : `${questionNumber}. ${question.name}`
           }
@@ -382,7 +382,21 @@ export default React.memo(function VasuTemplateEditor() {
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         {question.options.map((opt) => (
-          <Checkbox checked={false} label={opt.name} key={opt.key} />
+          <>
+            <FixedSpaceRow>
+              <Checkbox checked={false} label={opt.name} key={opt.key} />
+              {opt.date && (
+                <DatePicker
+                  date={null}
+                  errorTexts={i18n.validationErrors}
+                  locale="fi"
+                  onChange={() => void 0}
+                  hideErrorsBeforeTouched
+                />
+              )}
+            </FixedSpaceRow>
+            {!!opt.subText && <P noMargin>{opt.subText}</P>}
+          </>
         ))}
       </FixedSpaceColumn>
     )

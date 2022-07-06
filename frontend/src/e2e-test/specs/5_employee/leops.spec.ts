@@ -109,6 +109,6 @@ describe('Child Information - Leops documents section', () => {
     await vasuEditPage.previewBtn.click()
     const vasuPreviewPage = new VasuPreviewPage(page)
 
-    await vasuPreviewPage.assertMultiSelectContains('9.1', 'test text')
+    await vasuPreviewPage.assertMultiSelectContains('10.1', 'test text')
   })
 })

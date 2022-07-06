@@ -194,7 +194,7 @@ export function DynamicSections({
                       }
                       onChange={
                         setContent
-                          ? (option, value) =>
+                          ? (option, value, date) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
@@ -220,6 +220,19 @@ export function DynamicSections({
                                     : (question.textValue = {
                                         [option.key]: value
                                       })
+                                }
+                                if (date !== undefined) {
+                                  if (question1.dateValue) {
+                                    if (date) {
+                                      question1.dateValue[option.key] = date
+                                    } else {
+                                      delete question1.dateValue[option.key]
+                                    }
+                                  } else if (date) {
+                                    question1.dateValue = {
+                                      [option.key]: date
+                                    }
+                                  }
                                 }
                                 return clone
                               })

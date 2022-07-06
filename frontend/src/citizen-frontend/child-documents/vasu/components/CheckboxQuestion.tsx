@@ -18,9 +18,10 @@ type Props = QuestionProps<CheckboxQuestion> & {
 
 export function CheckboxQuestion(props: Props) {
   const i18n = useTranslation()
-  const checkboxLabel = props.question.label
-    ? props.question.name
-    : `${props.questionNumber} ${props.question.name}`
+  const checkboxLabel =
+    props.question.label || props.question.notNumbered
+      ? props.question.name
+      : `${props.questionNumber} ${props.question.name}`
   const numberedLabel =
     props.question.label && `${props.questionNumber} ${props.question.label}`
 
