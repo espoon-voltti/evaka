@@ -47,7 +47,7 @@ private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacem
         PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
     }
 
-fun mapToTerminatablePlacements(placements: List<ChildPlacement>): List<TerminatablePlacementGroup> = placements
+fun mapToTerminatablePlacements(placements: List<ChildPlacement>, today: LocalDate): List<TerminatablePlacementGroup> = placements
     .groupBy { it.unitName }
     .entries
     .fold(listOf<TerminatablePlacementGroup>()) { acc, (_, childPlacements) ->
@@ -86,15 +86,16 @@ fun mapToTerminatablePlacements(placements: List<ChildPlacement>): List<Terminat
         }
         acc + placementsByType.map { (type, placements) ->
             val (placementsOfSameType, additional) = placements.partition { toTerminatablePlacementType(it.type) == type }
+            val startDate = placementsOfSameType.minOf { placement -> placement.startDate }
             TerminatablePlacementGroup(
                 type = type,
                 placements = placementsOfSameType,
                 additionalPlacements = additional,
-                startDate = placementsOfSameType.minOf { placement -> placement.startDate },
+                startDate = startDate,
                 endDate = placementsOfSameType.maxOf { placement -> placement.endDate },
                 unitId = placementsOfSameType[0].unitId,
                 unitName = placementsOfSameType[0].unitName,
-                terminatable = placementsOfSameType[0].terminatable
+                terminatable = placementsOfSameType[0].terminatable && startDate.isBefore(today.plusDays(1))
             )
         }
     }

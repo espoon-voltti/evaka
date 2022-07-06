@@ -56,7 +56,8 @@ class PlacementControllerCitizen(
                             evakaClock.today(),
                             childId
                         )
-                    }
+                    },
+                    evakaClock.today()
                 )
             )
         }
@@ -88,7 +89,7 @@ class PlacementControllerCitizen(
                 .also { placements ->
                     accessControl.requirePermissionFor(user, Action.Citizen.Placement.TERMINATE, placements.map { it.id })
                 }
-                .let { mapToTerminatablePlacements(it) }
+                .let { mapToTerminatablePlacements(it, clock.today()) }
                 .find { it.unitId == body.unitId && it.type == body.type }
                 ?: throw NotFound("Matching placement type not found")
 
