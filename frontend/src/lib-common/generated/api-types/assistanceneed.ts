@@ -204,6 +204,7 @@ export interface AssistanceNeedDecisionRequest {
 */
 export interface AssistanceNeedDecisionResponse {
   decision: AssistanceNeedDecision
+  hasMissingFields: boolean
   permittedActions: Action.AssistanceNeedDecision[]
 }
 

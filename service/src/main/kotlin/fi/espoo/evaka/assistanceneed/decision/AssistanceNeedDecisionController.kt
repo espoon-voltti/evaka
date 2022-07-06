@@ -76,9 +76,12 @@ class AssistanceNeedDecisionController(
         accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
                 AssistanceNeedDecisionResponse(
-                    decision = tx.getAssistanceNeedDecisionById(id),
-                    permittedActions = accessControl.getPermittedActions(tx, user, id)
+                    decision,
+                    permittedActions = accessControl.getPermittedActions(tx, user, id),
+                    hasMissingFields = hasMissingFields(decision)
                 )
             }
         }
@@ -130,6 +133,10 @@ class AssistanceNeedDecisionController(
                     (decision.status != AssistanceNeedDecisionStatus.DRAFT || decision.sentForDecision != null)
                 ) {
                     throw Forbidden("Only non-sent draft or workable decisions can be sent", "UNSENDABLE_DECISION")
+                }
+
+                if (hasMissingFields(decision)) {
+                    throw BadRequest("Decision has missing fields", "MISSING_FIELDS")
                 }
 
                 tx.updateAssistanceNeedDecision(
@@ -268,6 +275,10 @@ class AssistanceNeedDecisionController(
         }
     }
 
+    private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
+        return decision.selectedUnit == null
+    }
+
     data class AssistanceNeedDecisionBasicsResponse(
         val decision: AssistanceNeedDecisionBasics,
         val permittedActions: Set<Action.AssistanceNeedDecision>
@@ -275,7 +286,8 @@ class AssistanceNeedDecisionController(
 
     data class AssistanceNeedDecisionResponse(
         val decision: AssistanceNeedDecision,
-        val permittedActions: Set<Action.AssistanceNeedDecision>
+        val permittedActions: Set<Action.AssistanceNeedDecision>,
+        val hasMissingFields: Boolean
     )
 
     data class DecideAssistanceNeedDecisionRequest(

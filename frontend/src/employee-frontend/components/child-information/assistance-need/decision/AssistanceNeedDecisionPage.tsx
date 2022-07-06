@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -45,6 +45,17 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       ...i18n
     }
   } = useTranslation()
+
+  useEffect(() => {
+    if (assistanceNeedDecision.getOrElse(undefined)?.hasMissingFields) {
+      navigate(
+        `/child-information/${childId}/assistance-need-decision/${id}/edit`,
+        {
+          replace: true
+        }
+      )
+    }
+  }, [assistanceNeedDecision, childId, id, navigate])
 
   const canBeEdited = assistanceNeedDecision
     .map(

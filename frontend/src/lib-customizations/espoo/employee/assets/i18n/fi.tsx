@@ -700,6 +700,11 @@ export const fi = {
         description:
           'Haluatko varmasti poistaa päätöspohjan? Kaikki päätöspohjaan täydennetyt tiedot menetetään.'
       },
+      validation: {
+        title: 'Päätösesityksen tarkistus',
+        description:
+          'Ole hyvä ja tarkista seuraavat tiedot päätösesityksestä ennen esikatselua:'
+      },
       genericPlaceholder: 'Kirjoita',
       formLanguage: 'Lomakkeen kieli',
       neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',

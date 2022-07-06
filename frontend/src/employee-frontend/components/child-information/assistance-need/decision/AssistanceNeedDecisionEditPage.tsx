@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
+import { Failure } from 'lib-common/api'
 import {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionLanguage
@@ -26,16 +27,25 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import Select, { SelectOption } from 'lib-components/molecules/Select'
-import { H1, H2, Label } from 'lib-components/typography'
+import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { getPerson } from '../../../../api/person'
 
-import AssistanceNeededDecisionForm from './AssistanceNeededDecisionForm'
+import AssistanceNeededDecisionForm, {
+  FieldInfos
+} from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
 import { FooterContainer, DecisionInfoHeader } from './common'
+
+const requiredFormFields = ['selectedUnit'] as const
+
+const HorizontalLineWithoutBottomMargin = styled(HorizontalLine)`
+  margin-bottom: 0;
+`
 
 export default React.memo(function AssistanceNeedDecisionEditPage() {
   const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
@@ -92,6 +102,26 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
     }
   }, [formState, childId, id, navigate])
 
+  const missingFields = useMemo(
+    () => requiredFormFields.filter((key) => !formState?.[key]),
+    [formState]
+  )
+
+  const [showFormErrors, setShowFormErrors] = useState(false)
+
+  const fieldInfos = useMemo<FieldInfos>(
+    () =>
+      (showFormErrors
+        ? Object.fromEntries(
+            missingFields.map((field) => [
+              field,
+              { text: i18n.validationErrors.required, status: 'warning' }
+            ])
+          )
+        : {}) as FieldInfos,
+    [missingFields, showFormErrors, i18n]
+  )
+
   return (
     <>
       <Content>
@@ -129,6 +159,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                   child={child}
                   formState={formState}
                   setFormState={setFormState}
+                  fieldInfos={fieldInfos}
                 />
               </I18nContext.Provider>
             </>
@@ -137,6 +168,35 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       </Content>
       <Gap size="m" />
       <StickyFooter>
+        {showFormErrors && missingFields.length > 0 && (
+          <>
+            <H2>
+              {i18n.childInformation.assistanceNeedDecision.validation.title}
+            </H2>
+            <AlertBox
+              message={
+                <>
+                  <P noMargin>
+                    {
+                      i18n.childInformation.assistanceNeedDecision.validation
+                        .description
+                    }
+                  </P>
+                  <ul>
+                    {missingFields.map((field) => (
+                      <li key={field}>
+                        {field in i18n.childInformation.assistanceNeedDecision
+                          ? i18n.childInformation.assistanceNeedDecision[field]
+                          : field}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              }
+            />
+            <HorizontalLineWithoutBottomMargin slim />
+          </>
+        )}
         <FooterContainer>
           <AsyncButton
             primary
@@ -151,7 +211,19 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
           <AsyncButton
             primary
             text={i18n.childInformation.assistanceNeedDecision.preview}
-            onClick={forceSave}
+            onClick={() => {
+              if (missingFields.length === 0) {
+                return forceSave()
+              }
+
+              setShowFormErrors(true)
+
+              return Promise.resolve(
+                Failure.of({
+                  message: 'Invalid form'
+                })
+              )
+            }}
             onSuccess={() =>
               navigate(
                 `/child-information/${childId}/assistance-need-decision/${id}`
@@ -173,13 +245,15 @@ const FlexGap = styled.div`
 const DecisionContents = React.memo(function DecisionContents({
   child,
   formState,
-  setFormState
+  setFormState,
+  fieldInfos
 }: {
   child: PersonJSON
   formState?: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
     React.SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
+  fieldInfos: FieldInfos
 }) {
   const { i18n } = useTranslation()
 
@@ -207,6 +281,7 @@ const DecisionContents = React.memo(function DecisionContents({
         <AssistanceNeededDecisionForm
           formState={formState}
           setFormState={setFormState}
+          fieldInfos={fieldInfos}
         />
       )}
     </>

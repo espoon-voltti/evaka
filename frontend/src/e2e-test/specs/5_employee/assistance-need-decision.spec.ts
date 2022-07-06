@@ -119,6 +119,7 @@ describe('Assistance Need Decisions - Edit page', () => {
 
   test('Clicking the preview button opens the decision in preview mode', async () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
+    await assistanceNeedDecisionEditPage.selectUnit(daycareFixture.name)
     await assistanceNeedDecisionEditPage.clickPreviewButton()
 
     await page.page.waitForURL(

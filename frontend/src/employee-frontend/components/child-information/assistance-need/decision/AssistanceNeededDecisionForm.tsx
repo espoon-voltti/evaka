@@ -20,7 +20,7 @@ import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField from 'lib-components/atoms/form/InputField'
+import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
@@ -159,16 +159,23 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
   )
 })
 
+export type FieldInfos = Record<
+  keyof AssistanceNeedDecisionForm,
+  InputInfo | undefined
+>
+
 type AssistanceNeedDecisionFormProps = {
   formState: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
     SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
+  fieldInfos: FieldInfos
 }
 
 export default React.memo(function AssistanceNeedDecisionForm({
   formState,
-  setFormState
+  setFormState,
+  fieldInfos
 }: AssistanceNeedDecisionFormProps) {
   const [units] = useApiState(() => getUnits([], 'ALL'), [])
   const [employees] = useApiState(() => getEmployees(), [])
@@ -207,6 +214,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           onChange={(val) => setFieldVal({ pedagogicalMotivation: val })}
           placeholder={t.genericPlaceholder}
           data-qa="pedagogical-motivation-field"
+          info={fieldInfos.pedagogicalMotivation}
         />
       </FieldWithInfo>
 
@@ -292,6 +300,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             setFieldVal({ structuralMotivationDescription: val })
           }
           placeholder={t.structuralMotivationPlaceholder}
+          info={fieldInfos.structuralMotivationDescription}
         />
       </FieldWithInfo>
 
@@ -304,6 +313,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           value={formState.careMotivation ?? ''}
           onChange={(val) => setFieldVal({ careMotivation: val })}
           placeholder={t.genericPlaceholder}
+          info={fieldInfos.careMotivation}
         />
       </FieldWithInfo>
 
@@ -372,6 +382,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           value={formState.servicesMotivation ?? ''}
           onChange={(val) => setFieldVal({ servicesMotivation: val })}
           placeholder={t.servicesPlaceholder}
+          info={fieldInfos.servicesMotivation}
         />
       </FieldWithInfo>
 
@@ -386,6 +397,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
             setFieldVal({ guardiansHeardOn: date })
           }}
           errorTexts={i18n.validationErrors}
+          hideErrorsBeforeTouched
+          info={fieldInfos.guardiansHeardOn}
         />
       </FixedSpaceColumn>
 
@@ -430,6 +443,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           value={formState.viewOfGuardians ?? ''}
           onChange={(val) => setFieldVal({ viewOfGuardians: val })}
           placeholder={t.genericPlaceholder}
+          info={fieldInfos.viewOfGuardians}
         />
       </FieldWithInfo>
 
@@ -482,6 +496,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
             setFieldVal({ startDate: date })
           }}
           errorTexts={i18n.validationErrors}
+          hideErrorsBeforeTouched
+          info={fieldInfos.startDate}
         />
       </FieldWithInfo>
 
@@ -497,6 +513,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
             onChange={(unit) =>
               setFieldVal({ selectedUnit: unit && { id: unit.id } })
             }
+            info={fieldInfos.selectedUnit}
+            data-qa="unit-select"
           />
         ))}
         <Gap size="s" />
@@ -509,6 +527,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
           value={formState.motivationForDecision ?? ''}
           onChange={(val) => setFieldVal({ motivationForDecision: val })}
           placeholder={t.genericPlaceholder}
+          info={fieldInfos.motivationForDecision}
         />
       </FixedSpaceColumn>
 
