@@ -179,7 +179,7 @@ function AsyncButton<T>({
   const showIcon = buttonState.state !== 'idle'
 
   const container = useSpring<{ x: number }>({
-    x: !hideSuccess && showIcon ? 1 : 0
+    x: (!hideSuccess || !isSuccess) && showIcon ? 1 : 0
   })
   const spinner = useSpring<{ opacity: number }>({
     opacity: isInProgress ? 1 : 0

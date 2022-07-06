@@ -4,7 +4,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { ApiFunction, Result } from 'lib-common/api'
+import { ApiFunction, Failure, Result, Success } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -127,10 +127,38 @@ export function useAutosave<T, F extends ApiFunction>({
     [debouncedSave, status.state]
   )
 
+  const [waitingForceSaves, setWaitingForceSaves] = useState<
+    ((result: Result<void>) => void)[]
+  >([])
+
+  useEffect(() => {
+    if (
+      waitingForceSaves.length > 0 &&
+      (status.state === 'clean' || status.state === 'save-error')
+    ) {
+      waitingForceSaves.forEach((fn) =>
+        fn(
+          status.state === 'clean'
+            ? Success.of()
+            : Failure.of({
+                message: 'Save error'
+              })
+        )
+      )
+      setWaitingForceSaves([])
+    }
+  }, [status.state, waitingForceSaves])
+
   return {
     status,
     setStatus,
     setDirty,
-    forceSave: saveNow
+    forceSave() {
+      const promise = new Promise<Result<void>>((resolve) => {
+        setWaitingForceSaves((s) => [...s, resolve])
+      })
+      void saveNow()
+      return promise
+    }
   }
 }
