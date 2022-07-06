@@ -18,12 +18,13 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
+  daycare2Fixture,
   daycareGroupFixture,
   enduserChildFixtureKaarina,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { CareArea, EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
@@ -36,10 +37,14 @@ let citizenPage: Page
 let childId: UUID
 let unitSupervisor: EmployeeDetail
 let fixtures: AreaAndPersonFixtures
+let careArea: CareArea
+let backupDaycareId: UUID
+let backupGroupFixtureId: UUID
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+  careArea = fixtures.careAreaFixture
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   unitSupervisor = (
@@ -61,6 +66,25 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
+
+  await Fixture.daycare()
+    .with(daycare2Fixture)
+    .with({
+      careAreaId: careArea.id
+    })
+    .save()
+
+  backupDaycareId = daycare2Fixture.id
+  backupGroupFixtureId = uuidv4()
+  await insertDaycareGroupFixtures([
+    {
+      id: backupGroupFixtureId,
+      daycareId: backupDaycareId,
+      name: 'Varayksikön ryhmä',
+      startDate: '2000-01-01'
+    }
+  ])
+
   await upsertMessageAccounts()
   await insertGuardianFixtures([
     {
@@ -165,6 +189,36 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
+      })
+
+      test('Citizen sends a message to backup care child', async () => {
+        await insertBackupCareFixtures([
+          {
+            id: uuidv4(),
+            childId,
+            unitId: backupDaycareId,
+            groupId: backupGroupFixtureId,
+            period: {
+              start: LocalDate.todayInSystemTz().formatIso(),
+              end: LocalDate.todayInSystemTz().formatIso()
+            }
+          }
+        ])
+
+        await insertGuardianFixtures([
+          {
+            childId,
+            guardianId: fixtures.enduserGuardianFixture.id
+          }
+        ])
+
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(
+          'Test message',
+          'Test message content',
+          ['Varayksikön ryhmä (Henkilökunta)']
+        )
       })
 
       test('Unit supervisor sends an urgent message and citizen replies', async () => {
