@@ -191,14 +191,7 @@ describe('Citizen children page', () => {
       )
     })
 
-    /*
-      TODO
-      This test is now broken because placements in the future cannot be terminated.
-      It does test valuable things though, so this should be converted as several
-      tests that test just one ongoing (set of) placement(s) at a time
-    * */
     test('Daycare placements are grouped by type and unit, and invoiced daycare can be terminated separately', async () => {
-      const mockedDate = LocalDate.of(2022, 3, 1)
       const daycare1Start = mockedDate.subMonths(2)
       const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
@@ -264,15 +257,56 @@ describe('Citizen children page', () => {
       await childPage.openTerminationCollapsible()
 
       await childPage.assertTerminatedPlacementCount(0)
-      await childPage.assertTerminatablePlacementCount(4)
-      await assertTerminatablePlacements(Object.values(labels))
+      await childPage.assertTerminatablePlacementCount(1)
+      await childPage.assertNonTerminatablePlacementCount(2)
+      await assertTerminatablePlacements([labels.daycare1])
+      await assertNonTerminatablePlacements([
+        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
+        `Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`
+      ])
+    })
 
+    test('Daycare placements are grouped by type and unit, future placement cannot be terminated', async () => {
+      const daycare1Start = mockedDate.subMonths(2)
+      const daycare1End = mockedDate.addMonths(3)
+      const daycare2start = daycare1End.addDays(1)
+      const daycare2end = daycare1End.addMonths(2)
+      const placements: DaycarePlacement[] = [
+        {
+          id: uuidv4(),
+          type: 'DAYCARE',
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.daycareFixture.id,
+          startDate: daycare1Start.formatIso(),
+          endDate: daycare1End.formatIso()
+        },
+        {
+          id: uuidv4(),
+          type: 'DAYCARE',
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.preschoolFixture.id,
+          startDate: daycare2start.formatIso(),
+          endDate: daycare2end.formatIso()
+        }
+      ]
+      await insertDaycarePlacementFixtures(placements)
+      const labels = {
+        daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
+        daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
+      }
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+
+      await childPage.assertTerminatedPlacementCount(0)
+      await childPage.assertTerminatablePlacementCount(1)
+      await assertTerminatablePlacements([labels.daycare1])
       await childPage.togglePlacement(labels.daycare1)
       const daycare1FirstTermination = mockedDate.addWeeks(1)
       await childPage.fillTerminationDate(daycare1FirstTermination, 0)
       await childPage.submitTermination(0)
-      await childPage.assertTerminatablePlacementCount(4) // still 4 because not fully terminated
-
+      await childPage.assertTerminatablePlacementCount(1)
       await childPage.assertTerminatedPlacementCount(1)
       await assertTerminatedPlacements(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
@@ -282,13 +316,54 @@ describe('Citizen children page', () => {
       await childPage.togglePlacement(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1FirstTermination.format()}`
       )
-      await childPage.fillTerminationDate(LocalDate.todayInSystemTz(), 0)
+      await childPage.fillTerminationDate(mockedDate, 0)
       await childPage.submitTermination(0)
-      await childPage.assertTerminatablePlacementCount(3)
+      await childPage.assertTerminatablePlacementCount(1)
       await assertTerminatedPlacements(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
       )
-      await assertTerminatablePlacements(Object.values(labels).slice(1))
+
+      await childPage.assertNonTerminatablePlacementCount(1)
+      await assertNonTerminatablePlacements([
+        `Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
+      ])
+    })
+
+    test('Invoiced daycare can be terminated separately', async () => {
+      const preschool2Start = mockedDate.subMonths(2)
+      const preschool2End = mockedDate.addMonths(3)
+      const daycareAfterPreschoolStart = preschool2End.addDays(1)
+      const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
+      const placements: DaycarePlacement[] = [
+        {
+          id: uuidv4(),
+          type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.preschoolFixture.id,
+          startDate: preschool2Start.formatIso(),
+          endDate: preschool2End.formatIso()
+        },
+        {
+          id: uuidv4(),
+          type: 'DAYCARE', // this is shown under PRESCHOOL as "Maksullinen varhaiskasvatus"
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId: fixtures.preschoolFixture.id,
+          startDate: daycareAfterPreschoolStart.formatIso(),
+          endDate: daycareAfterPreschoolEnd.formatIso()
+        }
+      ]
+      await insertDaycarePlacementFixtures(placements)
+      const labels = {
+        preschool: `Esiopetus, Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`,
+        daycareAfterPreschool: `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycareAfterPreschoolEnd.format()}`
+      }
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openTerminationCollapsible()
+
+      await childPage.assertTerminatedPlacementCount(0)
+      await childPage.assertTerminatablePlacementCount(2)
 
       // selecting preschool selects daycare after preschool too
       await childPage.togglePlacement(labels.preschool)
@@ -310,14 +385,10 @@ describe('Citizen children page', () => {
       await assertToggledPlacements([])
 
       await childPage.togglePlacement(labels.daycareAfterPreschool)
-      await childPage.fillTerminationDate(
-        daycareAfterPreschoolEnd.subMonths(1),
-        1
-      )
-      await childPage.submitTermination(1)
+      await childPage.fillTerminationDate(daycareAfterPreschoolEnd.subMonths(1))
+      await childPage.submitTermination()
 
       await assertTerminatedPlacements([
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`,
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${daycareAfterPreschoolEnd
           .subMonths(1)
           .format()}`
@@ -325,13 +396,10 @@ describe('Citizen children page', () => {
 
       // terminating preschool terminates daycare after preschool
       await childPage.togglePlacement(labels.preschool)
-      await childPage.fillTerminationDate(mockedDate, 1)
-      await childPage.submitTermination(1)
-
-      await assertTerminatablePlacements([labels.daycare2])
+      await childPage.fillTerminationDate(mockedDate)
+      await childPage.submitTermination()
       await assertTerminatedPlacements([
-        `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-        // preschool was in future and is cancelled -> deleted from db -> no sign of termination
+        `Esiopetus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${mockedDate.format()}`
       ])
     })
 

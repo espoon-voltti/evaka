@@ -48,6 +48,12 @@ export class CitizenChildPage {
     await this.#placements.assertCount(count)
   }
 
+  async assertNonTerminatablePlacementCount(count: number) {
+    await this.page
+      .findAllByDataQa('non-terminatable-placement')
+      .assertCount(count)
+  }
+
   async assertTerminatedPlacementCount(count: number) {
     await this.#terminatedPlacements.assertCount(count)
   }
