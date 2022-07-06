@@ -27,6 +27,26 @@ jobs:
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v1
 
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
   proxy:
     runs-on: ubuntu-latest
     steps:
@@ -308,6 +328,7 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
     outputs:
       image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
 
   api-gateway:
     needs:
@@ -380,6 +401,7 @@ jobs:
             ${{ needs.java.outputs.image_name }}
     outputs:
       image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
 
   service-test:
     needs:
