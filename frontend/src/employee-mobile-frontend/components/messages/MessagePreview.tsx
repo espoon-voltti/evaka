@@ -44,7 +44,9 @@ export function MessagePreview({
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>
         </TitleAndDate>
         <Truncated>
-          {lastMessage.content.substring(0, 200).replace('\n', ' ')}
+          {lastMessage.content
+            .substring(0, 200)
+            .replace(new RegExp('\\n', 'g'), ' ')}
         </Truncated>
       </FixedSpaceColumn>
     </MessagePreviewContainer>
