@@ -116,6 +116,10 @@ export default function App() {
             <StateProvider>
               <Router basename="/employee">
                 <Header />
+                <ReloadNotification
+                  i18n={i18n.reloadNotification}
+                  apiVersion={authStatus?.apiVersion}
+                />
                 <Routes>
                   <Route
                     path="/login"
@@ -639,10 +643,6 @@ export default function App() {
                 </Routes>
                 <Footer />
                 <ErrorMessage />
-                <ReloadNotification
-                  i18n={i18n.reloadNotification}
-                  apiVersion={authStatus?.apiVersion}
-                />
                 <LoginErrorModal translations={i18n.login.failedModal} />
                 <PairingModal />
               </Router>

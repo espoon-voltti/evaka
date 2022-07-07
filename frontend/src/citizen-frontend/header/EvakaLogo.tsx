@@ -6,12 +6,15 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useTranslation } from 'citizen-frontend/localization'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 
 export default React.memo(function Logo() {
+  const t = useTranslation()
+
   return (
-    <Container to="/">
+    <Container to="/" aria-label={t.header.goToHomepage}>
       <EvakaLogo />
     </Container>
   )

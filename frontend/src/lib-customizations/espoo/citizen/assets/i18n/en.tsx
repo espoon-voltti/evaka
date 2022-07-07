@@ -117,7 +117,10 @@ const en: Translations = {
       en: 'In English'
     },
     login: 'Log in',
-    logout: 'Log out'
+    logout: 'Log out',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
+    goToHomepage: 'Go to homepage'
   },
   footer: {
     cityLabel: '© City of Espoo',

@@ -10,7 +10,6 @@ import styled from 'styled-components'
 
 import { scrollElementToPos } from 'lib-common/utils/scrolling'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
-import { desktopMin } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
@@ -33,7 +32,6 @@ import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
-import { headerHeightDesktop, headerHeightMobile } from './header/const'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
@@ -66,7 +64,6 @@ export default function App() {
                       <Content />
                       <GlobalDialog />
                       <LoginErrorModal translations={i18n.login.failedModal} />
-                      <CitizenReloadNotification />
                       <div id="modal-container" />
                     </HolidayPeriodsContextProvider>
                   </PedagogicalDocumentsContextProvider>
@@ -79,6 +76,11 @@ export default function App() {
     </BrowserRouter>
   )
 }
+
+const FullPageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
 
 const Content = React.memo(function Content() {
   const t = useTranslation()
@@ -97,9 +99,10 @@ const Content = React.memo(function Content() {
   )
 
   return (
-    <>
+    <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
+      <CitizenReloadNotification />
       <MainContainer ariaHidden={modalOpen} ref={mainRef}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -254,7 +257,7 @@ const Content = React.memo(function Content() {
           <Route index element={<HandleRedirection />} />
         </Routes>
       </MainContainer>
-    </>
+    </FullPageContainer>
   )
 })
 
@@ -296,10 +299,5 @@ function HandleRedirection() {
 }
 
 const ScrollableMain = styled.div`
-  height: calc(100% - ${headerHeightMobile}px);
-  overflow: auto;
-
-  @media (min-width: ${desktopMin}) {
-    height: calc(100% - ${headerHeightDesktop}px);
-  }
+  flex-grow: 1;
 `

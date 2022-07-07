@@ -17,6 +17,7 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
@@ -27,10 +28,11 @@ import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 import { headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
-import { scrollMainToPos } from '../utils'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
+import { useCalendarModalState } from './CalendarPage'
 import { HistoryOverlay } from './HistoryOverlay'
+import HolidayPeriodCta from './HolidayPeriodCta'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
@@ -61,18 +63,14 @@ export default React.memo(function CalendarGridView({
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
   const headerRef = useRef<HTMLDivElement>(null)
-  const todayRef = useRef<HTMLButtonElement>()
+  const todayRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const pos = todayRef.current?.getBoundingClientRect().top
+    const top = todayRef.current?.getBoundingClientRect().top
 
-    if (pos) {
-      const offset =
-        headerHeightDesktop + (headerRef.current?.clientHeight ?? 0) + 16
-
-      scrollMainToPos({
-        left: 0,
-        top: pos - offset
+    if (top) {
+      scrollToPos({
+        top: top - headerHeightDesktop - 32
       })
     }
   }, [])
@@ -90,6 +88,8 @@ export default React.memo(function CalendarGridView({
   )
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
+
+  const { openHolidayModal } = useCalendarModalState()
 
   return (
     <>
@@ -121,6 +121,8 @@ export default React.memo(function CalendarGridView({
             </ButtonContainer>
           </PageHeaderRow>
         </Container>
+
+        <HolidayPeriodCta openModal={openHolidayModal} />
       </StickyHeader>
       <Container>
         {monthlyData.map(({ month, year, weeks }) => (
@@ -232,7 +234,7 @@ const Month = React.memo(function Month({
   childData: ReservationChild[]
   weeks: WeeklyData[]
   holidayPeriods: FiniteDateRange[]
-  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  todayRef: MutableRefObject<HTMLButtonElement | null>
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
@@ -291,7 +293,7 @@ const Week = React.memo(function Week({
   childData: ReservationChild[]
   week: WeeklyData
   holidayPeriods: FiniteDateRange[]
-  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  todayRef: MutableRefObject<HTMLButtonElement | null>
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
@@ -340,7 +342,7 @@ const Day = React.memo(function Day({
   day: DailyReservationData
   childData: ReservationChild[]
   holidayPeriods: FiniteDateRange[]
-  todayRef: MutableRefObject<HTMLButtonElement | undefined>
+  todayRef: MutableRefObject<HTMLButtonElement | null>
   dateType: DateType
   selected: boolean
   selectDate: (date: LocalDate) => void

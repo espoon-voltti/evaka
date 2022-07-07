@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
@@ -34,6 +34,7 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
   const t = useTranslation()
   const user = useUser()
   const isEndUser = user?.userType === 'ENDUSER'
+  const { pathname } = useLocation()
 
   const maybeLockElem = !isEndUser && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
@@ -88,7 +89,15 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
               </RequireAuth>
             }
           />
-          <Route path="map" element={<MapView scrollToTop={scrollToTop} />} />
+          <Route
+            path="map"
+            element={
+              <>
+                <Gap size="s" />
+                <MapView scrollToTop={scrollToTop} />
+              </>
+            }
+          />
           <Route
             path="decisions"
             element={
@@ -107,7 +116,7 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
           />
         </Routes>
       </Main>
-      <Footer />
+      {pathname !== '/applying/map' && <Footer />}
     </>
   )
 })

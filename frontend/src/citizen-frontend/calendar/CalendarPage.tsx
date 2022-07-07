@@ -19,7 +19,6 @@ import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
-import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
@@ -32,7 +31,6 @@ import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
 import DayView from './DayView'
-import HolidayPeriodCta from './HolidayPeriodCta'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
@@ -65,7 +63,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     openAbsenceModal,
     openDayModal,
     closeModal
-  } = useModalState()
+  } = useCalendarModalState()
 
   const refreshOnQuestionnaireAnswer = useCallback(() => {
     refreshQuestionnaires()
@@ -127,7 +125,6 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   return renderResult(data, (response) => (
     <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-      <HolidayPeriodCta openModal={openHolidayModal} />
       <MobileAndTablet>
         <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
           <CalendarListView
@@ -141,7 +138,6 @@ const CalendarPage = React.memo(function CalendarPage() {
         </ContentArea>
       </MobileAndTablet>
       <DesktopOnly>
-        <Gap size="s" />
         <CalendarGridView
           childData={response.children}
           dailyData={response.dailyData}
@@ -231,7 +227,7 @@ interface UseModalStateResult {
   closeModal: () => void
 }
 
-function useModalState(): UseModalStateResult {
+export function useCalendarModalState(): UseModalStateResult {
   const location = useLocation()
   const navigate = useNavigate()
 

@@ -4,13 +4,13 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import React from 'react'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 
 import { faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
-import { desktopMin, tabletMin } from '../breakpoints'
+import { tabletMin } from '../breakpoints'
 import { FixedSpaceRow } from '../layout/flex-helpers'
 import { modalZIndex } from '../layout/z-helpers'
 import { defaultMargins } from '../white-space'
@@ -30,17 +30,10 @@ export default React.memo(function Toast({
   iconColor,
   onClick,
   onClose,
-  offsetTop,
-  offsetTopDesktop,
   children
 }: Props) {
   return (
-    <ToastRoot
-      role="dialog"
-      offsetTop={offsetTop}
-      offsetTopDesktop={offsetTopDesktop}
-      showPointer={!!onClick}
-    >
+    <ToastRoot role="dialog" showPointer={!!onClick}>
       <FixedSpaceRow alignItems="center">
         <RoundIcon
           content={icon}
@@ -58,24 +51,13 @@ export default React.memo(function Toast({
 })
 
 const ToastRoot = styled.div<{
-  offsetTop?: string
-  offsetTopDesktop?: string
   showPointer: boolean
 }>`
-  position: fixed;
-  top: ${(p) => p.offsetTop ?? '8px'};
-  right: 8px;
-  width: 360px;
+  width: 100%;
   @media (min-width: ${tabletMin}) {
     right: 16px;
     width: 480px;
-  }
-  @media (min-width: ${desktopMin}) {
-    ${(p) =>
-      p.offsetTopDesktop &&
-      css`
-        top: ${p.offsetTopDesktop};
-      `}
+    max-width: 360px;
   }
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.grayscale.g0};
