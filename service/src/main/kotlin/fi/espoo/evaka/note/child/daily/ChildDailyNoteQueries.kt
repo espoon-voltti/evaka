@@ -49,16 +49,9 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, to
             note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
         FROM child_daily_note 
         WHERE child_id IN (
-            SELECT pl.child_id
-            FROM daycare_group_placement gpl
-            JOIN placement pl ON pl.id = gpl.daycare_placement_id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
-            WHERE gpl.daycare_group_id = ANY(:groupIds) AND daterange(gpl.start_date, gpl.end_date, '[]') @> :today
-            
-            UNION 
-            
-            SELECT bc.child_id
-            FROM backup_care bc
-            WHERE bc.group_id = ANY(:groupIds) AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+            SELECT child_id
+            FROM realized_placement_all(:today)
+            WHERE group_id = ANY(:groupIds)
         )
         """.trimIndent()
     )

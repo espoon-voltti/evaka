@@ -106,12 +106,10 @@ fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: 
         """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
-        FROM placement pl
-        LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = :childId
-        JOIN daycare d ON d.id = coalesce(bc.unit_id, pl.unit_id) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+        FROM realized_placement_all(:date) rp
+        JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
         WHERE 
-            pl.child_id = :childId AND 
-            daterange(pl.start_date, pl.end_date, '[]') @> :date AND 
+            rp.child_id = :childId AND
             extract(isodow FROM :date) = ANY(d.operation_days) AND
             (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date)) AND
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)

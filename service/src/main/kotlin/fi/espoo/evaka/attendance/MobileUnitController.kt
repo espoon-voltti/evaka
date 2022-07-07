@@ -278,20 +278,10 @@ WITH present_children AS (
     WHERE ca.unit_id = ANY(:unitIds) AND ca.end_time IS NULL
     GROUP BY ca.unit_id
 ), total_children AS (
-    SELECT p.unit_id, count(*)
-    FROM (
-        SELECT p.unit_id
-        FROM placement p
-        LEFT JOIN backup_care bc ON p.child_id = bc.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-        WHERE p.unit_id = ANY(:unitIds) AND daterange(p.start_date, p.end_date, '[]') @> :date AND bc.id IS NULL
-
-        UNION ALL
-
-        SELECT bc.unit_id
-        FROM backup_care bc
-        WHERE bc.unit_id = ANY(:unitIds) AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-    ) p
-    GROUP BY p.unit_id
+    SELECT unit_id, count(child_id)
+    FROM realized_placement_one(:date)
+    WHERE unit_id = ANY(:unitIds)
+    GROUP BY unit_id
 ), present_staff AS (
     SELECT g.daycare_id AS unit_id, sum(sa.capacity) AS capacity, sum(sa.count) AS count, sum(sa.count_other) AS count_other
     FROM daycare_group g
