@@ -32,7 +32,7 @@ import { scrollMainToPos } from '../utils'
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
-import RoundChildImages, { getPresentChildImages } from './RoundChildImages'
+import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 export interface Props {
@@ -89,6 +89,8 @@ export default React.memo(function CalendarGridView({
     [holidayPeriodResult]
   )
 
+  const childImages = useMemo(() => getChildImages(childData), [childData])
+
   return (
     <>
       <StickyHeader ref={headerRef}>
@@ -134,6 +136,7 @@ export default React.memo(function CalendarGridView({
             selectDate={selectDate}
             includeWeekends={includeWeekends}
             dayIsReservable={dayIsReservable}
+            childImages={childImages}
           />
         ))}
       </Container>
@@ -221,7 +224,8 @@ const Month = React.memo(function Month({
   selectDate,
   selectedDate,
   includeWeekends,
-  dayIsReservable
+  dayIsReservable,
+  childImages
 }: {
   year: number
   month: number
@@ -233,6 +237,7 @@ const Month = React.memo(function Month({
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  childImages: ChildImageData[]
 }) {
   const i18n = useTranslation()
   return (
@@ -261,6 +266,7 @@ const Month = React.memo(function Month({
             selectedDate={selectedDate}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
+            childImages={childImages}
           />
         ))}
       </Grid>
@@ -277,7 +283,8 @@ const Week = React.memo(function Week({
   todayRef,
   selectedDate,
   selectDate,
-  dayIsReservable
+  dayIsReservable,
+  childImages
 }: {
   year: number
   month: number
@@ -288,6 +295,7 @@ const Week = React.memo(function Week({
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  childImages: ChildImageData[]
 }) {
   return (
     <>
@@ -303,6 +311,7 @@ const Week = React.memo(function Week({
           selected={selectedDate !== undefined && d.date.isEqual(selectedDate)}
           selectDate={selectDate}
           dayIsReservable={dayIsReservable}
+          childImages={childImages}
         />
       ))}
     </>
@@ -325,7 +334,8 @@ const Day = React.memo(function Day({
   dateType,
   selected,
   selectDate,
-  dayIsReservable
+  dayIsReservable,
+  childImages
 }: {
   day: DailyReservationData
   childData: ReservationChild[]
@@ -335,6 +345,7 @@ const Day = React.memo(function Day({
   selected: boolean
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  childImages: ChildImageData[]
 }) {
   const [lang] = useLang()
   const ref = useCallback(
@@ -359,11 +370,6 @@ const Day = React.memo(function Day({
     [day.date, selectDate]
   )
 
-  const presentChildImages = useMemo(
-    () => getPresentChildImages(childData, day),
-    [childData, day]
-  )
-
   if (dateType === 'otherMonth') {
     return <InactiveCell />
   }
@@ -382,31 +388,22 @@ const Day = React.memo(function Day({
         <DayCellDate
           inactive={!dayIsReservable(day)}
           aria-label={day.date.formatExotic('EEEE do MMMM', lang)}
+          holiday={day.isHoliday}
         >
           {day.date.format('d.M.')}
         </DayCellDate>
       </DayCellHeader>
-      <ChildImagesContainer>
-        <RoundChildImages
-          images={presentChildImages}
-          imageSize={37}
-          imageBorder={3}
-          imageOverlap={9}
+      <div data-qa="reservations">
+        <Reservations
+          data={day}
+          allChildren={childData}
+          childImages={childImages}
         />
-      </ChildImagesContainer>
-      <DayCellReservations data-qa="reservations">
-        <Reservations data={day} />
-      </DayCellReservations>
+      </div>
       {dateType === 'past' && <HistoryOverlay />}
     </DayCell>
   )
 })
-
-const ChildImagesContainer = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 8px;
-`
 
 const StickyHeader = styled.div`
   position: sticky;
@@ -516,18 +513,21 @@ const DayCell = styled.button<{
 const DayCellHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: ${defaultMargins.m};
+  margin-bottom: ${defaultMargins.s};
 `
 
-const DayCellDate = styled.div<{ inactive: boolean }>`
+const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
   font-family: Montserrat, sans-serif;
   font-style: normal;
-  color: ${(p) => (p.inactive ? colors.grayscale.g70 : colors.main.m1)};
+  color: ${(p) =>
+    p.inactive
+      ? colors.grayscale.g70
+      : p.holiday
+      ? colors.accents.a2orangeDark
+      : colors.main.m1};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `
-
-const DayCellReservations = styled.div``
 
 const InactiveCell = styled.div`
   background-color: transparent;

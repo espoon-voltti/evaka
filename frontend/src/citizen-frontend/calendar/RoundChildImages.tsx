@@ -5,10 +5,7 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import {
-  DailyReservationData,
-  ReservationChild
-} from 'lib-common/generated/api-types/reservations'
+import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { UUID } from 'lib-common/types'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
@@ -34,7 +31,7 @@ export default React.memo(function RoundChildImages({
   imageOverlap
 }: Props) {
   return (
-    <RoundChildImagesContainer>
+    <RoundChildImagesContainer borderSize={imageBorder}>
       {images.map((image, index) => (
         <Overlap key={image.childId} overlap={imageOverlap} index={index}>
           <RoundChildImage
@@ -50,8 +47,9 @@ export default React.memo(function RoundChildImages({
   )
 })
 
-const RoundChildImagesContainer = styled.div`
+const RoundChildImagesContainer = styled.div<{ borderSize: number }>`
   display: flex;
+  margin-left: -${(p) => p.borderSize}px;
 `
 
 const Overlap = styled.div<{ overlap: number; index: number }>`
@@ -118,27 +116,13 @@ const ChildInitialLetter = styled.div<{
   align-items: center;
 `
 
-export function getPresentChildImages(
-  childData: ReservationChild[],
-  day: DailyReservationData
-): ChildImageData[] {
-  return (
-    childData
-      // Save the index first, so that each child has the same index every time, regardless of the below filtering
-      .map((child, index) => [child, index] as const)
-      .filter(([child, _]) =>
-        day.children.some(
-          (dc) =>
-            dc.childId === child.id &&
-            dc.absence === null &&
-            (dc.reservations.length > 0 || dc.attendances.length > 0)
-        )
-      )
-      .map(([child, index]) => ({
-        childId: child.id,
-        imageId: child.imageId,
-        initialLetter: (child.preferredName || child.firstName || '?')[0],
-        colorIndex: index
-      }))
-  )
-}
+export const getChildImages = (
+  childData: ReservationChild[]
+): ChildImageData[] =>
+  childData.map((child, index) => ({
+    childId: child.id,
+    imageId: child.imageId,
+    initialLetter: (child.preferredName || child.firstName || '?')[0],
+    colorIndex: index,
+    childName: child.firstName
+  }))

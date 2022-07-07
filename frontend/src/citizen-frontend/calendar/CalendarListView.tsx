@@ -20,6 +20,7 @@ import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
+import { getChildImages } from './RoundChildImages'
 import WeekElem from './WeekElem'
 
 export interface Props {
@@ -42,6 +43,8 @@ export default React.memo(function CalendarListView({
   const i18n = useTranslation()
   const weeklyData = useMemo(() => asWeeklyData(dailyData), [dailyData])
 
+  const childImages = useMemo(() => getChildImages(childData), [childData])
+
   return (
     <>
       <FixedSpaceColumn spacing="zero">
@@ -53,6 +56,7 @@ export default React.memo(function CalendarListView({
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}
+            childImages={childImages}
           />
         ))}
       </FixedSpaceColumn>
