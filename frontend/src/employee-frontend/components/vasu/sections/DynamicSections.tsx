@@ -321,7 +321,10 @@ export function DynamicSections({
                       }
                     />
                   ) : isParagraph(question) ? (
-                    <ParagraphElem question={question} />
+                    <ParagraphElem
+                      question={question}
+                      isAtStart={questionIndex === 0}
+                    />
                   ) : isStaticInfoSubsection(question) ? (
                     <StaticInfoSubsection
                       type={vasu.type}
