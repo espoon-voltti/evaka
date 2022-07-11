@@ -33,7 +33,13 @@ export default React.memo(function RoundChildImages({
   return (
     <RoundChildImagesContainer borderSize={imageBorder}>
       {images.map((image, index) => (
-        <Overlap key={image.childId} overlap={imageOverlap} index={index}>
+        <Overlap
+          key={image.childId}
+          overlap={imageOverlap}
+          index={index}
+          data-qa="child-image"
+          data-qa-child-id={image.childId}
+        >
           <RoundChildImage
             imageId={image.imageId}
             initialLetter={image.initialLetter}

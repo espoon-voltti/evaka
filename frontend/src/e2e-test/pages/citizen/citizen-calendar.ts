@@ -9,6 +9,33 @@ import { UUID } from 'lib-common/types'
 import { waitUntilEqual } from '../../utils'
 import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
+interface BaseReservation {
+  childIds: UUID[]
+}
+
+interface AbsenceReservation extends BaseReservation {
+  absence: true
+}
+
+interface FreeAbsenceReservation extends BaseReservation {
+  freeAbsence: true
+}
+
+interface StartAndEndTimeReservation extends BaseReservation {
+  startTime: string
+  endTime: string
+}
+
+interface MissingReservation extends BaseReservation {
+  missing: true
+}
+
+type Reservation =
+  | AbsenceReservation
+  | FreeAbsenceReservation
+  | StartAndEndTimeReservation
+  | MissingReservation
+
 export default class CitizenCalendarPage {
   constructor(
     private readonly page: Page,
@@ -81,22 +108,30 @@ export default class CitizenCalendarPage {
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
 
-  async assertReservations(
-    date: LocalDate,
-    reservations: { startTime: string; endTime: string }[],
-    absence = false,
-    freeAbsence = false
-  ) {
-    await waitUntilEqual(
-      () => this.#dayCell(date).findByDataQa('reservations').innerText,
-      [
-        ...(absence ? ['Poissa'] : []),
-        ...(freeAbsence ? ['Maksuton poissaolo'] : []),
-        ...reservations.map(
-          ({ startTime, endTime }) => `${startTime} – ${endTime}`
-        )
-      ].join(', ')
-    )
+  async assertReservations(date: LocalDate, reservations: Reservation[]) {
+    const reservationRows = this.#dayCell(date)
+      .findByDataQa('reservations')
+      .findAllByDataQa('reservation-group')
+
+    for (const [i, reservation] of reservations.entries()) {
+      const row = reservationRows.nth(i)
+
+      for (const childId of reservation.childIds) {
+        await row
+          .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
+          .waitUntilVisible()
+      }
+      await waitUntilEqual(
+        () => row.findByDataQa('reservation-text').innerText,
+        'absence' in reservation
+          ? 'Poissa'
+          : 'freeAbsence' in reservation
+          ? 'Maksuton poissaolo'
+          : 'missing' in reservation
+          ? 'Ilmoitus puuttuu'
+          : `${reservation.startTime}–${reservation.endTime}`
+      )
+    }
   }
 
   #ctaContainer = this.page.findByDataQa('holiday-period-cta-container')
@@ -124,13 +159,6 @@ export default class CitizenCalendarPage {
     )
     await waitUntilEqual(() => this.#ctaContainer.findAll('> *').count(), 0)
   }
-
-  async assertNoReservationsOrAbsences(date: LocalDate) {
-    await waitUntilEqual(
-      () => this.#dayCell(date).findByDataQa('reservations').innerText,
-      'Ei varausta'
-    )
-  }
 }
 
 class ReservationsModal {
@@ -155,17 +183,39 @@ class ReservationsModal {
   )
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
 
+  #childCheckbox = (childId: string) =>
+    new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
+
   async createRepeatingDailyReservation(
     dateRange: FiniteDateRange,
     startTime: string,
-    endTime: string
+    endTime: string,
+    childIds?: UUID[],
+    totalChildren?: number
   ) {
+    if (childIds && totalChildren) {
+      await this.deselectChildren(totalChildren)
+      for (const childId of childIds) {
+        await this.#childCheckbox(childId).click()
+      }
+    }
+
     await this.#startDateInput.fill(dateRange.start.format())
     await this.#endDateInput.fill(dateRange.end.format())
     await this.#dailyStartTimeInput.fill(startTime)
     await this.#dailyEndTimeInput.fill(endTime)
 
     await this.#modalSendButton.click()
+  }
+
+  private async deselectChildren(n: number) {
+    for (let i = 0; i < n; i++) {
+      await this.page
+        .findByDataQa('modal')
+        .findAll('div[data-qa*="child"]')
+        .nth(i)
+        .click()
+    }
   }
 
   async createRepeatingWeeklyReservation(
@@ -214,7 +264,11 @@ class AbsencesModal {
 
   async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page.findAll('div[data-qa*="child"]').nth(i).click()
+      await this.page
+        .findByDataQa('modal')
+        .findAll('div[data-qa*="child"]')
+        .nth(i)
+        .click()
     }
   }
 

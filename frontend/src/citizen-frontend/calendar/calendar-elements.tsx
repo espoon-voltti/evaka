@@ -30,6 +30,7 @@ type DailyChildGroupElementType =
   | 'day-off' // TODO: EVAKA-4287
   | 'absent'
   | 'missing-reservation'
+  | 'absent-free'
 
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
@@ -70,7 +71,12 @@ export const Reservations = React.memo(function Reservations({
     <div>
       <FixedSpaceColumn spacing="xs">
         {groupedChildren.map((group) => (
-          <FixedSpaceRow key={group.key} spacing="s" alignItems="center">
+          <FixedSpaceRow
+            key={group.key}
+            spacing="s"
+            alignItems="center"
+            data-qa="reservation-group"
+          >
             <RoundChildImages
               images={childImages.filter((image) =>
                 group.childIds.includes(image.childId)
@@ -79,11 +85,16 @@ export const Reservations = React.memo(function Reservations({
               imageBorder={2}
               imageOverlap={16}
             />
-            <GroupedElementText className={group.type}>
+            <GroupedElementText
+              className={group.type}
+              data-qa="reservation-text"
+            >
               {group.type === 'missing-reservation'
                 ? i18n.calendar.noReservation
                 : group.type === 'absent'
                 ? i18n.calendar.absent
+                : group.type === 'absent-free'
+                ? i18n.calendar.absentFree
                 : group.text}
             </GroupedElementText>
           </FixedSpaceRow>
@@ -145,7 +156,7 @@ const groupChildren = (
         if (child.absence) {
           return {
             childId: child.childId,
-            type: 'absent'
+            type: child.absence === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
           }
         }
 
