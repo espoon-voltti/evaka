@@ -37,26 +37,6 @@ class OccupancyController(
     private val acl: AccessControlList,
     private val placementPlanService: PlacementPlanService
 ) {
-    @GetMapping("/by-unit/{unitId}/realtime")
-    fun getRealtimeOccupancy(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): RealtimeOccupancy {
-        Audit.OccupancyRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_OCCUPANCIES, unitId)
-
-        return db.connect { dbc ->
-            dbc.read {
-                RealtimeOccupancy(
-                    childAttendances = it.getChildOccupancyAttendances(unitId, date),
-                    staffAttendances = it.getStaffOccupancyAttendances(unitId, date)
-                )
-            }
-        }
-    }
-
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
         db: Database,

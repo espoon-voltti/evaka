@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
@@ -81,6 +82,13 @@ val idArgumentFactory = customArgumentFactory<Id<*>>(Types.OTHER) { CustomObject
 
 val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
     CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
+}
+
+val helsinkiDateTimeRangeArgumentFactory = pgObjectArgumentFactory<HelsinkiDateTimeRange> {
+    PGobject().apply {
+        type = "tstzrange"
+        value = "[${it.start.toInstant()},${it.end.toInstant()})"
+    }
 }
 
 val productKeyArgumentFactory = customArgumentFactory<ProductKey>(Types.VARCHAR) { CustomStringArgument(it.value) }

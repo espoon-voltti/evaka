@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -98,7 +99,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             assertEquals(listOf("One", "Three", "Four", "Two"), attendances.map { a -> a.firstName })
             assertEquals(listOf(group1.id, group1.id, group2.id, group2.id), attendances.flatMap { a -> a.groupIds })
 
-            val occupancyAttendances = it.getStaffOccupancyAttendances(testDaycare.id, now.toLocalDate())
+            val occupancyAttendances = it.getStaffOccupancyAttendances(
+                testDaycare.id,
+                HelsinkiDateTimeRange(now.atStartOfDay(), now.atEndOfDay())
+            )
             assertEquals(listOf(0.0, 0.0, 3.5, 3.5), occupancyAttendances.map { a -> a.capacity })
         }
     }

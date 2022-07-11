@@ -49,12 +49,14 @@ type Props = {
   filters: UnitFilters
   occupancies: UnitOccupancies
   realtimeStaffAttendanceEnabled: boolean
+  shiftCareUnit: boolean
 }
 
 export default React.memo(function OccupancyContainer({
   filters,
   occupancies,
-  realtimeStaffAttendanceEnabled
+  realtimeStaffAttendanceEnabled,
+  shiftCareUnit
 }: Props) {
   const { startDate, endDate } = filters
 
@@ -74,6 +76,7 @@ export default React.memo(function OccupancyContainer({
           realtimeOccupancies={
             realtimeStaffAttendanceEnabled ? occupancies.realtime : null
           }
+          shiftCareUnit={shiftCareUnit}
         />
       ) : (
         <WrapBox>

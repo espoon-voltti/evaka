@@ -29,20 +29,25 @@ interface Props {
   plannedOccupancies: OccupancyResponse
   realizedOccupancies: OccupancyResponse
   realtimeOccupancies: RealtimeOccupancy | null
+  shiftCareUnit: boolean
 }
 
 const OccupancySingleDay = React.memo(function OccupancySingleDay({
   occupancies,
   plannedOccupancies,
   realizedOccupancies,
-  realtimeOccupancies
+  realtimeOccupancies,
+  shiftCareUnit
 }: Props) {
   const { i18n } = useTranslation()
 
   if (realtimeOccupancies) {
     return (
       <Container>
-        <OccupancyDayGraph occupancy={realtimeOccupancies} />
+        <OccupancyDayGraph
+          occupancy={realtimeOccupancies}
+          shiftCareUnit={shiftCareUnit}
+        />
       </Container>
     )
   }

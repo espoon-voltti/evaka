@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.occupancy
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.ExternalStaffArrival
@@ -15,21 +14,18 @@ import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -183,13 +179,17 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?: error("data point missing")
     }
 
-    private fun getRealtimeOccupancy(): RealtimeOccupancyResponse {
-        val (_, res, result) = http.get("/occupancy/by-unit/${testDaycare.id}/realtime?date=${date.format(DateTimeFormatter.ISO_DATE)}")
-            .asUser(AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR)))
-            .responseObject<RealtimeOccupancyResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+    private fun getRealtimeOccupancy(): RealtimeOccupancy {
+        val timeRange = HelsinkiDateTimeRange(
+            HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
+            HelsinkiDateTime.of(date, LocalTime.of(23, 59))
+        )
+        return db.read { tx ->
+            RealtimeOccupancy(
+                childAttendances = tx.getChildOccupancyAttendances(testDaycare.id, timeRange),
+                staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange)
+            )
+        }
     }
 }
 

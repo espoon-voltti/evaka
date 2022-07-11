@@ -45,6 +45,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -54,6 +56,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RestController
 @RequestMapping("/views/units")
@@ -140,7 +143,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
-                    val unitOccupancies = getUnitOccupancies(tx, evakaClock.today(), unitId, period, acl.getAuthorizedUnits(user))
+                    val unitOccupancies = getUnitOccupancies(tx, evakaClock.now(), unitId, period, acl.getAuthorizedUnits(user))
                     val groupOccupancies = getGroupOccupancies(tx, evakaClock.today(), unitId, period, acl.getAuthorizedUnits(user))
                     val placementProposals = tx.getPlacementPlans(
                         evakaClock.today(),
@@ -209,29 +212,35 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
-    today: LocalDate,
+    now: HelsinkiDateTime,
     unitId: DaycareId,
     period: FiniteDateRange,
     aclAuth: AclAuthorization
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(today, unitId, period, OccupancyType.PLANNED, aclAuth)),
+        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(now.toLocalDate(), unitId, period, OccupancyType.PLANNED, aclAuth)),
         confirmed = getOccupancyResponse(
             tx.calculateOccupancyPeriods(
-                today,
+                now.toLocalDate(),
                 unitId,
                 period,
                 OccupancyType.CONFIRMED,
                 aclAuth
             )
         ),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(today, unitId, period, OccupancyType.REALIZED, aclAuth)),
-        realtime = period.start.takeIf { it == period.end }?.let { date ->
-            RealtimeOccupancy(
-                childAttendances = tx.getChildOccupancyAttendances(unitId, date),
-                staffAttendances = tx.getStaffOccupancyAttendances(unitId, date)
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(now.toLocalDate(), unitId, period, OccupancyType.REALIZED, aclAuth)),
+        realtime = if (period.start == period.end) {
+            val queryTimeRange = if (period.start == now.toLocalDate())
+                HelsinkiDateTimeRange(now.minusHours(16), now)
+            else HelsinkiDateTimeRange(
+                HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
+                HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
             )
-        }
+            RealtimeOccupancy(
+                childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
+                staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
+            )
+        } else null
     )
 }
 
