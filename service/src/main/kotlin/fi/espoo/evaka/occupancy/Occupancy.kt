@@ -222,7 +222,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     val caretakersSum = if (type == OccupancyType.REALIZED) """
         sum(
             CASE
-                WHEN sar.arrived IS NOT NULL AND sar.departed IS NOT NULL
+                WHEN sar.arrived IS NOT NULL
                     THEN EXTRACT(EPOCH FROM (sar.departed - sar.arrived)) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient
                 ELSE s.count
             END
@@ -235,9 +235,11 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
         LEFT JOIN (
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_realtime
+            WHERE departed IS NOT NULL
             UNION ALL
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_external
+            WHERE departed IS NOT NULL
         ) sar ON g.id = sar.group_id AND t = DATE(sar.arrived)
         LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
     """.trimIndent() else """

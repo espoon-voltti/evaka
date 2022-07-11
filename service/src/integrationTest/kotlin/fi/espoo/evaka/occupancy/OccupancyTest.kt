@@ -452,6 +452,83 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `calculateDailyGroupOccupancyValues with both realtime staff attendance and another staff attendance count`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId)
+            // not included because of no departure time
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId2)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(7))
+                .arriving(HelsinkiDateTime.of(today, LocalTime.of(8, 0)))
+                .save()
+
+            // this is ignored
+            tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 5.0)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance one day and non-realtime the other`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId, 1)
+            tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 2.0)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today.minusDays(1) to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                ),
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    2.0,
+                    7.1
+                )
+            )
+        )
+    }
+
+    @Test
     fun `occupancy for a child under 3 year old is 1,75`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today)
