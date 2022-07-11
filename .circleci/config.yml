@@ -1,50 +1,19 @@
-# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 version: 2.1
-setup: true
-
-orbs:
-  continuation: circleci/continuation@0.1.0
-  path-filtering: circleci/path-filtering@0.1.1
-
-executors:
-  ruby:
-    docker:
-      - image: cimg/ruby:3.0.2
 
 jobs:
-  generate-config:
-    executor: ruby
+  build:
+    resource_class: small
+    docker:
+      - image: cimg/node:17.2.0
     steps:
-      - checkout
-      - run:
-          name: Generate pipeline
-          command: |
-            erb -T- .circleci/template.yml > .circleci/generated.yml
-            cat .circleci/generated.yml
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - .
+      - run: echo "Disabled"
 
 workflows:
-  setup-workflow:
+  version: 2
+  build_test_and_deploy:
     jobs:
-      - generate-config:
-          filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
-
-      - path-filtering/filter:
-          workspace_path: .
-          requires:
-            - generate-config
-          base-revision: master
-          config-path: .circleci/generated.yml
-          mapping: |
-            compose/e2e/.* build-e2e true
-          filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/
+      - build
