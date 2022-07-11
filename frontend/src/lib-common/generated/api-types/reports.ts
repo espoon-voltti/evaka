@@ -422,7 +422,6 @@ export interface ServiceVoucherReport {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherUnitReport
 */
 export interface ServiceVoucherUnitReport {
-  assistanceNeedCapacityFactorEnabled: boolean
   locked: LocalDate | null
   rows: ServiceVoucherValueRow[]
   voucherTotal: number
@@ -434,7 +433,7 @@ export interface ServiceVoucherUnitReport {
 export interface ServiceVoucherValueRow {
   areaId: UUID
   areaName: string
-  assistanceNeedCapacityFactor: number
+  assistanceNeedCoefficient: number
   childDateOfBirth: LocalDate
   childFirstName: string
   childGroupName: string | null

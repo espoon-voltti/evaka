@@ -61,7 +61,7 @@ INSERT INTO voucher_value_decision (
     fee_alterations,
     final_co_payment,
     base_value,
-    capacity_factor,
+    assistance_need_coefficient,
     voucher_value
 ) VALUES (
     :id,
@@ -93,7 +93,7 @@ INSERT INTO voucher_value_decision (
     :feeAlterations,
     :finalCoPayment,
     :baseValue,
-    :capacityFactor,
+    :assistanceNeedCoefficient,
     :voucherValue
 ) ON CONFLICT (id) DO UPDATE SET
     status = :status::voucher_value_decision_status,
@@ -123,7 +123,7 @@ INSERT INTO voucher_value_decision (
     fee_alterations = :feeAlterations,
     final_co_payment = :finalCoPayment,
     base_value = :baseValue,
-    capacity_factor = :capacityFactor,
+    assistance_need_coefficient = :assistanceNeedCoefficient,
     voucher_value = :voucherValue
 """
 
@@ -181,7 +181,7 @@ SELECT
     fee_alterations,
     final_co_payment,
     base_value,
-    capacity_factor,
+    assistance_need_coefficient,
     voucher_value,
     document_key,
     approved_at,
@@ -235,7 +235,7 @@ SELECT
     fee_alterations,
     final_co_payment,
     base_value,
-    capacity_factor,
+    assistance_need_coefficient,
     voucher_value,
     document_key,
     approved_at,

@@ -52,7 +52,7 @@ data class VoucherValueDecision(
     val feeAlterations: List<FeeAlterationWithEffect>,
     val finalCoPayment: Int,
     val baseValue: Int,
-    val capacityFactor: BigDecimal,
+    val assistanceNeedCoefficient: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
     val approvedById: EmployeeId? = null,
@@ -142,7 +142,7 @@ data class VoucherValueDecision(
                 feeAlterations = listOf(),
                 finalCoPayment = 0,
                 baseValue = baseValue,
-                capacityFactor = BigDecimal.ZERO,
+                assistanceNeedCoefficient = BigDecimal.ZERO,
                 voucherValue = 0,
             )
             check(decision.isEmpty())
@@ -207,7 +207,7 @@ data class VoucherValueDecisionDetailed(
     val finalCoPayment: Int,
     val baseValue: Int,
     val childAge: Int,
-    val capacityFactor: BigDecimal,
+    val assistanceNeedCoefficient: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
     @Nested("approved_by")

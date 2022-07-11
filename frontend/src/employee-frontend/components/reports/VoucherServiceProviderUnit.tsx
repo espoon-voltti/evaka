@@ -253,7 +253,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         : '',
                     serviceNeedDescription: r.serviceNeedDescription,
                     assistanceNeedCapacityFactor: formatDecimal(
-                      r.assistanceNeedCapacityFactor
+                      r.assistanceNeedCoefficient
                     ),
                     serviceVoucherValue: formatCents(
                       r.serviceVoucherValue,
@@ -318,16 +318,11 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
                     key: 'serviceNeedDescription'
                   },
-                  ...(sortedReport.value.assistanceNeedCapacityFactorEnabled
-                    ? [
-                        {
-                          label:
-                            i18n.reports.voucherServiceProviderUnit
-                              .capacityFactor,
-                          key: 'assistanceNeedCapacityFactor' as const
-                        }
-                      ]
-                    : []),
+                  {
+                    label:
+                      i18n.reports.voucherServiceProviderUnit.assistanceNeed,
+                    key: 'assistanceNeedCapacityFactor'
+                  },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
@@ -371,11 +366,9 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  {sortedReport.value.assistanceNeedCapacityFactorEnabled ? (
-                    <StyledTh>
-                      {i18n.reports.voucherServiceProviderUnit.capacityFactor}
-                    </StyledTh>
-                  ) : null}
+                  <StyledTh>
+                    {i18n.reports.voucherServiceProviderUnit.assistanceNeed}
+                  </StyledTh>
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -458,12 +451,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         </Tooltip>
                       </Td>
                       <Td>{row.serviceNeedDescription}</Td>
-                      {sortedReport.value
-                        .assistanceNeedCapacityFactorEnabled && (
-                        <Td>
-                          {formatDecimal(row.assistanceNeedCapacityFactor)}
-                        </Td>
-                      )}
+                      <Td>{formatDecimal(row.assistanceNeedCoefficient)}</Td>
                       <Td data-qa="voucher-value">
                         {formatCents(row.serviceVoucherValue, true)}
                       </Td>

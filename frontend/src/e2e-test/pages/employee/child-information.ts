@@ -600,6 +600,80 @@ export class AssistanceNeedSection extends Section {
         .count()
     }
   }
+
+  readonly assistanceNeedVoucherCoefficientCount = () =>
+    this.page
+      .findByDataQa('table-of-assistance-need-voucher-coefficients')
+      .findAllByDataQa('table-assistance-need-voucher-coefficient')
+      .count()
+
+  async assistanceNeedVoucherCoefficients(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-assistance-need-voucher-coefficients')
+      .findAllByDataQa('table-assistance-need-voucher-coefficient')
+      .nth(nth)
+
+    return {
+      coefficient: await row.findByDataQa(
+        'assistance-need-voucher-coefficient-coefficient'
+      ).innerText,
+      validityPeriod: await row.findByDataQa(
+        'assistance-need-voucher-coefficient-validity-period'
+      ).innerText,
+      status: await row
+        .findByDataQa('assistance-need-voucher-coefficient-status')
+        .getAttribute('data-qa-status'),
+      actionCount: await row
+        .findByDataQa('assistance-need-voucher-coefficient-actions')
+        .findAll('button')
+        .count()
+    }
+  }
+
+  assistanceNeedVoucherCoefficientActions(nth: number) {
+    const row = this.page
+      .findByDataQa('table-of-assistance-need-voucher-coefficients')
+      .findAllByDataQa('table-assistance-need-voucher-coefficient')
+      .nth(nth)
+
+    return {
+      editBtn: row.findByDataQa('assistance-need-voucher-coefficient-edit-btn'),
+      deleteBtn: row.findByDataQa(
+        'assistance-need-voucher-coefficient-delete-btn'
+      )
+    }
+  }
+
+  assistanceNeedVoucherCoefficientForm(container: Element) {
+    const validityPeriod = container.findByDataQa(
+      'input-assistance-need-voucher-coefficient-validity-period'
+    )
+
+    return {
+      coefficientInput: new TextInput(
+        container.findByDataQa('input-assistance-need-voucher-coefficient')
+      ),
+      validityPeriod: {
+        startInput: new TextInput(validityPeriod.findByDataQa('start-date')),
+        endInput: new TextInput(validityPeriod.findByDataQa('end-date'))
+      },
+      saveBtn: container.findByDataQa(
+        'assistance-need-voucher-coefficient-save'
+      )
+    }
+  }
+
+  readonly createAssistanceNeedVoucherCoefficientBtn = this.page.findByDataQa(
+    'assistance-need-voucher-coefficient-create-btn'
+  )
+  readonly createAssistanceNeedVoucherCoefficientForm = this.page.findByDataQa(
+    'create-new-assistance-need-voucher-coefficient'
+  )
+  readonly editAssistanceNeedVoucherCoefficientForm = this.page.findByDataQa(
+    'table-assistance-need-voucher-coefficient-editor'
+  )
+
+  readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 
 class MessageBlocklistSection extends Section {

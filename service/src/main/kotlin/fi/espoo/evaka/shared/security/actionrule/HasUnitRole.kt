@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
@@ -178,6 +179,31 @@ JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND ad.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement() = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedVoucherCoefficientId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT avc.id, role, enabled_pilot_features AS unit_features
+FROM assistance_need_voucher_coefficient avc
+JOIN employee_child_daycare_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = :userId AND EXISTS(
+    SELECT 1 FROM placement p
+    JOIN daycare pd ON pd.id = p.unit_id
+    WHERE p.child_id = acl.child_id
+      AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+)
+AND avc.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
@@ -650,6 +676,30 @@ AND attachment.type = 'EXTENDED_CARE'
 AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementUnitOfChildWithServiceVoucherPlacement() = DatabaseActionRule(
+        this,
+        Query<ChildId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+FROM employee_child_daycare_acl(:today) acl
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = :userId AND EXISTS(
+    SELECT 1 FROM placement p
+    JOIN daycare pd ON pd.id = p.unit_id
+    WHERE p.child_id = acl.child_id
+      AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+)
+AND child_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()

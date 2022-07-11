@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePreferredName
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildController(private val accessControl: AccessControl) {
+class ChildController(private val accessControl: AccessControl, private val featureConfig: FeatureConfig) {
     @GetMapping("/children/{childId}")
     fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
@@ -46,7 +47,8 @@ class ChildController(private val accessControl: AccessControl) {
                 ChildResponse(
                     person = PersonJSON.from(child),
                     permittedActions = accessControl.getPermittedActions(tx, user, childId),
-                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId)
+                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId),
+                    assistanceNeedVoucherCoefficientsEnabled = !featureConfig.valueDecisionCapacityFactorEnabled
                 )
             }
         }
@@ -74,7 +76,8 @@ class ChildController(private val accessControl: AccessControl) {
     data class ChildResponse(
         val person: PersonJSON,
         val permittedActions: Set<Action.Child>,
-        val permittedPersonActions: Set<Action.Person>
+        val permittedPersonActions: Set<Action.Person>,
+        val assistanceNeedVoucherCoefficientsEnabled: Boolean
     )
 }
 

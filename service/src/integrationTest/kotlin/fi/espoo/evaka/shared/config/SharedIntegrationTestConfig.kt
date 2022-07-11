@@ -183,7 +183,7 @@ class SharedIntegrationTestConfig {
 }
 
 val testFeatureConfig = FeatureConfig(
-    valueDecisionCapacityFactorEnabled = true,
+    valueDecisionCapacityFactorEnabled = false,
     daycareApplicationServiceNeedOptionsEnabled = false,
     citizenReservationThresholdHours = 150,
     dailyFeeDivisorOperationalDaysOverride = null,

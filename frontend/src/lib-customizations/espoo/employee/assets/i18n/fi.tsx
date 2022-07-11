@@ -877,6 +877,39 @@ export const fi = {
         </>
       )
     },
+    assistanceNeedVoucherCoefficient: {
+      sectionTitle: 'Palvelusetelikerroin',
+      voucherCoefficient: 'Palvelusetelikerroin',
+      create: 'Aseta uusi palvelusetelikerroin',
+      statuses: {
+        ACTIVE: 'Aktiivinen',
+        ENDED: 'Päättynyt',
+        UPCOMING: 'Tuleva'
+      },
+      form: {
+        title: 'Aseta uusi palvelusetelikerroin',
+        editTitle: 'Muokkaa palvelusetelikerrointa',
+        titleInfo:
+          'Valitse palvelusetelikertoimen voimassaolopäivämäärät tuen tarpeen päätöksen mukaisesti.',
+        coefficient: 'Palvelusetelikerroin (luku)',
+        validityPeriod: 'Palvelusetelikerroin voimassa',
+        errors: {
+          previousOverlap:
+            'Aiempi päällekkäinen palvelusetelikerroin katkaistaan automaattisesti.',
+          upcomingOverlap:
+            'Tuleva päällekkäinen palvelusetelikerroin siirretään alkamaan myöhemmin automaattisesti.',
+          fullOverlap:
+            'Edellinen päällekkäinen palvelusetelikerroin poistetaan automaattisesti.',
+          coefficientRange: 'Kerroin tulee olla välillä 1-10'
+        }
+      },
+      deleteModal: {
+        title: 'Poistetaanko palvelusetelikerroin?',
+        description:
+          'Haluatko varmasti poistaa palvelusetelikertoimen? Asiakkaalle ei luoda uutta arvopäätöstä, vaikka kertoimen poistaisi, vaan sinun tulee tehdä uusi takautuva arvopäätös.',
+        delete: 'Poista kerroin'
+      }
+    },
     application: {
       title: 'Hakemukset',
       guardian: 'Hakemuksen tekijä',
@@ -2341,7 +2374,7 @@ export const fi = {
         LESS_THAN_3: 'Alle 3-vuotias',
         OVER_3: 'Vähintään 3-vuotias'
       },
-      capacityFactor: 'tuen tarpeen kerroin',
+      assistanceNeedCoefficient: 'tuen tarpeen kerroin',
       hoursPerWeek: 'tuntia viikossa'
     }
   },
@@ -2665,6 +2698,11 @@ export const fi = {
         'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',
         'assistance_action.child_id': 'Tuki- toimia',
         'assistance_need.child_id': 'Tuen tarpeita',
+        'assistance_need_decision.child_id': 'Tuen tarpeen päätöksiä',
+        'assistance_need_decision_guardian.person_id':
+          'Tuen tarpeen päätöksen huoltajana',
+        'assistance_need_voucher_coefficient.child_id':
+          'Tuen tarpeen palvelusetelikertoimia',
         'attachment.uploaded_by_person': 'Liitteitä',
         'attendance_reservation.child_id': 'Läsnäolo -varauksia',
         'attendance_reservation.created_by_guardian_id':
@@ -2887,7 +2925,7 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
-      capacityFactor: 'Tuen tarve',
+      assistanceNeed: 'Tuen tarve',
       partTime: 'Osa/Koko',
       type: {
         NEW: 'Uusi päätös',

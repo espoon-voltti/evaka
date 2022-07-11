@@ -57,8 +57,7 @@ class ServiceVoucherValueReportController(
     data class ServiceVoucherUnitReport(
         val locked: LocalDate?,
         val rows: List<ServiceVoucherValueRow>,
-        val voucherTotal: Int,
-        val assistanceNeedCapacityFactorEnabled: Boolean
+        val voucherTotal: Int
     )
 
     @GetMapping("/units/{unitId}")
@@ -83,8 +82,7 @@ class ServiceVoucherValueReportController(
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
                     rows = rows,
-                    voucherTotal = rows.sumOf { it.realizedAmount },
-                    assistanceNeedCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
+                    voucherTotal = rows.sumOf { it.realizedAmount }
                 )
             }
         }
@@ -193,7 +191,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherCoPayment: Int,
     val serviceVoucherFinalCoPayment: Int,
     val serviceNeedDescription: String,
-    val assistanceNeedCapacityFactor: BigDecimal,
+    val assistanceNeedCoefficient: BigDecimal,
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
@@ -383,7 +381,7 @@ SELECT
     decision.co_payment AS service_voucher_co_payment,
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
-    decision.capacity_factor AS assistance_need_capacity_factor,
+    decision.assistance_need_coefficient AS assistance_need_coefficient,
     coalesce(
         row.realized_amount,
         round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / row.operational_days_count::numeric(10, 8)))
@@ -463,7 +461,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             decision.co_payment AS service_voucher_co_payment,
             decision.final_co_payment AS service_voucher_final_co_payment,
             decision.service_need_voucher_value_description_fi AS service_need_description,
-            decision.capacity_factor AS assistance_need_capacity_factor,
+            decision.assistance_need_coefficient AS assistance_need_coefficient,
             sn_decision.realized_amount,
             sn_decision.realized_period,
             upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,

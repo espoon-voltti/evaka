@@ -59,15 +59,32 @@ export const Td = styled.td<{
   align?: 'right' | 'left'
   verticalAlign?: 'top' | 'middle' | 'bottom'
   color?: string
+  minimalWidth?: boolean
+  maximalWidth?: boolean
+  topBorder?: boolean
 }>`
   line-height: 1.3em;
   border-style: solid;
   border-color: ${(p) => p.theme.colors.grayscale.g15};
-  border-width: 0 0 1px;
+  border-width: ${(p) => (p.topBorder ? '1px 0 0 0' : '0 0 1px')};
   padding: ${defaultMargins.s};
   vertical-align: ${(p) => p.verticalAlign ?? 'top'};
   text-align: ${(p) => p.align ?? 'left'};
   ${(p) => (p.color ? `color: ${p.color};` : '')}
+  ${(p) =>
+    p.minimalWidth
+      ? `
+          width: 0;
+          white-space: nowrap;
+        `
+      : ''}
+  ${(p) =>
+    p.maximalWidth
+      ? `
+          width: 100%;
+          white-space: nowrap;
+        `
+      : ''}
 `
 
 export interface TrProps {
