@@ -69,14 +69,12 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val assistanceNeedCoefficients = if (featureConfig.valueDecisionAssistanceNeedCoefficientEnabled)
+    val assistanceNeedCoefficients = if (featureConfig.valueDecisionCapacityFactorEnabled)
+        getCapacityFactorsByChild(child.id).map { AssistanceNeedCoefficient(it.dateRange, it.capacityFactor) }
+    else
         getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
             AssistanceNeedCoefficient(it.validityPeriod.asDateRange(), it.coefficient)
         }
-    else if (featureConfig.valueDecisionCapacityFactorEnabled)
-        getCapacityFactorsByChild(child.id).map { AssistanceNeedCoefficient(it.dateRange, it.capacityFactor) }
-    else
-        listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()

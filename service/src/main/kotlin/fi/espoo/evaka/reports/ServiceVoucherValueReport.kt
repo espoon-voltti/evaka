@@ -57,8 +57,7 @@ class ServiceVoucherValueReportController(
     data class ServiceVoucherUnitReport(
         val locked: LocalDate?,
         val rows: List<ServiceVoucherValueRow>,
-        val voucherTotal: Int,
-        val assistanceNeedCoefficientEnabled: Boolean
+        val voucherTotal: Int
     )
 
     @GetMapping("/units/{unitId}")
@@ -83,9 +82,7 @@ class ServiceVoucherValueReportController(
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
                     rows = rows,
-                    voucherTotal = rows.sumOf { it.realizedAmount },
-                    assistanceNeedCoefficientEnabled = featureConfig.valueDecisionAssistanceNeedCoefficientEnabled ||
-                        featureConfig.valueDecisionCapacityFactorEnabled,
+                    voucherTotal = rows.sumOf { it.realizedAmount }
                 )
             }
         }

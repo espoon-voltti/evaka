@@ -119,10 +119,8 @@ class AssistanceNeedVoucherCoefficientController(
         if (overlappingCoefficients.isNotEmpty()) {
             overlappingCoefficients.forEach {
                 if (range.contains(it.validityPeriod)) {
-                    Audit.ChildAssistanceNeedVoucherCoefficientAutoDelete.log(targetId = it.id, objectId = childId)
                     tx.deleteAssistanceNeedVoucherCoefficient(it.id)
                 } else {
-                    Audit.ChildAssistanceNeedVoucherCoefficientAutoUpdate.log(targetId = it.id, objectId = childId)
                     tx.updateAssistanceNeedVoucherCoefficient(
                         id = it.id,
                         data = AssistanceNeedVoucherCoefficientRequest(

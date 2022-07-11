@@ -422,7 +422,6 @@ export interface ServiceVoucherReport {
 * Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherUnitReport
 */
 export interface ServiceVoucherUnitReport {
-  assistanceNeedCoefficientEnabled: boolean
   locked: LocalDate | null
   rows: ServiceVoucherValueRow[]
   voucherTotal: number

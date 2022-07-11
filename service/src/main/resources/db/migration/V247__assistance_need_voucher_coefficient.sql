@@ -12,11 +12,6 @@ CREATE TABLE assistance_need_voucher_coefficient (
     )
 );
 
--- rename old capacity_factor column
-ALTER TABLE voucher_value_decision ADD COLUMN assistance_need_coefficient numeric(4, 2);
+CREATE INDEX idx$assistance_need_voucher_coefficient_child_id ON assistance_need_voucher_coefficient (child_id);
 
-UPDATE voucher_value_decision SET assistance_need_coefficient = capacity_factor;
-
-ALTER TABLE voucher_value_decision
-  ALTER COLUMN assistance_need_coefficient SET NOT NULL,
-  DROP COLUMN capacity_factor;
+ALTER TABLE voucher_value_decision RENAME COLUMN capacity_factor TO assistance_need_coefficient;

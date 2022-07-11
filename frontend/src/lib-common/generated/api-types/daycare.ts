@@ -185,6 +185,7 @@ export interface Child {
 * Generated from fi.espoo.evaka.daycare.controllers.ChildController.ChildResponse
 */
 export interface ChildResponse {
+  assistanceNeedVoucherCoefficientsEnabled: boolean
   permittedActions: Action.Child[]
   permittedPersonActions: Action.Person[]
   person: PersonJSON

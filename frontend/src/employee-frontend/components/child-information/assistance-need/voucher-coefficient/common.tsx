@@ -8,17 +8,12 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { theme } from 'lib-customizations/common'
 
-export type AssistanceNeedVoucherCoefficientStatus =
-  | 'ACTIVE'
-  | 'ENDED'
-  | 'UPCOMING'
-
 export const AssistanceNeedVoucherCoefficientStatusChip = React.memo(
   function AssistanceNeedVoucherCoefficientStatusChip({
     status,
     'data-qa': dataQa
   }: {
-    status: AssistanceNeedVoucherCoefficientStatus
+    status: 'ACTIVE' | 'ENDED' | 'UPCOMING'
     'data-qa'?: string
   }) {
     const { i18n } = useTranslation()

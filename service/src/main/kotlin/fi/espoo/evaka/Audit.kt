@@ -70,8 +70,6 @@ enum class Audit(
     ChildAssistanceNeedVoucherCoefficientRead("evaka.child.assistance-need-voucher-coefficient.read"),
     ChildAssistanceNeedVoucherCoefficientUpdate("evaka.child.assistance-need-voucher-coefficient.update"),
     ChildAssistanceNeedVoucherCoefficientDelete("evaka.child.assistance-need-voucher-coefficient.delete"),
-    ChildAssistanceNeedVoucherCoefficientAutoDelete("evaka.child.assistance-need-voucher-coefficient.auto-delete"),
-    ChildAssistanceNeedVoucherCoefficientAutoUpdate("evaka.child.assistance-need-voucher-coefficient.auto-update"),
     ChildAttendancesRead("evaka.child-attendances.read"),
     ChildAttendancesUpsert("evaka.child-attendances.upsert"),
     ChildAttendancesArrivalCreate("evaka.child-attendances.arrival.create"),

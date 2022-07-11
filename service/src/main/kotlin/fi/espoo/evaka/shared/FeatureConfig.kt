@@ -12,13 +12,6 @@ data class FeatureConfig(
      */
     val valueDecisionCapacityFactorEnabled: Boolean,
 
-    /** Do assistance need voucher coefficients affect voucher value decisions?
-     *
-     * If true, voucher value decision's value is multiplied by the currently active assistance need voucher coefficient.
-     * If false, value is not multiplied.
-     */
-    val valueDecisionAssistanceNeedCoefficientEnabled: Boolean,
-
     /** Whether to show service needs on application form */
     val daycareApplicationServiceNeedOptionsEnabled: Boolean,
 

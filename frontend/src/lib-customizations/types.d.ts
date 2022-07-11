@@ -129,7 +129,6 @@ interface BaseFeatureFlags {
     voucherUnitPayments?: boolean
     assistanceNeedDecisions?: boolean
     assistanceNeedDecisionsLanguageSelect?: boolean
-    assistanceNeedVoucherCoefficients?: boolean
     staffAttendanceTypes?: boolean
   }
 }

@@ -25,7 +25,8 @@ export interface Props {
 
 export default React.memo(function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { permittedActions } = useContext<ChildState>(ChildContext)
+  const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
+    useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -55,7 +56,7 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
               <AssistanceNeedDecisionSection id={id} />
             </>
           )}
-        {featureFlags.experimental?.assistanceNeedVoucherCoefficients &&
+        {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
           permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
             <>
               <HorizontalLine dashed slim />

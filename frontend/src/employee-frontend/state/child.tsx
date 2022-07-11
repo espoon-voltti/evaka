@@ -34,6 +34,7 @@ export interface ChildState {
   setBackupCares: (request: Result<ChildBackupCareResponse[]>) => void
   guardians: Result<PersonJSON[]>
   reloadPermittedActions: () => void
+  assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -48,7 +49,8 @@ const defaultState: ChildState = {
   backupCares: Loading.of(),
   setBackupCares: () => undefined,
   guardians: Loading.of(),
-  reloadPermittedActions: () => undefined
+  reloadPermittedActions: () => undefined,
+  assistanceNeedVoucherCoefficientsEnabled: Loading.of()
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -66,6 +68,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [permittedActions, setPermittedActions] = useState<
     Set<Action.Child | Action.Person>
   >(emptyPermittedActions)
+  const [
+    assistanceNeedVoucherCoefficientsEnabled,
+    setAssistanceNeedVoucherCoefficientsEnabled
+  ] = useState<Result<boolean>>(Loading.of())
 
   const updatePermittedActions = useCallback(
     (response: Result<ChildResponse>) => {
@@ -85,6 +91,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     (response: Result<ChildResponse>) => {
       updatePermittedActions(response)
       setChildResponse(response)
+      setAssistanceNeedVoucherCoefficientsEnabled(
+        response.map((res) => res.assistanceNeedVoucherCoefficientsEnabled)
+      )
     },
     [updatePermittedActions]
   )
@@ -139,7 +148,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       backupCares,
       setBackupCares,
       guardians,
-      reloadPermittedActions
+      reloadPermittedActions,
+      assistanceNeedVoucherCoefficientsEnabled
     }),
     [
       person,
@@ -150,7 +160,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       guardians,
-      reloadPermittedActions
+      reloadPermittedActions,
+      assistanceNeedVoucherCoefficientsEnabled
     ]
   )
 

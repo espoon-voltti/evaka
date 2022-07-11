@@ -318,16 +318,11 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
                     key: 'serviceNeedDescription'
                   },
-                  ...(sortedReport.value.assistanceNeedCoefficientEnabled
-                    ? [
-                        {
-                          label:
-                            i18n.reports.voucherServiceProviderUnit
-                              .assistanceNeed,
-                          key: 'assistanceNeedCapacityFactor' as const
-                        }
-                      ]
-                    : []),
+                  {
+                    label:
+                      i18n.reports.voucherServiceProviderUnit.assistanceNeed,
+                    key: 'assistanceNeedCapacityFactor'
+                  },
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
@@ -371,11 +366,9 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  {sortedReport.value.assistanceNeedCoefficientEnabled ? (
-                    <StyledTh>
-                      {i18n.reports.voucherServiceProviderUnit.assistanceNeed}
-                    </StyledTh>
-                  ) : null}
+                  <StyledTh>
+                    {i18n.reports.voucherServiceProviderUnit.assistanceNeed}
+                  </StyledTh>
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -458,9 +451,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                         </Tooltip>
                       </Td>
                       <Td>{row.serviceNeedDescription}</Td>
-                      {sortedReport.value.assistanceNeedCoefficientEnabled && (
-                        <Td>{formatDecimal(row.assistanceNeedCoefficient)}</Td>
-                      )}
+                      <Td>{formatDecimal(row.assistanceNeedCoefficient)}</Td>
                       <Td data-qa="voucher-value">
                         {formatCents(row.serviceVoucherValue, true)}
                       </Td>

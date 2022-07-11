@@ -21,16 +21,14 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
         """
         INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period)
         VALUES (:childId, :coefficient, :validityPeriod)
-        RETURNING id
+        RETURNING id, child_id, coefficient, validity_period
         """.trimIndent()
 
-    val id = createQuery(sql)
+    return createQuery(sql)
         .bindKotlin(data)
         .bind("childId", childId)
-        .mapTo<AssistanceNeedVoucherCoefficientId>()
+        .mapTo<AssistanceNeedVoucherCoefficient>()
         .first()
-
-    return getAssistanceNeedVoucherCoefficientById(id)
 }
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(id: AssistanceNeedVoucherCoefficientId): AssistanceNeedVoucherCoefficient {
@@ -72,16 +70,14 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
         SET coefficient = :coefficient,
             validity_period = :validityPeriod
         WHERE id = :id
-        RETURNING id
+        RETURNING id, child_id, coefficient, validity_period
         """.trimIndent()
 
-    createQuery(sql)
+    return createQuery(sql)
         .bindKotlin(data)
         .bind("id", id)
-        .mapTo<AssistanceNeedVoucherCoefficientId>()
+        .mapTo<AssistanceNeedVoucherCoefficient>()
         .firstOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
-
-    return getAssistanceNeedVoucherCoefficientById(id)
 }
 
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(id: AssistanceNeedVoucherCoefficientId): Boolean {

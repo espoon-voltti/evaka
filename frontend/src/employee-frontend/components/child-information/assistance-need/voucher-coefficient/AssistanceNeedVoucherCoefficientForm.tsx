@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import compact from 'lodash/compact'
 import React, {
   useCallback,
   useContext,
@@ -150,17 +149,17 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
         : props.coefficients.filter((c) => c.id !== props.coefficient.id)
     ).map((c) => c.validityPeriod)
 
-    const warnings = compact([
+    const overlapWarning = [
       hasFullOverlap(validityPeriod, relevantExistingCoefficients) &&
         t.form.errors.fullOverlap,
       hasPreviousOverlap(validityPeriod, relevantExistingCoefficients) &&
         t.form.errors.previousOverlap,
       hasUpcomingOverlap(validityPeriod, relevantExistingCoefficients) &&
         t.form.errors.upcomingOverlap
-    ])
+    ].find((warning): warning is string => !!warning)
 
-    if (warnings.length > 0) {
-      setWarning(warnings.join('\n'))
+    if (overlapWarning) {
+      setWarning(overlapWarning)
     }
   }, [form, props, t])
 

@@ -272,16 +272,20 @@ describe('Child assistance need decisions for employees', () => {
 })
 
 describe('Child assistance need voucher coefficients for employees', () => {
-  async function createVoucherCoefficient() {
+  async function createVoucherCoefficient(
+    coefficient: string,
+    validityPeriodStart: string,
+    validityPeriodEnd: string
+  ) {
     await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
     const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
       assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
     )
-    await form.coefficientInput.type('4,3')
+    await form.coefficientInput.type(coefficient)
     await form.validityPeriod.startInput.clear()
-    await form.validityPeriod.startInput.type('04.02.2021')
+    await form.validityPeriod.startInput.type(validityPeriodStart)
     await form.validityPeriod.endInput.clear()
-    await form.validityPeriod.endInput.type('01.09.2021')
+    await form.validityPeriod.endInput.type(validityPeriodEnd)
     await form.saveBtn.click()
   }
 
@@ -292,7 +296,8 @@ describe('Child assistance need voucher coefficients for employees', () => {
         await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
       ).data
     )
-    await createVoucherCoefficient()
+
+    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -312,17 +317,9 @@ describe('Child assistance need voucher coefficients for employees', () => {
         await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
       ).data
     )
-    await createVoucherCoefficient()
-    await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
-    const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
-      assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
-    )
-    await form.coefficientInput.type('1,2')
-    await form.validityPeriod.startInput.clear()
-    await form.validityPeriod.startInput.type('16.06.2021')
-    await form.validityPeriod.endInput.clear()
-    await form.validityPeriod.endInput.type('05.10.2021')
-    await form.saveBtn.click()
+
+    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
+    await createVoucherCoefficient('1,2', '16.06.2021', '05.10.2021')
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -352,7 +349,8 @@ describe('Child assistance need voucher coefficients for employees', () => {
         await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
       ).data
     )
-    await createVoucherCoefficient()
+
+    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
 
     await assistanceNeeds
       .assistanceNeedVoucherCoefficientActions(0)
@@ -386,18 +384,9 @@ describe('Child assistance need voucher coefficients for employees', () => {
         await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
       ).data
     )
-    await createVoucherCoefficient()
 
-    await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
-    const creationForm = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
-      assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
-    )
-    await creationForm.coefficientInput.type('1,9')
-    await creationForm.validityPeriod.startInput.clear()
-    await creationForm.validityPeriod.startInput.type('29.11.2021')
-    await creationForm.validityPeriod.endInput.clear()
-    await creationForm.validityPeriod.endInput.type('30.12.2021')
-    await creationForm.saveBtn.click()
+    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
+    await createVoucherCoefficient('1,9', '29.11.2021', '30.12.2021')
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -451,7 +440,8 @@ describe('Child assistance need voucher coefficients for employees', () => {
         await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
       ).data
     )
-    await createVoucherCoefficient()
+
+    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
 
     await assistanceNeeds
       .assistanceNeedVoucherCoefficientActions(0)
