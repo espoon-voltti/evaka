@@ -181,6 +181,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           onReload={loadDefaultRange}
           reservableDays={response.reservableDays}
           firstReservableDate={firstReservableDate}
+          existingReservations={response.dailyData}
         />
       )}
       {modalState?.type === 'absences' && (

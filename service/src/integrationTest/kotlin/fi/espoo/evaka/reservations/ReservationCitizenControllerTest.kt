@@ -79,8 +79,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         postReservations(
             listOf(testChild_1.id, testChild_2.id).flatMap { child ->
                 listOf(
-                    DailyReservationRequest(child, testDate, listOf(TimeRange(startTime, endTime))),
-                    DailyReservationRequest(child, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)))
+                    DailyReservationRequest(child, testDate, listOf(TimeRange(startTime, endTime)), absent = false),
+                    DailyReservationRequest(child, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)), absent = false)
                 )
             },
         )
@@ -140,11 +140,45 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `adding a reservation and an absence works`() {
+        postReservations(
+            listOf(
+                DailyReservationRequest(testChild_1.id, testDate, listOf(TimeRange(startTime, endTime)), absent = false),
+                DailyReservationRequest(testChild_1.id, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)), absent = true)
+            )
+        )
+
+        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
+
+        val dailyData = res.dailyData
+        assertEquals(3, dailyData.size)
+
+        assertEquals(testDate, dailyData[0].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf())
+            ),
+            dailyData[0].children.toSet()
+        )
+
+        assertEquals(testDate.plusDays(1), dailyData[1].date)
+        assertEquals(
+            setOf(
+                ChildDailyData(testChild_1.id, false, AbsenceType.OTHER_ABSENCE, emptyList(), listOf()),
+            ),
+            dailyData[1].children.toSet()
+        )
+
+        assertEquals(testDate.plusDays(2), dailyData[2].date)
+        assertEquals(0, dailyData[2].children.size)
+    }
+
+    @Test
     fun `adding reservations fails if past citizen reservation threshold setting`() {
         val request = listOf(testChild_1.id, testChild_2.id).flatMap { child ->
             listOf(
-                DailyReservationRequest(child, mockToday, listOf(TimeRange(startTime, endTime))),
-                DailyReservationRequest(child, mockToday.plusDays(1), listOf(TimeRange(startTime, endTime)))
+                DailyReservationRequest(child, mockToday, listOf(TimeRange(startTime, endTime)), absent = false),
+                DailyReservationRequest(child, mockToday.plusDays(1), listOf(TimeRange(startTime, endTime)), absent = false)
             )
         }
         postReservations(request, 400)

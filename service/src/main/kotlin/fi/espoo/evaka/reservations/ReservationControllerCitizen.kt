@@ -88,7 +88,7 @@ class ReservationControllerCitizen(
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservations(tx, user.evakaUserId, body.validate(reservableDays))
+                createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
     }
@@ -118,7 +118,11 @@ class ReservationControllerCitizen(
                 )
                 tx.insertAbsences(
                     user.id,
-                    body.childIds.map { AbsenceInsert(it, body.dateRange, body.absenceType) }
+                    body.childIds.flatMap { childId ->
+                        body.dateRange.dates().map { date ->
+                            AbsenceInsert(childId, date, body.absenceType)
+                        }
+                    }
                 )
             }
         }

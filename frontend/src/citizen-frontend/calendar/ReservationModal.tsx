@@ -4,42 +4,44 @@
 
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationData,
+  ReservationChild
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
 import {
   Repetition,
   ReservationFormDataForValidation,
-  TimeRangeErrors,
-  TimeRanges,
   validateForm
 } from 'lib-common/reservations'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
-import {
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
+import { tabletMin } from 'lib-components/breakpoints'
+import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { fontWeights, H2, Label, Light } from 'lib-components/typography'
+import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
+import { H1, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPlus, faTrash } from 'lib-icons'
+import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
+import { BottomFooterContainer } from './BottomFooterContainer'
 import { postReservations } from './api'
+import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 
 interface Props {
   onClose: () => void
@@ -47,6 +49,7 @@ interface Props {
   availableChildren: ReservationChild[]
   reservableDays: FiniteDateRange[]
   firstReservableDate: LocalDate
+  existingReservations: DailyReservationData[]
 }
 
 export default React.memo(function ReservationModal({
@@ -54,7 +57,8 @@ export default React.memo(function ReservationModal({
   onReload,
   availableChildren,
   reservableDays,
-  firstReservableDate
+  firstReservableDate,
+  existingReservations
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -79,48 +83,21 @@ export default React.memo(function ReservationModal({
     irregularTimes: {}
   })
 
-  const updateForm = (updated: Partial<ReservationFormDataForValidation>) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...updated
-    }))
-  }
+  const updateForm = useCallback(
+    (updated: Partial<ReservationFormDataForValidation>) => {
+      setFormData((prev) => ({
+        ...prev,
+        ...updated
+      }))
+    },
+    []
+  )
 
   const [showAllErrors, setShowAllErrors] = useState(false)
   const validationResult = useMemo(
     () => validateForm(reservableDays, formData),
     [reservableDays, formData]
   )
-
-  const shiftCareRange = useMemo(() => {
-    if (formData.repetition !== 'IRREGULAR') return
-
-    if (!formData.startDate || !formData.endDate) {
-      return
-    }
-
-    return [
-      ...new FiniteDateRange(formData.startDate, formData.endDate).dates()
-    ]
-  }, [formData.repetition, formData.startDate, formData.endDate])
-
-  const childrenInShiftCare = useMemo(
-    () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
-    [availableChildren]
-  )
-
-  const includedDays = useMemo(() => {
-    const combinedOperationDays = availableChildren.reduce<number[]>(
-      (totalOperationDays, child) => [
-        ...new Set([...totalOperationDays, ...child.maxOperationalDays])
-      ],
-      []
-    )
-
-    return [1, 2, 3, 4, 5, 6, 7].filter((day) =>
-      combinedOperationDays.includes(day)
-    )
-  }, [availableChildren])
 
   const isInvalidDate = useCallback(
     (date: LocalDate) =>
@@ -138,416 +115,244 @@ export default React.memo(function ReservationModal({
     [reservableDays]
   )
 
+  const selectedRange = useMemo(() => {
+    if (!formData.startDate || !formData.endDate) {
+      return
+    }
+
+    return new FiniteDateRange(formData.startDate, formData.endDate)
+  }, [formData.startDate, formData.endDate])
+
+  const childrenInShiftCare = useMemo(
+    () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
+    [availableChildren]
+  )
+
+  const includedDays = useMemo(() => {
+    if (!selectedRange) return []
+
+    const combinedOperationDays = availableChildren.reduce<number[]>(
+      (totalOperationDays, child) => [
+        ...new Set([...totalOperationDays, ...child.maxOperationalDays])
+      ],
+      []
+    )
+
+    return [1, 2, 3, 4, 5, 6, 7].filter(
+      (day) =>
+        combinedOperationDays.includes(day) &&
+        [...selectedRange.dates()].some(
+          (date) => date.getIsoDayOfWeek() === day
+        )
+    )
+  }, [availableChildren, selectedRange])
+
   return (
     <ModalAccessibilityWrapper>
-      <AsyncFormModal
-        mobileFullScreen
-        title={i18n.calendar.reservationModal.title}
-        resolveAction={() => {
-          if (validationResult.errors) {
-            setShowAllErrors(true)
-            return
-          } else {
-            return postReservations(validationResult.requestPayload)
-          }
-        }}
-        onSuccess={() => {
-          onReload()
-          onClose()
-        }}
-        resolveLabel={i18n.common.confirm}
-        resolveDisabled={formData.selectedChildren.length === 0}
-        rejectAction={onClose}
-        rejectLabel={i18n.common.cancel}
-      >
-        <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
-        <Label>{i18n.calendar.reservationModal.selectChildrenLabel}</Label>
-        <Gap size="xs" />
-        <FixedSpaceFlexWrap>
-          {availableChildren.map((child) => (
-            <SelectionChip
-              key={child.id}
-              text={formatPreferredName(child)}
-              selected={formData.selectedChildren.includes(child.id)}
-              onChange={(selected) => {
-                if (selected) {
-                  updateForm({
-                    selectedChildren: [...formData.selectedChildren, child.id]
-                  })
-                } else {
-                  updateForm({
-                    selectedChildren: formData.selectedChildren.filter(
-                      (id) => id !== child.id
-                    )
-                  })
-                }
-              }}
-              data-qa={`child-${child.id}`}
-            />
-          ))}
-        </FixedSpaceFlexWrap>
+      <PlainModal mobileFullScreen margin="auto">
+        <ReservationModalBackground>
+          <BottomFooterContainer>
+            <div>
+              <ModalSection>
+                <Gap size="L" sizeOnMobile="zero" />
+                <H1 data-qa="title" noMargin>
+                  {i18n.calendar.reservationModal.title}
+                </H1>
+              </ModalSection>
 
-        <H2>{i18n.calendar.reservationModal.dateRange}</H2>
-        <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
-        <Select<Repetition>
-          items={['DAILY', 'WEEKLY', 'IRREGULAR']}
-          selectedItem={formData.repetition}
-          onChange={(value) => {
-            if (value) updateForm({ repetition: value })
-          }}
-          getItemLabel={(item) =>
-            i18n.calendar.reservationModal.repetitions[item]
-          }
-          data-qa="repetition"
-        />
-        <Gap size="s" />
+              <Gap size="zero" sizeOnMobile="s" />
 
-        <ExpandingInfo
-          width="auto"
-          ariaLabel={i18n.common.openExpandingInfo}
-          info={
-            reservableDays.length > 0
-              ? i18n.calendar.reservationModal.dateRangeInfo(
-                  reservableDays[0].end
-                )
-              : i18n.calendar.reservationModal.noReservableDays
-          }
-        >
-          <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
-        </ExpandingInfo>
-        <DateRangePicker
-          start={formData.startDate}
-          end={formData.endDate}
-          onChange={(startDate, endDate) => updateForm({ startDate, endDate })}
-          locale={lang}
-          errorTexts={i18n.validationErrors}
-          isInvalidDate={isInvalidDate}
-          minDate={minDate}
-          maxDate={maxDate}
-          hideErrorsBeforeTouched={!showAllErrors}
-          onFocus={(ev) => {
-            scrollIntoViewSoftKeyboard(ev.target, 'start')
-          }}
-          startInfo={errorToInputInfo(
-            validationResult.errors?.startDate,
-            i18n.validationErrors
-          )}
-          endInfo={errorToInputInfo(
-            validationResult.errors?.endDate,
-            i18n.validationErrors
-          )}
-        />
-        <Gap size="m" />
-
-        <TimeInputGrid>
-          {formData.repetition === 'DAILY' && (
-            <TimeInputs
-              label={
-                <Label>{`${
-                  i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
-                }-${
-                  i18n.common.datetime.weekdaysShort[
-                    includedDays[includedDays.length - 1] - 1
-                  ]
-                }`}</Label>
-              }
-              times={formData.dailyTimes}
-              updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
-              validationErrors={validationResult.errors?.dailyTimes}
-              showAllErrors={showAllErrors}
-              allowExtraTimeRange={childrenInShiftCare}
-              dataQaPrefix="daily"
-              onFocus={(ev) => {
-                scrollIntoViewSoftKeyboard(ev.target)
-              }}
-            />
-          )}
-
-          {formData.repetition === 'WEEKLY' &&
-            formData.weeklyTimes.map((times, index) =>
-              includedDays.includes(index + 1) ? (
-                <TimeInputs
-                  key={`day-${index}`}
-                  label={
-                    <Checkbox
-                      label={i18n.common.datetime.weekdaysShort[index]}
-                      checked={!!times}
-                      onChange={(checked) =>
-                        updateForm({
-                          weeklyTimes: [
-                            ...formData.weeklyTimes.slice(0, index),
-                            checked
-                              ? [
-                                  {
-                                    startTime: '',
-                                    endTime: ''
-                                  }
-                                ]
-                              : undefined,
-                            ...formData.weeklyTimes.slice(index + 1)
-                          ]
-                        })
-                      }
-                    />
-                  }
-                  times={times}
-                  updateTimes={(times) =>
-                    updateForm({
-                      weeklyTimes: [
-                        ...formData.weeklyTimes.slice(0, index),
-                        times,
-                        ...formData.weeklyTimes.slice(index + 1)
-                      ]
-                    })
-                  }
-                  validationErrors={
-                    validationResult.errors?.weeklyTimes?.[index]
-                  }
-                  showAllErrors={showAllErrors}
-                  allowExtraTimeRange={childrenInShiftCare}
-                  dataQaPrefix={`weekly-${index}`}
-                  onFocus={(ev) => {
-                    scrollIntoViewSoftKeyboard(ev.target)
-                  }}
-                />
-              ) : null
-            )}
-
-          {formData.repetition === 'IRREGULAR' ? (
-            shiftCareRange ? (
-              shiftCareRange.map((date, index) => (
-                <Fragment key={`shift-care-${date.formatIso()}`}>
-                  {index !== 0 && date.getIsoDayOfWeek() === 1 ? (
-                    <Separator />
-                  ) : null}
-                  {index === 0 || date.getIsoDayOfWeek() === 1 ? (
-                    <Week>
-                      {i18n.common.datetime.week} {date.getIsoWeek()}
-                    </Week>
-                  ) : null}
-                  {includedDays.includes(date.getIsoDayOfWeek()) && (
-                    <TimeInputs
-                      label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
-                      times={
-                        formData.irregularTimes[date.formatIso()] ?? [
-                          {
-                            startTime: '',
-                            endTime: ''
-                          }
-                        ]
-                      }
-                      updateTimes={(times) =>
-                        updateForm({
-                          irregularTimes: {
-                            ...formData.irregularTimes,
-                            [date.formatIso()]: times
-                          }
-                        })
-                      }
-                      validationErrors={
-                        validationResult.errors?.irregularTimes?.[
-                          date.formatIso()
-                        ]
-                      }
-                      showAllErrors={showAllErrors}
-                      allowExtraTimeRange={childrenInShiftCare}
-                      dataQaPrefix={`irregular-${date.formatIso()}`}
-                      onFocus={(ev) => {
-                        scrollIntoViewSoftKeyboard(ev.target)
+              <ModalSection>
+                <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
+                <Label>
+                  {i18n.calendar.reservationModal.selectChildrenLabel}
+                </Label>
+                <Gap size="xs" />
+                <FixedSpaceFlexWrap>
+                  {availableChildren.map((child) => (
+                    <SelectionChip
+                      key={child.id}
+                      text={formatPreferredName(child)}
+                      selected={formData.selectedChildren.includes(child.id)}
+                      onChange={(selected) => {
+                        if (selected) {
+                          updateForm({
+                            selectedChildren: [
+                              ...formData.selectedChildren,
+                              child.id
+                            ]
+                          })
+                        } else {
+                          updateForm({
+                            selectedChildren: formData.selectedChildren.filter(
+                              (id) => id !== child.id
+                            )
+                          })
+                        }
                       }}
+                      data-qa={`child-${child.id}`}
                     />
+                  ))}
+                </FixedSpaceFlexWrap>
+              </ModalSection>
+
+              <Gap size="xxs" sizeOnMobile="s" />
+
+              <ModalSection>
+                <HorizontalLine slim dashed hiddenOnMobile />
+
+                <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+                <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
+                <Gap size="xxs" />
+                <Select<Repetition>
+                  items={['DAILY', 'WEEKLY', 'IRREGULAR']}
+                  selectedItem={formData.repetition}
+                  onChange={(value) => {
+                    if (value) updateForm({ repetition: value })
+                  }}
+                  getItemLabel={(item) =>
+                    i18n.calendar.reservationModal.repetitions[item]
+                  }
+                  data-qa="repetition"
+                />
+                <Gap size="s" />
+
+                <ExpandingInfo
+                  width="auto"
+                  ariaLabel={i18n.common.openExpandingInfo}
+                  info={
+                    reservableDays.length > 0
+                      ? i18n.calendar.reservationModal.dateRangeInfo(
+                          reservableDays[0].end
+                        )
+                      : i18n.calendar.reservationModal.noReservableDays
+                  }
+                >
+                  <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+                </ExpandingInfo>
+                <DateRangePicker
+                  start={formData.startDate}
+                  end={formData.endDate}
+                  onChange={(startDate, endDate) =>
+                    updateForm({ startDate, endDate })
+                  }
+                  locale={lang}
+                  errorTexts={i18n.validationErrors}
+                  isInvalidDate={isInvalidDate}
+                  minDate={minDate}
+                  maxDate={maxDate}
+                  hideErrorsBeforeTouched={!showAllErrors}
+                  onFocus={(ev) => {
+                    scrollIntoViewSoftKeyboard(ev.target, 'start')
+                  }}
+                  startInfo={errorToInputInfo(
+                    validationResult.errors?.startDate,
+                    i18n.validationErrors
                   )}
-                </Fragment>
-              ))
-            ) : (
-              <MissingDateRange>
-                {i18n.calendar.reservationModal.missingDateRange}
-              </MissingDateRange>
-            )
-          ) : null}
-        </TimeInputGrid>
-      </AsyncFormModal>
+                  endInfo={errorToInputInfo(
+                    validationResult.errors?.endDate,
+                    i18n.validationErrors
+                  )}
+                />
+
+                <Gap size="m" />
+
+                {selectedRange ? (
+                  <RepetitionTimeInputGrid
+                    formData={formData}
+                    childrenInShiftCare={childrenInShiftCare}
+                    includedDays={includedDays}
+                    updateForm={updateForm}
+                    showAllErrors={showAllErrors}
+                    existingReservations={existingReservations}
+                    validationResult={validationResult}
+                    selectedRange={selectedRange}
+                    repetition={formData.repetition}
+                  />
+                ) : (
+                  <MissingDateRange>
+                    {i18n.calendar.reservationModal.missingDateRange}
+                  </MissingDateRange>
+                )}
+              </ModalSection>
+            </div>
+            <ReservationModalButtons>
+              <Button
+                onClick={onClose}
+                data-qa="modal-cancelBtn"
+                text={i18n.common.cancel}
+              />
+              <AsyncButton
+                primary
+                text={i18n.common.confirm}
+                disabled={formData.selectedChildren.length === 0}
+                onClick={() => {
+                  if (validationResult.errors) {
+                    setShowAllErrors(true)
+                    return
+                  } else {
+                    return postReservations(validationResult.requestPayload)
+                  }
+                }}
+                onSuccess={() => {
+                  onReload()
+                  onClose()
+                }}
+                data-qa="modal-okBtn"
+              />
+            </ReservationModalButtons>
+          </BottomFooterContainer>
+        </ReservationModalBackground>
+        <ReservationModalCloseButton
+          onClick={onClose}
+          altText={i18n.common.closeModal}
+          icon={faTimes}
+        />
+      </PlainModal>
     </ModalAccessibilityWrapper>
   )
 })
 
-const TimeInputs = React.memo(function TimeInputs(props: {
-  label: JSX.Element
-  times: TimeRanges | undefined
-  updateTimes: (v: TimeRanges | undefined) => void
-  validationErrors: TimeRangeErrors[] | undefined
-  showAllErrors: boolean
-  allowExtraTimeRange: boolean
-  dataQaPrefix?: string
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
-}) {
-  const i18n = useTranslation()
+const ReservationModalCloseButton = styled(IconButton)`
+  position: absolute;
+  top: ${defaultMargins.s};
+  right: ${defaultMargins.s};
+  color: ${(p) => p.theme.colors.main.m2};
+`
 
-  if (!props.times) {
-    return (
-      <>
-        {props.label}
-        <div />
-        <div />
-      </>
-    )
+const ReservationModalButtons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: ${defaultMargins.s};
+  padding: ${defaultMargins.L};
+
+  @media (max-width: ${tabletMin}) {
+    padding: ${defaultMargins.s};
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: ${(p) => p.theme.colors.main.m4};
   }
-
-  const [timeRange, extraTimeRange] = props.times
-  return (
-    <>
-      {props.label}
-      <FixedSpaceRow alignItems="center">
-        <TimeInput
-          value={timeRange.startTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: value,
-              endTime: timeRange.endTime ?? ''
-            }
-
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.startTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
-          placeholder={i18n.calendar.reservationModal.start}
-          data-qa={
-            props.dataQaPrefix
-              ? `${props.dataQaPrefix}-start-time-0`
-              : undefined
-          }
-          onFocus={props.onFocus}
-        />
-        <span>–</span>
-        <TimeInput
-          value={timeRange.endTime ?? ''}
-          onChange={(value) => {
-            const updatedRange = {
-              startTime: timeRange.startTime ?? '',
-              endTime: value
-            }
-
-            props.updateTimes(
-              extraTimeRange ? [updatedRange, extraTimeRange] : [updatedRange]
-            )
-          }}
-          info={errorToInputInfo(
-            props.validationErrors?.[0]?.endTime,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!props.showAllErrors}
-          placeholder={i18n.calendar.reservationModal.end}
-          data-qa={
-            props.dataQaPrefix ? `${props.dataQaPrefix}-end-time-0` : undefined
-          }
-          onFocus={props.onFocus}
-        />
-      </FixedSpaceRow>
-      {!extraTimeRange && props.allowExtraTimeRange ? (
-        <IconButton
-          icon={faPlus}
-          onClick={() =>
-            props.updateTimes([
-              timeRange,
-              {
-                startTime: '',
-                endTime: ''
-              }
-            ])
-          }
-        />
-      ) : (
-        <div />
-      )}
-      {extraTimeRange ? (
-        <>
-          <div />
-          <FixedSpaceRow alignItems="center">
-            <TimeInput
-              value={extraTimeRange.startTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: value,
-                    endTime: extraTimeRange.endTime ?? ''
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.startTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-              placeholder={i18n.calendar.reservationModal.start}
-              data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-start-time-1`
-                  : undefined
-              }
-              onFocus={props.onFocus}
-            />
-            <span>–</span>
-            <TimeInput
-              value={extraTimeRange.endTime ?? ''}
-              onChange={(value) =>
-                props.updateTimes([
-                  timeRange,
-                  {
-                    startTime: extraTimeRange.startTime ?? '',
-                    endTime: value
-                  }
-                ])
-              }
-              info={errorToInputInfo(
-                props.validationErrors?.[1]?.endTime,
-                i18n.validationErrors
-              )}
-              hideErrorsBeforeTouched={!props.showAllErrors}
-              placeholder={i18n.calendar.reservationModal.end}
-              data-qa={
-                props.dataQaPrefix
-                  ? `${props.dataQaPrefix}-end-time-1`
-                  : undefined
-              }
-              onFocus={props.onFocus}
-            />
-          </FixedSpaceRow>
-          <IconButton
-            icon={faTrash}
-            onClick={() => props.updateTimes([timeRange])}
-          />
-        </>
-      ) : null}
-    </>
-  )
-})
-
-const TimeInputGrid = styled.div`
-  display: grid;
-  grid-template-columns: max-content max-content auto;
-  grid-column-gap: ${defaultMargins.s};
-  grid-row-gap: ${defaultMargins.s};
-  align-items: center;
 `
 
-const Week = styled.div`
-  color: ${(p) => p.theme.colors.main.m1};
-  font-weight: ${fontWeights.semibold};
-  grid-column-start: 1;
-  grid-column-end: 4;
+const ModalSection = styled.section`
+  padding: 0 ${defaultMargins.L};
+
+  @media (max-width: ${tabletMin}) {
+    padding: ${defaultMargins.m} ${defaultMargins.s};
+    background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+    h2 {
+      margin-top: 0;
+    }
+  }
 `
 
-const Separator = styled.div`
-  border-top: 2px dotted ${(p) => p.theme.colors.grayscale.g15};
-  margin: ${defaultMargins.s} 0;
-  grid-column-start: 1;
-  grid-column-end: 4;
+const ReservationModalBackground = styled.div`
+  height: 100%;
+
+  @media (max-width: ${tabletMin}) {
+    background-color: ${(p) => p.theme.colors.main.m4};
+  }
 `
 
 const MissingDateRange = styled(Light)`

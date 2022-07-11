@@ -45,6 +45,14 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz().addYears(1)
 )
 
+type EmployeeReservationFormData = Omit<
+  ReservationFormData,
+  'weeklyTimes' | 'irregularTimes'
+> & {
+  weeklyTimes: Array<TimeRanges | undefined>
+  irregularTimes: Record<string, TimeRanges | undefined>
+}
+
 export default React.memo(function ReservationModalSingleChild({
   onClose,
   onReload,
@@ -54,7 +62,7 @@ export default React.memo(function ReservationModalSingleChild({
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const [formData, setFormData] = useState<ReservationFormData>({
+  const [formData, setFormData] = useState<EmployeeReservationFormData>({
     selectedChildren: [child.id],
     startDate: LocalDate.todayInSystemTz(),
     endDate: null,
@@ -74,7 +82,7 @@ export default React.memo(function ReservationModalSingleChild({
     irregularTimes: {}
   })
 
-  const updateForm = (updated: Partial<ReservationFormData>) => {
+  const updateForm = (updated: Partial<EmployeeReservationFormData>) => {
     setFormData((prev) => ({
       ...prev,
       ...updated

@@ -110,7 +110,7 @@ export default React.memo(function DateRangePicker({
         date={internalEnd}
         onChange={(date) => setInternalEnd(date)}
         data-qa="end-date"
-        initialMonth={internalEnd ?? minDateForEnd}
+        initialMonth={internalEnd ?? internalStart ?? minDateForEnd}
         {...datePickerProps}
         minDate={minDateForEnd}
         info={

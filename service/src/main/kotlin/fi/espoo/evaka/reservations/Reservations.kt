@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -31,7 +33,8 @@ fun validateReservationTimeRange(timeRange: TimeRange) {
 data class DailyReservationRequest(
     val childId: ChildId,
     val date: LocalDate,
-    val reservations: List<TimeRange>?
+    val reservations: List<TimeRange>?,
+    val absent: Boolean
 )
 
 fun List<DailyReservationRequest>.validate(reservableDates: List<FiniteDateRange>? = null): List<DailyReservationRequest> {
@@ -80,8 +83,25 @@ class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
     }
 }
 
-fun createReservations(tx: Database.Transaction, userId: EvakaUserId, reservations: List<DailyReservationRequest>) {
-    tx.clearOldCitizenEditableAbsences(reservations.filter { it.reservations != null }.map { it.childId to it.date })
+fun createReservations(
+    tx: Database.Transaction,
+    userId: EvakaUserId,
+    reservations: List<DailyReservationRequest>,
+    personId: PersonId? = null
+) {
+    tx.clearOldCitizenEditableAbsences(
+        reservations.filter {
+            it.reservations != null || it.absent
+        }.map { it.childId to it.date }
+    )
     tx.clearOldReservations(reservations.map { it.childId to it.date })
-    tx.insertValidReservations(userId, reservations)
+    tx.insertValidReservations(userId, reservations.filterNot { it.absent })
+
+    if (personId != null) {
+        tx.insertAbsences(
+            personId,
+            reservations.filter { it.absent }
+                .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
+        )
+    }
 }

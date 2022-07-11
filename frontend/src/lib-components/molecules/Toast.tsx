@@ -82,7 +82,7 @@ const ToastRoot = styled.div<{
   border-radius: 16px;
   box-shadow: 4px 4px 8px rgba(15, 15, 15, 0.15),
     -2px 0 4px rgba(15, 15, 15, 0.15);
-  z-index: ${modalZIndex};
+  z-index: ${modalZIndex - 5};
   cursor: ${(p) => (p.showPointer ? 'pointer' : 'auto')};
 `
 

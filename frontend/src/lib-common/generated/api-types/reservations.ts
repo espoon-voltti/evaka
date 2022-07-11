@@ -43,6 +43,7 @@ export interface DailyReservationData {
 * Generated from fi.espoo.evaka.reservations.DailyReservationRequest
 */
 export interface DailyReservationRequest {
+  absent: boolean
   childId: UUID
   date: LocalDate
   reservations: TimeRange[] | null
