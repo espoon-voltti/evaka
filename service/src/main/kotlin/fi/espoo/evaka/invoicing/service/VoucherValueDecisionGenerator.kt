@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
+import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.getAssistanceNeedVoucherCoefficientsForChild
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
@@ -48,6 +48,11 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
+data class AssistanceNeedCoefficient(
+    val validityPeriod: DateRange,
+    val coefficient: BigDecimal
+)
+
 internal fun Database.Transaction.handleValueDecisionChanges(
     featureConfig: FeatureConfig,
     jsonMapper: JsonMapper,
@@ -64,8 +69,14 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val assistanceNeedCoefficients =
-        if (featureConfig.valueDecisionAssistanceNeedCoefficientEnabled) getAssistanceNeedVoucherCoefficientsForChild(child.id) else listOf()
+    val assistanceNeedCoefficients = if (featureConfig.valueDecisionAssistanceNeedCoefficientEnabled)
+        getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
+            AssistanceNeedCoefficient(it.validityPeriod.asDateRange(), it.coefficient)
+        }
+    else if (featureConfig.valueDecisionCapacityFactorEnabled)
+        getCapacityFactorsByChild(child.id).map { AssistanceNeedCoefficient(it.dateRange, it.capacityFactor) }
+    else
+        listOf()
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
@@ -113,13 +124,13 @@ private fun generateNewValueDecisions(
     prices: List<FeeThresholds>,
     voucherValues: Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValue>>,
     incomes: List<Income>,
-    assistanceNeedCoefficients: List<AssistanceNeedVoucherCoefficient>,
+    assistanceNeedCoefficients: List<AssistanceNeedCoefficient>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = families.map { it.period } +
         incomes.map { DateRange(it.validFrom, it.validTo) } +
-        assistanceNeedCoefficients.map { it.validityPeriod.asDateRange() } +
+        assistanceNeedCoefficients.map { it.validityPeriod } +
         prices.map { it.validDuring } +
         voucherValues.flatMap { it.value.map { voucherValues -> voucherValues.validity } } +
         allPlacements.flatMap { (child, placements) ->

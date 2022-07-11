@@ -109,6 +109,7 @@ class EspooConfig {
 
     @Bean
     fun featureConfig(): FeatureConfig = FeatureConfig(
+        valueDecisionCapacityFactorEnabled = false,
         valueDecisionAssistanceNeedCoefficientEnabled = true,
         daycareApplicationServiceNeedOptionsEnabled = false,
         citizenReservationThresholdHours = 150,

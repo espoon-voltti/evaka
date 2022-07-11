@@ -84,7 +84,8 @@ class ServiceVoucherValueReportController(
                     locked = snapshotTime,
                     rows = rows,
                     voucherTotal = rows.sumOf { it.realizedAmount },
-                    assistanceNeedCoefficientEnabled = featureConfig.valueDecisionAssistanceNeedCoefficientEnabled,
+                    assistanceNeedCoefficientEnabled = featureConfig.valueDecisionAssistanceNeedCoefficientEnabled ||
+                        featureConfig.valueDecisionCapacityFactorEnabled,
                 )
             }
         }
