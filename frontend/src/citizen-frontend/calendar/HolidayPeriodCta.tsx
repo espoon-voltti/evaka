@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
+import styled from 'styled-components'
 
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import Toast from 'lib-components/molecules/Toast'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
@@ -14,9 +16,11 @@ import { HolidayCta, NoCta, useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
 
 export default React.memo(function HolidayPeriodCta({
-  openModal
+  openModal,
+  topAligned
 }: {
   openModal: () => void
+  topAligned?: boolean
 }) {
   const { holidayCta, ctaClosed, closeCta } = useHolidayPeriods()
   const status = useDataStatus(holidayCta)
@@ -43,7 +47,11 @@ export default React.memo(function HolidayPeriodCta({
   }, [closeCta, openModal])
 
   return (
-    <div data-qa="holiday-period-cta-container" data-status={status}>
+    <CtaToastContainer
+      data-qa="holiday-period-cta-container"
+      data-status={status}
+      topAligned={topAligned}
+    >
       <UnwrapResult
         result={holidayCta}
         loading={() => null}
@@ -56,14 +64,21 @@ export default React.memo(function HolidayPeriodCta({
               iconColor={colors.status.warning}
               onClick={cta.type === 'questionnaire' ? clickAction : undefined}
               onClose={closeCta}
-              offsetTop="64px"
-              offsetTopDesktop="180px"
             >
               <span data-qa="holiday-period-cta">{getCtaText(cta)}</span>
             </Toast>
           ) : null
         }
       </UnwrapResult>
-    </div>
+    </CtaToastContainer>
   )
 })
+
+const CtaToastContainer = styled.div<{ topAligned?: boolean }>`
+  position: absolute;
+  top: ${(p) =>
+    p.topAligned ? defaultMargins.s : `calc(100% + ${defaultMargins.s})`};
+  right: ${defaultMargins.s};
+  z-index: 100;
+  padding-left: 16px;
+`

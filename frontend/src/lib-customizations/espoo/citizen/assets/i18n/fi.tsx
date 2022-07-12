@@ -116,7 +116,10 @@ export default {
       en: 'In English'
     },
     login: 'Kirjaudu sisään',
-    logout: 'Kirjaudu ulos'
+    logout: 'Kirjaudu ulos',
+    openMenu: 'Avaa valikko',
+    closeMenu: 'Sulje valikko',
+    goToHomepage: 'Siirry etusivulle'
   },
   footer: {
     cityLabel: '© Espoon kaupunki',

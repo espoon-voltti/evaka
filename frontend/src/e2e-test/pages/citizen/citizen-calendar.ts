@@ -134,30 +134,34 @@ export default class CitizenCalendarPage {
     }
   }
 
-  #ctaContainer = this.page.findByDataQa('holiday-period-cta-container')
+  #ctaContainers = this.page.findAllByDataQa('holiday-period-cta-container')
 
   async getHolidayCtaContent(): Promise<string> {
     await waitUntilEqual(
-      () => this.#ctaContainer.getAttribute('data-status'),
+      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
       'success'
     )
-    return this.#ctaContainer.findByDataQa('holiday-period-cta').innerText
+    return this.#ctaContainers.nth(1).findByDataQa('holiday-period-cta')
+      .innerText
   }
 
   async clickHoliayCta(): Promise<void> {
     await waitUntilEqual(
-      () => this.#ctaContainer.getAttribute('data-status'),
+      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
       'success'
     )
-    return this.#ctaContainer.findByDataQa('holiday-period-cta').click()
+    return this.#ctaContainers.nth(1).findByDataQa('holiday-period-cta').click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
     await waitUntilEqual(
-      () => this.#ctaContainer.getAttribute('data-status'),
+      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
       'success'
     )
-    await waitUntilEqual(() => this.#ctaContainer.findAll('> *').count(), 0)
+    await waitUntilEqual(
+      () => this.#ctaContainers.nth(1).findAll('> *').count(),
+      0
+    )
   }
 }
 

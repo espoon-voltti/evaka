@@ -11,14 +11,13 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
+import { scrollToPos } from 'lib-common/utils/scrolling'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { headerHeightMobile } from '../header/const'
 import { useLang, useTranslation } from '../localization'
-import { scrollMainToPos } from '../utils'
 
 import { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
@@ -137,16 +136,12 @@ const DayElem = React.memo(function DayElem({
   }, [selectDate, dailyReservations.date])
 
   useEffect(() => {
-    if (ref.current) {
-      const pos = ref.current?.getBoundingClientRect().top
+    const top = ref.current?.getBoundingClientRect().top
 
-      if (pos) {
-        const offset = headerHeightMobile + 16
-        scrollMainToPos({
-          left: 0,
-          top: pos - offset
-        })
-      }
+    if (top) {
+      scrollToPos({
+        top: top - 32
+      })
     }
   }, [])
 

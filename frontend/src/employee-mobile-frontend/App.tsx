@@ -59,6 +59,7 @@ export default function App() {
           )}
         >
           <UserContextProvider>
+            <MobileReloadNotification />
             <Router basename="/employee/mobile">
               <Routes>
                 <Route path="/landing" element={<MobileLander />} />
@@ -82,7 +83,6 @@ export default function App() {
                 <Route index element={<Navigate replace to="/landing" />} />
               </Routes>
             </Router>
-            <MobileReloadNotification />
           </UserContextProvider>
         </ErrorBoundary>
       </ThemeProvider>

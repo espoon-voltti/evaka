@@ -59,12 +59,12 @@ export default React.memo(function DesktopNav({
                 <>
                   {user.accessibleFeatures.reservations && (
                     <StyledNavLink to="/calendar" data-qa="nav-calendar">
-                      {t.header.nav.calendar}
+                      <NavLinkText text={t.header.nav.calendar} />
                     </StyledNavLink>
                   )}
                   {user.accessibleFeatures.messages && (
                     <StyledNavLink to="/messages" data-qa="nav-messages">
-                      {t.header.nav.messages}{' '}
+                      <NavLinkText text={t.header.nav.messages} />{' '}
                       {unreadMessagesCount > 0 ? (
                         <CircledChar
                           aria-label={`${t.header.nav.messageCount(
@@ -83,7 +83,7 @@ export default React.memo(function DesktopNav({
                       to="/child-documents"
                       data-qa="nav-child-documents"
                     >
-                      {t.header.nav.pedagogicalDocuments}
+                      <NavLinkText text={t.header.nav.pedagogicalDocuments} />
                       {maybeLockElem}
                       {isEnduser && unreadChildDocuments > 0 && (
                         <CircledChar data-qa="unread-child-documents-count">
@@ -93,10 +93,10 @@ export default React.memo(function DesktopNav({
                     </StyledNavLink>
                   )}
                   <StyledNavLink to="/children" data-qa="nav-children">
-                    {t.header.nav.children} {maybeLockElem}
+                    <NavLinkText text={t.header.nav.children} /> {maybeLockElem}
                   </StyledNavLink>
                   <StyledNavLink to="/applying" data-qa="nav-applying">
-                    {t.header.nav.applications}
+                    <NavLinkText text={t.header.nav.applications} />
                   </StyledNavLink>
                 </>
               ) : null}
@@ -117,6 +117,14 @@ export default React.memo(function DesktopNav({
       }}
     </UnwrapResult>
   )
+})
+
+const NavLinkText = React.memo(function NavLinkText({
+  text
+}: {
+  text: string
+}) {
+  return <div data-text={text}>{text}</div>
 })
 
 const Container = styled.div`
@@ -153,13 +161,27 @@ const StyledNavLink = styled(NavLink)`
     padding: 0 ${defaultMargins.m};
   }
 
-  &:hover {
+  &:hover,
+  [data-text]::before {
     font-weight: ${fontWeights.bold};
+  }
+
+  &:hover .circled-char,
+  &.active .circled-char {
+    border-width: 2px;
+    padding: 10px;
   }
 
   &.active {
     border-bottom-color: ${colors.grayscale.g0};
     font-weight: ${fontWeights.bold};
+  }
+
+  [data-text]::before {
+    display: block;
+    height: 0;
+    visibility: hidden;
+    content: attr(data-text);
   }
 `
 
@@ -179,16 +201,19 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
-export const CircledChar = styled.div`
+export const CircledChar = styled.div.attrs({
+  className: 'circled-char'
+})`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
   border: 1px solid ${colors.grayscale.g0};
-  padding: 10px;
+  padding: 11px;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   border-radius: 100%;
+  letter-spacing: 0;
 `
 
 interface LanguageMenuProps {

@@ -74,7 +74,11 @@ export default React.memo(function MobileNav({
 
         return (
           <Container ref={ref} data-qa="mobile-nav">
-            <MenuButton onClick={toggleMenu} data-qa="menu-button">
+            <MenuButton
+              onClick={toggleMenu}
+              data-qa="menu-button"
+              aria-label={showMenu ? t.header.closeMenu : t.header.openMenu}
+            >
               <AttentionIndicator
                 toggled={showAttentionIndicator}
                 data-qa="attention-indicator-mobile"
@@ -235,12 +239,12 @@ const Navigation = React.memo(function Navigation({
     <Nav>
       {user.accessibleFeatures.reservations && (
         <StyledNavLink to="/calendar" onClick={close} data-qa="nav-calendar">
-          {t.header.nav.calendar}
+          <NavLinkText text={t.header.nav.calendar} />
         </StyledNavLink>
       )}
       {user.accessibleFeatures.messages && (
         <StyledNavLink to="/messages" onClick={close} data-qa="nav-messages">
-          {t.header.nav.messages}
+          <NavLinkText text={t.header.nav.messages} />
           {unreadMessagesCount > 0 && (
             <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
           )}
@@ -252,7 +256,7 @@ const Navigation = React.memo(function Navigation({
           data-qa="nav-child-documents"
           onClick={close}
         >
-          {t.header.nav.pedagogicalDocuments}
+          <NavLinkText text={t.header.nav.pedagogicalDocuments} />
           {maybeLockElem}
           {unreadChildDocumentsCount > 0 && (
             <FloatingCircledChar>
@@ -262,13 +266,21 @@ const Navigation = React.memo(function Navigation({
         </StyledNavLink>
       )}
       <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
-        {t.header.nav.children} {maybeLockElem}
+        <NavLinkText text={t.header.nav.children} /> {maybeLockElem}
       </StyledNavLink>
       <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
-        {t.header.nav.applications} {maybeLockElem}
+        <NavLinkText text={t.header.nav.applications} /> {maybeLockElem}
       </StyledNavLink>
     </Nav>
   )
+})
+
+const NavLinkText = React.memo(function NavLinkText({
+  text
+}: {
+  text: string
+}) {
+  return <div data-text={text}>{text}</div>
 })
 
 const Nav = styled.nav`
@@ -295,14 +307,29 @@ const StyledNavLink = styled(NavLink)`
   margin: ${defaultMargins.xxs} 0;
   border-bottom: 2px solid transparent;
 
-  &:hover {
+  &:hover,
+  [data-text]::before {
     font-weight: ${fontWeights.bold};
     border-color: ${colors.grayscale.g0};
+  }
+
+  &:hover .circled-char,
+  &.active .circled-char {
+    border-width: 2px;
+    padding: 10px;
   }
 
   &.active {
     font-weight: ${fontWeights.bold};
     border-color: ${colors.grayscale.g0};
+  }
+
+  [data-text]::before {
+    display: block;
+    height: 0;
+    visibility: hidden;
+    content: attr(data-text);
+    text-align: center;
   }
 `
 

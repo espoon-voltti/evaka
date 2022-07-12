@@ -117,7 +117,10 @@ const sv: Translations = {
       en: 'In English'
     },
     login: 'Logga in',
-    logout: 'Logga ut'
+    logout: 'Logga ut',
+    openMenu: 'Öppna menyn',
+    closeMenu: 'Stäng menyn',
+    goToHomepage: 'Gå till hemsidan'
   },
   footer: {
     cityLabel: '© Esbo stad',
