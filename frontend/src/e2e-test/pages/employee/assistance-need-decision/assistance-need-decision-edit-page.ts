@@ -64,4 +64,10 @@ export default class AssistanceNeedDecisionEditPage {
       title
     )
   }
+
+  async selectUnit(unit: string): Promise<void> {
+    await new Combobox(
+      this.page.findByDataQa('unit-select')
+    ).fillAndSelectFirst(unit)
+  }
 }

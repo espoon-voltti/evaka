@@ -11,6 +11,8 @@ import styled from 'styled-components'
 
 import { faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 
+import UnderRowStatusIcon from '../StatusIcon'
+import { InputFieldUnderRow, InputInfo } from '../form/InputField'
 import { SpinnerSegment } from '../state/Spinner'
 
 import { borderRadius, borderStyles, DropdownProps, Root } from './shared'
@@ -27,6 +29,7 @@ export interface ComboboxProps<T> extends DropdownProps<T, HTMLInputElement> {
     menuEmptyItem?: (label: string) => React.ReactNode
   }
   fullWidth?: boolean
+  info?: InputInfo
 }
 
 export interface MenuItemProps<T> {
@@ -41,6 +44,14 @@ const InputWrapper = styled.div`
   ${borderStyles};
   &.active {
     border-color: transparent;
+  }
+
+  &.success {
+    border-color: ${(p) => p.theme.colors.status.success};
+  }
+
+  &.warning {
+    border-color: ${(p) => p.theme.colors.status.warning};
   }
 `
 
@@ -278,87 +289,97 @@ function Combobox<T>(props: ComboboxProps<T>) {
     }
   }, [isOpen, setInputValue, itemToString, selectedItem])
   return (
-    <Root
-      data-qa={dataQa}
-      className={classNames({ active: isOpen, 'full-width': fullWidth })}
-      onClick={enabled ? toggleMenu : undefined}
-    >
-      <InputWrapper
-        {...getComboboxProps({
-          disabled,
-          className: classNames({ active: isOpen })
-        })}
+    <>
+      <Root
+        data-qa={dataQa}
+        className={classNames({ active: isOpen, 'full-width': fullWidth })}
+        onClick={enabled ? toggleMenu : undefined}
       >
-        <Input
-          {...getInputProps({
-            id,
-            name,
+        <InputWrapper
+          {...getComboboxProps({
             disabled,
-            placeholder,
-            onFocus
-          })}
-        />
-        {clearable && selectedItem && (
-          <>
-            <Button
-              data-qa="clear"
-              onClick={enabled ? onClickClear : undefined}
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </Button>
-            <Separator>&nbsp;</Separator>
-          </>
-        )}
-        <Button
-          data-qa="toggle"
-          type="button"
-          {...getToggleButtonProps({
-            disabled,
-            // avoid toggling the menu twice
-            onClick: stopPropagation
+            className: classNames({ active: isOpen }, props.info?.status)
           })}
         >
-          <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
-        </Button>
-      </InputWrapper>
-      <MenuWrapper onClick={stopPropagation}>
-        <Menu
-          className={classNames({ closed: !isOpen })}
-          {...getMenuProps({
-            // styled-components and downshift typings don't play nice together
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
-            ref: menuRef as any
-          })}
-        >
-          {isOpen && (
+          <Input
+            {...getInputProps({
+              id,
+              name,
+              disabled,
+              placeholder,
+              onFocus
+            })}
+          />
+          {clearable && selectedItem && (
             <>
-              {isLoading ? (
-                <MenuItemWrapper>
-                  <SpinnerSegment />
-                </MenuItemWrapper>
-              ) : filteredItems.length === 0 ? (
-                <MenuItemWrapper>
-                  {renderEmptyResult(menuEmptyLabel ?? '')}
-                </MenuItemWrapper>
-              ) : (
-                filteredItems.map((item, index) => (
-                  <MenuItemWrapper
-                    data-qa="item"
-                    key={index}
-                    {...getItemProps({ item, index })}
-                  >
-                    {renderMenuItem({
-                      item,
-                      highlighted: highlightedIndex === index
-                    })}
-                  </MenuItemWrapper>
-                ))
-              )}
+              <Button
+                data-qa="clear"
+                onClick={enabled ? onClickClear : undefined}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </Button>
+              <Separator>&nbsp;</Separator>
             </>
           )}
-        </Menu>
-      </MenuWrapper>
-    </Root>
+          <Button
+            data-qa="toggle"
+            type="button"
+            {...getToggleButtonProps({
+              disabled,
+              // avoid toggling the menu twice
+              onClick: stopPropagation
+            })}
+          >
+            <FontAwesomeIcon icon={isOpen ? faChevronUp : faChevronDown} />
+          </Button>
+        </InputWrapper>
+        <MenuWrapper onClick={stopPropagation}>
+          <Menu
+            className={classNames({ closed: !isOpen })}
+            {...getMenuProps({
+              // styled-components and downshift typings don't play nice together
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
+              ref: menuRef as any
+            })}
+          >
+            {isOpen && (
+              <>
+                {isLoading ? (
+                  <MenuItemWrapper>
+                    <SpinnerSegment />
+                  </MenuItemWrapper>
+                ) : filteredItems.length === 0 ? (
+                  <MenuItemWrapper>
+                    {renderEmptyResult(menuEmptyLabel ?? '')}
+                  </MenuItemWrapper>
+                ) : (
+                  filteredItems.map((item, index) => (
+                    <MenuItemWrapper
+                      data-qa="item"
+                      key={index}
+                      {...getItemProps({ item, index })}
+                    >
+                      {renderMenuItem({
+                        item,
+                        highlighted: highlightedIndex === index
+                      })}
+                    </MenuItemWrapper>
+                  ))
+                )}
+              </>
+            )}
+          </Menu>
+        </MenuWrapper>
+      </Root>
+      {props.info && (
+        <InputFieldUnderRow className={classNames(props.info.status)}>
+          <span data-qa={dataQa ? `${dataQa}-info` : undefined}>
+            {props.info.text}
+          </span>
+          <UnderRowStatusIcon status={props.info.status} />
+        </InputFieldUnderRow>
+      )}
+    </>
   )
 }
 
