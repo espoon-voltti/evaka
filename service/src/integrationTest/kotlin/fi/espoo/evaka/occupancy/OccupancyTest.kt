@@ -31,11 +31,14 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -57,6 +60,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
     val employeeId = EmployeeId(UUID.randomUUID())
+    val employeeId2 = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
@@ -65,6 +69,11 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertTestEmployee(
                 DevEmployee(
                     id = employeeId
+                )
+            )
+            it.insertTestEmployee(
+                DevEmployee(
+                    id = employeeId2
                 )
             )
 
@@ -168,8 +177,355 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val occupancy = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies[today]!!
             assertEquals(3.0, occupancy.caretakers)
             assertEquals(1, occupancy.headcount)
-            assertEquals(4.8, occupancy.percentage)
         }
+    }
+
+    private fun Database.Transaction.addRealtimeAttendanceToday(employeeId: EmployeeId, minusDaysFromNow: Long = 0) =
+        FixtureBuilder.EmployeeFixture(this, today, employeeId)
+            .addRealtimeAttendance()
+            .inGroup(daycareGroup1)
+            .withCoefficient(BigDecimal(7))
+            .arriving(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)))
+            .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 45)))
+            .save()
+
+    private fun assertRealtimeAttendances(expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>) {
+        val (rangeStart, rangeEnd) = expectedCaretakers.map { it.first }.let {
+            it.minOrNull()!! to it.maxOrNull()!!
+        }
+
+        val occupancies =
+            db.read { tx ->
+                tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(rangeStart, rangeEnd),
+                    OccupancyType.REALIZED,
+                    AclAuthorization.All,
+                    unitId = daycareInArea1
+                ).find { it.key.groupId == daycareGroup1 }!!.occupancies
+            }
+
+        expectedCaretakers.forEach { (date, expectedValue) ->
+            assertEquals(expectedValue.sum, occupancies[date]?.sum, message = "bad sum")
+            assertEquals(expectedValue.headcount, occupancies[date]?.headcount, message = "bad headcount")
+            assertEquals(expectedValue.percentage, occupancies[date]?.percentage, message = "bad percentage")
+            assertEquals(expectedValue.caretakers, occupancies[date]?.caretakers, message = "bad caretaker count")
+        }
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                )
+            )
+        )
+
+        db.read { tx ->
+            val occupancyValues =
+                tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(today, today),
+                    OccupancyType.REALIZED,
+                    AclAuthorization.All,
+                    unitId = daycareInArea1
+                )
+
+            assertEquals(2, occupancyValues.size)
+            assertEquals(1, occupancyValues.filter { it.key.groupId == daycareGroup1 }.size)
+            val occupancy = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies[today]!!
+            assertEquals(1, occupancy.headcount)
+        }
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance for one employee & two days`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId, 1)
+            tx.addRealtimeAttendanceToday(employeeId)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today.minusDays(1) to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                ),
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance for two employees & one day`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId)
+            tx.addRealtimeAttendanceToday(employeeId2)
+        }
+
+        db.read { tx ->
+            val occupancyValues =
+                tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(today, today),
+                    OccupancyType.REALIZED,
+                    AclAuthorization.All,
+                    unitId = daycareInArea1
+                )
+
+            val occupancies = occupancyValues.find { it.key.groupId == daycareGroup1 }!!.occupancies
+            assertEquals(2.0, occupancies[today]!!.caretakers)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    2.0,
+                    7.1
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance for two days & two employees`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId, 1)
+            tx.addRealtimeAttendanceToday(employeeId)
+            tx.addRealtimeAttendanceToday(employeeId2, 1)
+            tx.addRealtimeAttendanceToday(employeeId2)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today.minusDays(1) to OccupancyValues(
+                    1.0,
+                    1,
+                    2.0,
+                    7.1
+                ),
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    2.0,
+                    7.1
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues for realtime attendance for half occupancy coefficient`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(3.5))
+                .arriving(LocalTime.of(16, 15))
+                .departing(today.plusDays(1), LocalTime.of(0, 0))
+                .save()
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    0.5,
+                    28.6
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues for realtime attendance without departing time and staff attendance`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(3.5))
+                .arriving(LocalTime.of(16, 15))
+                .save()
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    null,
+                    null
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with both realtime staff attendance and another staff attendance count`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId)
+            // not included because of no departure time
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId2)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(7))
+                .arriving(HelsinkiDateTime.of(today, LocalTime.of(8, 0)))
+                .save()
+
+            // this is ignored
+            tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 5.0)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues with realtime staff attendance one day and non-realtime the other`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(-1)
+                        .toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(daycareGroup1).save()
+                        }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId, 1)
+            tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 2.0)
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today.minusDays(1) to OccupancyValues(
+                    1.0,
+                    1,
+                    1.0,
+                    14.3
+                ),
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    2.0,
+                    7.1
+                )
+            )
+        )
     }
 
     @Test

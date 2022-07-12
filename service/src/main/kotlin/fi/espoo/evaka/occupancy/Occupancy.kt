@@ -217,12 +217,34 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
-    // language=sql
-    val (caretakersSum, caretakersJoin) =
-        if (type == OccupancyType.REALIZED)
-            "sum(s.count)" to "staff_attendance s ON g.id = s.group_id AND t = s.date"
-        else
-            "sum(c.amount)" to "daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date"
+    val workingDayHours = 7.75
+    val defaultOccupancyCoefficient = 7
+    val caretakersSum = if (type == OccupancyType.REALIZED) """
+        sum(
+            CASE
+                WHEN sar.arrived IS NOT NULL
+                    THEN EXTRACT(EPOCH FROM (sar.departed - sar.arrived)) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient
+                ELSE s.count
+            END
+        )
+    """.trimIndent() else """
+        sum(c.amount)
+    """.trimIndent()
+
+    val caretakersJoin = if (type == OccupancyType.REALIZED) """
+        LEFT JOIN (
+            SELECT group_id, arrived, departed, occupancy_coefficient
+            FROM staff_attendance_realtime
+            WHERE departed IS NOT NULL
+            UNION ALL
+            SELECT group_id, arrived, departed, occupancy_coefficient
+            FROM staff_attendance_external
+            WHERE departed IS NOT NULL
+        ) sar ON g.id = sar.group_id AND t = DATE(sar.arrived)
+        LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
+    """.trimIndent() else """
+        LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
+    """.trimIndent()
 
     // language=sql
     val (keyColumns, groupBy) = when (K::class) {
@@ -233,12 +255,16 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 
     // language=sql
     val query = """
-SELECT $keyColumns, t::date AS date, coalesce($caretakersSum, 0.0) AS caretaker_count
+SELECT $keyColumns, t::date AS date,
+coalesce(
+    $caretakersSum,
+    0.0
+) AS caretaker_count
 FROM generate_series(:start, :end, '1 day') t
 CROSS JOIN daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
 JOIN care_area a ON a.id = u.care_area_id
-LEFT JOIN $caretakersJoin
+$caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
 AND (:areaId::uuid IS NULL OR u.care_area_id = :areaId)
