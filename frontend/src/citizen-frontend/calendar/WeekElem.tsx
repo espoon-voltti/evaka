@@ -22,7 +22,7 @@ import { scrollMainToPos } from '../utils'
 
 import { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
-import RoundChildImages, { getPresentChildImages } from './RoundChildImages'
+import { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 interface Props extends WeeklyData {
@@ -30,6 +30,7 @@ interface Props extends WeeklyData {
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
+  childImages: ChildImageData[]
 }
 
 export default React.memo(function WeekElem({
@@ -38,7 +39,8 @@ export default React.memo(function WeekElem({
   dailyReservations,
   dayIsHolidayPeriod,
   selectDate,
-  dayIsReservable
+  dayIsReservable,
+  childImages
 }: Props) {
   const i18n = useTranslation()
   return (
@@ -61,6 +63,7 @@ export default React.memo(function WeekElem({
               selectDate={selectDate}
               isReservable={dayIsReservable(d)}
               isHolidayPeriod={dayIsHolidayPeriod(d.date)}
+              childImages={childImages}
             />
           </Fragment>
         ))}
@@ -98,6 +101,7 @@ interface DayProps {
   selectDate: (date: LocalDate) => void
   isReservable: boolean
   isHolidayPeriod: boolean
+  childImages: ChildImageData[]
 }
 
 const DayElem = React.memo(function DayElem({
@@ -105,7 +109,8 @@ const DayElem = React.memo(function DayElem({
   dailyReservations,
   selectDate,
   isReservable,
-  isHolidayPeriod
+  isHolidayPeriod,
+  childImages
 }: DayProps) {
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
@@ -131,11 +136,6 @@ const DayElem = React.memo(function DayElem({
     selectDate(dailyReservations.date)
   }, [selectDate, dailyReservations.date])
 
-  const presentChildImages = useMemo(
-    () => getPresentChildImages(childData, dailyReservations),
-    [childData, dailyReservations]
-  )
-
   useEffect(() => {
     if (ref.current) {
       const pos = ref.current?.getBoundingClientRect().top
@@ -159,7 +159,11 @@ const DayElem = React.memo(function DayElem({
       onClick={handleClick}
       data-qa={`mobile-calendar-day-${dailyReservations.date.formatIso()}`}
     >
-      <DayColumn spacing="xxs" inactive={!isReservable}>
+      <DayColumn
+        spacing="xxs"
+        inactive={!isReservable}
+        holiday={dailyReservations.isHoliday}
+      >
         <div aria-label={dailyReservations.date.formatExotic('EEEE', lang)}>
           {capitalizeFirstLetter(dailyReservations.date.format('EEEEEE', lang))}
         </div>
@@ -169,17 +173,12 @@ const DayElem = React.memo(function DayElem({
       </DayColumn>
       <Gap size="s" horizontal />
       <ReservationsContainer data-qa="reservations">
-        <Reservations data={dailyReservations} />
-      </ReservationsContainer>
-      <Gap size="s" horizontal />
-      <ChildImagesContainer>
-        <RoundChildImages
-          images={presentChildImages}
-          imageSize={34}
-          imageBorder={2}
-          imageOverlap={9}
+        <Reservations
+          data={dailyReservations}
+          allChildren={childData}
+          childImages={childImages}
         />
-      </ChildImagesContainer>
+      </ReservationsContainer>
       {dailyReservations.date.isBefore(LocalDate.todayInSystemTz()) && (
         <HistoryOverlay />
       )}
@@ -191,10 +190,6 @@ const ReservationsContainer = styled.div`
   flex: 1 0 0;
 `
 
-const ChildImagesContainer = styled.div`
-  flex: 0 0 auto;
-`
-
 const Day = styled.button<{
   today: boolean
   markedByEmployee: boolean
@@ -204,7 +199,7 @@ const Day = styled.button<{
   flex-direction: row;
   width: 100%;
   position: relative;
-  padding: ${defaultMargins.s} ${defaultMargins.s};
+  padding: calc(${defaultMargins.s} - 6px) ${defaultMargins.s};
   background: transparent;
   margin: 0;
   border: none;
@@ -213,6 +208,7 @@ const Day = styled.button<{
     ${(p) => (p.today ? colors.status.success : 'transparent')};
   cursor: pointer;
   text-align: left;
+  color: ${(p) => p.theme.colors.grayscale.g100};
 
   ${(p) =>
     p.markedByEmployee
@@ -226,8 +222,17 @@ const Day = styled.button<{
   }
 `
 
-const DayColumn = styled(FixedSpaceColumn)<{ inactive: boolean }>`
+const DayColumn = styled(FixedSpaceColumn)<{
+  inactive: boolean
+  holiday: boolean
+}>`
   width: 3rem;
-  color: ${(p) => (p.inactive ? colors.grayscale.g70 : colors.main.m1)};
+  color: ${(p) =>
+    p.inactive
+      ? colors.grayscale.g70
+      : p.holiday
+      ? colors.accents.a2orangeDark
+      : colors.main.m1};
   font-weight: ${fontWeights.semibold};
+  font-size: 1.25rem;
 `

@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
 import {
@@ -61,6 +62,7 @@ const holidayQuestionnaireFixture = () =>
   })
 
 async function assertReservationState(
+  childIds: UUID[],
   calendar: CitizenCalendarPage,
   startDate: LocalDate,
   endDate: LocalDate,
@@ -71,9 +73,19 @@ async function assertReservationState(
   let today = startDate
   while (today.isEqualOrBefore(endDate)) {
     if (hasFreeAbsence) {
-      await calendar.assertReservations(today, [], false, true)
+      await calendar.assertReservations(today, [
+        {
+          childIds,
+          freeAbsence: true
+        }
+      ])
     } else {
-      await calendar.assertNoReservationsOrAbsences(today)
+      await calendar.assertReservations(today, [
+        {
+          childIds,
+          missing: true
+        }
+      ])
     }
     today = today.addBusinessDays(1)
   }
@@ -173,6 +185,7 @@ describe('Holiday periods', () => {
     test('Holidays can be reported and cleared', async () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertReservationState(
+          [child.id],
           calendar,
           LocalDate.of(2035, 12, 26),
           LocalDate.of(2036, 1, 1),
@@ -199,6 +212,7 @@ describe('Holiday periods', () => {
     test('Holidays can be marked an cleared for two children', async () => {
       const assertFreeAbsences = (hasFreeAbsences: boolean) =>
         assertReservationState(
+          [child.id, child2.id],
           calendar,
           LocalDate.of(2035, 12, 26),
           LocalDate.of(2036, 1, 1),
@@ -309,6 +323,7 @@ describe('Holiday periods', () => {
       await holidayModal.markHoliday(child, '26.12.2035 - 01.01.2036')
 
       await assertReservationState(
+        [child.id],
         calendar,
         LocalDate.of(2035, 12, 26),
         LocalDate.of(2036, 1, 1),

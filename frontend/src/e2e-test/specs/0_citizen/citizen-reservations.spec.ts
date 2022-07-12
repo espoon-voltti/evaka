@@ -62,7 +62,11 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
   test('Citizen creates a repeating reservation for all children', async () => {
     const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
-    const reservation = { startTime: '08:00', endTime: '16:00' }
+    const reservation = {
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: children.map(({ id }) => id)
+    }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
@@ -82,7 +86,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     const weekdays = [0, 1, 2, 3, 4]
     const reservations = weekdays.map((index) => ({
       startTime: `08:0${index}`,
-      endTime: `16:0${index}`
+      endTime: `16:0${index}`,
+      childIds: children.map(({ id }) => id)
     }))
 
     const reservationsModal = await calendarPage.openReservationsModal()
@@ -102,7 +107,12 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
     const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
-    const reservation = { startTime: '08:00', endTime: '16:00' }
+    const reservation = {
+      startTime: '08:00',
+      endTime: '16:00',
+      absence: true,
+      childIds: [children[0].id]
+    }
 
     const reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
@@ -119,16 +129,16 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       'SICKLEAVE'
     )
 
-    await calendarPage.assertReservations(
-      firstReservationDay,
-      [reservation],
-      true
-    )
+    await calendarPage.assertReservations(firstReservationDay, [reservation])
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
     const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
-    const initialReservation = { startTime: '08:00', endTime: '16:00' }
+    const initialReservation = {
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: children.map(({ id }) => id)
+    }
 
     let reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
@@ -141,7 +151,11 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       initialReservation
     ])
 
-    const newReservation = { startTime: '09:00', endTime: '17:00' }
+    const newReservation = {
+      startTime: '09:00',
+      endTime: '17:00',
+      childIds: children.map(({ id }) => id)
+    }
 
     reservationsModal = await calendarPage.openReservationsModal()
     await reservationsModal.createRepeatingDailyReservation(
@@ -180,5 +194,43 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
     await absencesModal.assertStartDate(reservationDay.format())
     await absencesModal.assertEndDate(reservationDay.format())
+  })
+
+  test('Children are grouped correctly in calendar', async () => {
+    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const reservation1 = {
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: [children[0].id]
+    }
+
+    const reservation2 = {
+      startTime: '09:00',
+      endTime: '17:30',
+      childIds: [children[1].id, children[2].id]
+    }
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      reservation1.startTime,
+      reservation1.endTime,
+      reservation1.childIds,
+      3
+    )
+
+    const reservationsModal2 = await calendarPage.openReservationsModal()
+    await reservationsModal2.createRepeatingDailyReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      reservation2.startTime,
+      reservation2.endTime,
+      reservation2.childIds,
+      3
+    )
+
+    await calendarPage.assertReservations(firstReservationDay, [
+      reservation1,
+      reservation2
+    ])
   })
 }
