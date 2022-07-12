@@ -6,16 +6,15 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.pis.getEmployeeNamesByIds
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -33,7 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import java.time.LocalDate
 
 @RestController
 class VasuController(
@@ -88,32 +87,40 @@ class VasuController(
         val eventType: VasuDocumentEventType
     )
 
-    data class GetVasuDocumentResponse(
-        val vasu: VasuDocument,
-        val permittedFollowupActions: Map<UUID, Set<Action.VasuDocumentFollowup>>
-    )
     @GetMapping("/vasu/{id}")
     fun getDocument(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable id: VasuDocumentId
-    ): GetVasuDocumentResponse {
+    ): VasuDocument {
         Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 val doc = tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
-                val entryIds = doc.content.followupEntries().map { doc.id to it.id }.toList()
-                val permittedActions =
-                    accessControl.getPermittedActions<VasuDocumentFollowupEntryId, Action.VasuDocumentFollowup>(
-                        tx,
-                        user,
-                        entryIds
-                    )
-                GetVasuDocumentResponse(
-                    doc,
-                    permittedActions.mapKeys { it.key.second }
+
+                val employeeIds = doc.content.sections.flatMap { section ->
+                    section.questions.flatMap { question ->
+                        if (question.type === VasuQuestionType.FOLLOWUP) {
+                            val followup = question as VasuQuestion.Followup
+                            followup.value.flatMap { setOfNotNull(it.authorId, it.edited?.editorId) }
+                        } else {
+                            emptySet()
+                        }
+                    }
+                }
+
+                val employeeNames = if (employeeIds.isEmpty()) emptyMap() else tx.getEmployeeNamesByIds(employeeIds)
+
+                doc.copy(
+                    content = doc.content.mapQuestions { question, _, _ ->
+                        if (question.type === VasuQuestionType.FOLLOWUP) {
+                            (question as VasuQuestion.Followup).withEmployeeNames(employeeNames)
+                        } else {
+                            question
+                        }
+                    }
                 )
             }
         }
@@ -135,7 +142,53 @@ class VasuController(
             dbc.transaction { tx ->
                 val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
                 validateVasuDocumentUpdate(vasu, body)
-                tx.updateVasuDocumentMaster(id, body.content, body.childLanguage)
+
+                val transformedFollowupsVasu = body.copy(
+                    content = body.content.mapQuestions { question, sectionIndex, questionIndex ->
+                        if (question.type === VasuQuestionType.FOLLOWUP) {
+                            val followup = question as VasuQuestion.Followup
+                            val storedFollowup = vasu.content.sections[sectionIndex].questions[questionIndex] as VasuQuestion.Followup
+
+                            followup.copy(
+                                value = followup.value.mapIndexed { entryIndex, entry ->
+                                    val storedEntry = storedFollowup.value.getOrNull(entryIndex)
+                                        ?: return@mapIndexed entry.copy(
+                                            authorId = EmployeeId(user.rawId()),
+                                            edited = null,
+                                            createdDate = HelsinkiDateTime.now(),
+                                            authorName = null
+                                        )
+
+                                    val authorEditingInGracePeriod =
+                                        storedEntry.authorId == EmployeeId(user.rawId()) && storedEntry.createdDate?.let {
+                                            HelsinkiDateTime.now().durationSince(it).toMinutes() < 15
+                                        } == true
+
+                                    val identicalContent = entry.text == storedEntry.text && entry.date.isEqual(storedEntry.date)
+
+                                    entry.copy(
+                                        authorId = storedEntry.authorId,
+                                        edited =
+                                        if (authorEditingInGracePeriod || identicalContent)
+                                            storedEntry.edited
+                                        else
+                                            FollowupEntryEditDetails(
+                                                editedAt = LocalDate.now(),
+                                                editorId = EmployeeId(user.rawId()),
+                                                editorName = null
+                                            ),
+                                        createdDate = storedEntry.createdDate,
+                                        authorName = null
+                                    )
+                                }
+                            )
+                        } else {
+                            question
+                        }
+                    }
+                )
+
+                tx.updateVasuDocumentMaster(id, transformedFollowupsVasu.content, body.childLanguage)
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
@@ -148,41 +201,13 @@ class VasuController(
         if (!vasu.content.matchesStructurally(body.content))
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
 
-        if (vasu.content.containsModifiedFollowupEntries(body.content))
-            throw Forbidden("Permission denied", "CANNOT_EDIT_FOLLOWUP_COMMENTS")
+        if (vasu.content.followupEntriesMissing(body.content))
+            throw Forbidden("Follow-up entries may not be removed", "CANNOT_REMOVE_FOLLOWUP_COMMENTS")
     }
 
     data class EditFollowupEntryRequest(
         val text: String
     )
-
-    @PostMapping("/vasu/{id}/edit-followup/{entryId}")
-    fun editFollowupEntry(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        evakaClock: EvakaClock,
-        @PathVariable id: VasuDocumentId,
-        @PathVariable entryId: UUID,
-        @RequestBody body: EditFollowupEntryRequest
-    ) {
-        Audit.VasuDocumentEditFollowupEntry.log(id, entryId)
-        accessControl.requirePermissionFor(user, Action.VasuDocumentFollowup.UPDATE, VasuDocumentFollowupEntryId(id, entryId))
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
-
-                val editedBy = tx.getEmployee(user.id)
-
-                tx.updateVasuDocumentMaster(
-                    id,
-                    vasu.content.editFollowupEntry(entryId, evakaClock, editedBy, body.text),
-                    vasu.basics.childLanguage
-                )
-
-                tx.revokeVasuGuardianHasGivenPermissionToShare(id)
-            }
-        }
-    }
 
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(

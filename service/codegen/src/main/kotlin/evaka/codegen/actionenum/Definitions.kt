@@ -38,7 +38,6 @@ val generatedFiles = listOf(
             generateEnum<Action.ServiceNeed>(),
             generateEnum<Action.Unit>(),
             generateEnum<Action.VasuDocument>(),
-            generateEnum<Action.VasuDocumentFollowup>(),
             generateEnum<Action.VasuTemplate>(),
         )
     ),

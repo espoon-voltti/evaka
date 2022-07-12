@@ -6,17 +6,16 @@ import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import { Page, TextInput, Element, Checkbox } from '../../../utils/page'
 
 import {
-  AdditionalInfoSection,
-  AuthorsSection,
-  ConsiderationsSection,
+  AuthoringSection,
+  BasicInfoSection,
+  CooperationSection,
   DiscussionSection,
   EvaluationSection,
   GoalsSection,
   InfoSharedToSection,
   OtherDocsAndPlansSection,
-  PreviousVasuGoalsSection,
-  SpecialSupportSection,
-  WellnessSupportSection
+  VasuGoalsSection,
+  OtherSection
 } from './pageSections'
 
 class VasuPageCommon {
@@ -38,28 +37,28 @@ class VasuPageCommon {
     await this.#documentSection.first().waitUntilVisible()
   }
 
-  get authorsSection(): AuthorsSection {
-    return new AuthorsSection(this.getDocumentSection(0))
+  get basicInfoSection(): BasicInfoSection {
+    return new BasicInfoSection(this.getDocumentSection(0))
   }
 
-  get considerationsSection(): ConsiderationsSection {
-    return new ConsiderationsSection(this.getDocumentSection(1))
+  get authoringSection(): AuthoringSection {
+    return new AuthoringSection(this.getDocumentSection(1))
   }
 
-  get previousVasuGoalsSection(): PreviousVasuGoalsSection {
-    return new PreviousVasuGoalsSection(this.getDocumentSection(2))
+  get cooperationSection(): CooperationSection {
+    return new CooperationSection(this.getDocumentSection(2))
+  }
+
+  get vasuGoalsSection(): VasuGoalsSection {
+    return new VasuGoalsSection(this.getDocumentSection(3))
   }
 
   get goalsSection(): GoalsSection {
-    return new GoalsSection(this.getDocumentSection(3))
+    return new GoalsSection(this.getDocumentSection(4))
   }
 
-  get specialSupportSection(): SpecialSupportSection {
-    return new SpecialSupportSection(this.getDocumentSection(4))
-  }
-
-  get wellnessSupportSection(): WellnessSupportSection {
-    return new WellnessSupportSection(this.getDocumentSection(5))
+  get otherSection(): OtherSection {
+    return new OtherSection(this.getDocumentSection(5))
   }
 
   get otherDocsAndPlansSection(): OtherDocsAndPlansSection {
@@ -70,16 +69,12 @@ class VasuPageCommon {
     return new InfoSharedToSection(this.getDocumentSection(7))
   }
 
-  get additionalInfoSection(): AdditionalInfoSection {
-    return new AdditionalInfoSection(this.getDocumentSection(8))
-  }
-
   get discussionSection(): DiscussionSection {
-    return new DiscussionSection(this.getDocumentSection(9))
+    return new DiscussionSection(this.getDocumentSection(8))
   }
 
   get evaluationSection(): EvaluationSection {
-    return new EvaluationSection(this.getDocumentSection(10))
+    return new EvaluationSection(this.getDocumentSection(9))
   }
 
   get followupQuestionCount(): Promise<number> {
@@ -95,19 +90,12 @@ export class VasuEditPage extends VasuPageCommon {
       .findAllByDataQa('vasu-followup-question')
       .nth(nth)
     return {
-      newInput: new TextInput(
-        question.findByDataQa('vasu-followup-entry-new-input')
-      ),
-      newSubmit: question.findByDataQa('vasu-followup-entry-new-submit'),
-      entryTexts: question.findAllByDataQa('vasu-followup-entry-text'),
-      entryMetadatas: question.findAllByDataQa('vasu-followup-entry-metadata'),
-      entryEditButtons: question.findAllByDataQa(
-        'vasu-followup-entry-edit-btn'
-      ),
-      entryInput: new TextInput(
-        question.findByDataQa('vasu-followup-entry-edit-input')
-      ),
-      entrySaveButton: question.findByDataQa('vasu-followup-entry-edit-submit')
+      entryInput: (nth: number) =>
+        new TextInput(question.findByDataQa(`follow-up-${nth}-input`)),
+      entryDateInput: (nth: number) =>
+        new TextInput(question.findByDataQa(`follow-up-${nth}-date`)),
+      meta: (nth: number) =>
+        question.findByDataQa(`follow-up-${nth}-meta`).innerText
     }
   }
 
@@ -131,23 +119,25 @@ export class VasuEditPage extends VasuPageCommon {
     await this.#multiSelectQuestionOptionTextInput(key).fill(text)
   }
 
-  async inputFollowupComment(comment: string, nth: number) {
-    await this.#followup(nth).newInput.type(comment)
-    await this.#followup(nth).newSubmit.click()
+  async inputFollowupWithDateComment(
+    comment: string,
+    date: string,
+    nth: number,
+    entryNth: number
+  ) {
+    await this.#followup(nth).entryInput(entryNth).clear()
+    await this.#followup(nth).entryInput(entryNth).type(comment)
+    await this.#followup(nth).entryDateInput(entryNth).clear()
+    await this.#followup(nth).entryDateInput(entryNth).type(date)
   }
 
-  followupEntryTexts(nth: number): Promise<Array<string>> {
-    return this.#followup(nth).entryTexts.allInnerTexts()
+  async inputFollowupComment(comment: string, nth: number, entryNth: number) {
+    await this.#followup(nth).entryInput(entryNth).clear()
+    await this.#followup(nth).entryInput(entryNth).type(comment)
   }
 
-  followupEntryMetadata(nth: number): Promise<Array<string>> {
-    return this.#followup(nth).entryMetadatas.allInnerTexts()
-  }
-
-  async editFollowupComment(ix: number, text: string, nth: number) {
-    await this.#followup(nth).entryEditButtons.nth(ix).click()
-    await this.#followup(nth).entryInput.type(text)
-    await this.#followup(nth).entrySaveButton.click()
+  followupEntryMetadata(nth: number, entryNth: number): Promise<string> {
+    return this.#followup(nth).meta(entryNth)
   }
 
   get previewBtn(): Element {
@@ -214,6 +204,14 @@ export class VasuPage extends VasuPageCommon {
 
   async edit() {
     await this.#editButton.click()
+  }
+
+  followupEntry(sectionNth: number, entryNth: number) {
+    return this.page
+      .findAllByDataQa('vasu-followup-question')
+      .nth(sectionNth)
+      .findAllByDataQa('follow-up-entry')
+      .nth(entryNth).innerText
   }
 }
 

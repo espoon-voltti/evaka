@@ -146,7 +146,6 @@ typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficie
 typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
 typealias VardaPlacementId = Id<DatabaseTable.VardaPlacement>
 typealias VasuDocumentId = Id<DatabaseTable.VasuDocument>
-typealias VasuDocumentFollowupEntryId = Pair<VasuDocumentId, UUID>
 typealias VasuTemplateId = Id<DatabaseTable.VasuTemplate>
 typealias VoucherValueId = Id<DatabaseTable.VoucherValue>
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>

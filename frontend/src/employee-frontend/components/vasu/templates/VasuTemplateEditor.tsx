@@ -25,7 +25,11 @@ import {
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
-import { VasuSection, VasuTemplate } from 'lib-common/generated/api-types/vasu'
+import {
+  CurriculumType,
+  VasuSection,
+  VasuTemplate
+} from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import usePrompt from 'lib-common/utils/usePrompt'
@@ -44,7 +48,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { H1, H2, H3, Label, P } from 'lib-components/typography'
+import { Bold, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { vasuTranslations } from 'lib-customizations/employee'
@@ -54,6 +58,7 @@ import { useTranslation } from '../../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import { renderResult } from '../../async-rendering'
 import QuestionInfo from '../QuestionInfo'
+import { FixedSpaceRowOrColumns } from '../components/MultiFieldQuestion'
 import { OptionContainer } from '../components/RadioGroupQuestionOption'
 import {
   getQuestionNumber,
@@ -65,6 +70,7 @@ import {
   isMultiSelectQuestion,
   isParagraph,
   isRadioGroupQuestion,
+  isStaticInfoSubsection,
   isTextQuestion
 } from '../vasu-content'
 
@@ -286,7 +292,9 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
-  const dynamicOffset = 1
+  const dynamicOffset = template
+    .map((t) => (t.content.hasDynamicFirstSection ? 0 : 1))
+    .getOrElse(0)
 
   function renderTextQuestion(question: TextQuestion, questionNumber: string) {
     return (
@@ -332,28 +340,34 @@ export default React.memo(function VasuTemplateEditor() {
         <QuestionInfo info={question.info}>
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
-        {question.options.map((opt) => (
-          <OptionContainer key={opt.key}>
-            <Radio checked={false} label={opt.name} />
-            {opt.dateRange && (
-              <div>
-                <DatePicker
-                  locale="fi"
-                  date={null}
-                  onChange={() => void 0}
-                  errorTexts={i18n.validationErrors}
-                />
-                <span>-</span>
-                <DatePicker
-                  locale="fi"
-                  date={null}
-                  onChange={() => void 0}
-                  errorTexts={i18n.validationErrors}
-                />
-              </div>
-            )}
-          </OptionContainer>
-        ))}
+        {question.options.map((opt) =>
+          opt.isIntervention ? (
+            <QuestionInfo info={opt.info ?? null}>
+              <Bold>{opt.name}</Bold>
+            </QuestionInfo>
+          ) : (
+            <OptionContainer key={opt.key}>
+              <Radio checked={false} label={opt.name} />
+              {opt.dateRange && (
+                <div>
+                  <DatePicker
+                    locale="fi"
+                    date={null}
+                    onChange={() => void 0}
+                    errorTexts={i18n.validationErrors}
+                  />
+                  <span>-</span>
+                  <DatePicker
+                    locale="fi"
+                    date={null}
+                    onChange={() => void 0}
+                    errorTexts={i18n.validationErrors}
+                  />
+                </div>
+              )}
+            </OptionContainer>
+          )
+        )}
       </FixedSpaceColumn>
     )
   }
@@ -383,14 +397,16 @@ export default React.memo(function VasuTemplateEditor() {
         <QuestionInfo info={question.info}>
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
-        <FixedSpaceFlexWrap>
+        <FixedSpaceRowOrColumns columns={question.separateRows}>
           {question.keys.map((key) => (
             <FixedSpaceColumn key={key.name} spacing="xxs">
-              <Label>{key.name}</Label>
+              <QuestionInfo info={key.info ?? null}>
+                <Label>{key.name}</Label>
+              </QuestionInfo>
               <InputField value="" width="m" />
             </FixedSpaceColumn>
           ))}
-        </FixedSpaceFlexWrap>
+        </FixedSpaceRowOrColumns>
       </FixedSpaceColumn>
     )
   }
@@ -461,10 +477,38 @@ export default React.memo(function VasuTemplateEditor() {
     )
   }
 
+  function renderStaticInfoSubsection(type: CurriculumType) {
+    const t = translations.staticSections.basics
+
+    return (
+      <FixedSpaceColumn spacing="xxs">
+        <Label>{t.name}</Label>
+        <div>Matti Meikäläinen</div>
+
+        <Gap size="s" />
+
+        <Label>{t.dateOfBirth}</Label>
+        <div>10.08.2016</div>
+
+        <Gap size="s" />
+
+        <Label>{t.placements[type]}</Label>
+        <div>Päiväkoti ja esikoulu B (Perhoset) 20.08.2021 - 19.12.2021</div>
+
+        <Gap size="s" />
+
+        <Label>{t.guardians}</Label>
+        <div>Jaakko Meikäläinen</div>
+        <div>Pirjo Meikäläinen</div>
+      </FixedSpaceColumn>
+    )
+  }
+
   function renderQuestion(
     sectionQuestions: VasuQuestion[],
     question: VasuQuestion,
-    sectionIndex: number
+    sectionIndex: number,
+    type: CurriculumType
   ) {
     const questionNumber = getQuestionNumber(
       sectionIndex,
@@ -489,6 +533,8 @@ export default React.memo(function VasuTemplateEditor() {
       return renderFollowup(question, questionNumber)
     } else if (isParagraph(question)) {
       return renderParagraph(question)
+    } else if (isStaticInfoSubsection(question)) {
+      return renderStaticInfoSubsection(type)
     } else {
       return null
     }
@@ -507,9 +553,11 @@ export default React.memo(function VasuTemplateEditor() {
             <Gap />
 
             <FixedSpaceColumn>
-              <ElementContainer>
-                <H2>1. {translations.staticSections.basics.title}</H2>
-              </ElementContainer>
+              {!template.content.hasDynamicFirstSection && (
+                <ElementContainer>
+                  <H2>1. {translations.staticSections.basics.title}</H2>
+                </ElementContainer>
+              )}
 
               {template.content.sections.map((section, sectionIndex) => (
                 <Fragment key={`section-${sectionIndex}`}>
@@ -665,7 +713,8 @@ export default React.memo(function VasuTemplateEditor() {
                             {renderQuestion(
                               section.questions,
                               question,
-                              sectionIndex + dynamicOffset
+                              sectionIndex + dynamicOffset,
+                              template.type
                             )}
                           </ElementContainer>
                           {!readonly && (

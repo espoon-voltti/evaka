@@ -9,6 +9,7 @@ import config from '../../config'
 import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
+  insertGuardianFixtures,
   insertVasuDocument,
   insertVasuTemplateFixture,
   resetDatabase
@@ -16,11 +17,16 @@ import {
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
+  daycareFixture,
   daycareGroupFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  DaycarePlacement,
+  EmployeeDetail,
+  PersonDetailWithDependantsAndGuardians
+} from '../../dev-api/types'
 import ChildInformationPage, {
   VasuAndLeopsSection
 } from '../../pages/employee/child-information'
@@ -31,9 +37,11 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let admin: EmployeeDetail
+let unitSupervisor: EmployeeDetail
 let childInformationPage: ChildInformationPage
-let childId: UUID
+let child: PersonDetailWithDependantsAndGuardians
 let templateId: UUID
+let daycarePlacementFixture: DaycarePlacement
 
 beforeAll(async () => {
   await resetDatabase()
@@ -44,16 +52,40 @@ beforeAll(async () => {
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  child = fixtures.familyWithTwoGuardians.children[0]
 
-  const daycarePlacementFixture = createDaycarePlacementFixture(
+  unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save()).data
+
+  daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
-    childId,
+    child.id,
     unitId
   )
 
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
+
+  await Fixture.groupPlacement()
+    .with({
+      daycareGroupId: daycareGroupFixture.id,
+      daycarePlacementId: daycarePlacementFixture.id,
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
+    })
+    .save()
+
   templateId = await insertVasuTemplateFixture()
+
+  const [firstGuardian, secondGuardian] = child.guardians ?? []
+  await insertGuardianFixtures([
+    {
+      guardianId: firstGuardian.id,
+      childId: child.id
+    },
+    {
+      guardianId: secondGuardian.id,
+      childId: child.id
+    }
+  ])
 })
 
 describe('Child Information - Vasu documents section', () => {
@@ -61,7 +93,7 @@ describe('Child Information - Vasu documents section', () => {
   beforeEach(async () => {
     page = await Page.open()
     await employeeLogin(page, admin)
-    await page.goto(`${config.employeeUrl}/child-information/${childId}`)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('vasuAndLeops')
   })
@@ -94,7 +126,7 @@ describe('Vasu document page', () => {
   }
 
   beforeAll(async () => {
-    vasuDocId = await insertVasuDocument(childId, templateId)
+    vasuDocId = await insertVasuDocument(child.id, templateId)
   })
 
   beforeEach(async () => {
@@ -103,80 +135,130 @@ describe('Vasu document page', () => {
   })
 
   describe('Fill out document', () => {
-    test('Fill the authors section', async () => {
+    test('Fill the basic info section', async () => {
       const vasuEditPage = await editDocument()
-      const authors = vasuEditPage.authorsSection
-      await authors.primaryFirstNameInput.fill('Leena')
-      await authors.primaryLastNameInput.fill('Virtanen')
-      await authors.primaryTitleInput.fill('Johtaja')
-      await authors.primaryPhoneNumberInput.fill('1234565')
+      const basicInfo = vasuEditPage.basicInfoSection
+      expect(await basicInfo.childName).toEqual(
+        `${child.firstName} ${child.lastName}`
+      )
+      expect(await basicInfo.childDateOfBirth).toEqual(
+        LocalDate.parseIso(child.dateOfBirth).format()
+      )
+      expect(await basicInfo.placement(0)).toEqual(
+        `${daycareFixture.name} (${
+          daycareGroupFixture.name
+        }) ${LocalDate.parseIso(
+          daycarePlacementFixture.startDate
+        ).format()} - ${LocalDate.parseIso(
+          daycarePlacementFixture.endDate
+        ).format()}`
+      )
+      const [firstGuardian, secondGuardian] = child.guardians ?? []
+      expect(await basicInfo.guardian(0)).toEqual(
+        `${firstGuardian.firstName} ${firstGuardian.lastName}`
+      )
+      expect(await basicInfo.guardian(1)).toEqual(
+        `${secondGuardian.firstName} ${secondGuardian.lastName}`
+      )
+      await basicInfo.additionalContactInfoInput.fill(
+        'Only contact during 8-12'
+      )
 
-      await waitUntilEqual(() => authors.otherFieldsCount, 1)
-      await authors.otherFirstNameInput(0).fill('Veena')
-      await authors.otherLastNameInput(0).fill('Lirtanen')
-      await authors.otherTitleInput(0).fill('Hoitaja')
-      await authors.otherPhoneNumberInput(0).fill('1234565')
-
-      await waitUntilEqual(() => authors.otherFieldsCount, 2)
-      await authors.otherFirstNameInput(1).fill('Aneev')
-      await authors.otherLastNameInput(1).fill('Nenatril')
-      await authors.otherTitleInput(1).fill('Hoitaja')
-      await authors.otherPhoneNumberInput(1).fill('5654321')
-
-      await waitUntilEqual(() => authors.otherFieldsCount, 3)
       await vasuEditPage.waitUntilSaved()
 
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.authorsSection.primaryValue,
+        () => vasuPage.basicInfoSection.additionalContactInfo,
+        'Only contact during 8-12'
+      )
+    })
+
+    test('Fill the authoring section', async () => {
+      const vasuEditPage = await editDocument()
+      const authoring = vasuEditPage.authoringSection
+      await authoring.primaryFirstNameInput.fill('Leena')
+      await authoring.primaryLastNameInput.fill('Virtanen')
+      await authoring.primaryTitleInput.fill('Johtaja')
+      await authoring.primaryPhoneNumberInput.fill('1234565')
+
+      await waitUntilEqual(() => authoring.otherFieldsCount, 1)
+      await authoring.otherFirstNameInput(0).fill('Veena')
+      await authoring.otherLastNameInput(0).fill('Lirtanen')
+      await authoring.otherTitleInput(0).fill('Hoitaja')
+      await authoring.otherPhoneNumberInput(0).fill('1234565')
+
+      await waitUntilEqual(() => authoring.otherFieldsCount, 2)
+      await authoring.otherFirstNameInput(1).fill('Aneev')
+      await authoring.otherLastNameInput(1).fill('Nenatril')
+      await authoring.otherTitleInput(1).fill('Hoitaja')
+      await authoring.otherPhoneNumberInput(1).fill('5654321')
+
+      await waitUntilEqual(() => authoring.otherFieldsCount, 3)
+
+      await authoring.childPOVInput.fill('Hearing')
+      await authoring.guardianPOVInput.fill('Listening')
+
+      await vasuEditPage.waitUntilSaved()
+
+      const vasuPage = await openDocument()
+      await waitUntilEqual(
+        () => vasuPage.authoringSection.primaryValue,
         'Leena Virtanen Johtaja 1234565'
       )
       await waitUntilEqual(
-        () => vasuPage.authorsSection.otherValues,
+        () => vasuPage.authoringSection.otherValues,
         'Veena Lirtanen Hoitaja 1234565,\nAneev Nenatril Hoitaja 5654321'
       )
+      await waitUntilEqual(() => vasuPage.authoringSection.childPOV, 'Hearing')
+      await waitUntilEqual(
+        () => vasuPage.authoringSection.guardianPOV,
+        'Listening'
+      )
     })
 
-    test('Fill the consideration of views section', async () => {
+    test('Fill the multidisciplinary cooperation section', async () => {
       const vasuEditPage = await editDocument()
-      const considerations = vasuEditPage.considerationsSection
+      const cooperation = vasuEditPage.cooperationSection
 
-      await considerations.childsViewInput.type("This is the child's view")
-      await considerations.guardiansViewInput.type(
-        "This is the guardian's view"
+      await cooperation.collaboratorsInput.type(
+        'John Doe, child health centre director'
       )
+      await cooperation.methodsOfCooperationInput.type('Visit once a week')
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.considerationsSection.childsView,
-        "This is the child's view"
+        () => vasuPage.cooperationSection.collaborators,
+        'John Doe, child health centre director'
       )
       await waitUntilEqual(
-        () => vasuPage.considerationsSection.guardiansView,
-        "This is the guardian's view"
+        () => vasuPage.cooperationSection.methodsOfCooperation,
+        'Visit once a week'
       )
     })
 
-    test('Fill the previous vasu goals section', async () => {
+    test('Fill the vasu goals section', async () => {
       const vasuEditPage = await editDocument()
-      const previousGoals = vasuEditPage.previousVasuGoalsSection
+      const goals = vasuEditPage.vasuGoalsSection
 
-      await previousGoals.goalsRealizedInput.type(
-        'The goals were realized by ...'
+      await goals.goalsRealizationInput.type(
+        'The goals are going to be realized by ...'
       )
-      await previousGoals.otherObservationsInput.type(
-        'Other observations include ...'
-      )
+      await goals.specialNeedsEstimationInput.type('Some special needs ...')
+      await goals.otherObservationsInput.type('Other observations include ...')
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.previousVasuGoalsSection.goalsRealized,
-        'The goals were realized by ...'
+        () => vasuPage.vasuGoalsSection.goalsRealization,
+        'The goals are going to be realized by ...'
       )
       await waitUntilEqual(
-        () => vasuPage.previousVasuGoalsSection.otherObservations,
+        () => vasuPage.vasuGoalsSection.specialNeedsEstimation,
+        'Some special needs ...'
+      )
+      await waitUntilEqual(
+        () => vasuPage.vasuGoalsSection.otherObservations,
         'Other observations include ...'
       )
     })
@@ -186,7 +268,17 @@ describe('Vasu document page', () => {
       const goals = vasuEditPage.goalsSection
 
       await goals.childsStrengthsInput.type('Super helpful with chores')
-      await goals.goalsForTeachersInput.type('Child needs help drawing squares')
+      await goals.languageViewsInput.type('Daily reminder')
+      await goals.pedagogicalSupportInput.type('Flash cards')
+      await goals.structuralSupportInput.type('Small groups')
+      await goals.therapeuticSupportInput.type('Asthma')
+      await goals.staffGoalsInput.type('Child needs help drawing squares')
+      await goals.actionsInput.type('Show flash cards')
+      await goals.supportLevelOptions('during_range').click()
+      await goals
+        .supportLevelOptionRangeStart('during_range')
+        .fill('02.03.2020')
+      await goals.supportLevelOptionRangeEnd('during_range').fill('11.05.2021')
       await goals.otherInput.type(
         'Child snores heavily, waking all the other kids up'
       )
@@ -198,8 +290,32 @@ describe('Vasu document page', () => {
         'Super helpful with chores'
       )
       await waitUntilEqual(
-        () => vasuPage.goalsSection.goalsForTeachers,
+        () => vasuPage.goalsSection.languageViews,
+        'Daily reminder'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.pedagogicalSupport,
+        'Flash cards'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.structuralSupport,
+        'Small groups'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.therapeuticSupport,
+        'Asthma'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.staffGoals,
         'Child needs help drawing squares'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.actions,
+        'Show flash cards'
+      )
+      await waitUntilEqual(
+        () => vasuPage.goalsSection.supportLevel,
+        'Tukipalvelut ajalla 02.03.2020–11.05.2021'
       )
       await waitUntilEqual(
         () => vasuPage.goalsSection.other,
@@ -207,133 +323,18 @@ describe('Vasu document page', () => {
       )
     })
 
-    test('Fill the intensified or special support need section', async () => {
+    test('Fill the other info section', async () => {
       const vasuEditPage = await editDocument()
-      const specialSupport = vasuEditPage.specialSupportSection
+      const section = vasuEditPage.otherSection
 
-      await specialSupport.specialSupportEnabledInput.click()
-      await specialSupport.optionalFields.previousSpecialSupportInput.type(
-        'An environment with less...'
-      )
-      await specialSupport.optionalFields.currentSpecialSupportInput.type(
-        'An environment that is...'
-      )
-      await specialSupport.optionalFields.staffResponsibilitiesInput.type(
-        'Staff should monitor...'
-      )
-      await specialSupport.optionalFields.carerChildCooperationInput.type(
-        'Worked together to find...'
-      )
-
-      await specialSupport.supportLevelOptions('during_range').click()
-      await specialSupport
-        .supportLevelOptionRangeStart('during_range')
-        .fill('02.03.2020')
-      await specialSupport
-        .supportLevelOptionRangeEnd('during_range')
-        .fill('11.05.2021')
-
-      await vasuEditPage.waitUntilSaved()
-      const vasuPage = await openDocument()
-      await waitUntilEqual(
-        () => vasuPage.specialSupportSection.specialSupportEnabled,
-        'Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa'
-      )
-      await waitUntilEqual(
-        () =>
-          vasuPage.specialSupportSection.optionalFieldValues
-            .previousSpecialSupport,
-        'An environment with less...'
-      )
-      await waitUntilEqual(
-        () =>
-          vasuPage.specialSupportSection.optionalFieldValues
-            .currentSpecialSupport,
-        'An environment that is...'
-      )
-      await waitUntilEqual(
-        () =>
-          vasuPage.specialSupportSection.optionalFieldValues
-            .staffResponsibilities,
-        'Staff should monitor...'
-      )
-      await waitUntilEqual(
-        () =>
-          vasuPage.specialSupportSection.optionalFieldValues
-            .carerChildCooperation,
-        'Worked together to find...'
-      )
-      await waitUntilEqual(
-        () => vasuPage.specialSupportSection.optionalFieldValues.supportLevel,
-        'Tukipalvelut ajalla 02.03.2020–11.05.2021'
-      )
-    })
-
-    test('Fill the intensified or special support need section as not needed', async () => {
-      const vasuEditPage = await editDocument()
-      const specialSupport = vasuEditPage.specialSupportSection
-
-      // special needs were enabled in previous test; disable
-      await specialSupport.specialSupportEnabledInput.click()
-
-      await waitUntilEqual(
-        () =>
-          vasuEditPage.specialSupportSection
-            .findAllByDataQa('text-question-input')
-            .count(),
-        0
-      )
+      await section.otherInput.type('Something else...')
 
       await vasuEditPage.waitUntilSaved()
 
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.specialSupportSection.specialSupportEnabled,
-        'Ei'
-      )
-      await waitUntilEqual(
-        () =>
-          vasuPage.specialSupportSection
-            .findAllByDataQa('value-or-no-record')
-            .count(),
-        1
-      )
-    })
-
-    test('Fill the intensified or special support need section with non-date support level', async () => {
-      const vasuEditPage = await editDocument()
-      const specialSupport = vasuEditPage.specialSupportSection
-
-      // special needs were disabled in previous test; enable
-      await specialSupport.specialSupportEnabledInput.click()
-
-      await specialSupport.supportLevelOptions('general').click()
-
-      await vasuEditPage.waitUntilSaved()
-      const vasuPage = await openDocument()
-      await waitUntilEqual(
-        () => vasuPage.specialSupportSection.specialSupportEnabled,
-        'Kyllä, lapsella on tehostetun tai erityisen tuen tarve, tai tuen taso on muuttumassa'
-      )
-      await waitUntilEqual(
-        () => vasuPage.specialSupportSection.optionalFieldValues.supportLevel,
-        'Yleinen tuki'
-      )
-    })
-
-    test('Fill the wellness support section', async () => {
-      const vasuEditPage = await editDocument()
-      const wellnessSupport = vasuEditPage.wellnessSupportSection
-
-      await wellnessSupport.wellnessInput.type(
-        'Only sleeps for 0.2 seconds at a time'
-      )
-
-      await vasuEditPage.waitUntilSaved()
-      const vasuPage = await openDocument()
-      await waitUntilEqual(
-        () => vasuPage.wellnessSupportSection.wellness,
-        'Only sleeps for 0.2 seconds at a time'
+        () => vasuPage.otherSection.other,
+        'Something else...'
       )
     })
 
@@ -373,20 +374,6 @@ describe('Vasu document page', () => {
       )
     })
 
-    test('Fill the additional info section', async () => {
-      const vasuEditPage = await editDocument()
-      const additionalInfo = vasuEditPage.additionalInfoSection
-
-      await additionalInfo.infoInput.type('I love icecream')
-
-      await vasuEditPage.waitUntilSaved()
-      const vasuPage = await openDocument()
-      await waitUntilEqual(
-        () => vasuPage.additionalInfoSection.info,
-        'I love icecream'
-      )
-    })
-
     test('Fill the discussion section', async () => {
       const vasuEditPage = await editDocument()
       const discussion = vasuEditPage.discussionSection
@@ -411,40 +398,25 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the evaluation section', async () => {
-      await finalizeDocument()
       const vasuEditPage = await editDocument()
       const evaluation = vasuEditPage.evaluationSection
 
-      await evaluation.dateInput.type('1.12.2021')
-      await evaluation.participantsInput.type('Mom, dad, and teacher')
-      await evaluation.collaborationWithGuardiansInput.type(
-        'Collaboration is very good'
-      )
-      await evaluation.evaluationOfGoalsInput.type(
-        'All goals reached well ahead of time'
+      await evaluation.descriptionInput.type(
+        '1.12.2021, Collaboration is very good'
       )
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
-      await waitUntilEqual(() => vasuPage.evaluationSection.date, '01.12.2021')
       await waitUntilEqual(
-        () => vasuPage.evaluationSection.participants,
-        'Mom, dad, and teacher'
-      )
-      await waitUntilEqual(
-        () => vasuPage.evaluationSection.collaborationWithGuardians,
-        'Collaboration is very good'
-      )
-      await waitUntilEqual(
-        () => vasuPage.evaluationSection.evaluationOfGoals,
-        'All goals reached well ahead of time'
+        () => vasuPage.evaluationSection.description,
+        '1.12.2021, Collaboration is very good'
       )
     })
   })
 
   describe('Followup questions', () => {
     beforeAll(async () => {
-      vasuDocId = await insertVasuDocument(childId, templateId)
+      vasuDocId = await insertVasuDocument(child.id, templateId)
     })
 
     test('An unpublished vasu document has no followup questions', async () => {
@@ -464,69 +436,81 @@ describe('Vasu document page', () => {
         await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
       })
 
-      test('A published vasu document has two followup question when special support is enabled', async () => {
-        const vasuEditPage = await editDocument()
-        await vasuEditPage.specialSupportSection.specialSupportEnabledInput.click()
-        await vasuEditPage.waitUntilSaved()
-
-        const vasuPage = await openDocument()
-        await waitUntilEqual(() => vasuPage.followupQuestionCount, 2)
-      })
-
       test('Adding a followup comment renders it on the page', async () => {
         const vasuEditPage = await editDocument()
-        await vasuEditPage.inputFollowupComment('This is a followup', 0)
-        await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts(0),
-          ['This is a followup']
+        await vasuEditPage.inputFollowupWithDateComment(
+          'This is a followup',
+          '01.04.2020',
+          0,
+          0
         )
-        await vasuEditPage.inputFollowupComment('A second one', 0)
-        await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts(0),
-          ['This is a followup', 'A second one']
-        )
-        await vasuEditPage.inputFollowupComment(
-          'This is a followup to special support section',
+        await vasuEditPage.inputFollowupWithDateComment(
+          'A second one',
+          '09.10.2021',
+          0,
           1
         )
-        await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts(1),
-          ['This is a followup to special support section']
-        )
+
+        await vasuEditPage.waitUntilSaved()
+        const refreshedVasuEditPage = await editDocument()
 
         const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa`
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryMetadata(0),
-          [expectedMetadataStr, expectedMetadataStr]
+          () => refreshedVasuEditPage.followupEntryMetadata(0, 0),
+          expectedMetadataStr
+        )
+        await waitUntilEqual(
+          () => refreshedVasuEditPage.followupEntryMetadata(0, 1),
+          expectedMetadataStr
+        )
+
+        await refreshedVasuEditPage.waitUntilSaved()
+        const vasuPage = await openDocument()
+        await waitUntilEqual(
+          () => vasuPage.followupEntry(0, 0),
+          '01.04.2020: This is a followup'
+        )
+        await waitUntilEqual(
+          () => vasuPage.followupEntry(0, 1),
+          '09.10.2021: A second one'
         )
       })
 
-      const lastElement = <T>(arr: Array<T>): T => arr[arr.length - 1]
+      test('Followup comments are editable', async () => {
+        page = await Page.open()
+        await employeeLogin(page, unitSupervisor)
 
-      test('A user can edit his own followup comment', async () => {
         const vasuEditPage = await editDocument()
-        await vasuEditPage.inputFollowupComment('This will be edited', 0)
-        await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts(0).then(lastElement),
-          'This will be edited'
+        await vasuEditPage.inputFollowupComment('This will be edited', 0, 0)
+        await vasuEditPage.inputFollowupWithDateComment(
+          'Edited with date too',
+          '01.08.2021',
+          0,
+          1
         )
 
-        const entryCount = (await vasuEditPage.followupEntryTexts(0)).length
-        await vasuEditPage.editFollowupComment(
-          entryCount - 1,
-          'now edited: ',
-          0
+        await vasuEditPage.waitUntilSaved()
+        const refreshedVasuEditPage = await editDocument()
+
+        const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa, muokattu ${LocalDate.todayInSystemTz().format()} Essi Esimies`
+        await waitUntilEqual(
+          () => refreshedVasuEditPage.followupEntryMetadata(0, 0),
+          expectedMetadataStr
+        )
+        await waitUntilEqual(
+          () => refreshedVasuEditPage.followupEntryMetadata(0, 1),
+          expectedMetadataStr
         )
 
+        await refreshedVasuEditPage.waitUntilSaved()
+        const vasuPage = await openDocument()
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryTexts(0).then(lastElement),
-          'now edited: This will be edited'
+          () => vasuPage.followupEntry(0, 0),
+          '01.04.2020: This will be edited'
         )
-
-        const date = LocalDate.todayInSystemTz().format()
         await waitUntilEqual(
-          () => vasuEditPage.followupEntryMetadata(0).then(lastElement),
-          `${date} Seppo Sorsa, muokattu ${date} Seppo Sorsa`
+          () => vasuPage.followupEntry(0, 1),
+          '01.08.2021: Edited with date too'
         )
       })
     })
@@ -534,7 +518,7 @@ describe('Vasu document page', () => {
 
   describe('Publishing of vasu documents', () => {
     beforeEach(async () => {
-      vasuDocId = await insertVasuDocument(childId, templateId)
+      vasuDocId = await insertVasuDocument(child.id, templateId)
     })
 
     test('Finalize a document', async () => {

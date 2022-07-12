@@ -323,8 +323,6 @@ export type VasuDocument =
   | 'READ'
   | 'UPDATE'
 
-export type VasuDocumentFollowup = 'UPDATE'
-
 export type VasuTemplate =
   | 'COPY'
   | 'DELETE'

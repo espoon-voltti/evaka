@@ -390,10 +390,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
         val (_, res, result) = http.get("/vasu/$id")
             .asUser(adminUser)
-            .responseObject<VasuController.GetVasuDocumentResponse>(jsonMapper)
+            .responseObject<VasuDocument>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get().vasu
+        return result.get()
     }
 
     private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {

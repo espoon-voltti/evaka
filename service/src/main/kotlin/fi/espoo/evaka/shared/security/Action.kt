@@ -41,7 +41,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -731,16 +730,6 @@ sealed interface Action {
         ),
         EVENT_RETURNED_TO_REVIEWED,
         EVENT_MOVED_TO_CLOSED;
-
-        override fun toString(): String = "${javaClass.name}.$name"
-    }
-
-    enum class VasuDocumentFollowup(override vararg val defaultRules: ScopedActionRule<in VasuDocumentFollowupEntryId>) : ScopedAction<VasuDocumentFollowupEntryId> {
-        UPDATE(
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfVasuDocumentFollowupEntry(),
-            HasGroupRole(STAFF).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementGroupOfChildOfVasuDocumentFollowupEntry(),
-            IsEmployee.authorOfVasuDocumentFollowupEntry()
-        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

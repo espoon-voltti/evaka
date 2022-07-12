@@ -2,42 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 
 import {
   useAutosave,
   AutosaveStatus
 } from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
-import {
-  FollowupEntry,
-  GetVasuDocumentResponse,
-  PermittedFollowupActions
-} from 'lib-common/api-types/vasu'
 import {
   ChildLanguage,
   VasuContent,
   VasuDocument
 } from 'lib-common/generated/api-types/vasu'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
-import {
-  editFollowupEntry,
-  EditFollowupEntryParams,
-  getVasuDocument,
-  putVasuDocument,
-  PutVasuDocumentParams
-} from './api'
+import { getVasuDocument, putVasuDocument, PutVasuDocumentParams } from './api'
 
-type VasuMetadata = Omit<
+export type VasuMetadata = Omit<
   VasuDocument,
   | 'content'
   | 'authorsContent'
@@ -53,26 +33,21 @@ interface Vasu {
   setChildLanguage: Dispatch<ChildLanguage>
   status: AutosaveStatus
   translations: VasuTranslations
-  editFollowupEntry: (params: EditFollowupEntryParams) => void
-  permittedFollowupActions: PermittedFollowupActions
 }
 
 export function useVasu(id: string): Vasu {
   const [vasu, setVasu] = useState<VasuMetadata>()
-  const [content, setContent] = useState<VasuContent>({ sections: [] })
+  const [content, setContent] = useState<VasuContent>({
+    sections: [],
+    hasDynamicFirstSection: false
+  })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
-  const [permittedFollowupActions, setPermittedFollowupActions] =
-    useState<PermittedFollowupActions>({})
 
   const handleVasuDocLoaded = useCallback(
-    ({
-      vasu: { content, ...meta },
-      permittedFollowupActions
-    }: GetVasuDocumentResponse) => {
+    ({ content, ...meta }: VasuDocument) => {
       setVasu(meta)
       setContent(content)
       setChildLanguage(meta.basics.childLanguage)
-      setPermittedFollowupActions(permittedFollowupActions)
     },
     []
   )
@@ -85,61 +60,12 @@ export function useVasu(id: string): Vasu {
 
   const loadVasuDoc = useCallback(() => getVasuDocument(id), [id])
 
-  const { status, setStatus, setDirty } = useAutosave({
+  const { status, setDirty } = useAutosave({
     load: loadVasuDoc,
     onLoaded: handleVasuDocLoaded,
     save: putVasuDocument,
     getSaveParameters
   })
-
-  const handleEditFollowupEntryResult = useCallback(
-    (res: Result<unknown>) =>
-      res.mapAll({
-        loading: () => null,
-        failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
-        success: () =>
-          setStatus((prev) => {
-            if (prev.state === 'saving-dirty') {
-              return { ...prev, state: 'dirty' }
-            } else {
-              void getVasuDocument(id).then((vasuRes) => {
-                vasuRes.mapAll({
-                  loading: () => null,
-                  failure: () =>
-                    setStatus((prev) => ({ ...prev, state: 'save-error' })),
-                  success: handleVasuDocLoaded
-                })
-              })
-              return { state: 'loading' }
-            }
-          })
-      }),
-    [setStatus, id, handleVasuDocLoaded]
-  )
-  const editFollowup = useRestApi(
-    editFollowupEntry,
-    handleEditFollowupEntryResult
-  )
-
-  useEffect(
-    function addNewToPermittedFollowupActions() {
-      content.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          if (question.type === 'FOLLOWUP') {
-            question.value.forEach((entry: FollowupEntry) => {
-              if (entry.id && !permittedFollowupActions[entry.id]) {
-                setPermittedFollowupActions({
-                  ...permittedFollowupActions,
-                  [entry.id]: ['UPDATE']
-                })
-              }
-            })
-          }
-        })
-      })
-    },
-    [content, permittedFollowupActions]
-  )
 
   const setContentCallback = useCallback(
     (draft: SetStateAction<VasuContent>) => {
@@ -172,8 +98,6 @@ export function useVasu(id: string): Vasu {
     childLanguage,
     setChildLanguage: setChildLanguageCallback,
     status,
-    translations,
-    editFollowupEntry: editFollowup,
-    permittedFollowupActions
+    translations
   }
 }

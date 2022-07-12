@@ -10,7 +10,10 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { QuestionOption } from 'lib-common/api-types/vasu'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { Bold } from 'lib-components/typography'
 import { fasExclamationTriangle } from 'lib-icons'
+
+import QuestionInfo from '../QuestionInfo'
 
 import type { RadioGroupSelectedValue } from './RadioGroupQuestion'
 
@@ -81,6 +84,14 @@ export default React.memo(function RadioGroupQuestionOption({
     isSelected,
     rangeIsLinear
   ])
+
+  if (option.isIntervention) {
+    return (
+      <QuestionInfo info={option.info ?? null}>
+        <Bold>{option.name}</Bold>
+      </QuestionInfo>
+    )
+  }
 
   return (
     <OptionContainer>

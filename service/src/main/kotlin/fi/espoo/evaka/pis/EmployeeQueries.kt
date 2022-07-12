@@ -63,6 +63,11 @@ data class EmployeeWithDaycareRoles(
     val daycareRoles: List<DaycareRole> = listOf()
 )
 
+data class EmployeeIdWithName(
+    val id: EmployeeId,
+    val name: String
+)
+
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
@@ -366,3 +371,17 @@ RETURNING id
         .mapTo<EmployeeId>()
         .toList()
 }
+
+fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
+    createQuery(
+        """
+SELECT id, concat(first_name, ' ', last_name) name
+FROM employee
+WHERE id = ANY(:ids)
+        """.trimIndent()
+    )
+        .bind("ids", employeeIds.toTypedArray())
+        .mapTo<EmployeeIdWithName>()
+        .toList()
+        .map { it.id to it.name }
+        .toMap()

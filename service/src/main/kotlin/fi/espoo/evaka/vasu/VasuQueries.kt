@@ -7,7 +7,6 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
@@ -326,24 +325,6 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         .bind("id", id)
         .mapTo<VasuPlacement>()
         .list()
-}
-
-fun Database.Read.getVasuFollowupEntry(id: VasuDocumentFollowupEntryId): FollowupEntry {
-    val (docId, entryId) = id
-    return createQuery(
-        """
-        WITH followup_entries AS (
-            SELECT jsonb_path_query(content, '$.sections[*].questions ? (@.type=="FOLLOWUP").value[*]') AS entry 
-            FROM curriculum_content
-            WHERE document_id = :docId AND master = true
-        )
-        SELECT entry FROM followup_entries WHERE entry ->> 'id' = :entryId
-        """
-    )
-        .bind("docId", docId)
-        .bind("entryId", entryId.toString())
-        .map { row -> row.mapJsonColumn<FollowupEntry>("entry") }
-        .one()
 }
 
 fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId, guardianId: PersonId) {

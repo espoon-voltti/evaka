@@ -12,10 +12,12 @@ import {
   MultiSelectQuestion,
   Paragraph,
   RadioGroupQuestion,
+  StaticInfoSubsection,
   TextQuestion,
   VasuQuestion
 } from 'lib-common/api-types/vasu'
 import { VasuContent, VasuSection } from 'lib-common/generated/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 
@@ -69,6 +71,12 @@ export function isParagraph(question: VasuQuestion): question is Paragraph {
   return question.type === 'PARAGRAPH'
 }
 
+export function isStaticInfoSubsection(
+  question: VasuQuestion
+): question is StaticInfoSubsection {
+  return question.type === 'STATIC_INFO_SUBSECTION'
+}
+
 function isDateQuestionJson(
   question: JsonOf<VasuQuestion>
 ): question is JsonOf<DateQuestion> {
@@ -88,6 +96,7 @@ function isRadioGroupQuestionJson(
 }
 
 export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
+  ...content,
   sections: content.sections.map((section: JsonOf<VasuSection>) => ({
     ...section,
     questions: section.questions.map((question: JsonOf<VasuQuestion>) =>
@@ -105,7 +114,11 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
               edited: entry.edited && {
                 ...entry.edited,
                 editedAt: LocalDate.parseIso(entry.edited.editedAt)
-              }
+              },
+              createdDate:
+                typeof entry.createdDate === 'string'
+                  ? HelsinkiDateTime.parseIso(entry.createdDate)
+                  : undefined
             }))
           }
         : isRadioGroupQuestionJson(question)
@@ -132,7 +145,7 @@ export function getQuestionNumber(
       break
     }
 
-    if (!isParagraph(q) && !isFollowup(q)) {
+    if (!isParagraph(q) && !isFollowup(q) && !isStaticInfoSubsection(q)) {
       questionIndex += 1
     }
   }

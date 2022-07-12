@@ -2,183 +2,139 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useCallback } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
-import { v4 as uuid } from 'uuid'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
-import { PermittedFollowupActions } from 'lib-common/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Dimmed, H2, Label } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { H2, InformationText, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { VasuTranslations } from 'lib-customizations/employee'
-import { faPen } from 'lib-icons'
 
 import { UserContext } from '../../../state/user'
 import QuestionInfo from '../QuestionInfo'
 
 import { QuestionProps } from './question-props'
 
-const FollowupEntryElement = React.memo(function FollowupEntryElement({
-  entry,
-  onEdited,
-  permittedFollowupActions
-}: {
-  entry: FollowupEntry
-  onEdited?: (entry: FollowupEntry) => void
-  permittedFollowupActions?: PermittedFollowupActions
-}) {
-  const { i18n } = useTranslation()
-  const [editing, setEditing] = useState(false)
-  const [editedEntry, setEditedEntry] = useState<FollowupEntry>()
-
-  const editAllowed =
-    permittedFollowupActions && entry.id
-      ? permittedFollowupActions[entry.id]?.includes('UPDATE')
-      : false
-
-  const onCommitEdited = useCallback(
-    (editedEntry: FollowupEntry) => {
-      setEditing(false)
-      onEdited && onEdited(editedEntry)
-      setEditedEntry(editedEntry)
-    },
-    [onEdited]
-  )
-
-  const getEntry = useCallback(
-    () => (editedEntry ? editedEntry : entry),
-    [entry, editedEntry]
-  )
-
-  return (
-    <Entry>
-      {editing && onEdited ? (
-        <FollowupEntryEditor
-          entry={entry}
-          buttonCaption={i18n.common.save}
-          onChange={onCommitEdited}
-          data-qa="vasu-followup-entry-edit"
-        />
-      ) : (
-        <EntryText data-qa="vasu-followup-entry-text">
-          {getEntry().text}
-        </EntryText>
-      )}
-      <FixedSpaceRow>
-        <Dimmed data-qa="vasu-followup-entry-metadata">
-          {getEntry().date.format()} {getEntry().authorName}
-          {getEntry().edited &&
-            `, ${i18n.vasu.edited} ${
-              getEntry().edited?.editedAt.format() ?? ''
-            } ${getEntry().edited?.editorName ?? ''}`}
-        </Dimmed>
-        {onEdited && editAllowed ? (
-          <IconButton
-            icon={faPen}
-            onClick={() => setEditing(true)}
-            data-qa="vasu-followup-entry-edit-btn"
-          />
-        ) : null}
-      </FixedSpaceRow>
-    </Entry>
-  )
-})
-
-const Entry = styled.div`
-  margin: ${defaultMargins.m} 0px;
-`
-
-const EntryText = styled.p`
-  white-space: pre-line;
-  margin: 0px 0px ${defaultMargins.xxs} 0px;
-`
-
 const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
   entry,
-  buttonCaption,
+  date,
+  textValue,
   onChange,
   'data-qa': dataQa
 }: {
   entry?: FollowupEntry
-  buttonCaption: string
-  onChange: (entry: FollowupEntry) => void
+  date: LocalDate | null
+  textValue: string
+  onChange: (date: LocalDate | null, textValue: string) => void
   'data-qa': string
 }) {
   const { user } = useContext(UserContext)
-  const [textValue, setTextValue] = useState(entry ? entry.text : '')
+  const { i18n } = useTranslation()
 
-  const onSubmit = useCallback(() => {
-    if (entry?.id) {
-      onChange({
-        ...entry,
-        text: textValue,
-        edited: {
-          editedAt: LocalDate.todayInSystemTz(),
-          editorName: user?.name || 'unknown',
-          editorId: user?.id
-        }
-      })
-    } else {
-      onChange({
-        ...entry,
-        id: uuid(),
-        date: LocalDate.todayInSystemTz(),
-        authorName: user?.name || 'unknown',
-        authorId: user?.id,
-        text: textValue
-      })
+  const currentUserCaption = useMemo(
+    () => `${LocalDate.todayInHelsinkiTz().format()} ${user?.name ?? ''}`,
+    [user]
+  )
+
+  const [internalDate, setInternalDate] = useState<LocalDate | null>(
+    date ?? LocalDate.todayInHelsinkiTz()
+  )
+
+  useEffect(() => {
+    if (
+      date !== null &&
+      (internalDate === null || !internalDate.isEqual(date))
+    ) {
+      setInternalDate(date)
     }
-    setTextValue('')
-  }, [onChange, entry, user, textValue])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date])
 
   return (
-    <FollowupEntryInputRow fullWidth>
-      <TextArea
-        value={textValue}
-        onChange={setTextValue}
-        data-qa={`${dataQa}-input`}
-      />
-      <Button
-        primary
-        type="submit"
-        disabled={textValue === ''}
-        text={buttonCaption}
-        onClick={onSubmit}
-        data-qa={`${dataQa}-submit`}
-      />
-    </FollowupEntryInputRow>
+    <div>
+      <FixedSpaceRow alignItems="flex-end" spacing="s">
+        <DatePicker
+          locale="fi"
+          date={internalDate}
+          onChange={(date) => {
+            setInternalDate(date)
+            if (textValue.length > 0 && date) {
+              onChange(date, textValue)
+            }
+          }}
+          info={
+            !internalDate
+              ? {
+                  status: 'warning',
+                  text: i18n.validationErrors.required
+                }
+              : undefined
+          }
+          errorTexts={i18n.validationErrors}
+          hideErrorsBeforeTouched
+          data-qa={`${dataQa}-date`}
+        />
+        <TextArea
+          value={textValue}
+          onChange={(textValue) =>
+            internalDate && onChange(internalDate, textValue)
+          }
+          data-qa={`${dataQa}-input`}
+          placeholder={
+            entry ? undefined : i18n.vasu.newFollowUpEntryPlaceholder
+          }
+        />
+      </FixedSpaceRow>
+      <Gap size="xxs" />
+      {(entry || textValue.length > 0) && (
+        <InformationText data-qa={`${dataQa}-meta`}>
+          {entry
+            ? `${entry.createdDate?.toLocalDate().format() ?? ''} ${
+                entry.authorName
+              }${
+                textValue !== entry.text
+                  ? `, ${i18n.vasu.edited} ${currentUserCaption}`
+                  : entry.edited
+                  ? `, ${i18n.vasu.edited} ${entry.edited.editedAt.format()} ${
+                      entry.edited.editorName
+                    }`
+                  : ''
+              }`
+            : currentUserCaption}
+        </InformationText>
+      )}
+    </div>
   )
 })
 
-const FollowupEntryInputRow = styled(FixedSpaceRow)`
-  & > div {
-    flex: 1;
-  }
-`
-
 interface FollowupQuestionProps extends QuestionProps<Followup> {
-  onChange?: (value: FollowupEntry) => void
-  onEdited?: (value: FollowupEntry) => void
+  onChange?: (value: FollowupEntry[]) => void
   translations: VasuTranslations
-  permittedFollowupActions?: PermittedFollowupActions
 }
 
 export default React.memo(function FollowupQuestion({
   onChange,
-  onEdited,
   question: { title, name, value, info, continuesNumbering },
-  translations,
-  permittedFollowupActions,
   questionNumber
 }: FollowupQuestionProps) {
-  const { i18n } = useTranslation()
+  const entries = useMemo(
+    () =>
+      [...value, undefined].map((entry) => ({
+        entry,
+        date: entry?.date ?? null,
+        textValue: entry?.text ?? ''
+      })),
+    [value]
+  )
+
+  const { user } = useContext(UserContext)
 
   return (
     <FollowupQuestionContainer
@@ -193,24 +149,69 @@ export default React.memo(function FollowupQuestion({
       </QuestionInfo>
 
       <div>
-        {value.length > 0 ? (
-          value.map((entry, ix) => (
-            <FollowupEntryElement
+        {onChange ? (
+          entries.map(({ entry, date, textValue }, ix) => (
+            <FollowupEntryEditor
               key={ix}
               entry={entry}
-              onEdited={onEdited}
-              permittedFollowupActions={permittedFollowupActions}
+              date={date}
+              textValue={textValue}
+              data-qa={`follow-up-${ix}`}
+              onChange={(date, text) =>
+                onChange?.(
+                  entries
+                    .map((entry, i) => {
+                      if (i !== ix) {
+                        return entry.entry
+                      }
+
+                      if (entry.entry) {
+                        const authorEditingInGracePeriod =
+                          !entry.entry.createdDate ||
+                          (HelsinkiDateTime.now().timestamp -
+                            entry.entry.createdDate.timestamp <
+                            15 * 60 * 1000 &&
+                            entry.entry.authorId === user?.id)
+
+                        return {
+                          ...entry.entry,
+                          date,
+                          text,
+                          edited: !authorEditingInGracePeriod
+                            ? {
+                                editorId: user?.id,
+                                editorName: user?.name,
+                                editedAt: LocalDate.todayInHelsinkiTz()
+                              }
+                            : entry.entry.edited
+                        }
+                      }
+
+                      if (text.length > 0) {
+                        return {
+                          date,
+                          text,
+                          authorId: user?.id,
+                          authorName: user?.name,
+                          createdDate: HelsinkiDateTime.now()
+                        }
+                      }
+
+                      return undefined
+                    })
+                    .filter((entry): entry is FollowupEntry => !!entry)
+                )
+              }
             />
           ))
         ) : (
-          <Dimmed>{translations.noRecord}</Dimmed>
-        )}
-        {onChange && (
-          <FollowupEntryEditor
-            buttonCaption={i18n.common.addNew}
-            onChange={onChange}
-            data-qa="vasu-followup-entry-new"
-          />
+          <ul>
+            {value.map((entry, ix) => (
+              <li key={ix} data-qa="follow-up-entry">
+                {entry.date.format()}: {entry.text}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </FollowupQuestionContainer>

@@ -37,7 +37,9 @@ import {
   RadioGroupQuestion as RadioGroupQuestionElem,
   RadioGroupSelectedValue
 } from '../components/RadioGroupQuestion'
+import StaticInfoSubsection from '../components/StaticInfoSubsection'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
+import { VasuMetadata } from '../use-vasu'
 import {
   getQuestionNumber,
   isCheckboxQuestion,
@@ -48,6 +50,7 @@ import {
   isMultiSelectQuestion,
   isParagraph,
   isRadioGroupQuestion,
+  isStaticInfoSubsection,
   isTextQuestion
 } from '../vasu-content'
 
@@ -56,9 +59,8 @@ interface Props {
   sectionIndex: number
   setContent?: Dispatch<SetStateAction<VasuContent>>
   state: VasuDocumentState
-  permittedFollowupActions?: { [key: string]: string[] }
   translations: VasuTranslations
-  editFollowupEntry?: (entry: FollowupEntry) => void
+  vasu: VasuMetadata
 }
 
 export function DynamicSections({
@@ -66,9 +68,8 @@ export function DynamicSections({
   sectionIndex: sectionOffset,
   setContent,
   state,
-  permittedFollowupActions,
   translations,
-  editFollowupEntry
+  vasu
 }: Props) {
   const content = sections.map((section, sectionIndex) => {
     if (section.hideBeforeReady && state === 'DRAFT') {
@@ -293,23 +294,28 @@ export function DynamicSections({
                       question={question}
                       questionNumber={questionNumber}
                       translations={translations}
-                      permittedFollowupActions={permittedFollowupActions}
                       onChange={
                         setContent
-                          ? (value: FollowupEntry) =>
+                          ? (value: FollowupEntry[]) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[questionIndex] as Followup
-                                question1.value.push(value)
+                                question1.value = value
                                 return clone
                               })
                           : undefined
                       }
-                      onEdited={editFollowupEntry}
                     />
                   ) : isParagraph(question) ? (
                     <ParagraphElem question={question} />
+                  ) : isStaticInfoSubsection(question) ? (
+                    <StaticInfoSubsection
+                      type={vasu.type}
+                      basics={vasu.basics}
+                      templateRange={vasu.templateRange}
+                      translations={translations}
+                    />
                   ) : undefined}
                 </Fragment>
               )

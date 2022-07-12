@@ -13,12 +13,10 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
-import fi.espoo.evaka.shared.VasuDocumentFollowupEntryId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
-import fi.espoo.evaka.vasu.getVasuFollowupEntry
 import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
@@ -79,14 +77,6 @@ AND id = ANY(:ids)
                 .bind("userId", user.id)
                 .bind("ids", ids.toTypedArray())
                 .mapTo()
-        }
-    )
-
-    fun authorOfVasuDocumentFollowupEntry() = DatabaseActionRule(
-        this,
-        Query<VasuDocumentFollowupEntryId> { tx, user, _, ids ->
-            // TODO: replace naive loop with a batch operation
-            ids.filter { id -> tx.getVasuFollowupEntry(id).authorId == user.id.raw }
         }
     )
 
