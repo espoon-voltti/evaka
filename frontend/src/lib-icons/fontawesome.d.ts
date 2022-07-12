@@ -94,6 +94,7 @@ declare module 'Icons' {
   const faUndo: IconDefinition
   const faUser: IconDefinition
   const fasUser: IconDefinition
+  const fasUserMinus: IconDefinition
   const faUserAltSlash: IconDefinition
   const faUserFriends: IconDefinition
   const faUserMinus: IconDefinition

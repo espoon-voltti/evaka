@@ -11,12 +11,11 @@ import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
 data class AbsenceInsert(
     val childId: ChildId,
-    val dateRange: FiniteDateRange,
+    val date: LocalDate,
     val absenceType: AbsenceType,
     val questionnaireId: HolidayQuestionnaireId? = null
 )
@@ -41,16 +40,14 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
         """.trimIndent()
     )
 
-    absenceInserts.forEach { (childId, dateRange, absenceType, questionnaireId) ->
-        dateRange.dates().forEach { date ->
-            batch
-                .bind("childId", childId)
-                .bind("date", date)
-                .bind("absenceType", absenceType)
-                .bind("userId", userId)
-                .bindNullable("questionnaireId", questionnaireId)
-                .add()
-        }
+    absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
+        batch
+            .bind("childId", childId)
+            .bind("date", date)
+            .bind("absenceType", absenceType)
+            .bind("userId", userId)
+            .bindNullable("questionnaireId", questionnaireId)
+            .add()
     }
 
     batch.execute()

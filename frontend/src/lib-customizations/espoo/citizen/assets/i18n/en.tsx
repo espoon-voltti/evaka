@@ -276,7 +276,8 @@ const en: Translations = {
         IRREGULAR: 'Changes frequently'
       },
       start: 'Start',
-      end: 'End'
+      end: 'End',
+      absent: 'Absent'
     },
     absenceModal: {
       title: 'Report absence',

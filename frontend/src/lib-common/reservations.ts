@@ -20,8 +20,8 @@ export interface ReservationFormData {
   endDate: LocalDate | null
   repetition: Repetition
   dailyTimes: TimeRanges
-  weeklyTimes: Array<TimeRanges | undefined>
-  irregularTimes: Record<string, TimeRanges | undefined>
+  weeklyTimes: Array<TimeRanges | 'absent' | undefined>
+  irregularTimes: Record<string, TimeRanges | 'absent' | undefined>
 }
 
 export type TimeRanges = [TimeRange] | [TimeRange, TimeRange]
@@ -88,7 +88,9 @@ export function validateForm(
 
   if (formData.repetition === 'WEEKLY') {
     errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times ? times.map((timeRange) => validateTimeRange(timeRange)) : undefined
+      times && times !== 'absent'
+        ? times.map((timeRange) => validateTimeRange(timeRange))
+        : undefined
     )
   }
 
@@ -96,7 +98,7 @@ export function validateForm(
     errors['irregularTimes'] = Object.fromEntries(
       Object.entries(formData.irregularTimes).map(([date, times]) => [
         date,
-        times
+        times && times !== 'absent'
           ? times.map((timeRange) => validateTimeRange(timeRange))
           : undefined
       ])
@@ -113,39 +115,52 @@ export function validateForm(
 
   return {
     errors: undefined,
-    requestPayload: formData.selectedChildren.flatMap((childId) => {
-      switch (formData.repetition) {
-        case 'DAILY':
-          return dates.map((date) => ({
-            childId,
-            date,
-            reservations: filterEmpty(formData.dailyTimes)
-          }))
-        case 'WEEKLY':
-          return dates.map((date) => ({
-            childId,
-            date,
-            reservations: filterEmpty(
-              formData.weeklyTimes[date.getIsoDayOfWeek() - 1]
-            )
-          }))
-        case 'IRREGULAR':
-          return Object.entries(formData.irregularTimes)
-            .filter(([isoDate]) => {
-              const date = LocalDate.tryParseIso(isoDate)
-              return date && dateRange.includes(date)
-            })
-            .map(([isoDate, times]) => ({
+    requestPayload: formData.selectedChildren
+      .flatMap((childId) => {
+        switch (formData.repetition) {
+          case 'DAILY':
+            return dates.map((date) => ({
               childId,
-              date: LocalDate.parseIso(isoDate),
-              reservations: filterEmpty(times)
+              date,
+              reservations: filterReservations(formData.dailyTimes),
+              absent: false
             }))
-      }
-    })
+          case 'WEEKLY':
+            return dates.map((date) => ({
+              childId,
+              date,
+              reservations: filterReservations(
+                formData.weeklyTimes[date.getIsoDayOfWeek() - 1]
+              ),
+              absent:
+                formData.weeklyTimes[date.getIsoDayOfWeek() - 1] === 'absent'
+            }))
+          case 'IRREGULAR':
+            return Object.entries(formData.irregularTimes)
+              .filter(([isoDate]) => {
+                const date = LocalDate.tryParseIso(isoDate)
+                return date && dateRange.includes(date)
+              })
+              .map(([isoDate, times]) => ({
+                childId,
+                date: LocalDate.parseIso(isoDate),
+                reservations: filterReservations(times),
+                absent: times === 'absent'
+              }))
+        }
+      })
+      .filter(
+        ({ reservations, absent }) =>
+          (reservations && reservations.length > 0) || absent
+      )
   }
 }
 
-function filterEmpty(times: TimeRanges | undefined) {
+function filterReservations(times: TimeRanges | 'absent' | undefined) {
+  if (times === 'absent') {
+    return null
+  }
+
   return times?.filter(({ startTime, endTime }) => startTime && endTime) ?? null
 }
 

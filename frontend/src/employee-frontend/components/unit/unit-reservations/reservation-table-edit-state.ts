@@ -183,7 +183,8 @@ export function useUnitReservationEditState(
           .map(({ startTime, endTime }) => ({
             startTime,
             endTime
-          }))
+          })),
+        absent: false
       }
 
       const reqId = startRequest()

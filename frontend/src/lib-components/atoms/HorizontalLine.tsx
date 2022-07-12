@@ -7,7 +7,11 @@ import styled from 'styled-components'
 import { tabletMin } from '../breakpoints'
 import { defaultMargins } from '../white-space'
 
-const HorizontalLine = styled.hr<{ slim?: boolean; dashed?: boolean }>`
+const HorizontalLine = styled.hr<{
+  slim?: boolean
+  dashed?: boolean
+  hiddenOnMobile?: boolean
+}>`
   width: 100%;
   margin-block-start: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
   margin-block-end: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
@@ -17,6 +21,7 @@ const HorizontalLine = styled.hr<{ slim?: boolean; dashed?: boolean }>`
   border-bottom-color: ${(p) => p.theme.colors.grayscale.g15};
 
   @media (max-width: ${tabletMin}) {
+    display: ${(p) => (p.hiddenOnMobile ? 'none' : 'block')};
     margin-block-start: ${(p) =>
       p.slim ? defaultMargins.s : defaultMargins.L};
     margin-block-end: ${(p) => (p.slim ? defaultMargins.s : defaultMargins.L)};

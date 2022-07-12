@@ -253,29 +253,31 @@ export default {
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Ilmoita läsnäolo',
     noReservation: 'Ilmoitus puuttuu',
-    reservation: 'Läsnäolo',
-    realized: 'Toteuma',
-    reservationsAndRealized: 'Varaukset ja toteuma',
+    reservation: 'Ilmoitettu aika',
+    realized: 'Toteutunut aika',
+    reservationsAndRealized: 'Läsnäoloaika',
     attendanceWarning: 'Läsnäoloaika ylittää varauksen',
     reservationModal: {
-      title: 'Tee varaus',
-      selectChildren: 'Lapset, joille varaus tehdään',
+      title: 'Ilmoita läsnäolo',
+      selectChildren: 'Lapset, joiden läsnäolo ilmoitetaan',
       selectChildrenLabel: 'Valitse lapset',
-      dateRange: 'Varauksen voimassaolo',
-      dateRangeLabel: 'Tee varaus päiville',
+      dateRange: 'Läsnäoloaika',
+      dateRangeLabel: 'Ilmoita läsnäolo päiville',
       dateRangeInfo: (date: LocalDate) =>
-        `Voit tehdä varauksia enimmillään ${date.format()} asti.`,
-      noReservableDays: 'Ei varattavia päiviä',
-      missingDateRange: 'Valitse varattavat päivät',
+        `Voit ilmoittaa läsnäolon enimmillään ${date.format()} asti.`,
+      noReservableDays:
+        'Tulossa ei ole päiviä, joille voisi tehdä läsnäoloilmoituksen.',
+      missingDateRange: 'Valitse aikaväli',
       selectRecurrence: 'Valitse miten kellonaika toistuu',
-      postError: 'Varauksen luominen ei onnistunut',
+      postError: 'Läsnäolon ilmoittaminen ei onnistunut',
       repetitions: {
         DAILY: 'Päivittäin sama aika',
         WEEKLY: 'Viikonpäivittäin sama aika',
         IRREGULAR: 'Vaihtelevat ajat'
       },
       start: 'Alkaa',
-      end: 'Päättyy'
+      end: 'Päättyy',
+      absent: 'Poissa'
     },
     absenceModal: {
       title: 'Ilmoita poissaolo',

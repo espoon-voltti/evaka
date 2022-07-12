@@ -9,7 +9,10 @@ import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import CitizenCalendarPage, {
+  AbsenceReservation,
+  StartAndEndTimeReservation
+} from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -232,5 +235,42 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       reservation1,
       reservation2
     ])
+  })
+
+  test('Citizen creates a repeating weekly reservation for all children with absent day', async () => {
+    // This should be a monday
+    const firstReservationDay = LocalDate.todayInSystemTz()
+      .addDays(14)
+      .subDays(LocalDate.todayInSystemTz().getIsoDayOfWeek() - 1)
+    const weekdays = [0, 1, 2, 3, 4]
+    const childIds = children.map(({ id }) => id)
+    const reservations = weekdays.map<
+      AbsenceReservation | StartAndEndTimeReservation
+    >((index) =>
+      index === 1
+        ? {
+            absence: true,
+            childIds
+          }
+        : {
+            startTime: `08:0${index}`,
+            endTime: `16:0${index}`,
+            childIds
+          }
+    )
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingWeeklyReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      reservations
+    )
+
+    await weekdays.reduce(async (promise, index) => {
+      await promise
+      await calendarPage.assertReservations(
+        firstReservationDay.addDays(index),
+        [reservations[index]]
+      )
+    }, Promise.resolve())
   })
 }

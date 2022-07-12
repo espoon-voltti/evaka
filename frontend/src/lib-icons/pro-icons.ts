@@ -17,6 +17,7 @@ export { faExclamationTriangle as fasExclamationTriangle } from '@fortawesome/fr
 export { faInfo as fasInfo } from '@fortawesome/free-solid-svg-icons/faInfo'
 export { faMapMarkerAlt as fasMapMarkerAlt } from '@fortawesome/free-solid-svg-icons/faMapMarkerAlt'
 export { faUser as fasUser } from '@fortawesome/free-solid-svg-icons/faUser'
+export { faUserMinus as fasUserMinus } from '@fortawesome/free-solid-svg-icons/faUserMinus'
 export { faAbacus } from '@fortawesome/pro-light-svg-icons/faAbacus'
 export { faAngleDown } from '@fortawesome/pro-light-svg-icons/faAngleDown'
 export { faAngleLeft } from '@fortawesome/pro-light-svg-icons/faAngleLeft'

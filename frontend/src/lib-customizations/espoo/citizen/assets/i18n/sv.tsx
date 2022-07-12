@@ -275,7 +275,8 @@ const sv: Translations = {
         IRREGULAR: 'Varierar ofta'
       },
       start: 'Börjar',
-      end: 'Slutar'
+      end: 'Slutar',
+      absent: 'Frånvarande'
     },
     absenceModal: {
       title: 'Anmäl frånvaro',

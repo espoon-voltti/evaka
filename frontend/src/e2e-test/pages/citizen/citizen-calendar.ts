@@ -13,7 +13,7 @@ interface BaseReservation {
   childIds: UUID[]
 }
 
-interface AbsenceReservation extends BaseReservation {
+export interface AbsenceReservation extends BaseReservation {
   absence: true
 }
 
@@ -21,7 +21,7 @@ interface FreeAbsenceReservation extends BaseReservation {
   freeAbsence: true
 }
 
-interface StartAndEndTimeReservation extends BaseReservation {
+export interface StartAndEndTimeReservation extends BaseReservation {
   startTime: string
   endTime: string
 }
@@ -185,6 +185,10 @@ class ReservationsModal {
     (index) =>
       new TextInput(this.page.find(`[data-qa="weekly-${index}-end-time-0"]`))
   )
+  #weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
+    (index) =>
+      new TextInput(this.page.find(`[data-qa="weekly-${index}-absent-button"]`))
+  )
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
 
   #childCheckbox = (childId: string) =>
@@ -224,15 +228,20 @@ class ReservationsModal {
 
   async createRepeatingWeeklyReservation(
     dateRange: FiniteDateRange,
-    weeklyTimes: { startTime: string; endTime: string }[]
+    weeklyTimes: ({ startTime: string; endTime: string } | { absence: true })[]
   ) {
     await this.#startDateInput.fill(dateRange.start.format())
     await this.#endDateInput.fill(dateRange.end.format())
     await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
-    await weeklyTimes.reduce(async (promise, { startTime, endTime }, index) => {
+    await weeklyTimes.reduce(async (promise, weeklyTime, index) => {
       await promise
-      await this.#weeklyStartTimeInputs[index].fill(startTime)
-      await this.#weeklyEndTimeInputs[index].fill(endTime)
+
+      if ('absence' in weeklyTime) {
+        await this.#weeklyAbsentButtons[index].click()
+      } else {
+        await this.#weeklyStartTimeInputs[index].fill(weeklyTime.startTime)
+        await this.#weeklyEndTimeInputs[index].fill(weeklyTime.endTime)
+      }
     }, Promise.resolve())
 
     await this.#modalSendButton.click()

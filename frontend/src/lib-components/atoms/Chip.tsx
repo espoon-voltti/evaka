@@ -122,9 +122,6 @@ export const ChoiceChip = React.memo(function ChoiceChip({
 
 const StyledLabel = styled.label`
   cursor: pointer;
-  &.checked {
-    margin-left: 32px;
-  }
 `
 
 const SelectionChipWrapper = styled.div`
@@ -177,15 +174,10 @@ const HiddenInput = styled.input`
 `
 
 const IconWrapper = styled.div`
-  position: absolute;
-  left: calc(${defaultMargins.xs} + ${defaultMargins.xxs});
-  top: 0;
-
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 24px;
-  height: 32px;
+  margin-right: ${defaultMargins.xs};
 
   font-size: 24px;
   color: ${(p) => p.theme.colors.grayscale.g0};

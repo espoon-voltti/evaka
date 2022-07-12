@@ -22,8 +22,8 @@ import {
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -38,14 +38,13 @@ import {
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, H2, H3, Label } from 'lib-components/typography'
+import { fontWeights, H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
-  faCheck,
   faChevronLeft,
   faChevronRight,
-  faPen,
   faPlus,
+  fasUserMinus,
   faTrash,
   faUserMinus
 } from 'lib-icons'
@@ -53,6 +52,7 @@ import {
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
 
+import { BottomFooterContainer } from './BottomFooterContainer'
 import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
@@ -154,6 +154,7 @@ export default React.memo(function DayView({
     startEditing,
     editorState,
     editorStateSetter,
+    editorAbsenceSetter,
     addSecondReservation,
     removeSecondReservation,
     saving,
@@ -183,150 +184,159 @@ export default React.memo(function DayView({
   return (
     <ModalAccessibilityWrapper>
       <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
-        <Gap size="XL" />
-        <Content highlight={date.isEqual(LocalDate.todayInSystemTz())}>
-          <DayPicker>
-            <IconButton
-              icon={faChevronLeft}
-              onClick={navigateToPrevDate}
-              disabled={!previousDate}
-              altText={i18n.calendar.previousDay}
-            />
-            <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
-            <IconButton
-              icon={faChevronRight}
-              onClick={navigateToNextDate}
-              disabled={!nextDate}
-              altText={i18n.calendar.nextDay}
-            />
-          </DayPicker>
-          <Gap size="m" />
-          <ReservationTitle>
-            <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
-            {editable &&
-              (editing ? (
-                <InlineButton
-                  icon={faCheck}
-                  disabled={saving}
-                  onClick={save}
-                  text={i18n.common.save}
-                  iconRight
-                  data-qa="save"
+        <HighlightBorder highlight={date.isEqual(LocalDate.todayInSystemTz())}>
+          <BottomFooterContainer>
+            <Content>
+              <DayPicker>
+                <IconButton
+                  icon={faChevronLeft}
+                  onClick={navigateToPrevDate}
+                  disabled={!previousDate}
+                  altText={i18n.calendar.previousDay}
                 />
+                <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
+                <IconButton
+                  icon={faChevronRight}
+                  onClick={navigateToNextDate}
+                  disabled={!nextDate}
+                  altText={i18n.calendar.nextDay}
+                />
+              </DayPicker>
+              <Gap size="m" />
+              <ReservationTitle>
+                <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
+              </ReservationTitle>
+              <Gap size="s" />
+              {zip(childrenWithReservations, editorState).map(
+                ([childWithReservation, childState], childIndex) => {
+                  if (!childWithReservation || !childState) return null
+
+                  const {
+                    child,
+                    absence,
+                    reservations,
+                    attendances,
+                    reservationEditable,
+                    markedByEmployee
+                  } = childWithReservation
+
+                  const showAttendanceWarning =
+                    !editing &&
+                    reservationsAndAttendancesDiffer(reservations, attendances)
+
+                  return (
+                    <div key={child.id} data-qa={`reservations-of-${child.id}`}>
+                      {childIndex !== 0 ? <Separator /> : null}
+                      <FixedSpaceRow>
+                        <FixedSpaceColumn>
+                          <RoundChildImage
+                            imageId={child.imageId}
+                            initialLetter={
+                              (child.preferredName || child.firstName || '?')[0]
+                            }
+                            colorIndex={childIndex}
+                            size={48}
+                          />
+                        </FixedSpaceColumn>
+                        <FixedSpaceColumn
+                          spacing="zero"
+                          justifyContent="center"
+                        >
+                          <ChildNameHeading noMargin data-qa="child-name">
+                            {formatPreferredName(child)}
+                          </ChildNameHeading>
+                        </FixedSpaceColumn>
+                      </FixedSpaceRow>
+                      <Gap size="s" />
+                      <Grid>
+                        <LabelLike>{i18n.calendar.reservation}</LabelLike>
+                        {editing &&
+                        (reservationEditable || reservations.length) ? (
+                          <EditReservation
+                            childId={child.id}
+                            canAddSecondReservation={
+                              !reservations[1] && child.inShiftCareUnit
+                            }
+                            childState={childState}
+                            editorStateSetter={editorStateSetter}
+                            editorAbsenceSetter={editorAbsenceSetter}
+                            addSecondReservation={addSecondReservation}
+                            removeSecondReservation={removeSecondReservation}
+                          />
+                        ) : absence ? (
+                          <Absence
+                            absence={absence}
+                            markedByEmployee={markedByEmployee}
+                          />
+                        ) : (
+                          <Reservations reservations={reservations} />
+                        )}
+                        <LabelLike>{i18n.calendar.realized}</LabelLike>
+                        <span>
+                          {attendances.length > 0
+                            ? attendances
+                                .map(
+                                  ({ startTime, endTime }) =>
+                                    `${startTime} – ${endTime ?? ''}`
+                                )
+                                .join(', ')
+                            : '–'}
+                        </span>
+                        {showAttendanceWarning && (
+                          <Warning>
+                            {i18n.calendar.attendanceWarning}
+                            <StatusIcon status="warning" />
+                          </Warning>
+                        )}
+                      </Grid>
+                    </div>
+                  )
+                }
+              )}
+              {confirmationModal ? (
+                <InfoModal
+                  title={i18n.common.saveConfirmation}
+                  close={confirmationModal.close}
+                  resolve={{
+                    action: confirmationModal.resolve,
+                    label: i18n.common.save
+                  }}
+                  reject={{
+                    action: confirmationModal.reject,
+                    label: i18n.common.discard
+                  }}
+                />
+              ) : null}
+            </Content>
+            <ButtonFooter>
+              {editable ? (
+                editing ? (
+                  <Button
+                    disabled={saving}
+                    onClick={save}
+                    text={i18n.common.save}
+                    data-qa="save"
+                  />
+                ) : (
+                  <Button
+                    onClick={startEditing}
+                    text={i18n.common.edit}
+                    data-qa="edit"
+                  />
+                )
               ) : (
-                <InlineButton
-                  icon={faPen}
-                  onClick={startEditing}
-                  text={i18n.common.edit}
-                  iconRight
-                  data-qa="edit"
-                />
-              ))}
-          </ReservationTitle>
-          <Gap size="s" />
-          {zip(childrenWithReservations, editorState).map(
-            ([childWithReservation, childState], childIndex) => {
-              if (!childWithReservation || !childState) return null
-
-              const {
-                child,
-                absence,
-                reservations,
-                attendances,
-                reservationEditable,
-                markedByEmployee
-              } = childWithReservation
-
-              const showAttendanceWarning =
-                !editing &&
-                reservationsAndAttendancesDiffer(reservations, attendances)
-
-              return (
-                <div key={child.id} data-qa={`reservations-of-${child.id}`}>
-                  {childIndex !== 0 ? <Separator /> : null}
-                  <FixedSpaceRow>
-                    <FixedSpaceColumn>
-                      <RoundChildImage
-                        imageId={child.imageId}
-                        initialLetter={
-                          (child.preferredName || child.firstName || '?')[0]
-                        }
-                        colorIndex={childIndex}
-                        size={48}
-                      />
-                    </FixedSpaceColumn>
-                    <FixedSpaceColumn spacing="zero" justifyContent="center">
-                      <H3 noMargin data-qa="child-name">
-                        {formatPreferredName(child)}
-                      </H3>
-                    </FixedSpaceColumn>
-                  </FixedSpaceRow>
-                  <Gap size="s" />
-                  <Grid>
-                    <Label>{i18n.calendar.reservation}</Label>
-                    {editing && (reservationEditable || reservations.length) ? (
-                      <EditReservation
-                        childId={child.id}
-                        canAddSecondReservation={
-                          !reservations[1] && child.inShiftCareUnit
-                        }
-                        childState={childState}
-                        editorStateSetter={editorStateSetter}
-                        addSecondReservation={addSecondReservation}
-                        removeSecondReservation={removeSecondReservation}
-                      />
-                    ) : absence ? (
-                      <Absence
-                        absence={absence}
-                        markedByEmployee={markedByEmployee}
-                      />
-                    ) : (
-                      <Reservations reservations={reservations} />
-                    )}
-                    <Label>{i18n.calendar.realized}</Label>
-                    <span>
-                      {attendances.length > 0
-                        ? attendances
-                            .map(
-                              ({ startTime, endTime }) =>
-                                `${startTime} – ${endTime ?? ''}`
-                            )
-                            .join(', ')
-                        : '–'}
-                    </span>
-                    {showAttendanceWarning && (
-                      <Warning>
-                        {i18n.calendar.attendanceWarning}
-                        <StatusIcon status="warning" />
-                      </Warning>
-                    )}
-                  </Grid>
-                </div>
-              )
-            }
-          )}
-          {confirmationModal ? (
-            <InfoModal
-              title={i18n.common.saveConfirmation}
-              close={confirmationModal.close}
-              resolve={{
-                action: confirmationModal.resolve,
-                label: i18n.common.save
-              }}
-              reject={{
-                action: confirmationModal.reject,
-                label: i18n.common.discard
-              }}
-            />
-          ) : null}
-        </Content>
-        <AbsenceButton
-          text={i18n.calendar.newAbsence}
-          icon={faUserMinus}
-          onClick={onCreateAbsence}
-          disabled={!absenceEditable}
-          data-qa="create-absence"
-        />
+                <EmptyButtonFooterElement />
+              )}
+              <Button
+                primary
+                text={i18n.calendar.newAbsence}
+                onClick={onCreateAbsence}
+                disabled={!absenceEditable}
+                data-qa="create-absence"
+              />
+            </ButtonFooter>
+          </BottomFooterContainer>
+        </HighlightBorder>
         <ModalCloseButton
           close={navigate(close)}
           closeLabel={i18n.common.closeModal}
@@ -337,9 +347,14 @@ export default React.memo(function DayView({
   )
 })
 
+const ChildNameHeading = styled(H3)`
+  font-weight: ${fontWeights.medium};
+`
+
 type EditorState = {
   child: ReservationChild
   reservations: TimeRangeWithErrors[]
+  absent: boolean
 }
 
 const emptyReservation: TimeRangeWithErrors = {
@@ -379,7 +394,7 @@ function useEditState(
 
   const initialEditorState: EditorState[] = useMemo(
     () =>
-      childrenWithReservations.map(({ child, reservations }) => ({
+      childrenWithReservations.map(({ child, reservations, absence }) => ({
         child,
         reservations:
           reservations.length > 0
@@ -387,7 +402,8 @@ function useEditState(
                 ...reservation,
                 errors: { startTime: undefined, endTime: undefined }
               }))
-            : [emptyReservation]
+            : [emptyReservation],
+        absent: !!absence
       })),
     [childrenWithReservations]
   )
@@ -414,6 +430,21 @@ function useEditState(
               : childState
           )
         ),
+    []
+  )
+
+  const editorAbsenceSetter = useCallback(
+    (childId: UUID, value: boolean) =>
+      setEditorState((state) =>
+        state.map((childState) =>
+          childState.child.id === childId
+            ? {
+                ...childState,
+                absent: value
+              }
+            : childState
+        )
+      ),
     []
   )
 
@@ -466,13 +497,14 @@ function useEditState(
 
     setSaving(true)
     return postReservations(
-      editorState.map(({ child, reservations }) => ({
+      editorState.map(({ child, reservations, absent }) => ({
         childId: child.id,
         date,
         reservations:
           reservations.flatMap(({ startTime, endTime }) =>
             startTime !== '' && endTime !== '' ? [{ startTime, endTime }] : []
-          ) ?? []
+          ) ?? [],
+        absent
       }))
     )
       .then(() => setEditing(false))
@@ -525,6 +557,7 @@ function useEditState(
     startEditing,
     editorState,
     editorStateSetter,
+    editorAbsenceSetter,
     addSecondReservation,
     removeSecondReservation,
     stateIsValid,
@@ -540,6 +573,7 @@ const EditReservation = React.memo(function EditReservation({
   canAddSecondReservation,
   childState,
   editorStateSetter,
+  editorAbsenceSetter,
   addSecondReservation,
   removeSecondReservation
 }: {
@@ -551,9 +585,12 @@ const EditReservation = React.memo(function EditReservation({
     index: number,
     field: 'startTime' | 'endTime'
   ) => (value: string) => void
+  editorAbsenceSetter: (childId: UUID, value: boolean) => void
   addSecondReservation: (childId: UUID) => void
   removeSecondReservation: (childId: UUID) => void
 }) {
+  const i18n = useTranslation()
+
   const onChangeFirst = useCallback(
     (field: 'startTime' | 'endTime') => editorStateSetter(childId, 0, field),
     [editorStateSetter, childId]
@@ -562,13 +599,25 @@ const EditReservation = React.memo(function EditReservation({
     (field: 'startTime' | 'endTime') => editorStateSetter(childId, 1, field),
     [editorStateSetter, childId]
   )
+
   return (
     <FixedSpaceColumn>
       <FixedSpaceRow alignItems="center">
-        <TimeRangeInput
-          value={childState.reservations[0]}
-          onChange={onChangeFirst}
-          data-qa="first-reservation"
+        {childState.absent ? (
+          <>
+            {i18n.calendar.absent}
+            <Gap horizontal size="s" />
+          </>
+        ) : (
+          <TimeRangeInput
+            value={childState.reservations[0]}
+            onChange={onChangeFirst}
+            data-qa="first-reservation"
+          />
+        )}
+        <IconButton
+          icon={childState.absent ? fasUserMinus : faUserMinus}
+          onClick={() => editorAbsenceSetter(childId, !childState.absent)}
         />
         {canAddSecondReservation && (
           <IconButton
@@ -677,16 +726,28 @@ export function addTimeRangeValidationErrors(
   }
 }
 
-const Content = styled.div<{ highlight: boolean }>`
+const HighlightBorder = styled.div<{ highlight: boolean }>`
+  height: 100%;
+  position: relative;
+
+  &::after {
+    content: '';
+    background-color: ${(p) =>
+      p.highlight ? p.theme.colors.status.success : 'transparent'};
+    width: 4px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+  }
+`
+
+const Content = styled.div`
   background: ${(p) => p.theme.colors.grayscale.g0};
   padding: ${defaultMargins.L};
-  padding-left: calc(${defaultMargins.L} - 4px);
-  border-left: 4px solid
-    ${(p) => (p.highlight ? p.theme.colors.status.success : 'transparent')};
 
   @media (max-width: ${tabletMin}) {
     padding: ${defaultMargins.s};
-    padding-left: calc(${defaultMargins.s} - 4px);
   }
 `
 
@@ -694,7 +755,6 @@ const DayPicker = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: space-between;
   align-items: center;
 `
 
@@ -713,7 +773,7 @@ const ReservationTitle = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: min-content auto;
+  grid-template-columns: max-content auto;
   row-gap: ${defaultMargins.xs};
   column-gap: ${defaultMargins.s};
   max-width: 100%;
@@ -732,17 +792,37 @@ const Separator = styled.div`
   margin: ${defaultMargins.s} 0;
 `
 
-const AbsenceButton = styled(InlineButton)`
-  padding: ${defaultMargins.s} ${defaultMargins.L};
-  text-align: left;
-  width: 100%;
-
-  @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.s};
-  }
-`
-
 const Warning = styled.div`
   grid-column: 1 / 3;
   color: ${({ theme }) => theme.colors.accents.a2orangeDark};
+`
+
+const ButtonFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: ${defaultMargins.L};
+  padding-top: 0;
+
+  @media (max-width: ${tabletMin}) {
+    margin-top: 0;
+    padding: ${defaultMargins.s};
+    display: grid;
+    grid-auto-columns: 1fr 1fr;
+    gap: ${defaultMargins.s};
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
+    background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+    & > * {
+      grid-row: 1;
+    }
+  }
+`
+
+const EmptyButtonFooterElement = styled.div`
+  @media (max-width: ${tabletMin}) {
+    display: none;
+  }
 `

@@ -108,22 +108,26 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                         throw BadRequest("Some children are not eligible to answer")
                     }
                 }
+
+                val invalidPeriod = body.fixedPeriods.values.find { !questionnaire.periodOptions.contains(it) }
+
+                if (invalidPeriod != null) {
+                    throw BadRequest("Invalid option provided ($invalidPeriod)")
+                }
+
                 val absences = body.fixedPeriods.entries
-                    .mapNotNull { (childId, period) ->
-                        if (period != null) AbsenceInsert(
-                            childId = childId,
-                            dateRange = period,
-                            absenceType = questionnaire.absenceType,
-                            questionnaireId = questionnaire.id
-                        ) else null
-                    }
-                    .onEach { (_, period) ->
-                        if (!questionnaire.periodOptions.contains(period)) {
-                            throw BadRequest("Invalid option provided ($period)")
-                        }
+                    .flatMap { (childId, period) ->
+                        period?.dates()?.map {
+                            AbsenceInsert(
+                                childId = childId,
+                                date = it,
+                                absenceType = questionnaire.absenceType,
+                                questionnaireId = questionnaire.id
+                            )
+                        } ?: emptySequence()
                     }
 
-                absences.flatMap { absence -> absence.dateRange.dates().map { absence.childId to it } }.let {
+                absences.map { absence -> absence.childId to absence.date }.let {
                     tx.clearOldReservations(it)
                     tx.clearOldCitizenEditableAbsences(it)
                 }
