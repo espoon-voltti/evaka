@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
+
 import {
   CheckboxQuestion,
   DateQuestion,
@@ -95,6 +97,12 @@ function isRadioGroupQuestionJson(
   return question.type === 'RADIO_GROUP'
 }
 
+function isMultiSelectQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<MultiSelectQuestion> {
+  return question.type === 'MULTISELECT'
+}
+
 export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
   ...content,
   sections: content.sections.map((section: JsonOf<VasuSection>) => ({
@@ -129,6 +137,13 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
               end: LocalDate.parseIso(question.dateRange.end)
             }
           }
+        : isMultiSelectQuestionJson(question)
+        ? {
+            ...question,
+            dateValue:
+              question.dateValue &&
+              mapValues(question.dateValue, (v) => LocalDate.parseIso(v))
+          }
         : question
     )
   }))
@@ -145,7 +160,12 @@ export function getQuestionNumber(
       break
     }
 
-    if (!isParagraph(q) && !isFollowup(q) && !isStaticInfoSubsection(q)) {
+    if (
+      !isParagraph(q) &&
+      !isFollowup(q) &&
+      !isStaticInfoSubsection(q) &&
+      (!isCheckboxQuestion(q) || !q.notNumbered)
+    ) {
       questionIndex += 1
     }
   }

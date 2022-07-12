@@ -73,7 +73,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             putVasuTemplateContent(
                 templateId,
-                getDefaultLeopsContent()
+                getDefaultLeopsContent(VasuLanguage.FI)
             )
             getVasuTemplate(templateId)
         }
@@ -264,7 +264,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sections = updatedContent.sections.map { section ->
                 if (
                     section.name == "Lapsen varhaiskasvatussuunnitelmakeskustelu" ||
-                    section.name == "Lapsen esiopetuksen oppimissuunnitelmakeskustelut"
+                    section.name == "Lapsen esiopetuksen oppimissuunnitelmakeskustelu"
                 ) {
                     section.copy(
                         questions = section.questions.map { question ->

@@ -17,7 +17,7 @@ interface Props extends QuestionProps<MultiSelectQuestion> {
 }
 
 export function MultiSelectQuestion({
-  question: { name, options, textValue },
+  question: { name, options, textValue, dateValue },
   questionNumber,
   selectedValues,
   translations
@@ -31,11 +31,16 @@ export function MultiSelectQuestion({
       <ValueOrNoRecord
         text={options
           .filter((option) => selectedValues.includes(option.key))
-          .map((o) =>
-            textValue && textValue[o.key]
-              ? `${o.name}: ${textValue[o.key]}`
-              : o.name
-          )
+          .map((o) => {
+            const date = dateValue?.[o.key]
+            const name = `${o.name}${date ? ` ${date.format()}` : ''}${
+              o.subText ? `\n${o.subText}` : ''
+            }`
+
+            return textValue && textValue[o.key]
+              ? `${name}: ${textValue[o.key]}`
+              : name
+          })
           .join(', ')}
         translations={translations}
         dataQa={`value-or-no-record-${questionNumber}`}

@@ -271,7 +271,8 @@ sealed class VasuQuestion(
         override val id: String? = null,
         override val dependsOn: List<String>? = null,
         val value: Boolean,
-        val label: String? = null
+        val label: String? = null,
+        val notNumbered: Boolean? = false
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is CheckboxQuestion && question.copy(value = this.value) == this
@@ -315,10 +316,21 @@ sealed class VasuQuestion(
         val minSelections: Int,
         val maxSelections: Int?,
         val value: List<String>,
-        val textValue: Map<String, String> = mapOf()
+        val textValue: Map<String, String> = mapOf(),
+        val dateValue: Map<String, LocalDate>? = mapOf()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiSelectQuestion && question.copy(value = this.value, textValue = this.textValue) == this
+            return question is MultiSelectQuestion && question.copy(
+                value = this.value,
+                textValue = this.textValue,
+                dateValue = this.dateValue
+            ) == this
+        }
+
+        override fun isValid(section: VasuSection): Boolean {
+            if (!super.isValid(section)) return false
+
+            return this.dateValue?.keys?.all { key -> options.find { it.key == key }?.date ?: false } ?: true
         }
     }
 
@@ -436,8 +448,10 @@ data class QuestionOption(
     val name: String,
     val textAnswer: Boolean = false,
     val dateRange: Boolean = false,
+    val date: Boolean = false,
     val isIntervention: Boolean = false,
-    val info: String = ""
+    val info: String = "",
+    val subText: String? = null
 )
 
 data class Field(val name: String, val info: String? = null)

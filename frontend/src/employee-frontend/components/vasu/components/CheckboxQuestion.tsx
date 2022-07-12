@@ -6,6 +6,7 @@ import React from 'react'
 
 import { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { VasuTranslations } from 'lib-customizations/employee'
 
@@ -22,16 +23,31 @@ type Props = QuestionProps<CheckboxQuestion> & {
 
 export function CheckboxQuestion(props: Props) {
   const { i18n } = useTranslation()
-  const checkboxLabel = props.question.label
-    ? props.question.name
-    : `${props.questionNumber} ${props.question.name}`
+  const checkboxLabel =
+    props.question.label || props.question.notNumbered
+      ? props.question.name
+      : `${props.questionNumber} ${props.question.name}`
   const numberedLabel =
     props.question.label && `${props.questionNumber} ${props.question.label}`
 
+  if (props.onChange && numberedLabel) {
+    return (
+      <FixedSpaceColumn spacing="xs">
+        <QuestionInfo info={props.question.info}>
+          <Label>{numberedLabel}</Label>
+        </QuestionInfo>
+        <Checkbox
+          checked={props.question.value}
+          label={checkboxLabel}
+          onChange={props.onChange}
+          data-qa="checkbox-question"
+        />
+      </FixedSpaceColumn>
+    )
+  }
+
   return (
     <QuestionInfo info={props.question.info}>
-      {props.onChange && !!numberedLabel && <Label>{numberedLabel}</Label>}
-
       {props.onChange ? (
         <Checkbox
           checked={props.question.value}

@@ -39,6 +39,7 @@ export interface CheckboxQuestion extends VasuQuestionCommon {
   type: 'CHECKBOX'
   value: boolean
   label: string | null
+  notNumbered?: boolean
 }
 
 export interface RadioGroupQuestion extends VasuQuestionCommon {
@@ -58,6 +59,7 @@ export interface MultiSelectQuestion extends VasuQuestionCommon {
   maxSelections: number | null
   value: string[]
   textValue?: TextValueMap
+  dateValue?: DateValueMap
 }
 
 export interface QuestionOption {
@@ -67,10 +69,16 @@ export interface QuestionOption {
   dateRange?: boolean
   isIntervention?: boolean
   info?: string
+  subText?: string
+  date?: boolean
 }
 
 export interface TextValueMap {
   [key: string]: string
+}
+
+export interface DateValueMap {
+  [key: string]: LocalDate
 }
 
 export interface MultiFieldQuestion extends VasuQuestionCommon {
