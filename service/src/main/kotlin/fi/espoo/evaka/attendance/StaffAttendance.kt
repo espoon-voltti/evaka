@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
@@ -17,6 +18,7 @@ import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.util.UUID
 
+@ConstList("staffAttendanceTypes")
 enum class StaffAttendanceType : DatabaseEnum {
     PRESENT,
     OTHER_WORK,
@@ -83,14 +85,17 @@ data class ExternalAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal
-)
+) {
+    val type = StaffAttendanceType.PRESENT
+}
 
 data class Attendance(
     val id: UUID,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val occupancyCoefficient: BigDecimal
+    val occupancyCoefficient: BigDecimal,
+    val type: StaffAttendanceType
 )
 
 data class EmployeeAttendance(

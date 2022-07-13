@@ -31,6 +31,7 @@ declare module 'Icons' {
   const faChevronUp: IconDefinition
   const faChild: IconDefinition
   const fasChild: IconDefinition
+  const faCircleEllipsis: IconDefinition
   const faCircleExclamation: IconDefinition
   const faClock: IconDefinition
   const faCoins: IconDefinition

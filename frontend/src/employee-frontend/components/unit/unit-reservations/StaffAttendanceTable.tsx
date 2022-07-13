@@ -10,13 +10,13 @@ import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
 
-import EllipsisMenu from 'employee-frontend/components/common/EllipsisMenu'
 import { Result, Success } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
 import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
+  StaffAttendanceType,
   UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
@@ -34,11 +34,14 @@ import { fontWeights } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
-import { faClock } from 'lib-icons'
+import { featureFlags } from 'lib-customizations/employee'
+import { faCircleEllipsis, faClock } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
+import EllipsisMenu from '../../common/EllipsisMenu'
 
+import StaffAttendanceDetailsModal from './StaffAttendanceDetailsModal'
 import {
   AttendanceTableHeader,
   DayTd,
@@ -52,6 +55,7 @@ import {
 import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
 interface Props {
+  unitId: UUID
   operationalDays: OperationalDay[]
   staffAttendances: EmployeeAttendance[]
   extraAttendances: ExternalAttendance[]
@@ -67,6 +71,7 @@ interface Props {
 }
 
 export default React.memo(function StaffAttendanceTable({
+  unitId,
   staffAttendances,
   extraAttendances,
   operationalDays,
@@ -76,6 +81,11 @@ export default React.memo(function StaffAttendanceTable({
   reloadStaffAttendances
 }: Props) {
   const { i18n } = useTranslation()
+  const [detailsModal, setDetailsModal] = useState<{
+    employeeId: string
+    date: LocalDate
+  }>()
+  const closeModal = useCallback(() => setDetailsModal(undefined), [])
 
   const staffRows = useMemo(
     () =>
@@ -104,52 +114,72 @@ export default React.memo(function StaffAttendanceTable({
   )
 
   return (
-    <Table data-qa="staff-attendances-table">
-      <AttendanceTableHeader
-        operationalDays={operationalDays}
-        startTimeHeader={i18n.unit.staffAttendance.startTime}
-        endTimeHeader={i18n.unit.staffAttendance.endTime}
-      />
-      <Tbody>
-        {staffRows.map((row, index) => (
-          <AttendanceRow
-            key={`${row.employeeId}-${index}`}
-            rowIndex={index}
-            isPositiveOccupancyCoefficient={row.currentOccupancyCoefficient > 0}
-            name={row.name}
-            employeeId={row.employeeId}
-            operationalDays={operationalDays}
-            attendances={row.attendances}
-            saveAttendances={saveAttendances}
-            deleteAttendances={deleteAttendances}
-            enableNewEntries={enableNewEntries}
-            reloadStaffAttendances={reloadStaffAttendances}
-          />
-        ))}
-        {extraRowsGroupedByName.map((row, index) => (
-          <AttendanceRow
-            key={`${row.name}-${index}`}
-            rowIndex={index}
-            isPositiveOccupancyCoefficient={
-              row.attendances[0].occupancyCoefficient > 0
-            }
-            name={row.name}
-            operationalDays={operationalDays}
-            attendances={row.attendances}
-            saveAttendances={saveAttendances}
-            deleteAttendances={deleteAttendances}
-            enableNewEntries={enableNewEntries}
-            reloadStaffAttendances={reloadStaffAttendances}
-          />
-        ))}
-      </Tbody>
-    </Table>
+    <>
+      <Table data-qa="staff-attendances-table">
+        <AttendanceTableHeader
+          operationalDays={operationalDays}
+          startTimeHeader={i18n.unit.staffAttendance.startTime}
+          endTimeHeader={i18n.unit.staffAttendance.endTime}
+        />
+        <Tbody>
+          {staffRows.map((row, index) => (
+            <AttendanceRow
+              key={`${row.employeeId}-${index}`}
+              rowIndex={index}
+              isPositiveOccupancyCoefficient={
+                row.currentOccupancyCoefficient > 0
+              }
+              name={row.name}
+              employeeId={row.employeeId}
+              operationalDays={operationalDays}
+              attendances={row.attendances}
+              saveAttendances={saveAttendances}
+              deleteAttendances={deleteAttendances}
+              enableNewEntries={enableNewEntries}
+              reloadStaffAttendances={reloadStaffAttendances}
+              openDetails={
+                featureFlags.experimental?.staffAttendanceTypes
+                  ? setDetailsModal
+                  : undefined
+              }
+            />
+          ))}
+          {extraRowsGroupedByName.map((row, index) => (
+            <AttendanceRow
+              key={`${row.name}-${index}`}
+              rowIndex={index}
+              isPositiveOccupancyCoefficient={
+                row.attendances[0].occupancyCoefficient > 0
+              }
+              name={row.name}
+              operationalDays={operationalDays}
+              attendances={row.attendances}
+              saveAttendances={saveAttendances}
+              deleteAttendances={deleteAttendances}
+              enableNewEntries={enableNewEntries}
+              reloadStaffAttendances={reloadStaffAttendances}
+            />
+          ))}
+        </Tbody>
+      </Table>
+      {detailsModal && (
+        <StaffAttendanceDetailsModal
+          unitId={unitId}
+          employeeId={detailsModal.employeeId}
+          date={detailsModal.date}
+          attendances={staffAttendances}
+          close={closeModal}
+          reloadStaffAttendances={reloadStaffAttendances}
+        />
+      )}
+    </>
   )
 })
 
 type TimeRangeWithErrorsAndMetadata = TimeRangeWithErrors & {
   id?: UUID
   groupId?: UUID
+  type?: StaffAttendanceType
   arrived: LocalDate
   departed: LocalDate
 }
@@ -256,6 +286,7 @@ interface AttendanceRowProps extends BaseProps {
   ) => Promise<Result<void>[]>
   enableNewEntries?: boolean
   reloadStaffAttendances: () => void
+  openDetails?: (v: { employeeId: string; date: LocalDate }) => void
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
@@ -268,7 +299,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
   saveAttendances,
   deleteAttendances,
   enableNewEntries,
-  reloadStaffAttendances
+  reloadStaffAttendances,
+  openDetails
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
@@ -337,6 +369,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 return {
                   id: attendance.id,
                   groupId: attendance.groupId,
+                  type: attendance.type,
                   arrived: day.date,
                   departed: day.date,
                   startTime,
@@ -437,7 +470,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
               LocalTime.parse(range.endTime, 'HH:mm')
             )
           : null,
-      groupId: range.groupId || ''
+      groupId: range.groupId || '',
+      type: range.type ?? 'PRESENT'
     }))
 
     return saveAttendances({
@@ -514,30 +548,43 @@ const AttendanceRow = React.memo(function AttendanceRow({
           partialRow={false}
           rowIndex={rowIndex}
         >
-          {timeRanges.map((range, rangeIx) => (
-            <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
-              {editing && (range.groupId || enableNewEntries) ? (
-                <OvernightAwareTimeRangeEditor
-                  timeRange={range}
-                  update={(updatedValue) =>
-                    updateValue(date, rangeIx, updatedValue)
-                  }
-                  save={() => {
-                    setDirtyDates(dirtyDates.add(date))
-                  }}
+          <DayCell>
+            <AttendanceTimes>
+              {timeRanges.map((range, rangeIx) => (
+                <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
+                  {editing && (range.groupId || enableNewEntries) ? (
+                    <OvernightAwareTimeRangeEditor
+                      timeRange={range}
+                      update={(updatedValue) =>
+                        updateValue(date, rangeIx, updatedValue)
+                      }
+                      save={() => {
+                        setDirtyDates(dirtyDates.add(date))
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <AttendanceTime data-qa="arrival-time">
+                        {renderArrivalTime(range.startTime)}
+                      </AttendanceTime>
+                      <AttendanceTime data-qa="departure-time">
+                        {renderDepartureTime(range.endTime)}
+                      </AttendanceTime>
+                    </>
+                  )}
+                </AttendanceCell>
+              ))}
+            </AttendanceTimes>
+            {!!employeeId && openDetails && (
+              <DetailsToggle>
+                <IconButton
+                  icon={faCircleEllipsis}
+                  onClick={() => openDetails({ employeeId, date })}
+                  data-qa={`open-details-${employeeId}-${date.formatIso()}`}
                 />
-              ) : (
-                <>
-                  <AttendanceTime data-qa="arrival-time">
-                    {renderArrivalTime(range.startTime)}
-                  </AttendanceTime>
-                  <AttendanceTime data-qa="departure-time">
-                    {renderDepartureTime(range.endTime)}
-                  </AttendanceTime>
-                </>
-              )}
-            </AttendanceCell>
-          ))}
+              </DetailsToggle>
+            )}
+          </DayCell>
         </DayTd>
       ))}
       <StyledTd partialRow={false} rowIndex={rowIndex} rowSpan={1}>
@@ -550,6 +597,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
     </DayTr>
   )
 })
+
+const DayCell = styled.div`
+  display: flex;
+`
+
+const AttendanceTimes = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+`
 
 const AttendanceCell = styled.div`
   display: flex;
@@ -565,6 +622,12 @@ const AttendanceTime = styled.span`
   flex: 1 0 54px;
   text-align: center;
   white-space: nowrap;
+`
+
+const DetailsToggle = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${defaultMargins.xs};
 `
 
 type RowMenuProps = {

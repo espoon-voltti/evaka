@@ -267,6 +267,87 @@ describe('Realtime staff attendances', () => {
       })
     })
   })
+  describe('Details modal', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+      await calendarPage.selectGroup('staff')
+    })
+    test('An existing entry can be edited', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
+      })
+    })
+    test('An existing overnight entry can be edited', async () => {
+      const modal = await calendarPage.openDetails(
+        groupStaff.id,
+        mockedToday.addDays(1)
+      )
+      await modal.setDepartureTime(0, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '→'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 1,
+        arrival: '→',
+        departure: '15:00'
+      })
+    })
+    test('Multiple new entries can be added', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '12:00')
+      await modal.addNewAttendance()
+      await modal.setType(1, 'TRAINING')
+      await modal.setArrivalTime(1, '12:00')
+      await modal.setDepartureTime(1, '13:00')
+      await modal.addNewAttendance()
+      await modal.setType(2, 'PRESENT')
+      await modal.setArrivalTime(2, '13:00')
+      await modal.setDepartureTime(2, '14:30')
+      await modal.addNewAttendance()
+      await modal.setType(3, 'OTHER_WORK')
+      await modal.setArrivalTime(3, '14:30')
+      await modal.setDepartureTime(3, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '12:00'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 1,
+        arrival: '12:00',
+        departure: '13:00'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 2,
+        arrival: '13:00',
+        departure: '14:30'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 3,
+        arrival: '14:30',
+        departure: '15:00'
+      })
+    })
+  })
 })
 
 function staffName(employeeDetail: EmployeeDetail): string {

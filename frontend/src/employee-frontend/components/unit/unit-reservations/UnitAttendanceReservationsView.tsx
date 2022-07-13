@@ -175,6 +175,7 @@ export default React.memo(function UnitAttendanceReservationsView({
         <FixedSpaceColumn spacing="L">
           {groupId === 'staff' ? (
             <StaffAttendanceTable
+              unitId={unitId}
               operationalDays={childData.operationalDays}
               staffAttendances={staffData.staff}
               extraAttendances={staffData.extraAttendances}
@@ -186,6 +187,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             <>
               {realtimeStaffAttendanceEnabled && (
                 <StaffAttendanceTable
+                  unitId={unitId}
                   operationalDays={childData.operationalDays}
                   staffAttendances={staffData.staff
                     .filter((s) => s.groups.includes(groupId))

@@ -52,6 +52,7 @@ export interface Attendance {
   groupId: UUID
   id: UUID
   occupancyCoefficient: number
+  type: StaffAttendanceType
 }
 
 /**
@@ -182,6 +183,7 @@ export interface ExternalAttendance {
   id: UUID
   name: string
   occupancyCoefficient: number
+  type: StaffAttendanceType
 }
 
 /**
@@ -246,6 +248,17 @@ export interface PlannedStaffAttendance {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.SingleDayStaffAttendanceUpsert
+*/
+export interface SingleDayStaffAttendanceUpsert {
+  arrived: HelsinkiDateTime
+  attendanceId: UUID | null
+  departed: HelsinkiDateTime | null
+  groupId: UUID
+  type: StaffAttendanceType
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.Staff
 */
 export interface Staff {
@@ -279,12 +292,15 @@ export interface StaffAttendanceResponse {
 /**
 * Generated from fi.espoo.evaka.attendance.StaffAttendanceType
 */
-export type StaffAttendanceType =
-  | 'PRESENT'
-  | 'OTHER_WORK'
-  | 'TRAINING'
-  | 'OVERTIME'
-  | 'JUSTIFIED_CHANGE'
+export const staffAttendanceTypes = [
+  'PRESENT',
+  'OTHER_WORK',
+  'TRAINING',
+  'OVERTIME',
+  'JUSTIFIED_CHANGE'
+] as const
+
+export type StaffAttendanceType = typeof staffAttendanceTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
@@ -389,4 +405,5 @@ export interface UpsertStaffAttendance {
   departed: HelsinkiDateTime | null
   employeeId: UUID
   groupId: UUID
+  type: StaffAttendanceType
 }
