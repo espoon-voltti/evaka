@@ -331,20 +331,8 @@ describe('Realtime staff attendances', () => {
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
         nth: 1,
-        arrival: '12:00',
-        departure: '13:00'
-      })
-      await calendarPage.assertArrivalDeparture({
-        rowIx: 1,
-        nth: 2,
         arrival: '13:00',
         departure: '14:30'
-      })
-      await calendarPage.assertArrivalDeparture({
-        rowIx: 1,
-        nth: 3,
-        arrival: '14:30',
-        departure: '15:00'
       })
     })
   })

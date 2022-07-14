@@ -6,6 +6,7 @@ import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
+import partition from 'lodash/partition'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
@@ -541,53 +542,59 @@ const AttendanceRow = React.memo(function AttendanceRow({
           <NameWrapper data-qa="staff-attendance-name">{name}</NameWrapper>
         </FixedSpaceRow>
       </NameTd>
-      {values.map(({ date, timeRanges }) => (
-        <DayTd
-          key={date.formatIso()}
-          className={classNames({ 'is-today': date.isToday() })}
-          partialRow={false}
-          rowIndex={rowIndex}
-          data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
-        >
-          <DayCell>
-            <AttendanceTimes>
-              {timeRanges.map((range, rangeIx) => (
-                <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
-                  {editing && (range.groupId || enableNewEntries) ? (
-                    <OvernightAwareTimeRangeEditor
-                      timeRange={range}
-                      update={(updatedValue) =>
-                        updateValue(date, rangeIx, updatedValue)
-                      }
-                      save={() => {
-                        setDirtyDates(dirtyDates.add(date))
-                      }}
-                    />
-                  ) : (
-                    <>
-                      <AttendanceTime data-qa="arrival-time">
-                        {renderArrivalTime(range.startTime)}
-                      </AttendanceTime>
-                      <AttendanceTime data-qa="departure-time">
-                        {renderDepartureTime(range.endTime)}
-                      </AttendanceTime>
-                    </>
-                  )}
-                </AttendanceCell>
-              ))}
-            </AttendanceTimes>
-            {!!employeeId && openDetails && !editing && (
-              <DetailsToggle showAlways={timeRanges.length > 1}>
-                <IconButton
-                  icon={faCircleEllipsis}
-                  onClick={() => openDetails({ employeeId, date })}
-                  data-qa={`open-details-${employeeId}-${date.formatIso()}`}
-                />
-              </DetailsToggle>
-            )}
-          </DayCell>
-        </DayTd>
-      ))}
+      {values.map(({ date, timeRanges }) => {
+        const [shownTimeRanges, hiddenTimeRanges] = partition(
+          timeRanges,
+          ({ type }) => type === undefined || type === 'PRESENT'
+        )
+        return (
+          <DayTd
+            key={date.formatIso()}
+            className={classNames({ 'is-today': date.isToday() })}
+            partialRow={false}
+            rowIndex={rowIndex}
+            data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
+          >
+            <DayCell>
+              <AttendanceTimes>
+                {shownTimeRanges.map((range, rangeIx) => (
+                  <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
+                    {editing && (range.groupId || enableNewEntries) ? (
+                      <OvernightAwareTimeRangeEditor
+                        timeRange={range}
+                        update={(updatedValue) =>
+                          updateValue(date, rangeIx, updatedValue)
+                        }
+                        save={() => {
+                          setDirtyDates(dirtyDates.add(date))
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <AttendanceTime data-qa="arrival-time">
+                          {renderArrivalTime(range.startTime)}
+                        </AttendanceTime>
+                        <AttendanceTime data-qa="departure-time">
+                          {renderDepartureTime(range.endTime)}
+                        </AttendanceTime>
+                      </>
+                    )}
+                  </AttendanceCell>
+                ))}
+              </AttendanceTimes>
+              {!!employeeId && openDetails && !editing && (
+                <DetailsToggle showAlways={hiddenTimeRanges.length > 0}>
+                  <IconButton
+                    icon={faCircleEllipsis}
+                    onClick={() => openDetails({ employeeId, date })}
+                    data-qa={`open-details-${employeeId}-${date.formatIso()}`}
+                  />
+                </DetailsToggle>
+              )}
+            </DayCell>
+          </DayTd>
+        )
+      })}
       <StyledTd partialRow={false} rowIndex={rowIndex} rowSpan={1}>
         {editing ? (
           <EditStateIndicator status={Success.of()} stopEditing={saveChanges} />
