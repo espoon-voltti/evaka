@@ -495,6 +495,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         test_chunk_number: [1, 2, 3, 4]
         test_chunk_count: [4] # must max value of above list
