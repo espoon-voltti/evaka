@@ -234,7 +234,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ needs.yarn.outputs.image }}
             ICONS=pro
-            SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
+            SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
             commit=${{ github.sha }}
           cache_from_images: |
