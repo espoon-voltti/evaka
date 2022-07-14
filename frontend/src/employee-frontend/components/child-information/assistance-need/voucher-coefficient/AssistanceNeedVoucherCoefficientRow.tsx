@@ -17,8 +17,9 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'
 import { faPen, faTrash } from 'lib-icons'
 
+import { TimeBasedStatusChip } from '../../TimeBasedStatusChip'
+
 import AssistanceNeedVoucherCoefficientForm from './AssistanceNeedVoucherCoefficientForm'
-import { AssistanceNeedVoucherCoefficientStatusChip } from './common'
 
 interface Props {
   voucherCoefficient: AssistanceNeedVoucherCoefficient
@@ -136,7 +137,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
           </FixedSpaceRow>
         </Td>
         <Td minimalWidth topBorder>
-          <AssistanceNeedVoucherCoefficientStatusChip
+          <TimeBasedStatusChip
             status={
               voucherCoefficient.validityPeriod.start.isAfter(
                 LocalDate.todayInHelsinkiTz()

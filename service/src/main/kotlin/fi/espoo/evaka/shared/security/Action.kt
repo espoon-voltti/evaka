@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -394,8 +395,7 @@ sealed interface Action {
         CREATE_STICKY_NOTE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
 
         READ_DAILY_SERVICE_TIMES(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
-        UPDATE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
-        DELETE_DAILY_SERVICE_TIMES(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
+        CREATE_DAILY_SERVICE_TIME(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
 
         READ_PLACEMENT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()),
 
@@ -448,6 +448,12 @@ sealed interface Action {
     enum class ChildStickyNote(override vararg val defaultRules: ScopedActionRule<in ChildStickyNoteId>) : ScopedAction<ChildStickyNoteId> {
         UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote()),
         DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfChildStickyNote(), IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class DailyServiceTime(override vararg val defaultRules: ScopedActionRule<in DailyServiceTimesId>) : ScopedAction<DailyServiceTimesId> {
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDailyServiceTime()),
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfFutureDailyServiceTime());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

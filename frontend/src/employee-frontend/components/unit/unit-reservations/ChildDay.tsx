@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
 import {
-  DailyServiceTimes,
   getTimesOnWeekday,
   isIrregular,
   isRegular,
@@ -50,7 +49,6 @@ const getReservationOrServiceTimeOfDay = (
 
 interface Props {
   day: OperationalDay
-  dailyServiceTimes: DailyServiceTimes | null
   dataForAllDays: Record<JsonOf<LocalDate>, ChildRecordOfDay>
   rowIndex: number
   editState?: EditState
@@ -63,7 +61,6 @@ interface Props {
 
 export default React.memo(function ChildDay({
   day,
-  dailyServiceTimes,
   dataForAllDays,
   rowIndex,
   editState,
@@ -75,12 +72,17 @@ export default React.memo(function ChildDay({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const dailyData = dataForAllDays[day.date.formatIso()]
+  const dailyData = useMemo(
+    () => dataForAllDays[day.date.formatIso()],
+    [dataForAllDays, day.date]
+  )
 
   if (!dailyData) return null
 
   if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
     return null
+
+  const { dailyServiceTimes } = dailyData
 
   const serviceTimesAvailable =
     dailyServiceTimes !== null && !isVariableTime(dailyServiceTimes)

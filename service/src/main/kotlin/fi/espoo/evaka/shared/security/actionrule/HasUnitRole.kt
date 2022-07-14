@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -499,6 +500,47 @@ JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementUnitOfChildOfDailyServiceTime() = DatabaseActionRule(
+        this,
+        Query<DailyServiceTimesId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT dst.id, role, enabled_pilot_features AS unit_features
+FROM daily_service_time dst
+JOIN employee_child_daycare_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = :userId
+AND dst.id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
+                .bind("userId", user.id)
+                .bind("ids", ids.toTypedArray())
+                .mapTo()
+        }
+    )
+
+    fun inPlacementUnitOfChildOfFutureDailyServiceTime() = DatabaseActionRule(
+        this,
+        Query<DailyServiceTimesId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT dst.id, role, enabled_pilot_features AS unit_features
+FROM daily_service_time dst
+JOIN employee_child_daycare_acl(:today) acl USING (child_id)
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = :userId
+  AND dst.id = ANY(:ids)
+  AND lower(dst.validity_period) > current_date
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())

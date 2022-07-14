@@ -4,41 +4,66 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import DateRange from 'lib-common/date-range'
+import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { OmitInUnion, UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-interface DailyServiceTimesResponse {
-  dailyServiceTimes: DailyServiceTimes | null
-}
-
 export async function getChildDailyServiceTimes(
   childId: UUID
-): Promise<Result<DailyServiceTimes | null>> {
+): Promise<Result<DailyServiceTimesResponse[]>> {
   return client
-    .get<JsonOf<DailyServiceTimesResponse>>(
+    .get<JsonOf<DailyServiceTimesResponse[]>>(
       `/children/${childId}/daily-service-times`
     )
-    .then((res) => Success.of(res.data.dailyServiceTimes))
+    .then((res) =>
+      Success.of(
+        res.data.map((response) => ({
+          ...response,
+          dailyServiceTimes: {
+            ...response.dailyServiceTimes,
+            times: {
+              ...response.dailyServiceTimes.times,
+              validityPeriod: DateRange.parseJson(
+                response.dailyServiceTimes.times.validityPeriod
+              )
+            }
+          }
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export type DailyServiceTimesRequestData = OmitInUnion<DailyServiceTimes, 'id'>
+
+export async function createChildDailyServiceTimes(
+  childId: UUID,
+  data: DailyServiceTimesRequestData
+): Promise<Result<void>> {
+  return client
+    .post(`/children/${childId}/daily-service-times`, data)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function putChildDailyServiceTimes(
-  childId: UUID,
-  data: DailyServiceTimes
+  id: UUID,
+  data: DailyServiceTimesRequestData
 ): Promise<Result<void>> {
   return client
-    .put(`/children/${childId}/daily-service-times`, data)
+    .put(`/daily-service-times/${id}`, data)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteChildDailyServiceTimes(
-  childId: UUID
+  id: UUID
 ): Promise<Result<void>> {
   return client
-    .delete(`/children/${childId}/daily-service-times`)
+    .delete(`/daily-service-times/${id}`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

@@ -114,7 +114,6 @@ export default React.memo(function ChildReservationsTable(props: Props) {
                   >
                     <ChildDay
                       day={day}
-                      dailyServiceTimes={child.dailyServiceTimes}
                       dataForAllDays={childDailyRecordRow}
                       rowIndex={index}
                       editState={childEditState}

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -133,26 +134,67 @@ export class AdditionalInformationSection extends Section {
   }
 }
 
+class DailyServiceTimeSectionCreationForm extends Section {
+  readonly validityPeriodStartInput = new TextInput(
+    this.findByDataQa('daily-service-times-validity-period-start')
+  )
+
+  async checkType(type: DailyServiceTimesType) {
+    await this.findByDataQa(`radio-${type.toLowerCase()}`).click()
+  }
+
+  async fillRegularTimeRange(start: string, end: string) {
+    await new TextInput(this.findByDataQa('regular-start')).fill(start)
+    await new TextInput(this.findByDataQa('regular-end')).fill(end)
+  }
+
+  async fillIrregularTimeRange(day: string, start: string, end: string) {
+    await new TextInput(this.findByDataQa(`${day}-start`)).fill(start)
+    await new TextInput(this.findByDataQa(`${day}-end`)).fill(end)
+  }
+
+  async submit() {
+    await this.findByDataQa('create-times-btn').click()
+  }
+}
+
 export class DailyServiceTimeSection extends Section {
-  readonly #typeText = this.find('[data-qa="times-type"]')
-  readonly #timesText = this.find('[data-qa="times"]')
-  readonly #editButton = this.find('[data-qa="edit-button"]')
+  readonly #createButton = this.findByDataQa('create-daily-service-times')
 
-  get typeText(): Promise<string> {
-    return this.#typeText.innerText
+  async create() {
+    await this.#createButton.click()
+
+    return new DailyServiceTimeSectionCreationForm(this.page, this.find('form'))
   }
 
-  get timesText(): Promise<string> {
-    return this.#timesText.innerText
+  async assertTableRow(nth: number, title: string, status: string) {
+    const row = this.findAllByDataQa('daily-service-times-row').nth(nth)
+
+    await waitUntilEqual(
+      () => row.findByDataQa('daily-service-times-row-title').innerText,
+      title
+    )
+    await waitUntilEqual(
+      () => row.findByDataQa('status').getAttribute('data-qa-status'),
+      status
+    )
   }
 
-  get hasTimesText(): Promise<boolean> {
-    return this.#timesText.visible
+  async toggleTableRowCollapsible(nth: number) {
+    await this.findAllByDataQa('daily-service-times-row')
+      .nth(nth)
+      .findByDataQa('daily-service-times-row-opener')
+      .click()
   }
 
-  async edit() {
-    await this.#editButton.click()
-    return new DailyServiceTimesSectionEdit(this.page, this)
+  async assertTableRowCollapsible(nth: number, text: string) {
+    const collapsible = this.find(
+      `:nth-match([data-qa="daily-service-times-row"], ${
+        nth + 1
+      }) + [data-qa="daily-service-times-row-collapsible"]`
+    )
+
+    await waitUntilEqual(() => collapsible.innerText, text)
   }
 }
 

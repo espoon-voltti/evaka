@@ -34,6 +34,7 @@ sealed interface DatabaseTable {
     sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
     sealed class GroupNote : DatabaseTable
+    sealed class DailyServicesTime : DatabaseTable
     sealed class DaycareCaretaker : DatabaseTable
     sealed class Decision : DatabaseTable
     sealed class Employee : DatabaseTable
@@ -104,6 +105,7 @@ typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 typealias GroupNoteId = Id<DatabaseTable.GroupNote>
+typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 typealias DecisionId = Id<DatabaseTable.Decision>
 typealias EmployeeId = Id<DatabaseTable.Employee>

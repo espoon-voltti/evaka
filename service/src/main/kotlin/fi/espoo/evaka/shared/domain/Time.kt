@@ -4,8 +4,12 @@
 
 package fi.espoo.evaka.shared.domain
 
+import com.fasterxml.jackson.annotation.JsonFormat
+import fi.espoo.evaka.ForceCodeGenType
+import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
@@ -203,3 +207,14 @@ fun asDistinctPeriods(periods: List<DateRange>, spanningPeriod: DateRange): List
 
 fun LocalDate.isWeekend() = this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY
 fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)
+
+data class TimeRange(
+    @ForceCodeGenType(String::class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @PropagateNull
+    val start: LocalTime,
+    @ForceCodeGenType(String::class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @PropagateNull
+    val end: LocalTime
+)

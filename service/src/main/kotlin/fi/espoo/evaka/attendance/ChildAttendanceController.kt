@@ -462,7 +462,7 @@ private fun Database.Read.getAttendancesResponse(unitId: DaycareId, instant: Hel
             status = status,
             attendance = child.attendance,
             absences = child.absences,
-            dailyServiceTimes = child.dailyServiceTimes,
+            dailyServiceTimes = child.dailyServiceTimes?.times,
             dailyNote = dailyNote,
             stickyNotes = stickyNotes,
             imageUrl = child.imageUrl,

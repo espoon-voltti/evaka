@@ -558,6 +558,11 @@ export const fi = {
       address: 'Osoite',
       backupPhone: 'Varanro'
     },
+    timeBasedStatuses: {
+      ACTIVE: 'Aktiivinen',
+      ENDED: 'Päättynyt',
+      UPCOMING: 'Tuleva'
+    },
     serviceNeed: {
       title: 'Palveluntarve',
       dateRange: 'Palveluntarve ajalle',
@@ -597,24 +602,27 @@ export const fi = {
       info: 'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
       info2:
         'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
+      create: 'Luo uusi varhaiskasvatusaika',
       types: {
-        notSet: 'Ei asetettu',
-        regular: 'Säännöllinen varhaiskasvatusaika',
-        irregular: 'Epäsäännöllinen varhaiskasvatusaika',
-        variableTimes: 'Vaihteleva varhaiskasvatusaika'
+        REGULAR: 'Säännöllinen varhaiskasvatusaika',
+        IRREGULAR: 'Epäsäännöllinen varhaiskasvatusaika',
+        VARIABLE_TIME: 'Vaihteleva varhaiskasvatusaika'
       },
       weekdays: {
-        monday: 'Maanantai',
-        tuesday: 'Tiistai',
-        wednesday: 'Keskiviikko',
-        thursday: 'Torstai',
-        friday: 'Perjantai',
-        saturday: 'Lauantai',
-        sunday: 'Sunnuntai'
+        monday: 'maanantai',
+        tuesday: 'tiistai',
+        wednesday: 'keskiviikko',
+        thursday: 'torstai',
+        friday: 'perjantai',
+        saturday: 'lauantai',
+        sunday: 'sunnuntai'
       },
       errors: {
         required: 'Pakollinen tieto'
-      }
+      },
+      dailyServiceTime: 'Päivittäinen varhaiskasvatusaika',
+      validFrom: 'Päivittäinen varhaiskasvatusaika voimassa alkaen',
+      createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika'
     },
     assistance: {
       title: 'Tuen tarve ja tukitoimet'
@@ -886,11 +894,6 @@ export const fi = {
       sectionTitle: 'Palvelusetelikerroin',
       voucherCoefficient: 'Palvelusetelikerroin',
       create: 'Aseta uusi palvelusetelikerroin',
-      statuses: {
-        ACTIVE: 'Aktiivinen',
-        ENDED: 'Päättynyt',
-        UPCOMING: 'Tuleva'
-      },
       form: {
         title: 'Aseta uusi palvelusetelikerroin',
         editTitle: 'Muokkaa palvelusetelikerrointa',
