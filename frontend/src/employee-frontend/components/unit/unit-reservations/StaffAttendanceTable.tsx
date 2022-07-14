@@ -547,6 +547,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
           className={classNames({ 'is-today': date.isToday() })}
           partialRow={false}
           rowIndex={rowIndex}
+          data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
         >
           <DayCell>
             <AttendanceTimes>
@@ -575,8 +576,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 </AttendanceCell>
               ))}
             </AttendanceTimes>
-            {!!employeeId && openDetails && (
-              <DetailsToggle>
+            {!!employeeId && openDetails && !editing && (
+              <DetailsToggle showAlways={timeRanges.length > 1}>
                 <IconButton
                   icon={faCircleEllipsis}
                   onClick={() => openDetails({ employeeId, date })}
@@ -598,8 +599,22 @@ const AttendanceRow = React.memo(function AttendanceRow({
   )
 })
 
+const DetailsToggle = styled.div<{ showAlways: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: ${defaultMargins.xxs};
+  margin-left: -${defaultMargins.s};
+  visibility: ${({ showAlways }) => (showAlways ? 'visible' : 'hidden')};
+`
+
 const DayCell = styled.div`
   display: flex;
+
+  &:hover {
+    ${DetailsToggle} {
+      visibility: visible;
+    }
+  }
 `
 
 const AttendanceTimes = styled.div`
@@ -622,12 +637,6 @@ const AttendanceTime = styled.span`
   flex: 1 0 54px;
   text-align: center;
   white-space: nowrap;
-`
-
-const DetailsToggle = styled.div`
-  display: flex;
-  align-items: center;
-  padding: ${defaultMargins.xs};
 `
 
 type RowMenuProps = {

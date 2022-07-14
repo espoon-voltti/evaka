@@ -178,6 +178,9 @@ export class UnitAttendancesPage {
     date: LocalDate
   ): Promise<StaffAttendanceDetailsModal> {
     await this.page
+      .findByDataQa(`day-cell-${employeeId}-${date.formatIso()}`)
+      .hover()
+    await this.page
       .findByDataQa(`open-details-${employeeId}-${date.formatIso()}`)
       .click()
     return new StaffAttendanceDetailsModal(
