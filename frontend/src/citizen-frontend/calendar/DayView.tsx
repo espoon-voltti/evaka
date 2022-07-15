@@ -71,6 +71,7 @@ interface ChildWithReservations {
   absence: AbsenceType | undefined
   reservations: TimeRange[]
   attendances: OpenTimeRange[]
+  dayOff: boolean
   reservationEditable: boolean
   markedByEmployee: boolean
 }
@@ -100,13 +101,15 @@ function getChildrenWithReservations(
       const reservationEditable =
         !markedByEmployee &&
         (!dailyData.isHoliday || child.inShiftCareUnit) &&
-        child.maxOperationalDays.includes(date.getIsoDayOfWeek())
+        child.maxOperationalDays.includes(date.getIsoDayOfWeek()) &&
+        !childReservations?.dayOff
 
       return {
         child,
         absence: childReservations?.absence ?? undefined,
         reservations: childReservations?.reservations ?? [],
         attendances: childReservations?.attendances ?? [],
+        dayOff: childReservations?.dayOff ?? false,
         reservationEditable,
         markedByEmployee
       }
@@ -216,6 +219,7 @@ export default React.memo(function DayView({
                     absence,
                     reservations,
                     attendances,
+                    dayOff,
                     reservationEditable,
                     markedByEmployee
                   } = childWithReservation
@@ -268,6 +272,8 @@ export default React.memo(function DayView({
                             absence={absence}
                             markedByEmployee={markedByEmployee}
                           />
+                        ) : reservations.length === 0 && dayOff ? (
+                          <DayOff />
                         ) : (
                           <Reservations reservations={reservations} />
                         )}
@@ -669,6 +675,35 @@ const Absence = React.memo(function Absence({
         <FixedSpaceColumn>
           {i18n.calendar.absenceMarkedByEmployee}
         </FixedSpaceColumn>
+        <FixedSpaceColumn>
+          <InfoButton
+            onClick={onClick}
+            aria-label={i18n.common.openExpandingInfo}
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
+      {open && (
+        <Colspan2>
+          <ExpandingInfoBox
+            width="auto"
+            info={i18n.calendar.contactStaffToEditAbsence}
+            close={onClick}
+          />
+        </Colspan2>
+      )}
+    </>
+  )
+})
+
+const DayOff = React.memo(function DayOff() {
+  const i18n = useTranslation()
+  const [open, setOpen] = useState(false)
+  const onClick = useCallback(() => setOpen((prev) => !prev), [])
+
+  return (
+    <>
+      <FixedSpaceRow data-qa="day-off">
+        <FixedSpaceColumn>{i18n.calendar.dayOff}</FixedSpaceColumn>
         <FixedSpaceColumn>
           <InfoButton
             onClick={onClick}

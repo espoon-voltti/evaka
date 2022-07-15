@@ -60,15 +60,27 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
     updateForm
   ])
 
+  const label = (
+    <Label>{`${i18n.common.datetime.weekdaysShort[includedDays[0] - 1]}-${
+      i18n.common.datetime.weekdaysShort[
+        includedDays[includedDays.length - 1] - 1
+      ]
+    }`}</Label>
+  )
+
+  if (formData.dailyTimes === 'day-off') {
+    return (
+      <>
+        <div>{label}</div>
+        <div>{i18n.calendar.reservationModal.dayOff}</div>
+        <div />
+      </>
+    )
+  }
+
   return (
     <TimeInputs
-      label={
-        <Label>{`${i18n.common.datetime.weekdaysShort[includedDays[0] - 1]}-${
-          i18n.common.datetime.weekdaysShort[
-            includedDays[includedDays.length - 1] - 1
-          ]
-        }`}</Label>
-      }
+      label={label}
       times={formData.dailyTimes}
       updateTimes={(dailyTimes) => updateForm({ dailyTimes })}
       validationErrors={validationResult.errors?.dailyTimes}
