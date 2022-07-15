@@ -71,6 +71,7 @@ interface Props {
   enableNewEntries?: boolean
   reloadStaffAttendances: () => void
   groups: Result<DaycareGroup[]>
+  groupFilter: (id: UUID) => boolean
 }
 
 export default React.memo(function StaffAttendanceTable({
@@ -82,7 +83,8 @@ export default React.memo(function StaffAttendanceTable({
   deleteAttendances,
   enableNewEntries,
   reloadStaffAttendances,
-  groups
+  groups,
+  groupFilter
 }: Props) {
   const { i18n } = useTranslation()
   const [detailsModal, setDetailsModal] = useState<{
@@ -146,6 +148,7 @@ export default React.memo(function StaffAttendanceTable({
                   ? setDetailsModal
                   : undefined
               }
+              groupFilter={groupFilter}
             />
           ))}
           {extraRowsGroupedByName.map((row, index) => (
@@ -162,6 +165,7 @@ export default React.memo(function StaffAttendanceTable({
               deleteAttendances={deleteAttendances}
               enableNewEntries={enableNewEntries}
               reloadStaffAttendances={reloadStaffAttendances}
+              groupFilter={groupFilter}
             />
           ))}
         </Tbody>
@@ -292,6 +296,7 @@ interface AttendanceRowProps extends BaseProps {
   enableNewEntries?: boolean
   reloadStaffAttendances: () => void
   openDetails?: (v: { employeeId: string; date: LocalDate }) => void
+  groupFilter: (id: UUID) => boolean
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
@@ -305,7 +310,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
   deleteAttendances,
   enableNewEntries,
   reloadStaffAttendances,
-  openDetails
+  openDetails,
+  groupFilter
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const [editing, setEditing] = useState<boolean>(false)
@@ -315,40 +321,59 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const [dirtyDates, setDirtyDates] = useState<Set<LocalDate>>(
     new Set<LocalDate>()
   )
+  const showTimeRange = useCallback(
+    ({
+      groupId,
+      type
+    }: {
+      groupId: UUID | undefined
+      type: StaffAttendanceType | undefined
+    }) =>
+      (groupId === undefined || groupFilter(groupId)) &&
+      (type === undefined || type === 'PRESENT'),
+    [groupFilter]
+  )
+
+  const [shownDailyAttendances, hiddenDailyAttendances] = useMemo(
+    () =>
+      partition(
+        // Splits overnight attendances to separate days
+        attendances.flatMap<Attendance>((attendance) => {
+          if (
+            attendance.departed &&
+            !attendance.arrived
+              .toLocalDate()
+              .isEqual(attendance.departed.toLocalDate())
+          ) {
+            return [
+              {
+                ...attendance,
+                departed: attendance.arrived.withTime(LocalTime.of(23, 59))
+              },
+              {
+                ...attendance,
+                id: '',
+                arrived: attendance.departed.withTime(LocalTime.of(0, 0))
+              }
+            ]
+          }
+          return attendance
+        }),
+        showTimeRange
+      ),
+    [attendances, showTimeRange]
+  )
 
   useEffect(() => {
-    // Splits overnight attendances to separate days
-    const dailyAttendances = attendances.flatMap<Attendance>((attendance) => {
-      if (
-        attendance.departed &&
-        !attendance.arrived
-          .toLocalDate()
-          .isEqual(attendance.departed.toLocalDate())
-      ) {
-        return [
-          {
-            ...attendance,
-            departed: attendance.arrived.withTime(LocalTime.of(23, 59))
-          },
-          {
-            ...attendance,
-            id: '',
-            arrived: attendance.departed.withTime(LocalTime.of(0, 0))
-          }
-        ]
-      }
-      return attendance
-    })
-
     const daysAndRanges = operationalDays.map((day) => {
       const date = day.date
 
-      const attendancesOnDay = dailyAttendances.filter((a) =>
+      const attendancesOnDay = shownDailyAttendances.filter((a) =>
         a.arrived.toLocalDate().isEqual(date)
       )
 
       const laterAttendances = sortBy(
-        dailyAttendances.filter((a) =>
+        shownDailyAttendances.filter((a) =>
           a.arrived.isAfter(HelsinkiDateTime.fromLocal(date, LocalTime.MIN))
         ),
         (a) => a.arrived.timestamp
@@ -391,11 +416,11 @@ const AttendanceRow = React.memo(function AttendanceRow({
               })
             : nextEntryIsOvernight
             ? [overnightTimeRangeAt(day.date, nextEntry.groupId)]
-            : [emptyTimeRangeAt(day.date)]
+            : [emptyTimeRangeAt(date)]
       }
     })
     setValues(daysAndRanges)
-  }, [operationalDays, attendances])
+  }, [operationalDays, attendances, shownDailyAttendances])
 
   const updateValue = useCallback(
     (date: LocalDate, rangeIx: number, updatedRange: TimeRange) => {
@@ -488,13 +513,12 @@ const AttendanceRow = React.memo(function AttendanceRow({
         : []
     }).then(() => reloadStaffAttendances())
   }, [
-    setEditing,
     values,
     saveAttendances,
-    deleteAttendances,
-    reloadStaffAttendances,
     employeeId,
-    name
+    deleteAttendances,
+    name,
+    reloadStaffAttendances
   ])
 
   const renderArrivalTime = useCallback((time: string) => {
@@ -547,10 +571,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
         </FixedSpaceRow>
       </NameTd>
       {values.map(({ date, timeRanges }) => {
-        const [shownTimeRanges, hiddenTimeRanges] = partition(
-          timeRanges,
-          ({ type }) => type === undefined || type === 'PRESENT'
-        )
         return (
           <DayTd
             key={date.formatIso()}
@@ -561,7 +581,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
           >
             <DayCell>
               <AttendanceTimes>
-                {shownTimeRanges.map((range, rangeIx) => (
+                {timeRanges.map((range, rangeIx) => (
                   <AttendanceCell key={`${date.formatIso()}-${rangeIx}`}>
                     {editing && (range.groupId || enableNewEntries) ? (
                       <OvernightAwareTimeRangeEditor
@@ -587,7 +607,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 ))}
               </AttendanceTimes>
               {!!employeeId && openDetails && !editing && (
-                <DetailsToggle showAlways={hiddenTimeRanges.length > 0}>
+                <DetailsToggle showAlways={hiddenDailyAttendances.length > 0}>
                   <IconButton
                     icon={faCircleEllipsis}
                     onClick={() => openDetails({ employeeId, date })}

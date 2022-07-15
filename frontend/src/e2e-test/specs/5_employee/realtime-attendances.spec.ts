@@ -40,6 +40,7 @@ const mockedToday = LocalDate.of(2022, 3, 28)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
+const groupId2 = uuidv4()
 
 beforeEach(async () => {
   await resetDatabase()
@@ -66,6 +67,14 @@ beforeEach(async () => {
       id: groupId,
       daycareId: daycare.id,
       name: 'Testailijat'
+    })
+    .save()
+
+  await Fixture.daycareGroup()
+    .with({
+      id: groupId2,
+      daycareId: daycare.id,
+      name: 'Testailijat 2'
     })
     .save()
 
@@ -100,6 +109,7 @@ beforeEach(async () => {
       })
       .withDaycareAcl(daycare.id, 'STAFF')
       .withGroupAcl(groupId)
+      .withGroupAcl(groupId2)
       .save()
   ).data
   staff = [(await Fixture.employeeStaff(daycare.id).save()).data, groupStaff]
@@ -336,6 +346,52 @@ describe('Realtime staff attendances', () => {
         nth: 1,
         arrival: '13:00',
         departure: '14:30'
+      })
+    })
+  })
+  describe('Entries to multiple groups', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+    })
+    test('Inline editor does not overwrite entries to other groups', async () => {
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '-'
+      })
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
+      })
+      await calendarPage.selectGroup(groupId2)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '-',
+        departure: '-'
+      })
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, '15:00', '16:15')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '15:00',
+        departure: '16:15'
+      })
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
       })
     })
   })
