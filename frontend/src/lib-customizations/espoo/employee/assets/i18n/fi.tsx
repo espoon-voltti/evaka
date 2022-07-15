@@ -1920,6 +1920,7 @@ export const fi = {
       dailyAttendances: 'Päivän kirjaukset',
       addNewAttendance: 'Lisää uusi kirjaus',
       saveChanges: 'Tallenna muutokset',
+      noGroup: 'Ei ryhmää',
       types: {
         PRESENT: 'Läsnä',
         OTHER_WORK: 'Työasia',

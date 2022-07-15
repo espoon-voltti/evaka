@@ -360,6 +360,14 @@ export class UnitOccupanciesSection extends Element {
 }
 
 export class StaffAttendanceDetailsModal extends Element {
+  async setGroup(row: number, groupId: UUID) {
+    await new Select(
+      this.findAllByDataQa('group-indicator')
+        .nth(row)
+        .findByDataQa('attendance-group-select')
+    ).selectOption(groupId)
+  }
+
   async setType(row: number, type: StaffAttendanceType) {
     await new Select(
       this.findAllByDataQa('attendance-type-select').nth(row)

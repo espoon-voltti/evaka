@@ -11,6 +11,7 @@ import { combine, Result } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -63,6 +64,7 @@ interface Props {
   isShiftCareUnit: boolean
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
+  groups: Result<DaycareGroup[]>
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
@@ -72,7 +74,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   setSelectedDate,
   isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
-  operationalDays
+  operationalDays,
+  groups
 }: Props) {
   const { i18n } = useTranslation()
   const dateRange = useMemo(
@@ -182,6 +185,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               saveAttendances={saveAttendances}
               deleteAttendances={deleteAttendances}
               reloadStaffAttendances={reloadStaffAttendances}
+              groups={groups}
             />
           ) : (
             <>
@@ -204,6 +208,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                   deleteAttendances={deleteAttendances}
                   reloadStaffAttendances={reloadStaffAttendances}
                   enableNewEntries
+                  groups={groups}
                 />
               )}
               <ChildReservationsTable

@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
   EmployeeAttendance,
@@ -13,6 +14,7 @@ import {
   StaffAttendanceType,
   staffAttendanceTypes
 } from 'lib-common/generated/api-types/attendance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -44,6 +46,7 @@ interface Props {
   attendances: EmployeeAttendance[]
   close: () => void
   reloadStaffAttendances: () => void
+  groups: Result<DaycareGroup[]>
 }
 
 interface EditedAttendance {
@@ -60,7 +63,8 @@ export default React.memo(function StaffAttendanceDetailsModal({
   date,
   attendances,
   close,
-  reloadStaffAttendances
+  reloadStaffAttendances,
+  groups
 }: Props) {
   const { i18n } = useTranslation()
   const [startOfDay, endOfDay] = useMemo(
@@ -100,7 +104,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
   const [editState, setEditState] =
     useState<EditedAttendance[]>(initialEditState)
   const updateAttendance = useCallback(
-    (index: number, data: Omit<EditedAttendance, 'id' | 'groupId'>) =>
+    (index: number, data: Omit<EditedAttendance, 'id'>) =>
       setEditState((previous) =>
         previous.map((row, i) => (index === i ? { ...row, ...data } : row))
       ),
@@ -140,14 +144,63 @@ export default React.memo(function StaffAttendanceDetailsModal({
         </H2>
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
         <ListGrid rowGap="s" labelWidth="auto">
-          {editState.map(({ arrived, departed, type }, index) => (
+          {editState.map(({ arrived, departed, type, groupId }, index) => (
             <Fragment key={index}>
+              <GroupIndicator data-qa="group-indicator">
+                {groupId === null ? (
+                  <Select
+                    items={[
+                      null,
+                      ...groups
+                        .map((gs) => gs.map(({ id }) => id))
+                        .getOrElse([])
+                    ]}
+                    selectedItem={groupId}
+                    onChange={(value) =>
+                      updateAttendance(index, {
+                        arrived,
+                        departed,
+                        type,
+                        groupId: value
+                      })
+                    }
+                    getItemLabel={(item) =>
+                      groups
+                        .map((gs) => gs.find(({ id }) => id === item)?.name)
+                        .getOrElse(undefined) ??
+                      i18n.unit.staffAttendance.noGroup
+                    }
+                    data-qa="attendance-group-select"
+                  />
+                ) : (
+                  <InlineButton
+                    text={
+                      groups
+                        .map((gs) => gs.find((g) => g.id === groupId)?.name)
+                        .getOrElse(undefined) ?? '-'
+                    }
+                    onClick={() =>
+                      updateAttendance(index, {
+                        arrived,
+                        departed,
+                        type,
+                        groupId: null
+                      })
+                    }
+                  />
+                )}
+              </GroupIndicator>
               <Select
                 items={[...staffAttendanceTypes]}
                 selectedItem={type}
                 onChange={(value) =>
                   value &&
-                  updateAttendance(index, { arrived, departed, type: value })
+                  updateAttendance(index, {
+                    arrived,
+                    departed,
+                    type: value,
+                    groupId
+                  })
                 }
                 getItemLabel={(item) => i18n.unit.staffAttendance.types[item]}
                 data-qa="attendance-type-select"
@@ -156,7 +209,12 @@ export default React.memo(function StaffAttendanceDetailsModal({
                 <TimeInput
                   value={arrived}
                   onChange={(value) =>
-                    updateAttendance(index, { arrived: value, departed, type })
+                    updateAttendance(index, {
+                      arrived: value,
+                      departed,
+                      type,
+                      groupId
+                    })
                   }
                   info={errorToInputInfo(
                     errors[index].arrived,
@@ -170,7 +228,12 @@ export default React.memo(function StaffAttendanceDetailsModal({
                 <TimeInput
                   value={departed}
                   onChange={(value) =>
-                    updateAttendance(index, { arrived, departed: value, type })
+                    updateAttendance(index, {
+                      arrived,
+                      departed: value,
+                      type,
+                      groupId
+                    })
                   }
                   info={errorToInputInfo(
                     errors[index].departed,
@@ -279,13 +342,17 @@ function validateEditState(
     return [undefined, errors]
   }
 
-  const fallbackGroupId = employee?.groups[0]
+  if (state.some(({ groupId }) => groupId === null)) {
+    return [undefined, errors]
+  }
+
   const body = state.map((att) => {
     const arrivedAsHelsinkiDateTime = () =>
       HelsinkiDateTime.fromLocal(date, LocalTime.parse(att.arrived, 'HH:mm'))
     return {
       attendanceId: att.id,
-      groupId: att.groupId ?? fallbackGroupId ?? '',
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      groupId: att.groupId!,
       arrived: !att.arrived
         ? employee?.attendances.find(({ id }) => id === att.id)?.arrived ??
           arrivedAsHelsinkiDateTime()
@@ -306,6 +373,11 @@ function validateEditState(
 
 const Content = styled.div`
   padding: ${defaultMargins.L};
+`
+
+const GroupIndicator = styled.div`
+  grid-column: 1 / 3;
+  margin-bottom: -${defaultMargins.xs};
 `
 
 const InputRow = styled.div`

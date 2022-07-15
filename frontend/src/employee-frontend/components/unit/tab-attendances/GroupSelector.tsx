@@ -5,17 +5,17 @@
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
+import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
 
-import { getDaycareGroups } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
-  unitId: UUID
+  groups: Result<DaycareGroup[]>
   selected: UUID | 'no-group' | 'staff' | null
   onSelect: (val: UUID | 'no-group' | 'staff') => void
   'data-qa'?: string
@@ -23,14 +23,13 @@ interface Props {
 }
 
 export default React.memo(function GroupSelector({
-  unitId,
+  groups,
   selected,
   onSelect,
   'data-qa': dataQa,
   realtimeStaffAttendanceEnabled
 }: Props) {
   const { i18n } = useTranslation()
-  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
 
   const options = useMemo(
     () => [

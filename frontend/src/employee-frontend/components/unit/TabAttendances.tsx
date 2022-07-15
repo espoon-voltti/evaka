@@ -11,6 +11,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useQuery } from 'lib-common/utils/useQuery'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -18,7 +19,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { UnitData } from '../../api/unit'
+import { getDaycareGroups, UnitData } from '../../api/unit'
 import UnitDataFilters from '../../components/unit/UnitDataFilters'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
@@ -71,6 +72,7 @@ export default React.memo(function TabAttendances() {
   useSyncQueryParams(
     groupId ? { group: groupId } : ({} as Record<string, string>)
   )
+  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
 
   const reservationEnabled = unitInformation
     .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))
@@ -160,7 +162,7 @@ export default React.memo(function TabAttendances() {
         <Gap size="xs" />
         <GroupSelectorWrapper>
           <GroupSelector
-            unitId={unitId}
+            groups={groups}
             selected={groupId}
             onSelect={setGroupId}
             data-qa="attendances-group-select"
@@ -193,6 +195,7 @@ export default React.memo(function TabAttendances() {
                 .getOrElse(null) ?? [1, 2, 3, 4, 5]
             }
             realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+            groups={groups}
           />
         )}
         <Gap size="L" />

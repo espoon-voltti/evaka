@@ -144,11 +144,12 @@ fun Database.Transaction.upsertStaffAttendance(attendanceId: StaffAttendanceId?,
         createUpdate(
             """
             UPDATE staff_attendance_realtime
-            SET arrived = :arrived, departed = :departed, type = :type
+            SET group_id = :groupId, arrived = :arrived, departed = :departed, type = :type
             WHERE id = :id
             """.trimIndent()
         )
             .bind("id", attendanceId)
+            .bind("groupId", groupId)
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("type", type)

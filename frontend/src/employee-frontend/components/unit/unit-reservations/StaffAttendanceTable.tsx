@@ -20,6 +20,7 @@ import {
   StaffAttendanceType,
   UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -69,6 +70,7 @@ interface Props {
   ) => Promise<Result<void>[]>
   enableNewEntries?: boolean
   reloadStaffAttendances: () => void
+  groups: Result<DaycareGroup[]>
 }
 
 export default React.memo(function StaffAttendanceTable({
@@ -79,7 +81,8 @@ export default React.memo(function StaffAttendanceTable({
   saveAttendances,
   deleteAttendances,
   enableNewEntries,
-  reloadStaffAttendances
+  reloadStaffAttendances,
+  groups
 }: Props) {
   const { i18n } = useTranslation()
   const [detailsModal, setDetailsModal] = useState<{
@@ -171,6 +174,7 @@ export default React.memo(function StaffAttendanceTable({
           attendances={staffAttendances}
           close={closeModal}
           reloadStaffAttendances={reloadStaffAttendances}
+          groups={groups}
         />
       )}
     </>
