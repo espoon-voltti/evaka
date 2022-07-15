@@ -134,11 +134,7 @@ export class AdditionalInformationSection extends Section {
   }
 }
 
-class DailyServiceTimeSectionCreationForm extends Section {
-  readonly validityPeriodStartInput = new TextInput(
-    this.findByDataQa('daily-service-times-validity-period-start')
-  )
-
+class DailyServiceTimeSectionBaseForm extends Section {
   async checkType(type: DailyServiceTimesType) {
     await this.findByDataQa(`radio-${type.toLowerCase()}`).click()
   }
@@ -152,14 +148,30 @@ class DailyServiceTimeSectionCreationForm extends Section {
     await new TextInput(this.findByDataQa(`${day}-start`)).fill(start)
     await new TextInput(this.findByDataQa(`${day}-end`)).fill(end)
   }
+}
+
+class DailyServiceTimeSectionCreationForm extends DailyServiceTimeSectionBaseForm {
+  readonly validityPeriodStartInput = new TextInput(
+    this.findByDataQa('daily-service-times-validity-period-start')
+  )
 
   async submit() {
     await this.findByDataQa('create-times-btn').click()
   }
 }
 
+class DailyServiceTimeSectionEditForm extends DailyServiceTimeSectionBaseForm {
+  async submit() {
+    await this.findByDataQa('modify-times-btn').click()
+  }
+}
+
 export class DailyServiceTimeSection extends Section {
   readonly #createButton = this.findByDataQa('create-daily-service-times')
+
+  private getNthRow(nth: number) {
+    return this.findAllByDataQa('daily-service-times-row').nth(nth)
+  }
 
   async create() {
     await this.#createButton.click()
@@ -181,8 +193,7 @@ export class DailyServiceTimeSection extends Section {
   }
 
   async toggleTableRowCollapsible(nth: number) {
-    await this.findAllByDataQa('daily-service-times-row')
-      .nth(nth)
+    await this.getNthRow(nth)
       .findByDataQa('daily-service-times-row-opener')
       .click()
   }
@@ -195,6 +206,32 @@ export class DailyServiceTimeSection extends Section {
     )
 
     await waitUntilEqual(() => collapsible.innerText, text)
+  }
+
+  async editTableRow(nth: number) {
+    await this.getNthRow(nth)
+      .findByDataQa('daily-service-times-row-edit')
+      .click()
+
+    const editor = this.find(
+      `:nth-match([data-qa="daily-service-times-row"], ${
+        nth + 1
+      }) + [data-qa="daily-service-times-row-editor"]`
+    )
+
+    return new DailyServiceTimeSectionEditForm(this.page, editor)
+  }
+
+  async deleteTableRow(nth: number) {
+    await this.getNthRow(nth)
+      .findByDataQa('daily-service-times-row-delete')
+      .click()
+
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async assertTableRowCount(count: number) {
+    await this.findAllByDataQa('daily-service-times-row').assertCount(count)
   }
 }
 

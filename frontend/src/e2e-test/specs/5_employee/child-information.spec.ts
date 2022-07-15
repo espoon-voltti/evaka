@@ -242,9 +242,49 @@ describe('Child Information - daily service times', () => {
       'Epäsäännöllinen varhaiskasvatusaika\nkeskiviikko 12:00–14:00, perjantai 12:00–18:00'
     )
   })
+
+  test('can modify daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in10Days)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '14:00')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
+      'UPCOMING'
+    )
+
+    const editor = await section.editTableRow(0)
+
+    await editor.checkType('IRREGULAR')
+    await editor.fillIrregularTimeRange('monday', '09:00', '15:00')
+    await editor.fillIrregularTimeRange('friday', '13:00', '14:00')
+    await editor.submit()
+
+    await section.toggleTableRowCollapsible(0)
+    await section.assertTableRowCollapsible(
+      0,
+      'Epäsäännöllinen varhaiskasvatusaika\nmaanantai 09:00–15:00, perjantai 13:00–14:00'
+    )
+  })
+
+  test('can delete daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in10Days)
+    await form.checkType('VARIABLE_TIME')
+    await form.submit()
+
+    await section.assertTableRowCount(1)
+    await section.deleteTableRow(0)
+    await section.assertTableRowCount(0)
+  })
 })
 
-describe('Chind information - backup care', () => {
+describe('Child information - backup care', () => {
   let section: BackupCaresSection
   beforeEach(async () => {
     section = await childInformationPage.openCollapsible('backupCares')
