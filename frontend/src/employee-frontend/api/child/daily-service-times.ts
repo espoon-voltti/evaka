@@ -7,7 +7,7 @@ import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
 import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
-import { OmitInUnion, UUID } from 'lib-common/types'
+import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
@@ -37,11 +37,9 @@ export async function getChildDailyServiceTimes(
     .catch((e) => Failure.fromError(e))
 }
 
-export type DailyServiceTimesRequestData = OmitInUnion<DailyServiceTimes, 'id'>
-
 export async function createChildDailyServiceTimes(
   childId: UUID,
-  data: DailyServiceTimesRequestData
+  data: DailyServiceTimes
 ): Promise<Result<void>> {
   return client
     .post(`/children/${childId}/daily-service-times`, data)
@@ -51,7 +49,7 @@ export async function createChildDailyServiceTimes(
 
 export async function putChildDailyServiceTimes(
   id: UUID,
-  data: DailyServiceTimesRequestData
+  data: DailyServiceTimes
 ): Promise<Result<void>> {
   return client
     .put(`/daily-service-times/${id}`, data)

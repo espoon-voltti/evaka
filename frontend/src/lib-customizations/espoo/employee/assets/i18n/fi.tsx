@@ -622,7 +622,15 @@ export const fi = {
       },
       dailyServiceTime: 'Päivittäinen varhaiskasvatusaika',
       validFrom: 'Päivittäinen varhaiskasvatusaika voimassa alkaen',
-      createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika'
+      createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika',
+      deleteModal: {
+        title: 'Poistetaanko varhaiskasvatusaika?',
+        description:
+          'Haluatko varmasti poistaa päivittäisen varhaiskasvatusajan? Aikaa ei saa palautettua, vaan se tulee poiston jälkeen tarvittaessa lisätä uudelleen.',
+        deleteBtn: 'Poista aika'
+      },
+      retroactiveModificationWarning:
+        'Huom! Olet muokkaamassa päivittäistä varhaiskasvatusaikaa takautuvasti. Lapsen läsnäolokalenterin merkinnät saattavat muuttua tällä aikavälillä.'
     },
     assistance: {
       title: 'Tuen tarve ja tukitoimet'

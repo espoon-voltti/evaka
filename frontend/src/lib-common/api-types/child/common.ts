@@ -10,7 +10,6 @@ export interface TimeRange {
 }
 
 interface BaseDailyServiceTimes {
-  id: string
   validityPeriod: DateRange
 }
 

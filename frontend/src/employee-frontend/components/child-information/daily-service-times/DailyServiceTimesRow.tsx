@@ -10,6 +10,7 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { Action } from 'lib-common/generated/action'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -18,12 +19,24 @@ import { Gap } from 'lib-components/white-space'
 
 import { TimeBasedStatusChip } from '../TimeBasedStatusChip'
 
+import { DailyServiceTimesModificationForm } from './DailyServiceTimesForms'
+
 export default React.memo(function DailyServiceTimesRow({
   times,
-  permittedActions
+  permittedActions,
+  onDelete,
+  onEdit,
+  onRefresh,
+  isEditing,
+  id
 }: {
   times: DailyServiceTimes
   permittedActions: Action.DailyServiceTime[]
+  onDelete: () => void
+  onEdit: (open: boolean) => void
+  onRefresh: () => void
+  isEditing: boolean
+  id: UUID
 }) {
   const { i18n } = useTranslation()
 
@@ -51,12 +64,23 @@ export default React.memo(function DailyServiceTimesRow({
         <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
           <FixedSpaceRow alignItems="center" spacing="s">
             {permittedActions.includes('UPDATE') && (
-              <IconButton icon={faPen} data-qa="daily-service-times-row-edit" />
+              <IconButton
+                icon={faPen}
+                data-qa="daily-service-times-row-edit"
+                onClick={(ev) => {
+                  ev.stopPropagation()
+                  onEdit(true)
+                }}
+              />
             )}
             {permittedActions.includes('DELETE') && (
               <IconButton
                 icon={faTrash}
                 data-qa="daily-service-times-row-delete"
+                onClick={(ev) => {
+                  ev.stopPropagation()
+                  onDelete()
+                }}
               />
             )}
           </FixedSpaceRow>
@@ -89,7 +113,7 @@ export default React.memo(function DailyServiceTimesRow({
           </FixedSpaceRow>
         </Td>
       </ClickableTr>
-      {isOpen && (
+      {isOpen && !isEditing && (
         <Tr data-qa="daily-service-times-row-collapsible">
           <Td
             colSpan={3}
@@ -101,6 +125,29 @@ export default React.memo(function DailyServiceTimesRow({
               {i18n.childInformation.dailyServiceTimes.types[times.type]}
             </LabelLike>
             <DailyServiceTimesReadOnly times={times} />
+            <Gap size="s" />
+          </Td>
+        </Tr>
+      )}
+      {isEditing && (
+        <Tr data-qa="daily-service-times-row-editor">
+          <Td
+            colSpan={3}
+            borderStyle="none"
+            horizontalPadding="zero"
+            verticalPadding="zero"
+          >
+            <DailyServiceTimesModificationForm
+              id={id}
+              onClose={(shouldRefresh) => {
+                onEdit(false)
+
+                if (shouldRefresh) {
+                  onRefresh()
+                }
+              }}
+              initialData={times}
+            />
             <Gap size="s" />
           </Td>
         </Tr>

@@ -12,10 +12,15 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faQuestion } from 'lib-icons'
 
-import { getChildDailyServiceTimes } from '../../api/child/daily-service-times'
+import {
+  deleteChildDailyServiceTimes,
+  getChildDailyServiceTimes
+} from '../../api/child/daily-service-times'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -42,69 +47,131 @@ export default React.memo(function DailyServiceTimesSection({
 
   const [creationFormOpen, setCreationFormOpen] = useState(false)
 
+  const [uiMode, setUIMode] = useState<{
+    type: 'delete' | 'modify'
+    id: UUID
+  }>()
+
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{i18n.childInformation.dailyServiceTimes.title}</H2>}
-      open={open}
-      toggleOpen={() => setOpen(!open)}
-      opaque
-      paddingVertical="L"
-      data-qa="child-daily-service-times-collapsible"
-    >
-      <P>
-        {i18n.childInformation.dailyServiceTimes.info}
-        <br />
-        {i18n.childInformation.dailyServiceTimes.info2}
-      </P>
+    <>
+      {uiMode?.type === 'delete' && (
+        <DeleteDailyServiceTimesModal
+          dailyServiceTimesId={uiMode.id}
+          onClose={(shouldRefresh) => {
+            setUIMode(undefined)
 
-      <FixedSpaceRow justifyContent="flex-end">
-        <AddButton
-          flipped
-          text={i18n.childInformation.dailyServiceTimes.create}
-          onClick={() => {
-            setCreationFormOpen(true)
+            if (shouldRefresh) {
+              loadData()
+            }
           }}
-          disabled={creationFormOpen}
-          data-qa="create-daily-service-times"
         />
-      </FixedSpaceRow>
-
-      {creationFormOpen && (
-        <>
-          <HorizontalLine slim dashed />
-          <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
-          <DailyServiceTimesCreationForm
-            onClose={(shouldRefresh) => {
-              setCreationFormOpen(false)
-
-              if (shouldRefresh) {
-                loadData()
-              }
-            }}
-            childId={id}
-          />
-        </>
       )}
+      <CollapsibleContentArea
+        title={
+          <H2 noMargin>{i18n.childInformation.dailyServiceTimes.title}</H2>
+        }
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
+        data-qa="child-daily-service-times-collapsible"
+      >
+        <P>
+          {i18n.childInformation.dailyServiceTimes.info}
+          <br />
+          {i18n.childInformation.dailyServiceTimes.info2}
+        </P>
 
-      <Gap size="m" />
+        <FixedSpaceRow justifyContent="flex-end">
+          <AddButton
+            flipped
+            text={i18n.childInformation.dailyServiceTimes.create}
+            onClick={() => {
+              setCreationFormOpen(true)
+            }}
+            disabled={creationFormOpen}
+            data-qa="create-daily-service-times"
+          />
+        </FixedSpaceRow>
 
-      {renderResult(apiData, (dailyServiceTimesList) => (
-        <Table>
-          <Tbody>
-            {orderBy(
-              dailyServiceTimesList,
-              ({ dailyServiceTimes: { times } }) => times.validityPeriod.start,
-              ['desc']
-            ).map(({ permittedActions, dailyServiceTimes: { id, times } }) => (
-              <DailyServiceTimesRow
-                key={id}
-                times={times}
-                permittedActions={permittedActions}
-              />
-            ))}
-          </Tbody>
-        </Table>
-      ))}
-    </CollapsibleContentArea>
+        {creationFormOpen && (
+          <>
+            <HorizontalLine slim dashed />
+            <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
+            <DailyServiceTimesCreationForm
+              onClose={(shouldRefresh) => {
+                setCreationFormOpen(false)
+
+                if (shouldRefresh) {
+                  loadData()
+                }
+              }}
+              childId={id}
+            />
+          </>
+        )}
+
+        <Gap size="m" />
+
+        {renderResult(apiData, (dailyServiceTimesList) => (
+          <Table>
+            <Tbody>
+              {orderBy(
+                dailyServiceTimesList,
+                ({ dailyServiceTimes: { times } }) =>
+                  times.validityPeriod.start,
+                ['desc']
+              ).map(
+                ({ permittedActions, dailyServiceTimes: { id, times } }) => (
+                  <DailyServiceTimesRow
+                    key={id}
+                    times={times}
+                    permittedActions={permittedActions}
+                    onDelete={() => setUIMode({ type: 'delete', id })}
+                    onEdit={(open) =>
+                      setUIMode(open ? { type: 'modify', id } : undefined)
+                    }
+                    onRefresh={loadData}
+                    isEditing={uiMode?.id === id && uiMode?.type === 'modify'}
+                    id={id}
+                  />
+                )
+              )}
+            </Tbody>
+          </Table>
+        ))}
+      </CollapsibleContentArea>
+    </>
   )
 })
+
+const DeleteDailyServiceTimesModal = React.memo(
+  function DeleteDailyServiceTimesModal({
+    dailyServiceTimesId,
+    onClose
+  }: {
+    dailyServiceTimesId: UUID
+    onClose: (shouldRefresh: boolean) => void
+  }) {
+    const { i18n } = useTranslation()
+    return (
+      <InfoModal
+        type="warning"
+        title={i18n.childInformation.dailyServiceTimes.deleteModal.title}
+        text={i18n.childInformation.dailyServiceTimes.deleteModal.description}
+        icon={faQuestion}
+        reject={{
+          action: () => onClose(false),
+          label: i18n.common.cancel
+        }}
+        resolve={{
+          async action() {
+            await deleteChildDailyServiceTimes(dailyServiceTimesId)
+            onClose(true)
+          },
+          label: i18n.childInformation.dailyServiceTimes.deleteModal.deleteBtn
+        }}
+      />
+    )
+  }
+)
