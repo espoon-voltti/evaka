@@ -16,6 +16,7 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.DayOfWeek
+import java.time.LocalDate
 
 enum class DailyServiceTimesType {
     REGULAR,
@@ -151,6 +152,24 @@ WHERE child_id = :childId
         .toList()
 }
 
+data class ValidDailyServiceTimeRow(
+    val childId: ChildId,
+    val validityPeriod: DateRange
+)
+
+fun Database.Read.getChildDailyServiceTimeValidity(id: DailyServiceTimesId): ValidDailyServiceTimeRow? {
+    return this.createQuery(
+        """
+SELECT child_id, validity_period
+FROM daily_service_time
+WHERE id = :id
+        """.trimIndent()
+    )
+        .bind("id", id)
+        .mapTo<ValidDailyServiceTimeRow>()
+        .firstOrNull()
+}
+
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimesWithId {
     return when (row.type) {
         DailyServiceTimesType.REGULAR -> DailyServiceTimes.RegularTimes(
@@ -211,6 +230,25 @@ fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, t
         .execute()
 }
 
+fun Database.Transaction.addDailyServiceTimesNotification(
+    id: DailyServiceTimesId,
+    childId: ChildId,
+    dateFrom: LocalDate,
+    hasDeletedReservations: Boolean
+) {
+    val sql = """
+        INSERT INTO daily_service_time_notification (guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
+        SELECT guardian_id, :id, :dateFrom, :hasDeletedReservations FROM guardian WHERE child_id = :childId
+    """.trimIndent()
+
+    this.createUpdate(sql)
+        .bind("id", id)
+        .bind("childId", childId)
+        .bind("dateFrom", dateFrom)
+        .bind("hasDeletedReservations", hasDeletedReservations)
+        .execute()
+}
+
 fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     // language=sql
     val sql = """
@@ -221,7 +259,7 @@ fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     this.createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimes) {
+fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimes): DailyServiceTimesId {
     val sql = """
         INSERT INTO daily_service_time (
             child_id, type, 
@@ -247,13 +285,14 @@ fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: D
             :sundayTimes,
             :validityPeriod
         )
-        
+        RETURNING id
     """.trimIndent()
 
-    this.createUpdate(sql)
+    return createQuery(sql)
         .bindKotlin(times.asUpdateRow())
         .bind("childId", childId)
-        .execute()
+        .mapTo<DailyServiceTimesId>()
+        .first()
 }
 
 data class DailyServiceTimesValidityWithId(val id: DailyServiceTimesId, val validityPeriod: DateRange)

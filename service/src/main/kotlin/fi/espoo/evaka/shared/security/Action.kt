@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -198,7 +199,9 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
-
+        enum class DailyServiceTimeNotification(override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>) : ScopedAction<DailyServiceTimeNotificationId> {
+            DISMISS(IsCitizen(allowWeakLogin = true).guardianOfDailyServiceTimeNotification());
+        }
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
             DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision());
         }
@@ -224,7 +227,8 @@ sealed interface Action {
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
-            UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self());
+            UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
+            READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

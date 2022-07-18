@@ -50,6 +50,8 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  DevDailyServiceTime,
+  DevDailyServiceTimeNotification,
   DevFixedPeriodQuestionnaire,
   DevHolidayPeriod,
   DevIncome,
@@ -571,6 +573,26 @@ export async function insertDefaultServiceNeedOptions(): Promise<void> {
 export async function insertVoucherValues(): Promise<void> {
   try {
     await devClient.post<UUID>(`/voucher-values`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDailyServiceTime(
+  data: DevDailyServiceTime
+): Promise<void> {
+  try {
+    await devClient.post('/daily-service-time', data)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDailyServiceTimeNotification(
+  data: DevDailyServiceTimeNotification
+): Promise<void> {
+  try {
+    await devClient.post('/daily-service-time-notification', data)
   } catch (e) {
     throw new DevApiError(e)
   }

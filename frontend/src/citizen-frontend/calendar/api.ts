@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import {
   AbsenceRequest,
   DailyReservationRequest,
@@ -11,6 +12,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 
@@ -59,6 +61,33 @@ export async function postAbsences(
 ): Promise<Result<void>> {
   return client
     .post('/citizen/absences', request)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getDailyServiceTimeNotifications(): Promise<
+  Result<DailyServiceTimeNotification[]>
+> {
+  return client
+    .get<JsonOf<DailyServiceTimeNotification[]>>(
+      '/citizen/daily-service-time-notifications'
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((notif) => ({
+          ...notif,
+          dateFrom: LocalDate.parseIso(notif.dateFrom)
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function dismissDailyServiceTimeNotifications(
+  notificationIds: UUID[]
+): Promise<Result<void>> {
+  return client
+    .post('/citizen/daily-service-time-notifications/dismiss', notificationIds)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

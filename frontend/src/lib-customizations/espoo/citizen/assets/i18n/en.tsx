@@ -304,7 +304,15 @@ const en: Translations = {
         `The questionnaire doesn't concern the child, because he or she hasn't been in early childhood education continuously during ${period.format()}.`
     },
     previousDay: 'Previous day',
-    nextDay: 'Next day'
+    nextDay: 'Next day',
+    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
+      `A new daily service time has been updated to your early childhood education contract starting from ${dateFrom}.`,
+    dailyServiceTimeModifiedDestructivelyModal: {
+      text: (dateFrom: string) =>
+        `A new daily service time has been updated to your early childhood education contract. Please make new reservations starting from ${dateFrom}.`,
+      title: 'Make new reservations',
+      ok: 'OK'
+    }
   },
   messages: {
     inboxTitle: 'Inbox',

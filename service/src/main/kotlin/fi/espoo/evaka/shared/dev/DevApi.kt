@@ -25,6 +25,7 @@ import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.decision.UnitInfo
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
@@ -96,6 +97,8 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
+import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
@@ -134,6 +137,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.user.EvakaUser
@@ -1205,6 +1209,36 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                     .execute()
             }
         }
+
+    @PostMapping("/daily-service-time")
+    fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTime) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    """
+                    INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
+                    VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tuesdayTimes, :wednesdayTimes, :thursdayTimes, :fridayTimes, :saturdayTimes, :sundayTimes)
+                    """.trimIndent()
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
+
+    @PostMapping("/daily-service-time-notification")
+    fun addDailyServiceTimeNotification(db: Database, @RequestBody body: DevDailyServiceTimeNotification) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                    """
+                    INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
+                    VALUES (:id, :guardianId, :dailyServiceTimeId, :dateFrom, :hasDeletedReservations)
+                    """.trimIndent()
+                )
+                    .bindKotlin(body)
+                    .execute()
+            }
+        }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1662,4 +1696,27 @@ data class DevStaffAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal
+)
+
+data class DevDailyServiceTime(
+    val id: DailyServiceTimesId,
+    val childId: ChildId,
+    val type: DailyServiceTimesType,
+    val validityPeriod: DateRange,
+    val regularTimes: TimeRange?,
+    val mondayTimes: TimeRange?,
+    val tuesdayTimes: TimeRange?,
+    val wednesdayTimes: TimeRange?,
+    val thursdayTimes: TimeRange?,
+    val fridayTimes: TimeRange?,
+    val saturdayTimes: TimeRange?,
+    val sundayTimes: TimeRange?
+)
+
+data class DevDailyServiceTimeNotification(
+    val id: DailyServiceTimeNotificationId,
+    val guardianId: PersonId,
+    val dailyServiceTimeId: DailyServiceTimesId,
+    val dateFrom: LocalDate,
+    val hasDeletedReservations: Boolean
 )

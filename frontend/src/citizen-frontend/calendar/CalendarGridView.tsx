@@ -30,9 +30,8 @@ import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
-import { useCalendarModalState } from './CalendarPage'
+import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { HistoryOverlay } from './HistoryOverlay'
-import HolidayPeriodCta from './HolidayPeriodCta'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
@@ -89,8 +88,6 @@ export default React.memo(function CalendarGridView({
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
-  const { openHolidayModal } = useCalendarModalState()
-
   return (
     <>
       <StickyHeader ref={headerRef}>
@@ -122,7 +119,9 @@ export default React.memo(function CalendarGridView({
           </PageHeaderRow>
         </Container>
 
-        <HolidayPeriodCta openModal={openHolidayModal} />
+        <NotificationSlotContainer>
+          <CalendarNotificationsSlot />
+        </NotificationSlotContainer>
       </StickyHeader>
       <Container>
         {monthlyData.map(({ month, year, weeks }) => (
@@ -145,6 +144,14 @@ export default React.memo(function CalendarGridView({
     </>
   )
 })
+
+const NotificationSlotContainer = styled.div`
+  position: absolute;
+  top: calc(100% + ${defaultMargins.s});
+  right: ${defaultMargins.s};
+  z-index: 100;
+  padding-left: 16px;
+`
 
 interface MonthlyData {
   month: number

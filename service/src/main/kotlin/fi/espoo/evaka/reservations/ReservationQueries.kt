@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 
 data class AbsenceInsert(
@@ -117,6 +118,13 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, L
     }
 
     batch.execute()
+}
+
+fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: DateRange): Int {
+    return this.createUpdate("DELETE FROM attendance_reservation WHERE child_id = :childId AND date <@ :range")
+        .bind("childId", childId)
+        .bind("range", range)
+        .execute()
 }
 
 fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: List<DailyReservationRequest>) {

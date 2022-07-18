@@ -23,6 +23,7 @@ export interface Props {
   offsetTop?: string
   offsetTopDesktop?: string
   children?: React.ReactNode
+  dataQa?: string
 }
 
 export default React.memo(function Toast({
@@ -30,10 +31,11 @@ export default React.memo(function Toast({
   iconColor,
   onClick,
   onClose,
-  children
+  children,
+  dataQa
 }: Props) {
   return (
-    <ToastRoot role="dialog" showPointer={!!onClick}>
+    <ToastRoot role="dialog" showPointer={!!onClick} data-qa={dataQa}>
       <FixedSpaceRow alignItems="center">
         <RoundIcon
           content={icon}

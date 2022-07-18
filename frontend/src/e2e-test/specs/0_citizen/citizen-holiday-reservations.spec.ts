@@ -171,7 +171,7 @@ describe('Holiday periods', () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      await calendar.clickHoliayCta()
+      await calendar.clickHolidayCta()
       await calendar.assertHolidayModalVisible()
     })
 

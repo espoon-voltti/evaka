@@ -5,9 +5,19 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { DailyServiceTimes } from '../../api-types/child/common'
 import { UUID } from '../../types'
+
+/**
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimeNotification
+*/
+export interface DailyServiceTimeNotification {
+  dateFrom: LocalDate
+  hasDeletedReservations: boolean
+  id: UUID
+}
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse

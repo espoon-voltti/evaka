@@ -42,6 +42,8 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevDailyServiceTime,
+  DevDailyServiceTimeNotification,
   DevIncome,
   DevStaffOccupancyCoefficient,
   DevVardaReset,
@@ -87,7 +89,9 @@ import {
   insertVtjPersonFixture,
   setAclForDaycareGroups,
   setAclForDaycares,
-  upsertOccupancyCoefficient
+  upsertOccupancyCoefficient,
+  insertDailyServiceTime,
+  insertDailyServiceTimeNotification
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1557,6 +1561,39 @@ export class Fixture {
       unitId
     })
   }
+
+  static dailyServiceTime(childId: string): DailyServiceTimeBuilder {
+    return new DailyServiceTimeBuilder({
+      id: uuidv4(),
+      validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
+      type: 'REGULAR',
+      regularTimes: {
+        start: '01:00',
+        end: '15:00'
+      },
+      childId,
+      mondayTimes: null,
+      tuesdayTimes: null,
+      wednesdayTimes: null,
+      thursdayTimes: null,
+      fridayTimes: null,
+      saturdayTimes: null,
+      sundayTimes: null
+    })
+  }
+
+  static dailyServiceTimeNotification(
+    guardianId: string,
+    dailyServiceTimeId: string
+  ): DailyServiceTimeNotificationBuilder {
+    return new DailyServiceTimeNotificationBuilder({
+      id: uuidv4(),
+      guardianId,
+      dailyServiceTimeId,
+      dateFrom: LocalDate.of(2020, 4, 3),
+      hasDeletedReservations: false
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2010,5 +2047,27 @@ export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevStaffOcc
 
   copy() {
     return new StaffOccupancyCoefficientBuilder({ ...this.data })
+  }
+}
+
+export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTime> {
+  async save() {
+    await insertDailyServiceTime(this.data)
+    return this
+  }
+
+  copy() {
+    return new DailyServiceTimeBuilder({ ...this.data })
+  }
+}
+
+export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDailyServiceTimeNotification> {
+  async save() {
+    await insertDailyServiceTimeNotification(this.data)
+    return this
+  }
+
+  copy() {
+    return new DailyServiceTimeNotificationBuilder({ ...this.data })
   }
 }
