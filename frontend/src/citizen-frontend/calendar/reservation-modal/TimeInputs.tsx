@@ -24,8 +24,8 @@ interface BaseTimeInputProps {
 }
 
 interface TimeInputWithAbsencesProps extends BaseTimeInputProps {
-  times: TimeRanges | 'absent' | undefined
-  updateTimes: (v: TimeRanges | 'absent' | undefined) => void
+  times: TimeRanges | 'absent' | 'day-off' | undefined
+  updateTimes: (v: TimeRanges | 'absent' | 'day-off' | undefined) => void
   showAbsences: true
 }
 
@@ -66,6 +66,16 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             onClick={() => props.updateTimes(emptyTimeRange)}
           />
         </div>
+      </>
+    )
+  }
+
+  if (props.times === 'day-off') {
+    return (
+      <>
+        <div>{props.label}</div>
+        <div>{i18n.calendar.reservationModal.dayOff}</div>
+        <div />
       </>
     )
   }

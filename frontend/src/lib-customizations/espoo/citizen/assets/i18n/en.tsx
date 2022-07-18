@@ -242,6 +242,7 @@ const en: Translations = {
     title: 'Calendar',
     holiday: 'Holiday',
     absent: 'Absent',
+    dayOff: 'Day off',
     absentFree: 'Free absence',
     absences: {
       SICKLEAVE: 'Sickness absence'
@@ -277,7 +278,8 @@ const en: Translations = {
       },
       start: 'Start',
       end: 'End',
-      absent: 'Absent'
+      absent: 'Absent',
+      dayOff: 'Day off'
     },
     absenceModal: {
       title: 'Report absence',

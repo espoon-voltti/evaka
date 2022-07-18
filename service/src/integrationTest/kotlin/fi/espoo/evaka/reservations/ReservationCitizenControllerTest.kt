@@ -7,6 +7,8 @@ package fi.espoo.evaka.reservations
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -22,11 +24,13 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.withMockedTime
 import org.jdbi.v3.core.kotlin.mapTo
@@ -37,6 +41,10 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import fi.espoo.evaka.shared.domain.TimeRange as DSTTimeRange
 
 class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     // Monday
@@ -120,8 +128,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
-                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf())
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false),
+                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false)
             ),
             dailyData[0].children.toSet()
         )
@@ -129,8 +137,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
-                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf()),
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false),
+                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false),
             ),
             dailyData[1].children.toSet()
         )
@@ -156,7 +164,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(testDate, dailyData[0].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf())
+                ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false)
             ),
             dailyData[0].children.toSet()
         )
@@ -164,7 +172,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, false, AbsenceType.OTHER_ABSENCE, emptyList(), listOf()),
+                ChildDailyData(testChild_1.id, false, AbsenceType.OTHER_ABSENCE, emptyList(), listOf(), dayOff = false),
             ),
             dailyData[1].children.toSet()
         )
@@ -204,14 +212,16 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 ),
                 ChildDailyData(
                     childId = testChild_2.id,
                     markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 )
             ),
             res.dailyData[0].children.toSet()
@@ -225,14 +235,16 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 ),
                 ChildDailyData(
                     childId = testChild_2.id,
                     markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 )
             ),
             res.dailyData[1].children.toSet()
@@ -290,7 +302,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     markedByEmployee = true,
                     absence = AbsenceType.PLANNED_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 ),
             ),
             res.dailyData[0].children.toSet()
@@ -304,7 +317,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     markedByEmployee = false,
                     absence = AbsenceType.OTHER_ABSENCE,
                     reservations = listOf(),
-                    attendances = listOf()
+                    attendances = listOf(),
+                    dayOff = false
                 ),
             ),
             res.dailyData[1].children.toSet()
@@ -317,6 +331,53 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                 testDate.plusDays(1) to 1,
             )
         )
+    }
+
+    @Test
+    fun `citizen cannot add absences or reservations for days off`() {
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_3.id,
+                unitId = testDaycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = testDate,
+                endDate = testDate.plusDays(10)
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
+        }
+
+        val dailyServiceTimes = DailyServiceTimes.IrregularTimes(
+            monday = null,
+            tuesday = null,
+            wednesday = DSTTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            thursday = DSTTimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+            friday = DSTTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0)),
+            saturday = null,
+            sunday = null,
+            validityPeriod = DateRange(testDate, null)
+        )
+        insertDailyServiceTimes(testChild_3.id, dailyServiceTimes)
+
+        postReservations(
+            listOf(
+                DailyReservationRequest(testChild_3.id, testDate, listOf(TimeRange(startTime, endTime)), absent = false),
+                DailyReservationRequest(testChild_3.id, testDate.plusDays(1), null, absent = true),
+                DailyReservationRequest(testChild_3.id, testDate.plusDays(3), listOf(TimeRange(startTime, endTime)), absent = false),
+            )
+        )
+
+        val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(4)))
+
+        val dailyData = res.dailyData
+        assertEquals(5, dailyData.size)
+
+        assertEquals(testDate, dailyData[0].date)
+        assertTrue(dailyData[0].children[0].reservations.isEmpty())
+        assertTrue(dailyData[0].children[0].dayOff)
+        assertNull(dailyData[1].children[0].absence)
+        assertTrue(dailyData[1].children[0].dayOff)
+        assertTrue(dailyData[3].children[0].reservations.isNotEmpty())
+        assertFalse(dailyData[3].children[0].dayOff)
     }
 
     private fun postReservations(request: List<DailyReservationRequest>, expectedStatus: Int? = 200) {
@@ -377,5 +438,9 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         }
 
         assertEquals(expected, actual)
+    }
+
+    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimes) {
+        db.transaction { tx -> tx.createChildDailyServiceTimes(childId, dailyServiceTimes) }
     }
 }

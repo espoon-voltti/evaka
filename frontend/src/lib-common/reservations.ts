@@ -19,9 +19,9 @@ export interface ReservationFormData {
   startDate: LocalDate | null
   endDate: LocalDate | null
   repetition: Repetition
-  dailyTimes: TimeRanges
-  weeklyTimes: Array<TimeRanges | 'absent' | undefined>
-  irregularTimes: Record<string, TimeRanges | 'absent' | undefined>
+  dailyTimes: TimeRanges | 'day-off'
+  weeklyTimes: Array<TimeRanges | 'absent' | 'day-off' | undefined>
+  irregularTimes: Record<string, TimeRanges | 'absent' | 'day-off' | undefined>
 }
 
 export type TimeRanges = [TimeRange] | [TimeRange, TimeRange]
@@ -81,14 +81,15 @@ export function validateForm(
   }
 
   if (formData.repetition === 'DAILY') {
-    errors['dailyTimes'] = formData.dailyTimes.map((timeRange) =>
-      validateTimeRange(timeRange)
-    )
+    errors['dailyTimes'] =
+      formData.dailyTimes === 'day-off'
+        ? undefined
+        : formData.dailyTimes.map((timeRange) => validateTimeRange(timeRange))
   }
 
   if (formData.repetition === 'WEEKLY') {
     errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times && times !== 'absent'
+      times && times !== 'absent' && times !== 'day-off'
         ? times.map((timeRange) => validateTimeRange(timeRange))
         : undefined
     )
@@ -98,7 +99,7 @@ export function validateForm(
     errors['irregularTimes'] = Object.fromEntries(
       Object.entries(formData.irregularTimes).map(([date, times]) => [
         date,
-        times && times !== 'absent'
+        times && times !== 'absent' && times !== 'day-off'
           ? times.map((timeRange) => validateTimeRange(timeRange))
           : undefined
       ])
@@ -156,8 +157,10 @@ export function validateForm(
   }
 }
 
-function filterReservations(times: TimeRanges | 'absent' | undefined) {
-  if (times === 'absent') {
+function filterReservations(
+  times: TimeRanges | 'absent' | 'day-off' | undefined
+) {
+  if (times === 'absent' || times === 'day-off') {
     return null
   }
 

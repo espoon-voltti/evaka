@@ -14,6 +14,7 @@ import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
 import {
   allChildrenAreAbsent,
+  allChildrenHaveDayOff,
   bindUnboundedTimeRanges,
   emptyTimeRange,
   getCommonTimeRanges,
@@ -57,6 +58,15 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
           const relevantReservations = reservations.filter(({ date }) =>
             dayOfWeekDays.some((d) => d.isEqual(date))
           )
+
+          if (
+            allChildrenHaveDayOff(
+              relevantReservations,
+              formData.selectedChildren
+            )
+          ) {
+            return 'day-off'
+          }
 
           if (
             allChildrenAreAbsent(

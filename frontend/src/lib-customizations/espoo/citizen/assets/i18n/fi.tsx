@@ -242,6 +242,7 @@ export default {
     holiday: 'Pyhäpäivä',
     absent: 'Poissa',
     absentFree: 'Maksuton poissaolo',
+    dayOff: 'Vapaapäivä',
     absences: {
       SICKLEAVE: 'Sairauspoissaolo'
     },
@@ -277,7 +278,8 @@ export default {
       },
       start: 'Alkaa',
       end: 'Päättyy',
-      absent: 'Poissa'
+      absent: 'Poissa',
+      dayOff: 'Vapaapäivä'
     },
     absenceModal: {
       title: 'Ilmoita poissaolo',

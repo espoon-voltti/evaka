@@ -47,8 +47,9 @@ const reservableDates = new FiniteDateRange(
 
 type EmployeeReservationFormData = Omit<
   ReservationFormData,
-  'weeklyTimes' | 'irregularTimes'
+  'weeklyTimes' | 'irregularTimes' | 'dailyTimes'
 > & {
+  dailyTimes: TimeRanges
   weeklyTimes: Array<TimeRanges | undefined>
   irregularTimes: Record<string, TimeRanges | undefined>
 }

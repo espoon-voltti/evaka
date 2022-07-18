@@ -243,6 +243,7 @@ const sv: Translations = {
     holiday: 'Helgdag',
     absent: 'Frånvarande',
     absentFree: 'Gratis frånvaro',
+    dayOff: 'Ledighet',
     absences: {
       SICKLEAVE: 'Sjukskriven'
     },
@@ -276,7 +277,8 @@ const sv: Translations = {
       },
       start: 'Börjar',
       end: 'Slutar',
-      absent: 'Frånvarande'
+      absent: 'Frånvarande',
+      dayOff: 'Ledighet'
     },
     absenceModal: {
       title: 'Anmäl frånvaro',

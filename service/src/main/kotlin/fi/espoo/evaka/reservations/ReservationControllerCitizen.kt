@@ -149,7 +149,8 @@ data class ChildDailyData(
     val markedByEmployee: Boolean,
     val absence: AbsenceType?,
     val reservations: List<TimeRange>,
-    val attendances: List<OpenTimeRange>
+    val attendances: List<OpenTimeRange>,
+    val dayOff: Boolean
 )
 
 data class ReservationChild(
@@ -188,15 +189,21 @@ SELECT
                 'markedByEmployee', a.modified_by_type <> 'CITIZEN',
                 'absence', a.absence_type,
                 'reservations', coalesce(ar.reservations, '[]'),
-                'attendances', coalesce(ca.attendances, '[]')
+                'attendances', coalesce(ca.attendances, '[]'),
+                'dayOff', coalesce(ds.day_off, FALSE)
             )
-        ) FILTER (WHERE a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL),
+        ) FILTER (
+            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL OR ds.day_off IS TRUE)
+              AND EXISTS(
+                SELECT 1 FROM placement p
+                JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+                WHERE g.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
+              )
+        ),
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t
 JOIN guardian g ON g.guardian_id = :guardianId
-JOIN placement p ON g.child_id = p.child_id
-JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 LEFT JOIN LATERAL (
     SELECT
         jsonb_agg(
@@ -223,6 +230,22 @@ LEFT JOIN LATERAL (
     WHERE a.child_id = g.child_id AND a.date = t::date
     LIMIT 1
 ) a ON true
+LEFT JOIN LATERAL (
+    SELECT (
+    	CASE date_part('isodow', t)
+    	    WHEN 1 THEN monday_times IS NULL
+    	    WHEN 2 THEN tuesday_times IS NULL
+    	    WHEN 3 THEN wednesday_times IS NULL
+    	    WHEN 4 THEN thursday_times IS NULL
+    	    WHEN 5 THEN friday_times IS NULL
+    	    WHEN 6 THEN saturday_times IS NULL
+    	    WHEN 7 THEN sunday_times IS NULL
+    	END
+	) AS day_off
+    FROM daily_service_time dst
+    WHERE dst.child_id = g.child_id AND dst.validity_period @> t::date AND dst.type = 'IRREGULAR'
+    LIMIT 1
+) ds ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
         """.trimIndent()

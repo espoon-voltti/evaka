@@ -27,7 +27,7 @@ import RoundChildImages, { ChildImageData } from './RoundChildImages'
 type DailyChildGroupElementType =
   | 'attendance'
   | 'reservation'
-  | 'day-off' // TODO: EVAKA-4287
+  | 'day-off'
   | 'absent'
   | 'missing-reservation'
   | 'absent-free'
@@ -95,6 +95,8 @@ export const Reservations = React.memo(function Reservations({
                 ? i18n.calendar.absent
                 : group.type === 'absent-free'
                 ? i18n.calendar.absentFree
+                : group.type === 'day-off'
+                ? i18n.calendar.dayOff
                 : group.text}
             </GroupedElementText>
           </FixedSpaceRow>
@@ -167,6 +169,13 @@ const groupChildren = (
             text: child.reservations
               .map(({ startTime, endTime }) => `${startTime}–${endTime}`)
               .join(', ')
+          }
+        }
+
+        if (child.dayOff) {
+          return {
+            childId: child.childId,
+            type: 'day-off'
           }
         }
 
