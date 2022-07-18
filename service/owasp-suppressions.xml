@@ -64,4 +64,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2022-33915</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        The RipudamanKaushikDal/projects repository does not affect evaka, misidentification
+        ]]></notes>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
 </suppressions>
