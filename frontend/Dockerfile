@@ -36,7 +36,7 @@ RUN if [ "$ICONS" = "pro" ]; then ./unpack-pro-icons.sh; fi \
  && export NODE_OPTIONS="--max-old-space-size=4096" \
  && yarn build
 
-FROM nginx:1.21.3-alpine
+FROM nginx:1.23.0-alpine
 
 COPY --from=builder "/project/dist/bundle/employee-frontend" "/static/employee"
 COPY --from=builder "/project/dist/bundle/employee-mobile-frontend" "/static/employee/mobile"
