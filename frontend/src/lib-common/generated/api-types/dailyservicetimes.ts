@@ -5,11 +5,22 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import { Action } from '../action'
 import { DailyServiceTimes } from '../../api-types/child/common'
+import { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
 */
 export interface DailyServiceTimesResponse {
-  dailyServiceTimes: DailyServiceTimes | null
+  dailyServiceTimes: DailyServiceTimesWithId
+  permittedActions: Action.DailyServiceTime[]
+}
+
+/**
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
+*/
+export interface DailyServiceTimesWithId {
+  id: UUID
+  times: DailyServiceTimes
 }

@@ -844,5 +844,16 @@ const toChildDayRows = (
   child: {
     ...json.child,
     dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-  }
+  },
+  dailyData: json.dailyData.map((record) =>
+    mapValues(record, (daily) => ({
+      ...daily,
+      dailyServiceTimes: daily.dailyServiceTimes && {
+        ...daily.dailyServiceTimes,
+        validityPeriod: DateRange.parseJson(
+          daily.dailyServiceTimes.validityPeriod
+        )
+      }
+    }))
+  )
 })

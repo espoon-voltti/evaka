@@ -4,41 +4,64 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import DateRange from 'lib-common/date-range'
+import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-interface DailyServiceTimesResponse {
-  dailyServiceTimes: DailyServiceTimes | null
-}
-
 export async function getChildDailyServiceTimes(
   childId: UUID
-): Promise<Result<DailyServiceTimes | null>> {
+): Promise<Result<DailyServiceTimesResponse[]>> {
   return client
-    .get<JsonOf<DailyServiceTimesResponse>>(
+    .get<JsonOf<DailyServiceTimesResponse[]>>(
       `/children/${childId}/daily-service-times`
     )
-    .then((res) => Success.of(res.data.dailyServiceTimes))
+    .then((res) =>
+      Success.of(
+        res.data.map((response) => ({
+          ...response,
+          dailyServiceTimes: {
+            ...response.dailyServiceTimes,
+            times: {
+              ...response.dailyServiceTimes.times,
+              validityPeriod: DateRange.parseJson(
+                response.dailyServiceTimes.times.validityPeriod
+              )
+            }
+          }
+        }))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function putChildDailyServiceTimes(
+export async function createChildDailyServiceTimes(
   childId: UUID,
   data: DailyServiceTimes
 ): Promise<Result<void>> {
   return client
-    .put(`/children/${childId}/daily-service-times`, data)
+    .post(`/children/${childId}/daily-service-times`, data)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function putChildDailyServiceTimes(
+  id: UUID,
+  data: DailyServiceTimes
+): Promise<Result<void>> {
+  return client
+    .put(`/daily-service-times/${id}`, data)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteChildDailyServiceTimes(
-  childId: UUID
+  id: UUID
 ): Promise<Result<void>> {
   return client
-    .delete(`/children/${childId}/daily-service-times`)
+    .delete(`/daily-service-times/${id}`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

@@ -7,8 +7,7 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.dailyservicetimes.TimeRange
-import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -29,7 +28,9 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -212,9 +213,12 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has regular daily service times`() {
-        val testTimes = DailyServiceTimes.RegularTimes(regularTimes = TimeRange("08:15", "17:19"))
+        val testTimes = DailyServiceTimes.RegularTimes(
+            regularTimes = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+            validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
+        )
         db.transaction { tx ->
-            tx.upsertChildDailyServiceTimes(
+            tx.createChildDailyServiceTimes(
                 childId = testChild_1.id,
                 times = testTimes
             )
@@ -226,16 +230,17 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child has irregular daily service times`() {
         val testTimes = DailyServiceTimes.IrregularTimes(
-            monday = TimeRange("08:15", "17:19"),
-            tuesday = TimeRange("08:16", "17:19"),
-            wednesday = TimeRange("08:17", "17:19"),
+            monday = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+            tuesday = TimeRange(LocalTime.of(8, 16), LocalTime.of(17, 19)),
+            wednesday = TimeRange(LocalTime.of(8, 17), LocalTime.of(17, 19)),
             thursday = null,
-            friday = TimeRange("08:19", "17:19"),
+            friday = TimeRange(LocalTime.of(8, 19), LocalTime.of(17, 19)),
             saturday = null,
-            sunday = TimeRange("18:00", "10:30"),
+            sunday = TimeRange(LocalTime.of(10, 0), LocalTime.of(17, 30)),
+            validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
         )
         db.transaction { tx ->
-            tx.upsertChildDailyServiceTimes(
+            tx.createChildDailyServiceTimes(
                 childId = testChild_1.id,
                 times = testTimes
             )

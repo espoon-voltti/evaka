@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Property } from 'csstype'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -14,7 +15,7 @@ import {
 } from 'lib-icons'
 
 import { fontWeights } from '../typography'
-import { defaultMargins, Gap } from '../white-space'
+import { defaultMargins, Gap, SpacingSize } from '../white-space'
 
 export const Table = styled.table`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
@@ -62,12 +63,22 @@ export const Td = styled.td<{
   minimalWidth?: boolean
   maximalWidth?: boolean
   topBorder?: boolean
+  borderStyle?: Property.BorderStyle
+  horizontalPadding?: SpacingSize
+  verticalPadding?: SpacingSize
 }>`
   line-height: 1.3em;
-  border-style: solid;
+  border-style: ${(p) => p.borderStyle ?? 'solid'};
   border-color: ${(p) => p.theme.colors.grayscale.g15};
   border-width: ${(p) => (p.topBorder ? '1px 0 0 0' : '0 0 1px')};
-  padding: ${defaultMargins.s};
+  padding: ${(p) =>
+    `${
+      p.verticalPadding ? defaultMargins[p.verticalPadding] : defaultMargins.s
+    } ${
+      p.horizontalPadding
+        ? defaultMargins[p.horizontalPadding]
+        : defaultMargins.s
+    }`};
   vertical-align: ${(p) => p.verticalAlign ?? 'top'};
   text-align: ${(p) => p.align ?? 'left'};
   ${(p) => (p.color ? `color: ${p.color};` : '')}

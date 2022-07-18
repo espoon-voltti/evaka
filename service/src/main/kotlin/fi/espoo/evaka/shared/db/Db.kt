@@ -83,6 +83,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.getConfig(Jackson2Config::class.java).mapper = jsonMapper
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
+    jdbi.registerArgument(timeRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
@@ -92,6 +93,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(productKeyArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
+    jdbi.register(timeRangeColumnMapper)
     jdbi.register(coordinateColumnMapper)
     jdbi.register(externalIdColumnMapper)
     jdbi.register(idColumnMapper) { type ->

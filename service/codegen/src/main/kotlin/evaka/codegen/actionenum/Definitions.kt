@@ -27,6 +27,7 @@ val generatedFiles = listOf(
             generateEnum<Action.BackupPickup>(),
             generateEnum<Action.Child>(),
             generateEnum<Action.ChildDailyNote>(),
+            generateEnum<Action.DailyServiceTime>(),
             generateEnum<Action.Decision>(),
             generateEnum<Action.Group>(),
             generateEnum<Action.GroupPlacement>(),

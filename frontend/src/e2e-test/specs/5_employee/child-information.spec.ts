@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -23,7 +24,7 @@ import ChildInformationPage, {
   FamilyContactsSection,
   GuardiansSection
 } from '../../pages/employee/child-information'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -109,80 +110,181 @@ describe('Child Information - daily service times', () => {
     section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
-  test('no service times initially', async () => {
-    await waitUntilEqual(() => section.typeText, 'Ei asetettu')
-    await waitUntilFalse(() => section.hasTimesText)
+  const today = LocalDate.todayInHelsinkiTz().format()
+  const in10Days = LocalDate.todayInHelsinkiTz().addDays(10).format()
+  const in40Days = LocalDate.todayInHelsinkiTz().addDays(40).format()
+
+  test('can create regular daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in10Days)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '14:00')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
+      'UPCOMING'
+    )
   })
 
-  test('cannot save regular without setting times', async () => {
-    const editor = await section.edit()
-    await editor.selectRegularTime()
-    await waitUntilTrue(() => editor.submitIsDisabled)
+  test('can create irregular daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in40Days)
+    await form.checkType('IRREGULAR')
+    await form.fillIrregularTimeRange('monday', '09:00', '10:00')
+    await form.fillIrregularTimeRange('wednesday', '04:00', '10:00')
+    await form.fillIrregularTimeRange('thursday', '12:00', '18:00')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
+      'UPCOMING'
+    )
   })
 
-  test('set regular daily service times', async () => {
-    let editor = await section.edit()
-    await editor.selectRegularTime()
-    await editor.fillTimeRange('regular', '09:00', '17:00')
+  test('can create variable daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in40Days)
+    await form.checkType('VARIABLE_TIME')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
+      'UPCOMING'
+    )
+  })
+
+  test('can create regular daily service times starting today', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(today)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '15:00')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${today} –`,
+      'ACTIVE'
+    )
+  })
+
+  test('can create multiple daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(today)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '15:00')
+    await form.submit()
+
+    const form2 = await section.create()
+    await form2.validityPeriodStartInput.clear()
+    await form2.validityPeriodStartInput.fill(in10Days)
+    await form2.checkType('REGULAR')
+    await form2.fillRegularTimeRange('08:00', '19:00')
+    await form2.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
+      'UPCOMING'
+    )
+    await section.assertTableRow(
+      1,
+      `Päivittäinen varhaiskasvatusaika ${today} – ${LocalDate.todayInHelsinkiTz()
+        .addDays(9)
+        .format()}`,
+      'ACTIVE'
+    )
+  })
+
+  test('the currently active daily service times is open by default, and others can be opened', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(today)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '15:00')
+    await form.submit()
+
+    const form2 = await section.create()
+    await form2.validityPeriodStartInput.clear()
+    await form2.validityPeriodStartInput.fill(in40Days)
+    await form2.checkType('IRREGULAR')
+    await form2.fillIrregularTimeRange('wednesday', '12:00', '14:00')
+    await form2.fillIrregularTimeRange('friday', '12:00', '18:00')
+    await form2.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
+      'UPCOMING'
+    )
+    await section.assertTableRow(
+      1,
+      `Päivittäinen varhaiskasvatusaika ${today} – ${LocalDate.todayInHelsinkiTz()
+        .addDays(39)
+        .format()}`,
+      'ACTIVE'
+    )
+    await section.assertTableRowCollapsible(
+      1,
+      'Säännöllinen varhaiskasvatusaika\nmaanantai–perjantai 08:00–15:00'
+    )
+    await section.toggleTableRowCollapsible(0)
+    await section.assertTableRowCollapsible(
+      0,
+      'Epäsäännöllinen varhaiskasvatusaika\nkeskiviikko 12:00–14:00, perjantai 12:00–18:00'
+    )
+  })
+
+  test('can modify daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in10Days)
+    await form.checkType('REGULAR')
+    await form.fillRegularTimeRange('08:00', '14:00')
+    await form.submit()
+
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
+      'UPCOMING'
+    )
+
+    const editor = await section.editTableRow(0)
+
+    await editor.checkType('IRREGULAR')
+    await editor.fillIrregularTimeRange('monday', '09:00', '15:00')
+    await editor.fillIrregularTimeRange('friday', '13:00', '14:00')
     await editor.submit()
 
-    await waitUntilEqual(
-      () => section.typeText,
-      'Säännöllinen varhaiskasvatusaika'
+    await section.toggleTableRowCollapsible(0)
+    await section.assertTableRowCollapsible(
+      0,
+      'Epäsäännöllinen varhaiskasvatusaika\nmaanantai 09:00–15:00, perjantai 13:00–14:00'
     )
-    await waitUntilEqual(
-      () => section.timesText,
-      'maanantai-perjantai 09:00–17:00'
-    )
-
-    // Check that initial values are correct when editing
-    editor = await section.edit()
-    await waitUntilTrue(() => editor.regularTimeIsSelected())
-    await waitUntilTrue(() => editor.hasTimeRange('regular', '09:00', '17:00'))
   })
 
-  test('cannot save irregular without setting times', async () => {
-    const editor = await section.edit()
-    await editor.selectIrregularTime()
-    await waitUntilTrue(() => editor.submitIsDisabled)
-  })
+  test('can delete daily service times', async () => {
+    const form = await section.create()
+    await form.validityPeriodStartInput.clear()
+    await form.validityPeriodStartInput.fill(in10Days)
+    await form.checkType('VARIABLE_TIME')
+    await form.submit()
 
-  test('set irregular daily service times', async () => {
-    let editor = await section.edit()
-    await editor.selectIrregularTime()
-    await editor.selectDay('monday')
-    await editor.fillTimeRange('monday', '08:15', '16:45')
-    await editor.selectDay('friday')
-    await editor.fillTimeRange('friday', '09:00', '13:30')
-    await editor.selectDay('sunday')
-    await editor.fillTimeRange('sunday', '13:50', '09:20')
-    await editor.submit()
-
-    await waitUntilEqual(
-      () => section.typeText,
-      'Epäsäännöllinen varhaiskasvatusaika'
-    )
-    await waitUntilEqual(
-      () => section.timesText,
-      'maanantai 08:15-16:45, perjantai 09:00-13:30, sunnuntai 13:50-09:20'
-    )
-
-    // Check that initial values are correct when editing
-    editor = await section.edit()
-    await waitUntilTrue(() => editor.dayIsSelected('monday'))
-    await waitUntilTrue(() => editor.hasTimeRange('monday', '08:15', '16:45'))
-    await waitUntilFalse(() => editor.dayIsSelected('tuesday'))
-    await waitUntilFalse(() => editor.dayIsSelected('wednesday'))
-    await waitUntilFalse(() => editor.dayIsSelected('thursday'))
-    await waitUntilTrue(() => editor.dayIsSelected('friday'))
-    await waitUntilTrue(() => editor.hasTimeRange('friday', '09:00', '13:30'))
-    await waitUntilFalse(() => editor.dayIsSelected('saturday'))
-    await waitUntilTrue(() => editor.dayIsSelected('sunday'))
-    await waitUntilTrue(() => editor.hasTimeRange('sunday', '13:50', '09:20'))
+    await section.assertTableRowCount(1)
+    await section.deleteTableRow(0)
+    await section.assertTableRowCount(0)
   })
 })
 
-describe('Chind information - backup care', () => {
+describe('Child information - backup care', () => {
   let section: BackupCaresSection
   beforeEach(async () => {
     section = await childInformationPage.openCollapsible('backupCares')

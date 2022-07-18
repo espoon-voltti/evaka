@@ -2,17 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
+
 export interface TimeRange {
   start: string
   end: string
 }
 
-export interface RegularDailyServiceTimes {
+interface BaseDailyServiceTimes {
+  validityPeriod: DateRange
+}
+
+export interface RegularDailyServiceTimes extends BaseDailyServiceTimes {
   type: 'REGULAR'
   regularTimes: TimeRange
 }
 
-export interface IrregularDailyServiceTimes {
+export interface IrregularDailyServiceTimes extends BaseDailyServiceTimes {
   type: 'IRREGULAR'
   monday: TimeRange | null
   tuesday: TimeRange | null
@@ -23,7 +29,7 @@ export interface IrregularDailyServiceTimes {
   sunday: TimeRange | null
 }
 
-export interface VariableDailyServiceTimes {
+export interface VariableDailyServiceTimes extends BaseDailyServiceTimes {
   type: 'VARIABLE_TIME'
 }
 

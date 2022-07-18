@@ -35,6 +35,7 @@ export interface ChildRecordOfDay {
   reservation: TimeRange | null
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
+  dailyServiceTimes: DailyServiceTimes | null
 }
 
 interface Group {
@@ -47,7 +48,6 @@ export interface Child {
   firstName: string
   lastName: string
   dateOfBirth: LocalDate
-  dailyServiceTimes: DailyServiceTimes | null
 }
 
 export interface AttendanceTimes {

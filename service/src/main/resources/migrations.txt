@@ -245,3 +245,4 @@ V244__payment.sql
 V245__assistance_need_decision_time_and_employee_phone.sql
 V246__assistance_need_decision_unopened.sql
 V247__assistance_need_voucher_coefficient.sql
+V248__time_series_daily_service_times.sql

@@ -12,6 +12,7 @@ export type DeepReadonly<T> = T extends primitive ? T : DeepReadonlyObject<T>
 export type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>
 }
+export type OmitInUnion<T, K extends keyof T> = T extends T ? Omit<T, K> : never
 
 // CONCRETE TYPES
 

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
@@ -222,7 +223,13 @@ function deserializeAttendanceResponse(
             reservations: attendanceChild.reservations.map((reservation) => ({
               startTime: new Date(reservation.startTime),
               endTime: new Date(reservation.endTime)
-            }))
+            })),
+            dailyServiceTimes: attendanceChild.dailyServiceTimes && {
+              ...attendanceChild.dailyServiceTimes,
+              validityPeriod: DateRange.parseJson(
+                attendanceChild.dailyServiceTimes.validityPeriod
+              )
+            }
           }
         })
         .sort((a, b) => compareByProperty(a, b, 'lastName'))

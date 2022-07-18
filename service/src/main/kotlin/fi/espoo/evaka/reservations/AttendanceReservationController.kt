@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -127,7 +128,8 @@ data class UnitAttendanceReservations(
     data class ChildRecordOfDay(
         val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
-        val absence: Absence?
+        val absence: Absence?,
+        val dailyServiceTimes: DailyServiceTimes?
     )
 
     data class ReservationTimes(
@@ -150,8 +152,7 @@ data class UnitAttendanceReservations(
         val id: ChildId,
         val firstName: String,
         val lastName: String,
-        val dateOfBirth: LocalDate,
-        val dailyServiceTimes: DailyServiceTimes?
+        val dateOfBirth: LocalDate
     )
 
     data class QueryRow(
@@ -239,57 +240,54 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
 private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>) = createQuery(
     """
 SELECT
+    id,
     child_id,
     type,
-    regular_start,
-    regular_end,
-    monday_start,
-    monday_end,
-    tuesday_start,
-    tuesday_end,
-    wednesday_start,
-    wednesday_end,
-    thursday_start,
-    thursday_end,
-    friday_start,
-    friday_end,
-    saturday_start,
-    saturday_end,
-    sunday_start,
-    sunday_end
+    regular_times,
+    monday_times,
+    tuesday_times,
+    wednesday_times,
+    thursday_times,
+    friday_times,
+    saturday_times,
+    sunday_times,
+    validity_period
 FROM daily_service_time
 WHERE child_id = ANY(:childIds)
     """.trimIndent()
 )
     .bind("childIds", childIds.toTypedArray())
-    .map { row -> toDailyServiceTimes(row)?.let { row.mapColumn<ChildId>("child_id") to it } }
-    .filterNotNull()
-    .toMap()
+    .map { row -> row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times }
+    .toList()
+    .groupBy { it.first }
+    .mapValues { it.value.map { it.second } }
 
-private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, DailyServiceTimes>): List<UnitAttendanceReservations.ChildDailyRecords> {
+private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, List<DailyServiceTimes>>): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.child }
         .map { (child, dailyData) ->
             UnitAttendanceReservations.ChildDailyRecords(
-                child = child.copy(dailyServiceTimes = serviceTimes.get(child.id)),
+                child = child,
                 dailyData = listOfNotNull(
                     dailyData.associateBy(
                         keySelector = { it.date },
-                        valueTransform = {
+                        valueTransform = { day ->
                             UnitAttendanceReservations.ChildRecordOfDay(
-                                reservation = it.reservations.getOrNull(0),
-                                attendance = it.attendances.getOrNull(0),
-                                absence = it.absence
+                                reservation = day.reservations.getOrNull(0),
+                                attendance = day.attendances.getOrNull(0),
+                                absence = day.absence,
+                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) }
                             )
                         }
                     ),
                     if (dailyData.any { it.reservations.size > 1 || it.attendances.size > 1 }) dailyData.associateBy(
                         keySelector = { it.date },
-                        valueTransform = {
+                        valueTransform = { day ->
                             UnitAttendanceReservations.ChildRecordOfDay(
-                                reservation = it.reservations.getOrNull(1),
-                                attendance = it.attendances.getOrNull(1),
-                                absence = it.absence
+                                reservation = day.reservations.getOrNull(1),
+                                attendance = day.attendances.getOrNull(1),
+                                absence = day.absence,
+                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) }
                             )
                         }
                     ) else null

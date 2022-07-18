@@ -4,7 +4,8 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCategory
@@ -17,10 +18,11 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -108,7 +110,7 @@ data class ChildBasics(
     val lastName: String,
     val preferredName: String?,
     val dateOfBirth: LocalDate,
-    val dailyServiceTimes: DailyServiceTimes?,
+    val dailyServiceTimes: DailyServiceTimesWithId?,
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
@@ -116,6 +118,32 @@ data class ChildBasics(
     val absences: List<ChildAbsence>,
     val imageUrl: String?
 )
+
+data class ChildBasicsRow(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String?,
+    val dateOfBirth: LocalDate,
+    @Nested("dst")
+    val dailyServiceTimes: DailyServiceTimeRow?,
+    val placementType: PlacementType,
+    val groupId: GroupId?,
+    val backup: Boolean,
+    @Json
+    val attendance: AttendanceTimes?,
+    @Json
+    val absences: List<ChildAbsence>,
+    val imageId: String?
+) {
+    fun toChildBasics() = ChildBasics(
+        id, firstName, lastName, preferredName, dateOfBirth,
+        dailyServiceTimes = dailyServiceTimes?.let { toDailyServiceTimes(it) },
+        placementType, groupId, backup, attendance, absences,
+        imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
+    )
+}
+
 fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTime): List<ChildBasics> {
     // language=sql
     val sql =
@@ -190,24 +218,18 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             pe.last_name,
             pe.preferred_name,
             pe.date_of_birth,
-            dst.child_id,
-            dst.type,
-            dst.regular_start,
-            dst.regular_end,
-            dst.monday_start,
-            dst.monday_end,
-            dst.tuesday_start,
-            dst.tuesday_end,
-            dst.wednesday_start,
-            dst.wednesday_end,
-            dst.thursday_start,
-            dst.thursday_end,
-            dst.friday_start,
-            dst.friday_end,
-            dst.saturday_start,
-            dst.saturday_end,
-            dst.sunday_start,
-            dst.sunday_end,
+            dst.id AS dst_id,
+            dst.child_id AS dst_child_id,
+            dst.type AS dst_type,
+            dst.regular_times AS dst_regular_times,
+            dst.monday_times AS dst_monday_times,
+            dst.tuesday_times AS dst_tuesday_times,
+            dst.wednesday_times AS dst_wednesday_times,
+            dst.thursday_times AS dst_thursday_times,
+            dst.friday_times AS dst_friday_times,
+            dst.saturday_times AS dst_saturday_times,
+            dst.sunday_times AS dst_sunday_times,
+            dst.validity_period AS dst_validity_period,
             cimg.id AS image_id,
             c.group_id,
             c.placement_type,
@@ -216,7 +238,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             coalesce(a.absences, '[]'::jsonb) AS absences
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
-        LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
+        LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_period @> :date
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         LEFT JOIN LATERAL (
             SELECT
@@ -241,22 +263,8 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         .bind("unitId", unitId)
         .bind("date", instant.toLocalDate())
         .bind("departedThreshold", instant.toLocalTime().minusMinutes(30))
-        .map { row ->
-            ChildBasics(
-                id = row.mapColumn("id"),
-                firstName = row.mapColumn("first_name"),
-                lastName = row.mapColumn("last_name"),
-                preferredName = row.mapColumn("preferred_name"),
-                dateOfBirth = row.mapColumn("date_of_birth"),
-                placementType = row.mapColumn("placement_type"),
-                dailyServiceTimes = toDailyServiceTimes(row),
-                groupId = row.mapColumn("group_id"),
-                backup = row.mapColumn("backup"),
-                attendance = row.mapJsonColumn("attendance"),
-                absences = row.mapJsonColumn("absences"),
-                imageUrl = row.mapColumn<String?>("image_id")?.let { id -> "/api/internal/child-images/$id" }
-            )
-        }
+        .mapTo<ChildBasicsRow>()
+        .map { it.toChildBasics() }
         .list()
 }
 

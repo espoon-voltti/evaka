@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.TimeRange
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
@@ -44,6 +45,7 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.Optional
 import java.util.UUID
@@ -55,10 +57,18 @@ val finiteDateRangeArgumentFactory = pgObjectArgumentFactory<FiniteDateRange> {
         value = "[${it.start},${it.end}]"
     }
 }
+
 val dateRangeArgumentFactory = pgObjectArgumentFactory<DateRange> {
     PGobject().apply {
         type = "daterange"
         value = "[${it.start},${it.end ?: ""}]"
+    }
+}
+
+val timeRangeArgumentFactory = pgObjectArgumentFactory<TimeRange> {
+    PGobject().apply {
+        type = "timerange"
+        value = "(${it.start},${it.end})"
     }
 }
 
@@ -114,6 +124,14 @@ val dateRangeColumnMapper = PgObjectColumnMapper {
             null
         }
         DateRange(start, end)
+    }
+}
+
+val timeRangeColumnMapper = PgObjectColumnMapper {
+    assert(it.type == "timerange")
+    it.value?.let { value ->
+        val parts = value.trim('(', ')').split(',')
+        TimeRange(LocalTime.parse(parts[0]), LocalTime.parse(parts[1]))
     }
 }
 
