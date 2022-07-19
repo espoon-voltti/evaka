@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../../utils'
 import {
+  AsyncButton,
   DatePickerDeprecated,
   Element,
   Modal,
@@ -169,6 +171,21 @@ export class UnitAttendancesPage {
       .findByDataQa(`attendance-row-${rowIx}`)
       .findByDataQa('inline-editor-state-button')
       .click()
+  }
+
+  async openDetails(
+    employeeId: string,
+    date: LocalDate
+  ): Promise<StaffAttendanceDetailsModal> {
+    await this.page
+      .findByDataQa(`day-cell-${employeeId}-${date.formatIso()}`)
+      .hover()
+    await this.page
+      .findByDataQa(`open-details-${employeeId}-${date.formatIso()}`)
+      .click()
+    return new StaffAttendanceDetailsModal(
+      this.page.findByDataQa('staff-attendance-details-modal')
+    )
   }
 
   async assertNoTimeInputsVisible(): Promise<void> {
@@ -339,5 +356,47 @@ export class UnitOccupanciesSection extends Element {
       () => this.#elem('maximum', 'planned').innerText,
       maximum
     )
+  }
+}
+
+export class StaffAttendanceDetailsModal extends Element {
+  async setGroup(row: number, groupId: UUID) {
+    await new Select(
+      this.findAllByDataQa('group-indicator')
+        .nth(row)
+        .findByDataQa('attendance-group-select')
+    ).selectOption(groupId)
+  }
+
+  async setType(row: number, type: StaffAttendanceType) {
+    await new Select(
+      this.findAllByDataQa('attendance-type-select').nth(row)
+    ).selectOption(type)
+  }
+
+  async setArrivalTime(row: number, time: string) {
+    await new TextInput(
+      this.findAllByDataQa('arrival-time-input').nth(row)
+    ).fill(time)
+  }
+
+  async setDepartureTime(row: number, time: string) {
+    await new TextInput(
+      this.findAllByDataQa('departure-time-input').nth(row)
+    ).fill(time)
+  }
+
+  async addNewAttendance() {
+    await this.findByDataQa('new-attendance').click()
+  }
+
+  async save() {
+    const button = new AsyncButton(this.findByDataQa('save'))
+    await button.click()
+    await button.waitUntilIdle()
+  }
+
+  async close() {
+    await this.findByDataQa('close').click()
   }
 }

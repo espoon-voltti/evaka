@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RestController
 @RequestMapping("/staff-attendances/realtime")
@@ -57,7 +59,16 @@ class RealtimeStaffAttendanceController(
                         firstName = data[0].firstName,
                         lastName = data[0].lastName,
                         currentOccupancyCoefficient = data[0].currentOccupancyCoefficient ?: BigDecimal.ZERO,
-                        attendances = data.map { att -> Attendance(att.id, att.groupId, att.arrived, att.departed, att.occupancyCoefficient) }
+                        attendances = data.map { att ->
+                            Attendance(
+                                att.id,
+                                att.groupId,
+                                att.arrived,
+                                att.departed,
+                                att.occupancyCoefficient,
+                                att.type
+                            )
+                        }
                     )
                 }
                 val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId)
@@ -86,7 +97,8 @@ class RealtimeStaffAttendanceController(
         val employeeId: EmployeeId,
         val groupId: GroupId,
         val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?
+        val departed: HelsinkiDateTime?,
+        val type: StaffAttendanceType
     )
     data class UpsertExternalAttendance(
         val attendanceId: StaffAttendanceExternalId?,
@@ -127,7 +139,7 @@ class RealtimeStaffAttendanceController(
                         it.arrived,
                         it.departed,
                         occupancyCoefficients[it.employeeId],
-                        StaffAttendanceType.PRESENT
+                        it.type
                     )
                 }
 
@@ -139,6 +151,49 @@ class RealtimeStaffAttendanceController(
                         it.arrived,
                         it.departed,
                         occupancyCoefficientSeven
+                    )
+                }
+            }
+        }
+    }
+
+    data class SingleDayStaffAttendanceUpsert(
+        val attendanceId: StaffAttendanceId?,
+        val groupId: GroupId,
+        val arrived: HelsinkiDateTime,
+        val departed: HelsinkiDateTime?,
+        val type: StaffAttendanceType
+    )
+    @PostMapping("/{unitId}/{employeeId}/{date}")
+    fun upsertDailyStaffAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable unitId: DaycareId,
+        @PathVariable employeeId: EmployeeId,
+        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestBody body: List<SingleDayStaffAttendanceUpsert>
+    ) {
+        Audit.StaffAttendanceUpdate.log(targetId = unitId)
+        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val occupancyCoefficients = body.map { it.groupId }.distinct().associateWith {
+                    tx.getOccupancyCoefficientForEmployee(employeeId, it) ?: BigDecimal.ZERO
+                }
+                val wholeDay = HelsinkiDateTimeRange(
+                    HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
+                    HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
+                )
+                tx.deleteStaffAttendanceWithoutIds(employeeId, wholeDay, body.mapNotNull { it.attendanceId })
+                body.forEach {
+                    tx.upsertStaffAttendance(
+                        it.attendanceId,
+                        employeeId,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficients[it.groupId],
+                        it.type
                     )
                 }
             }

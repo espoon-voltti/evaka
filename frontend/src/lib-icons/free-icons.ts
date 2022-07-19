@@ -31,6 +31,7 @@ export { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight
 export { faChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
 export { faChild } from '@fortawesome/free-solid-svg-icons/faChild'
 export { faChild as fasChild } from '@fortawesome/free-solid-svg-icons/faChild'
+export { faEllipsis as faCircleEllipsis } from '@fortawesome/free-solid-svg-icons/faEllipsis'
 export { faCircleExclamation } from '@fortawesome/free-solid-svg-icons/faCircleExclamation'
 export { faClock } from '@fortawesome/free-solid-svg-icons/faClock'
 export { faCoins } from '@fortawesome/free-solid-svg-icons/faCoins'

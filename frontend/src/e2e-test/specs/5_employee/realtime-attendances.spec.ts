@@ -40,6 +40,7 @@ const mockedToday = LocalDate.of(2022, 3, 28)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
+const groupId2 = uuidv4()
 
 beforeEach(async () => {
   await resetDatabase()
@@ -66,6 +67,14 @@ beforeEach(async () => {
       id: groupId,
       daycareId: daycare.id,
       name: 'Testailijat'
+    })
+    .save()
+
+  await Fixture.daycareGroup()
+    .with({
+      id: groupId2,
+      daycareId: daycare.id,
+      name: 'Testailijat 2'
     })
     .save()
 
@@ -100,6 +109,7 @@ beforeEach(async () => {
       })
       .withDaycareAcl(daycare.id, 'STAFF')
       .withGroupAcl(groupId)
+      .withGroupAcl(groupId2)
       .save()
   ).data
   staff = [(await Fixture.employeeStaff(daycare.id).save()).data, groupStaff]
@@ -264,6 +274,124 @@ describe('Realtime staff attendances', () => {
         nth: 0,
         arrival: '-',
         departure: '-'
+      })
+    })
+  })
+  describe('Details modal', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+      await calendarPage.selectGroup('staff')
+    })
+    test('An existing entry can be edited', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
+      })
+    })
+    test('An existing overnight entry can be edited', async () => {
+      const modal = await calendarPage.openDetails(
+        groupStaff.id,
+        mockedToday.addDays(1)
+      )
+      await modal.setDepartureTime(0, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '→'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 1,
+        arrival: '→',
+        departure: '15:00'
+      })
+    })
+    test('Multiple new entries can be added', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '12:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(1, groupId)
+      await modal.setType(1, 'TRAINING')
+      await modal.setArrivalTime(1, '12:00')
+      await modal.setDepartureTime(1, '13:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(2, groupId)
+      await modal.setType(2, 'PRESENT')
+      await modal.setArrivalTime(2, '13:00')
+      await modal.setDepartureTime(2, '14:30')
+      await modal.addNewAttendance()
+      await modal.setGroup(3, groupId)
+      await modal.setType(3, 'OTHER_WORK')
+      await modal.setArrivalTime(3, '14:30')
+      await modal.setDepartureTime(3, '15:00')
+      await modal.save()
+      await modal.close()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '12:00'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 1,
+        arrival: '13:00',
+        departure: '14:30'
+      })
+    })
+  })
+  describe('Entries to multiple groups', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+    })
+    test('Inline editor does not overwrite entries to other groups', async () => {
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '-'
+      })
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
+      })
+      await calendarPage.selectGroup(groupId2)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '-',
+        departure: '-'
+      })
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, '15:00', '16:15')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '15:00',
+        departure: '16:15'
+      })
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 0,
+        arrival: '07:00',
+        departure: '15:00'
       })
     })
   })

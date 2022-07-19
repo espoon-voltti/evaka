@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
@@ -143,11 +144,12 @@ fun Database.Transaction.upsertStaffAttendance(attendanceId: StaffAttendanceId?,
         createUpdate(
             """
             UPDATE staff_attendance_realtime
-            SET arrived = :arrived, departed = :departed, type = :type
+            SET group_id = :groupId, arrived = :arrived, departed = :departed, type = :type
             WHERE id = :id
             """.trimIndent()
         )
             .bind("id", attendanceId)
+            .bind("groupId", groupId)
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("type", type)
@@ -257,6 +259,7 @@ data class RawAttendance(
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
     val currentOccupancyCoefficient: BigDecimal?,
+    val type: StaffAttendanceType,
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
@@ -272,6 +275,7 @@ SELECT
     sa.departed,
     sa.group_id,
     sa.occupancy_coefficient,
+    sa.type,
     emp.first_name,
     emp.last_name,
     soc.coefficient AS currentOccupancyCoefficient
@@ -412,3 +416,18 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
     .mapTo<StaffAttendance>()
     .findOne()
     .orElseGet { null }
+
+fun Database.Transaction.deleteStaffAttendanceWithoutIds(
+    employeeId: EmployeeId,
+    timeRange: HelsinkiDateTimeRange,
+    attendanceIds: List<StaffAttendanceId>
+) = createUpdate(
+    """
+DELETE FROM staff_attendance_realtime
+WHERE employee_id = :employeeId AND tstzrange(arrived, departed) && :timeRange AND NOT id = ANY(:attendanceIds)
+"""
+)
+    .bind("employeeId", employeeId)
+    .bind("timeRange", timeRange)
+    .bind("attendanceIds", attendanceIds.toTypedArray())
+    .execute()

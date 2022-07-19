@@ -174,7 +174,8 @@ export const fi = {
       ]
     },
     nb: 'Huom',
-    validTo: (date: string) => `Voimassa ${date} saakka`
+    validTo: (date: string) => `Voimassa ${date} saakka`,
+    closeModal: 'Sulje ponnahdusikkuna'
   },
   header: {
     applications: 'Hakemukset',
@@ -1926,7 +1927,18 @@ export const fi = {
     },
     staffAttendance: {
       startTime: 'tulo',
-      endTime: 'lähtö'
+      endTime: 'lähtö',
+      dailyAttendances: 'Päivän kirjaukset',
+      addNewAttendance: 'Lisää uusi kirjaus',
+      saveChanges: 'Tallenna muutokset',
+      noGroup: 'Ei ryhmää',
+      types: {
+        PRESENT: 'Läsnä',
+        OTHER_WORK: 'Työasia',
+        TRAINING: 'Koulutus',
+        OVERTIME: 'Ylityö',
+        JUSTIFIED_CHANGE: 'Perusteltu muutos'
+      }
     },
     error: {
       placement: {

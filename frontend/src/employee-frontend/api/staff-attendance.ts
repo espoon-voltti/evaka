@@ -7,11 +7,13 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   EmployeeAttendance,
   ExternalAttendance,
+  SingleDayStaffAttendanceUpsert,
   StaffAttendanceResponse,
   UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from './client'
@@ -64,6 +66,21 @@ export function postStaffAndExternalAttendances(
 ): Promise<Result<void>> {
   return client
     .post(`/staff-attendances/realtime/${unitId}/upsert`, body)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function postSingleDayStaffAttendances(
+  unitId: UUID,
+  employeeId: UUID,
+  date: LocalDate,
+  body: SingleDayStaffAttendanceUpsert[]
+): Promise<Result<void>> {
+  return client
+    .post(
+      `/staff-attendances/realtime/${unitId}/${employeeId}/${date.formatIso()}`,
+      body
+    )
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

@@ -11,6 +11,7 @@ import { combine, Result } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -63,6 +64,7 @@ interface Props {
   isShiftCareUnit: boolean
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
+  groups: Result<DaycareGroup[]>
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
@@ -72,7 +74,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   setSelectedDate,
   isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
-  operationalDays
+  operationalDays,
+  groups
 }: Props) {
   const { i18n } = useTranslation()
   const dateRange = useMemo(
@@ -140,6 +143,9 @@ export default React.memo(function UnitAttendanceReservationsView({
     [unitId]
   )
 
+  const groupFilter = useCallback((id) => id === groupId, [groupId])
+  const noFilter = useCallback(() => true, [])
+
   return renderResult(
     combine(childReservations, staffAttendances),
     ([childData, staffData]) => (
@@ -175,26 +181,25 @@ export default React.memo(function UnitAttendanceReservationsView({
         <FixedSpaceColumn spacing="L">
           {groupId === 'staff' ? (
             <StaffAttendanceTable
+              unitId={unitId}
               operationalDays={childData.operationalDays}
               staffAttendances={staffData.staff}
               extraAttendances={staffData.extraAttendances}
               saveAttendances={saveAttendances}
               deleteAttendances={deleteAttendances}
               reloadStaffAttendances={reloadStaffAttendances}
+              groups={groups}
+              groupFilter={noFilter}
             />
           ) : (
             <>
               {realtimeStaffAttendanceEnabled && (
                 <StaffAttendanceTable
+                  unitId={unitId}
                   operationalDays={childData.operationalDays}
-                  staffAttendances={staffData.staff
-                    .filter((s) => s.groups.includes(groupId))
-                    .map((employeeAttendance) => ({
-                      ...employeeAttendance,
-                      attendances: employeeAttendance.attendances.filter(
-                        (a) => a.groupId === groupId
-                      )
-                    }))}
+                  staffAttendances={staffData.staff.filter((s) =>
+                    s.groups.includes(groupId)
+                  )}
                   extraAttendances={staffData.extraAttendances.filter(
                     (ea) => ea.groupId === groupId
                   )}
@@ -202,6 +207,8 @@ export default React.memo(function UnitAttendanceReservationsView({
                   deleteAttendances={deleteAttendances}
                   reloadStaffAttendances={reloadStaffAttendances}
                   enableNewEntries
+                  groups={groups}
+                  groupFilter={groupFilter}
                 />
               )}
               <ChildReservationsTable
