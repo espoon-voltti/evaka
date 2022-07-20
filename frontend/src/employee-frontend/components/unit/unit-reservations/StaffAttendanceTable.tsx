@@ -5,10 +5,12 @@
 import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import isEqual from 'lodash/isEqual'
+import mapValues from 'lodash/mapValues'
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import partition from 'lodash/partition'
 import sortBy from 'lodash/sortBy'
+import uniqBy from 'lodash/uniqBy'
 import React, {
   useMemo,
   useState,
@@ -222,6 +224,58 @@ export default React.memo(function StaffAttendanceTable({
     ]
   )
 
+  const personCountSums = useMemo(
+    () =>
+      mapValues(
+        groupBy(
+          staffRows
+            .flatMap(({ attendances, employeeId }) =>
+              uniqBy(
+                attendances
+                  .filter(
+                    ({ type, groupId }) =>
+                      type !== 'OTHER_WORK' &&
+                      type !== 'TRAINING' &&
+                      groupFilter(groupId)
+                  )
+                  .flatMap(({ departed, arrived }) =>
+                    [arrived.toLocalDate()].concat(
+                      departed?.toLocalDate() ?? []
+                    )
+                  ),
+                ({ date }) => date
+              ).map((date) => ({
+                date,
+                employeeId
+              }))
+            )
+            .concat(
+              extraAttendances
+                .filter(
+                  ({ type, groupId }) =>
+                    type !== 'OTHER_WORK' &&
+                    type !== 'TRAINING' &&
+                    groupFilter(groupId)
+                )
+                .flatMap(({ departed, arrived, name }) =>
+                  uniqBy(
+                    [arrived.toLocalDate()].concat(
+                      departed?.toLocalDate() ?? []
+                    ),
+                    ({ date }) => date
+                  ).map((date) => ({
+                    employeeId: `extra-${name}`,
+                    date
+                  }))
+                )
+            ),
+          ({ date }) => date.toString()
+        ),
+        (rows) => uniqBy(rows, ({ employeeId }) => employeeId).length
+      ),
+    [extraAttendances, groupFilter, staffRows]
+  )
+
   return (
     <>
       <Table data-qa="staff-attendances-table">
@@ -276,6 +330,22 @@ export default React.memo(function StaffAttendanceTable({
             />
           ))}
         </Tbody>
+        <tfoot>
+          <BottomSumTr>
+            <BottomSumTd>{i18n.unit.staffAttendance.personCount}</BottomSumTd>
+            {operationalDays.map(({ date }) => (
+              <BottomSumTd
+                centered
+                key={date.toString()}
+                data-qa="person-count-sum"
+              >
+                {personCountSums[date.toString()] ?? '–'}{' '}
+                {i18n.unit.staffAttendance.personCountAbbr}
+              </BottomSumTd>
+            ))}
+            <BottomSumTd />
+          </BottomSumTr>
+        </tfoot>
       </Table>
       {detailsModal && (
         <StaffAttendanceDetailsModal
@@ -337,6 +407,15 @@ const getNearestNextDay: GetNearestDayFn = (days, targetDate) =>
     ({ date }) => date.differenceInDays(targetDate)
   )
 
+const BottomSumTr = styled.tr`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  font-weight: ${fontWeights.semibold};
+`
+
+const BottomSumTd = styled.td<{ centered?: boolean }>`
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
+  text-align: ${(p) => (p.centered ? 'center' : 'left')};
+`
 const OvernightAwareTimeRangeEditor = React.memo(
   function OvernightAwareTimeRangeEditor({
     attendance: { arrivalDate, departureDate, startTime, endTime },

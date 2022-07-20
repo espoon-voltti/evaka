@@ -120,12 +120,3 @@ data class PlannedStaffAttendance(
     val end: HelsinkiDateTime,
     val type: StaffAttendanceType
 )
-
-data class PlannedStaffAttendanceWithEmployeeId(
-    val start: HelsinkiDateTime,
-    val end: HelsinkiDateTime,
-    val type: StaffAttendanceType,
-    val employeeId: EmployeeId
-) {
-    fun toPlannedStaffAttendance() = PlannedStaffAttendance(start, end, type)
-}

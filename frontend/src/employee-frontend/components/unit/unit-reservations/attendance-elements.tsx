@@ -91,7 +91,7 @@ export const DayTr = styled(Tr)<TrProps>`
       border-top: 2px solid ${colors.status.success};
     }
   }
-  &:last-child {
+  &:last-child(2) {
     > ${DayTd}.is-today {
       border-bottom: 2px solid ${colors.status.success};
     }

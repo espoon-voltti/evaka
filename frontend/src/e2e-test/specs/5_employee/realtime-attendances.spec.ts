@@ -417,9 +417,11 @@ describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summaryPlan, '–')
-      await waitUntilEqual(() => modal.summaryRealized, '07:00 – 15:00')
-      await waitUntilEqual(() => modal.summaryHours, '8:00')
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
+      })
 
       await modal.close()
       await calendarPage.assertArrivalDeparture({
@@ -437,9 +439,11 @@ describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '16:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summaryPlan, '–')
-      await waitUntilEqual(() => modal.summaryRealized, '→ – 16:00')
-      await waitUntilEqual(() => modal.summaryHours, '33:00')
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '→ – 16:00',
+        hours: '33:00'
+      })
 
       await modal.close()
       await calendarPage.assertArrivalDeparture({
@@ -475,9 +479,11 @@ describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(3, '15:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summaryPlan, '–')
-      await waitUntilEqual(() => modal.summaryRealized, '07:00 – 15:00')
-      await waitUntilEqual(() => modal.summaryHours, '8:00')
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
+      })
 
       await modal.close()
       await calendarPage.assertArrivalDeparture({
@@ -571,6 +577,26 @@ describe('Realtime staff attendances', () => {
         arrival: '07:00',
         departure: '15:00'
       })
+    })
+  })
+  describe('Staff count sums in the table', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+    })
+    test('Total staff counts', async () => {
+      await waitUntilEqual(() => calendarPage.personCountSum(0), '– hlö')
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, 0, '12:00', '15:00')
+      await calendarPage.setNthArrivalDeparture(0, 4, '09:00', '10:00')
+      await calendarPage.setNthArrivalDeparture(0, 5, '10:00', '13:00')
+      await calendarPage.closeInlineEditor()
+      await waitUntilEqual(() => calendarPage.personCountSum(0), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(4), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(5), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(1), '– hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(2), '– hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(3), '– hlö')
     })
   })
 })

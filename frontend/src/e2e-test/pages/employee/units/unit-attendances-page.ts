@@ -336,6 +336,10 @@ export class UnitAttendancesPage {
   async assertFormWarning() {
     await this.page.findByDataQa('form-error-warning').waitUntilVisible()
   }
+
+  personCountSum(nth: number) {
+    return this.page.findAllByDataQa('person-count-sum').nth(nth).innerText
+  }
 }
 
 export class ReservationModal extends Modal {
@@ -482,16 +486,13 @@ export class StaffAttendanceDetailsModal extends Element {
     await this.findByDataQa('close').click()
   }
 
-  get summaryPlan() {
-    return this.findByDataQa('staff-attendance-summary-plan').innerText
-  }
-
-  get summaryRealized() {
-    return this.findByDataQa('staff-attendance-summary-realized').innerText
-  }
-
-  get summaryHours() {
-    return this.findByDataQa('staff-attendance-summary-hours').innerText
+  async summary() {
+    return {
+      plan: await this.findByDataQa('staff-attendance-summary-plan').innerText,
+      realized: await this.findByDataQa('staff-attendance-summary-realized')
+        .innerText,
+      hours: await this.findByDataQa('staff-attendance-summary-hours').innerText
+    }
   }
 
   gapWarning(index: number) {

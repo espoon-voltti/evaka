@@ -52,7 +52,7 @@ class RealtimeStaffAttendanceController(
                 val range = FiniteDateRange(start, end)
                 val attendancesByEmployee = it.getStaffAttendancesForDateRange(unitId, range).groupBy { raw -> raw.employeeId }
                 val attendanceEmployeeToGroups = it.getGroupsForEmployees(attendancesByEmployee.keys)
-                val plannedAttendances = it.getPlannedStaffAttendanceForDays(attendancesByEmployee.keys.toList(), range.dates().toList())
+                val plannedAttendances = it.getPlannedStaffAttendanceForDays(attendancesByEmployee.keys, range)
                 val staffWithAttendance = attendancesByEmployee.entries.map { (employeeId, data) ->
                     EmployeeAttendance(
                         employeeId = employeeId,
@@ -71,7 +71,7 @@ class RealtimeStaffAttendanceController(
                             )
                         },
                         hasFutureAttendances = data[0].hasFutureAttendances,
-                        plannedAttendances = plannedAttendances.filter { it.employeeId == employeeId }.map { it.toPlannedStaffAttendance() }
+                        plannedAttendances = plannedAttendances[employeeId] ?: emptyList()
                     )
                 }
                 val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
@@ -86,7 +86,7 @@ class RealtimeStaffAttendanceController(
                             lastName = emp.lastName,
                             currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf(),
                             hasFutureAttendances = emp.hasFutureAttendances,
-                            plannedAttendances = plannedAttendances.filter { it.employeeId == emp.id }.map { it.toPlannedStaffAttendance() }
+                            plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
                         )
                     }
                 StaffAttendanceResponse(

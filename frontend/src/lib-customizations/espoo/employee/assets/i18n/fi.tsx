@@ -1939,7 +1939,9 @@ export const fi = {
         'Tarkista antamasi läsnäolotiedot. Muutoksesi voi jäädä tallentamatta, jos ne ei ole kelvollisia. Ohita varoitus klikkaamalla.',
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
-      gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`
+      gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
+      personCount: 'Henkilökuntaa paikalla',
+      personCountAbbr: 'hlö'
     },
     error: {
       placement: {

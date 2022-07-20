@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -439,19 +441,20 @@ WHERE employee_id = :employeeId AND tstzrange(start_time, end_time) && tstzrange
         .toList()
 
 fun Database.Read.getPlannedStaffAttendanceForDays(
-    employeeIds: List<EmployeeId>,
-    days: List<LocalDate>
-): List<PlannedStaffAttendanceWithEmployeeId> =
+    employeeIds: Collection<EmployeeId>,
+    range: FiniteDateRange
+): Map<EmployeeId, List<PlannedStaffAttendance>> =
     createQuery(
         """
 SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attendance_plan
-WHERE employee_id = ANY(:employeeIds) AND (date(start_time) = ANY(:days) OR date(end_time) = ANY(:days))
+WHERE employee_id = ANY(:employeeIds) AND (tstzrange(start_time, end_time) && tstzrange(:startTime, :endTime))
 """
     )
         .bind("employeeIds", employeeIds.toTypedArray())
-        .bind("days", days.toTypedArray())
-        .mapTo<PlannedStaffAttendanceWithEmployeeId>()
-        .toList()
+        .bind("startTime", HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT))
+        .bind("endTime", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT))
+        .map { row -> Pair(row.mapColumn<EmployeeId>("employee_id"), row.mapRow<PlannedStaffAttendance>()) }
+        .groupBy({ it.first }, { it.second })
 
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? = createQuery(
     """
