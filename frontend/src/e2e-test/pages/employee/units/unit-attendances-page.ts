@@ -481,4 +481,16 @@ export class StaffAttendanceDetailsModal extends Element {
   async close() {
     await this.findByDataQa('close').click()
   }
+
+  get summaryPlan() {
+    return this.findByDataQa('staff-attendance-summary-plan').innerText
+  }
+
+  get summaryRealized() {
+    return this.findByDataQa('staff-attendance-summary-realized').innerText
+  }
+
+  get summaryHours() {
+    return this.findByDataQa('staff-attendance-summary-hours').innerText
+  }
 }

@@ -34,6 +34,7 @@ import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.util.PGobject
 import java.lang.reflect.Type
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
@@ -112,6 +113,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
             value = "[${it.start},${it.end}]"
         }
     }
+    jdbi.registerArrayType(LocalDate::class.java, "date")
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
             (elementType as? Class<*>)?.let { elementClass ->

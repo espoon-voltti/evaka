@@ -30,6 +30,7 @@ const mapExternalAttendance = ({
 
 const mapEmployeeAttendance = ({
   attendances,
+  plannedAttendances,
   ...rest
 }: JsonOf<EmployeeAttendance>): EmployeeAttendance => ({
   ...rest,
@@ -37,6 +38,11 @@ const mapEmployeeAttendance = ({
     ...rest,
     arrived: HelsinkiDateTime.parseIso(arrived),
     departed: departed ? HelsinkiDateTime.parseIso(departed) : null
+  })),
+  plannedAttendances: plannedAttendances.map(({ start, end, ...rest }) => ({
+    ...rest,
+    start: HelsinkiDateTime.parseIso(start),
+    end: HelsinkiDateTime.parseIso(end)
   }))
 })
 

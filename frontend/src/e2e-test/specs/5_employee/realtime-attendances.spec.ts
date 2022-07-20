@@ -416,6 +416,11 @@ describe('Realtime staff attendances', () => {
       const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summaryPlan, '–')
+      await waitUntilEqual(() => modal.summaryRealized, '07:00 – 15:00')
+      await waitUntilEqual(() => modal.summaryHours, '8:00')
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
@@ -429,8 +434,13 @@ describe('Realtime staff attendances', () => {
         groupStaff.id,
         mockedToday.addDays(1)
       )
-      await modal.setDepartureTime(0, '15:00')
+      await modal.setDepartureTime(0, '16:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summaryPlan, '–')
+      await waitUntilEqual(() => modal.summaryRealized, '→ – 16:00')
+      await waitUntilEqual(() => modal.summaryHours, '33:00')
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
@@ -442,7 +452,7 @@ describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 1,
         arrival: '→',
-        departure: '15:00'
+        departure: '16:00'
       })
     })
     test('Multiple new entries can be added', async () => {
@@ -464,6 +474,11 @@ describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(3, '14:30')
       await modal.setDepartureTime(3, '15:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summaryPlan, '–')
+      await waitUntilEqual(() => modal.summaryRealized, '07:00 – 15:00')
+      await waitUntilEqual(() => modal.summaryHours, '8:00')
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,

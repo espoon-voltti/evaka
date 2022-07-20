@@ -106,7 +106,8 @@ data class EmployeeAttendance(
     val lastName: String,
     val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>,
-    val hasFutureAttendances: Boolean
+    val hasFutureAttendances: Boolean,
+    val plannedAttendances: List<PlannedStaffAttendance>
 )
 
 data class StaffAttendanceResponse(
@@ -119,3 +120,12 @@ data class PlannedStaffAttendance(
     val end: HelsinkiDateTime,
     val type: StaffAttendanceType
 )
+
+data class PlannedStaffAttendanceWithEmployeeId(
+    val start: HelsinkiDateTime,
+    val end: HelsinkiDateTime,
+    val type: StaffAttendanceType,
+    val employeeId: EmployeeId
+) {
+    fun toPlannedStaffAttendance() = PlannedStaffAttendance(start, end, type)
+}

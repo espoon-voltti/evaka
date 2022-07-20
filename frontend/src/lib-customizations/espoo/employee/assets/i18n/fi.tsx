@@ -1920,6 +1920,10 @@ export const fi = {
     staffAttendance: {
       startTime: 'tulo',
       endTime: 'lähtö',
+      summary: 'Yhteenveto',
+      plan: 'Suunnitelma',
+      realized: 'Toteutuma',
+      hours: 'Tunnit',
       dailyAttendances: 'Päivän kirjaukset',
       addNewAttendance: 'Lisää uusi kirjaus',
       saveChanges: 'Tallenna muutokset',
@@ -1932,7 +1936,9 @@ export const fi = {
         JUSTIFIED_CHANGE: 'Perusteltu muutos'
       },
       formErrorWarning:
-        'Tarkista antamasi läsnäolotiedot. Muutoksesi voi jäädä tallentamatta, jos ne ei ole kelvollisia. Ohita varoitus klikkaamalla.'
+        'Tarkista antamasi läsnäolotiedot. Muutoksesi voi jäädä tallentamatta, jos ne ei ole kelvollisia. Ohita varoitus klikkaamalla.',
+      incalculableSum:
+        'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.'
     },
     error: {
       placement: {

@@ -438,6 +438,21 @@ WHERE employee_id = :employeeId AND tstzrange(start_time, end_time) && tstzrange
         .mapTo<PlannedStaffAttendance>()
         .toList()
 
+fun Database.Read.getPlannedStaffAttendanceForDays(
+    employeeIds: List<EmployeeId>,
+    days: List<LocalDate>
+): List<PlannedStaffAttendanceWithEmployeeId> =
+    createQuery(
+        """
+SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attendance_plan
+WHERE employee_id = ANY(:employeeIds) AND (date(start_time) = ANY(:days) OR date(end_time) = ANY(:days))
+"""
+    )
+        .bind("employeeIds", employeeIds.toTypedArray())
+        .bind("days", days.toTypedArray())
+        .mapTo<PlannedStaffAttendanceWithEmployeeId>()
+        .toList()
+
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? = createQuery(
     """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type

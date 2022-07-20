@@ -2,8 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import initial from 'lodash/initial'
+import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import reduce from 'lodash/reduce'
+import uniq from 'lodash/uniq'
+import uniqBy from 'lodash/uniqBy'
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -19,21 +31,35 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ListGrid from 'lib-components/layout/ListGrid'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { DatePickerSpacer } from 'lib-components/molecules/date-picker/DatePicker'
 import {
   ModalCloseButton,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import { H1, H2, H3 } from 'lib-components/typography'
+import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faPlus, faTrash } from 'lib-icons'
+import colors from 'lib-customizations/common'
+import {
+  faChevronLeft,
+  faChevronRight,
+  faExclamationTriangle,
+  faPlus,
+  faTrash
+} from 'lib-icons'
 
 import { postSingleDayStaffAttendances } from '../../../api/staff-attendance'
 import { useTranslation } from '../../../state/i18n'
@@ -47,6 +73,8 @@ interface Props {
   close: () => void
   reloadStaffAttendances: () => void
   groups: Result<DaycareGroup[]>
+  onPreviousDate: () => Promise<void>
+  onNextDate: () => Promise<void>
 }
 
 interface EditedAttendance {
@@ -64,7 +92,9 @@ export default React.memo(function StaffAttendanceDetailsModal({
   attendances,
   close,
   reloadStaffAttendances,
-  groups
+  groups,
+  onPreviousDate,
+  onNextDate
 }: Props) {
   const { i18n } = useTranslation()
   const [startOfDay, endOfDay] = useMemo(
@@ -76,10 +106,27 @@ export default React.memo(function StaffAttendanceDetailsModal({
   )
   const employee = useMemo(
     () =>
-      attendances.find((attendance) => attendance.employeeId === employeeId),
+      reduce(
+        attendances.filter(
+          (attendance) => attendance.employeeId === employeeId
+        ),
+        (p, n) => ({
+          ...p,
+          ...n,
+          attendances: uniqBy(
+            [...p.attendances, ...n.attendances],
+            ({ id }) => id
+          ),
+          groups: uniq([...p.groups, ...n.groups]),
+          plannedAttendances: uniq([
+            ...p.plannedAttendances,
+            ...n.plannedAttendances
+          ])
+        })
+      ),
     [employeeId, attendances]
   )
-  const initialEditState = useMemo(
+  const sortedAttendances = useMemo(
     () =>
       orderBy(
         employee?.attendances?.filter(
@@ -87,7 +134,13 @@ export default React.memo(function StaffAttendanceDetailsModal({
             arrived < endOfDay && (departed === null || startOfDay < departed)
         ) ?? [],
         ({ arrived }) => arrived
-      ).map(({ id, groupId, arrived, departed, type }) => ({
+      ),
+    [employee?.attendances, endOfDay, startOfDay]
+  )
+
+  const initialEditState = useMemo(
+    () =>
+      sortedAttendances.map(({ id, groupId, arrived, departed, type }) => ({
         id,
         groupId,
         arrived: date.isEqual(arrived.toLocalDate())
@@ -99,28 +152,55 @@ export default React.memo(function StaffAttendanceDetailsModal({
             : '',
         type
       })),
-    [date, employee?.attendances, endOfDay, startOfDay]
+    [date, sortedAttendances]
   )
-  const [editState, setEditState] =
-    useState<EditedAttendance[]>(initialEditState)
+  const [{ editState, editStateDate }, setEditState] = useState<{
+    editState: EditedAttendance[]
+    editStateDate: LocalDate
+  }>({ editState: initialEditState, editStateDate: date })
+
+  useEffect(() => {
+    if (editStateDate !== date) {
+      setEditState({
+        editState: initialEditState,
+        editStateDate: date
+      })
+    }
+  }, [initialEditState, date, editStateDate, editState, attendances])
+
   const updateAttendance = useCallback(
     (index: number, data: Omit<EditedAttendance, 'id'>) =>
-      setEditState((previous) =>
-        previous.map((row, i) => (index === i ? { ...row, ...data } : row))
-      ),
+      setEditState(({ editState, editStateDate }) => ({
+        editStateDate,
+        editState: editState.map((row, i) =>
+          index === i ? { ...row, ...data } : row
+        )
+      })),
     []
   )
   const removeAttendance = useCallback(
     (index: number) =>
-      setEditState((previous) => previous.filter((att, i) => index !== i)),
+      setEditState(({ editState, editStateDate }) => ({
+        editStateDate,
+        editState: editState.filter((att, i) => index !== i)
+      })),
     []
   )
   const addNewAttendance = useCallback(
     () =>
-      setEditState((previous) => [
-        ...previous,
-        { id: null, groupId: null, arrived: '', departed: '', type: 'PRESENT' }
-      ]),
+      setEditState(({ editState, editStateDate }) => ({
+        editStateDate,
+        editState: [
+          ...editState,
+          {
+            id: null,
+            groupId: null,
+            arrived: '',
+            departed: '',
+            type: 'PRESENT'
+          }
+        ]
+      })),
     []
   )
   const [requestBody, errors] = validateEditState(employee, date, editState)
@@ -128,6 +208,82 @@ export default React.memo(function StaffAttendanceDetailsModal({
     if (!requestBody) return
     return postSingleDayStaffAttendances(unitId, employeeId, date, requestBody)
   }, [date, employeeId, requestBody, unitId])
+
+  const gaplessAttendances = useMemo(
+    () =>
+      sortedAttendances
+        .reduce<
+          {
+            arrived: HelsinkiDateTime
+            departed: HelsinkiDateTime | null
+          }[][]
+        >(
+          (prev, { arrived, departed }) =>
+            prev.length === 0 || !last(last(prev))?.departed?.isEqual(arrived)
+              ? [
+                  ...prev,
+                  [
+                    {
+                      arrived,
+                      departed
+                    }
+                  ]
+                ]
+              : [
+                  ...initial(prev),
+                  [...(last(prev) ?? []), { arrived, departed }]
+                ],
+          []
+        )
+        .map((gaplessPeriod) => ({
+          arrived: gaplessPeriod[0].arrived,
+          departed: last(gaplessPeriod)?.departed ?? null
+        })),
+    [sortedAttendances]
+  )
+
+  const plannedAttendances = useMemo(
+    () =>
+      employee?.plannedAttendances.filter(
+        ({ end, start }) =>
+          end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
+      ),
+    [employee?.plannedAttendances, date]
+  )
+
+  const totalMinutes = useMemo(
+    () =>
+      gaplessAttendances.some(
+        ({ arrived, departed }) =>
+          !arrived.toLocalDate().isEqual(LocalDate.todayInHelsinkiTz()) &&
+          !departed
+      )
+        ? 'incalculable'
+        : gaplessAttendances.reduce(
+            (prev, { arrived, departed }) =>
+              prev +
+              ((departed?.timestamp ?? HelsinkiDateTime.now().timestamp) -
+                arrived.timestamp),
+            0
+          ) /
+          1000 /
+          60,
+    [gaplessAttendances]
+  )
+
+  const diffPlannedTotalMinutes = useMemo(
+    () =>
+      totalMinutes === 'incalculable'
+        ? 0
+        : totalMinutes -
+          (plannedAttendances?.reduce(
+            (prev, { start, end }) => prev + (end.timestamp - start.timestamp),
+            0
+          ) ?? 0) /
+            1000 /
+            60,
+    [plannedAttendances, totalMinutes]
+  )
 
   if (!employee) return null
 
@@ -138,10 +294,66 @@ export default React.memo(function StaffAttendanceDetailsModal({
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
       <Content>
-        <H1>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
+        <FixedSpaceRow alignItems="center">
+          <AsyncIconButton icon={faChevronLeft} onClick={onPreviousDate} />
+          <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
+          <AsyncIconButton icon={faChevronRight} onClick={onNextDate} />
+        </FixedSpaceRow>
         <H2>
           {employee.firstName} {employee.lastName}
         </H2>
+        <H3>{i18n.unit.staffAttendance.summary}</H3>
+        <ListGrid rowGap="s" labelWidth="auto">
+          <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
+          <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
+            {plannedAttendances && plannedAttendances.length > 0
+              ? plannedAttendances.map(({ end, start }, i) => (
+                  <div key={i}>
+                    {formatDate(start, date)} –{' '}
+                    {end ? formatDate(end, date) : ''}
+                  </div>
+                ))
+              : '–'}
+          </FixedSpaceColumn>
+          <LabelLike>{i18n.unit.staffAttendance.realized}</LabelLike>
+          <FixedSpaceColumn data-qa="staff-attendance-summary-realized">
+            {gaplessAttendances.length > 0
+              ? gaplessAttendances.map(({ arrived, departed }, i) => (
+                  <div key={i}>
+                    {arrived ? formatDate(arrived, date) : ''} –{' '}
+                    {departed ? formatDate(departed, date) : ''}
+                  </div>
+                ))
+              : '–'}
+          </FixedSpaceColumn>
+          <LabelLike>{i18n.unit.staffAttendance.hours}</LabelLike>
+          <div data-qa="staff-attendance-summary-hours">
+            {totalMinutes === 'incalculable' ? (
+              <Tooltip tooltip={i18n.unit.staffAttendance.incalculableSum}>
+                <FontAwesomeIcon
+                  icon={faExclamationTriangle}
+                  color={colors.status.warning}
+                />
+              </Tooltip>
+            ) : totalMinutes === 0 ? (
+              '-'
+            ) : (
+              `${Math.floor(totalMinutes / 60)}:${(totalMinutes % 60)
+                .toString()
+                .padStart(2, '0')}${
+                plannedAttendances && plannedAttendances.length > 0
+                  ? ` (${Math.sign(diffPlannedTotalMinutes) === 1 ? '+' : ''}${
+                      Math.sign(diffPlannedTotalMinutes) *
+                      Math.floor(Math.abs(diffPlannedTotalMinutes) / 60)
+                    }.${Math.abs(diffPlannedTotalMinutes) % 60})`
+                  : ''
+              }`
+            )}
+          </div>
+        </ListGrid>
+
+        <HorizontalLine slim />
+
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
         <ListGrid rowGap="s" labelWidth="auto">
           {editState.map(({ arrived, departed, type, groupId }, index) => (
@@ -279,6 +491,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
     </PlainModal>
   )
 })
+
+const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
+  time.toLocalDate().isEqual(currentDate)
+    ? time.toLocalTime().format('HH:mm')
+    : '→'
 
 interface ValidationError {
   arrived?: ErrorKey
