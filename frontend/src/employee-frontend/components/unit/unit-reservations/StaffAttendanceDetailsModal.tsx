@@ -285,6 +285,29 @@ export default React.memo(function StaffAttendanceDetailsModal({
     [plannedAttendances, totalMinutes]
   )
 
+  const getGapBefore = useCallback(
+    (currentIndex: number) => {
+      if (!requestBody) return undefined
+
+      const previousEntry = requestBody[currentIndex - 1]
+      const currentEntry = requestBody[currentIndex]
+
+      if (!previousEntry || !currentEntry) return undefined
+
+      if (
+        !previousEntry.departed ||
+        !currentEntry.arrived.isEqual(previousEntry.departed)
+      ) {
+        return `${
+          previousEntry.departed?.toLocalTime().format('HH:mm') ?? ''
+        } – ${currentEntry.arrived.toLocalTime().format('HH:mm')}`
+      }
+
+      return undefined
+    },
+    [requestBody]
+  )
+
   if (!employee) return null
 
   const saveDisabled =
@@ -356,111 +379,132 @@ export default React.memo(function StaffAttendanceDetailsModal({
 
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
         <ListGrid rowGap="s" labelWidth="auto">
-          {editState.map(({ arrived, departed, type, groupId }, index) => (
-            <Fragment key={index}>
-              <GroupIndicator data-qa="group-indicator">
-                {groupId === null ? (
-                  <Select
-                    items={[
-                      null,
-                      ...groups
-                        .map((gs) => gs.map(({ id }) => id))
-                        .getOrElse([])
-                    ]}
-                    selectedItem={groupId}
+          {editState.map(({ arrived, departed, type, groupId }, index) => {
+            const gap = getGapBefore(index)
+
+            return (
+              <Fragment key={index}>
+                {!!gap && (
+                  <FullGridWidth>
+                    <FixedSpaceRow
+                      justifyContent="center"
+                      alignItems="center"
+                      spacing="s"
+                    >
+                      <FontAwesomeIcon
+                        icon={faExclamationTriangle}
+                        color={colors.status.warning}
+                      />
+                      <div data-qa={`attendance-gap-warning-${index}`}>
+                        {i18n.unit.staffAttendance.gapWarning(gap)}
+                      </div>
+                    </FixedSpaceRow>
+                  </FullGridWidth>
+                )}
+                <GroupIndicator data-qa="group-indicator">
+                  {groupId === null ? (
+                    <Select
+                      items={[
+                        null,
+                        ...groups
+                          .map((gs) => gs.map(({ id }) => id))
+                          .getOrElse([])
+                      ]}
+                      selectedItem={groupId}
+                      onChange={(value) =>
+                        updateAttendance(index, {
+                          arrived,
+                          departed,
+                          type,
+                          groupId: value
+                        })
+                      }
+                      getItemLabel={(item) =>
+                        groups
+                          .map((gs) => gs.find(({ id }) => id === item)?.name)
+                          .getOrElse(undefined) ??
+                        i18n.unit.staffAttendance.noGroup
+                      }
+                      data-qa="attendance-group-select"
+                    />
+                  ) : (
+                    <InlineButton
+                      text={
+                        groups
+                          .map((gs) => gs.find((g) => g.id === groupId)?.name)
+                          .getOrElse(undefined) ?? '-'
+                      }
+                      onClick={() =>
+                        updateAttendance(index, {
+                          arrived,
+                          departed,
+                          type,
+                          groupId: null
+                        })
+                      }
+                    />
+                  )}
+                </GroupIndicator>
+                <Select
+                  items={[...staffAttendanceTypes]}
+                  selectedItem={type}
+                  onChange={(value) =>
+                    value &&
+                    updateAttendance(index, {
+                      arrived,
+                      departed,
+                      type: value,
+                      groupId
+                    })
+                  }
+                  getItemLabel={(item) => i18n.unit.staffAttendance.types[item]}
+                  data-qa="attendance-type-select"
+                />
+                <InputRow>
+                  <TimeInput
+                    value={arrived}
+                    onChange={(value) =>
+                      updateAttendance(index, {
+                        arrived: value,
+                        departed,
+                        type,
+                        groupId
+                      })
+                    }
+                    info={errorToInputInfo(
+                      errors[index].arrived,
+                      i18n.validationErrors
+                    )}
+                    data-qa="arrival-time-input"
+                  />
+                  <Gap size="xs" horizontal />
+                  <DatePickerSpacer />
+                  <Gap size="xs" horizontal />
+                  <TimeInput
+                    value={departed}
                     onChange={(value) =>
                       updateAttendance(index, {
                         arrived,
-                        departed,
+                        departed: value,
                         type,
-                        groupId: value
+                        groupId
                       })
                     }
-                    getItemLabel={(item) =>
-                      groups
-                        .map((gs) => gs.find(({ id }) => id === item)?.name)
-                        .getOrElse(undefined) ??
-                      i18n.unit.staffAttendance.noGroup
-                    }
-                    data-qa="attendance-group-select"
+                    info={errorToInputInfo(
+                      errors[index].departed,
+                      i18n.validationErrors
+                    )}
+                    data-qa="departure-time-input"
                   />
-                ) : (
-                  <InlineButton
-                    text={
-                      groups
-                        .map((gs) => gs.find((g) => g.id === groupId)?.name)
-                        .getOrElse(undefined) ?? '-'
-                    }
-                    onClick={() =>
-                      updateAttendance(index, {
-                        arrived,
-                        departed,
-                        type,
-                        groupId: null
-                      })
-                    }
+                  <Gap size="xs" horizontal />
+                  <IconButton
+                    icon={faTrash}
+                    onClick={() => removeAttendance(index)}
                   />
-                )}
-              </GroupIndicator>
-              <Select
-                items={[...staffAttendanceTypes]}
-                selectedItem={type}
-                onChange={(value) =>
-                  value &&
-                  updateAttendance(index, {
-                    arrived,
-                    departed,
-                    type: value,
-                    groupId
-                  })
-                }
-                getItemLabel={(item) => i18n.unit.staffAttendance.types[item]}
-                data-qa="attendance-type-select"
-              />
-              <InputRow>
-                <TimeInput
-                  value={arrived}
-                  onChange={(value) =>
-                    updateAttendance(index, {
-                      arrived: value,
-                      departed,
-                      type,
-                      groupId
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors[index].arrived,
-                    i18n.validationErrors
-                  )}
-                  data-qa="arrival-time-input"
-                />
-                <Gap size="xs" horizontal />
-                <DatePickerSpacer />
-                <Gap size="xs" horizontal />
-                <TimeInput
-                  value={departed}
-                  onChange={(value) =>
-                    updateAttendance(index, {
-                      arrived,
-                      departed: value,
-                      type,
-                      groupId
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors[index].departed,
-                    i18n.validationErrors
-                  )}
-                  data-qa="departure-time-input"
-                />
-                <Gap size="xs" horizontal />
-                <IconButton
-                  icon={faTrash}
-                  onClick={() => removeAttendance(index)}
-                />
-              </InputRow>
-            </Fragment>
-          ))}
+                </InputRow>
+              </Fragment>
+            )
+          })}
           <NewAttendance>
             <InlineButton
               icon={faPlus}
@@ -608,4 +652,8 @@ const NewAttendance = styled.div`
 const ModalActions = styled.div`
   display: flex;
   justify-content: space-between;
+`
+
+const FullGridWidth = styled.div`
+  grid-column: 1 / -1;
 `

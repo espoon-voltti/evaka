@@ -495,6 +495,29 @@ describe('Realtime staff attendances', () => {
         departure: '14:30'
       })
     })
+    test('Gaps in attendances are warned about', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '12:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(1, groupId)
+      await modal.setType(1, 'TRAINING')
+      await modal.setArrivalTime(1, '12:30')
+      await modal.setDepartureTime(1, '13:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(2, groupId)
+      await modal.setType(2, 'PRESENT')
+      await modal.setArrivalTime(2, '13:20')
+      await modal.setDepartureTime(2, '14:30')
+
+      await waitUntilEqual(
+        () => modal.gapWarning(1),
+        'Kirjaus puuttuu välillä 12:00 – 12:30'
+      )
+      await waitUntilEqual(
+        () => modal.gapWarning(2),
+        'Kirjaus puuttuu välillä 13:00 – 13:20'
+      )
+    })
   })
   describe('Entries to multiple groups', () => {
     beforeEach(async () => {

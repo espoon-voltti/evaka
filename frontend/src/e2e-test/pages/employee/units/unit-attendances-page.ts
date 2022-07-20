@@ -493,4 +493,8 @@ export class StaffAttendanceDetailsModal extends Element {
   get summaryHours() {
     return this.findByDataQa('staff-attendance-summary-hours').innerText
   }
+
+  gapWarning(index: number) {
+    return this.findByDataQa(`attendance-gap-warning-${index}`).innerText
+  }
 }
