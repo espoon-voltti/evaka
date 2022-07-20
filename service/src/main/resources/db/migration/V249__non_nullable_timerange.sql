@@ -1,3 +1,22 @@
+-- delete daily service times that do not follow the rules
+-- note: '(,)'::timerange IS NULL = TRUE
+DELETE FROM daily_service_time
+WHERE
+  regular_times IS NULL AND
+  type = 'REGULAR';
+
+DELETE FROM daily_service_time
+WHERE
+  monday_times IS NULL AND
+  tuesday_times IS NULL AND
+  wednesday_times IS NULL AND
+  thursday_times IS NULL AND
+  friday_times IS NULL AND
+  saturday_times IS NULL AND
+  sunday_times IS NULL AND
+  type = 'IRREGULAR';
+
+-- update remaining empty composite types to NULL
 UPDATE daily_service_time
 SET regular_times = NULL
 WHERE (regular_times).start IS NULL OR (regular_times).end IS NULL;
@@ -30,6 +49,7 @@ UPDATE daily_service_time
 SET sunday_times = NULL
 WHERE (sunday_times).start IS NULL OR (sunday_times).end IS NULL;
 
+-- add requirement for start and end time
 CREATE DOMAIN timerange_non_nullable_range AS timerange
 CHECK (value IS NOT DISTINCT FROM NULL OR ((value).start IS NOT NULL AND (value).end IS NOT NULL));
 
