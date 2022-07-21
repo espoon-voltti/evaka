@@ -65,7 +65,7 @@ export default React.memo(function MessagesPage() {
     setEditorVisible(searchParams.get('editorVisible') === 'true')
   }, [setEditorVisible, searchParams])
 
-  const showEditor = useCallback(
+  const changeEditorVisibility = useCallback(
     (setEditorVisible: boolean) => {
       if (!setEditorVisible) {
         navigate('/messages')
@@ -85,7 +85,7 @@ export default React.memo(function MessagesPage() {
               <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
                 <ThreadList
                   accountId={id}
-                  setEditorVisible={showEditor}
+                  setEditorVisible={changeEditorVisibility}
                   newMessageButtonEnabled={!editorVisible}
                 />
                 {selectedThread ? (
@@ -100,10 +100,10 @@ export default React.memo(function MessagesPage() {
                   onSend={(message) => sendMessage(message)}
                   onSuccess={() => {
                     refreshThreads()
-                    setEditorVisible(false)
+                    changeEditorVisibility(false)
                   }}
                   onFailure={() => setDisplaySendError(true)}
-                  onClose={() => setEditorVisible(false)}
+                  onClose={() => changeEditorVisibility(false)}
                   displaySendError={displaySendError}
                 />
               )}
