@@ -26,7 +26,7 @@ import { UIContext } from '../../../state/ui'
 import { DaycareGroup } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
-import { AgeIndicatorIcon } from '../../common/AgeIndicatorIcon'
+import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
 function renderMissingGroupPlacementRow(
@@ -46,8 +46,6 @@ function renderMissingGroupPlacementRow(
     placementType
   } = missingPlacement
 
-  const childIsUnder3 = placementPeriod.start.differenceInYears(dateOfBirth) < 3
-
   return (
     <Tr
       key={`${childId}:${gap.start.formatIso()}`}
@@ -59,10 +57,9 @@ function renderMissingGroupPlacementRow(
         </Link>
       </Td>
       <Td>
-        <FixedSpaceRow spacing="xs">
-          <AgeIndicatorIcon
-            isUnder3={childIsUnder3}
-            tooltipText="placement-start"
+        <FixedSpaceRow spacing="xs" alignItems="center">
+          <AgeIndicatorChip
+            age={placementPeriod.start.differenceInYears(dateOfBirth)}
           />
           <span data-qa="child-dob">{dateOfBirth.format()}</span>
         </FixedSpaceRow>

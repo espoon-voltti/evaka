@@ -19,7 +19,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
-import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
+import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
 import AbsenceCell, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
@@ -81,20 +81,22 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
   return (
     <tr data-qa="absence-child-row">
       <td className="absence-child-name hover-highlight">
-        <FixedSpaceRow spacing="xs">
-          <AgeIndicatorIcon
-            isUnder3={selectedDate.differenceInYears(child.dateOfBirth) < 3}
+        <FixedSpaceRow spacing="xs" alignItems="center">
+          <AgeIndicatorChip
+            age={selectedDate.differenceInYears(child.dateOfBirth)}
           />
           <Tooltip
             tooltip={`${child.lastName}, ${child.firstName}`}
             position="top"
           >
-            <Link
-              to={`/child-information/${child.id}`}
-              data-qa="absence-child-link"
-            >
-              {shortChildName(child.firstName, child.lastName, i18n)}
-            </Link>
+            <FixedSpaceRow alignItems="center">
+              <Link
+                to={`/child-information/${child.id}`}
+                data-qa="absence-child-link"
+              >
+                {shortChildName(child.firstName, child.lastName, i18n)}
+              </Link>
+            </FixedSpaceRow>
           </Tooltip>
         </FixedSpaceRow>
       </td>
