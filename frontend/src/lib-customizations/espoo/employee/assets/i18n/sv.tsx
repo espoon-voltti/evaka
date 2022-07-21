@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+
+import { H2, P } from 'lib-components/typography'
+
 import { fi } from './fi'
 
 export const sv = {
@@ -92,7 +96,103 @@ export const sv = {
       modifyDecision: 'Redigera',
       sendToDecisionMaker: 'Skicka till beslutsfattaren',
       sentToDecisionMaker: 'Skickat till beslutsfattaren',
-      appealInstructionsTitle: 'Instruktioner för yrkande om korrigering'
+      appealInstructionsTitle: 'Anvisningar för begäran om omprövning',
+      appealInstructions: (
+        <>
+          <P>
+            En part som missnöjd med beslutet kan göra en skriftlig begäran om
+            omprövning.
+          </P>
+          <H2>Rätt att begära omprövning</H2>
+          <P>
+            En begäran om omprövning får göras av den som beslutet avser, eller
+            vars rätt, skyldigheter eller fördel direkt påverkas av beslutet.
+          </P>
+          <H2>Myndighet hos vilken omprövningen begärs</H2>
+          <P>
+            Begäran om omprövning görs hos Regionförvaltningsverket i Västra och
+            Inre Finland (huvudkontoret i Vasa).
+          </P>
+          <P>
+            Regionförvaltningsverket i Västra och Inre Finlands huvudkontor
+            <br />
+            Besöksadress: Wolffskavägen 35, Vasa
+            <br />
+            Öppet: mån–fre kl. 8.00–16.15
+            <br />
+            Postadress: PB 5, 13035 AVI
+            <br />
+            E-post: registratur.vastra@rfv.fi
+            <br />
+            Fax 06-317 4817
+            <br />
+            Telefonväxel 0295 018 450
+          </P>
+          <H2>Tidsfrist för begäran om omprövning</H2>
+          <P>
+            En begäran om omprövning ska lämnas in inom 30 dagar efter
+            delgivningen av beslutet.
+          </P>
+          <H2>Delgivning av beslut</H2>
+          <P>
+            Om inte något annat visas, anses en part ha fått del av beslutet sju
+            dagar från det att det postades, tre dagar efter att det skickades
+            elektroniskt, enligt tiden som anges i mottagningsbeviset eller
+            enligt tidpunkten som anges i delgivningsbeviset. Delgivningsdagen
+            räknas inte med i beräkningen av tidsfristen. Om den utsatta dagen
+            för begäran om omprövning är en helgdag, självständighetsdag, första
+            maj, julafton, midsommarafton eller lördag, är det möjligt att göra
+            begäran om omprövning ännu under följande vardag.
+          </P>
+          <H2>Begäran om omprövning</H2>
+          <P noMargin>
+            Begäran om omprövning ska innehålla följande uppgifter:
+          </P>
+          <ul>
+            <li>
+              Namnet på den som begär omprövning och personens hemkommun,
+              postadress och telefonnummer
+            </li>
+            <li>Vilket beslut som omprövas</li>
+            <li>
+              Vilka delar av beslutet som du anser ska omprövas och vilken
+              ändring som söks
+            </li>
+            <li>På vilka grunder omprövningen begärs</li>
+          </ul>
+          <P noMargin>
+            Till begäran om omprövning bifogas följande handlingar:
+          </P>
+          <ul>
+            <li>
+              beslutet som begäran om omprövning gäller, som original eller
+              kopia
+            </li>
+            <li>
+              en redogörelse för när den som begär omprövning har tagit del av
+              beslutet, eller annan redogörelse för när tidsfristen för begäran
+              om omprövning har börjat
+            </li>
+            <li>
+              handlingar som begäran om omprövning stöder sig på, ifall dessa
+              inte tidigare skickats till myndigheten.
+            </li>
+          </ul>
+          <P>
+            Ett ombud ska bifoga en skriftlig fullmakt till begäran om
+            omprövning, så som det föreskrivs i § 32 i lagen om rättegång i
+            förvaltningsärenden (808/2019).
+          </P>
+          <H2>Att sända begäran om omprövning</H2>
+          <P>
+            En skriftlig begäran om omprövning ska inom tidsfristen sändas till
+            myndigheten hos vilken omprövningen begärs. En begäran om omprövning
+            måste finnas hos myndigheten senast den sista dagen för sökande av
+            ändring, före öppethållningstidens slut. Omprövningsbegäran sänds
+            per post eller elektroniskt på avsändarens ansvar.
+          </P>
+        </>
+      )
     }
   }
 }
