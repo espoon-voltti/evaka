@@ -12,6 +12,7 @@ import { AbsenceChild } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -198,7 +199,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
 }: AbsenceHeadProps) {
   const { i18n, lang } = useTranslation()
   return (
-    <thead>
+    <Thead sticky>
       <tr>
         <th />
         {dateCols.map((item) =>
@@ -227,7 +228,7 @@ const AbsenceTableHead = React.memo(function AbsenceTableHead({
           </>
         )}
       </tr>
-    </thead>
+    </Thead>
   )
 })
 

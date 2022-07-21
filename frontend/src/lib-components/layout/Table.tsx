@@ -116,7 +116,16 @@ export const Tr = styled.tr<TrProps>`
       : ''}
 `
 
-export const Thead = styled.thead``
+export const Thead = styled.thead<{ sticky?: boolean }>`
+  ${(p) =>
+    p.sticky
+      ? `
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: ${p.theme.colors.grayscale.g0};`
+      : ''}
+`
 
 export const Tbody = styled.tbody``
 
