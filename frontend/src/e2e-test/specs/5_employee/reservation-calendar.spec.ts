@@ -10,6 +10,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
   daycare2Fixture,
+  daycareFixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -35,6 +36,8 @@ let unitSupervisor: EmployeeDetail
 const mockedToday = LocalDate.of(2023, 2, 15)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
+const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
+const backupCareEndDate = backupCareStartDate.addDays(8)
 const groupId: UUID = uuidv4()
 
 beforeEach(async () => {
@@ -59,6 +62,15 @@ beforeEach(async () => {
     })
     .save()
 
+  const groupId2 = uuidv4()
+  await Fixture.daycareGroup()
+    .with({
+      id: groupId2,
+      daycareId: daycareFixture.id,
+      name: 'Testailijat Toisessa'
+    })
+    .save()
+
   child1Fixture = fixtures.familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
   await Fixture.placement()
@@ -68,6 +80,19 @@ beforeEach(async () => {
       unitId: daycare.id,
       startDate: placementStartDate.formatIso(),
       endDate: placementEndDate.formatIso()
+    })
+    .save()
+
+  await Fixture.backupCare()
+    .with({
+      id: uuidv4(),
+      childId: child1Fixture.id,
+      unitId: daycareFixture.id,
+      groupId: groupId2,
+      period: {
+        start: backupCareStartDate.formatIso(),
+        end: backupCareEndDate.formatIso()
+      }
     })
     .save()
 
@@ -95,6 +120,26 @@ describe('Unit group calendar', () => {
     calendarPage = await loadUnitCalendarPage()
     await calendarPage.selectMode('week')
     await waitUntilEqual(() => calendarPage.childRowCount(child1Fixture.id), 1)
+  })
+
+  test('Child in backup care for the entire week is shown', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(backupCareStartDate)
+    await waitUntilEqual(
+      () => calendarPage.childInOtherUnitCount(child1Fixture.id),
+      7
+    )
+  })
+
+  test('Child in backup care during the week is shown', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    await calendarPage.selectMode('week')
+    await calendarPage.changeWeekToDate(backupCareEndDate)
+    await waitUntilEqual(
+      () => calendarPage.childInOtherUnitCount(child1Fixture.id),
+      2
+    )
   })
 
   test('Employee can add reservation', async () => {

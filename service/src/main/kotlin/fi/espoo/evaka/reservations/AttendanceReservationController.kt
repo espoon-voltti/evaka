@@ -129,7 +129,8 @@ data class UnitAttendanceReservations(
         val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
         val absence: Absence?,
-        val dailyServiceTimes: DailyServiceTimes?
+        val dailyServiceTimes: DailyServiceTimes?,
+        val inOtherUnit: Boolean
     )
 
     data class ReservationTimes(
@@ -166,7 +167,8 @@ data class UnitAttendanceReservations(
         @Json
         val attendances: List<AttendanceTimes>,
         @Nested("absence")
-        val absence: Absence?
+        val absence: Absence?,
+        val inOtherUnit: Boolean
     )
 }
 
@@ -184,57 +186,70 @@ private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: F
     .mapTo<UnitAttendanceReservations.OperationalDay>()
     .toList()
 
-private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRange: FiniteDateRange) = createQuery(
-    """
-    SELECT 
-        t::date AS date,
-        dg.id AS group_id,
-        dg.name AS group_name,
-        p.id,
-        p.first_name,
-        p.last_name,
-        p.date_of_birth,
-        coalesce(res.reservations, '[]') AS reservations,
-        coalesce(attendances.attendances, '[]') AS attendances,
-        ab.absence_type
-    FROM generate_series(:start, :end, '1 day') t
-    JOIN realized_placement_one(t::date) rp ON true
-    JOIN person p ON rp.child_id = p.id
-    LEFT JOIN daycare_group dg ON rp.group_id = dg.id
-    LEFT JOIN LATERAL (
-        SELECT
-            jsonb_agg(
-                jsonb_build_object(
-                    'startTime', to_char(att.start_time, 'HH24:MI'),
-                    'endTime', to_char(att.end_time, 'HH24:MI')
-                ) ORDER BY att.start_time ASC
-            ) AS attendances
-        FROM child_attendance att WHERE att.child_id = p.id AND att.date = t::date
-    ) attendances ON true
-    LEFT JOIN LATERAL (
-        SELECT
-            jsonb_agg(
-                jsonb_build_object(
-                    'startTime', to_char(ar.start_time, 'HH24:MI'),
-                    'endTime', to_char(ar.end_time, 'HH24:MI')
-                ) ORDER BY ar.start_time ASC
-            ) AS reservations
-        FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.date = t::date
-    ) res ON true
-    LEFT JOIN LATERAL (
-        SELECT absence_type
-        FROM absence
-        WHERE absence.date = t::date AND absence.child_id = p.id
-        LIMIT 1
-    ) ab ON true
-    WHERE rp.unit_id = :unitId
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .bind("start", dateRange.start)
-    .bind("end", dateRange.end)
-    .mapTo<UnitAttendanceReservations.QueryRow>()
-    .toList()
+private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRange: FiniteDateRange): List<UnitAttendanceReservations.QueryRow> {
+    val inOtherUnit = "rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId"
+    return createQuery(
+        """
+        SELECT 
+            t::date AS date,
+            dg.id AS group_id,
+            dg.name AS group_name,
+            p.id,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth,
+            (CASE WHEN ($inOtherUnit)
+                THEN '[]'
+                ELSE coalesce(res.reservations, '[]') END
+            ) AS reservations,
+            (CASE WHEN ($inOtherUnit)
+                THEN '[]'
+                ELSE coalesce(attendances.attendances, '[]') END
+            ) AS attendances,
+            ab.absence_type,
+            $inOtherUnit AS in_other_unit
+        FROM generate_series(:start, :end, '1 day') t
+        JOIN realized_placement_one(t::date) rp ON true
+        JOIN person p ON rp.child_id = p.id
+        LEFT JOIN daycare_group dg ON dg.id = (CASE WHEN ($inOtherUnit)
+            THEN rp.placement_group_id
+            ELSE rp.group_id END
+        )
+        LEFT JOIN LATERAL (
+            SELECT
+                jsonb_agg(
+                    jsonb_build_object(
+                        'startTime', to_char(att.start_time, 'HH24:MI'),
+                        'endTime', to_char(att.end_time, 'HH24:MI')
+                    ) ORDER BY att.start_time ASC
+                ) AS attendances
+            FROM child_attendance att WHERE att.child_id = p.id AND att.date = t::date
+        ) attendances ON true
+        LEFT JOIN LATERAL (
+            SELECT
+                jsonb_agg(
+                    jsonb_build_object(
+                        'startTime', to_char(ar.start_time, 'HH24:MI'),
+                        'endTime', to_char(ar.end_time, 'HH24:MI')
+                    ) ORDER BY ar.start_time ASC
+                ) AS reservations
+            FROM attendance_reservation ar WHERE ar.child_id = p.id AND ar.date = t::date
+        ) res ON true
+        LEFT JOIN LATERAL (
+            SELECT absence_type
+            FROM absence
+            WHERE absence.date = t::date AND absence.child_id = p.id
+            LIMIT 1
+        ) ab ON true
+        WHERE rp.unit_id = :unitId OR rp.placement_unit_id = :unitId
+        """.trimIndent()
+    )
+        .bind("unitId", unitId)
+        .bind("start", dateRange.start)
+        .bind("end", dateRange.end)
+        .mapTo<UnitAttendanceReservations.QueryRow>()
+        .toList()
+}
 
 // currently queried separately to be able to use existing mapper
 private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>) = createQuery(
@@ -276,7 +291,8 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                                 reservation = day.reservations.getOrNull(0),
                                 attendance = day.attendances.getOrNull(0),
                                 absence = day.absence,
-                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) }
+                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) },
+                                inOtherUnit = day.inOtherUnit
                             )
                         }
                     ),
@@ -287,7 +303,8 @@ private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serv
                                 reservation = day.reservations.getOrNull(1),
                                 attendance = day.attendances.getOrNull(1),
                                 absence = day.absence,
-                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) }
+                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) },
+                                inOtherUnit = day.inOtherUnit
                             )
                         }
                     ) else null

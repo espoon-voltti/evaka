@@ -9,12 +9,15 @@ TABLE (
     -- these come from the normal placement, even in backup care rows
     placement_id uuid, placement_type placement_type,
     -- these two ids are nullable
-    group_id uuid, backup_care_id uuid
+    group_id uuid, backup_care_id uuid,
+    -- these ids are always the actual placement's, never backup care's
+    placement_unit_id uuid, placement_group_id uuid
 ) AS $$
     SELECT
         p.child_id, (CASE WHEN bc.id IS NULL THEN p.unit_id ELSE bc.unit_id END) AS unit_id, (bc.id IS NOT NULL) AS is_backup,
         p.id AS placement_id, p.type AS placement_type,
-        (CASE WHEN bc.id IS NULL THEN dgp.daycare_group_id ELSE bc.group_id END) AS group_id, bc.id AS backup_care_id
+        (CASE WHEN bc.id IS NULL THEN dgp.daycare_group_id ELSE bc.group_id END) AS group_id, bc.id AS backup_care_id,
+        p.unit_id AS placement_unit_id, dgp.daycare_group_id AS placement_group_id
     FROM placement p
     LEFT JOIN backup_care bc
     ON p.child_id = bc.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> today

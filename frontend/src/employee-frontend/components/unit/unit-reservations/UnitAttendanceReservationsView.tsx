@@ -160,7 +160,7 @@ export default React.memo(function UnitAttendanceReservationsView({
           />
         )}
 
-        <WeekPicker>
+        <WeekPicker data-qa-week-range={dateRange.toString()}>
           <WeekPickerButton
             icon={faChevronLeft}
             onClick={() => setSelectedDate(selectedDate.subDays(7))}
