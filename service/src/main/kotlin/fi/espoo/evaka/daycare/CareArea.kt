@@ -128,5 +128,6 @@ data class UnitStub(
 data class UnitFeatures(
     val id: DaycareId,
     val name: String,
-    val features: List<PilotFeature>
+    val features: List<PilotFeature>,
+    val providerType: ProviderType
 )

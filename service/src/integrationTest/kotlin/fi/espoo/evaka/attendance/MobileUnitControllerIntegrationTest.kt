@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.setUnitFeatures
+import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -62,7 +62,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.setUnitFeatures(testDaycare.id, setOf(PilotFeature.REALTIME_STAFF_ATTENDANCE))
+            tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE))
             groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child ->

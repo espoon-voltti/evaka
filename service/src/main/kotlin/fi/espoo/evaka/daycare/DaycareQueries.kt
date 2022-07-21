@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -339,7 +338,7 @@ WHERE daycare_id = :daycareId
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
     """
-    SELECT id, name, enabled_pilot_features AS features
+    SELECT id, name, enabled_pilot_features AS features, provider_type
     FROM daycare
     ORDER BY name
     """.trimIndent()
@@ -347,22 +346,45 @@ fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
     .mapTo<UnitFeatures>()
     .list()
 
-fun Database.Transaction.setUnitFeatures(daycareId: DaycareId, features: Set<PilotFeature>) {
+fun Database.Transaction.addUnitFeatures(
+    daycareIds: List<DaycareId>,
+    features: List<PilotFeature>
+) {
     createUpdate(
         """
         UPDATE daycare
-        SET enabled_pilot_features = (:features)::pilot_feature[]
-        WHERE id = :id
+        SET enabled_pilot_features = enabled_pilot_features || (:features)::pilot_feature[]
+        WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("id", daycareId)
+        .bind("ids", daycareIds.toTypedArray())
         .bind("features", features.toTypedArray())
-        .updateExactlyOne()
+        .execute()
+}
+
+fun Database.Transaction.removeUnitFeatures(
+    daycareIds: List<DaycareId>,
+    features: List<PilotFeature>
+) {
+    createUpdate(
+        """
+        UPDATE daycare
+        SET enabled_pilot_features = array(
+            SELECT unnest(enabled_pilot_features)
+            EXCEPT
+            SELECT unnest((:features)::pilot_feature[])
+        )::pilot_feature[]
+        WHERE id = ANY(:ids)
+        """.trimIndent()
+    )
+        .bind("ids", daycareIds.toTypedArray())
+        .bind("features", features.toTypedArray())
+        .execute()
 }
 
 fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
     """
-    SELECT id, name, enabled_pilot_features AS features
+    SELECT id, name, enabled_pilot_features AS features, provider_type
     FROM daycare
     WHERE id = :id
     """.trimIndent()
