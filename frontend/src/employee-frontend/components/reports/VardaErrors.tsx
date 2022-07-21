@@ -99,7 +99,7 @@ export default React.memo(function VardaErrors() {
                     </Td>
 
                     <Td data-qa={`errors-${row.childId}`}>
-                      {row.errors.join('\n')}
+                      <BreakAll>{row.errors.join('\n')}</BreakAll>
                     </Td>
                     <Td>
                       <FlatList>
@@ -144,3 +144,7 @@ export default React.memo(function VardaErrors() {
     </Container>
   )
 })
+
+const BreakAll = styled.span`
+  word-break: break-all;
+`
