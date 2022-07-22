@@ -71,8 +71,8 @@ export default React.memo(function StaffPage() {
   const updateAttendance = useCallback(
     async (attendance: StaffAttendanceUpdate) => {
       await postStaffAttendance(attendance)
-      reloadStaff()
-      reloadRealizedOccupancyToday()
+      void reloadStaff()
+      void reloadRealizedOccupancyToday()
       return Success.of()
     },
     [reloadRealizedOccupancyToday, reloadStaff]

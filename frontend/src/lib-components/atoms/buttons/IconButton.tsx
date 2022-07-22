@@ -15,6 +15,7 @@ interface ButtonProps {
   size: IconSize | undefined
   gray?: boolean
   white?: boolean
+  color?: string
 }
 
 const StyledButton = styled.button<ButtonProps>`
@@ -71,7 +72,9 @@ const StyledButton = styled.button<ButtonProps>`
     }
   }};
   color: ${(p) =>
-    p.gray
+    p.color
+      ? p.color
+      : p.gray
       ? p.theme.colors.grayscale.g70
       : p.white
       ? p.theme.colors.grayscale.g0
@@ -97,7 +100,9 @@ const StyledButton = styled.button<ButtonProps>`
 
   &:hover .icon-wrapper {
     color: ${(p) =>
-      p.gray
+      p.color
+        ? p.color
+        : p.gray
         ? p.theme.colors.grayscale.g70
         : p.white
         ? p.theme.colors.grayscale.g0
@@ -106,7 +111,11 @@ const StyledButton = styled.button<ButtonProps>`
 
   &:active .icon-wrapper {
     color: ${(p) =>
-      p.gray ? p.theme.colors.grayscale.g100 : p.theme.colors.main.m2Active};
+      p.color
+        ? p.color
+        : p.gray
+        ? p.theme.colors.grayscale.g100
+        : p.theme.colors.main.m2Active};
   }
 
   &.disabled {
@@ -138,8 +147,10 @@ export default React.memo(function IconButton({
   disabled,
   size,
   gray,
-  white
-}: IconButtonProps) {
+  white,
+  color,
+  ...props
+}: IconButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <StyledButton
       type="button"
@@ -151,6 +162,8 @@ export default React.memo(function IconButton({
       size={size}
       gray={gray}
       white={white}
+      color={color}
+      {...props}
     >
       <div className="icon-wrapper">
         <FontAwesomeIcon icon={icon} />

@@ -652,7 +652,7 @@ export default React.memo(function UnitAccessControl({
   const confirmRemoveDevice = useCallback(async () => {
     if (mobileId) {
       await deleteMobileDevice(mobileId)
-      reloadMobileDevices()
+      void reloadMobileDevices()
     }
     closeRemoveModal()
   }, [closeRemoveModal, mobileId, reloadMobileDevices])
@@ -681,7 +681,7 @@ export default React.memo(function UnitAccessControl({
     async (name: string) => {
       if (mobileId) {
         await putMobileDeviceName(mobileId, name)
-        reloadMobileDevices()
+        void reloadMobileDevices()
         clearUiMode()
       }
     },

@@ -158,7 +158,7 @@ export default React.memo(function HolidayPeriodsPage() {
             resolveLabel={i18n.common.remove}
             onSuccess={() => {
               setPeriodToDelete(undefined)
-              refreshPeriods()
+              void refreshPeriods()
             }}
           />
         )}
@@ -174,7 +174,7 @@ export default React.memo(function HolidayPeriodsPage() {
             resolveLabel={i18n.common.remove}
             onSuccess={() => {
               setQuestionnaireToDelete(undefined)
-              refreshQuestionnaires()
+              void refreshQuestionnaires()
             }}
           />
         )}

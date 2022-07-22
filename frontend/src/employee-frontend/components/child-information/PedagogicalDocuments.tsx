@@ -57,7 +57,9 @@ export default React.memo(function PedagogicalDocuments({
   >(undefined)
 
   useEffect(() => {
-    if (open) loadData()
+    if (open) {
+      void loadData()
+    }
   }, [open, loadData])
 
   const [expandingInfo, setExpandingInfo] = useState<string>()

@@ -70,7 +70,7 @@ interface FormState {
 const coefficientRegex = /^\d(([.,])(\d){1,2})?$/
 
 interface CommonProps {
-  onReload: () => undefined | void
+  onReload: () => void
   assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
 }

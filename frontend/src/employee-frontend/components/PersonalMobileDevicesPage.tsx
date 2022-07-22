@@ -52,7 +52,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
   )
   const closeModal = useCallback(() => {
     setOpenModal(undefined)
-    reloadDevices()
+    void reloadDevices()
   }, [reloadDevices])
 
   if (!user) {

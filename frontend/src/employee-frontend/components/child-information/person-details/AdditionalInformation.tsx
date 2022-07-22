@@ -80,7 +80,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   )
   const onSuccess = useCallback(() => {
     clearUiMode()
-    loadData()
+    void loadData()
   }, [clearUiMode, loadData])
 
   const valueWidth = '600px'

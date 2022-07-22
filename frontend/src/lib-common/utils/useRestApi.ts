@@ -69,27 +69,31 @@ export function useRestApi<F extends ApiFunction>(
 export function useApiState<T, Deps extends DependencyList>(
   f: () => Promise<Result<T>>,
   deps: Deps
-): [Result<T>, () => void] {
+): [Result<T>, () => Promise<void>] {
   const [state, setState] = useState<Result<T>>(Loading.of())
 
-  const mountedRef = useRef(true)
+  const currentRef = useRef(0)
   useEffect(
     () => () => {
-      mountedRef.current = false
+      currentRef.current = -1
     },
     []
   )
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     const api = withStaleCancellation(f)
     setState((prev) => (prev.isSuccess ? prev.reloading() : Loading.of()))
-    void api().then((result) => {
-      if (mountedRef.current && !isCancelled(result)) setState(result)
+    const loadIdx = ++currentRef.current
+    await api().then((result) => {
+      if (currentRef.current === loadIdx && !isCancelled(result))
+        setState(result)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 
-  useEffect(load, [load])
+  useEffect(() => {
+    void load()
+  }, [load])
 
   return [state, load]
 }

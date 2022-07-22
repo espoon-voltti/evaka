@@ -67,7 +67,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
           onClose={(shouldRefresh) => {
             setRemovingDecision(undefined)
             if (shouldRefresh) {
-              reloadDecisions()
+              void reloadDecisions()
             }
           }}
           childId={id}
@@ -137,7 +137,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
                 },
                 viewOfGuardians: null
               }).then((decision) => {
-                reloadDecisions()
+                void reloadDecisions()
                 setIsCreatingDecision(false)
 
                 decision.map(({ id: decisionId }) =>

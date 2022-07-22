@@ -125,7 +125,7 @@ export default React.memo(function PersonInvoiceCorrections({
 
   const onSaveSuccess = useCallback(() => {
     cancelEditing()
-    reloadCorrections()
+    void reloadCorrections()
   }, [cancelEditing, reloadCorrections])
 
   const deleteCorrection = useCallback(
@@ -150,7 +150,9 @@ export default React.memo(function PersonInvoiceCorrections({
 
   const onNoteUpdateSuccess = useCallback(() => {
     setNoteModalState(undefined)
-    if (noteModalState && noteModalState.id !== 'new') reloadCorrections()
+    if (noteModalState && noteModalState.id !== 'new') {
+      void reloadCorrections()
+    }
   }, [noteModalState, reloadCorrections])
 
   return (

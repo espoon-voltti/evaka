@@ -140,7 +140,7 @@ export const Incomes = React.memo(function Incomes({
 
   // FIXME: This component shouldn't know about family's dependency on its data
   const reloadIncomes = useCallback(() => {
-    loadIncomes()
+    void loadIncomes()
     reloadFamily()
   }, [loadIncomes, reloadFamily])
   useEffect(reloadIncomes, [reloadIncomes])

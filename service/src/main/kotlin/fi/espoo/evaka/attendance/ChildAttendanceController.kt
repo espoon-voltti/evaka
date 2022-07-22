@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,6 +56,8 @@ val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
 val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15)
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/attendances")
@@ -114,6 +117,7 @@ class ChildAttendanceController(
                         )
                     }
                 } catch (e: Exception) {
+                    logger.error(e.toString())
                     throw mapPSQLException(e)
                 }
             }

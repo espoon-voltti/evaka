@@ -46,7 +46,7 @@ export function StaffOccupancyCoefficients({ allowEditing }: Props) {
         coefficient: checked ? 7 : 0
       }).then(() => {
         setSaving(false)
-        reload()
+        void reload()
       })
     },
     [reload, unitId]

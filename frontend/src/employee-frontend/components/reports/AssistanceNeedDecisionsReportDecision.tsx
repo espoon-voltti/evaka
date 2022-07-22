@@ -117,7 +117,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
           onClose={(shouldRefresh) => {
             setDecisionModalStatus(undefined)
             if (shouldRefresh) {
-              reloadDecision()
+              void reloadDecision()
             }
           }}
           decisionId={id}
@@ -129,7 +129,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
         <MismatchDecisionMakerModal
           onClose={() => {
             setMismatchDecisionMakerModalOpen(false)
-            reloadDecision()
+            void reloadDecision()
           }}
           decisionId={id}
         />

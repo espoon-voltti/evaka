@@ -52,7 +52,7 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
         })
       }
       setSaving(false)
-      loadData()
+      void loadData()
     },
     [i18n, id, loadData, setErrorMessage]
   )

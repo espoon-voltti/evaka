@@ -86,8 +86,8 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   )
 
   const reloadFridgeChildren = useCallback(() => {
-    reloadFamily()
-    loadFridgeChildren()
+    void reloadFamily()
+    void loadFridgeChildren()
   }, [reloadFamily, loadFridgeChildren])
 
   const person = useMemo(
@@ -99,7 +99,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
       setPersonResponse((prev) =>
         prev.map((response) => ({ ...response, person }))
       )
-      reloadFamily()
+      void reloadFamily()
     },
     [reloadFamily]
   )

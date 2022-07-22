@@ -54,7 +54,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
 
   // FIXME: This component shouldn't know about family's dependency on its data
   const reload = () => {
-    loadData()
+    void loadData()
     reloadFamily()
   }
 

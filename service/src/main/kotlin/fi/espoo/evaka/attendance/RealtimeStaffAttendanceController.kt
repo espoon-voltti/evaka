@@ -68,10 +68,11 @@ class RealtimeStaffAttendanceController(
                                 att.occupancyCoefficient,
                                 att.type
                             )
-                        }
+                        },
+                        hasFutureAttendances = data[0].hasFutureAttendances
                     )
                 }
-                val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId)
+                val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId, range.end)
                 val noAttendanceEmployeeToGroups = it.getGroupsForEmployees(staffForAttendanceCalendar.map { emp -> emp.id }.toSet())
                 val staffWithoutAttendance = staffForAttendanceCalendar
                     .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
@@ -81,7 +82,8 @@ class RealtimeStaffAttendanceController(
                             groups = noAttendanceEmployeeToGroups[emp.id] ?: listOf(),
                             firstName = emp.firstName,
                             lastName = emp.lastName,
-                            currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf()
+                            currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf(),
+                            hasFutureAttendances = emp.hasFutureAttendances
                         )
                     }
                 StaffAttendanceResponse(
