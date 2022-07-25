@@ -1,5 +1,9 @@
 name: Build
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+    - master
 
 env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
