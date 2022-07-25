@@ -304,7 +304,15 @@ export default {
         `Kysely ei koske lasta, koska hän ei ole ollut varhaiskasvatuksessa yhtäjaksoisesti ${period.format()}.`
     },
     previousDay: 'Edellinen päivä',
-    nextDay: 'Seuraava päivä'
+    nextDay: 'Seuraava päivä',
+    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
+      `Varhaiskasvatussopimukseenne on päivitetty uusi läsnäoloaika ${dateFrom} alkaen.`,
+    dailyServiceTimeModifiedDestructivelyModal: {
+      text: (dateFrom: string) =>
+        `Varhaiskasvatussopimukseenne on päivitetty uusi päivittäinen läsnäoloaika. Teethän uudet läsnäoloilmoitukset ${dateFrom} alkaen.`,
+      title: 'Tee uudet läsnäoloilmoitukset',
+      ok: 'Selvä!'
+    }
   },
   messages: {
     inboxTitle: 'Viestit',

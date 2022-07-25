@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -261,6 +262,23 @@ AND id = ANY(:ids)
             )
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
+    fun guardianOfDailyServiceTimeNotification() = DatabaseActionRule(
+        this,
+        Query<DailyServiceTimeNotificationId> { tx, guardianId, _, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM daily_service_time_notification
+WHERE id = ANY(:ids)
+AND guardian_id = :guardianId
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("guardianId", guardianId)
                 .mapTo()
         }
     )

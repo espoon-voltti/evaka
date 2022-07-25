@@ -134,34 +134,42 @@ export default class CitizenCalendarPage {
     }
   }
 
-  #ctaContainers = this.page.findAllByDataQa('holiday-period-cta-container')
+  #ctas = this.page.findAllByDataQa('holiday-period-cta')
 
   async getHolidayCtaContent(): Promise<string> {
-    await waitUntilEqual(
-      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
-      'success'
-    )
-    return this.#ctaContainers.nth(1).findByDataQa('holiday-period-cta')
-      .innerText
+    return this.#ctas.nth(1).innerText
   }
 
-  async clickHoliayCta(): Promise<void> {
-    await waitUntilEqual(
-      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
-      'success'
-    )
-    return this.#ctaContainers.nth(1).findByDataQa('holiday-period-cta').click()
+  async clickHolidayCta(): Promise<void> {
+    return this.#ctas.nth(1).click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
     await waitUntilEqual(
-      () => this.#ctaContainers.nth(1).getAttribute('data-status'),
+      () =>
+        this.page
+          .find('[data-holiday-period-cta-status]')
+          .getAttribute('data-holiday-period-cta-status'),
       'success'
     )
-    await waitUntilEqual(
-      () => this.#ctaContainers.nth(1).findAll('> *').count(),
-      0
-    )
+    await this.#ctas.assertCount(0)
+  }
+
+  #dailyServiceTimeNotifications = this.page.findAllByDataQa(
+    'daily-service-time-notification'
+  )
+
+  async getDailyServiceTimeNotificationContent(nth: number): Promise<string> {
+    return this.#dailyServiceTimeNotifications.nth(nth).innerText
+  }
+
+  #dailyServiceTimeNotificationModal = this.page.findByDataQa(
+    'daily-service-time-notification-modal'
+  )
+
+  async getDailyServiceTimeNotificationModalContent(): Promise<string> {
+    return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
+      .innerText
   }
 }
 

@@ -303,7 +303,15 @@ const sv: Translations = {
         `Enkäten rör inte barnet, eftersom hen inte varit i småbarnspedagogiken oavbrutet under tiden ${period.format()}.`
     },
     previousDay: 'Föregående dag',
-    nextDay: 'Nästa dag'
+    nextDay: 'Nästa dag',
+    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
+      `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt från och med ${dateFrom}.`,
+    dailyServiceTimeModifiedDestructivelyModal: {
+      text: (dateFrom: string) =>
+        `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt. Vänligen gör nya bokningar från och med ${dateFrom}.`,
+      title: 'Gör nya reservationer',
+      ok: 'Klart!'
+    }
   },
   messages: {
     inboxTitle: 'Inkorg',

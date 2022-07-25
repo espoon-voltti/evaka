@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { TimeRange } from 'lib-common/api-types/child/common'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
@@ -27,6 +28,7 @@ import {
   PilotFeature,
   UserRole
 } from 'lib-common/generated/api-types/shared'
+import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -539,4 +541,27 @@ export interface DevStaffOccupancyCoefficient {
   coefficient: number
   employeeId: UUID
   unitId: UUID
+}
+
+export interface DevDailyServiceTime {
+  id: UUID
+  childId: UUID
+  type: DailyServiceTimesType
+  validityPeriod: DateRange
+  regularTimes: TimeRange
+  mondayTimes: TimeRange | null
+  tuesdayTimes: TimeRange | null
+  wednesdayTimes: TimeRange | null
+  thursdayTimes: TimeRange | null
+  fridayTimes: TimeRange | null
+  saturdayTimes: TimeRange | null
+  sundayTimes: TimeRange | null
+}
+
+export interface DevDailyServiceTimeNotification {
+  id: UUID
+  guardianId: UUID
+  dailyServiceTimeId: UUID
+  dateFrom: LocalDate
+  hasDeletedReservations: boolean
 }

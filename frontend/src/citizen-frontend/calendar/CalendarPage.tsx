@@ -30,6 +30,8 @@ import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
+import { CalendarNotificationsProvider } from './CalendarNotifications'
+import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import ReservationModal from './ReservationModal'
 import { getReservations } from './api'
@@ -123,89 +125,97 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   if (!user || !user.accessibleFeatures.reservations) return null
 
-  return renderResult(data, (response) => (
-    <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-      <MobileAndTablet>
-        <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
-          <CalendarListView
-            childData={response.children}
-            dailyData={response.dailyData}
-            onHoverButtonClick={openPickActionModal}
-            selectDate={openDayModal}
-            dayIsReservable={dayIsReservable}
-            dayIsHolidayPeriod={dayIsHolidayPeriod}
-          />
-        </ContentArea>
-      </MobileAndTablet>
-      <DesktopOnly>
-        <CalendarGridView
-          childData={response.children}
-          dailyData={response.dailyData}
-          onCreateReservationClicked={openReservationModal}
-          onCreateAbsencesClicked={openAbsenceModal}
-          onReportHolidaysClicked={openHolidayModal}
-          selectedDate={
-            modalState?.type === 'day' ? modalState.date : undefined
-          }
-          selectDate={openDayModal}
-          includeWeekends={response.includesWeekends}
-          dayIsReservable={dayIsReservable}
-        />
-      </DesktopOnly>
-      {modalState?.type === 'day' && (
-        <DayView
-          date={modalState.date}
-          reservationsResponse={response}
-          selectDate={openDayModal}
-          reloadData={loadDefaultRange}
-          close={closeModal}
-          openAbsenceModal={openAbsenceModal}
-        />
-      )}
-      {modalState?.type === 'pickAction' && (
-        <ActionPickerModal
-          close={closeModal}
-          openReservations={openReservationModal}
-          openAbsences={openAbsenceModal}
-          openHolidays={openHolidayModal}
-        />
-      )}
-      {modalState?.type === 'reservations' && (
-        <ReservationModal
-          onClose={closeModal}
-          availableChildren={response.children}
-          onReload={loadDefaultRange}
-          reservableDays={response.reservableDays}
-          firstReservableDate={firstReservableDate}
-          existingReservations={response.dailyData}
-        />
-      )}
-      {modalState?.type === 'absences' && (
-        <AbsenceModal
-          close={closeModal}
-          initialDate={modalState.initialDate}
-          reload={loadDefaultRange}
-          availableChildren={response.children}
-        />
-      )}
-      {modalState?.type === 'holidays' && questionnaire && (
-        <RequireAuth
-          strength={
-            questionnaire.questionnaire.requiresStrongAuth ? 'STRONG' : 'WEAK'
-          }
-        >
-          <FixedPeriodSelectionModal
-            close={closeModal}
-            reload={refreshOnQuestionnaireAnswer}
-            questionnaire={questionnaire.questionnaire}
-            availableChildren={response.children}
-            eligibleChildren={questionnaire.eligibleChildren}
-            previousAnswers={questionnaire.previousAnswers}
-          />
-        </RequireAuth>
-      )}
-    </div>
-  ))
+  return (
+    <CalendarNotificationsProvider>
+      <DailyServiceTimeNotifications />
+
+      {renderResult(data, (response) => (
+        <div data-qa="calendar-page" data-isloading={isLoading(data)}>
+          <MobileAndTablet>
+            <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
+              <CalendarListView
+                childData={response.children}
+                dailyData={response.dailyData}
+                onHoverButtonClick={openPickActionModal}
+                selectDate={openDayModal}
+                dayIsReservable={dayIsReservable}
+                dayIsHolidayPeriod={dayIsHolidayPeriod}
+              />
+            </ContentArea>
+          </MobileAndTablet>
+          <DesktopOnly>
+            <CalendarGridView
+              childData={response.children}
+              dailyData={response.dailyData}
+              onCreateReservationClicked={openReservationModal}
+              onCreateAbsencesClicked={openAbsenceModal}
+              onReportHolidaysClicked={openHolidayModal}
+              selectedDate={
+                modalState?.type === 'day' ? modalState.date : undefined
+              }
+              selectDate={openDayModal}
+              includeWeekends={response.includesWeekends}
+              dayIsReservable={dayIsReservable}
+            />
+          </DesktopOnly>
+          {modalState?.type === 'day' && (
+            <DayView
+              date={modalState.date}
+              reservationsResponse={response}
+              selectDate={openDayModal}
+              reloadData={loadDefaultRange}
+              close={closeModal}
+              openAbsenceModal={openAbsenceModal}
+            />
+          )}
+          {modalState?.type === 'pickAction' && (
+            <ActionPickerModal
+              close={closeModal}
+              openReservations={openReservationModal}
+              openAbsences={openAbsenceModal}
+              openHolidays={openHolidayModal}
+            />
+          )}
+          {modalState?.type === 'reservations' && (
+            <ReservationModal
+              onClose={closeModal}
+              availableChildren={response.children}
+              onReload={loadDefaultRange}
+              reservableDays={response.reservableDays}
+              firstReservableDate={firstReservableDate}
+              existingReservations={response.dailyData}
+            />
+          )}
+          {modalState?.type === 'absences' && (
+            <AbsenceModal
+              close={closeModal}
+              initialDate={modalState.initialDate}
+              reload={loadDefaultRange}
+              availableChildren={response.children}
+            />
+          )}
+          {modalState?.type === 'holidays' && questionnaire && (
+            <RequireAuth
+              strength={
+                questionnaire.questionnaire.requiresStrongAuth
+                  ? 'STRONG'
+                  : 'WEAK'
+              }
+            >
+              <FixedPeriodSelectionModal
+                close={closeModal}
+                reload={refreshOnQuestionnaireAnswer}
+                questionnaire={questionnaire.questionnaire}
+                availableChildren={response.children}
+                eligibleChildren={questionnaire.eligibleChildren}
+                previousAnswers={questionnaire.previousAnswers}
+              />
+            </RequireAuth>
+          )}
+        </div>
+      ))}
+    </CalendarNotificationsProvider>
+  )
 })
 
 // Modal states stored to the URL

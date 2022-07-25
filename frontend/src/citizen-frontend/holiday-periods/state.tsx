@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import head from 'lodash/head'
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { combine, Loading, Result, Success } from 'lib-common/api'
@@ -35,8 +29,6 @@ export interface HolidayPeriodsState {
   activeFixedPeriodQuestionnaire: Result<ActiveQuestionnaire | undefined>
   questionnaireAvailable: QuestionnaireAvailability
   holidayCta: Result<HolidayCta>
-  ctaClosed: boolean
-  closeCta: () => void
   refreshQuestionnaires: () => void
 }
 
@@ -45,8 +37,6 @@ const defaultState: HolidayPeriodsState = {
   activeFixedPeriodQuestionnaire: Loading.of(),
   questionnaireAvailable: false,
   holidayCta: Loading.of(),
-  ctaClosed: false,
-  closeCta: () => null,
   refreshQuestionnaires: () => null
 }
 
@@ -105,17 +95,12 @@ export const HolidayPeriodsContextProvider = React.memo(
         : { type: 'none' }
     })
 
-    const [ctaClosed, setCtaClosed] = useState(false)
-    const closeCta = useCallback(() => setCtaClosed(true), [])
-
     const value = useMemo(
       () => ({
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
         holidayCta,
-        ctaClosed,
-        closeCta,
         refreshQuestionnaires
       }),
       [
@@ -123,8 +108,6 @@ export const HolidayPeriodsContextProvider = React.memo(
         holidayPeriods,
         questionnaireAvailable,
         holidayCta,
-        ctaClosed,
-        closeCta,
         refreshQuestionnaires
       ]
     )

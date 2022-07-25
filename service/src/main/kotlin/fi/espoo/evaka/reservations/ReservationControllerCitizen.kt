@@ -61,9 +61,13 @@ class ReservationControllerCitizen(
                 }
                 val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
-                val placementRange = FiniteDateRange(children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN, children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX)
-                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                    .flatMap { range -> listOfNotNull(range.intersection(placementRange)) }
+                val placementRange = FiniteDateRange(
+                    children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN,
+                    children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
+                )
+                val reservableDays =
+                    getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                        .flatMap { range -> listOfNotNull(range.intersection(placementRange)) }
                 ReservationsResponse(
                     dailyData = reservations,
                     children = children,
@@ -87,7 +91,8 @@ class ReservationControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
-                val reservableDays = getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                val reservableDays =
+                    getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }

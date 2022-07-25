@@ -20,8 +20,7 @@ import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { useCalendarModalState } from './CalendarPage'
-import HolidayPeriodCta from './HolidayPeriodCta'
+import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { getChildImages } from './RoundChildImages'
 import WeekElem from './WeekElem'
 
@@ -47,13 +46,13 @@ export default React.memo(function CalendarListView({
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
-  const { openHolidayModal } = useCalendarModalState()
-
   return (
     <>
-      <HolidayPeriodCtaContainer>
-        <HolidayPeriodCta openModal={openHolidayModal} topAligned />
-      </HolidayPeriodCtaContainer>
+      <NotificationSlotContainer>
+        <NotificationSlotInnerContainer>
+          <CalendarNotificationsSlot />
+        </NotificationSlotInnerContainer>
+      </NotificationSlotContainer>
       <FixedSpaceColumn spacing="zero">
         {weeklyData.map((w) => (
           <WeekElem
@@ -121,8 +120,16 @@ const Icon = styled(FontAwesomeIcon)`
   margin-right: ${defaultMargins.xs};
 `
 
-const HolidayPeriodCtaContainer = styled.div`
+const NotificationSlotContainer = styled.div`
   position: sticky;
   top: 0;
+  width: 100%;
   z-index: 20;
+`
+
+const NotificationSlotInnerContainer = styled.div`
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding: ${defaultMargins.s};
 `

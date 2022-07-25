@@ -91,6 +91,8 @@ enum class Audit(
     ChildDailyServiceTimesDelete("evaka.child.daily-service-times.delete"),
     ChildDailyServiceTimesEdit("evaka.child.daily-service-times.edit"),
     ChildDailyServiceTimesRead("evaka.child.daily-service-times.read"),
+    ChildDailyServiceTimeNotificationsRead("evaka.child.daily-service-time-notifications.read"),
+    ChildDailyServiceTimeNotificationsDismiss("evaka.child.daily-service-time-notifications.dismiss"),
     ChildFeeAlterationsCreate("evaka.child.fee-alterations.create"),
     ChildFeeAlterationsDelete("evaka.child.fee-alterations.delete"),
     ChildFeeAlterationsRead("evaka.child.fee-alterations.read"),

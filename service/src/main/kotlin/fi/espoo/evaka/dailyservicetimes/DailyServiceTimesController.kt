@@ -5,6 +5,7 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.reservations.clearReservationsForRange
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -72,7 +73,7 @@ class DailyServiceTimesController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
-                tx.createChildDailyServiceTimes(childId, body)
+                this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), evakaClock)
             }
         }
     }
@@ -80,6 +81,7 @@ class DailyServiceTimesController(
     @PutMapping("/daily-service-times/{id}")
     fun putDailyServiceTimes(
         db: Database,
+        evakaClock: EvakaClock,
         user: AuthenticatedUser,
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimes
@@ -87,7 +89,12 @@ class DailyServiceTimesController(
         Audit.ChildDailyServiceTimesEdit.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.DailyServiceTime.UPDATE, id)
 
-        db.connect { dbc -> dbc.transaction { it.updateChildDailyServiceTimes(id, body) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.updateChildDailyServiceTimes(id, body)
+                this.deleteCollidingReservationsAndNotify(tx, id, evakaClock)
+            }
+        }
     }
 
     @DeleteMapping("/daily-service-times/{id}")
@@ -126,5 +133,26 @@ class DailyServiceTimesController(
                 }
             }
         }
+    }
+
+    private fun deleteCollidingReservationsAndNotify(
+        tx: Database.Transaction,
+        id: DailyServiceTimesId,
+        evakaClock: EvakaClock
+    ) {
+        val dst = tx.getChildDailyServiceTimeValidity(id) ?: return
+
+        if (dst.validityPeriod.end?.isBefore(evakaClock.today()) == true) {
+            return
+        }
+
+        val actionableRange = DateRange(
+            dst.validityPeriod.start.takeIf { it.isAfter(evakaClock.today()) } ?: evakaClock.today(),
+            dst.validityPeriod.end
+        )
+
+        val deletedReservationCount = tx.clearReservationsForRange(dst.childId, actionableRange)
+
+        tx.addDailyServiceTimesNotification(id, dst.childId, actionableRange.start, deletedReservationCount > 0)
     }
 }
