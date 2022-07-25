@@ -1816,7 +1816,9 @@ const sv: Translations = {
   childDocuments: {
     title: 'Tillväxt och inlärning',
     description:
-      'På denna sida publiceras barnets plan för lärande samt bilder och andra dokument som berör utveckling, välbefinnande och vardagen inom enheten.'
+      'På denna sida publiceras barnets plan för lärande samt bilder och andra dokument som berör utveckling, välbefinnande och vardagen inom enheten.',
+    deletionDisclaimer:
+      'Dessa dokument kommer att raderas när barnets plats upphör. Ladda ner dokumenten till din egen enhet som du vill behålla.'
   },
   pedagogicalDocuments: {
     title: 'Tillväxt och inlärning',

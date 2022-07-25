@@ -1859,7 +1859,9 @@ const en: Translations = {
   childDocuments: {
     title: 'Growth and learning',
     description:
-      'Documents and photos relating to the growth and learning of the child are gathered on this page.'
+      'Documents and photos relating to the growth and learning of the child are gathered on this page.',
+    deletionDisclaimer:
+      "These documents will be deleted when the child's placement ends. Download the documents to your own device that you want to keep."
   },
   pedagogicalDocuments: {
     title: 'Growth and learning',
