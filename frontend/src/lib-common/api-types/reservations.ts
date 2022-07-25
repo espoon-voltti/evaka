@@ -36,6 +36,7 @@ export interface ChildRecordOfDay {
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
   dailyServiceTimes: DailyServiceTimes | null
+  inOtherUnit: boolean
 }
 
 interface Group {

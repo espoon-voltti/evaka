@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -54,9 +55,47 @@ export class UnitAttendancesPage {
     await foo.click()
   }
 
+  private async getWeekDateRange() {
+    const rawRange = await this.page
+      .find('[data-qa-week-range]')
+      .getAttribute('data-qa-week-range')
+
+    if (!rawRange) throw Error('Week range cannot be found')
+
+    const [start, end] = rawRange
+      .replace(/^\[/, '')
+      .replace(/\]$/, '')
+      .split(', ')
+    return new FiniteDateRange(
+      LocalDate.parseIso(start),
+      LocalDate.parseIso(end)
+    )
+  }
+
+  async changeWeekToDate(date: LocalDate) {
+    for (let i = 0; i < 50; i++) {
+      const currentRange = await this.getWeekDateRange()
+      if (currentRange.includes(date)) return
+
+      await this.page
+        .findByDataQa(
+          currentRange.start.isBefore(date) ? 'next-week' : 'previous-week'
+        )
+        .click()
+    }
+    throw Error(`Unable to seek to date ${date.formatIso()}`)
+  }
+
   async childRowCount(childId: UUID): Promise<number> {
     return await this.page
-      .findAll(`[data-qa="reservation-row-child-${childId}"]`)
+      .findAllByDataQa(`reservation-row-child-${childId}`)
+      .count()
+  }
+
+  async childInOtherUnitCount(childId: UUID): Promise<number> {
+    return await this.page
+      .findAllByDataQa(`reservation-row-child-${childId}`)
+      .findAll('[data-qa="in-other-unit"]')
       .count()
   }
 

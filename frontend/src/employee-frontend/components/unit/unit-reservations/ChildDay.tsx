@@ -20,7 +20,8 @@ import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { attendanceTimeDiffers } from 'lib-common/reservations'
-import { fontWeights } from 'lib-components/typography'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { fontWeights, Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 
@@ -81,6 +82,18 @@ export default React.memo(function ChildDay({
 
   if (day.isHoliday && !dailyData.reservation && !dailyData.attendance)
     return null
+
+  if (dailyData.inOtherUnit) {
+    return (
+      <FixedSpaceRow
+        alignItems="center"
+        justifyContent="center"
+        data-qa="in-other-unit"
+      >
+        <Light>{i18n.unit.attendanceReservations.inOtherUnit}</Light>
+      </FixedSpaceRow>
+    )
+  }
 
   const { dailyServiceTimes } = dailyData
 

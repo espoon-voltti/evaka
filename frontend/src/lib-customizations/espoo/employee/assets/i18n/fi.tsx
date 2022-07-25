@@ -1914,7 +1914,8 @@ export const fi = {
         hhmm: 'tt:mm'
       },
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
-      doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen'
+      doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
+      inOtherUnit: 'Muussa yksikössä'
     },
     staffAttendance: {
       startTime: 'tulo',
