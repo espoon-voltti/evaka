@@ -819,10 +819,7 @@ export const fi = {
             vaikuttaa (asianosainen).
           </P>
           <H2>Oikaisuviranomainen</H2>
-          <P>
-            Oikaisu tehdään Länsi- ja Sisä-Suomen aluehallintovirastolle (Vaasan
-            päätoimipaikka).
-          </P>
+          <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
           <P>
             Etelä-Suomen aluehallintovirasto
             <br />
