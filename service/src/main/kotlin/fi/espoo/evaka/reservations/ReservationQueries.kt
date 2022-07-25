@@ -121,7 +121,7 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, L
 }
 
 fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: DateRange): Int {
-    return this.createUpdate("DELETE FROM attendance_reservation WHERE child_id = :childId AND date <@ :range")
+    return this.createUpdate("DELETE FROM attendance_reservation WHERE child_id = :childId AND between_start_and_end(:range, date)")
         .bind("childId", childId)
         .bind("range", range)
         .execute()

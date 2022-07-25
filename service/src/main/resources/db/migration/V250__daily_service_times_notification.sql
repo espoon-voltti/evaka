@@ -7,3 +7,4 @@ CREATE TABLE daily_service_time_notification (
 );
 
 CREATE INDEX idx$daily_service_time_notification_guardian_id ON daily_service_time_notification (guardian_id);
+CREATE INDEX idx$daily_service_time_notification_daily_service_time_id ON daily_service_time_notification (daily_service_time_id);
