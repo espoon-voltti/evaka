@@ -129,7 +129,7 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
 }: AttendanceTableHeaderProps) {
   const { lang } = useTranslation()
   return (
-    <Thead>
+    <Thead sticky>
       <Tr>
         <CustomTh />
         {operationalDays.map(({ date, isHoliday }) => (
