@@ -1,5 +1,5 @@
 name: Build
-on: [push]
+on: [push, pull_request]
 
 env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
