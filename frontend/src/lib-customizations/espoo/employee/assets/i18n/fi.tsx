@@ -240,12 +240,6 @@ export const fi = {
       returnMessage: 'Palaa takaisin'
     }
   },
-  ageIndicator: {
-    under3: 'Alle 3-vuotias',
-    over3: 'Yli 3-vuotias',
-    under3AtPlacementStart: 'Alle 3-vuotias sijoituksen alkaessa',
-    over3AtPlacementStart: 'Yli 3-vuotias sijoituksen alkaessa'
-  },
   applications: {
     list: {
       title: 'Hakemukset',

@@ -71,7 +71,7 @@ import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'
 import { renderResult } from '../../../async-rendering'
-import { AgeIndicatorIcon } from '../../../common/AgeIndicatorIcon'
+import { AgeIndicatorChip } from '../../../common/AgeIndicatorChip'
 import { CareTypeChip } from '../../../common/CareTypeLabel'
 import { DataList } from '../../../common/DataList'
 import { StatusIconContainer } from '../../../common/StatusIconContainer'
@@ -596,13 +596,11 @@ export default React.memo(function Group({
                           </Link>
                         </Td>
                         <Td>
-                          <FixedSpaceRow spacing="xs">
-                            <AgeIndicatorIcon
-                              isUnder3={
-                                filters.startDate.differenceInYears(
-                                  dateOfBirth
-                                ) < 3
-                              }
+                          <FixedSpaceRow spacing="xs" alignItems="center">
+                            <AgeIndicatorChip
+                              age={filters.startDate.differenceInYears(
+                                dateOfBirth
+                              )}
                             />
                             <span data-qa="child-dob">
                               {dateOfBirth.format()}

@@ -50,7 +50,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
-import { AgeIndicatorIcon } from '../common/AgeIndicatorIcon'
+import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
@@ -391,11 +391,6 @@ export default React.memo(function VoucherServiceProviderUnit() {
               </Thead>
               <Tbody>
                 {sortedReport.value.rows.map((row: ServiceVoucherValueRow) => {
-                  const under3YearsOld =
-                    row.realizedPeriod.start.differenceInYears(
-                      row.childDateOfBirth
-                    ) < 3
-
                   const rowType =
                     row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
 
@@ -432,10 +427,11 @@ export default React.memo(function VoucherServiceProviderUnit() {
                               true
                             )}
                           </Link>
-                          <FixedSpaceRow spacing="xs">
-                            <AgeIndicatorIcon
-                              isUnder3={under3YearsOld}
-                              position="right"
+                          <FixedSpaceRow spacing="xs" alignItems="center">
+                            <AgeIndicatorChip
+                              age={row.realizedPeriod.start.differenceInYears(
+                                row.childDateOfBirth
+                              )}
                             />
                             <span>{row.childDateOfBirth.format()}</span>
                           </FixedSpaceRow>

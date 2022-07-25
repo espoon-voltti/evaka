@@ -19,7 +19,7 @@ import { Table, Tbody } from 'lib-components/layout/Table'
 import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
-import { AgeIndicatorIcon } from '../../common/AgeIndicatorIcon'
+import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 
 import ChildDay from './ChildDay'
 import {
@@ -89,10 +89,8 @@ export default React.memo(function ChildReservationsTable(props: Props) {
                 <NameTd partialRow={multipleRows} rowIndex={index}>
                   {index == 0 && (
                     <NameWrapper>
-                      <AgeIndicatorIcon
-                        isUnder3={
-                          selectedDate.differenceInYears(child.dateOfBirth) < 3
-                        }
+                      <AgeIndicatorChip
+                        age={selectedDate.differenceInYears(child.dateOfBirth)}
                       />
                       <Link to={`/child-information/${child.id}`}>
                         {formatName(
