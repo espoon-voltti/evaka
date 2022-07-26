@@ -56,10 +56,10 @@ class AttachmentsIntegrationTest {
             "png" to pngFile,
         )
         cases.forEach { (extension, file) ->
-            file.openStream().use { file ->
+            file.openStream().use { stream ->
                 assertDoesNotThrow {
                     checkFileContentTypeAndExtension(
-                        file,
+                        stream,
                         extension,
                         listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
                     )
@@ -75,10 +75,10 @@ class AttachmentsIntegrationTest {
             "pdf" to pngFile,
         )
         cases.forEach { (extension, file) ->
-            file.openStream().use { file ->
+            file.openStream().use { stream ->
                 assertThrows<BadRequest> {
                     checkFileContentTypeAndExtension(
-                        file,
+                        stream,
                         extension,
                         listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
                     )

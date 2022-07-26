@@ -133,7 +133,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             createVoucherDecision(janFirst, testDaycare.id, 52200, 28800, testAdult_2.id, testChild_2),
             createVoucherDecision(janFirst, testDaycare.id, 134850, 0, testAdult_3.id, testChild_3)
         ).sumOf { decision ->
-            (decision.voucherValue ?: 0) - (decision.coPayment ?: 0)
+            decision.voucherValue - decision.coPayment
         }
     }
 
