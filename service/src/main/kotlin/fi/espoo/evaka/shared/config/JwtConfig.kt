@@ -27,7 +27,7 @@ class JwtConfig {
     @Profile("local")
     @Bean
     fun devRsaJwtAlgorithm(): Algorithm {
-        val publicKeys = this.javaClass.getResourceAsStream("/local-development/jwks.json").use { loadPublicKeys(it) }
+        val publicKeys = this.javaClass.getResourceAsStream("/local-development/jwks.json").use { loadPublicKeys(it!!) }
         return Algorithm.RSA256(JwtKeys(publicKeys))
     }
 
