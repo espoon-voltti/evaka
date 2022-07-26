@@ -3427,7 +3427,24 @@ export const fi = {
     }
   },
   unitFeatures: {
-    title: 'Toimintojen avaukset'
+    title: 'Toimintojen avaukset',
+    page: {
+      title: 'Yksiköille avatut toiminnot',
+      unit: 'Yksikkö',
+      selectAll: 'Valitse kaikki',
+      unselectAll: 'Poista kaikki',
+      providerType: 'Yksikön toimintamuoto',
+      undo: 'Kumoa edellinen muutos'
+    },
+    pilotFeatures: {
+      MESSAGING: 'Viestintä',
+      MOBILE: 'Mobiili',
+      RESERVATIONS: 'Varaukset',
+      VASU_AND_PEDADOC: 'Vasu ja pedagoginen dokumentointi',
+      MOBILE_MESSAGING: 'Mobiili-viestintä',
+      PLACEMENT_TERMINATION: 'Paikan irtisanominen',
+      REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo'
+    }
   },
   roles: {
     adRoles: {

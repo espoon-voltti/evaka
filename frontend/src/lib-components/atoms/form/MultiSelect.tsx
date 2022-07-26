@@ -48,6 +48,12 @@ function MultiSelect<T>({
   return (
     <div data-qa={props['data-qa']}>
       <ReactSelect
+        styles={{
+          menu: (base) => ({
+            ...base,
+            zIndex: 15
+          })
+        }}
         autoFocus={autoFocus}
         isMulti
         isSearchable={true}

@@ -494,6 +494,7 @@ export interface UnitFeatures {
   features: PilotFeature[]
   id: UUID
   name: string
+  providerType: ProviderType
 }
 
 /**
@@ -532,6 +533,15 @@ export type UnitTypeFilter =
   | 'CLUB'
   | 'DAYCARE'
   | 'PRESCHOOL'
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.UpdateFeaturesRequest
+*/
+export interface UpdateFeaturesRequest {
+  enable: boolean
+  features: PilotFeature[]
+  unitIds: UUID[]
+}
 
 /**
 * Generated from fi.espoo.evaka.daycare.VisitingAddress

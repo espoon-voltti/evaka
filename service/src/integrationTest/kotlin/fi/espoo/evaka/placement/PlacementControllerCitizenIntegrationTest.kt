@@ -8,7 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.daycare.setUnitFeatures
+import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -552,7 +552,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             terminateDaycareOnly = false,
         )
         terminatePlacements(child.id, body, 403)
-        db.transaction { it.setUnitFeatures(daycare2Id, setOf(PilotFeature.PLACEMENT_TERMINATION)) }
+        db.transaction { it.addUnitFeatures(listOf(daycare2Id), listOf(PilotFeature.PLACEMENT_TERMINATION)) }
         terminatePlacements(child.id, body, 200)
     }
 

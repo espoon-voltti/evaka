@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.CaretakerAmount
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
 import fi.espoo.evaka.daycare.UnitFeatures
+import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.deleteCaretakers
 import fi.espoo.evaka.daycare.getCaretakers
@@ -19,9 +20,9 @@ import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.insertCaretakers
+import fi.espoo.evaka.daycare.removeUnitFeatures
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
-import fi.espoo.evaka.daycare.setUnitFeatures
 import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
@@ -72,16 +73,24 @@ class DaycareController(
         return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }
     }
 
-    @PutMapping("/{daycareId}/features")
-    fun putFeatures(
+    @PostMapping("/unit-features")
+    fun postUnitFeatures(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable daycareId: DaycareId,
-        @RequestBody features: Set<PilotFeature>
+        @RequestBody request: UpdateFeaturesRequest
     ) {
-        Audit.UnitFeaturesUpdate.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_FEATURES, daycareId)
-        db.connect { dbc -> dbc.transaction { it.setUnitFeatures(daycareId, features) } }
+        Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_FEATURES, request.unitIds)
+
+        db.connect { dbc ->
+            dbc.transaction {
+                if (request.enable) {
+                    it.addUnitFeatures(request.unitIds, request.features)
+                } else {
+                    it.removeUnitFeatures(request.unitIds, request.features)
+                }
+            }
+        }
     }
 
     @GetMapping("/{daycareId}")
@@ -323,4 +332,6 @@ class DaycareController(
     data class DaycareGroupResponse(val id: GroupId, val name: String, val permittedActions: Set<Action.Group>)
 
     data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
+
+    data class UpdateFeaturesRequest(val unitIds: List<DaycareId>, val features: List<PilotFeature>, val enable: Boolean)
 }

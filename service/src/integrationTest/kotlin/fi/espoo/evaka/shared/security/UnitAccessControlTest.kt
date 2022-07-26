@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.shared.security
 
-import fi.espoo.evaka.daycare.setUnitFeatures
+import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -32,7 +32,7 @@ class UnitAccessControlTest : AccessControlTest() {
             areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             featureDaycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            tx.setUnitFeatures(featureDaycareId, setOf(unitFeature))
+            tx.addUnitFeatures(listOf(featureDaycareId), listOf(unitFeature))
         }
     }
 

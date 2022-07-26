@@ -16,6 +16,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Content from 'lib-components/layout/Container'
@@ -57,22 +58,6 @@ const DangerAsyncButton = styled(AsyncButton)`
     color: ${(p) => p.theme.colors.grayscale.g0};
     border-color: ${(p) => p.theme.colors.grayscale.g35};
     background: ${(p) => p.theme.colors.grayscale.g35};
-  }
-`
-
-const ButtonLink = styled.button`
-  color: ${(p) => p.theme.colors.main.m2};
-  cursor: pointer;
-  text-decoration: underline;
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  display: inline;
-
-  &:hover {
-    text-decoration: none;
-    color: ${(p) => p.theme.colors.main.m1};
   }
 `
 

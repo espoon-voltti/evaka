@@ -2,26 +2,37 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import isEqual from 'lodash/isEqual'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
+import { useTranslation } from 'employee-frontend/state/i18n'
+import { Failure, Result, Success } from 'lib-common/api'
+import {
+  ProviderType,
+  UnitFeatures
+} from 'lib-common/generated/api-types/daycare'
 import {
   PilotFeature,
   pilotFeatures
 } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
+import { Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
 import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { unitProviderTypes } from 'lib-customizations/employee'
 
 import { client } from '../api/client'
 
 import { renderResult } from './async-rendering'
+import { TableScrollable } from './reports/common'
 
 async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
   return client
@@ -30,71 +41,141 @@ async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-async function putUnitFeatures(
-  unitId: UUID,
-  features: PilotFeature[]
+async function updateUnitFeatures(
+  unitIds: UUID[],
+  features: PilotFeature[],
+  enable: boolean
 ): Promise<Result<void>> {
   return client
-    .put<JsonOf<UnitFeatures[]>>(`/daycares/${unitId}/features`, features)
+    .post(`/daycares/unit-features`, { unitIds, features, enable })
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
 export default React.memo(function UnitFeaturesPage() {
-  const [unitsResult, setUnitsResult] = useState<Result<UnitFeatures[]>>(
-    Loading.of()
-  )
+  const { i18n } = useTranslation()
 
-  const load = useRestApi(getUnitFeatures, setUnitsResult)
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  // editable live copy of data
-  const [units, setUnits] = useState<Result<UnitFeatures[]>>(Loading.of())
-  useEffect(() => setUnits(unitsResult), [unitsResult])
+  const [units, reloadUnits] = useApiState(getUnitFeatures, [])
 
   const [submitting, setSubmitting] = useState(false)
 
-  const updateFlag = (unitId: UUID, feature: PilotFeature, value: boolean) => {
-    if (!units.isSuccess) return
+  const [undoAction, setUndoAction] =
+    useState<[UUID[], PilotFeature[], boolean]>()
 
-    const currentFeatures = units.value.find((u) => u.id === unitId)?.features
-    if (!currentFeatures) return
+  const updateFeatures = useCallback(
+    async (
+      unitIds: UUID[],
+      features: PilotFeature[],
+      enable: boolean,
+      isUndoAction = false
+    ) => {
+      setSubmitting(true)
 
-    const newFeatures = value
-      ? [...currentFeatures, feature]
-      : currentFeatures.filter((f) => f !== feature)
-
-    setSubmitting(true)
-    void putUnitFeatures(unitId, newFeatures).then((res) => {
-      setSubmitting(false)
-      if (res.isSuccess) {
-        setUnits((prev) =>
-          prev.map((rows) =>
-            rows.map((row) =>
-              row.id === unitId ? { ...row, features: newFeatures } : row
-            )
-          )
-        )
-      } else {
-        void load()
+      const result = await updateUnitFeatures(unitIds, features, enable)
+      if (!isUndoAction) {
+        setUndoAction([unitIds, features, !enable])
       }
-    })
-  }
+
+      reloadUnits()
+      setSubmitting(false)
+
+      return result
+    },
+    [reloadUnits]
+  )
+
+  const [filteredProviderTypes, setFilteredProviderTypes] =
+    useState<ProviderType[]>(unitProviderTypes)
+
+  const filteredUnits = useMemo(
+    () =>
+      isEqual(unitProviderTypes, filteredProviderTypes)
+        ? units
+        : units.map((units) =>
+            units.filter((unit) =>
+              filteredProviderTypes.includes(unit.providerType)
+            )
+          ),
+    [filteredProviderTypes, units]
+  )
+
+  const undo = useCallback(() => {
+    if (!undoAction)
+      return Promise.resolve(
+        Failure.of<void>({
+          message: 'No undo action'
+        })
+      )
+
+    const promise = updateFeatures(
+      undoAction[0],
+      undoAction[1],
+      undoAction[2],
+      true
+    )
+    setUndoAction(undefined)
+    return promise
+  }, [undoAction, updateFeatures])
 
   return (
     <Container>
       <ContentArea opaque>
-        <H1>Yksiköille avatut toiminnot</H1>
-        {renderResult(units, (units) => (
-          <Table>
-            <Thead>
+        <H1>{i18n.unitFeatures.page.title}</H1>
+        <MultiSelect
+          options={unitProviderTypes}
+          getOptionId={(pt) => pt}
+          placeholder={i18n.unitFeatures.page.providerType}
+          getOptionLabel={(providerType) =>
+            i18n.common.providerType[providerType]
+          }
+          value={filteredProviderTypes}
+          onChange={setFilteredProviderTypes}
+        />
+        <Gap size="s" />
+        <AsyncButton
+          disabled={!undoAction}
+          onClick={undo}
+          onSuccess={reloadUnits}
+          text={i18n.unitFeatures.page.undo}
+        />
+        <Gap size="s" />
+        {renderResult(filteredUnits, (units) => (
+          <TableScrollable>
+            <Thead sticky>
               <Tr>
-                <Td>Yksikkö</Td>
-                {pilotFeatures.map((f) => (
-                  <Td key={f}>{f}</Td>
-                ))}
+                <Td>{i18n.unitFeatures.page.unit}</Td>
+                {pilotFeatures.map((f) => {
+                  const allSelected = units.every(({ features }) =>
+                    features.includes(f)
+                  )
+
+                  return (
+                    <Td key={f}>
+                      <div>{i18n.unitFeatures.pilotFeatures[f]}</div>
+                      <Gap size="xs" />
+                      <div>
+                        <ButtonLink
+                          onClick={() => {
+                            void updateFeatures(
+                              units
+                                .filter(
+                                  ({ features }) =>
+                                    features.includes(f) === allSelected
+                                )
+                                .map(({ id }) => id),
+                              [f],
+                              !allSelected
+                            )
+                          }}
+                        >
+                          {allSelected
+                            ? i18n.unitFeatures.page.unselectAll
+                            : i18n.unitFeatures.page.selectAll}
+                        </ButtonLink>
+                      </div>
+                    </Td>
+                  )
+                })}
               </Tr>
             </Thead>
             <Tbody>
@@ -102,6 +183,7 @@ export default React.memo(function UnitFeaturesPage() {
                 <Tr key={unit.id}>
                   <Td>
                     <Link to={`/units/${unit.id}`}>{unit.name}</Link>
+                    <div>{i18n.common.providerType[unit.providerType]}</div>
                   </Td>
                   {pilotFeatures.map((f) => (
                     <Td key={f}>
@@ -109,7 +191,9 @@ export default React.memo(function UnitFeaturesPage() {
                         label={f}
                         hiddenLabel
                         checked={unit.features.includes(f)}
-                        onChange={(value) => updateFlag(unit.id, f, value)}
+                        onChange={(value) =>
+                          updateFeatures([unit.id], [f], value)
+                        }
                         disabled={submitting}
                       />
                     </Td>
@@ -117,7 +201,7 @@ export default React.memo(function UnitFeaturesPage() {
                 </Tr>
               ))}
             </Tbody>
-          </Table>
+          </TableScrollable>
         ))}
       </ContentArea>
     </Container>
