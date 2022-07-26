@@ -28,6 +28,7 @@ jobs:
       uses: fsfe/reuse-action@v1
 
   proxy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -52,6 +53,7 @@ jobs:
       image: ${{ steps.build.outputs.image }}
 
   keycloak:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -76,6 +78,7 @@ jobs:
       image: ${{ steps.build.outputs.image }}
 
   base:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -98,6 +101,7 @@ jobs:
       image_name: ${{ steps.build.outputs.image_name }}
 
   yarn:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     needs:
       - base
     runs-on: ubuntu-latest
@@ -127,6 +131,7 @@ jobs:
       image_name: ${{ steps.build.outputs.image_name }}
 
   frontend-prepare:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -254,6 +259,19 @@ jobs:
 
       - name: Test
         run: docker run --rm "${{ steps.build-builder.outputs.image }}" yarn test --maxWorkers=2
+
+  frontend-test-fork:
+    if: ${{ github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          cd ./evaka-base
+          ./build.sh
+          cd ../frontend
+          ./build-docker.sh test
 
   java:
     needs:
@@ -415,6 +433,20 @@ jobs:
         run: |
           docker run --rm ${{ steps.build.outputs.image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
+  service-test-fork:
+    if: ${{ github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run service tests
+        shell: bash
+        run: |
+          cd ./evaka-base
+          ./build.sh
+          cd ../service
+          ./build-docker.sh test
+
   service-integration-test:
     needs:
       - java
@@ -489,6 +521,33 @@ jobs:
           path: ./compose/test-results/integrationTest/
           retention-days: 2
 
+  service-integration-test-fork:
+    if: ${{ github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare
+        shell: bash
+        run: |
+          cd ./compose
+          ./build.sh
+          ./compose-integration build
+
+      - name: Run service integration tests
+        shell: bash
+        run: |
+          cd ./compose
+          ./compose-integration run integration-test
+
+      - name: Store build
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: ./compose/test-results/integrationTest/
+          retention-days: 2
+
   e2e:
     needs:
       - service
@@ -547,6 +606,41 @@ jobs:
           name: screenshots
           path: ./frontend/screenshots/
           retention-days: 2
+
+
+  e2e-fork:
+    if: ${{ github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test_chunk_number: [1, 2, 3, 4]
+        test_chunk_count: [4] # must max value of above list
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare e2e tests
+        run: |
+          cd ./compose
+          ./build.sh
+          ./test-e2e build
+
+      - name: Run e2e tests
+        run: |
+          ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
+          cd ./compose
+          BUILD=false ./test-e2e run playwright
+
+      - name: Store screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: screenshots
+          path: ./frontend/screenshots/
+          retention-days: 2
+
 
   frontend-install:
     needs:
