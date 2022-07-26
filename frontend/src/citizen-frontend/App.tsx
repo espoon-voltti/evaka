@@ -28,6 +28,7 @@ import CalendarPage from './calendar/CalendarPage'
 import ChildDocuments from './child-documents/ChildDocuments'
 import { PedagogicalDocumentsContextProvider } from './child-documents/state'
 import VasuPage from './child-documents/vasu/VasuPage'
+import AssistanceNeedDecisionPage from './children/AssistanceNeedDecisionPage'
 import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -187,6 +188,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <ApplicationEditor />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/children/:childId/assistance-need-decision/:id"
+            element={
+              <RequireAuth>
+                <AssistanceNeedDecisionPage />
               </RequireAuth>
             }
           />

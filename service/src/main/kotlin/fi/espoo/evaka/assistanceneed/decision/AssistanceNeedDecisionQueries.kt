@@ -314,3 +314,19 @@ fun Database.Transaction.markAssistanceNeedDecisionAsOpened(
         .bind("id", id)
         .updateExactlyOne()
 }
+
+fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(childId: ChildId): List<AssistanceNeedDecisionCitizenListItem> {
+    //language=sql
+    val sql =
+        """
+        SELECT ad.id, start_date, end_date, status, decision_made, assistance_level,
+            selected_unit selected_unit_id, unit.name selected_unit_name
+        FROM assistance_need_decision ad
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED')
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("childId", childId)
+        .mapTo<AssistanceNeedDecisionCitizenListItem>()
+        .list()
+}

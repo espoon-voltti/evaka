@@ -14,6 +14,7 @@ import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/ass
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
@@ -28,7 +29,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion, faTimes } from 'lib-icons'
 
-import AssistanceNeedDecisionReadOnly from '../child-information/assistance-need/decision/AssistanceNeedDecisionReadOnly'
 import {
   decideAssistanceNeedDecision,
   getAssistanceNeedDecision,
@@ -175,6 +175,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                     />
                   )
                 }
+                texts={t}
               />
             </I18nContext.Provider>
           )

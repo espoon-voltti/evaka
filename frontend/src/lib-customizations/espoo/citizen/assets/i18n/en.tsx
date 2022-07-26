@@ -13,6 +13,8 @@ import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import fi from './fi'
+
 const yes = 'Yes'
 const no = 'No'
 
@@ -1973,6 +1975,35 @@ const en: Translations = {
       confirmDescription: (date: string) =>
         `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
       terminate: 'Terminate the agreement'
+    },
+    assistanceNeed: {
+      title: 'Support need',
+      decisions: {
+        title: 'Support need decisions',
+        form: 'Form',
+        assistanceLevel: 'Level of support',
+        validityPeriod: 'Valid',
+        unit: 'Unit',
+        decisionMade: 'Decision made',
+        status: 'Status',
+        openDecision: 'Open decision',
+        // the actual decision cannot be in English
+        decision: {
+          ...fi.children.assistanceNeed.decisions.decision,
+          statuses: {
+            DRAFT: 'Draft',
+            NEEDS_WORK: 'Needs work',
+            ACCEPTED: 'Accepted',
+            REJECTED: 'Rejected'
+          },
+          assistanceLevel: {
+            assistanceEnds: 'Assistance ends',
+            assistanceServicesForTime: 'Assistance services during',
+            enhancedAssistance: 'Enhanced assistance',
+            specialAssistance: 'Special assistance'
+          }
+        }
+      }
     }
   },
   accessibilityStatement: (

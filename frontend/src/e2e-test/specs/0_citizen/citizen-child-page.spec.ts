@@ -5,6 +5,7 @@
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
+import config from '../../config'
 import {
   insertApplications,
   insertDaycarePlacementFixtures,
@@ -17,10 +18,12 @@ import {
 import {
   applicationFixture,
   applicationFixtureId,
+  Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement } from '../../dev-api/types'
+import { DaycarePlacement, EmployeeDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import {
   CitizenChildPage,
   CitizenChildrenPage
@@ -433,5 +436,196 @@ describe('Citizen children page', () => {
 
       await childPage.assertTerminatedPlacementCount(0) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
     })
+  })
+
+  describe('Assistance need decisions table', () => {
+    test('Has an accepted decision', async () => {
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'ACCEPTED',
+          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          startDate: LocalDate.of(2020, 2, 5),
+          endDate: LocalDate.of(2021, 5, 11),
+          decisionMade: LocalDate.of(2020, 1, 17)
+        })
+        .save()
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openAssistanceNeedCollapsible()
+
+      await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
+        assistanceLevel: 'Erityinen tuki',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: '05.02.2020 – 11.05.2021',
+        decisionMade: '17.01.2020',
+        status: 'ACCEPTED'
+      })
+    })
+    test('Has a rejected decision', async () => {
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'REJECTED',
+          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          startDate: LocalDate.of(2022, 2, 10),
+          decisionMade: LocalDate.of(2021, 1, 17)
+        })
+        .save()
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openAssistanceNeedCollapsible()
+
+      await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
+        assistanceLevel: 'Tehostettu tuki',
+        selectedUnit: fixtures.daycareFixture.name,
+        validityPeriod: '10.02.2022 –',
+        decisionMade: '17.01.2021',
+        status: 'REJECTED'
+      })
+    })
+    test('Does not have a needs work or draft decision', async () => {
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'NEEDS_WORK',
+          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          startDate: LocalDate.of(2022, 2, 10),
+          decisionMade: LocalDate.of(2021, 1, 17)
+        })
+        .save()
+
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'DRAFT',
+          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          startDate: LocalDate.of(2020, 2, 5),
+          endDate: LocalDate.of(2021, 5, 11),
+          decisionMade: LocalDate.of(2021, 1, 17)
+        })
+        .save()
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openAssistanceNeedCollapsible()
+
+      await waitUntilEqual(
+        () => childPage.getAssistanceNeedDecisionRowCount(),
+        0
+      )
+    })
+  })
+})
+
+describe('Citizen assistance need decision page', () => {
+  let assistanceNeedDecisionPage: AssistanceNeedDecisionPage
+  let serviceWorker: EmployeeDetail
+
+  beforeEach(async () => {
+    serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+
+    const decision = await Fixture.preFilledAssistanceNeedDecision()
+      .withChild(fixtures.enduserChildFixtureKaarina.id)
+      .with({
+        selectedUnit: { id: fixtures.daycareFixture.id },
+        status: 'ACCEPTED',
+        assistanceLevel: 'ENHANCED_ASSISTANCE',
+        startDate: LocalDate.of(2020, 2, 5),
+        endDate: LocalDate.of(2021, 5, 11),
+        decisionMade: LocalDate.of(2021, 1, 17),
+        decisionMaker: {
+          employeeId: serviceWorker.id,
+          title: 'head teacher'
+        },
+        preparedBy1: {
+          employeeId: serviceWorker.id,
+          title: 'teacher',
+          phoneNumber: '010202020202'
+        }
+      })
+      .save()
+
+    await header.selectTab('children')
+    await childrenPage.openChildPage('Kaarina')
+    await childPage.openAssistanceNeedCollapsible()
+    await childPage.getAssistanceNeedDecisionRowClick(0)
+
+    await page.page.waitForURL(
+      `${config.enduserUrl}/children/${
+        fixtures.enduserChildFixtureKaarina.id
+      }/assistance-need-decision/${decision.data.id ?? ''}`
+    )
+
+    assistanceNeedDecisionPage = new AssistanceNeedDecisionPage(page)
+  })
+
+  test('Preview shows filled information', async () => {
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.pedagogicalMotivation,
+      'Pedagogical motivation text'
+    )
+    await assistanceNeedDecisionPage.assertStructuralMotivationOption(
+      'groupAssistant'
+    )
+    await assistanceNeedDecisionPage.assertStructuralMotivationOption(
+      'smallerGroup'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.structuralMotivationDescription,
+      'Structural motivation description text'
+    )
+    await assistanceNeedDecisionPage.assertServiceOption(
+      'interpretationAndAssistanceServices'
+    )
+    await assistanceNeedDecisionPage.assertServiceOption('partTimeSpecialEd')
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.careMotivation,
+      'Care motivation text'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.guardiansHeardOn,
+      '05.04.2020'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.otherRepresentativeDetails,
+      'John Doe, 01020304050, via phone'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.viewOfGuardians,
+      'VOG text'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.futureLevelOfAssistance,
+      'Tehostettu tuki'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.startDate,
+      '05.02.2020'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.selectedUnit,
+      `${fixtures.daycareFixture.name}\n${fixtures.daycareFixture.streetAddress}\n${fixtures.daycareFixture.postalCode} ${fixtures.daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.motivationForDecision,
+      'Motivation for decision text'
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.preparedBy1,
+      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n${
+        serviceWorker.email ?? ''
+      }\n010202020202`
+    )
+    await waitUntilEqual(
+      () => assistanceNeedDecisionPage.decisionMaker,
+      `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
+    )
   })
 })

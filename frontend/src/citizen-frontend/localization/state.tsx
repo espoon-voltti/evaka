@@ -39,7 +39,8 @@ const defaultState = {
   setLang: () => undefined
 }
 
-const LocalizationContext = createContext<LocalizationState>(defaultState)
+export const LocalizationContext =
+  createContext<LocalizationState>(defaultState)
 
 const validateLang = (value: string | null): value is Lang => {
   for (const lang of langs) {

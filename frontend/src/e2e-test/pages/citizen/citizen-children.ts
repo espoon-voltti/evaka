@@ -44,6 +44,10 @@ export class CitizenChildPage {
     await this.page.findText('Paikan irtisanominen').click()
   }
 
+  async openAssistanceNeedCollapsible() {
+    await this.page.findText('Tuen tarve').click()
+  }
+
   async assertTerminatablePlacementCount(count: number) {
     await this.#placements.assertCount(count)
   }
@@ -93,5 +97,30 @@ export class CitizenChildPage {
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')
     )
+  }
+
+  async getAssistanceNeedDecisionRow(nth: number) {
+    const row = this.page
+      .findAllByDataQa('assistance-need-decision-row')
+      .nth(nth)
+
+    return {
+      assistanceLevel: await row.findByDataQa('assistance-level').innerText,
+      validityPeriod: await row.findByDataQa('validity-period').innerText,
+      selectedUnit: await row.findByDataQa('selected-unit').innerText,
+      decisionMade: await row.findByDataQa('decision-made').innerText,
+      status: await row.findByDataQa('status').getAttribute('data-qa-status')
+    }
+  }
+
+  async getAssistanceNeedDecisionRowCount() {
+    return this.page.findAllByDataQa('assistance-need-decision-row').count()
+  }
+
+  async getAssistanceNeedDecisionRowClick(nth: number) {
+    return this.page
+      .findAllByDataQa('assistance-need-decision-row')
+      .nth(nth)
+      .click()
   }
 }

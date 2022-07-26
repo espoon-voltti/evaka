@@ -106,6 +106,19 @@ export interface AssistanceNeedDecisionChild {
 }
 
 /**
+* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionCitizenListItem
+*/
+export interface AssistanceNeedDecisionCitizenListItem {
+  assistanceLevel: AssistanceLevel | null
+  decisionMade: LocalDate | null
+  endDate: LocalDate | null
+  id: UUID
+  selectedUnit: UnitInfoBasics | null
+  startDate: LocalDate | null
+  status: AssistanceNeedDecisionStatus
+}
+
+/**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {

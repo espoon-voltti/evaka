@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.messaging.filterCitizenPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -204,6 +205,22 @@ AND guardian_id = :guardianId
             )
                 .bind("ids", ids.toTypedArray())
                 .bind("guardianId", guardianId)
+                .mapTo()
+        }
+    )
+
+    fun guardianOfChildOfAssistanceNeedDecision() = DatabaseActionRule(
+        this,
+        Query<AssistanceNeedDecisionId> { tx, citizenId, _, ids ->
+            tx.createQuery(
+                """
+SELECT id
+FROM assistance_need_decision ad
+WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_id = ad.child_id)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
                 .mapTo()
         }
     )

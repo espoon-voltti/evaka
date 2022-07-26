@@ -5,13 +5,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useTranslation } from 'employee-frontend/state/i18n'
 import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faFileAlt, faPen, faTrash } from 'lib-icons'
-
-import { AssistanceNeedDecisionStatusChip } from './assistance-need/decision/common'
 
 interface Props {
   decision: AssistanceNeedDecisionBasicsResponse
@@ -25,6 +25,8 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
   onDelete
 }: Props) {
   const navigate = useNavigate()
+
+  const { i18n } = useTranslation()
 
   return (
     <Tr data-qa="table-assistance-need-decision-row">
@@ -61,6 +63,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
       <Td>
         <AssistanceNeedDecisionStatusChip
           decisionStatus={decision.status}
+          texts={i18n.childInformation.assistanceNeedDecision.statuses}
           data-qa="decision-status"
         />
       </Td>

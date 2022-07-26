@@ -237,3 +237,16 @@ data class AssistanceNeedDecisionChild(
     val id: ChildId?,
     val name: String?
 )
+
+data class AssistanceNeedDecisionCitizenListItem(
+    val id: AssistanceNeedDecisionId,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
+    val status: AssistanceNeedDecisionStatus,
+
+    val decisionMade: LocalDate?,
+    @Nested("selected_unit")
+    val selectedUnit: UnitInfoBasics?,
+
+    val assistanceLevel: AssistanceLevel?
+)

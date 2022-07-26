@@ -8,9 +8,11 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
+import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -23,7 +25,6 @@ import {
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import AssistanceNeedDecisionReadOnly from './AssistanceNeedDecisionReadOnly'
 import { getAssistanceNeedDecision, sendAssistanceNeedDecision } from './api'
 
 const StickyFooterContainer = styled.div`
@@ -77,7 +78,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
               setLang: () => undefined
             }}
           >
-            <AssistanceNeedDecisionReadOnly decision={decision} />
+            <AssistanceNeedDecisionContent decision={decision} />
           </I18nContext.Provider>
         ))}
       </Content>
@@ -141,3 +142,19 @@ export default React.memo(function AssistanceNeedDecisionPage() {
     </>
   )
 })
+
+const AssistanceNeedDecisionContent = React.memo(
+  function AssistanceNeedDecisionContent({
+    decision
+  }: {
+    decision: AssistanceNeedDecision
+  }) {
+    const {
+      i18n: {
+        childInformation: { assistanceNeedDecision: t }
+      }
+    } = useTranslation()
+
+    return <AssistanceNeedDecisionReadOnly decision={decision} texts={t} />
+  }
+)
