@@ -49,6 +49,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
             tx.insertTestApplicationForm(
                 applicationId,
                 DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
                     child = Child(
                         dateOfBirth = LocalDate.of(2019, 1, 1)
                     ),
@@ -56,7 +57,6 @@ class ApplicationAccessControlTest : AccessControlTest() {
                     apply = Apply(
                         preferredUnits = listOf(daycareId)
                     ),
-                    type = ApplicationType.DAYCARE
                 )
             )
         }
