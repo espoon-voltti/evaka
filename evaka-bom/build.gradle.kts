@@ -25,18 +25,18 @@ javaPlatform {
 dependencies {
     constraints {
         api("com.auth0:java-jwt:3.19.1")
-        api("com.github.kagkarlsson:db-scheduler:11.0")
+        api("com.github.kagkarlsson:db-scheduler:11.2")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
         api("com.zaxxer:HikariCP:5.0.1")
         api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.3.2")
         api("io.github.microutils:kotlin-logging-jvm:2.1.23")
-        api("io.javalin:javalin:4.4.0")
+        api("io.javalin:javalin:4.6.4")
         api("javax.annotation:javax.annotation-api:1.3.2")
         api("javax.jws:javax.jws-api:1.1")
         api("javax.xml.ws:jaxws-api:2.3.1")
-        api("net.bytebuddy:byte-buddy:1.12.1")
+        api("net.bytebuddy:byte-buddy:1.12.12")
         api("net.logstash.logback:logstash-logback-encoder:7.2")
         api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.11.1")
@@ -53,12 +53,12 @@ dependencies {
         api("org.mockito:mockito-junit-jupiter:${Version.mockito}")
         api("org.mockito.kotlin:mockito-kotlin:4.0.0")
         api("org.postgresql:postgresql:42.3.3")
-        api("org.skyscreamer:jsonassert:1.5.0")
+        api("org.skyscreamer:jsonassert:1.5.1")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
         api("org.thymeleaf:thymeleaf:3.0.15.RELEASE")
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
-        api("redis.clients:jedis:4.2.1")
+        api("redis.clients:jedis:4.2.3")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.13.3"))
