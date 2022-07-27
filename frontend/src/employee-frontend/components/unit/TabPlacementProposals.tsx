@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 
-import {
+import type {
   AssistanceAction,
   AssistanceActionResponse
 } from 'employee-frontend/types/child'
-import { Action } from 'lib-common/generated/action'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
+import type { Action } from 'lib-common/generated/action'
+import type { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'

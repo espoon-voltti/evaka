@@ -5,14 +5,14 @@
 import React, { useContext, useState } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CreateTemplateRequest,
   CurriculumType,
   VasuLanguage,
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -24,11 +24,11 @@ import { featureFlags } from 'lib-customizations/employee'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 
+import type { VasuErrorCode } from './api'
 import {
   createVasuTemplate,
   curriculumTypes,
   editVasuTemplate,
-  VasuErrorCode,
   vasuLanguages
 } from './api'
 

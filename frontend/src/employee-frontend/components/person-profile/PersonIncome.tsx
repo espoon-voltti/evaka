@@ -5,8 +5,9 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Failure, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { Failure, Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -30,7 +31,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
-import { Income, IncomeBody, IncomeId } from '../../types/income'
+import type { Income, IncomeBody, IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
 

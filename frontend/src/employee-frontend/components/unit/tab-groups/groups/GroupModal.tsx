@@ -4,8 +4,8 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { UpdateStateFn } from 'lib-common/form-state'
-import LocalDate from 'lib-common/local-date'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'

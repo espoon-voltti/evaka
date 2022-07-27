@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
@@ -39,7 +39,8 @@ import { useTranslation } from '../localization'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
 import { Desktop, Mobile, PaddedDiv } from './components'
-import { ChildDocumentsContext, ChildDocumentsState } from './state'
+import type { ChildDocumentsState } from './state'
+import { ChildDocumentsContext } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,

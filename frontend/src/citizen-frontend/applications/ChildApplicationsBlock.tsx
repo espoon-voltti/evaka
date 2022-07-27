@@ -10,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatDate } from 'lib-common/date'
-import {
+import type {
   ApplicationStatus,
   CitizenApplicationSummary
 } from 'lib-common/generated/api-types/application'

@@ -6,7 +6,7 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -19,7 +19,8 @@ import { useTranslation } from '../../state/i18n'
 import Actions from './Actions'
 import PaymentFilters from './PaymentFilters'
 import Payments from './Payments'
-import { PaymentsActions, usePaymentsState } from './payments-state'
+import type { PaymentsActions } from './payments-state'
+import { usePaymentsState } from './payments-state'
 
 export default React.memo(function PaymentsPage() {
   const {

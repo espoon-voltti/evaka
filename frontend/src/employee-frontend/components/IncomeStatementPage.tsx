@@ -7,9 +7,10 @@ import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import {
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type {
   Accountant,
   ChildIncome,
   Entrepreneur,
@@ -17,8 +18,8 @@ import {
   Gross,
   Income
 } from 'lib-common/api-types/incomeStatement'
-import { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
-import { UUID } from 'lib-common/types'
+import type { SetIncomeStatementHandledBody } from 'lib-common/generated/api-types/incomestatement'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -45,7 +46,8 @@ import {
   updateIncomeStatementHandled
 } from '../api/income-statement'
 import { getPerson } from '../api/person'
-import { Translations, useTranslation } from '../state/i18n'
+import type { Translations } from '../state/i18n'
+import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 
@@ -221,7 +223,7 @@ function GrossIncome({ gross }: { gross: Gross }) {
   )
 }
 
-function EstimatedIncome({
+function EstimatedIncomeInfo({
   estimatedIncome
 }: {
   estimatedIncome: EstimatedIncome
@@ -308,7 +310,7 @@ function EntrepreneurIncome({ entrepreneur }: { entrepreneur: Entrepreneur }) {
                 <Item>{i18n.incomeStatement.selfEmployedAttachments}</Item>
               )}
               {entrepreneur.selfEmployed.estimatedIncome && (
-                <EstimatedIncome
+                <EstimatedIncomeInfo
                   estimatedIncome={entrepreneur.selfEmployed.estimatedIncome}
                 />
               )}

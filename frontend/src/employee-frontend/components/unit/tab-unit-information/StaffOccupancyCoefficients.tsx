@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 
 import { formatPersonName } from 'employee-frontend/utils'
 import { combine } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { ContentArea } from 'lib-components/layout/Container'

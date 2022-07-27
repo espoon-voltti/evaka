@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch } from 'react'
+import type { Dispatch } from 'react'
+import React from 'react'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  ChildLanguage,
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   CurriculumType,
-  VasuBasics
+  VasuBasics,
+  ChildLanguage
 } from 'lib-common/generated/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -18,7 +19,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 import StaticInfoSubsection from '../components/StaticInfoSubsection'
@@ -81,7 +82,7 @@ export function BasicsSection({
               setChildLanguage={setChildLanguage}
             />
           ) : (
-            <ChildLanguage
+            <ChildLanguageSection
               sectionIndex={sectionIndex}
               childLanguage={childLanguage}
               translations={translations}
@@ -99,7 +100,7 @@ interface ChildLanguageProps {
   translations: VasuTranslations
 }
 
-const ChildLanguage = React.memo(function ChildLanguage({
+const ChildLanguageSection = React.memo(function ChildLanguage({
   childLanguage,
   translations
 }: ChildLanguageProps) {

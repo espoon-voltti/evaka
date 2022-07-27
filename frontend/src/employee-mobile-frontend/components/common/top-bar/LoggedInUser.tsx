@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { Staff } from 'lib-common/generated/api-types/attendance'
+import type { Staff } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'

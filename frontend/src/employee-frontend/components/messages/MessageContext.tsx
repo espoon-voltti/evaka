@@ -10,8 +10,9 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   DraftContent,
   Message,
   MessageThread,
@@ -20,14 +21,15 @@ import {
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
+import type { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
 
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
 
+import type { ReplyToThreadParams } from './api'
 import {
   getMessageDrafts,
   getMessagingAccounts,
@@ -35,10 +37,9 @@ import {
   getSentMessages,
   getUnreadCounts,
   markThreadRead,
-  replyToThread,
-  ReplyToThreadParams
+  replyToThread
 } from './api'
-import { AccountView } from './types-view'
+import type { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>

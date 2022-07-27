@@ -4,9 +4,10 @@
 
 import React, { createContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { UnitInfo } from 'lib-common/generated/api-types/attendance'
-import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { UnitInfo } from 'lib-common/generated/api-types/attendance'
+import type { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 

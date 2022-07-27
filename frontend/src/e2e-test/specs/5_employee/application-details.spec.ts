@@ -12,12 +12,10 @@ import {
   resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Application, EmployeeDetail } from '../../dev-api/types'
+import type { Application, EmployeeDetail } from '../../dev-api/types'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'

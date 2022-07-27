@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNodeArray, useState } from 'react'
+import type { ReactNodeArray } from 'react'
+import React, { useState } from 'react'
 
 interface Props {
   children: ReactNodeArray

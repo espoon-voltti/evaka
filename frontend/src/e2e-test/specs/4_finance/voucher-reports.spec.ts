@@ -21,11 +21,11 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import type { PersonDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import type { VoucherServiceProvidersReport } from '../../pages/employee/reports'
 import ReportsPage, {
-  ServiceVoucherUnitReport,
-  VoucherServiceProvidersReport
+  ServiceVoucherUnitReport
 } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

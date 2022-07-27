@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Collapsible, Page } from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { Collapsible } from '../../../utils/page'
 
 export class ChildDocumentsPage {
   constructor(readonly page: Page) {}

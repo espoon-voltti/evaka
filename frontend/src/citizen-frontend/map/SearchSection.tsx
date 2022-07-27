@@ -5,8 +5,11 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { Language, PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Result } from 'lib-common/api'
+import type {
+  Language,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -27,7 +30,7 @@ import { faArrowLeft } from 'lib-icons'
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
 
-import { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'
+import type { CareTypeOption, MapAddress, ProviderTypeOption } from './MapView'
 
 interface Props {
   allUnits: Result<PublicUnit[]>

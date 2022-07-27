@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { UUID } from 'lib-common/types'
 import { faTimes, faTrash } from 'lib-icons'
 
 import Button from '../atoms/buttons/Button'

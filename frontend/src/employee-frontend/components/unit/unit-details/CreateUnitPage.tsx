@@ -5,8 +5,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { combine, Loading } from 'lib-common/api'
+import type {
   DaycareCareArea,
   DaycareFields
 } from 'lib-common/generated/api-types/daycare'
@@ -16,7 +17,7 @@ import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import { createDaycare } from '../../../api/unit'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import type { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 
 export default React.memo(function CreateUnitPage() {

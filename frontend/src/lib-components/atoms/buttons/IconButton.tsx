@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
 
-import { BaseProps } from '../../utils'
-import { IconSize } from '../icon-size'
+import type { BaseProps } from '../../utils'
+import type { IconSize } from '../icon-size'
 
 interface ButtonProps {
   size: IconSize | undefined

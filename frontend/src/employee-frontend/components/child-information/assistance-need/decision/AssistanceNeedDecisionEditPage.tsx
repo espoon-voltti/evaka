@@ -8,14 +8,15 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
-import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
+import type { Lang } from 'employee-frontend/state/i18n'
+import { I18nContext, useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
-import {
+import type {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionLanguage
 } from 'lib-common/generated/api-types/assistanceneed'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
@@ -29,16 +30,16 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import Select, { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
+import Select from 'lib-components/molecules/Select'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { getPerson } from '../../../../api/person'
 
-import AssistanceNeededDecisionForm, {
-  FieldInfos
-} from './AssistanceNeededDecisionForm'
+import type { FieldInfos } from './AssistanceNeededDecisionForm'
+import AssistanceNeededDecisionForm from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
 import { FooterContainer } from './common'
 

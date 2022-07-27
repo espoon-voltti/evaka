@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FocusEventHandler } from 'react'
+import type { FocusEventHandler } from 'react'
 import styled, { css } from 'styled-components'
 
 export interface DropdownProps<T, E extends HTMLElement> {

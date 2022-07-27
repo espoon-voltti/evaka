@@ -11,25 +11,26 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   Message,
   MessageThread,
   AuthorizedMessageAccount,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SelectOption } from 'lib-components/molecules/Select'
+import type { SelectOption } from 'lib-components/molecules/Select'
 
+import type { ReplyToThreadParams } from '../api/messages'
 import {
   getMessagingAccounts,
   getReceivedMessages,
   markThreadRead,
-  replyToThread,
-  ReplyToThreadParams
+  replyToThread
 } from '../api/messages'
 
 import { UnitContext } from './unit'

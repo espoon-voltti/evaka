@@ -4,39 +4,40 @@
 
 import mapValues from 'lodash/mapValues'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { AdRole } from 'lib-common/api-types/employee-auth'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
+import type {
   ChildDailyRecords,
   UnitAttendanceReservations
 } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type {
   CreateDaycareResponse,
   DaycareFields,
   Stats
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   OccupancyResponseSpeculated,
   RealtimeOccupancy
 } from 'lib-common/generated/api-types/occupancy'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import {
+import type { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import type {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import {
+import type {
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,

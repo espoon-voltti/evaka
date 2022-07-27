@@ -2,29 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
-import { Paged, Result } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import type {
   InvoiceSortParam,
   InvoiceSummary,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
+import type { InvoiceSearchParams } from '../../api/invoicing'
 import {
   createInvoices,
   getInvoices,
-  InvoiceSearchParams,
   sendInvoices,
   sendInvoicesByDate
 } from '../../api/invoicing'

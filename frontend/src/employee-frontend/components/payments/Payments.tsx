@@ -7,8 +7,9 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success } from 'lib-common/api'
+import type {
   Payment,
   PaymentSortParam,
   SortDirection
@@ -32,7 +33,7 @@ import { faExclamationTriangle, faSync } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
-import { PaymentsActions } from './payments-state'
+import type { PaymentsActions } from './payments-state'
 
 interface Props {
   actions: PaymentsActions

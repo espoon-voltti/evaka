@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   MessageReceiver,
   MessageReceiversResponse
 } from 'lib-common/generated/api-types/messaging'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 /*
     SelectorNode is a recursive type for storing a selectorId, the corresponding selected

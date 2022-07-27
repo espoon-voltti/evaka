@@ -4,7 +4,8 @@
 
 import styled from 'styled-components'
 
-import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins, isSpacingSize } from '../white-space'
 
 export default styled.ul<{ spacing?: SpacingSize | string }>`
   margin: 0;

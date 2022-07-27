@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import type {
+  ClubTerm,
+  PreschoolTerm
+} from 'lib-common/generated/api-types/daycare'
 
-import { JsonOf } from '../../json'
+import type { JsonOf } from '../../json'
 
 export const deserializeClubTerm = (clubTerm: JsonOf<ClubTerm>): ClubTerm => ({
   applicationPeriod: FiniteDateRange.parseJson(clubTerm.applicationPeriod),

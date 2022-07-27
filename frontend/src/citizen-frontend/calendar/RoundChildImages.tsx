@@ -5,8 +5,8 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { UUID } from 'lib-common/types'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { UUID } from 'lib-common/types'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
 

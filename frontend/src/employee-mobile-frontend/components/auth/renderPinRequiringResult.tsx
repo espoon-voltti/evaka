@@ -4,10 +4,11 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 
 import { PinLoginRequired } from '../../api/auth-pin-login'
-import { renderResult, RenderResultFn } from '../async-rendering'
+import type { RenderResultFn } from '../async-rendering'
+import { renderResult } from '../async-rendering'
 
 import { PinLogin } from './PinLogin'
 

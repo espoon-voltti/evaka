@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../utils'
-import { Element, Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Element } from '../../utils/page'
 
 import ApplicationReadView from './applications/application-read-view'
 

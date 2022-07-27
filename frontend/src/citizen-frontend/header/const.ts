@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { User } from '../auth/state'
+import type { User } from '../auth/state'
 
 export const getWeakLoginUri = (path?: string) =>
   `/api/application/auth/evaka-customer/login?RelayState=${encodeURIComponent(

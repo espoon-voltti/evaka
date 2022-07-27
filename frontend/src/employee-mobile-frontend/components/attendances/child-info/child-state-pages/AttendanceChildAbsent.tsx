@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 
 import { returnToComing } from '../../../../api/attendances'
 import { ChildAttendanceContext } from '../../../../state/child-attendance'

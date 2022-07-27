@@ -8,13 +8,13 @@ import maxBy from 'lodash/maxBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import {
+import type {
   PlacementTerminationRequestBody,
   PlacementType,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'

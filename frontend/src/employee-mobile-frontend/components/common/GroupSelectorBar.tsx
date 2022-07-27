@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -16,7 +16,8 @@ import { faAngleDown, faAngleUp, faChevronUp, faSearch } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { zIndex } from '../constants'
 
-import GroupSelector, { CountInfo } from './GroupSelector'
+import type { CountInfo } from './GroupSelector'
+import GroupSelector from './GroupSelector'
 
 const GroupContainer = styled.div`
   display: block;

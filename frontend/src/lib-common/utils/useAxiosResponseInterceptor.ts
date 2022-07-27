@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
+import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
+import axios from 'axios'
 import { useEffect } from 'react'
 
 export function useAxiosResponseInterceptor(

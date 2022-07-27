@@ -12,12 +12,16 @@ import {
 } from 'employee-frontend/api/child/daily-service-times'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
-import { DailyServiceTimes, TimeRange } from 'lib-common/api-types/child/common'
+import type {
+  DailyServiceTimes,
+  TimeRange
+} from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
-import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import type { ErrorKey } from 'lib-common/form-validation'
+import { required, time, validate } from 'lib-common/form-validation'
+import type { DailyServiceTimesType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
-import { OmitInUnion, UUID } from 'lib-common/types'
+import type { OmitInUnion, UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'

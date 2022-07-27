@@ -7,15 +7,15 @@ import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
-import {
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type {
   Accountant,
   Entrepreneur,
   EstimatedIncome,
   Gross,
   Income
 } from 'lib-common/api-types/incomeStatement'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -175,7 +175,7 @@ const GrossIncome = React.memo(function GrossIncome({
   )
 })
 
-const EstimatedIncome = React.memo(function EstimatedIncome({
+const EstimatedIncomeInfo = React.memo(function EstimatedIncomeInfo({
   estimatedIncome
 }: {
   estimatedIncome: EstimatedIncome
@@ -265,7 +265,7 @@ const EntrepreneurIncome = React.memo(function EntrepreneurIncome({
                 <Item>{t.income.view.selfEmployedAttachments}</Item>
               )}
               {entrepreneur.selfEmployed.estimatedIncome && (
-                <EstimatedIncome
+                <EstimatedIncomeInfo
                   estimatedIncome={entrepreneur.selfEmployed.estimatedIncome}
                 />
               )}

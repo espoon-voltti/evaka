@@ -4,7 +4,7 @@
 
 import React, { useCallback, useContext } from 'react'
 
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 

@@ -14,7 +14,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
-import { PlacementDraftPlacement } from '../../types/placementdraft'
+import type { PlacementDraftPlacement } from '../../types/placementdraft'
 import { getStatusLabelByDateRange } from '../../utils/date'
 
 const Type = styled.span`

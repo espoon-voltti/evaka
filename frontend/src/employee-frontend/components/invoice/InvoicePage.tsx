@@ -5,8 +5,9 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   InvoiceCodes,
   InvoiceDetailed,
   InvoiceRowDetailed
@@ -18,7 +19,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { totalPrice } from '../../utils/pricing'
 
 import Actions from './Actions'

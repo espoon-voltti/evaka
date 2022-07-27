@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { ReactNode, useCallback, useState } from 'react'
+import type { ReactNode } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -13,7 +14,8 @@ import { fasInfo, faTimes } from 'lib-icons'
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
 import { desktopMin } from '../breakpoints'
-import { defaultMargins, SpacingSize } from '../white-space'
+import type { SpacingSize } from '../white-space'
+import { defaultMargins } from '../white-space'
 
 const InfoBoxContainer = styled(Container)<{
   width?: 'fixed' | 'full' | 'auto'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -11,17 +11,15 @@ import {
   insertDaycarePlacementFixtures,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement, EmployeeDetail } from '../../dev-api/types'
+import type { DaycarePlacement, EmployeeDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import {

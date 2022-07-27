@@ -5,12 +5,13 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/reservations'
+import type { Result } from 'lib-common/api'
+import type { OperationalDay } from 'lib-common/api-types/reservations'
+import type { TimeRange } from 'lib-common/generated/api-types/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
-import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
+import type { TrProps } from 'lib-components/layout/Table'
+import { Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { fontWeights, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -18,7 +19,7 @@ import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
-import { TimeRangeWithErrors } from './reservation-table-edit-state'
+import type { TimeRangeWithErrors } from './reservation-table-edit-state'
 
 export const EditStateIndicator = React.memo(function EditStateIndicator({
   status,

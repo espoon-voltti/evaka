@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, TextInput, Combobox } from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { TextInput, Combobox } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
   constructor(private readonly page: Page) {}

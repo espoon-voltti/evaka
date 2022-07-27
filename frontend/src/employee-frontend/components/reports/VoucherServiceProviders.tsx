@@ -8,9 +8,10 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import type { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -28,10 +29,8 @@ import colors from 'lib-customizations/common'
 import { faLockAlt, faSearch } from 'lib-icons'
 
 import { getAreas } from '../../api/daycare'
-import {
-  getVoucherServiceProvidersReport,
-  VoucherServiceProvidersFilters
-} from '../../api/reports'
+import type { VoucherServiceProvidersFilters } from '../../api/reports'
+import { getVoucherServiceProvidersReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'

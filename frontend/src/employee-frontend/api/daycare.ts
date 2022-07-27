@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
-import {
+import type { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+import type {
   DaycareCareArea,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { JsonOf } from 'lib-common/json'
-import LocalDate from 'lib-common/local-date'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { JsonOf } from 'lib-common/json'
+import type LocalDate from 'lib-common/local-date'
 
 import { client } from './client'
 

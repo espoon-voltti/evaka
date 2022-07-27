@@ -20,7 +20,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { AssistanceNeedDecision, EmployeeDetail } from '../../dev-api/types'
+import type {
+  AssistanceNeedDecision,
+  EmployeeDetail
+} from '../../dev-api/types'
 import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedDecisionsReportDecision

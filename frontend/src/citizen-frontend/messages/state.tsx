@@ -10,24 +10,25 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result, Success } from 'lib-common/api'
-import {
+import type { Paged, Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type {
   MessageThread,
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import { useTranslation } from '../localization'
 
+import type { ReplyToThreadParams } from './api'
 import {
   getMessageAccount,
   getReceivedMessages,
   getUnreadMessagesCount,
   markThreadRead,
-  replyToThread,
-  ReplyToThreadParams
+  replyToThread
 } from './api'
 
 const initialThreadState: ThreadsState = {

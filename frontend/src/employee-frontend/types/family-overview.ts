@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IncomeEffect } from 'lib-common/api-types/income'
-import LocalDate from 'lib-common/local-date'
+import type { IncomeEffect } from 'lib-common/api-types/income'
+import type LocalDate from 'lib-common/local-date'
 
 export interface FamilyOverviewPerson {
   personId: string

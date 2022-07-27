@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import React, { useMemo, useState, createContext, useCallback } from 'react'
 
-import { ModalType } from 'lib-components/molecules/modals/BaseModal'
+import type { ModalType } from 'lib-components/molecules/modals/BaseModal'
 
 export interface InfoMessage {
   title: string

@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -24,7 +24,7 @@ import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { getApplicationDecisions } from '../api'
 import { sortDecisions } from '../shared'
-import { Decision } from '../types'
+import type { Decision } from '../types'
 
 import DecisionResponse from './DecisionResponse'
 

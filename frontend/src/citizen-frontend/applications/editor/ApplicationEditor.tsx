@@ -5,15 +5,15 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import {
   apiDataToFormData,
-  ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useBetterParams from 'lib-common/useNonNullableParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -48,11 +48,8 @@ import {
   updateApplication
 } from '../api'
 
-import {
-  ApplicationFormDataErrors,
-  applicationHasErrors,
-  validateApplication
-} from './validations'
+import type { ApplicationFormDataErrors } from './validations'
+import { applicationHasErrors, validateApplication } from './validations'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails

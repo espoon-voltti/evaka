@@ -3,11 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import {
-  DigitransitFeature,
-  putDigitransitAutocomplete,
-  resetDatabase
-} from '../../dev-api'
+import type { DigitransitFeature } from '../../dev-api'
+import { putDigitransitAutocomplete, resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   clubFixture,
@@ -15,7 +12,7 @@ import {
   Fixture,
   preschoolFixture
 } from '../../dev-api/fixtures'
-import { Daycare } from '../../dev-api/types'
+import type { Daycare } from '../../dev-api/types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'

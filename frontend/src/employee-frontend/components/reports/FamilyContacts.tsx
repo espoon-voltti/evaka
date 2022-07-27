@@ -5,9 +5,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
-import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -16,7 +17,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 
 import { getFamilyContactsReport } from '../../api/reports'
-import { getDaycare, UnitResponse } from '../../api/unit'
+import type { UnitResponse } from '../../api/unit'
+import { getDaycare } from '../../api/unit'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 

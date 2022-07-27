@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { Daycare } from 'lib-common/generated/api-types/daycare'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { Daycare } from 'lib-common/generated/api-types/daycare'
+import type {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { EvakaUser } from 'lib-common/generated/api-types/user'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type { EvakaUser } from 'lib-common/generated/api-types/user'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
-import { DayOfWeek } from './index'
+import type { DayOfWeek } from './index'
 
 export interface Unit extends Omit<Daycare, 'operationDays'> {
   operationDays: DayOfWeek[] | null

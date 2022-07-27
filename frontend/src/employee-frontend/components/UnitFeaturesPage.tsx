@@ -7,17 +7,16 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   ProviderType,
   UnitFeatures
 } from 'lib-common/generated/api-types/daycare'
-import {
-  PilotFeature,
-  pilotFeatures
-} from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { PilotFeature } from 'lib-common/generated/api-types/shared'
+import { pilotFeatures } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'

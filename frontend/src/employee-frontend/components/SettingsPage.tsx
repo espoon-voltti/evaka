@@ -5,12 +5,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import {
-  settings as options,
-  SettingType
-} from 'lib-common/generated/api-types/setting'
-import { JsonOf } from 'lib-common/json'
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success } from 'lib-common/api'
+import type { SettingType } from 'lib-common/generated/api-types/setting'
+import { settings as options } from 'lib-common/generated/api-types/setting'
+import type { JsonOf } from 'lib-common/json'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'

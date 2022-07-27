@@ -6,7 +6,7 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
-import {
+import type {
   ChildVasuSummary,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
@@ -28,7 +28,8 @@ import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import { Desktop, Mobile, PaddedDiv } from './components'
-import { ChildDocumentsContext, ChildDocumentsState } from './state'
+import type { ChildDocumentsState } from './state'
+import { ChildDocumentsContext } from './state'
 import { getGuardianChildVasuSummaries } from './vasu/api'
 import { VasuStateChip } from './vasu/components/VasuStateChip'
 

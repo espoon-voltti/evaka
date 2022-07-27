@@ -5,7 +5,7 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
-import {
+import type {
   DailyReservationData,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
@@ -19,9 +19,9 @@ import colors from 'lib-customizations/common'
 
 import { useLang, useTranslation } from '../localization'
 
-import { WeeklyData } from './CalendarListView'
+import type { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
-import { ChildImageData } from './RoundChildImages'
+import type { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
 
 interface Props extends WeeklyData {

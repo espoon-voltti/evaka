@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 
 import { returnToPresent } from '../../../../api/attendances'
 import { ChildAttendanceContext } from '../../../../state/child-attendance'

@@ -9,7 +9,8 @@ import LocalDate from 'lib-common/local-date'
 import { usePendingUserInput } from 'lib-common/utils/usePendingUserInput'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
-import InputField, { InputInfo } from '../../atoms/form/InputField'
+import type { InputInfo } from '../../atoms/form/InputField'
+import InputField from '../../atoms/form/InputField'
 
 interface Props {
   date: LocalDate | null

@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   BrowserContextOptions,
   Keyboard,
   Locator,
   Page as PlaywrightPage
 } from 'playwright'
 
-import { EvakaBrowserContextOptions, newBrowserContext } from '../browser'
+import type { EvakaBrowserContextOptions } from '../browser'
+import { newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
 

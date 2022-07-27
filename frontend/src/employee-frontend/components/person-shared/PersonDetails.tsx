@@ -5,10 +5,11 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { Action } from 'lib-common/generated/action'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { Action } from 'lib-common/generated/action'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -35,7 +36,8 @@ import {
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { useTranslation } from '../../state/i18n'
-import { UIContext, UiState } from '../../state/ui'
+import type { UiState } from '../../state/ui'
+import { UIContext } from '../../state/ui'
 
 const PostalCodeAndOffice = styled.div`
   display: flex;

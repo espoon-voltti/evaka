@@ -6,18 +6,16 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   MessageReceiversResponse,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  receiverAsSelectorNode,
-  SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
+import type { SelectorNode } from 'lib-components/employee/messages/SelectorNode'
+import { receiverAsSelectorNode } from 'lib-components/employee/messages/SelectorNode'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'

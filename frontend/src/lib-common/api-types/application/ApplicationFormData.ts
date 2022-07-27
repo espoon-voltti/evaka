@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ApplicationAttachment,
   ApplicationDetails,
   ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { throwIfNull } from 'lib-common/form-validation'
-import {
+import type {
   OtherGuardianAgreementStatus,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null

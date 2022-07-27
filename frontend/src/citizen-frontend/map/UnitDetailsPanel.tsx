@@ -6,9 +6,13 @@ import { addDays, isSaturday, isSunday } from 'date-fns'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
-import { CareType, PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type {
+  CareType,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -21,7 +25,7 @@ import { faArrowLeft } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import { queryDistance } from './api'
 import { mapViewBreakpoint } from './const'
 import { formatDistance } from './distances'

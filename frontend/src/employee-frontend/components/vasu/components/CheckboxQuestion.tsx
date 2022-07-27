@@ -4,17 +4,17 @@
 
 import React from 'react'
 
-import { CheckboxQuestion } from 'lib-common/api-types/vasu'
+import type { CheckboxQuestion } from 'lib-common/api-types/vasu'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import QuestionInfo from '../QuestionInfo'
 
 import { ReadOnlyValue } from './ReadOnlyValue'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 type Props = QuestionProps<CheckboxQuestion> & {
   onChange?: (checked: boolean) => void

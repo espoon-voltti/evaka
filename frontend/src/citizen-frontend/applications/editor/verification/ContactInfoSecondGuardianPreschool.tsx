@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
 

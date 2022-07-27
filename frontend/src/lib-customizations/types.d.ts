@@ -5,30 +5,30 @@
 import 'react'
 import type { LatLngExpression } from 'leaflet'
 
-import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
-import {
+import type { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
+import type {
   AbsenceType,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
-import {
+import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import type {
   PlacementPlanRejectReason,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import { Theme } from 'lib-common/theme'
-import { DeepReadonly } from 'lib-common/types'
+import type { Theme } from 'lib-common/theme'
+import type { DeepReadonly } from 'lib-common/types'
 
-import {
+import type {
   Lang as LangCitizen,
   Translations as TranslationsCitizen
 } from './citizen'
-import {
+import type {
   Lang as LangEmployee,
   Translations as TranslationsEmployee,
   VasuLang as VasuLangEmployee,
   VasuTranslations as VasuTranslationsEmployee
 } from './employee'
-import {
+import type {
   Lang as LangEmployeeMobile,
   Translations as TranslationsEmployeeMobile
 } from './employeeMobile'

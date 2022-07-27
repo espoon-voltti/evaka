@@ -4,7 +4,7 @@
 
 import React, { useMemo } from 'react'
 
-import { ErrorKey } from 'lib-common/form-validation'
+import type { ErrorKey } from 'lib-common/form-validation'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 
 import { errorToInputInfo } from '../input-info-helper'

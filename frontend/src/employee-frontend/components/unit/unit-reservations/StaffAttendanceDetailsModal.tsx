@@ -6,19 +6,19 @@ import orderBy from 'lodash/orderBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { ErrorKey } from 'lib-common/form-validation'
-import {
+import type { Result } from 'lib-common/api'
+import type { ErrorKey } from 'lib-common/form-validation'
+import type {
   EmployeeAttendance,
   SingleDayStaffAttendanceUpsert,
-  StaffAttendanceType,
-  staffAttendanceTypes
+  StaffAttendanceType
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { staffAttendanceTypes } from 'lib-common/generated/api-types/attendance'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

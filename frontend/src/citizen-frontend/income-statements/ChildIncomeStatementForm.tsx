@@ -5,10 +5,10 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -28,15 +28,17 @@ import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import ChildIncomeStatementAttachments from './ChildIncomeStatementAttachments'
+import type {
+  IncomeStatementFormAPI,
+  SetStateCallback
+} from './IncomeStatementComponents'
 import {
   ActionContainer,
   AssureCheckbox,
-  IncomeStatementFormAPI,
   LabelError,
-  SetStateCallback,
   useFieldDispatch
 } from './IncomeStatementComponents'
-import * as Form from './types/form'
+import type * as Form from './types/form'
 
 interface Props {
   incomeStatementId: UUID | undefined

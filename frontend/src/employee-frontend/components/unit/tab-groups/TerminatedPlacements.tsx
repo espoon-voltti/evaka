@@ -9,8 +9,9 @@ import { Link } from 'react-router-dom'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { Translations, useTranslation } from '../../../state/i18n'
-import { TerminatedPlacement } from '../../../types/unit'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
+import type { TerminatedPlacement } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 

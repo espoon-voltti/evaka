@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import { MultiSelectQuestion } from 'lib-common/api-types/vasu'
+import type { MultiSelectQuestion } from 'lib-common/api-types/vasu'
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]

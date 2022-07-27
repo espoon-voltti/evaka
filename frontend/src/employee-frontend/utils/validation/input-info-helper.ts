@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ErrorKey } from 'lib-common/form-validation'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
-import { Translations } from 'lib-customizations/employee'
+import type { ErrorKey } from 'lib-common/form-validation'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { Translations } from 'lib-customizations/employee'
 
 export function errorToInputInfo(
   error: ErrorKey | undefined,

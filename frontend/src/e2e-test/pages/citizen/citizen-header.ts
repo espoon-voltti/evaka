@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Lang } from 'lib-customizations/citizen'
+import type { Lang } from 'lib-customizations/citizen'
 
 import { waitUntilEqual, waitUntilFalse } from '../../utils'
-import { Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
 
 export default class CitizenHeader {
   constructor(

@@ -6,10 +6,10 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure } from 'lib-common/api'
+import type { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -20,19 +20,17 @@ import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  deletePlacement,
-  PlacementUpdate,
-  updatePlacement
-} from '../../../api/child/placements'
+import type { PlacementUpdate } from '../../../api/child/placements'
+import { deletePlacement, updatePlacement } from '../../../api/child/placements'
 import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
-import { UIContext, UiState } from '../../../state/ui'
+import type { UiState } from '../../../state/ui'
+import { UIContext } from '../../../state/ui'
+import type { DateRange } from '../../../utils/date'
 import {
-  DateRange,
   getStatusLabelByDateRange,
   isActiveDateRange
 } from '../../../utils/date'

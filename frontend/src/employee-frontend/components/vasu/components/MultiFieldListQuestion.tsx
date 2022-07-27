@@ -4,7 +4,7 @@
 
 import React, { Fragment, useEffect } from 'react'
 
-import { MultiFieldListQuestion } from 'lib-common/api-types/vasu'
+import type { MultiFieldListQuestion } from 'lib-common/api-types/vasu'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
   FixedSpaceColumn,
@@ -12,12 +12,12 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiFieldListQuestion> {
   onChange?: (questionValue: MultiFieldListQuestion['value']) => void

@@ -5,17 +5,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Loading, Result, Success } from 'lib-common/api'
-import { IncomeStatement } from 'lib-common/api-types/incomeStatement'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { combine, Loading, Success } from 'lib-common/api'
+import type { IncomeStatement } from 'lib-common/api-types/incomeStatement'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
 
 import { renderResult } from '../async-rendering'
 
 import ChildIncomeStatementForm from './ChildIncomeStatementForm'
-import { IncomeStatementFormAPI } from './IncomeStatementComponents'
+import type { IncomeStatementFormAPI } from './IncomeStatementComponents'
 import {
   createChildIncomeStatement,
   getChildIncomeStatement,

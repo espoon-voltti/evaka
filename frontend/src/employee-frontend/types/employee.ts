@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GlobalRole, ScopedRole } from 'lib-common/api-types/employee-auth'
-import { UUID } from 'lib-common/types'
+import type { GlobalRole, ScopedRole } from 'lib-common/api-types/employee-auth'
+import type { UUID } from 'lib-common/types'
 
 export interface Employee {
   id: UUID

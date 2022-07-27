@@ -6,8 +6,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -20,10 +21,8 @@ import {
   DatePickerDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 
-import {
-  getMissingHeadOfFamilyReport,
-  MissingHeadOfFamilyReportFilters
-} from '../../api/reports'
+import type { MissingHeadOfFamilyReportFilters } from '../../api/reports'
+import { getMissingHeadOfFamilyReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'

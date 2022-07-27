@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { JsonOf } from 'lib-common/json'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { JsonOf } from 'lib-common/json'
 
 import { waitUntilEqual, waitUntilDefined, waitUntilTrue } from '../../utils'
-import { FormInput, Section, sections } from '../../utils/application-forms'
-import { Page, Checkbox, Radio, TextInput, FileInput } from '../../utils/page'
+import type { FormInput, Section } from '../../utils/application-forms'
+import { sections } from '../../utils/application-forms'
+import type { Page } from '../../utils/page'
+import { Checkbox, Radio, TextInput, FileInput } from '../../utils/page'
 
 export default class CitizenApplicationsPage {
   constructor(private readonly page: Page) {}

@@ -5,8 +5,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged, Result } from 'lib-common/api'
-import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import type { Paged, Result } from 'lib-common/api'
+import type { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -18,8 +18,8 @@ import { getApplications } from '../../api/applications'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
-import { SearchOrder } from '../../types'
-import {
+import type { SearchOrder } from '../../types'
+import type {
   ApplicationSearchParams,
   SortByApplications
 } from '../../types/application'

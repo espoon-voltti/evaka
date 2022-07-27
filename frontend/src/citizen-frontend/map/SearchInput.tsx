@@ -4,11 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { FocusEventHandler, useCallback, useMemo, useState } from 'react'
+import type { FocusEventHandler } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Result, Success } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Result } from 'lib-common/api'
+import { combine, Success } from 'lib-common/api'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -23,7 +25,7 @@ import { fasMapMarkerAlt } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { MapAddress } from './MapView'
+import type { MapAddress } from './MapView'
 import { queryAutocomplete } from './api'
 
 type Props = {

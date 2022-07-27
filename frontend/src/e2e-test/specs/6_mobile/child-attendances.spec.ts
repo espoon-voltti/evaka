@@ -2,27 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import type { EmployeeBuilder } from '../../dev-api/fixtures'
 import {
   careAreaFixture,
   daycare2Fixture,
   daycareFixture,
   daycareGroupFixture,
-  EmployeeBuilder,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserChildFixturePorriHatterRestricted,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement } from '../../dev-api/types'
+import type { DaycarePlacement } from '../../dev-api/types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'

@@ -4,12 +4,12 @@
 
 import React from 'react'
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { careTypeColors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { CareTypeLabel } from '../../types'
+import type { CareTypeLabel } from '../../types'
 
 const placementTypeToCareTypeLabel = (
   type: PlacementType | 'backup-care'

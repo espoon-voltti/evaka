@@ -4,10 +4,10 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { Message } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { Message } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 
-import { SelectableAccount } from '../molecules/MessageReplyEditor'
+import type { SelectableAccount } from '../molecules/MessageReplyEditor'
 
 function getInitialRecipients(
   messages: Message[],

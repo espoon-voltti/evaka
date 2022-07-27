@@ -4,7 +4,7 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -22,7 +22,7 @@ import {
 } from '../../api/child/fee-alteration'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { FeeAlteration } from '../../types/fee-alteration'
+import type { FeeAlteration } from '../../types/fee-alteration'
 import { renderResult } from '../async-rendering'
 
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'

@@ -7,15 +7,15 @@ import styled from 'styled-components'
 
 import { postFixedPeriodQuestionnaireAnswer } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   FixedPeriodQuestionnaire,
   FixedPeriodsBody,
   HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
-import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import type { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'

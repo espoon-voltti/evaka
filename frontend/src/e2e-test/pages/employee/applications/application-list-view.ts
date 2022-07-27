@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+import type { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
-import { MultiSelect, Page } from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { MultiSelect } from '../../../utils/page'
 
 export default class ApplicationListView {
   constructor(private page: Page) {}

@@ -2,27 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { createContext, useMemo, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import {
-  DaycareAclRow,
-  getDaycare,
-  getDaycareAclRows,
-  getUnitData,
-  UnitData,
-  UnitResponse
-} from '../api/unit'
+import type { DaycareAclRow, UnitData, UnitResponse } from '../api/unit'
+import { getDaycare, getDaycareAclRows, getUnitData } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
 
 export interface UnitState {

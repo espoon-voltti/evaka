@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import type { UUID } from 'lib-common/types'
 
 import { API_URL, client } from './client'
 

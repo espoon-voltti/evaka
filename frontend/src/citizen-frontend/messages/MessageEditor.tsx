@@ -6,8 +6,8 @@ import React, { useCallback, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   CitizenMessageBody,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'

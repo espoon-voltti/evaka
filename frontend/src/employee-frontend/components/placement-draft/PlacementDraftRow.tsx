@@ -7,7 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { fontWeights, H2 } from 'lib-components/typography'
@@ -16,7 +16,7 @@ import colors from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import {
+import type {
   DaycarePlacementPlan,
   PlacementDraft,
   PlacementDraftPlacement

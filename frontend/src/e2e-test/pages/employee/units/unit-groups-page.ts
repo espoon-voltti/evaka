@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   DatePickerDeprecated,
   Element,
   Modal,
-  Page,
   TextInput
 } from '../../../utils/page'
 

@@ -5,19 +5,19 @@
 import React, { useMemo } from 'react'
 import styled, { css } from 'styled-components'
 
+import type { TimeRange as ServiceTimesTimeRange } from 'lib-common/api-types/child/common'
 import {
   getTimesOnWeekday,
   isIrregular,
   isRegular,
-  isVariableTime,
-  TimeRange as ServiceTimesTimeRange
+  isVariableTime
 } from 'lib-common/api-types/child/common'
-import {
+import type {
   ChildRecordOfDay,
   OperationalDay
 } from 'lib-common/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
+import type { TimeRange } from 'lib-common/generated/api-types/reservations'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { attendanceTimeDiffers } from 'lib-common/reservations'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -29,7 +29,7 @@ import { useTranslation } from '../../../state/i18n'
 
 import AbsenceDay from './AbsenceDay'
 import { TimeRangeEditor } from './attendance-elements'
-import { EditState } from './reservation-table-edit-state'
+import type { EditState } from './reservation-table-edit-state'
 
 type ReservationOrServiceTime =
   | (ServiceTimesTimeRange & { type: 'reservation' | 'service-time' })

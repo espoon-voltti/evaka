@@ -4,18 +4,18 @@
 
 import React from 'react'
 
-import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import EditorSection from '../../../applications/editor/EditorSection'
 import SiblingBasisSubSection from '../../../applications/editor/unit-preference/SiblingBasisSubSection'
 import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import type { ApplicationFormDataErrors } from '../validations'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData

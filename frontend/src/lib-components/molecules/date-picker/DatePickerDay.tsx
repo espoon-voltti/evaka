@@ -4,7 +4,8 @@
 
 import { fi, sv, enGB } from 'date-fns/locale'
 import React from 'react'
-import DayPicker, { DayModifiers } from 'react-day-picker'
+import type { DayModifiers } from 'react-day-picker'
+import DayPicker from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'

@@ -5,8 +5,8 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint

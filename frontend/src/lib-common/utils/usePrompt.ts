@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { History } from 'history'
-import { ContextType, useContext, useEffect } from 'react'
+import type { History } from 'history'
+import type { ContextType } from 'react'
+import { useContext, useEffect } from 'react'
 import { UNSAFE_NavigationContext } from 'react-router-dom'
 
 /**

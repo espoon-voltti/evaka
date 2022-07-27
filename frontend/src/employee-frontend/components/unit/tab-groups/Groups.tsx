@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { Dispatch, SetStateAction, useContext, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { Stats } from 'lib-common/generated/api-types/daycare'
+import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -19,7 +20,7 @@ import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 
-import { OccupancyResponse } from '../../../api/unit'
+import type { OccupancyResponse } from '../../../api/unit'
 import UnitDataFilters from '../../../components/unit/UnitDataFilters'
 import Group from '../../../components/unit/tab-groups/groups/Group'
 import GroupModal from '../../../components/unit/tab-groups/groups/GroupModal'
@@ -28,15 +29,15 @@ import BackupCareGroupModal from '../../../components/unit/tab-groups/missing-gr
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UserContext } from '../../../state/user'
-import {
+import type {
   DaycareGroup,
   DaycareGroupPlacementDetailed,
   DaycarePlacement,
-  flatMapGroupPlacements,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'
-import { UnitFilters } from '../../../utils/UnitFilters'
+import { flatMapGroupPlacements } from '../../../types/unit'
+import type { UnitFilters } from '../../../utils/UnitFilters'
 import { requireRole } from '../../../utils/roles'
 
 function renderGroups(

@@ -5,18 +5,18 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import { Action } from '../action'
-import { ApplicationUnitSummary } from './application'
-import { DaycareGroup } from './daycare'
-import { DaycarePlacementWithDetails } from './placement'
-import { MissingGroupPlacement } from './placement'
-import { OccupancyResponse } from './occupancy'
-import { PlacementPlanDetails } from './placement'
-import { RealtimeOccupancy } from './occupancy'
-import { Stats } from './daycare'
-import { TerminatedPlacements } from './placement'
-import { UnitBackupCare } from './backupcare'
-import { UnitChildrenCapacityFactors } from './placement'
+import type { Action } from '../action'
+import type { ApplicationUnitSummary } from './application'
+import type { DaycareGroup } from './daycare'
+import type { DaycarePlacementWithDetails } from './placement'
+import type { MissingGroupPlacement } from './placement'
+import type { OccupancyResponse } from './occupancy'
+import type { PlacementPlanDetails } from './placement'
+import type { RealtimeOccupancy } from './occupancy'
+import type { Stats } from './daycare'
+import type { TerminatedPlacements } from './placement'
+import type { UnitBackupCare } from './backupcare'
+import type { UnitChildrenCapacityFactors } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.units.Caretakers

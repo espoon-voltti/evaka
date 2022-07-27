@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationAttachment } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationAttachment } from 'lib-common/api-types/application/ApplicationDetails'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'

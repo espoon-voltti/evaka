@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { Page } from '../../../utils/page'
 import {
   Combobox,
   DatePickerDeprecated,
   Element,
-  Page,
   Radio,
   Select,
   TextInput

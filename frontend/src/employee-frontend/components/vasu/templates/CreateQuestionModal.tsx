@@ -7,13 +7,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import {
+import type {
   QuestionOption,
   VasuQuestion,
-  VasuQuestionType,
-  vasuQuestionTypes
+  VasuQuestionType
 } from 'lib-common/api-types/vasu'
-import { VasuSection } from 'lib-common/generated/api-types/vasu'
+import { vasuQuestionTypes } from 'lib-common/api-types/vasu'
+import type { VasuSection } from 'lib-common/generated/api-types/vasu'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'

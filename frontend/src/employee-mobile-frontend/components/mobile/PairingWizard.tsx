@@ -6,17 +6,18 @@ import { useState } from 'react'
 import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 
-import { Result, Loading } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faArrowRight } from 'lib-icons'
 
+import type { PairingResponse } from '../../api/unit'
 import {
   authMobile,
   getPairingStatus,
-  PairingResponse,
   postPairingChallenge
 } from '../../api/unit'
 import EvakaLogo from '../../assets/EvakaLogo.svg'

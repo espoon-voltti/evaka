@@ -4,9 +4,9 @@
 
 import React from 'react'
 
-import { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
@@ -20,7 +20,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
-import { ApplicationFormDataErrors } from '../validations'
+import type { ApplicationFormDataErrors } from '../validations'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

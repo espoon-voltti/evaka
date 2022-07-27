@@ -10,8 +10,10 @@ import { faUser } from 'lib-icons'
 
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { useTranslation } from '../../state/i18n'
-import { PersonContext, PersonState } from '../../state/person'
-import { TitleContext, TitleState } from '../../state/title'
+import type { PersonState } from '../../state/person'
+import { PersonContext } from '../../state/person'
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
 import { renderResult } from '../async-rendering'
 
 export default React.memo(function PersonFridgeHead() {

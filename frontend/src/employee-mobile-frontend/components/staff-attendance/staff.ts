@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ExternalStaffMember,
   StaffMember
 } from 'lib-common/generated/api-types/attendance'

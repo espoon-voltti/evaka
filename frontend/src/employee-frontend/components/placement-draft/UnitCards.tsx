@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { UUID } from 'lib-common/types'
 import { defaultMargins } from 'lib-components/white-space'
 
-import {
+import type {
   DaycarePlacementPlan,
   PlacementDraft
 } from '../../types/placementdraft'

@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactElement } from 'react'
+import type { ReactElement } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -10,9 +11,8 @@ import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronUp, faChevronDown } from 'lib-icons'
 
-import StatusLabel, {
-  StatusLabelType
-} from '../../components/common/StatusLabel'
+import type { StatusLabelType } from '../../components/common/StatusLabel'
+import StatusLabel from '../../components/common/StatusLabel'
 
 interface Props {
   title?: string

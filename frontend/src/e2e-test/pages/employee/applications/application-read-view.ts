@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DecisionType } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { DatePickerDeprecated, Radio } from '../../../utils/page'
 
 import ApplicationEditView from './application-edit-view'
 

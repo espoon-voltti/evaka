@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import orderBy from 'lodash/orderBy'
 import styled from 'styled-components'
 
-import { DecisionSummary } from 'lib-common/generated/api-types/application'
+import type { DecisionSummary } from 'lib-common/generated/api-types/application'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import {
@@ -18,7 +18,7 @@ import {
   faTimes
 } from 'lib-icons'
 
-import { Decision } from './types'
+import type { Decision } from './types'
 
 export const Status = styled.span`
   text-transform: uppercase;

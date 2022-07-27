@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import type { Page } from '../../utils/page'
 import {
   Combobox,
   DatePickerDeprecated,
-  Page,
   Select,
   TextInput
 } from '../../utils/page'

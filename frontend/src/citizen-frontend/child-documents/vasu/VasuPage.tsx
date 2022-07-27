@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -20,7 +20,8 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
-import { ChildDocumentsContext, ChildDocumentsState } from '../state'
+import type { ChildDocumentsState } from '../state'
+import { ChildDocumentsContext } from '../state'
 
 import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'

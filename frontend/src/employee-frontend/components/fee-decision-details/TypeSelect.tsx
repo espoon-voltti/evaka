@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
+import type { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { voucherValueDecisionTypes } from 'lib-customizations/employee'
 

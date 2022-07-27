@@ -5,19 +5,20 @@
 import axios from 'axios'
 import sortBy from 'lodash/sortBy'
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { JsonOf } from 'lib-common/json'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { mapConfig } from 'lib-customizations/citizen'
 
 import { client } from '../api-client'
 
-import { MapAddress } from './MapView'
-import { UnitWithDistance, UnitWithStraightDistance } from './distances'
+import type { MapAddress } from './MapView'
+import type { UnitWithDistance, UnitWithStraightDistance } from './distances'
 
 export async function fetchUnits(
   type: ApplicationType

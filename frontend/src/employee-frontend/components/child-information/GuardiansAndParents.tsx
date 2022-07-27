@@ -7,7 +7,7 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { isLoading } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { getAge } from 'lib-common/utils/local-date'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, Select, TextInput } from '../../../utils/page'
+import type { Page } from '../../../utils/page'
+import { Select, TextInput } from '../../../utils/page'
 
 export class VasuTemplatesListPage {
   constructor(readonly page: Page) {}

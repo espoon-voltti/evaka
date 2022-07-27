@@ -2,19 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import {
   deserializeFixedPeriodQuestionnaire,
   deserializeHolidayPeriod
 } from 'lib-common/api-types/holiday-period'
-import {
+import type {
   FixedPeriodQuestionnaire,
   FixedPeriodQuestionnaireBody,
   HolidayPeriod,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../../api/client'
 

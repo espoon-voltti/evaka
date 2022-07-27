@@ -6,10 +6,10 @@ import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
 import { formatDate, formatTime } from 'lib-common/date'
-import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
+import type { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 
-import { Translations } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
 
 interface Props {
   i18n: Translations

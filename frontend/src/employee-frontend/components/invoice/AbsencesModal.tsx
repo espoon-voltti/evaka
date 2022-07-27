@@ -5,13 +5,13 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   Absence,
   AbsenceCategory,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -23,7 +23,8 @@ import { faAbacus } from 'lib-icons'
 import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
-import { Lang, Translations, useTranslation } from '../../state/i18n'
+import type { Lang, Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'

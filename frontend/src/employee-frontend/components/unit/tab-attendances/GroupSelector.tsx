@@ -5,11 +5,11 @@
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 
 import { useTranslation } from '../../../state/i18n'

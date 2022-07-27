@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useCallback } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
+import type { Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
@@ -21,7 +23,7 @@ import colors from 'lib-customizations/common'
 
 import { getSpeculatedOccupancyRates } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
-import { DaycarePlacementPlan } from '../../types/placementdraft'
+import type { DaycarePlacementPlan } from '../../types/placementdraft'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 

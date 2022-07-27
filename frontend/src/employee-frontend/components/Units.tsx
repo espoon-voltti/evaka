@@ -26,9 +26,10 @@ import { faSearch } from 'lib-icons'
 
 import { getDaycares } from '../api/unit'
 import { useTranslation } from '../state/i18n'
-import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
+import type { SearchColumn, UnitsState } from '../state/units'
+import { UnitsContext } from '../state/units'
 import { UserContext } from '../state/user'
-import { Unit } from '../types/unit'
+import type { Unit } from '../types/unit'
 import { RequireRole } from '../utils/roles'
 
 const TopBar = styled.div`

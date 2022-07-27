@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useContext, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 
-import { Action } from 'lib-common/generated/action'
-import { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
+import type { Action } from 'lib-common/generated/action'
+import type { AssistanceBasisOption } from 'lib-common/generated/api-types/assistanceneed'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -19,7 +20,10 @@ import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { AssistanceNeed, AssistanceNeedResponse } from '../../../types/child'
+import type {
+  AssistanceNeed,
+  AssistanceNeedResponse
+} from '../../../types/child'
 import { isActiveDateRange } from '../../../utils/date'
 
 export interface Props {

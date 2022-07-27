@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   Message,
   MessageAccount,
   MessageThread,
   ThreadReply
 } from '../../generated/api-types/messaging'
-import { JsonOf } from '../../json'
+import type { JsonOf } from '../../json'
 
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,

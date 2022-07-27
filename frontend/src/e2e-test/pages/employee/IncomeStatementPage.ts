@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../utils'
-import { Page, Checkbox, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, TextInput } from '../../utils/page'
 
 export class IncomeStatementPage {
   constructor(private readonly page: Page) {}

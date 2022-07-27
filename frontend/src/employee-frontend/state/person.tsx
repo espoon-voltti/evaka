@@ -17,13 +17,13 @@ import {
   PersonJSON,
   PersonResponse
 } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import { getFamilyOverview } from '../api/family-overview'
 import { getParentshipsByHeadOfChild } from '../api/parentships'
 import { getPersonDetails } from '../api/person'
-import { FamilyOverview } from '../types/family-overview'
+import type { FamilyOverview } from '../types/family-overview'
 
 export interface PersonState {
   person: Result<PersonJSON>

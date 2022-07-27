@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
+import type { Child } from 'lib-common/generated/api-types/attendance'
+import type { GroupNote } from 'lib-common/generated/api-types/note'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, Label } from 'lib-components/typography'

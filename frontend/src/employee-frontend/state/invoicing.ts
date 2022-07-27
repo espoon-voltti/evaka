@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 
-import { Checked } from './invoicing-ui'
+import type { Checked } from './invoicing-ui'
 
 export function useCheckedState() {
   const [checked, setChecked] = useState<Checked>({})

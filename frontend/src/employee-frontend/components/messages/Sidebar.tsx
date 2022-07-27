@@ -7,17 +7,15 @@ import uniqBy from 'lodash/uniqBy'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   AuthorizedMessageAccount,
   MessageReceiversResponse
 } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import {
-  SelectorNode,
-  unitAsSelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
+import type { SelectorNode } from 'lib-components/employee/messages/SelectorNode'
+import { unitAsSelectorNode } from 'lib-components/employee/messages/SelectorNode'
 import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'

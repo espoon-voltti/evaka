@@ -5,10 +5,8 @@
 import LocalDate from 'lib-common/local-date'
 
 import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'

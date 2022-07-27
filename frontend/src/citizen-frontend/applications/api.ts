@@ -2,29 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
   ApplicationDetails,
-  ApplicationFormUpdate,
-  deserializeApplicationDetails
+  ApplicationFormUpdate
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { deserializeApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import {
   deserializeClubTerm,
   deserializePreschoolTerm
 } from 'lib-common/api-types/units/terms'
-import {
+import type {
   ApplicationsOfChild,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import {
+import type {
   ClubTerm,
   PreschoolTerm,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { JsonOf } from 'lib-common/json'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 
 import { client } from '../api-client'

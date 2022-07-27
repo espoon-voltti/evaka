@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from './finite-date-range'
-import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
-import {
+import type { ErrorKey } from './form-validation'
+import { regexp, TIME_REGEXP } from './form-validation'
+import type {
   DailyReservationRequest,
   OpenTimeRange,
   TimeRange
 } from './generated/api-types/reservations'
 import LocalDate from './local-date'
-import { UUID } from './types'
+import type { UUID } from './types'
 
 export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
 

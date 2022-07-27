@@ -5,17 +5,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as Sentry from '@sentry/browser'
 import classNames from 'classnames'
-import React, {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import type { FormEvent } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { animated, useSpring } from 'react-spring'
 import styled, { useTheme } from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 

@@ -8,17 +8,18 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'
-import { combine, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   InvoiceCorrection,
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -42,7 +43,8 @@ import {
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
 } from '../../api/invoicing'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'

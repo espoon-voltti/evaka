@@ -2,36 +2,36 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { TimeRange } from 'lib-common/api-types/child/common'
-import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
-import { HighestFee } from 'lib-common/api-types/incomeStatement'
-import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type { TimeRange } from 'lib-common/api-types/child/common'
+import type { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
+import type { HighestFee } from 'lib-common/api-types/incomeStatement'
+import type DateRange from 'lib-common/date-range'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ApplicationForm,
   ApplicationOrigin,
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
-import { Language } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Language } from 'lib-common/generated/api-types/daycare'
+import type {
   DecisionStatus,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import {
+import type {
   FixedPeriodQuestionnaireBody,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   Coordinate,
   PilotFeature,
   UserRole
 } from 'lib-common/generated/api-types/shared'
-import { DailyServiceTimesType } from 'lib-common/generated/enums'
-import { JsonOf } from 'lib-common/json'
+import type { DailyServiceTimesType } from 'lib-common/generated/enums'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 type ISODate = string
 

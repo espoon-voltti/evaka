@@ -5,16 +5,16 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import DateRange from '../../date-range'
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { Coordinate } from './shared'
-import { DaycareAclRow } from './shared'
-import { EvakaUserType } from './user'
-import { PersonJSON } from './pis'
-import { PilotFeature } from './shared'
-import { UUID } from '../../types'
+import type DateRange from '../../date-range'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { Action } from '../action'
+import type { Coordinate } from './shared'
+import type { DaycareAclRow } from './shared'
+import type { EvakaUserType } from './user'
+import type { PersonJSON } from './pis'
+import type { PilotFeature } from './shared'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.Absence

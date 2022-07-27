@@ -2,25 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AssistanceNeedDecision,
   AssistanceNeedDecisionCitizenListItem
 } from 'lib-common/generated/api-types/assistanceneed'
-import {
+import type {
   Child,
   ChildrenResponse
 } from 'lib-common/generated/api-types/children'
-import {
+import type {
   ChildPlacement,
   ChildPlacementResponse,
   PlacementTerminationRequestBody,
   TerminatablePlacementGroup
 } from 'lib-common/generated/api-types/placement'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 

@@ -6,7 +6,7 @@ import some from 'lodash/some'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   AssistanceLevel,
   AssistanceNeedDecision
 } from 'lib-common/generated/api-types/assistanceneed'

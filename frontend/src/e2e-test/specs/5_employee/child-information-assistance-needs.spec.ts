@@ -4,9 +4,9 @@
 
 import { addDays, subDays } from 'date-fns'
 
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -24,10 +24,9 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
-import ChildInformationPage, {
-  AssistanceNeedSection
-} from '../../pages/employee/child-information'
+import type { EmployeeDetail } from '../../dev-api/types'
+import type { AssistanceNeedSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

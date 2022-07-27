@@ -4,8 +4,8 @@
 
 import React from 'react'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'

@@ -4,11 +4,11 @@
 
 import React, { useContext, useState } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -17,14 +17,12 @@ import { Bold } from 'lib-components/typography'
 import { faChild } from 'lib-icons'
 
 import { updateBackupCare } from '../../../../api/child/backup-care'
-import {
-  createGroupPlacement,
-  MissingGroupPlacement
-} from '../../../../api/unit'
+import type { MissingGroupPlacement } from '../../../../api/unit'
+import { createGroupPlacement } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { DaycareGroup } from '../../../../types/unit'
+import type { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
 
 interface Props {

@@ -4,14 +4,12 @@
 
 import React, { useCallback, useContext, useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
-import { ChildStickyNote } from 'lib-common/generated/api-types/note'
-import { UUID } from 'lib-common/types'
-import {
-  StickyNoteTab,
-  StickyNoteTabLabels
-} from 'lib-components/employee/notes/StickyNoteTab'
-import { EditedNote } from 'lib-components/employee/notes/notes'
+import type { Result } from 'lib-common/api'
+import type { ChildStickyNote } from 'lib-common/generated/api-types/note'
+import type { UUID } from 'lib-common/types'
+import type { StickyNoteTabLabels } from 'lib-components/employee/notes/StickyNoteTab'
+import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
+import type { EditedNote } from 'lib-components/employee/notes/notes'
 
 import {
   deleteChildStickyNote,
@@ -19,7 +17,8 @@ import {
   putChildStickyNote
 } from '../../../api/notes'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 
 const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
   addNew: i18n.attendances.notes.addNew,

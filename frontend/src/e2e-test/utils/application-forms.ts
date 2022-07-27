@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { JsonOf } from 'lib-common/json'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { JsonOf } from 'lib-common/json'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
-import { PersonDetail } from '../dev-api/types'
+import type { PersonDetail } from '../dev-api/types'
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)

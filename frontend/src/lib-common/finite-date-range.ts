@@ -4,9 +4,9 @@
 
 import sortBy from 'lodash/sortBy'
 
-import { DateFormat } from './date'
+import type { DateFormat } from './date'
 import DateRange from './date-range'
-import { JsonOf } from './json'
+import type { JsonOf } from './json'
 import LocalDate from './local-date'
 import { groupDatesToRanges } from './utils/local-date'
 

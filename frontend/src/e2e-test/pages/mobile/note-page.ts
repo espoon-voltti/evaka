@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   ChildDailyNoteBody,
   ChildDailyNoteLevel,
   ChildDailyNoteReminder
 } from 'lib-common/generated/api-types/note'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Modal, Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Modal, TextInput } from '../../utils/page'
 
 export default class MobileNotePage {
   constructor(private readonly page: Page) {}

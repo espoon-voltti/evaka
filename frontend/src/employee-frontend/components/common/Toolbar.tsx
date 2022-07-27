@@ -7,14 +7,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { AdRole } from 'lib-common/api-types/employee-auth'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 
 import StatusLabel from '../../components/common/StatusLabel'
 import { UserContext } from '../../state/user'
-import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
+import type { DateRangeOpen } from '../../utils/date'
+import { getStatusLabelByDateRange } from '../../utils/date'
 import { requireRole } from '../../utils/roles'
 
 const ToolbarWrapper = styled.div`

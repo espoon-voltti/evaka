@@ -29,9 +29,10 @@ import {
   subYears
 } from 'date-fns'
 
-import { DateFormat, DateFormatWithWeekday, locales } from './date'
+import type { DateFormat, DateFormatWithWeekday } from './date'
+import { locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
-import LocalTime from './local-time'
+import type LocalTime from './local-time'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/

@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react'
 
-import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

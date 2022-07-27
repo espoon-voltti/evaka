@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
+import type { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -15,10 +15,8 @@ import {
   insertPersonFixture,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   adultFixtureWihtoutSSN,
   createDaycarePlacementFixture,
@@ -28,10 +26,8 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import {
-  FinancePage,
-  InvoicesPage
-} from '../../pages/employee/finance/finance-page'
+import type { InvoicesPage } from '../../pages/employee/finance/finance-page'
+import { FinancePage } from '../../pages/employee/finance/finance-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
+import type {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
@@ -20,7 +20,7 @@ import { faFileAlt } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
-import { DaycarePlacementPlan } from '../../../types/unit'
+import type { DaycarePlacementPlan } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'

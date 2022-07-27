@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isToday, Locale } from 'date-fns'
+import type { Locale } from 'date-fns'
+import { isToday } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { fi, sv, enGB } from 'date-fns/locale'
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
+import type DateRange from 'lib-common/date-range'
 
 export interface TimeRange {
   start: string

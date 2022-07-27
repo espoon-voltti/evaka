@@ -10,7 +10,7 @@ import {
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Family } from '../../dev-api/types'
+import type { Family } from '../../dev-api/types'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'

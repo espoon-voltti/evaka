@@ -4,17 +4,15 @@
 
 import config from '../../config'
 import { insertApplications, resetDatabase } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import type { EmployeeDetail } from '../../dev-api/types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

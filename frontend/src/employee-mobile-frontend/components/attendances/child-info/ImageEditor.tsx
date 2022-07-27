@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ReactCrop, { Crop } from 'react-image-crop'
+import type { Crop } from 'react-image-crop'
+import ReactCrop from 'react-image-crop'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

@@ -14,12 +14,12 @@ import React, {
 import styled from 'styled-components'
 
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
-import {
+import type {
   Message,
   MessageThread,
   MessageType
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -38,7 +38,7 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
-import { View } from './types-view'
+import type { View } from './types-view'
 
 const MessageContainer = styled.div`
   background-color: ${colors.grayscale.g0};

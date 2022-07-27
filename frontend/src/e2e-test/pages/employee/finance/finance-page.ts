@@ -2,18 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   AsyncButton,
   Checkable,
   Checkbox,
   Combobox,
   DatePickerDeprecated,
-  Page,
   Select,
   TextInput
 } from '../../../utils/page'

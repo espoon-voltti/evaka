@@ -7,7 +7,8 @@ import styled from 'styled-components'
 
 import { autocomplete } from 'lib-common/time'
 
-import InputField, { TextInputProps } from './InputField'
+import type { TextInputProps } from './InputField'
+import InputField from './InputField'
 
 export interface TimeInputProps
   extends Pick<

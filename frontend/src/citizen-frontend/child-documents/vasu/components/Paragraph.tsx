@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Paragraph } from 'lib-common/api-types/vasu'
+import type { Paragraph } from 'lib-common/api-types/vasu'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { H3, Italic, P } from 'lib-components/typography'
 

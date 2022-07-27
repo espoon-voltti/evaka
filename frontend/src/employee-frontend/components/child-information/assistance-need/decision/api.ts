@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AssistanceNeedDecision,
   AssistanceNeedDecisionBasicsResponse,
   AssistanceNeedDecisionForm,
@@ -12,9 +13,9 @@ import {
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../../../../api/client'
 

@@ -5,17 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
+import type { GroupNote } from 'lib-common/generated/api-types/note'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'

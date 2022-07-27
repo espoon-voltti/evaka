@@ -28,7 +28,7 @@ import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
 import { acceptDecision, rejectDecision } from '../api'
 import { decisionStatusIcon, Status } from '../shared'
-import { Decision } from '../types'
+import type { Decision } from '../types'
 
 interface SingleDecisionProps {
   decision: Decision

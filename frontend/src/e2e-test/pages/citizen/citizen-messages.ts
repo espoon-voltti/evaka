@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { TextInput } from '../../utils/page'
 
 export default class CitizenMessagesPage {
   constructor(private readonly page: Page) {}

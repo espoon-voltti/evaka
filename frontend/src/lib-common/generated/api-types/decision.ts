@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import LocalDate from '../../local-date'
-import { ProviderType } from './daycare'
-import { UUID } from '../../types'
+import type LocalDate from '../../local-date'
+import type { ProviderType } from './daycare'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.decision.Decision

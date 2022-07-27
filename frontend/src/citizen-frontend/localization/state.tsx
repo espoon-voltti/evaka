@@ -5,8 +5,8 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 
 import useLocalStorage from 'lib-common/utils/useLocalStorage'
+import type { Lang } from 'lib-customizations/citizen'
 import {
-  Lang,
   langs,
   translations as localizations
 } from 'lib-customizations/citizen'

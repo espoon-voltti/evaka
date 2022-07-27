@@ -8,11 +8,11 @@ import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   DailyReservationData,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'

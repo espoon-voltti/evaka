@@ -5,16 +5,16 @@
 import React, { Fragment, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/api-types/reservations'
+import type { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import {
+import type {
   Repetition,
   ReservationFormData,
   TimeRangeErrors,
-  TimeRanges,
-  validateForm
+  TimeRanges
 } from 'lib-common/reservations'
+import { validateForm } from 'lib-common/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

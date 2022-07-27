@@ -2,28 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useMemo,
-  useState,
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useCallback
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useMemo, useState, createContext, useCallback } from 'react'
 
-import { Result, Loading, Paged } from 'lib-common/api'
-import {
+import type { Result, Paged } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   ApplicationSummary,
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
-import { Unit } from '../api/daycare'
-import {
+import type { Unit } from '../api/daycare'
+import type {
   ApplicationDateType,
   ApplicationBasis,
   ApplicationSummaryStatusOptions,

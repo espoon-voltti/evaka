@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Loading } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

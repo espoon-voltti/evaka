@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
-import { Combobox, Page } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Combobox } from '../../utils/page'
 
 export class PlacementDraftPage {
   constructor(private page: Page) {}

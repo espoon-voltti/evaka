@@ -8,8 +8,9 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success } from 'lib-common/api'
+import type {
   InvoiceSortParam,
   InvoiceSummary,
   SortDirection
@@ -40,7 +41,7 @@ import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
 
-import { InvoicesActions } from './invoices-state'
+import type { InvoicesActions } from './invoices-state'
 
 interface Props {
   actions: InvoicesActions

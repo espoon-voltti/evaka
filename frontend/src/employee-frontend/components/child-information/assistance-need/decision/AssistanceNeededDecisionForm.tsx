@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, SetStateAction } from 'react'
+import type { SetStateAction } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import DateRangeInput from 'employee-frontend/components/common/DateRangeInput'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Employee } from 'employee-frontend/types/employee'
+import type { Employee } from 'employee-frontend/types/employee'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
@@ -20,7 +21,8 @@ import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,

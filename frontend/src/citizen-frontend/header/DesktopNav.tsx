@@ -25,8 +25,10 @@ import {
 } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
-import { AuthContext, User } from '../auth/state'
-import { Lang, langs, useLang, useTranslation } from '../localization'
+import type { User } from '../auth/state'
+import { AuthContext } from '../auth/state'
+import type { Lang } from '../localization'
+import { langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'

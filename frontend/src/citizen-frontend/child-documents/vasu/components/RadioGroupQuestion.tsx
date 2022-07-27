@@ -4,10 +4,10 @@
 
 import React from 'react'
 
-import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type { RadioGroupQuestion } from 'lib-common/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 

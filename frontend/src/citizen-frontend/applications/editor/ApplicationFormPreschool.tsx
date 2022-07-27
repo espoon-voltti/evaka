@@ -7,7 +7,7 @@ import React from 'react'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
+import type { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
 import FeeSection from '../../applications/editor/FeeSection'
 import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'

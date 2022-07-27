@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 

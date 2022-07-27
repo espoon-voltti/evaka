@@ -6,7 +6,7 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -20,7 +20,8 @@ import { useTranslation } from '../../state/i18n'
 import Actions from './Actions'
 import InvoiceFilters from './InvoiceFilters'
 import Invoices from './Invoices'
-import { InvoicesActions, useInvoicesState } from './invoices-state'
+import type { InvoicesActions } from './invoices-state'
+import { useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {
   const {

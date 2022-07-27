@@ -8,8 +8,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -18,12 +19,11 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import {
-  getStartingPlacementsReport,
-  PlacementsReportFilters
-} from '../../api/reports'
+import type { PlacementsReportFilters } from '../../api/reports'
+import { getStartingPlacementsReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { Lang, Translations, useTranslation } from '../../state/i18n'
+import type { Lang, Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 

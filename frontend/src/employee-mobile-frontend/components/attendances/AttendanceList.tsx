@@ -4,11 +4,11 @@
 
 import React, { useMemo } from 'react'
 
-import {
+import type {
   AttendanceResponse,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
 

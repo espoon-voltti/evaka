@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result, Success, Failure } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Success, Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   CreateTemplateRequest,
   VasuContent,
   VasuTemplate,
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../../../api/client'
 import { mapVasuContent } from '../vasu-content'

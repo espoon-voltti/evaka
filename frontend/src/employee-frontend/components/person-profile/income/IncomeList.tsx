@@ -4,15 +4,15 @@
 
 import React from 'react'
 
-import { Failure, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { Failure, Result } from 'lib-common/api'
+import type { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import { IncomeTypeOptions } from '../../../api/income'
+import type { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
-import { Income, IncomeBody, IncomeId } from '../../../types/income'
+import type { Income, IncomeBody, IncomeId } from '../../../types/income'
 
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'

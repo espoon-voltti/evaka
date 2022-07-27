@@ -6,9 +6,10 @@ import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/attendance'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { Child } from 'lib-common/generated/api-types/attendance'
+import type {
   ChildDailyNote,
   ChildStickyNote,
   GroupNote
@@ -31,7 +32,7 @@ import { BackButtonInline } from '../components'
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
 import { DailyNotesTab } from './DailyNotesTab'
 import { GroupNotesTab } from './GroupNotesTab'
-import { ChildDailyNoteFormData } from './daily-note'
+import type { ChildDailyNoteFormData } from './daily-note'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
 

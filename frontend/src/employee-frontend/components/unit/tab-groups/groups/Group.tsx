@@ -9,18 +9,19 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Action } from 'lib-common/generated/action'
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Action } from 'lib-common/generated/action'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { Stats } from 'lib-common/generated/api-types/daycare'
+import type {
   ChildDailyNote,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -50,23 +51,20 @@ import {
 
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
-import {
-  deleteGroup,
-  deleteGroupPlacement,
-  OccupancyResponse
-} from '../../../../api/unit'
+import type { OccupancyResponse } from '../../../../api/unit'
+import { deleteGroup, deleteGroupPlacement } from '../../../../api/unit'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
-import {
+import type {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Unit,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { formatPersonName } from '../../../../utils'
-import { UnitFilters } from '../../../../utils/UnitFilters'
+import type { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { requireRole } from '../../../../utils/roles'

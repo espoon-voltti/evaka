@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
-import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import type { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
 

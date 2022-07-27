@@ -4,8 +4,9 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -20,7 +21,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import { useTranslation } from '../../localization'
 import { getServiceNeedOptionPublicInfos } from '../api'
 
-import { ApplicationFormProps } from './ApplicationEditor'
+import type { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,

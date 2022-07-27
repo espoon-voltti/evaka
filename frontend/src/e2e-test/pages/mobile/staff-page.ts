@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DaycareGroup } from '../../dev-api/types'
+import type { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Combobox, Element, Page, Select, TextInput } from '../../utils/page'
+import type { Element, Page } from '../../utils/page'
+import { Combobox, Select, TextInput } from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}

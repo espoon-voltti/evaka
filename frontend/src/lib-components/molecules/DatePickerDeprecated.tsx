@@ -4,7 +4,8 @@
 
 import fi from 'date-fns/locale/fi'
 import React from 'react'
-import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
+import type { ReactDatePickerProps } from 'react-datepicker'
+import ReactDatePicker from 'react-datepicker'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'

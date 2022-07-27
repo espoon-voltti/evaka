@@ -9,18 +9,16 @@ import {
   insertDaycareGroupFixtures,
   resetDatabase
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createBackupCareFixture,
   daycareGroupFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { BackupCare, PersonDetail } from '../../dev-api/types'
+import type { BackupCare, PersonDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
+import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

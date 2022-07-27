@@ -4,12 +4,12 @@
 
 import React, { useState } from 'react'
 
-import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type { RadioGroupQuestion } from 'lib-common/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 

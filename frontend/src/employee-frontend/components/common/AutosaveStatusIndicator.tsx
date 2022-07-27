@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import type { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { formatTime } from 'lib-common/date'
 import { InformationText } from 'lib-components/typography'
 

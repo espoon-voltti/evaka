@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import type { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import Button from 'lib-components/atoms/buttons/Button'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -14,7 +14,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 
-import { PaymentsActions } from './payments-state'
+import type { PaymentsActions } from './payments-state'
 
 const CheckedRowsInfo = styled.div`
   color: ${colors.grayscale.g35};

@@ -8,24 +8,25 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   ApplicationAddress,
   ApplicationDetails,
   ApplicationFutureAddress,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { AttachmentType } from 'lib-common/generated/api-types/attachment'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -56,7 +57,8 @@ import {
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 

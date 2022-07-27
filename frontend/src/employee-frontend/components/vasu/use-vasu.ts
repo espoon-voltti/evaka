@@ -2,20 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
-import {
-  useAutosave,
-  AutosaveStatus
-} from 'employee-frontend/utils/use-autosave'
-import {
+import type { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import { useAutosave } from 'employee-frontend/utils/use-autosave'
+import type {
   ChildLanguage,
   VasuContent,
   VasuDocument
 } from 'lib-common/generated/api-types/vasu'
-import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
+import { vasuTranslations } from 'lib-customizations/employee'
 
-import { getVasuDocument, putVasuDocument, PutVasuDocumentParams } from './api'
+import type { PutVasuDocumentParams } from './api'
+import { getVasuDocument, putVasuDocument } from './api'
 
 export type VasuMetadata = Omit<
   VasuDocument,

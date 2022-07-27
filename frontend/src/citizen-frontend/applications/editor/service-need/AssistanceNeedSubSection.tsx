@@ -14,7 +14,7 @@ import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,

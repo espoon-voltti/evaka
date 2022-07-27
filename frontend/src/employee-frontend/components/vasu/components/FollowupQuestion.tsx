@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
+import type { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -15,12 +15,12 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, InformationText, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { UserContext } from '../../../state/user'
 import QuestionInfo from '../QuestionInfo'
 
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
   entry,

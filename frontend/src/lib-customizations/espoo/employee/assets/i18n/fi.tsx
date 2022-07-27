@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { H2, P } from 'lib-components/typography'
 
 export const fi = {

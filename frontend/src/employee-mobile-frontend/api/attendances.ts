@@ -2,19 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   AbsenceThreshold,
   AttendanceResponse,
   Child,
   DepartureRequest
 } from 'lib-common/generated/api-types/attendance'
-import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { JsonOf } from 'lib-common/json'
+import type {
+  Absence,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { client } from './client'
 

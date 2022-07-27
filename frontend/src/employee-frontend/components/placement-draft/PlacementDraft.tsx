@@ -2,22 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Loading, Result, Success } from 'lib-common/api'
+import type { Result, Success } from 'lib-common/api'
+import { isLoading, Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -32,8 +27,9 @@ import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
 import { getApplicationUnits } from '../../api/daycare'
 import WarningLabel from '../../components/common/WarningLabel'
 import { useTranslation } from '../../state/i18n'
-import { TitleContext, TitleState } from '../../state/title'
-import {
+import type { TitleState } from '../../state/title'
+import { TitleContext } from '../../state/title'
+import type {
   DaycarePlacementPlan,
   PlacementDraft,
   PlacementDraftPlacement

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { JsonOf } from 'lib-common/json'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { JsonOf } from 'lib-common/json'
 
 export function deserializePublicUnit(unit: JsonOf<PublicUnit>): PublicUnit {
   return {

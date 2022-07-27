@@ -3,18 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { ReactNode, useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import {
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type {
   Language,
   ProviderType,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate } from 'lib-common/generated/api-types/shared'
+import type { Coordinate } from 'lib-common/generated/api-types/shared'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -30,8 +32,10 @@ import SearchSection from './SearchSection'
 import UnitDetailsPanel from './UnitDetailsPanel'
 import UnitList from './UnitList'
 import { fetchUnits, queryDistances } from './api'
-import { mapViewBreakpoint, MobileMode } from './const'
-import { calcStraightDistance, UnitWithStraightDistance } from './distances'
+import type { MobileMode } from './const'
+import { mapViewBreakpoint } from './const'
+import type { UnitWithStraightDistance } from './distances'
+import { calcStraightDistance } from './distances'
 
 export type MapAddress = {
   coordinates: Coordinate

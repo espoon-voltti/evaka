@@ -6,7 +6,7 @@ import React from 'react'
 
 import { errorToInputInfo } from 'citizen-frontend/input-info-helper'
 import { useTranslation } from 'citizen-frontend/localization'
-import { TimeRangeErrors, TimeRanges } from 'lib-common/reservations'
+import type { TimeRangeErrors, TimeRanges } from 'lib-common/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

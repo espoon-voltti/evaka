@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePicker, Page, Radio, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { DatePicker, Radio, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}

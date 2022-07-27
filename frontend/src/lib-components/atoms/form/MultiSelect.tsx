@@ -4,7 +4,8 @@
 
 import classNames from 'classnames'
 import React from 'react'
-import ReactSelect, { Props } from 'react-select'
+import type { Props } from 'react-select'
+import ReactSelect from 'react-select'
 import styled from 'styled-components'
 
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'

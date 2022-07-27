@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { GroupStaffAttendance } from '../generated/api-types/daycare'
-import LocalDate from '../local-date'
+import type { GroupStaffAttendance } from '../generated/api-types/daycare'
+import type LocalDate from '../local-date'
 
 // The `attendances` object only contains days that have staff attendances
 export interface GroupStaffAttendanceForDates {

@@ -4,13 +4,13 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import { UpsertableDraftContent } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { UpsertableDraftContent } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
+import type { SaveDraftParams } from 'lib-components/employee/messages/types'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 

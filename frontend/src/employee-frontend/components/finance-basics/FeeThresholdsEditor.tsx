@@ -5,10 +5,10 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import type { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
-import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
+import type { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -27,19 +27,19 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 
+import type { FeeThresholdsSaveError } from '../../api/finance-basics'
 import {
   createFeeThresholds,
-  FeeThresholdsSaveError,
   updateFeeThresholds
 } from '../../api/finance-basics'
-import { Translations } from '../../state/i18n'
-import {
-  familySizes,
+import type { Translations } from '../../state/i18n'
+import type {
   FamilySize,
   FeeThresholdsWithId
 } from '../../types/finance-basics'
+import { familySizes } from '../../types/finance-basics'
 
-import { FormState } from './FeesSection'
+import type { FormState } from './FeesSection'
 
 export default React.memo(function FeeThresholdsEditor({
   i18n,

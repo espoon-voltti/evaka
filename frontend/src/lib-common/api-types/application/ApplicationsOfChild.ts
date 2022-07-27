@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationsOfChild } from '../../generated/api-types/application'
-import { JsonOf } from '../../json'
+import type { ApplicationsOfChild } from '../../generated/api-types/application'
+import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
 
 export const deserializeApplicationsOfChild = (

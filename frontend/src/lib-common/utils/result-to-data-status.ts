@@ -4,7 +4,7 @@
 
 import { useMemo } from 'react'
 
-import { Result } from '../api'
+import type { Result } from '../api'
 
 type DataStatus = 'failure' | 'loading' | 'success'
 

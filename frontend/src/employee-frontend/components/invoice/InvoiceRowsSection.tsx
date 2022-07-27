@@ -7,8 +7,8 @@ import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   PersonDetailed,
   InvoiceCodes,
   InvoiceRowDetailed

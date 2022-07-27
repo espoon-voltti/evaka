@@ -5,18 +5,18 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import {
+import type { Failure, Result } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type {
   IncomeCoefficient,
   IncomeEffect,
-  incomeEffects,
   IncomeValue
 } from 'lib-common/api-types/income'
+import { incomeEffects } from 'lib-common/api-types/income'
 import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -37,15 +37,13 @@ import {
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
-import { IncomeTypeOptions } from '../../../api/income'
+import type { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
-import { Income, IncomeBody, IncomeFields } from '../../../types/income'
+import type { Income, IncomeBody, IncomeFields } from '../../../types/income'
 import DateRangeInput from '../../common/DateRangeInput'
 
-import IncomeTable, {
-  IncomeTableData,
-  tableDataFromIncomeFields
-} from './IncomeTable'
+import type { IncomeTableData } from './IncomeTable'
+import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;

@@ -5,11 +5,12 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -25,7 +26,7 @@ import { createPlacement } from '../../../api/child/placements'
 import { getDaycares } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { Unit } from '../../../types/unit'
+import type { Unit } from '../../../types/unit'
 
 export interface Props {
   childId: UUID

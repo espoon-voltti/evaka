@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
+import type { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
 
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   Checkbox,
   Combobox,
   DatePickerDeprecated,
   FileInput,
-  Page,
   Radio,
   TextInput
 } from '../../../utils/page'

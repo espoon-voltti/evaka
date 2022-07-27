@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
-import { Child } from 'lib-common/generated/api-types/children'
+import type { Child } from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import { RoundImage } from 'lib-components/atoms/RoundImage'

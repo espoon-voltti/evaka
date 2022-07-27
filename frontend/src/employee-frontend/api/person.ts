@@ -2,27 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
-import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import { Decision } from 'lib-common/generated/api-types/decision'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import type { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type {
   EditRecipientRequest,
   Recipient
 } from 'lib-common/generated/api-types/messaging'
-import {
+import type {
   CreatePersonBody,
   PersonJSON,
   PersonResponse,
   PersonSummary,
   PersonWithChildrenDTO
 } from 'lib-common/generated/api-types/pis'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { SearchOrder } from '../types'
-import { deserializePersonJSON, SearchColumn } from '../types/person'
+import type { SearchOrder } from '../types'
+import type { SearchColumn } from '../types/person'
+import { deserializePersonJSON } from '../types/person'
 
 import { client } from './client'
 

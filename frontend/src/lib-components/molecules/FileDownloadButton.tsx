@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
-import { UUID } from 'lib-common/types'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type { UUID } from 'lib-common/types'
 
 import { FixedSpaceRow } from '../layout/flex-helpers'
 

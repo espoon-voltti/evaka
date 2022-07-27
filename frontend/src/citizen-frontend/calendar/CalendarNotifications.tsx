@@ -12,11 +12,8 @@ import React, {
   useState
 } from 'react'
 
-import {
-  HolidayCta,
-  NoCta,
-  useHolidayPeriods
-} from 'citizen-frontend/holiday-periods/state'
+import type { HolidayCta, NoCta } from 'citizen-frontend/holiday-periods/state'
+import { useHolidayPeriods } from 'citizen-frontend/holiday-periods/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'

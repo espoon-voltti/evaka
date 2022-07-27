@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Response, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
+import type { Response, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
+import type {
+  FeeAlteration,
+  PartialFeeAlteration
+} from '../../types/fee-alteration'
 import { client } from '../client'
 
 export async function getFeeAlterations(

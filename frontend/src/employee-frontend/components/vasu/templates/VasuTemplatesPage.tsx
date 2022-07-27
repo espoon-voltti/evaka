@@ -5,8 +5,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
-import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

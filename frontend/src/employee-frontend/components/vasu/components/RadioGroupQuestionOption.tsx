@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { QuestionOption } from 'lib-common/api-types/vasu'
+import type { QuestionOption } from 'lib-common/api-types/vasu'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Bold } from 'lib-components/typography'

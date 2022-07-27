@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { AbsenceType } from './daycare'
-import { Translatable } from './shared'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { AbsenceType } from './daycare'
+import type { Translatable } from './shared'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire

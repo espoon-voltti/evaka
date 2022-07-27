@@ -6,9 +6,9 @@ import zip from 'lodash/zip'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type {
   OpenTimeRange,
   ReservationChild,
   ReservationsResponse,
@@ -20,7 +20,7 @@ import {
   reservationsAndAttendancesDiffer,
   validateTimeRange
 } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -54,7 +54,8 @@ import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { RoundChildImage } from './RoundChildImages'
-import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
+import type { TimeRangeWithErrors } from './TimeRangeInput'
+import TimeRangeInput from './TimeRangeInput'
 import { postReservations } from './api'
 
 interface Props {

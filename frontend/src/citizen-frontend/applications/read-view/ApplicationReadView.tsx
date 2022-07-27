@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'

@@ -2,9 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
-import { JsonOf } from 'lib-common/json'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type {
+  UnitInfo,
+  UnitStats
+} from 'lib-common/generated/api-types/attendance'
+import type { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
 

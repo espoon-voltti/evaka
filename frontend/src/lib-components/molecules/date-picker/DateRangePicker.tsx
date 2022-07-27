@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useEffect, useMemo, useState } from 'react'
 
-import LocalDate from 'lib-common/local-date'
-import { InputInfo } from 'lib-components/atoms/form/InputField'
+import type LocalDate from 'lib-common/local-date'
+import type { InputInfo } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
+import type { DatePickerProps } from './DatePicker'
 import DatePicker, {
-  DatePickerProps,
   DatePickerSpacer,
   nativeDatePickerEnabled
 } from './DatePicker'

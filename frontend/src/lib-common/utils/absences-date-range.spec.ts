@@ -4,7 +4,7 @@
 
 import uniqueId from 'lodash/uniqueId'
 
-import { Absence } from 'lib-common/generated/api-types/daycare'
+import type { Absence } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 
 import { groupAbsencesByDateRange } from './absences'

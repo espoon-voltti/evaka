@@ -5,13 +5,11 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  deselectAll,
-  SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
+import type { SelectorNode } from 'lib-components/employee/messages/SelectorNode'
+import { deselectAll } from 'lib-components/employee/messages/SelectorNode'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'

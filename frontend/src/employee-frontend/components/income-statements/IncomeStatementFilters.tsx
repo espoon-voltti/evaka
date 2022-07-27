@@ -4,8 +4,8 @@
 
 import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
 
 import { getAreas } from '../../api/daycare'
 import { useTranslation } from '../../state/i18n'

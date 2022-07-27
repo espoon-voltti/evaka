@@ -2,33 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ScopedRole } from 'lib-common/api-types/employee-auth'
-import { DecisionIncome } from 'lib-common/api-types/income'
+import type { ScopedRole } from 'lib-common/api-types/employee-auth'
+import type { DecisionIncome } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   ApplicationForm,
   ApplicationStatus,
   ApplicationType,
   OtherGuardianAgreementStatus
 } from 'lib-common/generated/api-types/application'
-import {
+import type {
   FixedPeriodQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
-import {
+import type {
   FeeDecision,
   FeeDecisionStatus,
   FeeThresholds,
   Invoice,
   VoucherValueDecision
 } from 'lib-common/generated/api-types/invoicing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import {
+import type {
   Application,
   AssistanceNeed,
   AssistanceNeedDecision,

@@ -7,11 +7,11 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { CustomTitle } from 'employee-mobile-frontend/components/attendances/components'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import type { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
-import { Translations } from 'lib-customizations/employeeMobile'
+import type { Translations } from 'lib-customizations/employeeMobile'
 import { fasInfo } from 'lib-icons'
 
 interface Props {

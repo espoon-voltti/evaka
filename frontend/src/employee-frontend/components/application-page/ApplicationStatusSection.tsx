@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import type { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import ListGrid from 'lib-components/layout/ListGrid'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'

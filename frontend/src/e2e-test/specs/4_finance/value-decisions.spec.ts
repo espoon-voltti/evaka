@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DecisionIncome } from 'lib-common/api-types/income'
+import type { DecisionIncome } from 'lib-common/api-types/income'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -26,10 +26,10 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import type { ValueDecisionsPage } from '../../pages/employee/finance/finance-page'
 import {
   FinancePage,
-  ValueDecisionDetailsPage,
-  ValueDecisionsPage
+  ValueDecisionDetailsPage
 } from '../../pages/employee/finance/finance-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'

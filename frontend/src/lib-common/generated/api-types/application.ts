@@ -5,21 +5,21 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { AttachmentType } from './attachment'
-import { CreatePersonBody } from './pis'
-import { Decision } from './decision'
-import { DecisionDraft } from './decision'
-import { DecisionStatus } from './decision'
-import { DecisionType } from './decision'
-import { DecisionUnit } from './decision'
-import { PersonJSON } from './pis'
-import { PlacementPlanConfirmationStatus } from './placement'
-import { PlacementPlanRejectReason } from './placement'
-import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { Action } from '../action'
+import type { AttachmentType } from './attachment'
+import type { CreatePersonBody } from './pis'
+import type { Decision } from './decision'
+import type { DecisionDraft } from './decision'
+import type { DecisionStatus } from './decision'
+import type { DecisionType } from './decision'
+import type { DecisionUnit } from './decision'
+import type { PersonJSON } from './pis'
+import type { PlacementPlanConfirmationStatus } from './placement'
+import type { PlacementPlanRejectReason } from './placement'
+import type { PlacementType } from './placement'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.application.AcceptDecisionRequest

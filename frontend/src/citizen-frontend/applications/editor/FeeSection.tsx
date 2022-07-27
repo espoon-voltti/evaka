@@ -4,16 +4,16 @@
 
 import React from 'react'
 
-import { FeeFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
+import type { FeeFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 
 import EditorSection from '../../applications/editor/EditorSection'
 import { useTranslation } from '../../localization'
 
-import { ApplicationFormDataErrors } from './validations'
+import type { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   applicationType: ApplicationType

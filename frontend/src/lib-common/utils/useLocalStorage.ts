@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Dispatch, useEffect, useState } from 'react'
+import type { Dispatch } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function useLocalStorage(
   key: string,

@@ -6,16 +6,17 @@ import classNames from 'classnames'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
-import { UpdateStateFn } from 'lib-common/form-state'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type {
   DraftContent,
   AuthorizedMessageAccount,
   PostMessageBody,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -23,6 +24,10 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
+import type {
+  ReactSelectOption,
+  SelectorNode
+} from 'lib-components/employee/messages/SelectorNode'
 import {
   deselectAll,
   getReceiverOptions,
@@ -30,18 +35,16 @@ import {
   getSelectedBottomElements,
   getSelectorName,
   getSubTree,
-  ReactSelectOption,
-  SelectorNode,
   updateSelector
 } from 'lib-components/employee/messages/SelectorNode'
-import {
-  isGroupMessageAccount,
-  SaveDraftParams
-} from 'lib-components/employee/messages/types'
-import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
+import type { SaveDraftParams } from 'lib-components/employee/messages/types'
+import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
+import type { Draft } from 'lib-components/employee/messages/useDraft'
+import { useDraft } from 'lib-components/employee/messages/useDraft'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
-import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+import type { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+import FileUpload from 'lib-components/molecules/FileUpload'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {

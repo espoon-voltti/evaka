@@ -18,7 +18,7 @@ import { UnitsContextProvider } from './units'
 const StateProvider = React.memo(function StateProvider({
   children
 }: {
-  children: JSX.Element
+  children: React.ReactNode
 }) {
   return (
     <UIContextProvider>

@@ -5,16 +5,16 @@
 import React, { Fragment, useCallback, useMemo } from 'react'
 
 import { formatDate } from 'lib-common/date'
-import {
+import type {
   AbsenceCategory,
   AbsenceWithModifierInfo
 } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 
 import { useTranslation } from '../../state/i18n'
-import { Cell, CellPart } from '../../types/absence'
+import type { Cell, CellPart } from '../../types/absence'
 
 interface AbsenceCellPartProps {
   position: string

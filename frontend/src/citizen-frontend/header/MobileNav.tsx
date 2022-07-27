@@ -3,13 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
@@ -32,7 +27,8 @@ import {
 } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
-import { AuthContext, User } from '../auth/state'
+import type { User } from '../auth/state'
+import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'

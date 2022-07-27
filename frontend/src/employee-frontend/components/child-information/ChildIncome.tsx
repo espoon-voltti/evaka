@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

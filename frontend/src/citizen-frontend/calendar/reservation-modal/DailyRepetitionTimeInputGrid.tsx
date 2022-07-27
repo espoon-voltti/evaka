@@ -8,7 +8,7 @@ import { useTranslation } from 'citizen-frontend/localization'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { Label } from 'lib-components/typography'
 
-import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
+import type { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
 import {
   bindUnboundedTimeRanges,

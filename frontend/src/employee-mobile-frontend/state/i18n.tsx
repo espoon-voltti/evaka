@@ -4,11 +4,8 @@
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
-import {
-  Lang,
-  Translations,
-  translations
-} from 'lib-customizations/employeeMobile'
+import type { Lang, Translations } from 'lib-customizations/employeeMobile'
+import { translations } from 'lib-customizations/employeeMobile'
 interface I18nState {
   lang: Lang
   setLang: (l: Lang) => void

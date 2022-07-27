@@ -6,9 +6,10 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import {
+import type { ErrorsOf } from 'lib-common/form-validation'
+import { getErrorCount } from 'lib-common/form-validation'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type {
   AbsenceRequest,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'

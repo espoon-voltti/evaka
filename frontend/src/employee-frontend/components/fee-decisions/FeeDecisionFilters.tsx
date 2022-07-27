@@ -5,11 +5,11 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
-import {
+import type {
   DistinctiveParams,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
 import { getAreas, getUnits } from '../../api/daycare'

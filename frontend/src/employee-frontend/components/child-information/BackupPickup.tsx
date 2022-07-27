@@ -5,9 +5,10 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
+import type { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

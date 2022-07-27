@@ -6,8 +6,11 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { MultiSelectQuestion, QuestionOption } from 'lib-common/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
+import type {
+  MultiSelectQuestion,
+  QuestionOption
+} from 'lib-common/api-types/vasu'
+import type LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import {
@@ -17,12 +20,12 @@ import {
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import QuestionInfo from '../QuestionInfo'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
-import { QuestionProps } from './question-props'
+import type { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
   selectedValues: string[]

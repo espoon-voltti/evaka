@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { isValidTime } from 'lib-common/date'
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'

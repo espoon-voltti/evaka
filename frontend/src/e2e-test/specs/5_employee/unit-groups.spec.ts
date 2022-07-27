@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -13,12 +13,11 @@ import {
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
-import ChildInformationPage, {
-  AssistanceNeedSection
-} from '../../pages/employee/child-information'
+import type { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import type { AssistanceNeedSection } from '../../pages/employee/child-information'
+import ChildInformationPage from '../../pages/employee/child-information'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
+import type { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 

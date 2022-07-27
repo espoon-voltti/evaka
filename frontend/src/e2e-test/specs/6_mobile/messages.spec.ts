@@ -8,12 +8,11 @@ import {
   resetDatabase,
   upsertMessageAccounts
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { DaycareGroupBuilder, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { Daycare, PersonDetail } from '../../dev-api/types'
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import type { DaycareGroupBuilder } from '../../dev-api/fixtures'
+import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import type { Daycare, PersonDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'

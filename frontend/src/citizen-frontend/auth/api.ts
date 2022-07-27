@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 
 import { client } from '../api-client'
 
-import { User } from './state'
+import type { User } from './state'
 
 export type AuthStatus =
   | { loggedIn: false; apiVersion: string }

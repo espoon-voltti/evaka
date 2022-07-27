@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 import { tabletMin } from '../../breakpoints'
-import { BaseProps } from '../../utils'
+import type { BaseProps } from '../../utils'
 
 import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 

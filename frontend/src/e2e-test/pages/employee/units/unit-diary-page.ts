@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { UUID } from 'lib-common/types'
+import type { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../../utils'
+import type { Page } from '../../../utils/page'
 import {
   Checkbox,
   Element,
   Modal,
-  Page,
   Radio,
   Select,
   TextInput

@@ -2,21 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useMemo,
-  useState,
-  createContext
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useCallback, useMemo, useState, createContext } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   DaycareCareArea,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import {
+import type {
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
   InvoiceStatus,
@@ -26,10 +21,10 @@ import {
   PaymentStatus
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
-import { Unit } from '../api/daycare'
+import type { Unit } from '../api/daycare'
 
 export interface Checked {
   [id: string]: boolean

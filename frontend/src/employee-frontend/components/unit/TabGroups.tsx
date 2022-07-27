@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import React, { useContext, useMemo } from 'react'
 
-import { combine, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 

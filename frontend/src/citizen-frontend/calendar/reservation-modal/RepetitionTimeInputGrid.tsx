@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
-import {
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { DailyReservationData } from 'lib-common/generated/api-types/reservations'
+import type {
   Repetition,
   ReservationFormDataForValidation,
   ValidationResult

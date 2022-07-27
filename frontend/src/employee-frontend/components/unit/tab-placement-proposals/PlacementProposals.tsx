@@ -13,11 +13,11 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
+import type {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -35,7 +35,7 @@ import {
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DaycarePlacementPlan } from '../../../types/unit'
+import type { DaycarePlacementPlan } from '../../../types/unit'
 
 const ButtonRow = styled.div`
   display: flex;

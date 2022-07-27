@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types'
+import type { UUID } from '../types'
 
 export interface Attachment {
   id: UUID

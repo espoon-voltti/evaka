@@ -8,17 +8,17 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   DailyReservationData,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
-import {
+import type {
   Repetition,
-  ReservationFormDataForValidation,
-  validateForm
+  ReservationFormDataForValidation
 } from 'lib-common/reservations'
+import { validateForm } from 'lib-common/reservations'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

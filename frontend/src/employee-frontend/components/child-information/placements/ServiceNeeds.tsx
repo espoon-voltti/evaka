@@ -7,8 +7,8 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import {
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
@@ -21,7 +21,7 @@ import { faPlus, faQuestion } from 'lib-icons'
 
 import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { useTranslation } from '../../../state/i18n'
-import { DateRange } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
 import { RequireRole } from '../../../utils/roles'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'

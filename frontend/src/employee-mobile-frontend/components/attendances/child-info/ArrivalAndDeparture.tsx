@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { formatTime } from 'lib-common/date'
-import { Child } from 'lib-common/generated/api-types/attendance'
+import type { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 

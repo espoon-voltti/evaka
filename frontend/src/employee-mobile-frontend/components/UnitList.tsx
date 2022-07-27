@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading } from 'lib-common/api'
-import { UnitStats } from 'lib-common/generated/api-types/attendance'
+import type { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 import {

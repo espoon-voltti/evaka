@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
+import type {
   ApplicationAddress,
   ApplicationAttachment,
   ApplicationPersonBasics
@@ -34,7 +34,7 @@ import ApplicationTitle from '../../components/application-page/ApplicationTitle
 import VTJGuardian from '../../components/application-page/VTJGuardian'
 import Attachment from '../../components/common/Attachment'
 import { useTranslation } from '../../state/i18n'
-import { ApplicationResponse } from '../../types/application'
+import type { ApplicationResponse } from '../../types/application'
 import { formatName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
 

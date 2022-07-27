@@ -2,16 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo
-} from 'react'
+import type { ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 

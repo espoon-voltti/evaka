@@ -12,18 +12,19 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import {
+import type {
   DaycarePlacementWithDetails,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
-import {
+import type {
   VasuDocumentSummary,
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import type { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 
-import { Translations } from '../state/i18n'
+import type { Translations } from '../state/i18n'
 
 export type ChildAttendanceUIState =
   | 'coming'

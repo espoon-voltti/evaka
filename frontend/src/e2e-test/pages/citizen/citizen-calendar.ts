@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
-import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, Element, Select, TextInput } from '../../utils/page'
 
 interface BaseReservation {
   childIds: UUID[]

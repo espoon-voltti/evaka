@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { TooltipModel } from 'chart.js'
+import type { TooltipModel } from 'chart.js'
 import React from 'react'
 import styled from 'styled-components'
 

@@ -2,22 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 import {
   insertDefaultServiceNeedOptions,
   resetDatabase,
   postChildDailyNote
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
+import type { AreaAndPersonFixtures } from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import type {
   DaycareBuilder,
-  DaycareGroupBuilder,
-  Fixture
+  DaycareGroupBuilder
 } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

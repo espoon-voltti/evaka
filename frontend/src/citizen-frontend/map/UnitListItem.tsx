@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins as dM } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

@@ -6,11 +6,11 @@ import groupBy from 'lodash/groupBy'
 import React, { useEffect } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { TimeRanges } from 'lib-common/reservations'
+import type { TimeRanges } from 'lib-common/reservations'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { LabelLike } from 'lib-components/typography'
 
-import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
+import type { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
 import {
   allChildrenAreAbsent,

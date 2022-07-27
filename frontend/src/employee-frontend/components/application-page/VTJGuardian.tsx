@@ -5,9 +5,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { isLoading, Loading, Result } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { isLoading, Loading } from 'lib-common/api'
+import type { PersonJSON } from 'lib-common/generated/api-types/pis'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H4, Label } from 'lib-components/typography'

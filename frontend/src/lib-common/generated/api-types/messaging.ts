@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import LocalDate from '../../local-date'
-import { MessageAttachment } from './attachment'
-import { UUID } from '../../types'
+import type LocalDate from '../../local-date'
+import type { MessageAttachment } from './attachment'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AccountType

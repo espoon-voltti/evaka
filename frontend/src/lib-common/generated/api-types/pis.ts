@@ -5,15 +5,15 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { EmployeeFeatures } from './shared'
-import { ExternalId } from './identity'
-import { IncomeEffect } from './invoicing'
-import { Nationality } from './vtjclient'
-import { NativeLanguage } from './vtjclient'
-import { UUID } from '../../types'
-import { UserRole } from './shared'
+import type LocalDate from '../../local-date'
+import type { Action } from '../action'
+import type { EmployeeFeatures } from './shared'
+import type { ExternalId } from './identity'
+import type { IncomeEffect } from './invoicing'
+import type { Nationality } from './vtjclient'
+import type { NativeLanguage } from './vtjclient'
+import type { UUID } from '../../types'
+import type { UserRole } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.AddSsnRequest

@@ -12,12 +12,13 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -30,11 +31,12 @@ import {
   getChildBackupCares,
   updateBackupCare
 } from '../../../api/child/backup-care'
-import { getUnits, Unit } from '../../../api/daycare'
+import { getUnits } from '../../../api/daycare'
+import type { Unit } from '../../../api/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DateRange } from '../../../utils/date'
+import type { DateRange } from '../../../utils/date'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
@@ -63,7 +65,7 @@ const FormLabel = styled.div`
   width: 300px;
 `
 
-const Unit = styled.div`
+const UnitContainer = styled.div`
   flex: 1 1 auto;
 `
 
@@ -173,7 +175,7 @@ export default function BackupCareForm({
       <form data-qa="backup-care-form">
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.unit}</FormLabel>
-          <Unit>
+          <UnitContainer>
             {backupCare ? (
               backupCare.unit.name
             ) : (
@@ -189,7 +191,7 @@ export default function BackupCareForm({
                 />
               </div>
             )}
-          </Unit>
+          </UnitContainer>
         </FormField>
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.dateRange}</FormLabel>

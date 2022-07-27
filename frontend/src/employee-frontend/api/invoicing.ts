@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
+import type { Paged, Response, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Absence } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Absence } from 'lib-common/generated/api-types/daycare'
+import type {
   DistinctiveParams,
   FeeDecision,
   FeeDecisionDetailed,
@@ -33,9 +34,9 @@ import {
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { API_URL, client } from './client'
 

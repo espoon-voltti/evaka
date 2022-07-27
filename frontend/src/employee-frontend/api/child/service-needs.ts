@@ -2,16 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import {
+import type { Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type {
   ServiceNeedCreateRequest,
   ServiceNeedOption,
   ServiceNeedOptionPublicInfo,
   ServiceNeedUpdateRequest
 } from 'lib-common/generated/api-types/serviceneed'
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import type { JsonOf } from 'lib-common/json'
+import type { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 

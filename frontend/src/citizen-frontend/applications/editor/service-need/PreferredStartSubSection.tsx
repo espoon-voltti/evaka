@@ -6,9 +6,9 @@ import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import React, { useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -34,7 +34,7 @@ import {
 } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,

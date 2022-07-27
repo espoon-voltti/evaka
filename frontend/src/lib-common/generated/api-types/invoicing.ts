@@ -5,14 +5,14 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import DateRange from '../../date-range'
-import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import { CareType } from './daycare'
-import { DecisionIncome } from '../../api-types/income'
-import { PlacementType } from './placement'
-import { UUID } from '../../types'
+import type DateRange from '../../date-range'
+import type FiniteDateRange from '../../finite-date-range'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import type { CareType } from './daycare'
+import type { DecisionIncome } from '../../api-types/income'
+import type { PlacementType } from './placement'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth

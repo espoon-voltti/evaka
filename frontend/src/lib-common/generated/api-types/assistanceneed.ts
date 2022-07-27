@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type HelsinkiDateTime from '../../helsinki-date-time'
+import type LocalDate from '../../local-date'
+import type { Action } from '../action'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.AssistanceBasisOption

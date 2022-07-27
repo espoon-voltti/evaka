@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
-import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import type { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faChild, faExchange } from 'lib-icons'
@@ -12,7 +12,7 @@ import { faChild, faExchange } from 'lib-icons'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { DaycareGroup } from '../../../../types/unit'
+import type { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
 
 interface Props {

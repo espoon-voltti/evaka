@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   Group,
   MessageReceiver,
   AuthorizedMessageAccount,
   UpsertableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 export interface GroupMessageAccount extends AuthorizedMessageAccount {
   daycareGroup: Group

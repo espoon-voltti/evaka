@@ -4,7 +4,7 @@
 
 import React, { createContext, useCallback, useMemo, useState } from 'react'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import {

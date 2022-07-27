@@ -4,16 +4,17 @@
 
 import fs from 'fs'
 
-import playwright, {
+import type {
   Browser,
   BrowserContext,
   BrowserContextOptions,
   Download,
   Page
 } from 'playwright'
+import playwright from 'playwright'
 
-import { JsonOf } from 'lib-common/json'
-import {
+import type { JsonOf } from 'lib-common/json'
+import type {
   CitizenCustomizations,
   CommonCustomizations,
   DeepPartial,

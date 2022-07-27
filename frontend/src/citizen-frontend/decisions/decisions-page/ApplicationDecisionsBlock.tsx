@@ -5,8 +5,8 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
-import { DecisionType } from 'lib-common/generated/api-types/decision'
+import type { ApplicationDecisions } from 'lib-common/generated/api-types/application'
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

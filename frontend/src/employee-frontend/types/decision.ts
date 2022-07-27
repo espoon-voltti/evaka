@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GuardianInfo } from 'lib-common/generated/api-types/application'
-import {
+import type { GuardianInfo } from 'lib-common/generated/api-types/application'
+import type {
   DecisionDraft,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'

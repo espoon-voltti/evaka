@@ -2,23 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import type {
   ChildLanguage,
   CitizenGetVasuDocumentResponse,
   VasuContent,
   VasuDocument
 } from 'lib-common/generated/api-types/vasu'
-import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
+import { vasuTranslations } from 'lib-customizations/employee'
 
 import { getCitizenVasuDocument } from './api'
 

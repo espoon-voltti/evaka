@@ -5,11 +5,11 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { Action } from '../action'
-import { ServiceNeed } from './serviceneed'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { Action } from '../action'
+import type { ServiceNeed } from './serviceneed'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareChild

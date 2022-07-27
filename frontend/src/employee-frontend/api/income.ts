@@ -4,12 +4,13 @@
 
 import partition from 'lodash/partition'
 
-import { Failure, Response, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
+import type { Response, Result } from 'lib-common/api'
+import { Failure, Success } from 'lib-common/api'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
-import { Income, IncomeOption, IncomeBody } from '../types/income'
+import type { Income, IncomeOption, IncomeBody } from '../types/income'
 
 import { client } from './client'
 

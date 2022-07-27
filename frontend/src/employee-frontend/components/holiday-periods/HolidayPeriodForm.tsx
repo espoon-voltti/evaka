@@ -5,13 +5,13 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { UpdateStateFn } from 'lib-common/form-state'
-import { ErrorKey } from 'lib-common/form-validation'
-import {
+import type { UpdateStateFn } from 'lib-common/form-state'
+import type { ErrorKey } from 'lib-common/form-validation'
+import type {
   HolidayPeriod,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { MessageAccount } from 'lib-common/generated/api-types/messaging'
+import type { MessageAccount } from 'lib-common/generated/api-types/messaging'
 
 export type View = 'RECEIVED' | 'SENT' | 'DRAFTS'
 

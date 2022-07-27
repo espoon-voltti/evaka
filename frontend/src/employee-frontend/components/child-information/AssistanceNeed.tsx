@@ -5,9 +5,10 @@
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import type { ChildState } from 'employee-frontend/state/child'
+import { ChildContext } from 'employee-frontend/state/child'
 import { combine } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'

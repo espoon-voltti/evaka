@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
+import type { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faMoneyCheck } from 'lib-icons'
 

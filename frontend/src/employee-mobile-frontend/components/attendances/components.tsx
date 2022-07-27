@@ -9,11 +9,8 @@ import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { fontWeights } from 'lib-components/typography'
-import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from 'lib-components/white-space'
+import type { SpacingSize } from 'lib-components/white-space'
+import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 export const WideAsyncButton = styled(AsyncButton)`

@@ -7,7 +7,7 @@ import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Attachment } from 'lib-common/api-types/attachment'
+import type { Attachment } from 'lib-common/api-types/attachment'
 import { formatDate } from 'lib-common/date'
 import Title from 'lib-components/atoms/Title'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -18,10 +18,10 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl } from '../../../api/attachments'
-import { IncomeTypeOptions } from '../../../api/income'
+import type { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { UserContext } from '../../../state/user'
-import { Income } from '../../../types/income'
+import type { Income } from '../../../types/income'
 
 import IncomeTable, { tableDataFromIncomeFields } from './IncomeTable'
 

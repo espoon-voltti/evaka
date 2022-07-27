@@ -13,11 +13,12 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading, Result } from 'lib-common/api'
-import { AdRole } from 'lib-common/api-types/employee-auth'
-import { Action } from 'lib-common/generated/action'
-import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
+import type { AdRole } from 'lib-common/api-types/employee-auth'
+import type { Action } from 'lib-common/generated/action'
+import type { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -36,12 +37,11 @@ import { Gap } from 'lib-components/white-space'
 import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
+import type { DaycareAclRow, DaycareGroupSummary } from '../../../api/unit'
 import {
   addDaycareAclSpecialEducationTeacher,
   addDaycareAclStaff,
   addDaycareAclSupervisor,
-  DaycareAclRow,
-  DaycareGroupSummary,
   deleteMobileDevice,
   getMobileDevices,
   putMobileDeviceName,
@@ -50,11 +50,12 @@ import {
   removeDaycareAclSupervisor,
   updateDaycareGroupAcl
 } from '../../../api/unit'
-import { Translations, useTranslation } from '../../../state/i18n'
+import type { Translations } from '../../../state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
 import { UserContext } from '../../../state/user'
-import { Employee } from '../../../types/employee'
+import type { Employee } from '../../../types/employee'
 import { formatName } from '../../../utils'
 import { renderResult } from '../../async-rendering'
 

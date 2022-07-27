@@ -5,10 +5,11 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
+import type { Result } from 'lib-common/api'
+import { Success } from 'lib-common/api'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -26,9 +27,10 @@ import colors from 'lib-customizations/common'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { UnwrapResult } from '../../../async-rendering'
 import { useTranslation } from '../../../localization'
-import { ApplicationUnitType, getApplicationUnits } from '../../api'
+import type { ApplicationUnitType } from '../../api'
+import { getApplicationUnits } from '../../api'
 
-import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
 
 const maxUnits = 3
 

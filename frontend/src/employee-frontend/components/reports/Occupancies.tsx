@@ -10,9 +10,10 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
+import { Loading, Success } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import type { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
@@ -27,14 +28,15 @@ import { unitProviderTypes } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { getAreas } from '../../api/daycare'
-import {
-  getOccupanciesReport,
+import type {
   OccupancyReportFilters,
   OccupancyReportRow,
   OccupancyReportType
 } from '../../api/reports'
+import { getOccupanciesReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { Translations, useTranslation } from '../../state/i18n'
+import type { Translations } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'

@@ -4,7 +4,8 @@
 
 import config from '../config'
 
-import { Page, TextInput } from './page'
+import type { Page } from './page'
+import { TextInput } from './page'
 
 import { waitUntilEqual } from './index'
 

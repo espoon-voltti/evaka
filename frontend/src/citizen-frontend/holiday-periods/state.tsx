@@ -6,9 +6,10 @@ import head from 'lodash/head'
 import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
-import { combine, Loading, Result, Success } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type { Result } from 'lib-common/api'
+import { combine, Loading, Success } from 'lib-common/api'
+import type FiniteDateRange from 'lib-common/finite-date-range'
+import type {
   ActiveQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'

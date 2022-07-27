@@ -7,7 +7,7 @@
 import defaultsUntyped from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
 
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
 import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'

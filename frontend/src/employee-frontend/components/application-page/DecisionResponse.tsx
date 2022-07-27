@@ -4,8 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
-import { Decision } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import {

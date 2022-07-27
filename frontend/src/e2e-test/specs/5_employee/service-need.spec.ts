@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
+import type {
   EmployeeBuilder,
-  Fixture,
   PlacementBuilder,
   ServiceNeedOptionBuilder
 } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

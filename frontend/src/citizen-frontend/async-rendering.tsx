@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  makeHelpers,
-  RenderResultFn,
-  UnwrapResultProps
-} from 'lib-components/async-rendering'
+import { makeHelpers } from 'lib-components/async-rendering'
 
 import { useTranslation } from './localization'
 
@@ -15,5 +11,8 @@ function useFailureMessage() {
 }
 
 const { UnwrapResult, renderResult } = makeHelpers(useFailureMessage)
-export type { UnwrapResultProps, RenderResultFn }
+export type {
+  UnwrapResultProps,
+  RenderResultFn
+} from 'lib-components/async-rendering'
 export { UnwrapResult, renderResult }

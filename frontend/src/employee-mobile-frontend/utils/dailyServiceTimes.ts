@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import type {
   DailyServiceTimes,
+  TimeRange
+} from 'lib-common/api-types/child/common'
+import {
   isIrregular,
   isRegular,
-  isVariableTime,
-  TimeRange
+  isVariableTime
 } from 'lib-common/api-types/child/common'
 import { mockNow } from 'lib-common/utils/helpers'
 

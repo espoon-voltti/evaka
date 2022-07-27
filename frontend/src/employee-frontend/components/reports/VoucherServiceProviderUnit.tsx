@@ -9,14 +9,15 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type {
   VoucherReportRowType,
   ServiceVoucherUnitReport,
   ServiceVoucherValueRow
 } from 'lib-common/generated/api-types/reports'
 import { formatCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -43,10 +44,8 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faHome, faLockAlt } from 'lib-icons'
 
-import {
-  getVoucherServiceProviderUnitReport,
-  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
-} from '../../api/reports'
+import type { VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters } from '../../api/reports'
+import { getVoucherServiceProviderUnitReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'

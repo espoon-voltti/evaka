@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
-import {
+import type { ApplicationDecisions } from 'lib-common/generated/api-types/application'
+import type {
   DecisionStatus,
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import { JsonOf } from 'lib-common/json'
+import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 export function deserializeApplicationDecisions(
   json: JsonOf<ApplicationDecisions>

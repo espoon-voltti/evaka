@@ -9,7 +9,8 @@ import styled from 'styled-components'
 
 import { faChevronDown } from 'lib-icons'
 
-import { borderStyles, DropdownProps, Root } from './shared'
+import type { DropdownProps } from './shared'
+import { borderStyles, Root } from './shared'
 
 type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &
   (T extends string | number

@@ -4,9 +4,9 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
-import { MessageType } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { MessageType } from 'lib-common/generated/api-types/messaging'
+import type { UUID } from 'lib-common/types'
 
 import { renderResult } from '../async-rendering'
 

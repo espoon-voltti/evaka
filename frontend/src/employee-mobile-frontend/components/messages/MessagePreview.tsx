@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import type { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   Container,

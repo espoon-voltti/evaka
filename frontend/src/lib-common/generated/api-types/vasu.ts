@@ -5,10 +5,10 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { UUID } from '../../types'
-import { VasuQuestion } from '../../api-types/vasu'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { UUID } from '../../types'
+import type { VasuQuestion } from '../../api-types/vasu'
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest

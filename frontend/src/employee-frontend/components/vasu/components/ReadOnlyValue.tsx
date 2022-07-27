@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { Label } from 'lib-components/typography'
-import { VasuTranslations } from 'lib-customizations/employee'
+import type { VasuTranslations } from 'lib-customizations/employee'
 
 import { ValueOrNoRecord } from './ValueOrNoRecord'
 

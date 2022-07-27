@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from '../generated/api-types/daycare'
-import { TimeRange } from '../generated/api-types/reservations'
-import { JsonOf } from '../json'
-import LocalDate from '../local-date'
+import type { AbsenceType } from '../generated/api-types/daycare'
+import type { TimeRange } from '../generated/api-types/reservations'
+import type { JsonOf } from '../json'
+import type LocalDate from '../local-date'
 
-import { DailyServiceTimes } from './child/common'
+import type { DailyServiceTimes } from './child/common'
 
 export interface UnitAttendanceReservations {
   unit: string

@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Gap } from 'lib-components/white-space'
 

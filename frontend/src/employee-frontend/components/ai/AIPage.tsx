@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ChartDataset, ChartOptions, ScatterDataPoint } from 'chart.js'
+import type { ChartDataset, ChartOptions, ScatterDataPoint } from 'chart.js'
 import React, { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
-import { JsonOf } from 'lib-common/json'
+import type { Result } from 'lib-common/api'
+import { Failure, Loading, Success } from 'lib-common/api'
+import type { JsonOf } from 'lib-common/json'
 import Button from 'lib-components/atoms/buttons/Button'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'

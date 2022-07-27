@@ -14,11 +14,11 @@ import React, {
 import styled from 'styled-components'
 
 import { formatDate } from 'lib-common/date'
-import {
+import type {
   Message,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'

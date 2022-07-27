@@ -4,14 +4,14 @@
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import type { EmployeeBuilder } from '../../dev-api/fixtures'
 import {
   daycare2Fixture,
   daycareGroupFixture,
-  EmployeeBuilder,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycareGroup } from '../../dev-api/types'
+import type { DaycareGroup } from '../../dev-api/types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { StaffAttendancePage } from '../../pages/mobile/staff-page'
 import { pairMobileDevice } from '../../utils/mobile'

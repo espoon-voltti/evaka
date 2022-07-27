@@ -4,9 +4,10 @@
 
 import React, { createContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'

@@ -6,9 +6,9 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import type { Result } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import {
+import type {
   FeeDecisionSortParam,
   FeeDecisionSummary,
   SortDirection

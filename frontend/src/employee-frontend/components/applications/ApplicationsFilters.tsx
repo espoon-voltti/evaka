@@ -5,33 +5,33 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 
 import { Loading } from 'lib-common/api'
-import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+import type { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { getAreas, getUnits } from '../../api/daycare'
-import {
-  ApplicationUIContext,
-  VoucherApplicationFilter
-} from '../../state/application-ui'
+import type { VoucherApplicationFilter } from '../../state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
+import type {
+  ApplicationDateType,
+  ApplicationBasis,
+  ApplicationSummaryStatusOptions,
+  PreschoolType,
+  ApplicationSummaryStatusAllOptions,
+  ApplicationDistinctions
+} from '../common/Filters'
 import {
   Filters,
   ApplicationDistinctionsFilter,
   ApplicationStatusFilter,
   ApplicationTypeFilter,
   ApplicationDateFilter,
-  ApplicationDateType,
   ApplicationBasisFilter,
-  ApplicationBasis,
-  ApplicationSummaryStatusOptions,
-  PreschoolType,
   preschoolTypes,
-  ApplicationSummaryStatusAllOptions,
   MultiSelectUnitFilter,
-  ApplicationDistinctions,
   TransferApplicationsFilter
 } from '../common/Filters'
 

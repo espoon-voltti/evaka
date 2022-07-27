@@ -6,9 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
-import { Decision } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { Decision } from 'lib-common/generated/api-types/decision'
+import type { UUID } from 'lib-common/types'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,

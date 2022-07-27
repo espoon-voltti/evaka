@@ -13,7 +13,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
-import { Staff } from './staff'
+import type { Staff } from './staff'
 
 const StaffBox = styled.div`
   display: flex;

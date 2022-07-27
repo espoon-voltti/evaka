@@ -6,8 +6,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
-import {
+import type { Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
+import type {
   DailyReservationData,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'

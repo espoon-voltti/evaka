@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import type { Result } from 'lib-common/api'
+import type { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -27,7 +27,7 @@ import {
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 const Hyphenbox = styled.div`
   padding-top: 36px;

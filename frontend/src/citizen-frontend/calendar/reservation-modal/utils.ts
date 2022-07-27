@@ -4,11 +4,11 @@
 
 import uniqBy from 'lodash/uniqBy'
 
-import {
+import type {
   DailyReservationData,
   TimeRange
 } from 'lib-common/generated/api-types/reservations'
-import { TimeRanges } from 'lib-common/reservations'
+import type { TimeRanges } from 'lib-common/reservations'
 
 export const emptyTimeRange: [TimeRange] = [
   {

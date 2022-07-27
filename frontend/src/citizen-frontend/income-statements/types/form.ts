@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Attachment } from 'lib-common/api-types/attachment'
-import * as IncomeStatement from 'lib-common/api-types/incomeStatement'
-import { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
+import type { Attachment } from 'lib-common/api-types/attachment'
+import type * as IncomeStatement from 'lib-common/api-types/incomeStatement'
+import type { IncomeSource, OtherIncome } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 
 export interface IncomeStatementForm {

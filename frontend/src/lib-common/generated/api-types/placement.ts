@@ -5,13 +5,13 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import FiniteDateRange from '../../finite-date-range'
-import LocalDate from '../../local-date'
-import { EvakaUser } from './user'
-import { PilotFeature } from './shared'
-import { ProviderType } from './daycare'
-import { ServiceNeed } from './serviceneed'
-import { UUID } from '../../types'
+import type FiniteDateRange from '../../finite-date-range'
+import type LocalDate from '../../local-date'
+import type { EvakaUser } from './user'
+import type { PilotFeature } from './shared'
+import type { ProviderType } from './daycare'
+import type { ServiceNeed } from './serviceneed'
+import type { UUID } from '../../types'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics

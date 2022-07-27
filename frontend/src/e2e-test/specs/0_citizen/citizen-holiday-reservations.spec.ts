@@ -4,19 +4,18 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
+import type { DaycareBuilder, PersonBuilder } from '../../dev-api/fixtures'
 import {
   careAreaFixture,
-  DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
-  Fixture,
-  PersonBuilder
+  Fixture
 } from '../../dev-api/fixtures'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'

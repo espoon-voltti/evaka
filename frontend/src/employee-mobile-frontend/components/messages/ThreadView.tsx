@@ -7,12 +7,12 @@ import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import {
+import type {
   Message,
   MessageThread,
   AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights } from 'lib-components/typography'

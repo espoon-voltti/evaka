@@ -4,8 +4,10 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { GlobalRole, globalRoles } from 'lib-common/api-types/employee-auth'
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { GlobalRole } from 'lib-common/api-types/employee-auth'
+import { globalRoles } from 'lib-common/api-types/employee-auth'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -20,7 +22,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { getEmployeeDetails, updateEmployee } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser } from '../../types/employee'
+import type { EmployeeUser } from '../../types/employee'
 
 interface FormData {
   globalRoles: GlobalRole[]

@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
+import type { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
 import { formatDate } from 'lib-common/date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'

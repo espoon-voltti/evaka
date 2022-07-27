@@ -10,11 +10,10 @@ import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
-import {
-  ChildDocumentsContext,
-  ChildDocumentsState
-} from '../child-documents/state'
-import { MessageContext, MessagePageState } from '../messages/state'
+import type { ChildDocumentsState } from '../child-documents/state'
+import { ChildDocumentsContext } from '../child-documents/state'
+import type { MessagePageState } from '../messages/state'
+import { MessageContext } from '../messages/state'
 
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'

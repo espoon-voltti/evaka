@@ -5,8 +5,8 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { Attachment } from 'lib-common/api-types/attachment'
+import type { Result } from 'lib-common/api'
+import type { Attachment } from 'lib-common/api-types/attachment'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
 import {
   required,
@@ -14,9 +14,9 @@ import {
   validateIf,
   validInt
 } from 'lib-common/form-validation'
-import { OtherIncome } from 'lib-common/generated/enums'
-import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import type { OtherIncome } from 'lib-common/generated/enums'
+import type LocalDate from 'lib-common/local-date'
+import type { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -43,19 +43,21 @@ import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import IncomeStatementAttachments from './IncomeStatementAttachments'
+import type {
+  IncomeStatementFormAPI,
+  SetStateCallback
+} from './IncomeStatementComponents'
 import {
   ActionContainer,
   AssureCheckbox,
   identity,
-  IncomeStatementFormAPI,
   LabelError,
-  SetStateCallback,
   useFieldDispatch,
   useFieldSetState,
   useFieldSetter
 } from './IncomeStatementComponents'
-import { AttachmentType } from './types/common'
-import * as Form from './types/form'
+import type { AttachmentType } from './types/common'
+import type * as Form from './types/form'
 
 interface Props {
   incomeStatementId: UUID | undefined

@@ -12,9 +12,9 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { Light } from 'lib-components/typography'
 
 import EuroInput from '../../../../components/common/EuroInput'
-import { Translations } from '../../../../state/i18n'
-import { IncomeOption } from '../../../../types/income'
-import { IncomeValueString } from '../IncomeTable'
+import type { Translations } from '../../../../state/i18n'
+import type { IncomeOption } from '../../../../types/income'
+import type { IncomeValueString } from '../IncomeTable'
 
 type Props = {
   i18n: Translations

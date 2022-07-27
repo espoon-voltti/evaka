@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Checkbox, Page, TextInput } from '../../utils/page'
+import type { Page } from '../../utils/page'
+import { Checkbox, TextInput } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 
