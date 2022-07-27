@@ -11,16 +11,12 @@ cd "$( dirname "${BASH_SOURCE[0]}")"
 rm ./espoo-customizations -rf
 cp ../espoo-customizations . -r
 
-if [ "${1:-}" = "test" ]; then
+if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
     docker build -t evaka/frontend-builder \
         --target=builder \
         --build-arg build=0 \
         --build-arg commit="$(git rev-parse HEAD)" \
         -f Dockerfile .
-
-    docker run --rm evaka/frontend-builder:latest yarn lint
-    docker run --rm evaka/frontend-builder:latest yarn type-check
-    docker run --rm evaka/frontend-builder:latest yarn test --maxWorkers=2
 else
     docker build -t evaka/frontend \
         --build-arg build=0 \
@@ -29,3 +25,9 @@ else
 fi
 
 rm ./espoo-customizations -r
+
+if [ "${1:-}" = "test" ]; then
+    docker run --rm evaka/frontend-builder:latest yarn lint
+    docker run --rm evaka/frontend-builder:latest yarn type-check
+    docker run --rm evaka/frontend-builder:latest yarn test --maxWorkers=2
+fi
