@@ -31,6 +31,7 @@ import VasuPage from './child-documents/vasu/VasuPage'
 import AssistanceNeedDecisionPage from './children/AssistanceNeedDecisionPage'
 import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
+import { ChildrenContextProvider } from './children/state'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
@@ -62,10 +63,14 @@ export default function App() {
                 <MessageContextProvider>
                   <PedagogicalDocumentsContextProvider>
                     <HolidayPeriodsContextProvider>
-                      <Content />
-                      <GlobalDialog />
-                      <LoginErrorModal translations={i18n.login.failedModal} />
-                      <div id="modal-container" />
+                      <ChildrenContextProvider>
+                        <Content />
+                        <GlobalDialog />
+                        <LoginErrorModal
+                          translations={i18n.login.failedModal}
+                        />
+                        <div id="modal-container" />
+                      </ChildrenContextProvider>
                     </HolidayPeriodsContextProvider>
                   </PedagogicalDocumentsContextProvider>
                 </MessageContextProvider>

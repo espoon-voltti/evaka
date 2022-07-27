@@ -6,7 +6,8 @@ import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AssistanceNeedDecision,
-  AssistanceNeedDecisionCitizenListItem
+  AssistanceNeedDecisionCitizenListItem,
+  UnreadAssistanceNeedDecisionItem
 } from 'lib-common/generated/api-types/assistanceneed'
 import {
   Child,
@@ -151,5 +152,25 @@ export function getAssistanceNeedDecision(
       `/citizen/children/assistance-need-decision/${id}`
     )
     .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function markAssistanceNeedDecisionAsRead(
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .post(`/citizen/children/assistance-need-decision/${id}/read`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAssistanceNeedDecisionUnreadCounts(): Promise<
+  Result<UnreadAssistanceNeedDecisionItem[]>
+> {
+  return client
+    .get<JsonOf<UnreadAssistanceNeedDecisionItem[]>>(
+      `/citizen/children/assistance-need-decisions/unread-counts`
+    )
+    .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

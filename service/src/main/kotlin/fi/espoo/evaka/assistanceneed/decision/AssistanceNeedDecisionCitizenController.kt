@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.security.Action
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -26,7 +27,7 @@ class AssistanceNeedDecisionCitizenController(
     @GetMapping("/children/{childId}/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionCitizenListItem> {
         Audit.ChildAssistanceNeedDecisionsListCitizen.log(targetId = childId)
@@ -34,7 +35,7 @@ class AssistanceNeedDecisionCitizenController(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getAssistanceNeedDecisionsByChildIdForCitizen(childId)
+                tx.getAssistanceNeedDecisionsByChildIdForCitizen(childId, user.id)
             }
         }
     }
@@ -69,5 +70,34 @@ class AssistanceNeedDecisionCitizenController(
         Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
         return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
+    }
+
+    @PostMapping("/children/assistance-need-decision/{id}/read")
+    fun markAssistanceNeedDecisionAsRead(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        @PathVariable id: AssistanceNeedDecisionId
+    ) {
+        Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.MARK_AS_READ, id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
+            }
+        }
+    }
+
+    @GetMapping("/children/assistance-need-decisions/unread-counts")
+    fun getAssistanceNeedDecisionUnreadCount(
+        db: Database,
+        user: AuthenticatedUser.Citizen
+    ): List<UnreadAssistanceNeedDecisionItem> {
+        Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id)
+            }
+        }
     }
 }

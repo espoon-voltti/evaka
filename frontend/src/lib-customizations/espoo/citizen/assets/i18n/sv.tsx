@@ -1933,6 +1933,7 @@ const sv: Translations = {
     },
     assistanceNeed: {
       title: 'Behov av stöd',
+      unreadCount: 'olästa',
       decisions: {
         title: 'Beslut om behov av stöd',
         form: 'Form',

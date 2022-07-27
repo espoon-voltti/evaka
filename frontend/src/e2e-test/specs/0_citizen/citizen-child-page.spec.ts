@@ -4,6 +4,7 @@
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
@@ -38,6 +39,7 @@ let page: Page
 let header: CitizenHeader
 let childPage: CitizenChildPage
 let childrenPage: CitizenChildrenPage
+let unreadGuardianIds: UUID[]
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
@@ -50,6 +52,7 @@ beforeEach(async () => {
   header = new CitizenHeader(page)
   childPage = new CitizenChildPage(page)
   childrenPage = new CitizenChildrenPage(page)
+  unreadGuardianIds = [fixtures.enduserGuardianFixture.id]
 })
 
 describe('Citizen children page', () => {
@@ -521,6 +524,93 @@ describe('Citizen children page', () => {
         0
       )
     })
+
+    test('Has the correct amount of unread children', async () => {
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'ACCEPTED',
+          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          startDate: LocalDate.of(2020, 2, 5),
+          endDate: LocalDate.of(2021, 5, 11),
+          decisionMade: LocalDate.of(2020, 1, 17),
+          unreadGuardianIds
+        })
+        .save()
+
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'REJECTED',
+          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          startDate: LocalDate.of(2019, 2, 5),
+          endDate: LocalDate.of(2020, 1, 11),
+          decisionMade: LocalDate.of(2018, 1, 17),
+          unreadGuardianIds
+        })
+        .save()
+
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixturePorriHatterRestricted.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'ACCEPTED',
+          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          startDate: LocalDate.of(2020, 2, 5),
+          endDate: LocalDate.of(2021, 5, 11),
+          decisionMade: LocalDate.of(2020, 1, 17),
+          unreadGuardianIds
+        })
+        .save()
+
+      await page.reload()
+      await header.assertUnreadChildrenCount(3)
+
+      await header.selectTab('children')
+      await childrenPage.assertChildUnreadCount(
+        fixtures.enduserChildFixtureKaarina.id,
+        2
+      )
+      await childrenPage.assertChildUnreadCount(
+        fixtures.enduserChildFixturePorriHatterRestricted.id,
+        1
+      )
+
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.assertUnreadAssistanceNeedDecisions(2)
+    })
+    test('Unread indicator is shown in the table', async () => {
+      await Fixture.preFilledAssistanceNeedDecision()
+        .withChild(fixtures.enduserChildFixtureKaarina.id)
+        .with({
+          selectedUnit: { id: fixtures.daycareFixture.id },
+          status: 'ACCEPTED',
+          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          startDate: LocalDate.of(2020, 2, 5),
+          endDate: LocalDate.of(2021, 5, 11),
+          decisionMade: LocalDate.of(2020, 1, 17),
+          unreadGuardianIds
+        })
+        .save()
+
+      await page.reload()
+      await header.assertUnreadChildrenCount(1)
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openAssistanceNeedCollapsible()
+
+      await childPage.assertAssistanceNeedDecisionRowUnread(0)
+      await childPage.assistanceNeedDecisionRowClick(0)
+      await header.assertUnreadChildrenCount(0)
+
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openAssistanceNeedCollapsible()
+      await childPage.assertNotAssistanceNeedDecisionRowUnread(0)
+    })
   })
 })
 
@@ -555,7 +645,7 @@ describe('Citizen assistance need decision page', () => {
     await header.selectTab('children')
     await childrenPage.openChildPage('Kaarina')
     await childPage.openAssistanceNeedCollapsible()
-    await childPage.getAssistanceNeedDecisionRowClick(0)
+    await childPage.assistanceNeedDecisionRowClick(0)
 
     await page.page.waitForURL(
       `${config.enduserUrl}/children/${

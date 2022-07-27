@@ -2,26 +2,52 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faFileAlt } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
 import { getAssistanceNeedDecisions } from './api'
+
+const Highlight = styled.div`
+  background-color: ${(p) => p.theme.colors.status.success};
+  width: 6px;
+  position: absolute;
+  left: 0.5px;
+  top: 0.5px;
+  bottom: 0.5px;
+`
+
+const RelativeTr = styled(Tr)`
+  position: relative;
+`
+
+const TitleWrapper = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding-right: ${defaultMargins.s};
+`
 
 interface AssistanceNeedProps {
   childId: UUID
@@ -39,12 +65,34 @@ export default React.memo(function AssistanceNeedSection({
     [childId]
   )
 
+  const unreadCount = useMemo(
+    () =>
+      assistanceNeedDecisions.getOrElse([]).filter(({ isUnread }) => isUnread)
+        .length,
+    [assistanceNeedDecisions]
+  )
+
+  const [open, setOpen] = useState(false)
+
   return (
-    <CollapsibleSection
-      title={t.children.assistanceNeed.title}
-      startCollapsed
-      fitted
-      headingComponent={H2}
+    <CollapsibleContentArea
+      title={
+        <TitleWrapper>
+          <H2 noMargin>{t.children.assistanceNeed.title}</H2>
+          {unreadCount > 0 && (
+            <RoundIcon
+              content={unreadCount.toString()}
+              color={colors.status.warning}
+              aria-label={`${unreadCount} ${t.children.assistanceNeed.unreadCount}`}
+              size="m"
+              data-qa="assistance-need-decision-unread-count"
+            />
+          )}
+        </TitleWrapper>
+      }
+      opaque
+      open={open}
+      toggleOpen={() => setOpen(!open)}
     >
       <H3>{t.children.assistanceNeed.decisions.title}</H3>
       {renderResult(assistanceNeedDecisions, (decisions) => (
@@ -61,7 +109,7 @@ export default React.memo(function AssistanceNeedSection({
           </Thead>
           <Tbody>
             {decisions.map((decision) => (
-              <Tr
+              <RelativeTr
                 key={decision.id}
                 onClick={() =>
                   navigate(
@@ -71,6 +119,10 @@ export default React.memo(function AssistanceNeedSection({
                 data-qa="assistance-need-decision-row"
               >
                 <Td minimalWidth>
+                  {decision.isUnread && (
+                    <Highlight data-qa="unopened-indicator" />
+                  )}
+
                   <FixedSpaceRow justifyContent="center" alignItems="center">
                     <IconButton
                       icon={faFileAlt}
@@ -128,12 +180,12 @@ export default React.memo(function AssistanceNeedSection({
                   />
                   <div>{decision.decisionMade?.format()}</div>
                 </JoinedStatusAndDecisionMade>
-              </Tr>
+              </RelativeTr>
             ))}
           </Tbody>
         </ResponsiveTable>
       ))}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

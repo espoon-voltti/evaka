@@ -37,9 +37,7 @@ export default React.memo(function ChildPage() {
                 <ChildHeader child={child} />
               </ContentArea>
               <Gap size="s" />
-              <ContentArea opaque>
-                <AssistanceNeedSection childId={childId} />
-              </ContentArea>
+              <AssistanceNeedSection childId={childId} />
               <Gap size="s" />
               <ContentArea opaque>
                 <PlacementTerminationSection childId={childId} />

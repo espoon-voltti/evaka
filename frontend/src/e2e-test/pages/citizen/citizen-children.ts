@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { waitUntilEqual } from '../../utils'
 import { Page, TextInput } from '../../utils/page'
 
 export class CitizenChildrenPage {
@@ -24,6 +25,16 @@ export class CitizenChildrenPage {
   async openChildPage(childName: string) {
     await this.#childRows.find(`h2:has-text("${childName}")`).click()
     await this.page.find(`h1:has-text("${childName}")`).waitUntilVisible()
+  }
+
+  async assertChildUnreadCount(childId: string, count: number) {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .find(`[data-qa="child"][data-qa-value="${childId}"]`)
+          .findByDataQa('unread-count').innerText,
+      count.toString()
+    )
   }
 }
 
@@ -120,10 +131,35 @@ export class CitizenChildPage {
     return this.page.findAllByDataQa('assistance-need-decision-row').count()
   }
 
-  async getAssistanceNeedDecisionRowClick(nth: number) {
+  async assistanceNeedDecisionRowClick(nth: number) {
     return this.page
       .findAllByDataQa('assistance-need-decision-row')
       .nth(nth)
       .click()
+  }
+
+  async assertUnreadAssistanceNeedDecisions(count: number) {
+    await waitUntilEqual(
+      () =>
+        this.page.findByDataQa('assistance-need-decision-unread-count')
+          .innerText,
+      count.toString()
+    )
+  }
+
+  async assertAssistanceNeedDecisionRowUnread(nth: number) {
+    await this.page
+      .findAllByDataQa('assistance-need-decision-row')
+      .nth(nth)
+      .findByDataQa('unopened-indicator')
+      .waitUntilVisible()
+  }
+
+  async assertNotAssistanceNeedDecisionRowUnread(nth: number) {
+    await this.page
+      .findAllByDataQa('assistance-need-decision-row')
+      .nth(nth)
+      .findByDataQa('unopened-indicator')
+      .waitUntilHidden()
   }
 }

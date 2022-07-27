@@ -251,5 +251,11 @@ data class AssistanceNeedDecisionCitizenListItem(
     @Nested("selected_unit")
     val selectedUnit: UnitInfoBasics?,
 
-    val assistanceLevel: AssistanceLevel?
+    val assistanceLevel: AssistanceLevel?,
+    val isUnread: Boolean
+)
+
+data class UnreadAssistanceNeedDecisionItem(
+    val childId: ChildId,
+    val count: Int
 )

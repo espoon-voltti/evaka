@@ -249,3 +249,4 @@ V248__time_series_daily_service_times.sql
 V249__non_nullable_timerange.sql
 V250__daily_service_times_notification.sql
 V251__assistance_need_decision_pdf.sql
+V252__assistance_need_decision_read.sql

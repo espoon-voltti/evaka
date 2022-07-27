@@ -511,6 +511,7 @@ export interface AssistanceNeedDecision {
     specialGroup: boolean
   }
   viewOfGuardians: string | null
+  unreadGuardianIds: UUID[] | null
 }
 
 export interface DevIncome {

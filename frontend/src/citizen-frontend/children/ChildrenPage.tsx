@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -10,6 +10,7 @@ import Footer from 'citizen-frontend/Footer'
 import { Child } from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -34,6 +35,7 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
 import { getChildren } from './api'
+import { ChildrenContext } from './state'
 
 const Children = styled.div`
   display: flex;
@@ -79,9 +81,24 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
     [navigate, child.id]
   )
 
+  const { unreadAssistanceNeedDecisionCounts } = useContext(ChildrenContext)
+
+  const unreadCount = useMemo(
+    () =>
+      unreadAssistanceNeedDecisionCounts.find(
+        ({ childId }) => childId === child.id
+      )?.count ?? 0,
+    [unreadAssistanceNeedDecisionCounts, child]
+  )
+
   const name = `${child.firstName} ${child.lastName}`
   return (
-    <ChildContainer onClick={navigateToChild} opaque data-qa="child">
+    <ChildContainer
+      onClick={navigateToChild}
+      opaque
+      data-qa="child"
+      data-qa-value={child.id}
+    >
       <RoundImage
         size="XL"
         sizeDesktop="XXL"
@@ -109,6 +126,16 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
         </NameAndGroup>
       </Desktop>
       <ChevronContainer>
+        {unreadCount > 0 && (
+          <RoundIcon
+            content={unreadCount.toString()}
+            color={colors.status.warning}
+            aria-label={`${unreadCount} ${t.children.assistanceNeed.unreadCount}`}
+            size="m"
+            data-qa="unread-count"
+          />
+        )}
+        <Gap horizontal size="s" />
         <IconButton icon={faChevronRight} />
       </ChevronContainer>
     </ChildContainer>

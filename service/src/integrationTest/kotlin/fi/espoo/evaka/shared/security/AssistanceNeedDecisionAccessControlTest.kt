@@ -82,7 +82,8 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     otherRepresentativeDetails = null,
                     assistanceLevel = null,
                     assistanceServicesTime = null,
-                    motivationForDecision = null
+                    motivationForDecision = null,
+                    unreadGuardianIds = null
                 )
             )
         }

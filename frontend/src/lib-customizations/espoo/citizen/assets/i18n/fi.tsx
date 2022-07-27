@@ -1906,6 +1906,7 @@ export default {
     },
     assistanceNeed: {
       title: 'Tuen tarve',
+      unreadCount: 'lukematonta',
       decisions: {
         title: 'Tuen tarpeen päätökset',
         form: 'Lomake',
