@@ -85,7 +85,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         controller.createParentship(Database(jdbi), user, reqBody)
 
         val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
-        with(getResponse.first()) {
+        with(getResponse.first().data) {
             assertNotNull(this.id)
             assertEquals(parent.id, this.headOfChildId)
             assertEquals(child, this.child)
@@ -111,6 +111,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
         assertEquals(2, getResponse.size)
         getResponse
+            .map { it.data }
             .find { it.childId == sibling.id }
             .let {
                 assertNotNull(it)

@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Parentship } from 'lib-common/generated/api-types/pis'
+import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 
@@ -36,7 +36,7 @@ const FridgeParents = React.memo(function FridgeParents() {
           </Thead>
           <Tbody>
             {orderBy(data, ['startDate'], ['desc']).map(
-              (parentship: Parentship) => (
+              ({ data: parentship }: ParentshipWithPermittedActions) => (
                 <Tr key={parentship.id}>
                   <Td>
                     <Link to={`/profile/${parentship.headOfChildId}`}>

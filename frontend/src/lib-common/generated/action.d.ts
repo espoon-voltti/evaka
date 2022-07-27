@@ -228,6 +228,13 @@ export type MobileDevice =
 
 export type Pairing = 'POST_RESPONSE'
 
+export type Parentship =
+  | 'DELETE'
+  | 'DELETE_CONFLICTED_PARENTSHIP'
+  | 'READ'
+  | 'RETRY'
+  | 'UPDATE'
+
 export type Payment = 'SEND'
 
 export type Person =

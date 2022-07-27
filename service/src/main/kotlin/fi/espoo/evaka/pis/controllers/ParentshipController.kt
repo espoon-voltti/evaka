@@ -59,7 +59,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
-    ): List<Parentship> {
+    ): List<ParentshipWithPermittedActions> {
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
 
         if ((childId != null) == (headOfChildId != null)) {
@@ -72,12 +72,14 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         accessControl.requirePermissionFor(user, Action.Person.READ_PARENTSHIPS, personId)
 
         return db.connect { dbc ->
-            dbc.read {
-                it.getParentships(
+            dbc.read { tx ->
+                val parentships = tx.getParentships(
                     headOfChildId = headOfChildId,
                     childId = childId,
                     includeConflicts = true
                 )
+                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, parentships.map { it.id })
+                parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
     }
@@ -156,4 +158,6 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         val startDate: LocalDate,
         val endDate: LocalDate
     )
+
+    data class ParentshipWithPermittedActions(val data: Parentship, val permittedActions: Set<Action.Parentship>)
 }

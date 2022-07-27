@@ -74,7 +74,9 @@ export default React.memo(function PersonInvoiceCorrections({
   const children = useMemo(
     () =>
       fridgeChildren.map((children) =>
-        uniqBy(children, ({ childId }) => childId).map(({ child }) => child)
+        uniqBy(children, ({ data: { childId } }) => childId).map(
+          ({ data: { child } }) => child
+        )
       ),
     [fridgeChildren]
   )

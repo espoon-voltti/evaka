@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { Parentship } from 'lib-common/generated/api-types/pis'
+import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -15,19 +15,22 @@ import { client } from './client'
 async function getParentships(
   headOfChildId?: UUID,
   childId?: UUID
-): Promise<Result<Parentship[]>> {
+): Promise<Result<ParentshipWithPermittedActions[]>> {
   return client
-    .get<JsonOf<Parentship[]>>('/parentships', {
+    .get<JsonOf<ParentshipWithPermittedActions[]>>('/parentships', {
       params: { headOfChildId, childId }
     })
     .then((res) => res.data)
     .then((dataArray) =>
-      dataArray.map((data) => ({
-        ...data,
-        startDate: LocalDate.parseIso(data.startDate),
-        endDate: LocalDate.parseIso(data.endDate),
-        headOfChild: deserializePersonJSON(data.headOfChild),
-        child: deserializePersonJSON(data.child)
+      dataArray.map(({ data, ...rest }) => ({
+        ...rest,
+        data: {
+          ...data,
+          startDate: LocalDate.parseIso(data.startDate),
+          endDate: LocalDate.parseIso(data.endDate),
+          headOfChild: deserializePersonJSON(data.headOfChild),
+          child: deserializePersonJSON(data.child)
+        }
       }))
     )
     .then((v) => Success.of(v))
@@ -36,13 +39,13 @@ async function getParentships(
 
 export async function getParentshipsByHeadOfChild(
   id: UUID
-): Promise<Result<Parentship[]>> {
+): Promise<Result<ParentshipWithPermittedActions[]>> {
   return getParentships(id, undefined)
 }
 
 export async function getParentshipsByChild(
   id: UUID
-): Promise<Result<Parentship[]>> {
+): Promise<Result<ParentshipWithPermittedActions[]>> {
   return getParentships(undefined, id)
 }
 

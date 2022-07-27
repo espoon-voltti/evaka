@@ -13,7 +13,7 @@ import React, {
 import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import {
-  Parentship,
+  ParentshipWithPermittedActions,
   PersonJSON,
   PersonResponse
 } from 'lib-common/generated/api-types/pis'
@@ -29,7 +29,7 @@ export interface PersonState {
   person: Result<PersonJSON>
   permittedActions: Set<Action.Person>
   family: Result<FamilyOverview>
-  fridgeChildren: Result<Parentship[]>
+  fridgeChildren: Result<ParentshipWithPermittedActions[]>
   setPerson: (person: PersonJSON) => void
   reloadFamily: () => void
   reloadFridgeChildren: () => void

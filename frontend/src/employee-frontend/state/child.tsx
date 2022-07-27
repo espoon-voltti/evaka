@@ -14,7 +14,10 @@ import { Loading, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import { Parentship, PersonJSON } from 'lib-common/generated/api-types/pis'
+import {
+  ParentshipWithPermittedActions,
+  PersonJSON
+} from 'lib-common/generated/api-types/pis'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -29,7 +32,7 @@ export interface ChildState {
   permittedActions: Set<Action.Child | Action.Person>
   placements: Result<DaycarePlacementWithDetails[]>
   loadPlacements: () => void
-  parentships: Result<Parentship[]>
+  parentships: Result<ParentshipWithPermittedActions[]>
   backupCares: Result<ChildBackupCareResponse[]>
   setBackupCares: (request: Result<ChildBackupCareResponse[]>) => void
   guardians: Result<PersonJSON[]>
@@ -126,7 +129,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     [id]
   )
   const [parentships] = useApiState(
-    async (): Promise<Result<Parentship[]>> =>
+    async (): Promise<Result<ParentshipWithPermittedActions[]>> =>
       permittedActions.has('READ_PARENTSHIPS')
         ? await getParentshipsByChild(id)
         : Loading.of(),

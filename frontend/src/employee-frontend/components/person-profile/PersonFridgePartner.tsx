@@ -46,7 +46,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { reloadFamily } = useContext(PersonContext)
+  const { reloadFamily, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const [partnerships, loadData] = useApiState(() => getPartnerships(id), [id])
@@ -118,6 +118,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
               toggleUiMode('add-fridge-partner')
             }}
             data-qa="add-partner-button"
+            disabled={!permittedActions.has('CREATE_PARTNERSHIP')}
           />
         </TopBar>
         {renderResult(partnerships, (partnerships) => (
