@@ -105,6 +105,9 @@ export default React.memo(function UnitAttendanceReservationsView({
       ).then(() => {
         if (!cancelled) {
           setWeek((week) =>
+            // strict equality check: ensure the current week is the
+            // same one as when originally started, even when switching
+            // going x* -> y -> x the save at * should be ignored at the end
             week.dateRange === dateRange
               ? {
                   ...week,

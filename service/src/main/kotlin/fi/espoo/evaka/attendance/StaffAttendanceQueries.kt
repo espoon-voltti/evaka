@@ -284,7 +284,9 @@ SELECT
     EXISTS(
         SELECT 1 FROM staff_attendance_realtime osar
         JOIN daycare_group odg on osar.group_id = odg.id
-        WHERE osar.employee_id = sa.employee_id AND osar.arrived > :end AND odg.daycare_id = :unitId
+        WHERE osar.employee_id = sa.employee_id
+          AND tstzrange(:start, :end) << tstzrange(osar.arrived, osar.departed)
+          AND odg.daycare_id = :unitId
     ) AS has_future_attendances
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
@@ -309,15 +311,18 @@ data class RawAttendanceEmployee(
 
 fun Database.Read.getCurrentStaffForAttendanceCalendar(
     unitId: DaycareId,
+    start: LocalDate,
     end: LocalDate
 ): List<RawAttendanceEmployee> = createQuery(
     """
 SELECT DISTINCT
     dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient,
     EXISTS(
-        SELECT 1 FROM staff_attendance_realtime sar
-        JOIN daycare_group dg on sar.group_id = dg.id
-        WHERE sar.employee_id = dacl.employee_id AND sar.arrived > :end AND dg.daycare_id = :unitId
+         SELECT 1 FROM staff_attendance_realtime sar
+         JOIN daycare_group dg on sar.group_id = dg.id
+         WHERE sar.employee_id = dacl.employee_id
+           AND tstzrange(:start, :end) << tstzrange(sar.arrived, sar.departed)
+           AND dg.daycare_id = :unitId
     ) AS has_future_attendances
 FROM daycare_acl dacl
 JOIN employee emp on emp.id = dacl.employee_id
@@ -327,6 +332,7 @@ WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_T
     """.trimIndent()
 )
     .bind("unitId", unitId)
+    .bind("start", start)
     .bind("end", end)
     .mapTo<RawAttendanceEmployee>()
     .list()
@@ -338,7 +344,9 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, rang
         EXISTS(
             SELECT 1 FROM staff_attendance_external osae
             JOIN daycare_group odg on osae.group_id = odg.id
-            WHERE osae.name = sae.name AND osae.arrived > :end AND odg.daycare_id = :unitId
+            WHERE osae.name = sae.name
+              AND tstzrange(:start, :end) << tstzrange(osae.arrived, osae.departed)
+              AND odg.daycare_id = :unitId
         ) AS has_future_attendances
     FROM staff_attendance_external sae
     JOIN daycare_group dg on sae.group_id = dg.id

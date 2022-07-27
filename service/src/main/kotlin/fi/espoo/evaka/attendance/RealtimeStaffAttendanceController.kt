@@ -72,7 +72,7 @@ class RealtimeStaffAttendanceController(
                         hasFutureAttendances = data[0].hasFutureAttendances
                     )
                 }
-                val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId, range.end)
+                val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
                 val noAttendanceEmployeeToGroups = it.getGroupsForEmployees(staffForAttendanceCalendar.map { emp -> emp.id }.toSet())
                 val staffWithoutAttendance = staffForAttendanceCalendar
                     .filter { emp -> !attendancesByEmployee.keys.contains(emp.id) }
