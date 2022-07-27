@@ -16,6 +16,7 @@ import {
 } from 'chart.js'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { getEnvironment } from 'lib-common/utils/helpers'
@@ -46,7 +47,12 @@ Chart.defaults.font = {
 }
 Chart.defaults.color = colors.grayscale.g100
 
-ReactDOM.render(<App />, document.getElementById('app'))
+ReactDOM.render(
+  <BrowserRouter basename="/employee">
+    <App />
+  </BrowserRouter>,
+  document.getElementById('app')
+)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

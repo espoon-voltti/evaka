@@ -7,6 +7,7 @@ import 'core-js/stable'
 import * as Sentry from '@sentry/browser'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 import { getEnvironment } from 'lib-common/utils/helpers'
@@ -27,7 +28,12 @@ Sentry.init({
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-ReactDOM.render(<App />, document.getElementById('app'))
+ReactDOM.render(
+  <BrowserRouter basename="/employee/mobile">
+    <App />
+  </BrowserRouter>,
+  document.getElementById('app')
+)
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

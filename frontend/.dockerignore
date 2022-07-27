@@ -11,6 +11,8 @@
 !*.js
 !*.sh
 
+!build-tools
+
 !.yarn/releases
 !.yarn/plugins
 !.yarnrc.yml

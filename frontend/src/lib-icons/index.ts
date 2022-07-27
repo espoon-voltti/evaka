@@ -7,6 +7,7 @@
 
 export * from 'Icons'
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 export type IconSet = typeof import('Icons')
 
 export function typeAssert<T extends boolean>(_: T) {

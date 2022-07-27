@@ -68,7 +68,7 @@ private fun getImports(classes: List<AnalyzedClass>): List<String> {
         if (tsMapping.containsKey(it)) {
             tsMapping[it]?.import
         } else {
-            "import { ${it.substringAfterLast('.')} } from './${getBasePackage(it)}'"
+            "import type { ${it.substringAfterLast('.')} } from './${getBasePackage(it)}'"
         }
     }.distinct()
 }

@@ -6,6 +6,7 @@ declare module '@fortawesome/pro-light-svg-icons/*'
 declare module '@fortawesome/pro-regular-svg-icons/*'
 declare module '@fortawesome/pro-solid-svg-icons/*'
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type IconDefinition = import('@fortawesome/fontawesome-svg-core').IconDefinition
 
 declare module 'Icons' {

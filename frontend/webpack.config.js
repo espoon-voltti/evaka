@@ -6,56 +6,24 @@ const fs = require('fs')
 const path = require('path')
 
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
+const PreloadWebpackPlugin = require('@vue/preload-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const webpack = require('webpack')
 const WebpackPwaManifest = require('webpack-pwa-manifest')
 
-function resolveCustomizations() {
-  const customizations = process.env.EVAKA_CUSTOMIZATIONS
-  if (customizations) {
-    const customizationsPath = path.resolve(
-      __dirname,
-      'src/lib-customizations',
-      customizations
-    )
-    console.info(`Using customizations from ${customizationsPath}`)
-    return customizations
-  } else {
-    return 'espoo'
-  }
-}
-
-function resolveIcons() {
-  switch (process.env.ICONS) {
-    case 'pro':
-      console.info('Using pro icons (forced)')
-      return 'pro'
-    case 'free':
-      console.info('Using free icons (forced)')
-      return 'free'
-    case undefined:
-      break
-    default:
-      throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
-  }
-  try {
-    require('@fortawesome/pro-light-svg-icons')
-    require('@fortawesome/pro-regular-svg-icons')
-    require('@fortawesome/pro-solid-svg-icons')
-    console.info('Using pro icons (auto-detected)')
-    return 'pro'
-  } catch (e) {
-    console.info('Using free icons (fallback)')
-    return 'free'
-  }
-}
+const { resolveCustomizations, resolveIcons } =
+  require('./build-tools/build-utils')(true)
 
 const customizationsModule = resolveCustomizations()
 const icons = resolveIcons()
 
-function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
+function baseConfig(
+  { isDevelopment, isDevServer },
+  { name, publicPath, prefetchChunks }
+) {
   const plugins = [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `src/${name}/index.html`),
@@ -64,6 +32,13 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
           path.resolve(__dirname, 'src/body.html'),
           'utf-8'
         )
+      },
+      minify: {
+        minifyJS: true,
+        collapseBooleanAttributes: true,
+        collapseWhitespace: true,
+        minifyCSS: true,
+        processConditionalComments: true
       }
     }),
     new webpack.NormalModuleReplacementPlugin(
@@ -71,15 +46,36 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
       (resource) => {
         resource.request = resource.request.replace(
           /@evaka\/customizations/,
-          `lib-customizations/${customizationsModule}`
+          customizationsModule
         )
       }
     ),
     new webpack.DefinePlugin({
       // This matches APP_COMMIT in apigw
       'process.env.APP_COMMIT': `'${process.env.APP_COMMIT || 'UNDEFINED'}'`
+    }),
+    new MiniCssExtractPlugin({
+      filename: isDevelopment ? '[name].css' : '[name].[contenthash].css',
+      chunkFilename: isDevelopment ? '[id].css' : '[id].[contenthash].css'
     })
   ]
+
+  if (prefetchChunks) {
+    plugins.push(
+      new PreloadWebpackPlugin({
+        rel: 'prefetch',
+        include: {
+          chunks: prefetchChunks
+        },
+        as(entry) {
+          if (/\.css$/.test(entry)) return 'style'
+          if (/\.(woff|woff2|otf|ttf|eot|)$/.test(entry)) return 'font'
+          if (/\.(svg|png|gif|jpe?g|ico)$/.test(entry)) return 'image'
+          return 'script'
+        }
+      })
+    )
+  }
 
   if (isDevServer) {
     plugins.push(new ForkTsCheckerWebpackPlugin())
@@ -90,15 +86,12 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   if (process.env.SENTRY_PUBLISH_ENABLED === 'true') {
     plugins.push(
       new SentryWebpackPlugin({
-        org: process.env.SENTRY_ORG || undefined,
-        release: process.env.APP_COMMIT,
         project: `evaka-${name}`,
         include: path.resolve(__dirname, `dist/bundle/${name}`),
         urlPrefix: `~${publicPath}`,
         setCommits: {
           repo: 'espoon-voltti/evaka',
-          commit: process.env.APP_COMMIT,
-          auto: false
+          auto: true
         }
       })
     )
@@ -159,7 +152,8 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
                     {
                       displayName: isDevServer,
                       fileName: false,
-                      pure: true
+                      pure: true,
+                      ssr: true
                     }
                   ]
                 ]
@@ -179,7 +173,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
         {
           test: /\.css$/,
           use: [
-            'style-loader',
+            MiniCssExtractPlugin.loader,
             {
               loader: 'css-loader',
               options: { importLoaders: 1 }
@@ -203,16 +197,9 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
     },
     optimization: {
       splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          defaultVendors: false,
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            chunks: 'all'
-          }
-        }
-      }
+        chunks: 'all'
+      },
+      usedExports: true
     },
     stats: {
       children: false,
@@ -230,21 +217,24 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
 function citizen(flags) {
   return baseConfig(flags, {
     name: 'citizen-frontend',
-    publicPath: '/'
+    publicPath: '/',
+    prefetchChunks: ['LoginPage', 'CalendarPage', 'Applying-MapView']
   })
 }
 
 function employee(flags) {
   return baseConfig(flags, {
     name: 'employee-frontend',
-    publicPath: '/employee/'
+    publicPath: '/employee/',
+    prefetchChunks: ['LoginPage']
   })
 }
 
 function employeeMobile(flags) {
   const config = baseConfig(flags, {
     name: 'employee-mobile-frontend',
-    publicPath: '/employee/mobile/'
+    publicPath: '/employee/mobile/',
+    prefetchChunks: ['MobileLander']
   })
   config.plugins.push(
     new WebpackPwaManifest({
@@ -295,5 +285,6 @@ module.exports = (env, argv) => {
   const isDevServer = !!(env && env['DEV_SERVER'])
   const flags = { isDevServer, isDevelopment }
 
+  // TODO: remaining prefetches, prioritization?
   return [citizen(flags), employee(flags), employeeMobile(flags)]
 }
