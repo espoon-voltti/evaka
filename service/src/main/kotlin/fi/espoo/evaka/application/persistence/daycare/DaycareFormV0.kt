@@ -19,6 +19,7 @@ const val DEFAULT_CHILD_LANGUAGE = "fi"
 
 @JsonIgnoreProperties("hasSecondGuardian", "guardiansSeparated", "secondGuardianHasAgreed", "guardianIsSingleParent")
 data class DaycareFormV0(
+    override val type: ApplicationType,
     val child: Child,
     val guardian: Adult,
     val otherGuardianAgreementStatus: OtherGuardianAgreementStatus? = null,
@@ -39,8 +40,7 @@ data class DaycareFormV0(
     val otherChildren: List<OtherPerson> = emptyList(),
     val docVersion: Long = 0L,
     val additionalDetails: DaycareAdditionalDetails = DaycareAdditionalDetails(),
-    val maxFeeAccepted: Boolean = false,
-    override val type: ApplicationType
+    val maxFeeAccepted: Boolean = false
 ) : DatabaseForm.DaycareForm() {
     override fun hideGuardianAddress(): DaycareFormV0 {
         return this.copy(
@@ -73,6 +73,7 @@ data class DaycareFormV0(
             childRestricted: Boolean,
             guardianRestricted: Boolean
         ) = DaycareFormV0(
+            type = type,
             child = Child(
                 firstName = form.child.person.firstName,
                 lastName = form.child.person.lastName,
@@ -175,7 +176,6 @@ data class DaycareFormV0(
                 dietType = form.child.diet,
                 otherInfo = form.otherInfo
             ),
-            type = type,
             maxFeeAccepted = form.maxFeeAccepted
         )
     }
