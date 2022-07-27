@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 
-import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
+import type { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 

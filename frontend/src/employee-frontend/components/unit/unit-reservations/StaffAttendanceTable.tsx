@@ -7,31 +7,26 @@ import groupBy from 'lodash/groupBy'
 import isEqual from 'lodash/isEqual'
 import partition from 'lodash/partition'
 import sortBy from 'lodash/sortBy'
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useCallback,
-  MutableRefObject
-} from 'react'
+import type { MutableRefObject } from 'react'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
+import type { Result } from 'lib-common/api'
+import type { OperationalDay } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
+import type {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
   UpsertStaffAndExternalAttendanceRequest,
   UpsertStaffAttendance
 } from 'lib-common/generated/api-types/attendance'
-import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import type { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

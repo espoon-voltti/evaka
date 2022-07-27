@@ -11,7 +11,8 @@ import styled, { useTheme } from 'styled-components'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { desktopMin } from '../breakpoints'
-import { H3, HeadingProps } from '../typography'
+import type { HeadingProps } from '../typography'
+import { H3 } from '../typography'
 import type { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 

@@ -5,7 +5,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { UUID } from 'lib-common/types'
+import type { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'

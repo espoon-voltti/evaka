@@ -10,16 +10,17 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
-import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
+import type { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
+import type { ChildResponse } from 'lib-common/generated/api-types/daycare'
+import type {
   ParentshipWithPermittedActions,
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
-import { UUID } from 'lib-common/types'
+import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
 import { getPlacements } from '../api/child/placements'

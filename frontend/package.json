@@ -5,6 +5,7 @@
   "private": true,
   "license": "LGPL-2.1-or-later",
   "scripts": {
+    "calculate-csp-hashes": "node build-tools/calculate-csp-hashes.js",
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
     "dev": "concurrently -n tsc,esbuild -c blue,green 'yarn type-check:watch' 'yarn build:serve'",
     "dev:prod-server": "node build-tools/dev-prod-server.js",
@@ -89,6 +90,7 @@
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
     "babel-loader": "^8.2.5",
+    "cheerio": "^1.0.0-rc.12",
     "compression": "^1.7.4",
     "concurrently": "^7.1.0",
     "css-loader": "^6.7.1",
@@ -212,7 +214,8 @@
     },
     "env": {
       "browser": true,
-      "node": true
+      "node": true,
+      "es6": true
     },
     "extends": [
       "eslint:recommended",

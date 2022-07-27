@@ -10,9 +10,10 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
-import {
+import type { Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
+import type { Action } from 'lib-common/generated/action'
+import type {
   ParentshipWithPermittedActions,
   PersonJSON,
   PersonResponse
