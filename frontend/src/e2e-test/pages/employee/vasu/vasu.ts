@@ -125,15 +125,18 @@ export class VasuEditPage extends VasuPageCommon {
     nth: number,
     entryNth: number
   ) {
-    await this.#followup(nth).entryInput(entryNth).clear()
-    await this.#followup(nth).entryInput(entryNth).type(comment)
-    await this.#followup(nth).entryDateInput(entryNth).clear()
-    await this.#followup(nth).entryDateInput(entryNth).type(date)
+    const dateInput = this.#followup(nth).entryDateInput(entryNth)
+    await dateInput.clear()
+    await dateInput.type(date)
+    await waitUntilEqual(() => dateInput.inputValue, date)
+    await this.inputFollowupComment(comment, nth, entryNth)
   }
 
   async inputFollowupComment(comment: string, nth: number, entryNth: number) {
-    await this.#followup(nth).entryInput(entryNth).clear()
-    await this.#followup(nth).entryInput(entryNth).type(comment)
+    const input = this.#followup(nth).entryInput(entryNth)
+    await input.clear()
+    await input.type(comment)
+    await waitUntilEqual(() => input.inputValue, comment)
   }
 
   followupEntryMetadata(nth: number, entryNth: number): Promise<string> {
