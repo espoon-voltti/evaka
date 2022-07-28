@@ -9,7 +9,7 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { P } from 'lib-components/typography'
+import { H2, P } from 'lib-components/typography'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
@@ -37,6 +37,7 @@ export default React.memo(function PlacementTerminationSection({
       title={t.children.placementTermination.title}
       startCollapsed
       fitted
+      headingComponent={H2}
     >
       {renderResult(placementsResponse, ({ placements }) => {
         const terminatedPlacements = placements.filter((p) =>

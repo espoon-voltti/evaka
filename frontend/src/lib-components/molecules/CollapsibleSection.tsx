@@ -11,7 +11,7 @@ import styled, { useTheme } from 'styled-components'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { desktopMin } from '../breakpoints'
-import { H3 } from '../typography'
+import { H3, HeadingProps } from '../typography'
 import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
@@ -37,24 +37,16 @@ const IconWrapper = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  color: ${(p) => p.theme.colors.grayscale.g35};
+  width: 100%;
+  justify-content: space-between;
   margin-bottom: ${defaultMargins.m};
 
   &.fitted {
     margin-bottom: 0;
   }
 
-  h3 {
-    flex-grow: 1;
-  }
-
   &:hover {
     cursor: pointer;
-
-    h3,
-    ${IconWrapper} {
-      color: ${(p) => p.theme.colors.main.m2Hover};
-    }
   }
 `
 
@@ -82,6 +74,7 @@ type CollapsibleSectionProps = BaseProps & {
   startCollapsed?: boolean
   fitted?: boolean
   'data-qa'?: string
+  headingComponent?: React.FC<HeadingProps>
 }
 
 export default React.memo(function CollapsibleSection({
@@ -91,7 +84,8 @@ export default React.memo(function CollapsibleSection({
   startCollapsed = false,
   fitted = false,
   className,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  headingComponent: Heading = H3
 }: CollapsibleSectionProps) {
   const { colors } = useTheme()
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
@@ -109,14 +103,16 @@ export default React.memo(function CollapsibleSection({
         onClick={toggleCollapse}
         className={classNames(className, { fitted })}
       >
-        {icon && (
-          <IconWrapper>
-            <FontAwesomeIcon icon={icon} />
-          </IconWrapper>
-        )}
-        <H3 fitted noMargin={fitted}>
-          {title}
-        </H3>
+        <div>
+          {icon && (
+            <IconWrapper>
+              <FontAwesomeIcon icon={icon} />
+            </IconWrapper>
+          )}
+          <Heading fitted noMargin={fitted}>
+            {title}
+          </Heading>
+        </div>
         <ToggleWrapper data-qa="collapsible-trigger">
           <FontAwesomeIcon
             icon={collapsed ? faAngleDown : faAngleUp}

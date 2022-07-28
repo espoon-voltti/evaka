@@ -181,6 +181,11 @@ sealed interface Action {
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
+        enum class AssistanceNeedDecision(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>) : ScopedAction<AssistanceNeedDecisionId> {
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision());
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
@@ -195,7 +200,9 @@ sealed interface Action {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+
+            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

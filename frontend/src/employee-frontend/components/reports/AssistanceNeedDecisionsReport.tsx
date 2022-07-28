@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -28,7 +29,6 @@ import {
 import { getAssistanceNeedDecisionsReport } from '../../api/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
-import { AssistanceNeedDecisionStatusChip } from '../child-information/assistance-need/decision/common'
 
 import { FilterLabel, FilterRow } from './common'
 
@@ -197,6 +197,9 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
                   <Td>
                     <AssistanceNeedDecisionStatusChip
                       decisionStatus={row.status}
+                      texts={
+                        i18n.childInformation.assistanceNeedDecision.statuses
+                      }
                       data-qa="decision-chip"
                     />
                   </Td>

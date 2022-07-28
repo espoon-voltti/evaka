@@ -6,7 +6,6 @@ import some from 'lodash/some'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import {
   AssistanceLevel,
   AssistanceNeedDecision
@@ -22,7 +21,62 @@ import {
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { DecisionInfoHeader } from './common'
+import AssistanceNeedDecisionInfoHeader from './AssistanceNeedDecisionInfoHeader'
+
+export interface AssistanceNeedDecisionTexts {
+  pageTitle: string
+  neededTypesOfAssistance: string
+  pedagogicalMotivation: string
+  structuralMotivation: string
+  structuralMotivationOptions: {
+    smallerGroup: string
+    specialGroup: string
+    smallGroup: string
+    groupAssistant: string
+    childAssistant: string
+    additionalStaff: string
+  }
+  careMotivation: string
+  serviceOptions: {
+    consultationSpecialEd: string
+    partTimeSpecialEd: string
+    fullTimeSpecialEd: string
+    interpretationAndAssistanceServices: string
+    specialAides: string
+  }
+  services: string
+  collaborationWithGuardians: string
+  guardiansHeardAt: string
+  guardiansHeard: string
+  viewOfTheGuardians: string
+  decisionAndValidity: string
+  futureLevelOfAssistance: string
+  assistanceLevel: {
+    assistanceEnds: string
+    assistanceServicesForTime: string
+    enhancedAssistance: string
+    specialAssistance: string
+  }
+  startDate: string
+  selectedUnit: string
+  unitMayChange: string
+  motivationForDecision: string
+  personsResponsible: string
+  preparator: string
+  decisionMaker: string
+  disclaimer: string
+  decisionNumber: string
+  statuses: {
+    DRAFT: string
+    NEEDS_WORK: string
+    ACCEPTED: string
+    REJECTED: string
+  }
+  confidential: string
+  lawReference: string
+  appealInstructionsTitle: string
+  appealInstructions: JSX.Element
+}
 
 const List = styled.ul`
   list-style-position: inside;
@@ -86,17 +140,13 @@ const someBoolObj = <K extends string>(obj: Record<K, boolean>) =>
 
 export default React.memo(function AssistanceNeedDecisionReadOnly({
   decision,
-  decisionMakerWarning
+  decisionMakerWarning,
+  texts: t
 }: {
   decision: AssistanceNeedDecision
   decisionMakerWarning?: React.ReactNode
+  texts: AssistanceNeedDecisionTexts
 }) {
-  const {
-    i18n: {
-      childInformation: { assistanceNeedDecision: t }
-    }
-  } = useTranslation()
-
   const assistanceLevelTexts: Record<AssistanceLevel, string> = useMemo(
     () => ({
       ASSISTANCE_ENDS: t.assistanceLevel.assistanceEnds,
@@ -125,9 +175,10 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             </H1>
             <H2 noMargin>{decision.child?.name}</H2>
           </FixedSpaceColumn>
-          <DecisionInfoHeader
+          <AssistanceNeedDecisionInfoHeader
             decisionNumber={decision.decisionNumber || 0}
             decisionStatus={decision.status || 'DRAFT'}
+            texts={t}
           />
         </FixedSpaceRow>
         <Gap size="s" />

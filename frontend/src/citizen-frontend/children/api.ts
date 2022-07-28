@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  AssistanceNeedDecision,
+  AssistanceNeedDecisionCitizenListItem
+} from 'lib-common/generated/api-types/assistanceneed'
 import {
   Child,
   ChildrenResponse
@@ -84,5 +89,63 @@ export function terminatePlacement(
   return client
     .post(`/citizen/children/${childId}/placements/terminate`, body)
     .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAssistanceNeedDecisions(
+  childId: UUID
+): Promise<Result<AssistanceNeedDecisionCitizenListItem[]>> {
+  return client
+    .get<JsonOf<AssistanceNeedDecisionCitizenListItem[]>>(
+      `/citizen/children/${childId}/assistance-need-decisions`
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((decision) => ({
+          ...decision,
+          decisionMade:
+            decision.decisionMade === null
+              ? null
+              : LocalDate.parseIso(decision.decisionMade),
+          endDate:
+            decision.endDate === null
+              ? null
+              : LocalDate.parseIso(decision.endDate),
+          startDate:
+            decision.startDate === null
+              ? null
+              : LocalDate.parseIso(decision.startDate)
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+const parseDate = (str: string | null): LocalDate | null =>
+  str ? LocalDate.parseIso(str) : null
+
+const mapToAssistanceNeedDecision = (
+  data: JsonOf<AssistanceNeedDecision>
+): AssistanceNeedDecision => ({
+  ...data,
+  startDate: parseDate(data.startDate),
+  endDate: parseDate(data.endDate),
+  assistanceServicesTime:
+    data.assistanceServicesTime !== null
+      ? FiniteDateRange.parseJson(data.assistanceServicesTime)
+      : null,
+  decisionMade: parseDate(data.decisionMade),
+  guardiansHeardOn: parseDate(data.guardiansHeardOn),
+  sentForDecision: parseDate(data.sentForDecision)
+})
+
+export function getAssistanceNeedDecision(
+  id: UUID
+): Promise<Result<AssistanceNeedDecision>> {
+  return client
+    .get<JsonOf<AssistanceNeedDecision>>(
+      `/citizen/children/assistance-need-decision/${id}`
+    )
+    .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
     .catch((e) => Failure.fromError(e))
 }

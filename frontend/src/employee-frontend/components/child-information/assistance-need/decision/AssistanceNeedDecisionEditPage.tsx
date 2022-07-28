@@ -18,6 +18,7 @@ import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -39,7 +40,7 @@ import AssistanceNeededDecisionForm, {
   FieldInfos
 } from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
-import { FooterContainer, DecisionInfoHeader } from './common'
+import { FooterContainer } from './common'
 
 const requiredFormFields = ['selectedUnit'] as const
 
@@ -272,9 +273,10 @@ const DecisionContents = React.memo(function DecisionContents({
             {child.firstName} {child.lastName}
           </H2>
         </FixedSpaceColumn>
-        <DecisionInfoHeader
+        <AssistanceNeedDecisionInfoHeader
           decisionNumber={formState?.decisionNumber || 0}
           decisionStatus={formState?.status || 'DRAFT'}
+          texts={i18n.childInformation.assistanceNeedDecision}
         />
       </FixedSpaceRow>
       {formState && (

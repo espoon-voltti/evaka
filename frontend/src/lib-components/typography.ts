@@ -24,7 +24,7 @@ export const fontSizesMobile = {
   h4: '16px'
 }
 
-type HeadingProps = BaseProps & {
+export type HeadingProps = BaseProps & {
   fitted?: boolean
   'data-qa'?: string
   centered?: boolean
