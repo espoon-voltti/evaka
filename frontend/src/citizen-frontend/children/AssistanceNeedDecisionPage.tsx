@@ -13,9 +13,13 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faArrowDownToLine } from 'lib-icons'
 
 import { getAssistanceNeedDecision } from './api'
 
@@ -33,7 +37,23 @@ export default React.memo(function AssistanceNeedDecisionPage() {
     <>
       <Content>
         <Gap size="m" />
-        <ReturnButton label={i18n.common.return} />
+        <FixedSpaceRow justifyContent="space-between">
+          <ReturnButton label={i18n.common.return} />
+          <InlineButton
+            icon={faArrowDownToLine}
+            text={i18n.common.download}
+            onClick={() => {
+              window.open(
+                `/api/application/citizen/children/assistance-need-decision/${id}/pdf`,
+                '_blank',
+                'noopener,noreferrer'
+              )
+            }}
+            data-qa="assistance-need-decision-download-btn"
+            disabled={!assistanceNeedDecision.getOrElse(undefined)?.hasDocument}
+            color={colors.main.m1}
+          />
+        </FixedSpaceRow>
         <Gap size="s" />
 
         {renderResult(assistanceNeedDecision, (decision) => (

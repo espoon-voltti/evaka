@@ -182,7 +182,8 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class AssistanceNeedDecision(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>) : ScopedAction<AssistanceNeedDecisionId> {
-            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision());
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

@@ -12,12 +12,14 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -26,17 +28,27 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
+import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+
+private val logger = KotlinLogging.logger {}
 
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    @Autowired
+    lateinit var assistanceNeedDecisionService: AssistanceNeedDecisionService
 
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
@@ -433,6 +445,92 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun getEmailFor(person: DevPerson): MockEmail {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+    }
+
+    fun `Decision PDF generation is successful`() {
+        val pdf = assistanceNeedDecisionService.generatePdf(
+            AssistanceNeedDecision(
+                startDate = LocalDate.of(2022, 1, 1),
+                endDate = LocalDate.of(2023, 1, 1),
+                status = AssistanceNeedDecisionStatus.ACCEPTED,
+                language = AssistanceNeedDecisionLanguage.FI,
+                decisionMade = LocalDate.of(2021, 12, 31),
+                sentForDecision = null,
+                selectedUnit = UnitInfo(
+                    id = testDaycare.id,
+                    name = "Test",
+                    streetAddress = "Mallilankatu 1",
+                    postalCode = "00100",
+                    postOffice = "Mallila"
+                ),
+                preparedBy1 = AssistanceNeedDecisionEmployee(
+                    employeeId = assistanceWorker.id,
+                    title = "worker",
+                    phoneNumber = "01020405060",
+                    name = "Jaakko Jokunen"
+                ),
+                preparedBy2 = null,
+                decisionMaker = AssistanceNeedDecisionMaker(
+                    employeeId = decisionMaker.id,
+                    title = "Decider of everything",
+                    name = "Mikko Mallila"
+                ),
+                pedagogicalMotivation = "Pedagogical motivation",
+                structuralMotivationOptions = StructuralMotivationOptions(
+                    smallerGroup = false,
+                    specialGroup = true,
+                    smallGroup = false,
+                    groupAssistant = false,
+                    childAssistant = false,
+                    additionalStaff = false,
+                ),
+                structuralMotivationDescription = "Structural motivation description",
+                careMotivation = "Care motivation",
+                serviceOptions = ServiceOptions(
+                    consultationSpecialEd = false,
+                    partTimeSpecialEd = false,
+                    fullTimeSpecialEd = false,
+                    interpretationAndAssistanceServices = false,
+                    specialAides = true,
+                ),
+                servicesMotivation = "Services Motivation",
+                expertResponsibilities = "Expert responsibilities",
+                guardiansHeardOn = LocalDate.of(2021, 11, 30),
+                guardianInfo = setOf(
+                    AssistanceNeedDecisionGuardian(
+                        id = null,
+                        personId = testAdult_1.id,
+                        name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
+                        isHeard = true,
+                        details = "Lots of details"
+                    ),
+                ),
+                viewOfGuardians = "The view of the guardians",
+                otherRepresentativeHeard = false,
+                otherRepresentativeDetails = null,
+
+                assistanceLevel = AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME,
+                assistanceServicesTime = FiniteDateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 6, 5)),
+                motivationForDecision = "Motivation for decision",
+                hasDocument = false,
+                id = AssistanceNeedDecisionId(UUID.randomUUID()),
+                child = AssistanceNeedDecisionChild(
+                    id = ChildId(UUID.randomUUID()),
+                    name = "Test Example",
+                    dateOfBirth = LocalDate.of(2012, 1, 4)
+                )
+            )
+        )
+
+        assertNotNull(pdf)
+
+        val file = File.createTempFile("assistance_need_decision_", ".pdf")
+
+        FileOutputStream(file).use {
+            it.write(pdf)
+        }
+
+        logger.debug { "Generated assistance need decision PDF to ${file.absolutePath}" }
     }
 
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {

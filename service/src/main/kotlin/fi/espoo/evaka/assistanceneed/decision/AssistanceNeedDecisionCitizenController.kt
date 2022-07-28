@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/citizen")
 class AssistanceNeedDecisionCitizenController(
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val assistanceNeedDecisionService: AssistanceNeedDecisionService
 ) {
     @GetMapping("/children/{childId}/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
@@ -56,5 +58,16 @@ class AssistanceNeedDecisionCitizenController(
                 decision
             }
         }
+    }
+
+    @GetMapping("/children/assistance-need-decision/{id}/pdf")
+    fun getAssistanceNeedDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable id: AssistanceNeedDecisionId
+    ): ResponseEntity<Any> {
+        Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
+        accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
+        return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
     }
 }

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.config
 
+import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -28,6 +29,7 @@ class PDFConfig {
                 }
             )
             addDialect(Java8TimeDialect())
+            addDialect(LayoutDialect())
         }
     }
 }

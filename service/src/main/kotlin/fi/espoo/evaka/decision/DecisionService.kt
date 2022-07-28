@@ -359,6 +359,7 @@ private fun generateDecisionPages(
             )
             setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
             setVariable("decisionMakerTitle", settings[SettingType.DECISION_MAKER_TITLE])
+            setVariable("sentDate", decision.sentDate)
         }
     )
 }

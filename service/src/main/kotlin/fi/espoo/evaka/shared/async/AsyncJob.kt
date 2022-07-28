@@ -171,6 +171,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendAssistanceNeedDecisionEmail(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    data class CreateAssistanceNeedDecisionPdf(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 data class JobParams<T : AsyncJobPayload>(

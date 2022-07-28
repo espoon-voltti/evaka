@@ -56,6 +56,7 @@ export interface AssistanceNeedDecision {
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
+  hasDocument: boolean
   id: UUID
   language: AssistanceNeedDecisionLanguage
   motivationForDecision: string | null
@@ -101,6 +102,7 @@ export interface AssistanceNeedDecisionBasicsResponse {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionChild
 */
 export interface AssistanceNeedDecisionChild {
+  dateOfBirth: LocalDate | null
   id: UUID | null
   name: string | null
 }

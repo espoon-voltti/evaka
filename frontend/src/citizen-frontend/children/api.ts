@@ -136,7 +136,11 @@ const mapToAssistanceNeedDecision = (
       : null,
   decisionMade: parseDate(data.decisionMade),
   guardiansHeardOn: parseDate(data.guardiansHeardOn),
-  sentForDecision: parseDate(data.sentForDecision)
+  sentForDecision: parseDate(data.sentForDecision),
+  child: data.child && {
+    ...data.child,
+    dateOfBirth: parseDate(data.child.dateOfBirth)
+  }
 })
 
 export function getAssistanceNeedDecision(
