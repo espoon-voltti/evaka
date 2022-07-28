@@ -113,7 +113,7 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
                         .execute()
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
-                        PSQLState.FOREIGN_KEY_VIOLATION.state -> throw BadRequest("Cannot delete an already invoiced correction")
+                        PSQLState.FOREIGN_KEY_VIOLATION.state -> throw BadRequest("Cannot delete an already invoiced correction", cause = e)
                         else -> throw e
                     }
                 }

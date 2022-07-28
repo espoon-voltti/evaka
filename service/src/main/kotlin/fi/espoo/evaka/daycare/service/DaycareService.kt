@@ -43,7 +43,7 @@ class DaycareService {
         tx.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
         throw e.psqlCause()?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
-            ?.let { Conflict("Cannot delete group which is still referred to from other data") }
+            ?.let { Conflict("Cannot delete group which is still referred to from other data", cause = e) }
             ?: e
     }
 

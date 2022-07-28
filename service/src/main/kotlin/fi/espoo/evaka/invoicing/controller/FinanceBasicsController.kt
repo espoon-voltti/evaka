@@ -287,11 +287,11 @@ fun <T> mapConstraintExceptions(fn: () -> T): T {
         fn()
     } catch (e: JdbiException) {
         when (e.psqlCause()?.sqlState) {
-            PSQLState.EXCLUSION_VIOLATION.state -> throwDateOverlapEx()
+            PSQLState.EXCLUSION_VIOLATION.state -> throwDateOverlapEx(cause = e)
             else -> throw e
         }
     }
 }
 
-fun throwDateOverlapEx(): Nothing =
-    throw BadRequest("Fee thresholds over lap with existing fee thresholds", "date-overlap")
+fun throwDateOverlapEx(cause: Throwable? = null): Nothing =
+    throw BadRequest("Fee thresholds over lap with existing fee thresholds", "date-overlap", cause)
