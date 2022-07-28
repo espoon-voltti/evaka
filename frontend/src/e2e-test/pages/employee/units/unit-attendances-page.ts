@@ -82,6 +82,7 @@ export class UnitAttendancesPage {
           currentRange.start.isBefore(date) ? 'next-week' : 'previous-week'
         )
         .click()
+      await this.waitForWeekLoaded()
     }
     throw Error(`Unable to seek to date ${date.formatIso()}`)
   }
@@ -248,27 +249,49 @@ export class UnitAttendancesPage {
     await input.fill(time)
   }
 
+  private nthEditor(nth: number, dayNth: number, rowIx = 0) {
+    return this.page
+      .findByDataQa(`attendance-row-${rowIx}`)
+      .findAllByDataQa('attendance-day')
+      .nth(dayNth)
+      .findAllByDataQa('time-range-editor')
+      .nth(nth)
+  }
+
   async setNthArrivalDeparture(
     nth: number,
+    dayNth: number,
     arrival: string,
-    departure: string
+    departure: string,
+    rowIx?: number
   ): Promise<void> {
     await new TextInput(
-      this.page.findAllByDataQa('input-start-time').nth(nth)
+      this.nthEditor(nth, dayNth, rowIx).findByDataQa('input-start-time')
     ).fill(arrival)
+    await this.setNthDeparture(nth, dayNth, departure, rowIx)
+  }
+
+  async setNthDeparture(
+    nth: number,
+    dayNth: number,
+    departure: string,
+    rowIx?: number
+  ): Promise<void> {
     await new TextInput(
-      this.page.findAllByDataQa('input-end-time').nth(nth)
+      this.nthEditor(nth, dayNth, rowIx).findByDataQa('input-end-time')
     ).fill(departure)
   }
 
   async assertArrivalDeparture({
     rowIx,
     nth,
+    timeNth,
     arrival,
     departure
   }: {
     rowIx: number
     nth: number
+    timeNth?: number
     arrival: string
     departure: string
   }): Promise<void> {
@@ -276,22 +299,42 @@ export class UnitAttendancesPage {
       () =>
         this.page
           .findByDataQa(`attendance-row-${rowIx}`)
+          .findAllByDataQa('attendance-day')
+          .nth(nth)
           .findAllByDataQa('arrival-time')
-          .nth(nth).innerText,
+          .nth(timeNth ?? 0).innerText,
       arrival
     )
     await waitUntilEqual(
       () =>
         this.page
           .findByDataQa(`attendance-row-${rowIx}`)
+          .findAllByDataQa('attendance-day')
+          .nth(nth)
           .findAllByDataQa('departure-time')
-          .nth(nth).innerText,
+          .nth(timeNth ?? 0).innerText,
       departure
     )
   }
 
-  async navigateToPreviousWeek() {
-    await this.page.findByDataQa('previous-week').click()
+  async assertDepartureLocked(nth: number, dayNth: number, rowIx?: number) {
+    await this.nthEditor(nth, dayNth, rowIx)
+      .findByDataQa('departure-lock')
+      .waitUntilVisible()
+  }
+
+  private async waitForWeekLoaded() {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findByDataQa('staff-attendances-status')
+          .getAttribute('data-qa-value'),
+      'success'
+    )
+  }
+
+  async assertFormWarning() {
+    await this.page.findByDataQa('form-error-warning').waitUntilVisible()
   }
 }
 

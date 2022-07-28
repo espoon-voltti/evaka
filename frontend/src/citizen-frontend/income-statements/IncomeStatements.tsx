@@ -148,7 +148,7 @@ export default React.memo(function IncomeStatements() {
           })
         }
         setDeletionState({ status: 'row-not-selected' })
-        fetchIncomeStatements()
+        void fetchIncomeStatements()
       })
     },
     [fetchIncomeStatements, setErrorMessage, t]

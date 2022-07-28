@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -119,15 +118,8 @@ beforeEach(async () => {
     id: uuidv4(),
     employeeId: staff[0].id,
     groupId: groupId,
-    arrived: HelsinkiDateTime.of(2022, 3, 27, 7, 0),
-    departed: HelsinkiDateTime.of(2022, 3, 27, 15, 0),
-    occupancyCoefficient: 7.0
-  })
-  await insertStaffRealtimeAttendance({
-    id: uuidv4(),
-    employeeId: staff[1].id,
-    groupId: groupId,
-    arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+    arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
+    departed: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(15, 0)),
     occupancyCoefficient: 7.0
   })
 
@@ -148,6 +140,14 @@ const openAttendancesPage = async (): Promise<UnitAttendancesPage> => {
 
 describe('Realtime staff attendances', () => {
   test('Occupancy graph', async () => {
+    await insertStaffRealtimeAttendance({
+      id: uuidv4(),
+      employeeId: staff[1].id,
+      groupId: groupId,
+      arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+      occupancyCoefficient: 7.0
+    })
+
     calendarPage = await openAttendancesPage()
     await calendarPage.occupancies.assertGraphIsVisible()
     await calendarPage.setFilterStartDate(LocalDate.of(2022, 3, 1))
@@ -179,7 +179,7 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Sunday entries are shown in the calendar', async () => {
-      await calendarPage.navigateToPreviousWeek()
+      await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,
         nth: 6,
@@ -187,39 +187,57 @@ describe('Realtime staff attendances', () => {
         departure: '15:00'
       })
     })
-
-    describe('With one attendance entry', () => {
-      beforeEach(async () => {
-        await calendarPage.assertNoTimeInputsVisible()
+  })
+  describe('Group selection: staff, with one attendance entry', () => {
+    beforeEach(async () => {
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        occupancyCoefficient: 7.0
       })
-      test('Existing entries can be edited', async () => {
-        await calendarPage.clickEditOnRow(1)
-        await calendarPage.assertCountTimeInputsVisible(1)
-      })
 
-      test('Editing an existing entry updates it', async () => {
-        const rowIx = 1
-        const nth = 0
-        await calendarPage.assertArrivalDeparture({
-          rowIx,
-          nth,
-          arrival: '07:00',
-          departure: '-'
-        })
-        await calendarPage.clickEditOnRow(rowIx)
-        await calendarPage.setNthArrivalDeparture(nth, '07:00', '15:00')
-        await calendarPage.closeInlineEditor()
-        await calendarPage.assertArrivalDeparture({
-          rowIx,
-          nth,
-          arrival: '07:00',
-          departure: '15:00'
-        })
+      calendarPage = await openAttendancesPage()
+      await calendarPage.selectGroup('staff')
+      await calendarPage.assertNoTimeInputsVisible()
+    })
+    test('Existing entries can be edited', async () => {
+      await calendarPage.clickEditOnRow(1)
+      await calendarPage.assertCountTimeInputsVisible(1)
+    })
+
+    test('Editing an existing entry updates it', async () => {
+      const rowIx = 1
+      const nth = 0
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth,
+        arrival: '07:00',
+        departure: '–'
+      })
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(0, nth, '07:00', '15:00', 1)
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth,
+        arrival: '07:00',
+        departure: '15:00'
       })
     })
   })
   describe('Group selection: group', () => {
     beforeEach(async () => {
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(16, 0)),
+        occupancyCoefficient: 7.0
+      })
+
       calendarPage = await openAttendancesPage()
       await calendarPage.selectGroup(groupId)
       await waitUntilEqual(
@@ -230,11 +248,11 @@ describe('Realtime staff attendances', () => {
     test('A new entry can be added', async () => {
       const rowIx = 0
       await calendarPage.clickEditOnRow(rowIx)
-      await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+      await calendarPage.setNthArrivalDeparture(0, 2, '07:00', '15:00')
       await calendarPage.closeInlineEditor()
       await calendarPage.assertArrivalDeparture({
         rowIx,
-        nth: 0,
+        nth: 2,
         arrival: '07:00',
         departure: '15:00'
       })
@@ -242,18 +260,13 @@ describe('Realtime staff attendances', () => {
     test('An overnight entry can be added', async () => {
       const rowIx = 0
       await calendarPage.clickEditOnRow(rowIx)
-      await calendarPage.setNthArrivalDeparture(2, '', '15:00')
+      await calendarPage.setNthArrivalDeparture(0, 1, '09:00', '')
+      await calendarPage.setNthDeparture(0, 2, '15:00')
       await calendarPage.closeInlineEditor()
       await calendarPage.assertArrivalDeparture({
         rowIx,
-        nth: 0,
-        arrival: '07:00',
-        departure: '→'
-      })
-      await calendarPage.assertArrivalDeparture({
-        rowIx,
         nth: 1,
-        arrival: '→',
+        arrival: '09:00',
         departure: '→'
       })
       await calendarPage.assertArrivalDeparture({
@@ -265,20 +278,137 @@ describe('Realtime staff attendances', () => {
     })
     test('Existing entries can be deleted by entering empty values', async () => {
       const rowIx = 0
-      const nth = 0
       await calendarPage.clickEditOnRow(rowIx)
-      await calendarPage.setNthArrivalDeparture(nth, '', '')
+      await calendarPage.setNthArrivalDeparture(0, 0, '', '')
       await calendarPage.closeInlineEditor()
       await calendarPage.assertArrivalDeparture({
         rowIx,
         nth: 0,
-        arrival: '-',
-        departure: '-'
+        arrival: '–',
+        departure: '–'
       })
+    })
+    test('An overnight entry can be added over the week boundary', async () => {
+      const rowIx = 0
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(0, 6, '15:00', '')
+      await calendarPage.changeWeekToDate(mockedToday.addWeeks(1))
+      await calendarPage.assertDepartureLocked(0, 0)
+      await calendarPage.setNthDeparture(0, 0, '07:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 0,
+        arrival: '→',
+        departure: '07:00'
+      })
+      await calendarPage.changeWeekToDate(mockedToday)
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 6,
+        arrival: '15:00',
+        departure: '→'
+      })
+    })
+    test('A warning is shown if open range is added with a future attendance', async () => {
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, 6, '09:00', '10:00')
+      await calendarPage.setNthArrivalDeparture(0, 4, '10:00', '')
+      await calendarPage.assertFormWarning()
+    })
+    test('A warning is shown if open range is added with a future attendance over the week boundary', async () => {
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.changeWeekToDate(mockedToday.addWeeks(1))
+      await calendarPage.setNthArrivalDeparture(0, 0, '09:00', '10:00')
+      await calendarPage.changeWeekToDate(mockedToday)
+      await calendarPage.setNthArrivalDeparture(0, 4, '10:00', '')
+      await calendarPage.assertFormWarning()
+    })
+  })
+  describe('Group selected, multiple per-day attendances', () => {
+    beforeEach(async () => {
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
+        occupancyCoefficient: 2.0
+      })
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
+        departed: mockedToday
+          .addDays(1)
+          .toHelsinkiDateTime(LocalTime.of(10, 0)),
+        occupancyCoefficient: 2.0
+      })
+
+      calendarPage = await openAttendancesPage()
+      await calendarPage.selectGroup(groupId)
+      await waitUntilEqual(
+        () => calendarPage.staffInAttendanceTable(),
+        [staffName(groupStaff)]
+      )
+    })
+
+    test('Multi-row attendances can be edited', async () => {
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(1, 1, '12:00', '14:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 1,
+        timeNth: 0,
+        arrival: '07:00',
+        departure: '09:00'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 1,
+        timeNth: 1,
+        arrival: '12:00',
+        departure: '14:00'
+      })
+    })
+    test('Multi-row attendance can be extended overnight', async () => {
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(1, 1, '14:00', '')
+      await calendarPage.setNthDeparture(0, 2, '04:00')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 1,
+        timeNth: 1,
+        arrival: '14:00',
+        departure: '→'
+      })
+      await calendarPage.assertArrivalDeparture({
+        rowIx: 0,
+        nth: 2,
+        timeNth: 0,
+        arrival: '→',
+        departure: '04:00'
+      })
+    })
+    test('An open multi-row attendance has warning when there is another after it', async () => {
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, 1, '07:00', '')
+      await calendarPage.assertFormWarning()
     })
   })
   describe('Details modal', () => {
     beforeEach(async () => {
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        occupancyCoefficient: 7.0
+      })
+
       calendarPage = await openAttendancesPage()
       await calendarPage.selectGroup('staff')
     })
@@ -338,12 +468,14 @@ describe('Realtime staff attendances', () => {
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
         nth: 0,
+        timeNth: 0,
         arrival: '07:00',
         departure: '12:00'
       })
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
-        nth: 1,
+        nth: 0,
+        timeNth: 1,
         arrival: '13:00',
         departure: '14:30'
       })
@@ -351,6 +483,14 @@ describe('Realtime staff attendances', () => {
   })
   describe('Entries to multiple groups', () => {
     beforeEach(async () => {
+      await insertStaffRealtimeAttendance({
+        id: uuidv4(),
+        employeeId: staff[1].id,
+        groupId: groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+        occupancyCoefficient: 7.0
+      })
+
       calendarPage = await openAttendancesPage()
     })
     test('Inline editor does not overwrite entries to other groups', async () => {
@@ -358,11 +498,11 @@ describe('Realtime staff attendances', () => {
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,
         nth: 0,
-        arrival: '07:00',
-        departure: '-'
+        arrival: '08:00',
+        departure: '–'
       })
       await calendarPage.clickEditOnRow(0)
-      await calendarPage.setNthArrivalDeparture(0, '07:00', '15:00')
+      await calendarPage.setNthArrivalDeparture(0, 0, '07:00', '15:00')
       await calendarPage.closeInlineEditor()
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,
@@ -374,11 +514,11 @@ describe('Realtime staff attendances', () => {
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,
         nth: 0,
-        arrival: '-',
-        departure: '-'
+        arrival: '–',
+        departure: '–'
       })
       await calendarPage.clickEditOnRow(0)
-      await calendarPage.setNthArrivalDeparture(0, '15:00', '16:15')
+      await calendarPage.setNthArrivalDeparture(0, 0, '15:00', '16:15')
       await calendarPage.closeInlineEditor()
       await calendarPage.assertArrivalDeparture({
         rowIx: 0,

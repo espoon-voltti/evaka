@@ -63,7 +63,7 @@ interface FormState {
 }
 
 interface CommonProps {
-  onReload: () => undefined | void
+  onReload: () => void
   assistanceActions: AssistanceActionResponse[]
   assistanceActionOptions: AssistanceActionOption[]
 }

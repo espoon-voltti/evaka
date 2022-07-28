@@ -49,7 +49,7 @@ export default React.memo(function ApplicationNotes({
               note={note}
               onSave={() => {
                 setEditing(null)
-                loadNotes()
+                void loadNotes()
               }}
               onCancel={() => setEditing(null)}
             />
@@ -82,7 +82,7 @@ export default React.memo(function ApplicationNotes({
             applicationId={applicationId}
             onSave={() => {
               setCreating(false)
-              loadNotes()
+              void loadNotes()
             }}
             onCancel={() => setCreating(false)}
           />

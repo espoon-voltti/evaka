@@ -25,7 +25,7 @@ import { isActiveDateRange } from '../../../utils/date'
 export interface Props {
   assistanceNeed: AssistanceNeed
   permittedActions: Action.AssistanceNeed[]
-  onReload: () => undefined | void
+  onReload: () => void
   assistanceNeeds: AssistanceNeedResponse[]
   assistanceBasisOptions: AssistanceBasisOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>

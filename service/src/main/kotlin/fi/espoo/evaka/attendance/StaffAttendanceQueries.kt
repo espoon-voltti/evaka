@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 
@@ -263,6 +264,7 @@ data class RawAttendance(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val hasFutureAttendances: Boolean
 )
 
 fun Database.Read.getStaffAttendancesForDateRange(unitId: DaycareId, range: FiniteDateRange): List<RawAttendance> =
@@ -278,7 +280,14 @@ SELECT
     sa.type,
     emp.first_name,
     emp.last_name,
-    soc.coefficient AS currentOccupancyCoefficient
+    soc.coefficient AS currentOccupancyCoefficient,
+    EXISTS(
+        SELECT 1 FROM staff_attendance_realtime osar
+        JOIN daycare_group odg on osar.group_id = odg.id
+        WHERE osar.employee_id = sa.employee_id
+          AND tstzrange(:start, :end) << tstzrange(osar.arrived, osar.departed)
+          AND odg.daycare_id = :unitId
+    ) AS has_future_attendances
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
@@ -297,11 +306,24 @@ data class RawAttendanceEmployee(
     val firstName: String,
     val lastName: String,
     val currentOccupancyCoefficient: BigDecimal?,
+    val hasFutureAttendances: Boolean
 )
 
-fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<RawAttendanceEmployee> = createQuery(
+fun Database.Read.getCurrentStaffForAttendanceCalendar(
+    unitId: DaycareId,
+    start: LocalDate,
+    end: LocalDate
+): List<RawAttendanceEmployee> = createQuery(
     """
-SELECT DISTINCT dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient
+SELECT DISTINCT
+    dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient,
+    EXISTS(
+         SELECT 1 FROM staff_attendance_realtime sar
+         JOIN daycare_group dg on sar.group_id = dg.id
+         WHERE sar.employee_id = dacl.employee_id
+           AND tstzrange(:start, :end) << tstzrange(sar.arrived, sar.departed)
+           AND dg.daycare_id = :unitId
+    ) AS has_future_attendances
 FROM daycare_acl dacl
 JOIN employee emp on emp.id = dacl.employee_id
 LEFT JOIN daycare_group_acl dgacl ON dgacl.employee_id = emp.id
@@ -310,12 +332,22 @@ WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_T
     """.trimIndent()
 )
     .bind("unitId", unitId)
+    .bind("start", start)
+    .bind("end", end)
     .mapTo<RawAttendanceEmployee>()
     .list()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(unitId: DaycareId, range: FiniteDateRange): List<ExternalAttendance> = createQuery(
     """
-    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient
+    SELECT
+        sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient,
+        EXISTS(
+            SELECT 1 FROM staff_attendance_external osae
+            JOIN daycare_group odg on osae.group_id = odg.id
+            WHERE osae.name = sae.name
+              AND tstzrange(:start, :end) << tstzrange(osae.arrived, osae.departed)
+              AND odg.daycare_id = :unitId
+        ) AS has_future_attendances
     FROM staff_attendance_external sae
     JOIN daycare_group dg on sae.group_id = dg.id
     WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:start, :end)

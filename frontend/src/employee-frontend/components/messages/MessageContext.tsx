@@ -270,7 +270,7 @@ export const MessageContextProvider = React.memo(
         if (hasUnreadMessages) {
           void markThreadRead(accountId, thread.id).then(() => {
             refreshMessages(accountId)
-            refreshUnreadCounts()
+            void refreshUnreadCounts()
           })
         }
       },

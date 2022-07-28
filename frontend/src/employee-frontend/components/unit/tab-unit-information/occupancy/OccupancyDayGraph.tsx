@@ -222,20 +222,24 @@ function graphData(
   const lastChildAttendance = childData[childData.length - 1]
 
   // If staff is still present, extend the graph up to current time
-  if (lastStaffAttendance.y > 0 && isBefore(lastStaffAttendance.x, now)) {
+  if (
+    lastStaffAttendance &&
+    lastStaffAttendance.y > 0 &&
+    isBefore(lastStaffAttendance.x, now)
+  ) {
     staffData.push({ ...lastStaffAttendance, x: new Date(now) })
     childData.push({ ...lastChildAttendance, x: new Date(now) })
   }
 
   const xMin = shiftCareUnit
-    ? firstStaffAttendance.x.getTime()
+    ? firstStaffAttendance?.x.getTime() ?? 0
     : min([
         // 6 AM
         setTime(new Date(), 6, 0),
         staffData[0].x
       ]).getTime()
   const xMax = shiftCareUnit
-    ? staffData[staffData.length - 1].x.getTime()
+    ? staffData[staffData.length - 1]?.x.getTime() ?? 0
     : max([
         // 6 PM
         setTime(new Date(), 18, 0),

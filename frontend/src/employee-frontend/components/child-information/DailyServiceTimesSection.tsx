@@ -61,7 +61,7 @@ export default React.memo(function DailyServiceTimesSection({
             setUIMode(undefined)
 
             if (shouldRefresh) {
-              loadData()
+              void loadData()
             }
           }}
         />
@@ -103,7 +103,7 @@ export default React.memo(function DailyServiceTimesSection({
                 setCreationFormOpen(false)
 
                 if (shouldRefresh) {
-                  loadData()
+                  void loadData()
                 }
               }}
               childId={id}

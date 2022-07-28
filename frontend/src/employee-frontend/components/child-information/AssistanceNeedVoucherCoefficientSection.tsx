@@ -69,7 +69,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
               clearUiMode()
               setActiveCoefficient(undefined)
               if (shouldRefresh) {
-                reloadCoefficients()
+                void reloadCoefficients()
               }
             }}
           />

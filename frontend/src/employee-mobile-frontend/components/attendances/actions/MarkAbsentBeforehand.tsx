@@ -109,7 +109,7 @@ export default React.memo(function MarkAbsentBeforehand() {
       await deleteAbsenceRange(unitId, childId, deleteRange)
     }
     setDeleteRange(undefined)
-    loadFutureAbsences()
+    void loadFutureAbsences()
     setUiMode('default')
   }, [childId, deleteRange, loadFutureAbsences, unitId])
 

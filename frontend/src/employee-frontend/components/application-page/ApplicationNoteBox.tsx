@@ -59,13 +59,13 @@ interface ReadProps {
   note: ApplicationNote
   editable: boolean
   deletable: boolean
-  onStartEdit: () => undefined | void
-  onDelete: () => undefined | void
+  onStartEdit: () => void
+  onDelete: () => void
 }
 
 interface InputProps {
-  onSave: () => undefined | void
-  onCancel: () => undefined | void
+  onSave: () => void
+  onCancel: () => void
 }
 
 interface EditProps extends InputProps {
@@ -74,8 +74,8 @@ interface EditProps extends InputProps {
 
 interface CreateProps extends InputProps {
   applicationId: UUID
-  onSave: () => undefined | void
-  onCancel: () => undefined | void
+  onSave: () => void
+  onCancel: () => void
 }
 
 type Props = ReadProps | EditProps | CreateProps

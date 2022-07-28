@@ -1930,7 +1930,9 @@ export const fi = {
         TRAINING: 'Koulutus',
         OVERTIME: 'Ylityö',
         JUSTIFIED_CHANGE: 'Perusteltu muutos'
-      }
+      },
+      formErrorWarning:
+        'Tarkista antamasi läsnäolotiedot. Muutoksesi voi jäädä tallentamatta, jos ne ei ole kelvollisia. Ohita varoitus klikkaamalla.'
     },
     error: {
       placement: {

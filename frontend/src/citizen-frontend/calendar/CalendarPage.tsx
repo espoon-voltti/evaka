@@ -69,7 +69,7 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   const refreshOnQuestionnaireAnswer = useCallback(() => {
     refreshQuestionnaires()
-    loadDefaultRange()
+    void loadDefaultRange()
   }, [loadDefaultRange, refreshQuestionnaires])
 
   const dayIsReservable = useCallback(

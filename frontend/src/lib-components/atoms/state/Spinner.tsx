@@ -49,14 +49,16 @@ const SpinnerWrapper = styled.div<SpinnerWrapperProps>`
 interface SpinnerSegmentProps {
   size?: SpacingSize
   margin?: SpacingSize
+  'data-qa'?: string
 }
 
 export const SpinnerSegment = React.memo(function SpinnerSegment({
   margin = 'm',
-  size = 'XXL'
+  size = 'XXL',
+  'data-qa': dataQa
 }: SpinnerSegmentProps) {
   return (
-    <SpinnerWrapper margin={defaultMargins[margin]}>
+    <SpinnerWrapper margin={defaultMargins[margin]} data-qa={dataQa}>
       <Spinner size={defaultMargins[size]} />
     </SpinnerWrapper>
   )

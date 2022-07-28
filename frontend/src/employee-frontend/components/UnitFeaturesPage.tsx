@@ -76,7 +76,7 @@ export default React.memo(function UnitFeaturesPage() {
         setUndoAction([unitIds, features, !enable])
       }
 
-      reloadUnits()
+      void reloadUnits()
       setSubmitting(false)
 
       return result

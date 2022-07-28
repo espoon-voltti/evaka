@@ -51,7 +51,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
 
   const onSuccess = useCallback(() => {
     clearUiMode()
-    loadFeeAlterations()
+    void loadFeeAlterations()
   }, [clearUiMode, loadFeeAlterations])
   const onFailure = useCallback(() => {
     setErrorMessage({
@@ -122,7 +122,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
               deleteFeeAlteration(deleted.id).then((res) => {
                 setDeleted(undefined)
                 if (res.isSuccess) {
-                  loadFeeAlterations()
+                  void loadFeeAlterations()
                 } else {
                   setErrorMessage({
                     type: 'error',
