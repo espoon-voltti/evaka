@@ -25,9 +25,9 @@ fun <T> handlingExceptions(fn: () -> T): T {
                 with(e.cause as PSQLException) {
                     when (this.sqlState) {
                         dataException, checkViolation ->
-                            throw BadRequest("Invalid data")
+                            throw BadRequest("Invalid data", cause = e)
                         exclusionViolation ->
-                            throw Conflict("Exclusion constraint violation in database")
+                            throw Conflict("Exclusion constraint violation in database", cause = e)
                         else -> {
                             logger.warn("Unmapped PSQLException sqlState error code ${this.sqlState}")
                             throw this
