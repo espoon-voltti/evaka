@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -17,7 +16,6 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faFileAlt } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -36,17 +34,6 @@ const Highlight = styled.div`
 
 const RelativeTr = styled(Tr)`
   position: relative;
-`
-
-const TitleWrapper = styled.div`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  padding-right: ${defaultMargins.s};
 `
 
 interface AssistanceNeedProps {
@@ -76,23 +63,15 @@ export default React.memo(function AssistanceNeedSection({
 
   return (
     <CollapsibleContentArea
-      title={
-        <TitleWrapper>
-          <H2 noMargin>{t.children.assistanceNeed.title}</H2>
-          {unreadCount > 0 && (
-            <RoundIcon
-              content={unreadCount.toString()}
-              color={colors.status.warning}
-              aria-label={`${unreadCount} ${t.children.assistanceNeed.unreadCount}`}
-              size="m"
-              data-qa="assistance-need-decision-unread-count"
-            />
-          )}
-        </TitleWrapper>
-      }
+      title={<H2 noMargin>{t.children.assistanceNeed.title}</H2>}
+      countIndicator={{
+        count: unreadCount,
+        ariaLabel: `${unreadCount} ${t.children.assistanceNeed.unreadCount}`
+      }}
       opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
+      data-qa="assistance-need-decisions"
     >
       <H3>{t.children.assistanceNeed.decisions.title}</H3>
       {renderResult(assistanceNeedDecisions, (decisions) => (

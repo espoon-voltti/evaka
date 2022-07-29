@@ -91,7 +91,12 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
   toggleOpen: () => void
   title: ReactNode
   children: ReactNode
-  countIndicator?: number
+  countIndicator?:
+    | number
+    | {
+        count: number
+        ariaLabel: string
+      }
 }
 
 const IconContainer = styled.div`
@@ -108,6 +113,12 @@ export const CollapsibleContentArea = React.memo(
     ...props
   }: CollapsibleContentAreaProps) {
     const { colors } = useTheme()
+
+    const showCountIndicator =
+      typeof countIndicator === 'number'
+        ? countIndicator > 0
+        : countIndicator.count > 0
+
     return (
       <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
         <TitleContainer
@@ -118,12 +129,20 @@ export const CollapsibleContentArea = React.memo(
         >
           {title}
           <IconContainer>
-            {countIndicator > 0 && (
+            {showCountIndicator && (
               <>
                 <RoundIcon
                   size="m"
                   color={colors.status.warning}
-                  content={countIndicator.toString()}
+                  content={(typeof countIndicator === 'number'
+                    ? countIndicator
+                    : countIndicator.count
+                  ).toString()}
+                  aria-label={
+                    typeof countIndicator === 'number'
+                      ? undefined
+                      : countIndicator.ariaLabel
+                  }
                   data-qa="count-indicator"
                 />
                 <Gap horizontal={true} size="s" />

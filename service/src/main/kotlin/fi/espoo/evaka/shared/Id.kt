@@ -30,6 +30,7 @@ sealed interface DatabaseTable {
     sealed class BackupCare : DatabaseTable
     sealed class BackupPickup : DatabaseTable
     sealed class Daycare : DatabaseTable
+    sealed class ChildConsent : DatabaseTable
     sealed class ChildDailyNote : DatabaseTable
     sealed class ChildImage : DatabaseTable
     sealed class ChildStickyNote : DatabaseTable
@@ -102,6 +103,7 @@ typealias BackupCareId = Id<DatabaseTable.BackupCare>
 typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>
+typealias ChildConsentId = Id<DatabaseTable.ChildConsent>
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>

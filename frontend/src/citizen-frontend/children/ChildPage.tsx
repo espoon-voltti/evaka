@@ -16,6 +16,7 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
 import AssistanceNeedSection from './AssistanceNeedSection'
+import ChildConsentsSection from './ChildConsentsSection'
 import ChildHeader from './ChildHeader'
 import PlacementTerminationSection from './PlacementTerminationSection'
 import { getChild } from './api'
@@ -36,6 +37,8 @@ export default React.memo(function ChildPage() {
               <ContentArea opaque>
                 <ChildHeader child={child} />
               </ContentArea>
+              <Gap size="s" />
+              <ChildConsentsSection childId={childId} />
               <Gap size="s" />
               <AssistanceNeedSection childId={childId} />
               <Gap size="s" />

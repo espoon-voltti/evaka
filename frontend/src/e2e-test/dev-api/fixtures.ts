@@ -42,6 +42,7 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevChildConsent,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevIncome,
@@ -91,7 +92,8 @@ import {
   setAclForDaycares,
   upsertOccupancyCoefficient,
   insertDailyServiceTime,
-  insertDailyServiceTimeNotification
+  insertDailyServiceTimeNotification,
+  insertChildConsent
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1596,6 +1598,20 @@ export class Fixture {
       hasDeletedReservations: false
     })
   }
+
+  static childConsent(
+    childId: string,
+    type: string,
+    guardianId: string,
+    given: boolean
+  ): ChildConsentBuilder {
+    return new ChildConsentBuilder({
+      childId,
+      type,
+      guardianId,
+      given
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2071,5 +2087,16 @@ export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDaily
 
   copy() {
     return new DailyServiceTimeNotificationBuilder({ ...this.data })
+  }
+}
+
+export class ChildConsentBuilder extends FixtureBuilder<DevChildConsent> {
+  async save() {
+    await insertChildConsent(this.data)
+    return this
+  }
+
+  copy() {
+    return new ChildConsentBuilder({ ...this.data })
   }
 }

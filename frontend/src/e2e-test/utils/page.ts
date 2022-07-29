@@ -314,7 +314,11 @@ export class Checkable extends Element {
 
 export class Checkbox extends Checkable {}
 
-export class Radio extends Checkable {}
+export class Radio extends Checkable {
+  get disabled(): Promise<boolean> {
+    return this.find('input[type=radio]').disabled
+  }
+}
 
 export class SelectionChip extends Checkable {}
 

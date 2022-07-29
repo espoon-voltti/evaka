@@ -442,6 +442,27 @@ describe('Citizen children page', () => {
   })
 
   describe('Assistance need decisions table', () => {
+    beforeEach(async () => {
+      // child consent counts affect the unread count too
+      await Fixture.childConsent(
+        fixtures.enduserChildFixtureKaarina.id,
+        'EVAKA_PROFILE_PICTURE',
+        fixtures.enduserGuardianFixture.id,
+        true
+      ).save()
+      await Fixture.childConsent(
+        fixtures.enduserChildFixtureJari.id,
+        'EVAKA_PROFILE_PICTURE',
+        fixtures.enduserGuardianFixture.id,
+        true
+      ).save()
+      await Fixture.childConsent(
+        fixtures.enduserChildFixturePorriHatterRestricted.id,
+        'EVAKA_PROFILE_PICTURE',
+        fixtures.enduserGuardianFixture.id,
+        true
+      ).save()
+    })
     test('Has an accepted decision', async () => {
       await Fixture.preFilledAssistanceNeedDecision()
         .withChild(fixtures.enduserChildFixtureKaarina.id)
@@ -610,6 +631,50 @@ describe('Citizen children page', () => {
       await childrenPage.openChildPage('Kaarina')
       await childPage.openAssistanceNeedCollapsible()
       await childPage.assertNotAssistanceNeedDecisionRowUnread(0)
+    })
+  })
+
+  describe('Consents', () => {
+    test('can give consent once', async () => {
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openConsentCollapsible()
+      await childPage.evakaProfilePicYes.check()
+      await childPage.saveConsent()
+      await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+
+      await page.reload()
+      await header.selectTab('children')
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.openConsentCollapsible()
+      await childPage.evakaProfilePicYes.waitUntilChecked(true)
+      await childPage.evakaProfilePicNo.waitUntilChecked(false)
+      await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+      await waitUntilEqual(() => childPage.evakaProfilePicNo.disabled, true)
+    })
+
+    test('shows unconsented count', async () => {
+      await page.reload()
+      await header.assertUnreadChildrenCount(3)
+
+      await header.selectTab('children')
+      await childrenPage.assertChildUnreadCount(
+        fixtures.enduserChildFixtureKaarina.id,
+        1
+      )
+      await childrenPage.assertChildUnreadCount(
+        fixtures.enduserChildFixturePorriHatterRestricted.id,
+        1
+      )
+
+      await childrenPage.openChildPage('Kaarina')
+      await childPage.assertUnconsentedCount(1)
+
+      await childPage.openConsentCollapsible()
+      await childPage.evakaProfilePicYes.check()
+      await childPage.saveConsent()
+
+      await header.assertUnreadChildrenCount(2)
     })
   })
 })
