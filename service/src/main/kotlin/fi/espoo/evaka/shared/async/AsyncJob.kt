@@ -12,6 +12,7 @@ import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -164,6 +165,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class SendPatuReport(val dateRange: DateRange) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendAssistanceNeedDecisionEmail(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }

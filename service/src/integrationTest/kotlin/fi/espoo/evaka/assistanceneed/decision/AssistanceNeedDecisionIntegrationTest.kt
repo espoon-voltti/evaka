@@ -7,13 +7,20 @@ package fi.espoo.evaka.assistanceneed.decision
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.emailclient.MockEmail
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -21,11 +28,16 @@ import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
     private val decisionMaker2 = AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.DIRECTOR))
@@ -382,6 +394,45 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         val updatedDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
 
         assertEquals(decisionMaker2.id, updatedDecision.decisionMaker?.employeeId)
+    }
+
+    @Test
+    fun `Assistance need decision is notified via email to guardians`() {
+        db.transaction { it.insertGuardian(testAdult_4.id, testChild_1.id) }
+
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.OK)
+        whenDecideAssistanceNeedDecisionOpenedThenExpectStatus(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+            HttpStatus.OK
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(
+            setOf(testAdult_4.email),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(
+            "Päätös tuen tarpeesta / Beslut om behov av stöd / Decision on support need",
+            getEmailFor(testAdult_4).subject
+        )
+        assertEquals("Test email sender fi <testemail_fi@test.com>", getEmailFor(testAdult_4).fromAddress)
+        assertTrue(getEmailFor(testAdult_4).htmlBody.contains("/children/${testChild_1.id}/assistance-need-decision/${assistanceNeedDecision.id}"))
+        assertTrue(getEmailFor(testAdult_4).textBody.contains("/children/${testChild_1.id}/assistance-need-decision/${assistanceNeedDecision.id}"))
+    }
+
+    private fun getEmailFor(person: DevPerson): MockEmail {
+        val address = person.email ?: throw Error("$person has no email")
+        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
     private fun whenPostAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {

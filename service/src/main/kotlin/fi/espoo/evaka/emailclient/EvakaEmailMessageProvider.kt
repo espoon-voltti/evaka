@@ -4,12 +4,16 @@
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.ChildId
+
 class EvakaEmailMessageProvider : IEmailMessageProvider {
 
     override val subjectForPendingDecisionEmail: String = "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
     override val subjectForClubApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
     override val subjectForDaycareApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
     override val subjectForPreschoolApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
+    override val subjectForAssistanceNeedDecisionEmail: String = "Päätös tuen tarpeesta / Beslut om behov av stöd / Decision on support need"
 
     override fun getPendingDecisionEmailHtml(): String {
         return """
@@ -512,4 +516,45 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
             """.trimIndent()
     }
+
+    override fun getAssistanceNeedDecisionEmailHtml(
+        childId: ChildId,
+        decisionId: AssistanceNeedDecisionId
+    ): String = """
+        <p>Hyvä(t) huoltaja(t),</p>
+        <p>Lapsellenne on tehty päätös tuen tarpeesta.</p>
+        <p>Päätös on nähtävissä eVakassa osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId">https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId</a>.</p>
+        <hr>
+        <p>Bästa vårdnadshavare,</p>
+        <p>Beslut har fattats om ditt barns behov av stöd.</p>
+        <p>Beslutet finns att se i eVaka på <a href="https://www.esbosmabarnspedagogik.fi/children/$childId/assistance-need-decision/$decisionId">https://www.esbosmabarnspedagogik.fi/children/$childId/assistance-need-decision/$decisionId</a>.</p>
+        <hr>
+        <p>Dear guardian(s),</p>
+        <p>A decision has been made on your child's need for support.</p>
+        <p>The decision can be viewed on eVaka at <a href="https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId">https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId</a>.</p>
+    """.trimIndent()
+
+    override fun getAssistanceNeedDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String = """
+        Hyvä(t) huoltaja(t),
+        
+        Lapsellenne on tehty päätös tuen tarpeesta.
+        
+        Päätös on nähtävissä eVakassa osoitteessa https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId.
+        
+        -----
+        
+        Bästa vårdnadshavare,
+        
+        Beslut har fattats om ditt barns behov av stöd.
+        
+        Beslutet finns att se i eVaka på https://www.esbosmabarnspedagogik.fi/children/$childId/assistance-need-decision/$decisionId.
+        
+        -----
+        
+        Dear guardian(s),
+        
+        A decision has been made on your child's need for support.
+        
+        The decision can be viewed on eVaka at https://www.espoonvarhaiskasvatus.fi/children/$childId/assistance-need-decision/$decisionId.
+    """.trimIndent()
 }
