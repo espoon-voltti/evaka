@@ -109,7 +109,10 @@ export class CitizenChildPage {
       validityPeriod: await row.findByDataQa('validity-period').innerText,
       selectedUnit: await row.findByDataQa('selected-unit').innerText,
       decisionMade: await row.findByDataQa('decision-made').innerText,
-      status: await row.findByDataQa('status').getAttribute('data-qa-status')
+      status: await row
+        .findAllByDataQa('status')
+        .first()
+        .getAttribute('data-qa-status')
     }
   }
 
