@@ -4,15 +4,18 @@
 
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { tabletMin } from 'lib-components/breakpoints'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H2, H3 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { faFileAlt } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -45,7 +48,7 @@ export default React.memo(function AssistanceNeedSection({
     >
       <H3>{t.children.assistanceNeed.decisions.title}</H3>
       {renderResult(assistanceNeedDecisions, (decisions) => (
-        <Table>
+        <ResponsiveTable>
           <Thead>
             <Tr>
               <Th>{t.children.assistanceNeed.decisions.form}</Th>
@@ -115,11 +118,69 @@ export default React.memo(function AssistanceNeedSection({
                     data-qa="status"
                   />
                 </Td>
+                <JoinedStatusAndDecisionMade>
+                  <AssistanceNeedDecisionStatusChip
+                    decisionStatus={decision.status}
+                    texts={
+                      t.children.assistanceNeed.decisions.decision.statuses
+                    }
+                    data-qa="status"
+                  />
+                  <div>{decision.decisionMade?.format()}</div>
+                </JoinedStatusAndDecisionMade>
               </Tr>
             ))}
           </Tbody>
-        </Table>
+        </ResponsiveTable>
       ))}
     </CollapsibleSection>
   )
 })
+
+const ResponsiveTable = styled(Table)`
+  @media (max-width: ${tabletMin}) {
+    margin: 0 -${defaultMargins.s};
+    width: calc(100% + 2 * ${defaultMargins.s});
+
+    thead {
+      display: none;
+    }
+
+    tbody tr {
+      display: grid;
+      grid-template-columns: min-content auto;
+      border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+      padding: ${defaultMargins.s};
+
+      td {
+        grid-column: 2;
+        border: none;
+        padding: ${defaultMargins.xxs} 0;
+      }
+
+      td:first-child {
+        grid-column: 1;
+        width: auto;
+      }
+
+      td:nth-last-child(3),
+      td:nth-last-child(2) {
+        display: none;
+      }
+
+      &:hover {
+        box-shadow: none;
+      }
+    }
+  }
+`
+
+const JoinedStatusAndDecisionMade = styled.td`
+  display: none;
+
+  @media (max-width: ${tabletMin}) {
+    display: flex;
+    align-items: center;
+    gap: ${defaultMargins.xs};
+  }
+`
