@@ -8,6 +8,8 @@ import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -30,7 +32,8 @@ data class AssistanceNeedDecisionRequest(
 
 @RestController
 class AssistanceNeedDecisionController(
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
@@ -220,6 +223,10 @@ class AssistanceNeedDecisionController(
                         decisionMade = if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now()
                     ).toForm()
                 )
+
+                if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                    asyncJobRunner.plan(tx, listOf(AsyncJob.SendAssistanceNeedDecisionEmail(id)))
+                }
             }
         }
     }
