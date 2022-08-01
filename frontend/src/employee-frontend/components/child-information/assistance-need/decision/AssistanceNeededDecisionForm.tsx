@@ -555,6 +555,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             }
             phoneLabel={i18n.common.form.phone}
             selectedPhone={formState.preparedBy1?.phoneNumber}
+            hasPhoneField
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.preparator}
@@ -577,6 +578,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             }
             phoneLabel={i18n.common.form.phone}
             selectedPhone={formState.preparedBy2?.phoneNumber}
+            hasPhoneField
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.decisionMaker}
