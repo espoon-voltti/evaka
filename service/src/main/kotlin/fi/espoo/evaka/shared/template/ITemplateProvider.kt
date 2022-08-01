@@ -13,4 +13,5 @@ interface ITemplateProvider {
     fun getDaycareDecisionPath(): String
     fun getPreschoolDecisionPath(): String
     fun getPreparatoryDecisionPath(): String
+    fun getAssistanceNeedDecisionPath(): String
 }

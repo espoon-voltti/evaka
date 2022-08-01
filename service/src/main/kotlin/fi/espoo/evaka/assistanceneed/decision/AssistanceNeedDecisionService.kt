@@ -4,35 +4,56 @@
 
 package fi.espoo.evaka.assistanceneed.decision
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.s3.Document
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.template.ITemplateProvider
+import fi.espoo.voltti.pdfgen.PDFService
+import fi.espoo.voltti.pdfgen.Page
+import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import org.thymeleaf.context.Context
+import java.time.LocalDate
+import java.util.Locale
 
 private val logger = KotlinLogging.logger {}
+
+const val assistanceNeedDecisionsBucketPrefix = "assistance-need-decisions/"
 
 @Component
 class AssistanceNeedDecisionService(
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    env: EmailEnv,
+    private val pdfService: PDFService,
+    private val documentClient: DocumentService,
+    private val templateProvider: ITemplateProvider,
+    bucketEnv: BucketEnv,
+    emailEnv: EmailEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-    private val senderAddressFi = env.applicationReceivedSenderAddressFi
-    private val senderNameFi = env.applicationReceivedSenderNameFi
-    private val senderAddressSv = env.applicationReceivedSenderAddressSv
-    private val senderNameSv = env.applicationReceivedSenderNameSv
+    private val senderAddressFi = emailEnv.applicationReceivedSenderAddressFi
+    private val senderNameFi = emailEnv.applicationReceivedSenderNameFi
+    private val senderAddressSv = emailEnv.applicationReceivedSenderAddressSv
+    private val senderNameSv = emailEnv.applicationReceivedSenderNameSv
+
+    private val bucket = bucketEnv.data
 
     init {
         asyncJobRunner.registerHandler(::runSendAssistanceNeedDecisionEmail)
+        asyncJobRunner.registerHandler(::runCreateAssistanceNeedDecisionPdf)
     }
 
     fun runSendAssistanceNeedDecisionEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendAssistanceNeedDecisionEmail) {
@@ -70,5 +91,44 @@ class AssistanceNeedDecisionService(
                 )
             }
         }
+    }
+
+    fun runCreateAssistanceNeedDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.CreateAssistanceNeedDecisionPdf) {
+        db.transaction { tx ->
+            this.createDecisionPdf(tx, msg.decisionId)
+            logger.info { "Successfully created assistance need decision pdf (id: ${msg.decisionId})." }
+        }
+    }
+
+    fun createDecisionPdf(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
+        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+
+        check(!decision.hasDocument) { "Assistance need decision $decisionId has a document key already" }
+
+        val pdf = generatePdf(decision)
+        val key = documentClient.upload(
+            bucket,
+            Document("${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf", pdf, "application/pdf")
+        ).key
+        tx.updateAssistanceNeedDocumentKey(decision.id, key)
+    }
+
+    fun getDecisionPdfResponse(dbc: Database.Connection, decisionId: AssistanceNeedDecisionId): ResponseEntity<Any> {
+        val documentKey = dbc.read { it.getAssistanceNeedDecisionDocumentKey(decisionId) }
+            ?: throw NotFound("No assistance need decision found with ID ($decisionId)")
+        return documentClient.responseAttachment(bucket, documentKey, null)
+    }
+
+    fun generatePdf(decision: AssistanceNeedDecision): ByteArray {
+        return pdfService.render(
+            Page(
+                Template(templateProvider.getAssistanceNeedDecisionPath()),
+                Context().apply {
+                    locale = Locale.Builder().setLanguage(decision.language.name.lowercase()).build()
+                    setVariable("decision", decision)
+                    setVariable("sentDate", LocalDate.now())
+                }
+            )
+        )
     }
 }

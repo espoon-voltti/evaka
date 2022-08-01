@@ -7,382 +7,241 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <!DOCTYPE html>
 
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <style th:fragment="css">
-        * {
-            line-height: 1.4;
-            font-family: 'Open Sans', sans-serif;
-        }
+      .header {
+        font-size: 11px;
+        font-weight: normal;
+      }
 
-        body {
-            margin: 0;
-        }
+      .headerLeft {
+        float: left;
+        width: 60mm;
+      }
 
-        @page {
-            size: A4 portrait;
-            margin: 5mm 3mm 3mm 11mm;
+      .headerRight {
+        float: right;
+        width: 80mm;
+      }
 
-            @top-left {
-                content: element(headerLeft);
-            }
+      .address {
+        font-style: normal;
+      }
 
-            @top-right {
-                content: element(headerRight);
-            }
-        }
+      .logo {
+        height: 77px;
+        width: 150px;
+      }
 
-        .page {
-            margin-left: 10mm;
-            margin-right: 10mm;
-            margin-top: 50mm;
-            margin-bottom: 10mm;
-            page-break-after: always;
-            font-size: 13px;
-        }
+      .logo img {
+        width: 130px;
+        height: auto;
+      }
 
-        .page h1, .page h2, .page h3, .page p, .page div {
-            font-size: 13px;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .page h1 {
-            margin-bottom: 10mm;
-            padding-bottom: 2rem;
-            page-break-after: avoid;
-        }
+      .text-right {
+        text-align: right;
+      }
 
-        .page.last-page {
-            page-break-after: avoid;
-        }
-
-        .page .child {
-            margin-bottom: 5mm;
-        }
-
-        .page .decision-details {
-            margin-top: 5mm;
-            margin-bottom: 5mm;
-        }
-
-        .page .decision-details-container {
-            margin-top: 10mm;
-            margin-bottom: 15mm;
-        }
-
-
-        .page.first-page .address {
-            top: 35mm;
-            left: 10mm;
-            width: 80mm;
-            height: 50mm;
-            overflow: hidden;
-            position: absolute;
-        }
-
-        .page.first-page {
-            margin-top: 95mm;
-        }
-
-        .headerLeft {
-            margin-top: 10mm;
-            position: running(headerLeft);
-            display: inline-block;
-            width: 60mm;
-            top: 0;
-        }
-
-        .headerRight {
-            margin-top: 30mm;
-            margin-right: -20mm;
-            position: running(headerRight);
-            display: inline-block;
-            width: 80mm;
-            font-size: 10px;
-        }
-
-
-        .left-column {
-            width: 61%;
-            display: inline-block;
-            margin: 0;
-            padding: 0;
-            vertical-align: top;
-        }
-
-        .right-column {
-            width: 37%;
-            display: inline-block;
-            text-align: right;
-            margin: 0;
-            padding: 0;
-            vertical-align: top;
-        }
-
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-
-
-        .logo {
-            top: 16mm;
-            position: absolute;
-            vertical-align: top;
-            margin-top: 5mm;
-            margin-left: 10mm;
-            height: 77px;
-            width: 150px;
-        }
-
-        .logo img {
-            width: 130px;
-            height: auto;
-        }
-
-        .accept-placement-wrapper {
-            margin-top: 50px;
-        }
-
-        .accept-placement-wrapper .details-section {
-            margin-bottom: 30px;
-        }
-
-        .accept-placement-wrapper .detail-label {
-            display: inline-block;
-            width: 200px;
-            text-align: left;
-            margin-right: 20px;
-        }
-
-        .accept-placement-wrapper .accept-heading {
-            display: block;
-            margin-bottom: 30px;
-        }
-
-
-        .accept-placement-wrapper .checkbox-heading-wrapper {
-            margin-bottom: 30px;
-        }
-
-        .accept-checkboxes .checkboxes-wrapper {
-            display: block;
-            vertical-align: top;
-        }
-
-        .accept-checkboxes .checkbox-label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .accept-checkboxes .checkbox {
-            display: inline-block;
-            width: 28px;
-            height: 18px;
-            line-height: 1;
-            margin-right: 8px;
-            border: 1px solid #2d2d2d;
-            border-radius: 1px;
-        }
-
-        .big-spacing-before {
-            margin-top: 60px;
-        }
-
-        .return-section {
-            margin-top: 60px;
-        }
-
-        .strong {
-            font-weight: bold;
-        }
-
-
-        @media print {
-            a,
-            a:visited {
-                text-decoration: underline;
-            }
-
-            .page-number:before {
-                content: counter(page);
-            }
-
-            .page-break {
-                page-break-after: always;
-            }
-
-        }
-
-        .col-row {
-            margin-bottom: 2px;
-        }
-
-        .left {
-            display: inline-block;
-            width:100px;
-        }
-
-        .right {
-            display: inline-block;
-            width:300px;
-        }
+      .full-width {
+        width: 100%;
+      }
     </style>
-</head>
-<body>
-<!-- Header (is repeated automatically on every page) -->
-<div th:fragment="header">
-    <div>
+  </head>
+  <body>
+    <!-- Header (is repeated automatically on every page) -->
+    <div th:fragment="header">
+      <div class="header">
         <div class="headerLeft">
-            <div class="logo">
-                <img th:replace="~{shared/espoo-logo :: logo-img}" />
-            </div>
+          <div class="logo">
+            <img th:replace="~{shared/espoo-logo :: logo-img}" />
+          </div>
         </div>
         <div class="headerRight">
-            <div class="left-column">
-                <div th:text="#{header.1}">PÄÄTÖS</div>
-                <div th:text="#{header.2}"></div>
-                <div><span th:replace="~{shared/common :: decision-date}"></span></div>
+          <div class="left-column">
+            <div th:text="#{header.1}">PÄÄTÖS</div>
+            <div th:utext="#{header.2}"></div>
+            <div>
+              <span th:replace="~{shared/common :: decision-date}"></span>
             </div>
-            <div class="right-column">
-                <div><span th:text="#{header.pageNumber}"></span> <span class="page-number"></span></div>
-                <div><br/></div>
-                <div th:text="#{header.decisionNumber}">Päätöksen numero</div>
-                <div th:text="${decision.decisionNumber}"></div>
+          </div>
+          <div class="right-column">
+            <div>
+              <span th:text="#{header.pageNumber}"></span>
+              <span class="page-number"></span>
             </div>
+            <div><br /></div>
+            <div th:text="#{header.decisionNumber}">Päätöksen numero</div>
+            <div th:text="${decision.decisionNumber}"></div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Fee decision header -->
-<div th:fragment="feeDecisionHeader">
-    <div>
+    <!-- Fee decision header -->
+    <div th:fragment="feeDecisionHeader">
+      <div class="header">
         <div class="headerLeft">
-            <div class="logo">
-                <img th:replace="~{shared/espoo-logo :: logo-img}" />
-            </div>
+          <div class="logo">
+            <img th:replace="~{shared/espoo-logo :: logo-img}" />
+          </div>
         </div>
         <div class="headerRight">
-            <div class="left-column">
-                <div th:text="${isReliefDecision} ? #{heading.relief.1} : #{heading.1}"></div>
-                <div th:text="${isReliefDecision} ? #{heading.relief.2} : #{heading.2}"></div>
-                <div th:text="#{heading.3}"></div>
-                <div th:text="#{heading.4}"></div>
-                <div th:text="#{heading.5(${approvedAt})}"></div>
+          <div class="left-column">
+            <div
+              th:text="${isReliefDecision} ? #{heading.relief.1} : #{heading.1}"
+            ></div>
+            <div
+              th:text="${isReliefDecision} ? #{heading.relief.2} : #{heading.2}"
+            ></div>
+            <div th:text="#{heading.3}"></div>
+            <div th:text="#{heading.4}"></div>
+            <div th:text="#{heading.5(${approvedAt})}"></div>
+          </div>
+          <div class="right-column">
+            <div>
+              <span th:text="#{header.pageNumber}"></span>
+              <span class="page-number"></span>
             </div>
-            <div class="right-column">
-                <div><span th:text="#{header.pageNumber}"></span> <span class="page-number"></span></div>
-                <div><br/></div>
-                <div th:text="#{decisionNumber}"></div>
-                <div th:text="${decisionNumber}"></div>
-            </div>
+            <div><br /></div>
+            <div th:text="#{decisionNumber}"></div>
+            <div th:text="${decisionNumber}"></div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-
-<div th:fragment="child-and-unit-details">
-    <div class="child-details">
+    <div th:fragment="child-and-unit-details">
+      <div class="child-details">
         <p>
-            <strong th:text="#{decision.details.child.prefix}">Lapsellenne</strong>
-            <span th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Etunimi Sukunimi (s. 1.1.2000)</span>
-            <br/>
-            <span th:utext="#{decision.details.date}">on tehty varhaiskasvatuspäätös varhaiskasvatukseen
-                ajalle</span>
-            <span th:replace="~{shared/common :: placement-dates}"></span>
+          <strong th:text="#{decision.details.child.prefix}"
+            >Lapsellenne</strong
+          >
+          <span
+            th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}"
+            >Etunimi Sukunimi (s. 1.1.2000)</span
+          >
+          <br />
+          <span th:utext="#{decision.details.date}"
+            >on tehty varhaiskasvatuspäätös varhaiskasvatukseen ajalle</span
+          >
+          <span
+            th:replace="~{shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
+          ></span>
         </p>
-    </div>
+      </div>
 
-    <div th:unless="${hideDaycareTime}" class="daycare-time-container">
+      <div th:unless="${hideDaycareTime}" class="daycare-time-container">
         <span class="strong" th:text="#{decision.daycareTime} + ': '"></span>
-        <span th:if="${isPartTimeDecision}" th:text="#{decision.partTime}"></span>
-        <span th:unless="${isPartTimeDecision}" th:text="#{decision.fullTime}"></span>
-    </div>
+        <span
+          th:if="${isPartTimeDecision}"
+          th:text="#{decision.partTime}"
+        ></span>
+        <span
+          th:unless="${isPartTimeDecision}"
+          th:text="#{decision.fullTime}"
+        ></span>
+      </div>
 
-    <div class="decision-details-container">
+      <div class="decision-details-container">
         <div class="decision-details">
-            <div class="strong" th:text="#{decision.placement.unit}">Varhaiskasvatusyksikkö</div>
-            <div style="text-indent: 6em">
-                <div th:text="${decisionUnitName}"></div>
-                <div th:if="${not #strings.isEmpty(decision.unit.streetAddress)}"
-                     th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></div>
-            </div>
+          <div class="strong" th:text="#{decision.placement.unit}">
+            Varhaiskasvatusyksikkö
+          </div>
+          <div style="text-indent: 6em">
+            <div th:text="${decisionUnitName}"></div>
+            <div
+              th:if="${not #strings.isEmpty(decision.unit.streetAddress)}"
+              th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"
+            ></div>
+          </div>
         </div>
 
         <div class="decision-details">
-            <div class="strong" th:text="#{decision.unitsupervisor}">Varhaiskasvatusyksikön johtaja</div>
-            <div style="text-indent: 6em">
-                <div th:text="${manager.name}"></div>
-                <div th:text="${manager.phone}"></div>
-            </div>
+          <div class="strong" th:text="#{decision.unitsupervisor}">
+            Varhaiskasvatusyksikön johtaja
+          </div>
+          <div style="text-indent: 6em">
+            <div th:text="${manager.name}"></div>
+            <div th:text="${manager.phone}"></div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<div th:fragment="decision-details">
-    <div class="decision-details-container">
+    <div th:fragment="decision-details">
+      <div class="decision-details-container">
         <p>
-            <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
-            <span th:replace="~{shared/common :: format-date(${decision.sentDate})}"></span>
+          <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
+          <span
+            th:replace="~{shared/common :: format-date(${decision.sentDate})}"
+          ></span>
         </p>
         <p>
-            <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
+          <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
         </p>
         <div th:text="${decision.createdBy}"></div>
-        <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
-        <div th:utext="#{decision.approver.title}">Varhaiskasvatuksen palveluohjaaja</div>
-        <div th:utext="#{decision.approver.unit}">Varhaiskasvatuksen palveluohjaus</div>
+        <div th:utext="#{decision.approver.additionalInfo}">
+          (allekirjoitettu koneellisesti)
+        </div>
+        <div th:utext="#{decision.approver.title}">
+          Varhaiskasvatuksen palveluohjaaja
+        </div>
+        <div th:utext="#{decision.approver.unit}">
+          Varhaiskasvatuksen palveluohjaus
+        </div>
         <div th:utext="#{decision.approver.address}"></div>
         <div th:utext="#{decision.approver.phoneNumber}"></div>
         <div>
-            <span th:text="#{decision.approver.email.heading}"></span>
-            <a th:href="'mailto:' + #{decision.approver.email.email}"
-               th:text="#{decision.approver.email.email}"></a>
+          <span th:text="#{decision.approver.email.heading}"></span>
+          <a
+            th:href="'mailto:' + #{decision.approver.email.email}"
+            th:text="#{decision.approver.email.email}"
+          ></a>
         </div>
+      </div>
+      <p th:text="#{decision.inform.guardians}"></p>
     </div>
-    <p>
-    <div th:text="#{decision.inform.guardians}"></div>
-    </p>
-</div>
 
-<div th:fragment="acceptance-form">
-    <div class="accept-placement-wrapper">
-        <div th:replace="~{shared/acceptance-form :: daycare-unit-details}"></div>
+    <div th:fragment="acceptance-form">
+      <div class="accept-placement-wrapper">
+        <div
+          th:replace="~{shared/acceptance-form :: daycare-unit-details}"
+        ></div>
         <p th:unless="${hideDaycareTime}">
-            <span th:text="#{decision.daycareTime} + ': '"></span>
-            <span th:if="${isPartTimeDecision}" th:text="#{decision.partTime}"></span>
-            <span th:unless="${isPartTimeDecision}" th:text="#{decision.fullTime}"></span>
+          <span th:text="#{decision.daycareTime} + ': '"></span>
+          <span
+            th:if="${isPartTimeDecision}"
+            th:text="#{decision.partTime}"
+          ></span>
+          <span
+            th:unless="${isPartTimeDecision}"
+            th:text="#{decision.fullTime}"
+          ></span>
         </p>
 
         <p th:utext="#{decision.acceptance.furtherInstructions}"></p>
         <div th:replace="~{shared/acceptance-form :: signatures}"></div>
         <div th:replace="~{shared/acceptance-form :: return-section}"></div>
+      </div>
     </div>
-</div>
 
-<div th:fragment="address">
-    <div class="address">
-        <div th:text="${guardian.lastName}"></div>
-        <div th:text="${guardian.firstName}"></div>
-        <div th:text="${sendAddress.row1}"></div>
-        <div th:text="${sendAddress.row2}"></div>
-        <div th:if="${not #strings.isEmpty(sendAddress.row3)}" th:text="${sendAddress.row3}"></div>
-    </div>
-</div>
-
-<span th:fragment="placement-dates">
-  <span th:text="${#temporals.format(decision.startDate, 'd.M.yyyy')}
+    <span th:fragment="date-range (startDate, endDate)">
+      <span
+        th:text="${#temporals.format(startDate, 'd.M.yyyy')}
                   + ' - ' +
-                  ${#temporals.format(decision.endDate, 'd.M.yyyy')}"></span>
-</span>
+                  (${#temporals.format(endDate, 'd.M.yyyy')} ?: '')"
+      ></span>
+    </span>
 
+    <span th:fragment="decision-date">
+      <div
+        class="detail"
+        th:text="#{text.decision.sentDate(${#temporals.format(sentDate, 'd.M.yyyy')})}"
+      ></div>
+    </span>
 
-<span th:fragment="decision-date">
-    <div class="detail" th:text="#{text.decision.sentDate(${#temporals.format(decision.sentDate, 'd.M.yyyy')})}"></div>
-</span>
-
-<span th:fragment="format-date (myDate)">
-    <span th:text="${#temporals.format(myDate, 'd.M.yyyy')}"></span>
-</span>
-
-</body>
+    <span th:fragment="format-date (myDate)">
+      <span th:text="${#temporals.format(myDate, 'd.M.yyyy')}"></span>
+    </span>
+  </body>
 </html>

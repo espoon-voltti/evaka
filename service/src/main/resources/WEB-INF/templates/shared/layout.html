@@ -1,0 +1,212 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+  <head>
+    <meta charset="utf-8" />
+    <style th:replace="~{shared/common.html :: css}"></style>
+    <style th:replace="~{shared/acceptance-form.html :: css}"></style>
+    <style th:fragment="css">
+      * {
+        line-height: 1.4;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        font-size: 13px;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 21mm 21mm 21mm 21mm;
+      }
+
+      table.layout-container-table {
+        page-break-after: always;
+        -fs-table-paginate: paginate;
+      }
+
+      table.layout-container-table > thead {
+        display: table-header-group;
+      }
+
+      table.layout-container-table .layout-content {
+        page-break-inside: avoid;
+      }
+
+      .page {
+        page-break-after: always;
+      }
+
+      .page:last-child {
+        page-break-after: avoid;
+      }
+
+      .page.first-page {
+        margin-top: 40mm;
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+
+      .page * {
+        font-size: 13px;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .page h1 {
+        margin-bottom: 10mm;
+        padding-bottom: 2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .page h2 {
+        font-weight: 700;
+      }
+
+      .page h3 {
+        font-weight: 600;
+      }
+
+      .page .child {
+        margin-bottom: 5mm;
+      }
+
+      .page .decision-details {
+        margin-top: 5mm;
+        margin-bottom: 5mm;
+        page-break-inside: avoid;
+      }
+
+      .page .decision-details-container {
+        margin-top: 5mm;
+        margin-bottom: 10mm;
+        page-break-inside: auto;
+      }
+
+      .left-column {
+        width: 61%;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        vertical-align: top;
+      }
+
+      .right-column {
+        width: 37%;
+        display: inline-block;
+        text-align: right;
+        margin: 0;
+        padding: 0;
+        vertical-align: top;
+      }
+
+      .row:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .accept-placement-wrapper {
+        margin-top: 50px;
+      }
+
+      .accept-placement-wrapper .details-section {
+        margin-bottom: 30px;
+      }
+
+      .accept-placement-wrapper .detail-label {
+        display: inline-block;
+        width: 200px;
+        text-align: left;
+        margin-right: 20px;
+      }
+
+      .accept-placement-wrapper .accept-heading {
+        display: block;
+        margin-bottom: 30px;
+      }
+
+      .accept-placement-wrapper .checkbox-heading-wrapper {
+        margin-bottom: 30px;
+      }
+
+      .strong {
+        font-weight: bold;
+      }
+
+      a,
+      a:visited {
+        text-decoration: underline;
+      }
+
+      .page-number:before {
+        content: counter(page);
+      }
+
+      .col-row {
+        margin-bottom: 2px;
+      }
+
+      .col-row .left {
+        display: inline-block;
+        width: 100px;
+      }
+
+      .col-row .right {
+        display: inline-block;
+        width: 300px;
+      }
+
+      address {
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <table class="layout-container-table">
+      <thead>
+        <tr>
+          <th layout:fragment="header">
+            <header th:replace="~{ shared/common :: header}"></header>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <address
+              th:if="${guardian} != null or ${sendAddress} != null"
+              layout:fragment="address"
+            >
+              <th:block th:if="${guardian} != null">
+                <div th:text="${guardian.lastName}"></div>
+                <div th:text="${guardian.firstName}"></div>
+              </th:block>
+              <th:block th:if="${sendAddress} != null">
+                <div th:text="${sendAddress.row1}"></div>
+                <div th:text="${sendAddress.row2}"></div>
+                <div
+                  th:if="${not #strings.isEmpty(sendAddress.row3)}"
+                  th:text="${sendAddress.row3}"
+                ></div>
+              </th:block>
+            </address>
+
+            <div class="layout-content" layout:fragment="content"></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

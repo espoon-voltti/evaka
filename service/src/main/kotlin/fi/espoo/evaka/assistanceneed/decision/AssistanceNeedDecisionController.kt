@@ -225,7 +225,13 @@ class AssistanceNeedDecisionController(
                 )
 
                 if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
-                    asyncJobRunner.plan(tx, listOf(AsyncJob.SendAssistanceNeedDecisionEmail(id)))
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.SendAssistanceNeedDecisionEmail(id),
+                            AsyncJob.CreateAssistanceNeedDecisionPdf(id)
+                        )
+                    )
                 }
             }
         }

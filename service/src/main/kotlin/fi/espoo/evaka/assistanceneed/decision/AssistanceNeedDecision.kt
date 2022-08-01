@@ -56,7 +56,9 @@ data class AssistanceNeedDecision(
 
     val assistanceLevel: AssistanceLevel?,
     val assistanceServicesTime: FiniteDateRange?,
-    val motivationForDecision: String?
+    val motivationForDecision: String?,
+
+    val hasDocument: Boolean
 ) {
     fun toForm() = AssistanceNeedDecisionForm(
         decisionNumber,
@@ -235,7 +237,8 @@ data class UnitInfoBasics(
 data class AssistanceNeedDecisionChild(
     @PropagateNull
     val id: ChildId?,
-    val name: String?
+    val name: String?,
+    val dateOfBirth: LocalDate?
 )
 
 data class AssistanceNeedDecisionCitizenListItem(
