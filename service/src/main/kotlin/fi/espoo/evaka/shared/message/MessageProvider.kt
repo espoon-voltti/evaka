@@ -13,6 +13,8 @@ interface IMessageProvider {
     fun getFeeDecisionContent(lang: MessageLanguage): String
     fun getVoucherValueDecisionHeader(lang: MessageLanguage): String
     fun getVoucherValueDecisionContent(lang: MessageLanguage): String
+    fun getAssistanceNeedDecisionHeader(lang: MessageLanguage): String
+    fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String
 
     /**
      * Returns address used for decisions when person has restricted details enabled or missing address.

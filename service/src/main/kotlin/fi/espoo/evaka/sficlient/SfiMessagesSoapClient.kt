@@ -111,8 +111,8 @@ class SfiMessagesSoapClient(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun send(msg: SfiMessage) {
-        val pdfBytes = getDocument(msg.documentBucket, msg.documentKey).bytes
+    override fun send(msg: SfiMessage, bytes: ByteArray?) {
+        val pdfBytes = bytes ?: getDocument(msg.documentBucket, msg.documentKey).bytes
 
         logger.info(
             mapOf(

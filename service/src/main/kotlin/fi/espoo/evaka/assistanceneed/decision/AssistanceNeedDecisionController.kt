@@ -229,7 +229,8 @@ class AssistanceNeedDecisionController(
                         tx,
                         listOf(
                             AsyncJob.SendAssistanceNeedDecisionEmail(id),
-                            AsyncJob.CreateAssistanceNeedDecisionPdf(id)
+                            AsyncJob.CreateAssistanceNeedDecisionPdf(id),
+                            AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
                         )
                     )
                 }

@@ -11,6 +11,7 @@ import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -37,6 +38,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -45,10 +47,10 @@ private val logger = KotlinLogging.logger {}
 
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    lateinit var assistanceNeedDecisionService: AssistanceNeedDecisionService
 
     @Autowired
-    lateinit var assistanceNeedDecisionService: AssistanceNeedDecisionService
+    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
@@ -112,6 +114,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
         }
     }
 
@@ -179,9 +182,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `posting without guardians adds guardians before saving`() {
-        db.transaction { tx ->
-            tx.insertGuardian(testAdult_1.id, testChild_1.id)
-        }
         val testDecisionWithoutGuardian = testDecision.copy(guardianInfo = setOf())
         val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
             AssistanceNeedDecisionRequest(
@@ -322,6 +322,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `Decision maker can make a decision`() {
+        MockSfiMessagesClient.clearMessages()
+
         val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
             AssistanceNeedDecisionRequest(
                 decision = testDecision
@@ -375,6 +377,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             decisionMaker,
             HttpStatus.BAD_REQUEST
         )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val messages = MockSfiMessagesClient.getMessages()
+        assertEquals(1, messages.size)
+        assertContains(messages[0].first.messageContent, "päätös tuen tarpeesta")
+        assertNotNull(messages[0].second)
     }
 
     @Test
