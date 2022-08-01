@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isEqual from 'lodash/isEqual'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -9,10 +10,18 @@ import { useSearchParams } from 'react-router-dom'
  * Keeps current URL's query params up to date with the queryParams object
  */
 export function useSyncQueryParams(queryParams: Record<string, string>) {
-  const [, setSearchParams] = useSearchParams()
-  const newSearchParams = new URLSearchParams(queryParams).toString()
+  const [currentParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
-    setSearchParams(newSearchParams)
-  }, [newSearchParams, setSearchParams])
+    if (
+      !isEqual(
+        Object.fromEntries(Array.from(currentParams.entries())),
+        queryParams
+      )
+    ) {
+      setSearchParams(queryParams, {
+        replace: true
+      })
+    }
+  }, [currentParams, queryParams, setSearchParams])
 }
