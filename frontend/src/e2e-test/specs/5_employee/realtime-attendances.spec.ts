@@ -416,6 +416,13 @@ describe('Realtime staff attendances', () => {
       const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
+      })
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
@@ -429,8 +436,15 @@ describe('Realtime staff attendances', () => {
         groupStaff.id,
         mockedToday.addDays(1)
       )
-      await modal.setDepartureTime(0, '15:00')
+      await modal.setDepartureTime(0, '16:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '→ – 16:00',
+        hours: '33:00'
+      })
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
@@ -442,7 +456,7 @@ describe('Realtime staff attendances', () => {
         rowIx: 1,
         nth: 1,
         arrival: '→',
-        departure: '15:00'
+        departure: '16:00'
       })
     })
     test('Multiple new entries can be added', async () => {
@@ -464,6 +478,13 @@ describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(3, '14:30')
       await modal.setDepartureTime(3, '15:00')
       await modal.save()
+
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
+      })
+
       await modal.close()
       await calendarPage.assertArrivalDeparture({
         rowIx: 1,
@@ -479,6 +500,29 @@ describe('Realtime staff attendances', () => {
         arrival: '13:00',
         departure: '14:30'
       })
+    })
+    test('Gaps in attendances are warned about', async () => {
+      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      await modal.setDepartureTime(0, '12:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(1, groupId)
+      await modal.setType(1, 'TRAINING')
+      await modal.setArrivalTime(1, '12:30')
+      await modal.setDepartureTime(1, '13:00')
+      await modal.addNewAttendance()
+      await modal.setGroup(2, groupId)
+      await modal.setType(2, 'PRESENT')
+      await modal.setArrivalTime(2, '13:20')
+      await modal.setDepartureTime(2, '14:30')
+
+      await waitUntilEqual(
+        () => modal.gapWarning(1),
+        'Kirjaus puuttuu välillä 12:00 – 12:30'
+      )
+      await waitUntilEqual(
+        () => modal.gapWarning(2),
+        'Kirjaus puuttuu välillä 13:00 – 13:20'
+      )
     })
   })
   describe('Entries to multiple groups', () => {
@@ -533,6 +577,26 @@ describe('Realtime staff attendances', () => {
         arrival: '07:00',
         departure: '15:00'
       })
+    })
+  })
+  describe('Staff count sums in the table', () => {
+    beforeEach(async () => {
+      calendarPage = await openAttendancesPage()
+    })
+    test('Total staff counts', async () => {
+      await waitUntilEqual(() => calendarPage.personCountSum(0), '– hlö')
+      await calendarPage.selectGroup(groupId)
+      await calendarPage.clickEditOnRow(0)
+      await calendarPage.setNthArrivalDeparture(0, 0, '12:00', '15:00')
+      await calendarPage.setNthArrivalDeparture(0, 4, '09:00', '10:00')
+      await calendarPage.setNthArrivalDeparture(0, 5, '10:00', '13:00')
+      await calendarPage.closeInlineEditor()
+      await waitUntilEqual(() => calendarPage.personCountSum(0), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(4), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(5), '1 hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(1), '– hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(2), '– hlö')
+      await waitUntilEqual(() => calendarPage.personCountSum(3), '– hlö')
     })
   })
 })

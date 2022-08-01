@@ -172,6 +172,7 @@ export interface EmployeeAttendance {
   groups: UUID[]
   hasFutureAttendances: boolean
   lastName: string
+  plannedAttendances: PlannedStaffAttendance[]
 }
 
 /**

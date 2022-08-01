@@ -5,8 +5,12 @@
 import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import isEqual from 'lodash/isEqual'
+import mapValues from 'lodash/mapValues'
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
 import partition from 'lodash/partition'
 import sortBy from 'lodash/sortBy'
+import uniqBy from 'lodash/uniqBy'
 import React, {
   useMemo,
   useState,
@@ -16,22 +20,29 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
+import { getStaffAttendances } from 'employee-frontend/api/staff-attendance'
+import { getUnitAttendanceReservations } from 'employee-frontend/api/unit'
+import { Loading, Result } from 'lib-common/api'
+import {
+  OperationalDay,
+  UnitAttendanceReservations
+} from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
-  UpsertStaffAndExternalAttendanceRequest,
-  UpsertStaffAttendance
+  UpsertStaffAttendance,
+  StaffAttendanceResponse,
+  UpsertStaffAndExternalAttendanceRequest
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -139,6 +150,132 @@ export default React.memo(function StaffAttendanceTable({
     [extraAttendances]
   )
 
+  const [modalStaffAttendance, setModalStaffAttendance] = useState<
+    Result<StaffAttendanceResponse>
+  >(Loading.of())
+  const [modalAttendance, setModalAttendance] = useState<
+    Result<UnitAttendanceReservations>
+  >(Loading.of())
+  const loadModalStaffAttendance = useRestApi(
+    getStaffAttendances,
+    setModalStaffAttendance
+  )
+  const loadModalAttendance = useRestApi(
+    getUnitAttendanceReservations,
+    setModalAttendance
+  )
+
+  const modalOperationalDays = useMemo(
+    () => modalAttendance.getOrElse(undefined)?.operationalDays,
+    [modalAttendance]
+  )
+
+  const changeDate = useCallback(
+    async (getNearestDay: GetNearestDayFn, newStartOfWeek: LocalDate) => {
+      if (!detailsModal) return
+
+      const nearestNextDate =
+        (modalOperationalDays &&
+          getNearestDay(modalOperationalDays, detailsModal.date)) ??
+        getNearestDay(operationalDays, detailsModal.date)
+
+      if (!nearestNextDate) {
+        const nextWeekRange = new FiniteDateRange(
+          newStartOfWeek,
+          newStartOfWeek.addDays(6)
+        )
+
+        const [_, attendance] = await Promise.all([
+          loadModalStaffAttendance(unitId, nextWeekRange),
+          loadModalAttendance(unitId, nextWeekRange)
+        ])
+
+        const newOperationalDays =
+          attendance.getOrElse(undefined)?.operationalDays
+
+        if (!newOperationalDays) return
+
+        const newPreviousDay = getNearestDay(
+          newOperationalDays,
+          detailsModal.date
+        )
+
+        if (!newPreviousDay) return
+
+        setDetailsModal({
+          ...detailsModal,
+          date: newPreviousDay.date
+        })
+        return
+      }
+
+      setDetailsModal({
+        ...detailsModal,
+        date: nearestNextDate.date
+      })
+    },
+    [
+      detailsModal,
+      loadModalAttendance,
+      loadModalStaffAttendance,
+      modalOperationalDays,
+      operationalDays,
+      unitId
+    ]
+  )
+
+  const personCountSums = useMemo(
+    () =>
+      mapValues(
+        groupBy(
+          staffRows
+            .flatMap(({ attendances, employeeId }) =>
+              uniqBy(
+                attendances
+                  .filter(
+                    ({ type, groupId }) =>
+                      type !== 'OTHER_WORK' &&
+                      type !== 'TRAINING' &&
+                      groupFilter(groupId)
+                  )
+                  .flatMap(({ departed, arrived }) =>
+                    [arrived.toLocalDate()].concat(
+                      departed?.toLocalDate() ?? []
+                    )
+                  ),
+                ({ date }) => date
+              ).map((date) => ({
+                date,
+                employeeId
+              }))
+            )
+            .concat(
+              extraAttendances
+                .filter(
+                  ({ type, groupId }) =>
+                    type !== 'OTHER_WORK' &&
+                    type !== 'TRAINING' &&
+                    groupFilter(groupId)
+                )
+                .flatMap(({ departed, arrived, name }) =>
+                  uniqBy(
+                    [arrived.toLocalDate()].concat(
+                      departed?.toLocalDate() ?? []
+                    ),
+                    ({ date }) => date
+                  ).map((date) => ({
+                    employeeId: `extra-${name}`,
+                    date
+                  }))
+                )
+            ),
+          ({ date }) => date.toString()
+        ),
+        (rows) => uniqBy(rows, ({ employeeId }) => employeeId).length
+      ),
+    [extraAttendances, groupFilter, staffRows]
+  )
+
   return (
     <>
       <Table data-qa="staff-attendances-table">
@@ -193,22 +330,92 @@ export default React.memo(function StaffAttendanceTable({
             />
           ))}
         </Tbody>
+        <tfoot>
+          <BottomSumTr>
+            <BottomSumTd>{i18n.unit.staffAttendance.personCount}</BottomSumTd>
+            {operationalDays.map(({ date }) => (
+              <BottomSumTd
+                centered
+                key={date.toString()}
+                data-qa="person-count-sum"
+              >
+                {personCountSums[date.toString()] ?? '–'}{' '}
+                {i18n.unit.staffAttendance.personCountAbbr}
+              </BottomSumTd>
+            ))}
+            <BottomSumTd />
+          </BottomSumTr>
+        </tfoot>
       </Table>
       {detailsModal && (
         <StaffAttendanceDetailsModal
           unitId={unitId}
           employeeId={detailsModal.employeeId}
           date={detailsModal.date}
-          attendances={staffAttendances}
+          attendances={staffAttendances.concat(
+            modalStaffAttendance.getOrElse(undefined)?.staff ?? []
+          )}
           close={closeModal}
-          reloadStaffAttendances={reloadStaffAttendances}
+          reloadStaffAttendances={() => {
+            void reloadStaffAttendances()
+
+            if (
+              !operationalDays.some(({ date }) =>
+                date.isEqual(detailsModal.date)
+              )
+            ) {
+              const startOfWeek = detailsModal.date.startOfWeek()
+              void loadModalStaffAttendance(
+                unitId,
+                new FiniteDateRange(startOfWeek, startOfWeek.addDays(6))
+              )
+            }
+          }}
           groups={groups}
+          onPreviousDate={() =>
+            changeDate(
+              getNearestPreviousDay,
+              detailsModal.date.startOfWeek().subWeeks(1)
+            )
+          }
+          onNextDate={() =>
+            changeDate(
+              getNearestNextDay,
+              detailsModal.date.startOfWeek().addWeeks(1)
+            )
+          }
         />
       )}
     </>
   )
 })
 
+type GetNearestDayFn = (
+  days: OperationalDay[],
+  targetDate: LocalDate
+) => OperationalDay | undefined
+
+const getNearestPreviousDay: GetNearestDayFn = (days, targetDate) =>
+  maxBy(
+    days.filter(({ date }) => date.isBefore(targetDate)),
+    ({ date }) => date.differenceInDays(targetDate)
+  )
+
+const getNearestNextDay: GetNearestDayFn = (days, targetDate) =>
+  minBy(
+    days.filter(({ date }) => date.isAfter(targetDate)),
+    ({ date }) => date.differenceInDays(targetDate)
+  )
+
+const BottomSumTr = styled.tr`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  font-weight: ${fontWeights.semibold};
+`
+
+const BottomSumTd = styled.td<{ centered?: boolean }>`
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
+  text-align: ${(p) => (p.centered ? 'center' : 'left')};
+`
 const OvernightAwareTimeRangeEditor = React.memo(
   function OvernightAwareTimeRangeEditor({
     attendance: { arrivalDate, departureDate, startTime, endTime },
