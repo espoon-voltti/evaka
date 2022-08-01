@@ -33,6 +33,7 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
+const mockedTime = LocalDate.of(2021, 8, 16)
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
 let applicationReadView: ApplicationReadView
@@ -49,7 +50,7 @@ beforeEach(async () => {
   await insertDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   applicationWorkbench = new ApplicationWorkbenchPage(page)
   applicationReadView = new ApplicationReadView(page)
 })
@@ -168,7 +169,7 @@ describe('Application transitions', () => {
   })
 
   test('Placement dialog works', async () => {
-    const preferredStartDate = LocalDate.of(2021, 8, 16)
+    const preferredStartDate = mockedTime
 
     const group = await Fixture.daycareGroup()
       .with({ daycareId: fixtures.daycareFixture.id })
