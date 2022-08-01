@@ -561,7 +561,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   groupFilter,
   selectedGroup,
   weekSavingFns,
-  hasFutureAttendances
+  hasFutureAttendances: _hasFutureAttendances
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
 
@@ -594,6 +594,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   )
 
   const [form, setForm] = useState<FormAttendance[]>()
+  const [hasFutureAttendances, setHasFutureAttendances] = useState(false)
 
   const [hasHiddenDailyAttendances, setHasHiddenDailyAttendances] =
     useState(false)
@@ -635,6 +636,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
         .map(({ date }) => emptyAttendanceOn(date))
 
       setForm([...formAttendances, ...newEmptyAttendances])
+      setHasFutureAttendances(_hasFutureAttendances)
       return
     }
 
@@ -680,7 +682,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
 
       return [...restoredAttendances, ...newEmptyAttendances]
     })
-  }, [groupFilter, attendances, operationalDays, editing])
+    setHasFutureAttendances(_hasFutureAttendances)
+  }, [
+    groupFilter,
+    attendances,
+    operationalDays,
+    editing,
+    _hasFutureAttendances
+  ])
 
   const createAttendance = useCallback(
     (date: LocalDate, data: Partial<FormAttendance>) =>

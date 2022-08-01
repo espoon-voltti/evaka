@@ -310,6 +310,20 @@ describe('Realtime staff attendances', () => {
         departure: '→'
       })
     })
+    test('Navigating to the previous week does not delete an open attendance', async () => {
+      const rowIx = 0
+      await calendarPage.clickEditOnRow(rowIx)
+      await calendarPage.setNthArrivalDeparture(0, 0, '15:00', '')
+      await calendarPage.closeInlineEditor()
+      await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
+      await calendarPage.changeWeekToDate(mockedToday)
+      await calendarPage.assertArrivalDeparture({
+        rowIx,
+        nth: 0,
+        arrival: '15:00',
+        departure: '–'
+      })
+    })
     test('A warning is shown if open range is added with a future attendance', async () => {
       await calendarPage.clickEditOnRow(0)
       await calendarPage.setNthArrivalDeparture(0, 6, '09:00', '10:00')
