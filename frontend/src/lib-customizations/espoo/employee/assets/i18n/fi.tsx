@@ -3446,6 +3446,7 @@ export const fi = {
       selectAll: 'Valitse kaikki',
       unselectAll: 'Poista kaikki',
       providerType: 'Yksikön toimintamuoto',
+      careType: 'Yksikön hoitomuoto',
       undo: 'Kumoa edellinen muutos'
     },
     pilotFeatures: {

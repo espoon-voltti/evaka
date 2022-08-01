@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure, Result, Success } from 'lib-common/api'
 import {
+  CareType,
+  careTypes,
   ProviderType,
   UnitFeatures
 } from 'lib-common/generated/api-types/daycare'
@@ -25,7 +27,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Thead, Tr } from 'lib-components/layout/Table'
-import { H1 } from 'lib-components/typography'
+import { H1, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 
@@ -86,17 +88,23 @@ export default React.memo(function UnitFeaturesPage() {
 
   const [filteredProviderTypes, setFilteredProviderTypes] =
     useState<ProviderType[]>(unitProviderTypes)
+  const [filteredCareTypes, setFilteredCareTypes] = useState<CareType[]>(
+    Array.from(careTypes)
+  )
 
   const filteredUnits = useMemo(
     () =>
-      isEqual(unitProviderTypes, filteredProviderTypes)
+      isEqual(unitProviderTypes, filteredProviderTypes) &&
+      isEqual(careTypes, filteredCareTypes)
         ? units
         : units.map((units) =>
-            units.filter((unit) =>
-              filteredProviderTypes.includes(unit.providerType)
+            units.filter(
+              (unit) =>
+                filteredProviderTypes.includes(unit.providerType) &&
+                unit.type.some((type) => filteredCareTypes.includes(type))
             )
           ),
-    [filteredProviderTypes, units]
+    [filteredProviderTypes, filteredCareTypes, units]
   )
 
   const undo = useCallback(() => {
@@ -121,6 +129,9 @@ export default React.memo(function UnitFeaturesPage() {
     <Container>
       <ContentArea opaque>
         <H1>{i18n.unitFeatures.page.title}</H1>
+
+        <LabelLike>{i18n.unitFeatures.page.providerType}</LabelLike>
+        <Gap size="xs" />
         <MultiSelect
           options={unitProviderTypes}
           getOptionId={(pt) => pt}
@@ -131,7 +142,22 @@ export default React.memo(function UnitFeaturesPage() {
           value={filteredProviderTypes}
           onChange={setFilteredProviderTypes}
         />
+
+        <Gap size="xs" />
+
+        <LabelLike>{i18n.unitFeatures.page.careType}</LabelLike>
+        <Gap size="xs" />
+        <MultiSelect
+          options={careTypes}
+          getOptionId={(pt) => pt}
+          placeholder={i18n.unitFeatures.page.careType}
+          getOptionLabel={(providerType) => i18n.common.types[providerType]}
+          value={filteredCareTypes}
+          onChange={setFilteredCareTypes}
+        />
+
         <Gap size="s" />
+
         <AsyncButton
           disabled={!undoAction}
           onClick={undo}

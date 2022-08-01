@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.AreaId
@@ -97,6 +98,7 @@ data class DaycareDecisionCustomization(
 
 data class DaycareCareArea(val id: AreaId, val name: String, val shortName: String)
 
+@ConstList("careTypes")
 enum class CareType {
     CLUB, FAMILY, CENTRE, GROUP_FAMILY, PRESCHOOL, PREPARATORY_EDUCATION
 }
@@ -129,5 +131,6 @@ data class UnitFeatures(
     val id: DaycareId,
     val name: String,
     val features: List<PilotFeature>,
-    val providerType: ProviderType
+    val providerType: ProviderType,
+    val type: List<CareType>
 )
