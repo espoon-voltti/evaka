@@ -112,15 +112,20 @@ function getOccupancyAverage(
   dates: Date[]
 ): number | null {
   const capacitySum = dates.reduce((sum, date) => {
-    return sum + (row.occupancies[toOccupancyKey(date)]?.sum ?? 0)
+    return sum + (row.occupancies[toOccupancyKey(date)]?.percentage ?? 0)
   }, 0)
 
   const caretakersSum = dates.reduce((sum, date) => {
-    return sum + (row.occupancies[toOccupancyKey(date)]?.caretakers ?? 0)
+    return (
+      sum +
+      (typeof row.occupancies[toOccupancyKey(date)]?.percentage === 'number'
+        ? 1
+        : 0)
+    )
   }, 0)
 
   if (caretakersSum > 0) {
-    return (100 * capacitySum) / (7 * caretakersSum)
+    return capacitySum / caretakersSum
   } else {
     return null
   }
@@ -233,11 +238,13 @@ function calculateAverages(
         const dividend =
           usedValues === 'headcount'
             ? row.occupancies[dateKey]?.headcount ?? 0
-            : 100 * (row.occupancies[dateKey]?.sum ?? 0)
+            : row.occupancies[dateKey]?.percentage ?? 0
         const divider =
           usedValues === 'headcount'
             ? 1
-            : resolveCaretakers(row.occupancies[dateKey]?.caretakers)
+            : typeof row.occupancies[dateKey]?.percentage === 'number'
+            ? 1
+            : 0
 
         dateData[areaKey] = dateData[areaKey] ?? {}
         dateData[areaKey][dateKey] = dateData[areaKey][dateKey] ?? {
@@ -278,13 +285,6 @@ function calculateAverages(
       : null
 
   return { average, byArea }
-}
-
-function resolveCaretakers(caretakers: number | null | undefined): number {
-  if (caretakers === null || caretakers === undefined) {
-    return 0
-  }
-  return 7 * caretakers
 }
 
 function formatAverage(
