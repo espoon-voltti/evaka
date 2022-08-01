@@ -13,7 +13,7 @@ import Container from 'lib-components/layout/Container'
 import Footer from '../../Footer'
 import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'
-import { useUser } from '../../auth/state'
+import { useStrongUser } from '../../auth/state'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { getApplication } from '../api'
@@ -21,7 +21,7 @@ import { getApplication } from '../api'
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const user = useUser()
+  const user = useStrongUser()
   const [apiData] = useApiState(
     () => getApplication(applicationId),
     [applicationId]

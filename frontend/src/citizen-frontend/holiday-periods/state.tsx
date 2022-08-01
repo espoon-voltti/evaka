@@ -65,7 +65,7 @@ export const HolidayPeriodsContextProvider = React.memo(
       .map<QuestionnaireAvailability>((val) =>
         !val || !user
           ? false
-          : val.questionnaire.requiresStrongAuth && user.userType !== 'ENDUSER'
+          : val.questionnaire.requiresStrongAuth && user.authLevel !== 'STRONG'
           ? 'with-strong-auth'
           : true
       )

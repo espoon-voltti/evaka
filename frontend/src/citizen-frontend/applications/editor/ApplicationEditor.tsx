@@ -35,7 +35,7 @@ import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDay
 import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
 import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
 import { renderResult } from '../../async-rendering'
-import { useUser } from '../../auth/state'
+import { useStrongUser } from '../../auth/state'
 import { useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import useTitle from '../../useTitle'
@@ -74,7 +74,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
   const navigate = useNavigate()
-  const user = useUser()
+  const user = useStrongUser()
 
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)

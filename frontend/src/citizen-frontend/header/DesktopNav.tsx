@@ -48,7 +48,7 @@ export default React.memo(function DesktopNav({
   return (
     <UnwrapResult result={user} loading={() => null}>
       {(user) => {
-        const isEnduser = user?.userType === 'ENDUSER'
+        const isEnduser = user?.authLevel === 'STRONG'
         const maybeLockElem = !isEnduser && (
           <FontAwesomeIcon icon={faLockAlt} size="xs" />
         )
@@ -269,7 +269,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
     setOpen(false)
   )
   const showUserAttentionIndicator = !user.email
-  const maybeLockElem = user.userType !== 'ENDUSER' && (
+  const maybeLockElem = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 

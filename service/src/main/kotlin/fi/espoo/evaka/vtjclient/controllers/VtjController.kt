@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -38,7 +39,7 @@ class VtjController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable(value = "personId") personId: PersonId
-    ): CitizenUserDetails {
+    ): UserDetailsResponse {
         Audit.VtjRequest.log(targetId = personId)
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
         val notFound = { throw NotFound("Person not found") }
@@ -48,16 +49,33 @@ class VtjController(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val person = tx.getPersonById(personId) ?: return@transaction null
-                when (person.identity) {
+                val person = tx.getPersonById(personId) ?: notFound()
+                val (userDetails, ssn, children) = when (person.identity) {
                     is ExternalIdentifier.NoID ->
-                        CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user))
+                        Triple(
+                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user)),
+                            (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
+                            emptyList()
+                        )
                     is ExternalIdentifier.SSN ->
                         personService.getPersonWithChildren(tx, user, personId)
-                            ?.let { CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)) }
+                            ?.let {
+                                Triple(
+                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)),
+                                    it.socialSecurityNumber!!,
+                                    it.children.map { Child.from(it) }
+                                )
+                            }
+                            ?: notFound()
+                }
+
+                if (user.authLevel == CitizenAuthLevel.STRONG) {
+                    UserDetailsResponse.Strong(userDetails, ssn, children)
+                } else {
+                    UserDetailsResponse.Weak(userDetails)
                 }
             }
-        } ?: notFound()
+        }
     }
 
     internal data class Child(
@@ -88,14 +106,12 @@ class VtjController(
         val firstName: String,
         val lastName: String,
         val preferredName: String,
-        val socialSecurityNumber: String,
         val streetAddress: String,
         val postalCode: String,
         val postOffice: String,
         val phone: String,
         val backupPhone: String,
         val email: String?,
-        val children: List<Child>,
         val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
@@ -104,14 +120,12 @@ class VtjController(
                 firstName = person.firstName,
                 lastName = person.lastName,
                 preferredName = person.preferredName,
-                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                 streetAddress = person.streetAddress,
                 postalCode = person.postalCode,
                 postOffice = person.postOffice,
                 phone = person.phone,
                 backupPhone = person.backupPhone,
                 email = person.email,
-                children = emptyList(),
                 accessibleFeatures = accessibleFeatures
             )
 
@@ -120,16 +134,29 @@ class VtjController(
                 firstName = person.firstName,
                 lastName = person.lastName,
                 preferredName = person.preferredName,
-                socialSecurityNumber = person.socialSecurityNumber!!,
                 streetAddress = person.address.streetAddress,
                 postalCode = person.address.postalCode,
                 postOffice = person.address.city,
                 phone = person.phone,
                 backupPhone = person.backupPhone,
                 email = person.email,
-                children = person.children.map { Child.from(it) },
                 accessibleFeatures = accessibleFeatures
             )
         }
+    }
+
+    internal sealed class UserDetailsResponse(
+        open val details: CitizenUserDetails,
+        val authLevel: CitizenAuthLevel
+    ) {
+        internal class Strong(
+            override val details: CitizenUserDetails,
+            val socialSecurityNumber: String,
+            val children: List<Child>
+        ) : UserDetailsResponse(details, CitizenAuthLevel.STRONG)
+
+        internal class Weak(
+            override val details: CitizenUserDetails
+        ) : UserDetailsResponse(details, CitizenAuthLevel.WEAK)
     }
 }

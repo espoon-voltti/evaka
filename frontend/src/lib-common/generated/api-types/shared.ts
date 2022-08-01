@@ -9,15 +9,6 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.shared.security.CitizenFeatures
-*/
-export interface CitizenFeatures {
-  childDocumentation: boolean
-  messages: boolean
-  reservations: boolean
-}
-
-/**
 * Generated from fi.espoo.evaka.shared.domain.Coordinate
 */
 export interface Coordinate {

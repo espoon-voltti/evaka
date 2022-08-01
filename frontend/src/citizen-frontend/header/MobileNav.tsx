@@ -232,7 +232,7 @@ const Navigation = React.memo(function Navigation({
 }) {
   const t = useTranslation()
 
-  const maybeLockElem = user.userType !== 'ENDUSER' && (
+  const maybeLockElem = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
@@ -379,7 +379,7 @@ const UserNameSubMenu = React.memo(function UserNameSubMenu({
     () => setShow((previous) => !previous),
     [setShow]
   )
-  const maybeLockElem = user.userType !== 'ENDUSER' && (
+  const maybeLockElem = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 

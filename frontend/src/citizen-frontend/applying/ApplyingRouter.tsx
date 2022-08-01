@@ -33,7 +33,7 @@ export interface Props {
 export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
   const t = useTranslation()
   const user = useUser()
-  const isEndUser = user?.userType === 'ENDUSER'
+  const isEndUser = user?.authLevel === 'STRONG'
   const { pathname } = useLocation()
 
   const maybeLockElem = !isEndUser && (
