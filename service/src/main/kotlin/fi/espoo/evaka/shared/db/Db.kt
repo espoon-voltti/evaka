@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.array.SqlArrayType
-import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.mapper.ColumnMapper
@@ -38,6 +37,7 @@ import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
+import kotlin.reflect.KClass
 
 /**
  * Registers the given JDBI column mapper, which will be used to map data from database to values of type T.
@@ -183,7 +183,8 @@ inline fun <reified T : Any> StatementContext.mapNullableColumn(rs: ResultSet, n
  *
  * This function works with Kotlin better than row.getColumn().
  */
-inline fun <reified T> RowView.mapColumn(name: String, type: QualifiedType<T> = QualifiedType.of(T::class.java)): T {
+inline fun <reified T> RowView.mapColumn(name: String, vararg annotations: KClass<out Annotation>): T {
+    val type = createQualifiedType<T>(*annotations)
     val value = getColumn(name, type)
     if (null !is T && value == null) {
         throw throw IllegalStateException("Non-nullable column $name was null")
@@ -194,8 +195,7 @@ inline fun <reified T> RowView.mapColumn(name: String, type: QualifiedType<T> = 
 /**
  * Maps a row json column to a value.
  */
-inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T =
-    mapColumn(name, QualifiedType.of(object : GenericType<T>() {}).with(Json::class.java))
+inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T = mapColumn(name, Json::class)
 
 /**
  * Maps a row to a value.
