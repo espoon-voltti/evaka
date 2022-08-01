@@ -31,7 +31,7 @@ export const Truncated = styled.span`
     margin-right: ${defaultMargins.s};
   }
 `
-export const Container = styled.button<{ isRead: boolean; active: boolean }>`
+export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   text-align: left;
   width: 100%;
 

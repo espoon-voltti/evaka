@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -42,6 +44,7 @@ export default React.memo(function ThreadListItem({
       active={active}
       onClick={onClick}
       data-qa="thread-list-item"
+      tabIndex={0}
     >
       <FixedSpaceColumn>
         <Header isRead={!hasUnreadMessages}>
@@ -54,6 +57,11 @@ export default React.memo(function ThreadListItem({
             labels={i18n.messages.types}
           />
         </Header>
+        <SrOnly>
+          <Link to={`/messages/${thread.id}`} tabIndex={-1}>
+            {i18n.messages.openMessage}
+          </Link>
+        </SrOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>
@@ -78,3 +86,12 @@ export default React.memo(function ThreadListItem({
     </Container>
   )
 })
+
+const SrOnly = styled.div`
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+`
