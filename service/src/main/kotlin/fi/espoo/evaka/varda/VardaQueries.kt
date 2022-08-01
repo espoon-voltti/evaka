@@ -489,5 +489,5 @@ GROUP BY evaka_child_id
         """.trimIndent()
     )
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
+        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<List<ServiceNeedId>>("service_need_ids") }
         .toMap()

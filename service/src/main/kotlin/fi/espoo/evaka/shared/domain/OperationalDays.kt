@@ -37,7 +37,7 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays = createQuery("SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')")
-        .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<Array<Int>>("operation_days").map { it }.toSet() }
+        .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<Set<Int>>("operation_days") }
         .toList()
 
     val holidays = getHolidays(range)

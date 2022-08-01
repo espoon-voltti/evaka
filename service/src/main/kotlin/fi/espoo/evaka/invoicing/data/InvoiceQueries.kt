@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -612,7 +611,7 @@ val toDetailedInvoice = { rv: RowView ->
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
                     unitId = rv.mapColumn("unit_id"),
-                    daycareType = rv.mapColumn<Array<CareType>>("type").toSet(),
+                    daycareType = rv.mapColumn("type"),
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
                     savedCostCenter = rv.mapColumn("saved_cost_center"),

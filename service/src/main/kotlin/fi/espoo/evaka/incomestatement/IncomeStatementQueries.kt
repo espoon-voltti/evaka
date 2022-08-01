@@ -120,7 +120,7 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
             val gross = if (grossIncomeSource != null) Gross(
                 incomeSource = grossIncomeSource,
                 estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
-                otherIncome = row.mapColumn<Array<OtherIncome>>("gross_other_income").toSet(),
+                otherIncome = row.mapColumn("gross_other_income"),
                 otherIncomeInfo = row.mapColumn("gross_other_income_info"),
             ) else null
 

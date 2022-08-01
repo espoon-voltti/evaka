@@ -263,7 +263,7 @@ fun Database.Read.fetchApplicationSummaries(
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
             a.duedate,
-            f.document ->> 'preferredStartDate' as preferredStartDate,
+            (f.document ->> 'preferredStartDate')::date as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
             a.type,
             a.status AS application_status,
@@ -361,7 +361,7 @@ fun Database.Read.fetchApplicationSummaries(
                 firstName = row.mapColumn("first_name"),
                 lastName = row.mapColumn("last_name"),
                 socialSecurityNumber = row.mapColumn("social_security_number"),
-                dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
+                dateOfBirth = row.mapColumn("date_of_birth"),
                 type = row.mapColumn("type"),
                 placementType = mapRequestedPlacementType(row, "document"),
                 serviceNeed = row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
@@ -372,8 +372,8 @@ fun Database.Read.fetchApplicationSummaries(
                         row.mapColumn("serviceNeedNameEn")
                     )
                 },
-                dueDate = row.mapColumn<String?>("duedate")?.let { LocalDate.parse(it) },
-                startDate = row.mapColumn<String?>("preferredStartDate")?.let { LocalDate.parse(it) },
+                dueDate = row.mapColumn("duedate"),
+                startDate = row.mapColumn("preferredStartDate"),
                 preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
                     PreferredUnit(
                         id = DaycareId(UUID.fromString(it)),
@@ -625,7 +625,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
                 dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<Array<ApplicationAttachment>>("attachments").toList()
+                attachments = row.mapJsonColumn("attachments")
             )
         }
         .firstOrNull()
