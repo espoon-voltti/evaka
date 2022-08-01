@@ -60,8 +60,11 @@ export default React.memo(function TabAttendances() {
   const { unitInformation, unitData, filters, setFilters } =
     useContext(UnitContext)
   const [mode, setMode] = useState<CalendarMode>('month')
+  const selectedDateParam = useQuery().get('date')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(
-    LocalDate.todayInSystemTz()
+    selectedDateParam
+      ? LocalDate.parseIso(selectedDateParam)
+      : LocalDate.todayInSystemTz()
   )
   const { roles } = useContext(UserContext)
 
@@ -69,9 +72,10 @@ export default React.memo(function TabAttendances() {
   const [groupId, setGroupId] = useState<AttendanceGroupFilter>(() =>
     groupParam ? getDefaultGroup(groupParam) : null
   )
-  useSyncQueryParams(
-    groupId ? { group: groupId } : ({} as Record<string, string>)
-  )
+  useSyncQueryParams({
+    ...(groupId ? { group: groupId } : {}),
+    date: selectedDate.toString()
+  })
   const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
 
   const reservationEnabled = unitInformation
