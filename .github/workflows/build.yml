@@ -130,7 +130,7 @@ jobs:
       image: ${{ steps.build.outputs.image }}
       image_name: ${{ steps.build.outputs.image_name }}
 
-  frontend-prepare:
+  customizations:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -154,7 +154,6 @@ jobs:
       - name: Fetch files
         if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
-          cd frontend
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/build-customizations/" ./espoo-customizations/
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" ./vendor/fortawesome/
 
@@ -163,13 +162,13 @@ jobs:
         with:
           name: customizations
           path: |
-            frontend/espoo-customizations/
-            frontend/vendor/fortawesome/
+            espoo-customizations/
+            vendor/fortawesome/
           retention-days: 1
 
   frontend:
     needs:
-      - frontend-prepare
+      - customizations
       - base
       - yarn
     runs-on: ubuntu-latest
@@ -215,7 +214,7 @@ jobs:
     needs:
       - base
       - yarn
-      - frontend-prepare
+      - customizations
       - frontend
     runs-on: ubuntu-latest
     steps:
@@ -346,9 +345,16 @@ jobs:
     needs:
       - base
       - java
+      - customizations
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Download customizations
+        uses: actions/download-artifact@v3
+        with:
+          name: customizations
+          path: .
+
       - name: Build Evaka Service image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
