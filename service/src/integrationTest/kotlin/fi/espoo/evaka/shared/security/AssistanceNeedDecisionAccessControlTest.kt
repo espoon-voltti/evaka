@@ -80,7 +80,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     viewOfGuardians = null,
                     otherRepresentativeHeard = false,
                     otherRepresentativeDetails = null,
-                    assistanceLevel = null,
+                    assistanceLevels = emptySet(),
                     assistanceServicesTime = null,
                     motivationForDecision = null,
                     unreadGuardianIds = null

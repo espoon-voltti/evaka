@@ -105,7 +105,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         otherRepresentativeHeard = false,
         otherRepresentativeDetails = null,
 
-        assistanceLevel = AssistanceLevel.ENHANCED_ASSISTANCE,
+        assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
         assistanceServicesTime = null,
         motivationForDecision = "Motivation for decision"
     )
@@ -175,7 +175,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.otherRepresentativeHeard, assistanceNeedDecision.otherRepresentativeHeard)
         assertEquals(testDecision.otherRepresentativeDetails, assistanceNeedDecision.otherRepresentativeDetails)
 
-        assertEquals(testDecision.assistanceLevel, assistanceNeedDecision.assistanceLevel)
+        assertEquals(testDecision.assistanceLevels, assistanceNeedDecision.assistanceLevels)
         assertEquals(testDecision.assistanceServicesTime, assistanceNeedDecision.assistanceServicesTime)
         assertEquals(testDecision.motivationForDecision, assistanceNeedDecision.motivationForDecision)
     }
@@ -518,7 +518,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 otherRepresentativeHeard = false,
                 otherRepresentativeDetails = null,
 
-                assistanceLevel = AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME,
+                assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
                 assistanceServicesTime = FiniteDateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 6, 5)),
                 motivationForDecision = "Motivation for decision",
                 hasDocument = false,

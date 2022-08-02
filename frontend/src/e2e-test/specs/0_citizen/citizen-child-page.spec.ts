@@ -469,7 +469,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
-          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          assistanceLevels: ['SPECIAL_ASSISTANCE', 'ENHANCED_ASSISTANCE'],
           startDate: LocalDate.of(2020, 2, 5),
           endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17)
@@ -481,7 +481,7 @@ describe('Citizen children page', () => {
       await childPage.openAssistanceNeedCollapsible()
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
-        assistanceLevel: 'Erityinen tuki',
+        assistanceLevel: 'Erityinen tuki, Tehostettu tuki',
         selectedUnit: fixtures.daycareFixture.name,
         validityPeriod: '05.02.2020 – 11.05.2021',
         decisionMade: '17.01.2020',
@@ -494,7 +494,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'REJECTED',
-          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          assistanceLevels: ['ENHANCED_ASSISTANCE'],
           startDate: LocalDate.of(2022, 2, 10),
           decisionMade: LocalDate.of(2021, 1, 17)
         })
@@ -518,7 +518,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'NEEDS_WORK',
-          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          assistanceLevels: ['ENHANCED_ASSISTANCE'],
           startDate: LocalDate.of(2022, 2, 10),
           decisionMade: LocalDate.of(2021, 1, 17)
         })
@@ -529,7 +529,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'DRAFT',
-          assistanceLevel: 'ENHANCED_ASSISTANCE',
+          assistanceLevels: ['ENHANCED_ASSISTANCE'],
           startDate: LocalDate.of(2020, 2, 5),
           endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2021, 1, 17)
@@ -552,7 +552,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
-          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          assistanceLevels: ['SPECIAL_ASSISTANCE'],
           startDate: LocalDate.of(2020, 2, 5),
           endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
@@ -565,7 +565,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'REJECTED',
-          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          assistanceLevels: ['SPECIAL_ASSISTANCE'],
           startDate: LocalDate.of(2019, 2, 5),
           endDate: LocalDate.of(2020, 1, 11),
           decisionMade: LocalDate.of(2018, 1, 17),
@@ -578,7 +578,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
-          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          assistanceLevels: ['SPECIAL_ASSISTANCE'],
           startDate: LocalDate.of(2020, 2, 5),
           endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
@@ -608,7 +608,7 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
-          assistanceLevel: 'SPECIAL_ASSISTANCE',
+          assistanceLevels: ['SPECIAL_ASSISTANCE'],
           startDate: LocalDate.of(2020, 2, 5),
           endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
@@ -691,7 +691,7 @@ describe('Citizen assistance need decision page', () => {
       .with({
         selectedUnit: { id: fixtures.daycareFixture.id },
         status: 'ACCEPTED',
-        assistanceLevel: 'ENHANCED_ASSISTANCE',
+        assistanceLevels: ['ENHANCED_ASSISTANCE'],
         startDate: LocalDate.of(2020, 2, 5),
         endDate: LocalDate.of(2021, 5, 11),
         decisionMade: LocalDate.of(2021, 1, 17),

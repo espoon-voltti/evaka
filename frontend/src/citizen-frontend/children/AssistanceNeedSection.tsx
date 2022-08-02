@@ -116,21 +116,25 @@ export default React.memo(function AssistanceNeedSection({
                   </FixedSpaceRow>
                 </Td>
                 <Td data-qa="assistance-level">
-                  {decision.assistanceLevel &&
-                    {
-                      ASSISTANCE_ENDS:
-                        t.children.assistanceNeed.decisions.decision
-                          .assistanceLevel.assistanceEnds,
-                      ASSISTANCE_SERVICES_FOR_TIME:
-                        t.children.assistanceNeed.decisions.decision
-                          .assistanceLevel.assistanceServicesForTime,
-                      ENHANCED_ASSISTANCE:
-                        t.children.assistanceNeed.decisions.decision
-                          .assistanceLevel.enhancedAssistance,
-                      SPECIAL_ASSISTANCE:
-                        t.children.assistanceNeed.decisions.decision
-                          .assistanceLevel.specialAssistance
-                    }[decision.assistanceLevel]}
+                  {decision.assistanceLevels
+                    .map(
+                      (level) =>
+                        ({
+                          ASSISTANCE_ENDS:
+                            t.children.assistanceNeed.decisions.decision
+                              .assistanceLevel.assistanceEnds,
+                          ASSISTANCE_SERVICES_FOR_TIME:
+                            t.children.assistanceNeed.decisions.decision
+                              .assistanceLevel.assistanceServicesForTime,
+                          ENHANCED_ASSISTANCE:
+                            t.children.assistanceNeed.decisions.decision
+                              .assistanceLevel.enhancedAssistance,
+                          SPECIAL_ASSISTANCE:
+                            t.children.assistanceNeed.decisions.decision
+                              .assistanceLevel.specialAssistance
+                        }[level])
+                    )
+                    .join(', ')}
                 </Td>
                 <Td data-qa="validity-period">
                   {decision.startDate?.format() ?? ''} –{' '}

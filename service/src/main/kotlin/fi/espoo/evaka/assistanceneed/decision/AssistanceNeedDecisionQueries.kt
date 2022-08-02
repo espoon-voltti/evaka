@@ -30,7 +30,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
+          assistance_levels, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
           decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
           preparer_1_phone_number, preparer_2_phone_number
         )
@@ -63,7 +63,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             :viewOfGuardians,
             :otherRepresentativeHeard,
             :otherRepresentativeDetails, 
-            :assistanceLevel,
+            :assistanceLevels,
             :assistanceServicesTime,
             :motivationForDecision,
             :decisionMakerEmployeeId,
@@ -146,7 +146,7 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_services_time, motivation_for_decision,
+          assistance_levels, assistance_services_time, motivation_for_decision,
           decision_maker_employee_id, decision_maker_title, concat(dm.first_name, ' ', dm.last_name) decision_maker_name,
           preparer_1_employee_id, preparer_1_title, concat(p1.first_name, ' ', p1.last_name) preparer_1_name, p1.email preparer_1_email, preparer_1_phone_number,
           preparer_2_employee_id, preparer_2_title, concat(p2.first_name, ' ', p2.last_name) preparer_2_name, p2.email preparer_2_email, preparer_2_phone_number,
@@ -214,7 +214,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             view_of_guardians = :viewOfGuardians,
             other_representative_heard = :otherRepresentativeHeard,
             other_representative_details = :otherRepresentativeDetails,
-            assistance_level = :assistanceLevel,
+            assistance_levels = :assistanceLevels,
             assistance_services_time = :assistanceServicesTime,
             motivation_for_decision = :motivationForDecision,
             decision_maker_employee_id = :decisionMakerEmployeeId,
@@ -325,7 +325,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
     //language=sql
     val sql =
         """
-        SELECT ad.id, start_date, end_date, status, decision_made, assistance_level,
+        SELECT ad.id, start_date, end_date, status, decision_made, assistance_levels,
             selected_unit selected_unit_id, unit.name selected_unit_name,
             (:guardianId = ANY(unread_guardian_ids)) AS is_unread
         FROM assistance_need_decision ad

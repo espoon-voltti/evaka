@@ -777,7 +777,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_level, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
+          assistance_levels, assistance_services_time, motivation_for_decision, decision_maker_employee_id,
           decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
           preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids
         )
@@ -812,7 +812,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             :viewOfGuardians,
             :otherRepresentativeHeard,
             :otherRepresentativeDetails, 
-            :assistanceLevel,
+            :assistanceLevels,
             :assistanceServicesTime,
             :motivationForDecision,
             :decisionMakerEmployeeId,

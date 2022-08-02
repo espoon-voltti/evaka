@@ -21,7 +21,6 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
-import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -189,12 +188,18 @@ export default React.memo(function AssistanceNeedDecisionForm({
     [formState, setFormState]
   )
 
-  const renderAssistanceLevelRadio = useCallback(
+  const renderAssistanceLevelMultiCheckbox = useCallback(
     (level: AssistanceLevel, label: string) => (
-      <Radio
-        checked={formState.assistanceLevel === level}
+      <Checkbox
+        checked={formState.assistanceLevels.includes(level)}
         label={label}
-        onChange={() => setFieldVal({ assistanceLevel: level })}
+        onChange={(checked) =>
+          setFieldVal({
+            assistanceLevels: checked
+              ? [...formState.assistanceLevels, level]
+              : formState.assistanceLevels.filter((level2) => level !== level2)
+          })
+        }
       />
     ),
     [formState, setFieldVal]
@@ -450,12 +455,12 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <H2>{t.decisionAndValidity}</H2>
       <FixedSpaceColumn spacing={defaultMargins.s}>
         <Label>{t.futureLevelOfAssistance}</Label>
-        {renderAssistanceLevelRadio(
+        {renderAssistanceLevelMultiCheckbox(
           'ASSISTANCE_ENDS',
           t.assistanceLevel.assistanceEnds
         )}
         <FixedSpaceRow alignItems="center">
-          {renderAssistanceLevelRadio(
+          {renderAssistanceLevelMultiCheckbox(
             'ASSISTANCE_SERVICES_FOR_TIME',
             t.assistanceLevel.assistanceServicesForTime
           )}
@@ -478,11 +483,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
             }
           />
         </FixedSpaceRow>
-        {renderAssistanceLevelRadio(
+        {renderAssistanceLevelMultiCheckbox(
           'ENHANCED_ASSISTANCE',
           t.assistanceLevel.enhancedAssistance
         )}
-        {renderAssistanceLevelRadio(
+        {renderAssistanceLevelMultiCheckbox(
           'SPECIAL_ASSISTANCE',
           t.assistanceLevel.specialAssistance
         )}

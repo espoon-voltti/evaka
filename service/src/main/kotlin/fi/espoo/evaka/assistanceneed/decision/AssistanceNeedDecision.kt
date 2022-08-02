@@ -54,7 +54,7 @@ data class AssistanceNeedDecision(
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
 
-    val assistanceLevel: AssistanceLevel?,
+    val assistanceLevels: Set<AssistanceLevel>,
     val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?,
 
@@ -84,7 +84,7 @@ data class AssistanceNeedDecision(
         viewOfGuardians,
         otherRepresentativeHeard,
         otherRepresentativeDetails,
-        assistanceLevel,
+        assistanceLevels,
         assistanceServicesTime,
         motivationForDecision
     )
@@ -124,7 +124,7 @@ data class AssistanceNeedDecisionForm(
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
 
-    val assistanceLevel: AssistanceLevel?,
+    val assistanceLevels: Set<AssistanceLevel>,
     val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?
 )
@@ -251,7 +251,7 @@ data class AssistanceNeedDecisionCitizenListItem(
     @Nested("selected_unit")
     val selectedUnit: UnitInfoBasics?,
 
-    val assistanceLevel: AssistanceLevel?,
+    val assistanceLevels: Set<AssistanceLevel>,
     val isUnread: Boolean
 )
 
