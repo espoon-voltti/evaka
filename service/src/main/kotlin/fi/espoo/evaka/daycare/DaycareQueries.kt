@@ -338,7 +338,7 @@ WHERE daycare_id = :daycareId
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
     """
-    SELECT id, name, enabled_pilot_features AS features, provider_type
+    SELECT id, name, enabled_pilot_features AS features, provider_type, type
     FROM daycare
     ORDER BY name
     """.trimIndent()
@@ -384,7 +384,7 @@ fun Database.Transaction.removeUnitFeatures(
 
 fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
     """
-    SELECT id, name, enabled_pilot_features AS features, provider_type
+    SELECT id, name, enabled_pilot_features AS features, provider_type, type
     FROM daycare
     WHERE id = :id
     """.trimIndent()

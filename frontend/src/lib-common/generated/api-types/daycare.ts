@@ -134,13 +134,16 @@ export interface AreaJSON {
 /**
 * Generated from fi.espoo.evaka.daycare.CareType
 */
-export type CareType =
-  | 'CLUB'
-  | 'FAMILY'
-  | 'CENTRE'
-  | 'GROUP_FAMILY'
-  | 'PRESCHOOL'
-  | 'PREPARATORY_EDUCATION'
+export const careTypes = [
+  'CLUB',
+  'FAMILY',
+  'CENTRE',
+  'GROUP_FAMILY',
+  'PRESCHOOL',
+  'PREPARATORY_EDUCATION'
+] as const
+
+export type CareType = typeof careTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.daycare.CaretakerAmount
@@ -495,6 +498,7 @@ export interface UnitFeatures {
   id: UUID
   name: string
   providerType: ProviderType
+  type: CareType[]
 }
 
 /**
