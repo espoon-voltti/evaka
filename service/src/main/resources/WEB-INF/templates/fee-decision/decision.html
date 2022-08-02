@@ -55,7 +55,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <p th:text="#{text.table.intro}"></p>
 
-        <table>
+        <table class="full-width">
           <tbody>
             <tr>
               <td th:text="${headFullName}"></td>
@@ -125,11 +125,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <br th:if="${hasChildIncome}" />
 
-        <table>
+        <table class="full-width">
           <tbody th:each="part: ${parts}">
             <tr>
-              <td th:text="${part.childName}"></td>
-              <td th:switch="${part.placementType.name}">
+              <td class="half-width" th:text="${part.childName}"></td>
+              <td class="half-width" th:switch="${part.placementType.name}">
                 <span
                   th:case="'DAYCARE'"
                   th:text="#{text.placementType.daycare}"
