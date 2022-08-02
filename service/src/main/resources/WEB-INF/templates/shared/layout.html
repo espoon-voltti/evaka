@@ -51,7 +51,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
 
       .page.first-page {
-        margin-top: 40mm;
+        margin-top: 50mm;
       }
 
       .page-break {
@@ -168,8 +168,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         width: 300px;
       }
 
-      address {
+      .address {
         font-style: normal;
+        margin-top: -10px;
+        position: absolute;
       }
     </style>
   </head>
@@ -186,6 +188,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tr>
           <td>
             <address
+              class="address"
               th:if="${guardian} != null or ${sendAddress} != null"
               layout:fragment="address"
             >
