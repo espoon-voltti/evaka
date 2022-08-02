@@ -116,19 +116,19 @@ const Graph = React.memo(function Graph({ occupancy, shiftCareUnit }: Props) {
               </tr>
               <tr>
                 <td>{i18n.unit.occupancy.realtime.children}</td>
-                <td>{child}</td>
+                <td>{parseFloat(child.toFixed(1))}</td>
               </tr>
               <tr>
                 <td>{i18n.unit.occupancy.realtime.childrenPresent}</td>
-                <td>{childrenPresent}</td>
+                <td>{parseFloat(childrenPresent.toFixed(1))}</td>
               </tr>
               <tr>
                 <td>{i18n.unit.occupancy.realtime.staffPresent}</td>
-                <td>{staffPresent}</td>
+                <td>{parseFloat(staffPresent.toFixed(1))}</td>
               </tr>
               <tr>
                 <td>{i18n.unit.occupancy.realtime.staffRequired}</td>
-                <td>{staffRequired}</td>
+                <td>{parseFloat(staffRequired.toFixed(1))}</td>
               </tr>
             </tbody>
           </table>
@@ -233,11 +233,13 @@ function graphData(
 
   const xMin = shiftCareUnit
     ? firstStaffAttendance?.x.getTime() ?? 0
-    : min([
-        // 6 AM
-        setTime(new Date(), 6, 0),
-        staffData[0].x
-      ]).getTime()
+    : min(
+        [
+          // 6 AM
+          setTime(new Date(), 6, 0),
+          staffData[0]?.x
+        ].filter((time): time is Date => !!time)
+      ).getTime()
   const xMax = shiftCareUnit
     ? staffData[staffData.length - 1]?.x.getTime() ?? 0
     : max([
