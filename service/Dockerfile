@@ -5,6 +5,7 @@
 ARG BASE_IMAGE=evaka-java:latest
 FROM "${BASE_IMAGE}" as builder
 
+COPY ./espoo-customizations/ ./espoo-customizations/
 COPY ./service/gradle/ ./service/gradle/
 COPY ./service/custom-ktlint-rules/ ./service/custom-ktlint-rules/
 COPY ./service/buildSrc ./service/buildSrc
