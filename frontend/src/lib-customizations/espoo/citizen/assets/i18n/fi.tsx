@@ -318,6 +318,7 @@ export default {
     inboxTitle: 'Viestit',
     noMessagesInfo: 'Tässä näet saapuneet ja lähetetyt viestisi',
     emptyInbox: 'Viestilaatikkosi on tyhjä',
+    openMessage: 'Avaa viesti',
     noSelectedMessage: 'Ei valittua viestiä',
     recipients: 'Vastaanottajat',
     send: 'Lähetä',

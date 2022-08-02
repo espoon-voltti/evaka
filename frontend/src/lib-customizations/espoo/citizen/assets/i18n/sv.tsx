@@ -318,6 +318,7 @@ const sv: Translations = {
     noMessagesInfo: 'Skickade och mottagna meddelanden visas här.',
     noSelectedMessage: 'Inget valt meddelande',
     emptyInbox: 'Din inkorg är tom.',
+    openMessage: 'Öppna meddelande',
     recipients: 'Mottagare',
     send: 'Skicka',
     sender: 'Avsändare',

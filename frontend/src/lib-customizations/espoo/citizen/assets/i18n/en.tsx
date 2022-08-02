@@ -321,6 +321,7 @@ const en: Translations = {
     noMessagesInfo: 'Sent and received messages are displayed here.',
     noSelectedMessage: 'A message is not selected',
     emptyInbox: 'Your inbox is empty',
+    openMessage: 'Open message',
     recipients: 'Recipients',
     send: 'Send',
     sender: 'Sender',
