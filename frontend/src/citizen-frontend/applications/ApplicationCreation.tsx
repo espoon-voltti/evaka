@@ -23,7 +23,7 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
-import { useUser } from '../auth/state'
+import { useStrongUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
@@ -37,7 +37,7 @@ export default React.memo(function ApplicationCreation() {
   const navigate = useNavigate()
   const { childId } = useNonNullableParams<{ childId: string }>()
   const t = useTranslation()
-  const user = useUser()
+  const user = useStrongUser()
   useTitle(t, t.applications.creation.title)
   const child = useMemo(
     () => user?.children.find(({ id }) => childId === id),

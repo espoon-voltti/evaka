@@ -5,37 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
-import { CitizenFeatures } from './shared'
-import { UUID } from '../../types'
 
-/**
-* Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.Child
-*/
-export interface Child {
-  firstName: string
-  id: UUID
-  lastName: string
-  socialSecurityNumber: string
-}
-
-/**
-* Generated from fi.espoo.evaka.vtjclient.controllers.VtjController.CitizenUserDetails
-*/
-export interface CitizenUserDetails {
-  accessibleFeatures: CitizenFeatures
-  backupPhone: string
-  children: Child[]
-  email: string | null
-  firstName: string
-  id: UUID
-  lastName: string
-  phone: string
-  postOffice: string
-  postalCode: string
-  preferredName: string
-  socialSecurityNumber: string
-  streetAddress: string
-}
 
 /**
 * Generated from fi.espoo.evaka.vtjclient.dto.Nationality

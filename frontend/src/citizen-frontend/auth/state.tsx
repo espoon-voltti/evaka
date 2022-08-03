@@ -11,7 +11,11 @@ import React, {
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import { CitizenUserDetails } from 'lib-common/generated/api-types/vtjclient'
+import {
+  Child,
+  CitizenUserDetails,
+  UserDetailsResponse
+} from 'lib-common/api-types/vtjclient'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
@@ -19,19 +23,26 @@ import { client } from '../api-client'
 
 import { getAuthStatus } from './api'
 
-export type User = CitizenUserDetails & {
-  userType: 'ENDUSER' | 'CITIZEN_WEAK'
+export interface User extends CitizenUserDetails {
+  authLevel: 'STRONG' | 'WEAK'
+}
+
+export interface StrongUser extends User {
+  socialSecurityNumber: string
+  children: Child[]
 }
 
 type AuthState = {
   apiVersion: string | undefined
   user: Result<User | undefined>
+  fullUserResponse: Result<UserDetailsResponse | undefined>
   refreshAuthStatus: () => void
 }
 
 const defaultState: AuthState = {
   apiVersion: undefined,
   user: Loading.of(),
+  fullUserResponse: Loading.of(),
   refreshAuthStatus: () => undefined
 }
 
@@ -52,7 +63,14 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
   const value = useMemo(
     () => ({
       apiVersion: authStatus.map((a) => a.apiVersion).getOrElse(undefined),
-      user: authStatus.map((a) => (a.loggedIn ? a.user : undefined)),
+      user: authStatus.map((a) =>
+        a.loggedIn
+          ? { ...a.user.details, authLevel: a.user.authLevel }
+          : undefined
+      ),
+      fullUserResponse: authStatus.map((a) =>
+        a.loggedIn ? a.user : undefined
+      ),
       refreshAuthStatus
     }),
     [authStatus, refreshAuthStatus]
@@ -63,5 +81,27 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
 
 export const useUser = (): User | undefined => {
   const authContext = useContext(AuthContext)
-  return authContext.user.getOrElse(undefined)
+  const full = authContext.fullUserResponse.getOrElse(undefined)
+  return useMemo(
+    () => full && { ...full.details, authLevel: full.authLevel },
+    [full]
+  )
+}
+
+export const useStrongUser = (): StrongUser | undefined => {
+  const authContext = useContext(AuthContext)
+  const user = authContext.fullUserResponse.getOrElse(undefined)
+
+  return useMemo(
+    () =>
+      user?.authLevel === 'STRONG'
+        ? {
+            ...user.details,
+            children: user.children,
+            socialSecurityNumber: user.socialSecurityNumber,
+            authLevel: 'STRONG'
+          }
+        : undefined,
+    [user]
+  )
 }

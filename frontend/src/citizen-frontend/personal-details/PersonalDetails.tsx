@@ -127,10 +127,10 @@ export default React.memo(function PersonalDetails() {
                 phone,
                 backupPhone,
                 email,
-                userType
+                authLevel
               } = personalData
 
-              const canEdit = userType === 'ENDUSER'
+              const canEdit = authLevel === 'STRONG'
 
               return (
                 <>

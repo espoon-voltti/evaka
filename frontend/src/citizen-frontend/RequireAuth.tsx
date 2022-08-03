@@ -21,11 +21,9 @@ export default React.memo(function RequireAuth({
   const { user } = useContext(AuthContext)
 
   const isStrong = user
-    .map((usr) => usr?.userType === 'ENDUSER')
+    .map((usr) => usr?.authLevel === 'STRONG')
     .getOrElse(false)
-  const isWeak = user
-    .map((usr) => usr?.userType === 'CITIZEN_WEAK')
-    .getOrElse(false)
+  const isWeak = user.map((usr) => usr?.authLevel === 'WEAK').getOrElse(false)
   const isLoggedIn = isStrong || isWeak
 
   return isLoggedIn ? (

@@ -18,7 +18,7 @@ export const getStrongLoginUri = (path?: string) =>
 
 export const getLogoutUri = (user: User) =>
   `/api/application/auth/${
-    user?.userType === 'CITIZEN_WEAK' ? 'evaka-customer' : 'saml'
+    user?.authLevel === 'WEAK' ? 'evaka-customer' : 'saml'
   }/logout`
 
 export const headerHeightDesktop = 80
