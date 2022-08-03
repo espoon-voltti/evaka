@@ -5,7 +5,10 @@
 import classNames from 'classnames'
 import React from 'react'
 import ReactSelect, { Props } from 'react-select'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
+
+import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
+import { tabletMin } from 'lib-components/breakpoints'
 
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
 import { fontWeights } from '../../typography'
@@ -45,13 +48,33 @@ function MultiSelect<T>({
   autoFocus,
   ...props
 }: MultiSelectProps<T>) {
+  const { colors } = useTheme()
+
   return (
-    <div data-qa={props['data-qa']}>
+    <div data-qa={props['data-qa']} className="multi-select">
       <ReactSelect
         styles={{
           menu: (base) => ({
             ...base,
             zIndex: 15
+          }),
+          clearIndicator: (base) => ({
+            ...base,
+            [`@media (max-width: ${tabletMin})`]: {
+              display: 'none'
+            }
+          }),
+          group: (base) => ({
+            ...base,
+            position: 'relative',
+            ':not(:last-child):after': {
+              position: 'absolute',
+              content: '""',
+              bottom: '-2px',
+              left: defaultMargins.s,
+              right: defaultMargins.s,
+              borderBottom: `1px solid ${colors.grayscale.g15}`
+            }
           })
         }}
         autoFocus={autoFocus}
@@ -65,6 +88,13 @@ function MultiSelect<T>({
         getOptionValue={getOptionId}
         value={value}
         tabSelectsValue={false}
+        onFocus={(ev) => {
+          const parentContainer = ev.target.closest('.multi-select')
+
+          if (parentContainer) {
+            scrollIntoViewSoftKeyboard(parentContainer, 'start')
+          }
+        }}
         options={[
           {
             options: value

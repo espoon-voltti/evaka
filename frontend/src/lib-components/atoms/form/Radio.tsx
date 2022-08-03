@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 
+import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
 import { BaseProps } from '../../utils'
@@ -14,17 +15,11 @@ import { defaultMargins } from '../../white-space'
 
 const diameter = '36px'
 
-const Wrapper = styled.div<SizeProps>`
+const Wrapper = styled.div`
   display: inline-flex;
   align-items: flex-start;
   cursor: pointer;
   width: fit-content;
-
-  label {
-    margin-top: ${(p) => (p.small ? '3px' : '6px')};
-    margin-left: ${defaultMargins.s};
-    cursor: pointer;
-  }
 
   &.disabled {
     cursor: not-allowed;
@@ -46,6 +41,12 @@ const Wrapper = styled.div<SizeProps>`
       }
     }
   }
+`
+
+const LabelContainer = styled.div<SizeProps>`
+  margin-top: ${(p) => (p.small ? '3px' : '6px')};
+  margin-left: ${defaultMargins.s};
+  cursor: pointer;
 `
 
 interface SizeProps {
@@ -133,7 +134,6 @@ export default React.memo(function Radio({
         if (!disabled && onChange) onChange()
       }}
       className={classNames(className, { disabled })}
-      small={small}
       data-qa={dataQa}
     >
       <Circle small={small}>
@@ -156,7 +156,10 @@ export default React.memo(function Radio({
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>
-      <label htmlFor={id}>{props.label}</label>
+      <LabelContainer small={small}>
+        <label htmlFor={id}>{props.label}</label>
+        <ExpandingInfoButtonSlot />
+      </LabelContainer>
     </Wrapper>
   )
 })

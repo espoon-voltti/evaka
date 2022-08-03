@@ -369,7 +369,7 @@ const en: Translations = {
       preschoolInfo:
         'Free-of-charge pre-primary education is available for four hours per day. In addition, you can apply for connected early childhood education (subject to a fee) for your child. You can also apply for a service voucher for connected early childhood education. Under Preferred units, select the service voucher unit to which you want to apply. It is available in pre-primary education units in the morning before pre-primary education and in the afternoon after pre-primary education. You can submit an application for connected early childhood education at the same time as you enrol your child in pre-primary education or through a separate application after pre-primary education has started. You can also use the same application to apply for free-of-charge preparatory education and early childhood education connected to preparatory education.',
       preschoolDaycareInfo:
-        'Application for connected early childhood education for a child who will be / has been enrolled in pre-primary education or preparatory education',
+        'With this form, you can also apply for connected early childhood education for a child who will be / has been enrolled in pre-primary education or preparatory education',
       clubLabel: 'Club application',
       clubInfo:
         'The club application is used for applying for municipal clubs.',

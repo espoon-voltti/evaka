@@ -26,6 +26,7 @@ import ReturnButton, {
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ActionRow from 'lib-components/layout/ActionRow'
 import Container from 'lib-components/layout/Container'
+import { ExpandingInfoGroup } from 'lib-components/molecules/ExpandingInfo'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
 
@@ -400,11 +401,13 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       )}
 
       <Main>
-        {verifying ? renderVerificationView() : renderEditor()}
+        <ExpandingInfoGroup>
+          {verifying ? renderVerificationView() : renderEditor()}
 
-        <Gap size="m" />
+          <Gap size="m" />
 
-        {renderActions()}
+          {renderActions()}
+        </ExpandingInfoGroup>
       </Main>
     </Container>
   )

@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { ReactNode, useCallback, useState } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -105,6 +111,25 @@ type ExpandingInfoProps = {
   inlineChildren?: boolean
 }
 
+const ExpandingInfoToggleContext = React.createContext<
+  | {
+      ariaLabel: string
+      margin?: SpacingSize
+      dataQa?: string
+      toggleExpanded: () => void
+      hasSlot: (has: boolean) => void
+    }
+  | undefined
+>(undefined)
+
+const ExpandingInfoGroupContext = React.createContext<{
+  onOpen: () => void
+  addExpandingInfo: (close: () => void) => () => void
+}>({
+  onOpen: () => undefined,
+  addExpandingInfo: () => () => undefined
+})
+
 export default React.memo(function ExpandingInfo({
   children,
   info,
@@ -114,11 +139,29 @@ export default React.memo(function ExpandingInfo({
   'data-qa': dataQa,
   inlineChildren
 }: ExpandingInfoProps) {
+  const group = useContext(ExpandingInfoGroupContext)
+
   const [expanded, setExpanded] = useState<boolean>(false)
-  const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), [])
+  const toggleExpanded = useCallback(() => {
+    if (!expanded) {
+      group.onOpen()
+    }
+    setExpanded(!expanded)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded, group.onOpen])
   const close = useCallback(() => setExpanded(false), [])
 
-  const content = inlineChildren ? (
+  useEffect(
+    () => group.addExpandingInfo(close),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [group.addExpandingInfo, close]
+  )
+
+  const [hasSlot, setHasSlot] = useState(false)
+
+  const content = hasSlot ? (
+    children
+  ) : inlineChildren ? (
     <div>
       {children}
       <InlineInfoButton
@@ -141,19 +184,59 @@ export default React.memo(function ExpandingInfo({
   )
 
   return (
-    <span aria-live="polite">
-      {content}
-      {expanded && (
-        <ExpandingInfoBox
-          info={info}
-          width={width}
-          close={close}
-          data-qa={dataQa}
-        />
-      )}
-    </span>
+    <ExpandingInfoToggleContext.Provider
+      value={{
+        toggleExpanded,
+        ariaLabel,
+        margin,
+        dataQa,
+        hasSlot: setHasSlot
+      }}
+    >
+      <span aria-live="polite">
+        {content}
+        {expanded && (
+          <ExpandingInfoBox
+            info={info}
+            width={width}
+            close={close}
+            data-qa={dataQa}
+          />
+        )}
+      </span>
+    </ExpandingInfoToggleContext.Provider>
   )
 })
+
+export const ExpandingInfoButtonSlot = React.memo(
+  function ExpendingInfoButtonSlot() {
+    const info = useContext(ExpandingInfoToggleContext)
+
+    useEffect(() => {
+      info?.hasSlot(true)
+
+      return () => {
+        info?.hasSlot(false)
+      }
+    }, [info])
+
+    if (!info) {
+      return null
+    }
+
+    return (
+      <InlineInfoButton
+        onClick={(ev) => {
+          ev.stopPropagation()
+          info.toggleExpanded()
+        }}
+        aria-label={info.ariaLabel}
+        margin={info.margin ?? 'zero'}
+        data-qa={info.dataQa}
+      />
+    )
+  }
+)
 
 export const InfoButton = React.memo(function InfoButton({
   onClick,
@@ -162,7 +245,7 @@ export const InfoButton = React.memo(function InfoButton({
   className,
   'data-qa': dataQa
 }: {
-  onClick: () => void
+  onClick: React.MouseEventHandler<HTMLButtonElement>
   'aria-label': string
   margin?: SpacingSize
   className?: string
@@ -217,5 +300,34 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
         <IconButton onClick={close} icon={faTimes} gray />
       </InfoBoxContentArea>
     </InfoBoxContainer>
+  )
+})
+
+interface ExpandingInfoGroupProps {
+  children: React.ReactNode
+}
+
+export const ExpandingInfoGroup = React.memo(function ExpandingInfoGroup({
+  children
+}: ExpandingInfoGroupProps) {
+  const [closingCallbacks, setClosingCallbacks] = useState<Array<() => void>>(
+    []
+  )
+
+  return (
+    <ExpandingInfoGroupContext.Provider
+      value={{
+        addExpandingInfo: useCallback((close) => {
+          setClosingCallbacks((cbs) => [...cbs, close])
+          return () =>
+            setClosingCallbacks((cbs) => cbs.filter((cb) => cb !== close))
+        }, []),
+        onOpen: useCallback(() => {
+          closingCallbacks.forEach((cb) => cb())
+        }, [closingCallbacks])
+      }}
+    >
+      {children}
+    </ExpandingInfoGroupContext.Provider>
   )
 })
