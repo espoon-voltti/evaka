@@ -216,12 +216,16 @@ class AssistanceNeedDecisionController(
                     throw BadRequest("Already-decided decisions cannot be decided again")
                 }
 
-                tx.updateAssistanceNeedDecision(
+                if (decision.child?.id == null) {
+                    throw BadRequest("The assistance need decision needs to be associated with a child")
+                }
+
+                tx.decideAssistanceNeedDecision(
                     id,
-                    decision.copy(
-                        status = body.status,
-                        decisionMade = if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now()
-                    ).toForm()
+                    body.status,
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now(),
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
+                    else tx.getChildGuardians(decision.child.id)
                 )
 
                 if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {

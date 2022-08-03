@@ -44,6 +44,7 @@ type Props = {
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
   unreadChildDocumentsCount: number
+  unreadChildrenCount: number
   hideLoginButton: boolean
 }
 
@@ -52,6 +53,7 @@ export default React.memo(function MobileNav({
   setShowMenu,
   unreadMessagesCount,
   unreadChildDocumentsCount,
+  unreadChildrenCount,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -70,6 +72,7 @@ export default React.memo(function MobileNav({
           !showMenu &&
           (unreadMessagesCount > 0 ||
             unreadChildDocumentsCount > 0 ||
+            unreadChildrenCount > 0 ||
             !!(user && !user.email))
 
         return (
@@ -96,6 +99,7 @@ export default React.memo(function MobileNav({
                     user={user}
                     unreadMessagesCount={unreadMessagesCount}
                     unreadChildDocumentsCount={unreadChildDocumentsCount}
+                    unreadChildrenCount={unreadChildrenCount}
                   />
                 )}
                 <VerticalSpacer />
@@ -223,12 +227,14 @@ const Navigation = React.memo(function Navigation({
   close,
   user,
   unreadMessagesCount,
-  unreadChildDocumentsCount
+  unreadChildDocumentsCount,
+  unreadChildrenCount
 }: {
   close: () => void
   user: User
   unreadMessagesCount: number
   unreadChildDocumentsCount: number
+  unreadChildrenCount: number
 }) {
   const t = useTranslation()
 
@@ -266,7 +272,11 @@ const Navigation = React.memo(function Navigation({
         </StyledNavLink>
       )}
       <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
-        <NavLinkText text={t.header.nav.children} /> {maybeLockElem}
+        <NavLinkText text={t.header.nav.children} />
+        {maybeLockElem}
+        {unreadChildrenCount > 0 && (
+          <FloatingCircledChar>{unreadChildrenCount}</FloatingCircledChar>
+        )}
       </StyledNavLink>
       <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
         <NavLinkText text={t.header.nav.applications} /> {maybeLockElem}

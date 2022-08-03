@@ -1348,7 +1348,8 @@ export class Fixture {
         smallerGroup: false,
         specialGroup: false
       },
-      viewOfGuardians: null
+      viewOfGuardians: null,
+      unreadGuardianIds: null
     })
   }
 
@@ -1408,7 +1409,8 @@ export class Fixture {
         smallerGroup: true,
         specialGroup: false
       },
-      viewOfGuardians: 'VOG text'
+      viewOfGuardians: 'VOG text',
+      unreadGuardianIds: null
     })
   }
 

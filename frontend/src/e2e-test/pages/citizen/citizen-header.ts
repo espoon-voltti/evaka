@@ -24,6 +24,7 @@ export default class CitizenHeader {
   #unreadChildDocumentsCount = this.page.findAllByDataQa(
     'unread-child-documents-count'
   )
+  #unreadChildrenCount = this.page.findAllByDataQa('unread-children-count')
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
@@ -147,5 +148,14 @@ export default class CitizenHeader {
       : await waitUntilFalse(
           () => this.#unreadChildDocumentsCount.first().visible
         )
+  }
+
+  async assertUnreadChildrenCount(expectedCount: number) {
+    expectedCount != 0
+      ? await waitUntilEqual(
+          () => this.#unreadChildrenCount.first().textContent,
+          expectedCount.toString()
+        )
+      : await waitUntilFalse(() => this.#unreadChildrenCount.first().visible)
   }
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -21,7 +21,11 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
-import { getAssistanceNeedDecision } from './api'
+import {
+  getAssistanceNeedDecision,
+  markAssistanceNeedDecisionAsRead
+} from './api'
+import { ChildrenContext } from './state'
 
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
@@ -32,6 +36,15 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   )
 
   const i18n = useTranslation()
+
+  const { refreshUnreadAssistanceNeedDecisionCounts } =
+    useContext(ChildrenContext)
+
+  useEffect(() => {
+    void markAssistanceNeedDecisionAsRead(id).then(() => {
+      refreshUnreadAssistanceNeedDecisionCounts()
+    })
+  }, [id, refreshUnreadAssistanceNeedDecisionCounts])
 
   return (
     <>

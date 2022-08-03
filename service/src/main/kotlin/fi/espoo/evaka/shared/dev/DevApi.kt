@@ -1509,7 +1509,9 @@ data class DevAssistanceNeedDecision(
 
     val assistanceLevel: AssistanceLevel?,
     val assistanceServicesTime: FiniteDateRange?,
-    val motivationForDecision: String?
+    val motivationForDecision: String?,
+
+    val unreadGuardianIds: List<PersonId>?
 )
 
 data class DevChildAttendance(

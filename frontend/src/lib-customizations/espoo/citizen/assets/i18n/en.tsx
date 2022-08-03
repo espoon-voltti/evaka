@@ -1979,6 +1979,7 @@ const en: Translations = {
     },
     assistanceNeed: {
       title: 'Support need',
+      unreadCount: 'unread',
       decisions: {
         title: 'Support need decisions',
         form: 'Form',

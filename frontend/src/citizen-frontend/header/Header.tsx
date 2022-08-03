@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import sumBy from 'lodash/sumBy'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
@@ -40,18 +42,29 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     refreshUnreadVasuDocumentsCount
   } = useContext<ChildDocumentsState>(ChildDocumentsContext)
 
+  const {
+    unreadAssistanceNeedDecisionCounts,
+    refreshUnreadAssistanceNeedDecisionCounts
+  } = useContext(ChildrenContext)
+
   useEffect(() => {
     if (user) {
       refreshUnreadPedagogicalDocumentsCount()
       refreshUnreadVasuDocumentsCount()
+      refreshUnreadAssistanceNeedDecisionCounts()
     }
-  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, user])
+  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, refreshUnreadAssistanceNeedDecisionCounts, user])
 
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
 
   const unreadDocumentCount =
     (unreadPedagogicalDocumentsCount || 0) + (unreadVasuDocumentsCount || 0)
+
+  const unreadChildrenCount = useMemo(
+    () => sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count),
+    [unreadAssistanceNeedDecisionCounts]
+  )
 
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
@@ -60,6 +73,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocuments={unreadDocumentCount}
+        unreadChildren={unreadChildrenCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav
@@ -67,6 +81,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocumentsCount={unreadDocumentCount}
+        unreadChildrenCount={unreadChildrenCount}
         hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>

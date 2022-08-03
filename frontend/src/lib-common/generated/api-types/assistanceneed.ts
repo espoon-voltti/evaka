@@ -115,6 +115,7 @@ export interface AssistanceNeedDecisionCitizenListItem {
   decisionMade: LocalDate | null
   endDate: LocalDate | null
   id: UUID
+  isUnread: boolean
   selectedUnit: UnitInfoBasics | null
   startDate: LocalDate | null
   status: AssistanceNeedDecisionStatus
@@ -330,6 +331,14 @@ export interface UnitInfo {
 export interface UnitInfoBasics {
   id: UUID | null
   name: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
+*/
+export interface UnreadAssistanceNeedDecisionItem {
+  childId: UUID
+  count: number
 }
 
 /**

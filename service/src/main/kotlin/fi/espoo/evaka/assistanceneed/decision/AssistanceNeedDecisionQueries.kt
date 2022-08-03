@@ -6,11 +6,13 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
@@ -316,18 +318,23 @@ fun Database.Transaction.markAssistanceNeedDecisionAsOpened(
         .updateExactlyOne()
 }
 
-fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(childId: ChildId): List<AssistanceNeedDecisionCitizenListItem> {
+fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
+    childId: ChildId,
+    guardianId: PersonId
+): List<AssistanceNeedDecisionCitizenListItem> {
     //language=sql
     val sql =
         """
         SELECT ad.id, start_date, end_date, status, decision_made, assistance_level,
-            selected_unit selected_unit_id, unit.name selected_unit_name
+            selected_unit selected_unit_id, unit.name selected_unit_name,
+            (:guardianId = ANY(unread_guardian_ids)) AS is_unread
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED')
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
+        .bind("guardianId", guardianId)
         .mapTo<AssistanceNeedDecisionCitizenListItem>()
         .list()
 }
@@ -358,5 +365,65 @@ fun Database.Transaction.updateAssistanceNeedDocumentKey(id: AssistanceNeedDecis
     createUpdate(sql)
         .bind("id", id)
         .bind("key", key)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
+    assistanceNeedDecisionId: AssistanceNeedDecisionId,
+    guardianId: PersonId
+) {
+    //language=sql
+    val sql =
+        """
+        UPDATE assistance_need_decision
+        SET unread_guardian_ids = array_remove(unread_guardian_ids, :guardianId)
+        WHERE id = :id
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", assistanceNeedDecisionId)
+        .bind("guardianId", guardianId)
+        .updateExactlyOne()
+}
+
+fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
+    guardianId: PersonId
+): List<UnreadAssistanceNeedDecisionItem> {
+    //language=sql
+    val sql =
+        """
+        SELECT ad.child_id, COUNT(ad.child_id) as count
+        FROM assistance_need_decision ad
+        JOIN guardian g ON g.child_id = ad.child_id AND g.guardian_id = :guardianId
+        WHERE (:guardianId = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
+        GROUP BY ad.child_id
+        """.trimIndent()
+    return createQuery(sql)
+        .bind("guardianId", guardianId)
+        .mapTo<UnreadAssistanceNeedDecisionItem>()
+        .list()
+}
+
+fun Database.Transaction.decideAssistanceNeedDecision(
+    id: AssistanceNeedDecisionId,
+    status: AssistanceNeedDecisionStatus,
+    decisionMade: LocalDate?,
+    unreadGuardianIds: List<PersonId>?
+) {
+    //language=sql
+    val sql =
+        """
+        UPDATE assistance_need_decision
+        SET 
+            status = :status,
+            decision_made = :decisionMade,
+            unread_guardian_ids = :unreadGuardianIds
+        WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
+        """.trimIndent()
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("status", status)
+        .bind("decisionMade", decisionMade)
+        .bind("unreadGuardianIds", unreadGuardianIds?.toTypedArray())
         .updateExactlyOne()
 }
