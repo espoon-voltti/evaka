@@ -14,11 +14,10 @@ import fi.espoo.evaka.invoicing.domain.incomeTotal
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getNullableUUID
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.result.RowView
 import org.springframework.stereotype.Service
-import java.sql.ResultSet
 import java.time.LocalDate
 
 @Service
@@ -84,7 +83,7 @@ ORDER BY date_of_birth ASC
         val familyMembersNow =
             tx.createQuery(sql)
                 .bind("id", adultId)
-                .map { rs, _ -> toFamilyOverviewPerson(rs, jsonMapper, incomeTypesProvider) }
+                .map { row -> toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider) }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 
@@ -144,23 +143,23 @@ data class FamilyOverviewIncome(
 )
 
 fun toFamilyOverviewPerson(
-    rs: ResultSet,
+    row: RowView,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(
-        personId = PersonId(rs.getUUID("id")),
-        firstName = rs.getString("first_name"),
-        lastName = rs.getString("last_name"),
-        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-        restrictedDetailsEnabled = rs.getBoolean("restricted_details_enabled"),
-        streetAddress = rs.getString("street_address"),
-        postalCode = rs.getString("postal_code"),
-        postOffice = rs.getString("post_office"),
-        headOfChild = rs.getNullableUUID("head_of_child")?.let(::PersonId),
+        personId = row.mapColumn("id"),
+        firstName = row.mapColumn("first_name"),
+        lastName = row.mapColumn("last_name"),
+        dateOfBirth = row.mapColumn("date_of_birth"),
+        restrictedDetailsEnabled = row.mapColumn("restricted_details_enabled"),
+        streetAddress = row.mapColumn("street_address"),
+        postalCode = row.mapColumn("postal_code"),
+        postOffice = row.mapColumn("post_office"),
+        headOfChild = row.mapColumn("head_of_child"),
         income = FamilyOverviewIncome(
-            effect = rs.getString("income_effect")?.let { IncomeEffect.valueOf(it) },
-            total = rs.getString("income_data")?.let {
+            effect = row.mapColumn("income_effect"),
+            total = row.mapColumn<String?>("income_data")?.let {
                 incomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get()))
             }
         )

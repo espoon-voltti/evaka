@@ -15,15 +15,13 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.UUID
 
 // language=SQL
 private val decisionSelector =
@@ -44,41 +42,41 @@ private val decisionSelector =
         LEFT JOIN unit_manager m on u.unit_manager_id = m.id
     """.trimIndent()
 
-private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
-    id = DecisionId(rs.getUUID("id")),
-    createdBy = rs.getString("created_by"),
-    type = DecisionType.valueOf(rs.getString("type")),
-    startDate = rs.getDate("start_date").toLocalDate(),
-    endDate = rs.getDate("end_date").toLocalDate(),
-    documentKey = rs.getString("document_key"),
-    otherGuardianDocumentKey = rs.getString("other_guardian_document_key"),
-    decisionNumber = rs.getLong("number"),
-    sentDate = rs.getDate("sent_date").toLocalDate(),
-    status = DecisionStatus.valueOf(rs.getString("status")),
-    requestedStartDate = rs.getDate("requested_start_date")?.toLocalDate(),
-    resolved = rs.getDate("resolved")?.toLocalDate(),
+private fun decisionFromResultSet(row: RowView): Decision = Decision(
+    id = row.mapColumn("id"),
+    createdBy = row.mapColumn("created_by"),
+    type = row.mapColumn("type"),
+    startDate = row.mapColumn("start_date"),
+    endDate = row.mapColumn("end_date"),
+    documentKey = row.mapColumn("document_key"),
+    otherGuardianDocumentKey = row.mapColumn("other_guardian_document_key"),
+    decisionNumber = row.mapColumn("number"),
+    sentDate = row.mapColumn("sent_date"),
+    status = row.mapColumn("status"),
+    requestedStartDate = row.mapColumn("requested_start_date"),
+    resolved = row.mapColumn<HelsinkiDateTime?>("resolved")?.toLocalDate(),
     unit = DecisionUnit(
-        id = DaycareId(rs.getUUID("unit_id")),
-        name = rs.getString("name"),
-        daycareDecisionName = rs.getString("decision_daycare_name"),
-        preschoolDecisionName = rs.getString("decision_preschool_name"),
-        manager = rs.getString("manager"),
-        streetAddress = rs.getString("street_address"),
-        postalCode = rs.getString("postal_code"),
-        postOffice = rs.getString("post_office"),
-        phone = rs.getString("phone"),
-        decisionHandler = rs.getString("decision_handler"),
-        decisionHandlerAddress = rs.getString("decision_handler_address"),
-        providerType = rs.getEnum("provider_type")
+        id = row.mapColumn("unit_id"),
+        name = row.mapColumn("name"),
+        daycareDecisionName = row.mapColumn("decision_daycare_name"),
+        preschoolDecisionName = row.mapColumn("decision_preschool_name"),
+        manager = row.mapColumn("manager"),
+        streetAddress = row.mapColumn("street_address"),
+        postalCode = row.mapColumn("postal_code"),
+        postOffice = row.mapColumn("post_office"),
+        phone = row.mapColumn("phone"),
+        decisionHandler = row.mapColumn("decision_handler"),
+        decisionHandlerAddress = row.mapColumn("decision_handler_address"),
+        providerType = row.mapColumn("provider_type")
     ),
-    applicationId = ApplicationId(rs.getUUID("application_id")),
-    childId = ChildId(UUID.fromString(rs.getString("child_id"))),
-    childName = "${rs.getString("child_last_name")} ${rs.getString("child_first_name")}"
+    applicationId = row.mapColumn("application_id"),
+    childId = row.mapColumn("child_id"),
+    childName = "${row.mapColumn<String>("child_last_name")} ${row.mapColumn<String>("child_first_name")}"
 )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
     return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
-        .map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.first()
+        .map(::decisionFromResultSet).first()
 }
 
 fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuthorization): List<Decision> {
@@ -86,7 +84,7 @@ fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuth
     val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", childId)
     units?.let { query.bind("units", units.toTypedArray()) }
-    return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
+    return query.map(::decisionFromResultSet).list()
 }
 
 fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
@@ -96,7 +94,7 @@ fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, author
     val query = createQuery(sql).bind("id", applicationId)
     units?.let { query.bind("units", units.toTypedArray()) }
 
-    return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
+    return query.map(::decisionFromResultSet).list()
 }
 
 fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: AclAuthorization): List<Decision> {
@@ -105,7 +103,7 @@ fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: 
     val query = createQuery(sql).bind("id", guardianId)
     units?.let { query.bind("units", units.toTypedArray()) }
 
-    return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
+    return query.map(::decisionFromResultSet).list()
 }
 
 data class ApplicationDecisionRow(
