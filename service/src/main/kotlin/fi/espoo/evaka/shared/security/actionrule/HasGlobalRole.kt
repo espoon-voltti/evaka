@@ -59,7 +59,7 @@ WHERE attachment.id = ANY(:ids)
 AND evaka_user.type = 'EMPLOYEE'
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )
@@ -93,7 +93,7 @@ WHERE p.child_id = ANY(:ids)
   AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )

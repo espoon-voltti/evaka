@@ -19,7 +19,7 @@ WHERE decision_maker_employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AssistanceNeedDecisionId>()
         .toSet()
 
@@ -32,6 +32,6 @@ WHERE id = ANY(:ids)
   AND sent_for_decision IS NOT NULL
         """.trimIndent()
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AssistanceNeedDecisionId>()
         .toSet()

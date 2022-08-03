@@ -276,7 +276,7 @@ GROUP BY $groupBy, t
         .bindNullable("areaId", areaId)
         .bindNullable("providerType", providerType)
         .bindNullable("unitId", unitId)
-        .bindNullable("unitIds", aclAuth.ids?.toTypedArray())
+        .bindNullable("unitIds", aclAuth.ids)
         .bind("start", period.start)
         .bind("end", period.end)
         .map(mapper)
@@ -319,7 +319,7 @@ WHERE $daterange && :period AND $groupingId = ANY(:keys)
 """
 
     return this.createQuery(query)
-        .bind("keys", keys.map { it.groupingId }.toTypedArray())
+        .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
         .mapTo()
 }
@@ -360,7 +360,7 @@ WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = A
 """
 
     return this.createQuery(query)
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .bind("period", period)
         .mapTo<QueryResult>()
         .groupBy { it.childId }
@@ -394,7 +394,7 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
 """
 
     return this.createQuery(query)
-        .bind("keys", keys.map { it.groupingId }.toTypedArray())
+        .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
         .mapTo()
 }
@@ -407,11 +407,11 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
 ): List<DailyOccupancyValues<K>> {
     val placementPlans =
         if (type == OccupancyType.PLANNED)
-            this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId }.toTypedArray())
+            this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId })
         else
             listOf()
 
-    val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet().toTypedArray()
+    val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
     val childBirthdays = this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
         .bind("childIds", childIds)
@@ -440,7 +440,7 @@ JOIN daycare u ON pl.unit_id = u.id
 WHERE sn.placement_id = ANY(:placementIds)
 """
     )
-        .bind("placementIds", placements.map { it.placementId }.toList().toTypedArray())
+        .bind("placementIds", placements.map { it.placementId })
         .mapTo<ServiceNeed>()
         .groupBy { it.placementId }
 
@@ -543,7 +543,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         }
 }
 
-private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Array<DaycareId>): List<Placement> {
+private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Collection<DaycareId>): List<Placement> {
     return this.createQuery(
         """
 SELECT

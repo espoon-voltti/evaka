@@ -177,7 +177,7 @@ WHERE
         .bind("today", today)
         .bind("from", from)
         .bind("to", to)
-        .bind("statuses", statuses.toTypedArray())
+        .bind("statuses", statuses)
         .mapTo<QueryResult>()
         .list()
         .map {

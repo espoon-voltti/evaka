@@ -18,7 +18,7 @@ fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     val deleteSql = "DELETE FROM setting WHERE key != ALL(:keys::setting_type[])"
 
     createUpdate(deleteSql)
-        .bind("keys", settings.keys.toTypedArray())
+        .bind("keys", settings.keys)
         .execute()
 
     // language=SQL

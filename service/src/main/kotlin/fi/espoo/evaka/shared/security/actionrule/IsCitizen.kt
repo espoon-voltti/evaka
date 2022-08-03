@@ -75,7 +75,7 @@ WHERE uploaded_by = :personId
 AND id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("personId", personId)
                 .mapTo()
         }
@@ -92,7 +92,7 @@ WHERE guardian_id = :guardianId
 AND child_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
@@ -111,7 +111,7 @@ WHERE img.id = ANY(:ids)
 AND guardian_id = :guardianId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
@@ -129,7 +129,7 @@ WHERE i.id = ANY(:ids)
 AND g.guardian_id = :userId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -147,7 +147,7 @@ WHERE pd.id = ANY(:ids)
 AND g.guardian_id = :guardianId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
@@ -166,7 +166,7 @@ WHERE a.id = ANY(:ids)
 AND g.guardian_id = :guardianId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
@@ -184,7 +184,7 @@ WHERE cd.id = ANY(:ids)
 AND g.guardian_id = :userId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -202,7 +202,7 @@ WHERE placement.id = ANY(:ids)
 AND guardian_id = :guardianId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }
@@ -218,7 +218,7 @@ FROM assistance_need_decision ad
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_id = ad.child_id)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -240,7 +240,7 @@ WHERE guardian_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -259,7 +259,7 @@ AND decision.id = ANY(:ids)
 AND decision.sent_date IS NOT NULL
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -276,7 +276,7 @@ WHERE person_id = :userId
 AND id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", citizenId)
                 .mapTo()
         }
@@ -293,7 +293,7 @@ WHERE id = ANY(:ids)
 AND guardian_id = :guardianId
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("guardianId", guardianId)
                 .mapTo()
         }

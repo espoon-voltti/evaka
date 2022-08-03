@@ -263,7 +263,7 @@ JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
 """
         )
-            .bind("placementIds", placements.map { it.id }.toTypedArray())
+            .bind("placementIds", placements.map { it.id })
             .map { row ->
                 row.mapColumn<DateRange>("range") to row.mapRow<ServiceNeedValue>()
             }

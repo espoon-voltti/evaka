@@ -82,7 +82,7 @@ fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuth
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", childId)
-    units?.let { query.bind("units", units.toTypedArray()) }
+    units?.let { query.bind("units", units) }
     return query.map(::decisionFromResultSet).list()
 }
 
@@ -91,7 +91,7 @@ fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, author
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", applicationId)
-    units?.let { query.bind("units", units.toTypedArray()) }
+    units?.let { query.bind("units", units) }
 
     return query.map(::decisionFromResultSet).list()
 }
@@ -100,7 +100,7 @@ fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: 
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", guardianId)
-    units?.let { query.bind("units", units.toTypedArray()) }
+    units?.let { query.bind("units", units) }
 
     return query.map(::decisionFromResultSet).list()
 }

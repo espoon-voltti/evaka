@@ -79,7 +79,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """.trimIndent()
     return createQuery(sql)
-        .bindNullable("units", authorizedUnits.ids?.toTypedArray())
+        .bindNullable("units", authorizedUnits.ids)
         .mapTo<PartnersInDifferentAddressReportRow>()
         .toList()
 }

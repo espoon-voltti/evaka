@@ -127,7 +127,7 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
     """
 
     return createQuery(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
 }
@@ -185,7 +185,7 @@ fun Database.Read.getInvoiceIdsByDates(range: FiniteDateRange, areas: List<Strin
 
     return createQuery(sql)
         .bind("range", range)
-        .bind("areas", areas.toTypedArray())
+        .bind("areas", areas)
         .bind("draft", InvoiceStatus.DRAFT)
         .mapTo<InvoiceId>()
         .toList()
@@ -364,7 +364,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
 
     createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
         .bind("status", InvoiceStatus.DRAFT.toString())
-        .bind("draftIds", draftIds.toTypedArray())
+        .bind("draftIds", draftIds)
         .execute()
 }
 
@@ -406,7 +406,7 @@ AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(:invoiceIds)
     """.trimIndent()
 )
-    .bind("invoiceIds", invoiceIds.toTypedArray())
+    .bind("invoiceIds", invoiceIds)
     .execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
@@ -494,7 +494,7 @@ private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) 
     if (invoiceIds.isEmpty()) return
 
     createUpdate("DELETE FROM invoice_row WHERE invoice_id = ANY(:invoiceIds)")
-        .bind("invoiceIds", invoiceIds.toTypedArray())
+        .bind("invoiceIds", invoiceIds)
         .execute()
 }
 

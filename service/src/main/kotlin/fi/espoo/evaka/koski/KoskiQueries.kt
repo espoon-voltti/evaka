@@ -37,8 +37,8 @@ WHERE kvsr.void_date IS NULL
 AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
 AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
 """
-    ).bind("personIds", params.personIds.toTypedArray())
-        .bind("daycareIds", params.daycareIds.toTypedArray())
+    ).bind("personIds", params.personIds)
+        .bind("daycareIds", params.daycareIds)
         .bind("today", today)
         .mapTo<KoskiStudyRightKey>()
         .list()

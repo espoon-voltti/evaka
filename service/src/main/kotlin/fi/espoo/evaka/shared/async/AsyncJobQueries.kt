@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 import java.util.UUID
@@ -41,7 +40,7 @@ FROM async_job
 WHERE completed_at IS NULL
 AND type = ANY(:jobTypes)
 """
-    ).bind("jobTypes", jobTypes.map { it.name }.toTypedArray())
+    ).bind("jobTypes", jobTypes.map { it.name })
         .mapTo<Int>()
         .one()
 
@@ -69,7 +68,7 @@ SET
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
 """
-    ).bind("jobTypes", jobTypes.map { it.name }.toTypedArray())
+    ).bind("jobTypes", jobTypes.map { it.name })
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(

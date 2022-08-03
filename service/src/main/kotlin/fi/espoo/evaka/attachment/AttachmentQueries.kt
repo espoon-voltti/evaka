@@ -136,7 +136,7 @@ fun Database.Transaction.associateAttachments(
         """.trimIndent()
     )
         .bind("incomeStatementId", incomeStatementId)
-        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("attachmentIds", attachmentIds)
         .bind("personId", personId)
         .execute()
 
@@ -159,7 +159,7 @@ fun Database.Transaction.associateIncomeAttachments(
         """.trimIndent()
     )
         .bind("incomeId", incomeId)
-        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("attachmentIds", attachmentIds)
         .bind("personId", personId)
         .execute()
 

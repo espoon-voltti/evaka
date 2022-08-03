@@ -270,7 +270,7 @@ FROM daily_service_time
 WHERE child_id = ANY(:childIds)
     """.trimIndent()
 )
-    .bind("childIds", childIds.toTypedArray())
+    .bind("childIds", childIds)
     .map { row -> row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times }
     .toList()
     .groupBy { it.first }

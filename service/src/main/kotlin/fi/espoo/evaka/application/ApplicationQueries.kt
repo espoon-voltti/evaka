@@ -140,7 +140,7 @@ fun Database.Read.activePlacementExists(
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .bind("types", placementTypes.toTypedArray())
+        .bind("types", placementTypes)
         .bind("today", today)
         .mapTo<Int>()
         .list()
@@ -419,7 +419,7 @@ fun Database.Read.fetchApplicationSummaries(
         """.trimIndent()
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
     val unitMap = createQuery(unitSql)
-        .bind("unitIds", unitIds.toTypedArray())
+        .bind("unitIds", unitIds)
         .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
         .toMap()
 
@@ -639,7 +639,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
             """.trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap = createQuery(unitSql)
-            .bind("unitIds", unitIds.toTypedArray())
+            .bind("unitIds", unitIds)
             .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
             .toMap()
 
@@ -897,12 +897,12 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
 
         // language=SQL
         createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
 
         // language=SQL
         createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
 
         applicationIds.forEach { applicationId ->
@@ -920,7 +920,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
 
         // language=SQL
         createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
     }
 }

@@ -29,7 +29,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
     WHERE group_id = ANY(:groupIds)
     """.trimIndent()
 )
-    .bind("groupIds", groupIds.toTypedArray())
+    .bind("groupIds", groupIds)
     .mapTo<GroupNote>()
     .list()
 

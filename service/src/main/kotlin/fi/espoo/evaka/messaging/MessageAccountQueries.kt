@@ -64,7 +64,7 @@ AND (
 )
 """
     return this.createQuery(sql)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<AuthorizedMessageAccount>()
         .toSet()
 }
@@ -77,7 +77,7 @@ fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<Strin
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("ids", accountIds.toTypedArray())
+        .bind("ids", accountIds)
         .mapTo<String>()
         .list()
 }
@@ -163,7 +163,7 @@ common_guardians AS (
 SELECT id, child_id FROM common_guardians
         """.trimIndent()
     )
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<AccountToChild>()
         .list()
 

@@ -86,7 +86,7 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
-        .bind("units", authorizedUnits.ids?.toTypedArray())
+        .bind("units", authorizedUnits.ids)
         .bind("from", from)
         .bind("to", to)
         .mapTo<MissingHeadOfFamilyReportRow>()

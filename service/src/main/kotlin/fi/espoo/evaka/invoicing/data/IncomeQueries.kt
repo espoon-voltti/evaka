@@ -161,7 +161,7 @@ fun Database.Read.getIncomesFrom(
         """
 
     return createQuery(sql)
-        .bind("personIds", personIds.toTypedArray())
+        .bind("personIds", personIds)
         .bind("from", from)
         .map(toIncome(mapper, incomeTypesProvider.get()))
         .toList()

@@ -169,7 +169,7 @@ fun Database.Transaction.deleteAssistanceBasisOptionRefsByNeedId(needId: Assista
         """.trimIndent()
     return createUpdate(sql)
         .bind("need_id", needId)
-        .bind("excluded", excluded.toTypedArray())
+        .bind("excluded", excluded)
         .execute()
 }
 

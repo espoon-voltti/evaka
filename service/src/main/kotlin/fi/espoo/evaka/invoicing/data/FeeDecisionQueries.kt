@@ -248,7 +248,7 @@ private fun Database.Transaction.deleteChildren(decisionIds: List<FeeDecisionId>
     if (decisionIds.isEmpty()) return
 
     createUpdate("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
-        .bind("decisionIds", decisionIds.toTypedArray())
+        .bind("decisionIds", decisionIds)
         .execute()
 }
 
@@ -256,7 +256,7 @@ fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }
 
@@ -407,7 +407,7 @@ WHERE decision.id = ANY(:ids)
 """
 
     return createQuery(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<FeeDecision>()
         .merge()
 }
@@ -423,7 +423,7 @@ ORDER BY part.child_date_of_birth DESC
 """
 
     return createQuery(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<FeeDecisionDetailed>()
         .merge()
 }
@@ -465,7 +465,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
             if (period != null) query.bind("period", period)
             else query
         }
-        .let { query -> if (status != null) query.bind("status", status.map { it.name }.toTypedArray()) else query }
+        .let { query -> if (status != null) query.bind("status", status.map { it.name }) else query }
         .mapTo<FeeDecision>()
         .merge()
 }
@@ -624,7 +624,7 @@ fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId)
 
 fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
     createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }
 
@@ -643,6 +643,6 @@ SELECT
 )
     .bind("headOfFamilyId", headOfFamilyId)
     .bind("partnerId", partnerId)
-    .bind("childIds", childIds.toTypedArray())
+    .bind("childIds", childIds)
     .mapTo<Boolean>()
     .first()

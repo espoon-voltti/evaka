@@ -331,7 +331,7 @@ LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(:unitIds)
 """
     )
-        .bind("unitIds", unitIds.toTypedArray())
+        .bind("unitIds", unitIds)
         .bind("date", date)
         .mapTo<UnitStats>()
         .toList()

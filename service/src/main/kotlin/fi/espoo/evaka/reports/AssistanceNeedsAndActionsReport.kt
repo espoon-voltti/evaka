@@ -170,7 +170,7 @@ ORDER BY ca.name, u.name, g.name
         """.trimIndent()
     )
         .bind("targetDate", date)
-        .bind("units", authorizedUnits.ids?.toTypedArray())
+        .bind("units", authorizedUnits.ids)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
         .list()

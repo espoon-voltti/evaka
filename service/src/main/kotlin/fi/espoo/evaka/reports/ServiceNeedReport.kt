@@ -68,10 +68,9 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: A
         ORDER BY care_area_name, unit_name, ages.age
         """.trimIndent()
 
-    @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
-        .bind("units", authorizedUnits.ids?.toTypedArray())
+        .bind("units", authorizedUnits.ids)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<ServiceNeedReportRow>()
         .toList()

@@ -135,7 +135,7 @@ WHERE
     AND (valid_to IS NULL OR valid_to >= :from)
         """.trimIndent()
     )
-        .bind("personIds", personIds.toTypedArray())
+        .bind("personIds", personIds)
         .bind("from", from)
         .mapTo<FeeAlteration>()
         .toList()

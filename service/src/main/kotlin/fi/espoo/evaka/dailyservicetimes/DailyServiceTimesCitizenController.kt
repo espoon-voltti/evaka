@@ -66,6 +66,6 @@ fun Database.Transaction.deleteDailyServiceTimesNotifications(notificationIds: L
 DELETE FROM daily_service_time_notification WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", notificationIds.toTypedArray())
+        .bind("ids", notificationIds)
         .execute()
 }

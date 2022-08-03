@@ -268,7 +268,7 @@ private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStateme
 private fun Database.SqlStatement<*>.bindGross(gross: Gross) {
     bind("grossIncomeSource", gross.incomeSource)
     bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
-    bind("grossOtherIncome", gross.otherIncome.toTypedArray())
+    bind("grossOtherIncome", gross.otherIncome)
     bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
 }
 
@@ -532,16 +532,16 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
 ): Paged<IncomeStatementAwaitingHandler> {
     val count = createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
         .bind("today", today)
-        .bind("areas", areas.toTypedArray())
-        .bind("providerTypes", providerTypes.toTypedArray())
+        .bind("areas", areas)
+        .bind("providerTypes", providerTypes)
         .bind("sentStartDate", sentStartDate)
         .bind("sentEndDate", sentEndDate)
         .mapTo<Int>()
         .one()
     val rows = createQuery("""$awaitingHandlerQuery LIMIT :pageSize OFFSET :offset""")
         .bind("today", today)
-        .bind("areas", areas.toTypedArray())
-        .bind("providerTypes", providerTypes.toTypedArray())
+        .bind("areas", areas)
+        .bind("providerTypes", providerTypes)
         .bind("sentStartDate", sentStartDate)
         .bind("sentEndDate", sentEndDate)
         .bind("pageSize", pageSize)
@@ -590,6 +590,6 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
     )
         .bind("today", HelsinkiDateTime.now().toLocalDate())
         .bind("guardianId", guardianId)
-        .bind("invoicedPlacementTypes", PlacementType.invoiced().toTypedArray())
+        .bind("invoicedPlacementTypes", PlacementType.invoiced())
         .mapTo<ChildBasicInfo>()
         .list()

@@ -190,7 +190,7 @@ FROM voucher_value_decision
 WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<VoucherValueDecision>()
         .toList()
 }
@@ -258,7 +258,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }
 
@@ -508,7 +508,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
     val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
     createUpdate(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("status", status)
         .execute()
 }
@@ -532,7 +532,7 @@ fun Database.Transaction.setVoucherValueDecisionType(id: VoucherValueDecisionId,
 
 fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDecisionId>, now: HelsinkiDateTime) {
     createUpdate("UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("now", now)
         .execute()
@@ -559,7 +559,7 @@ fun Database.Transaction.annulVoucherValueDecisions(ids: List<VoucherValueDecisi
     if (ids.isEmpty()) return
 
     createUpdate("UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("status", VoucherValueDecisionStatus.ANNULLED)
         .bind("now", now)
         .execute()
@@ -573,6 +573,6 @@ fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
 
 fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }

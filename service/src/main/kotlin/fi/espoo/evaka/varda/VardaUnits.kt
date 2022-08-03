@@ -74,7 +74,7 @@ fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunici
         .bind("ophMunicipalityCode", ophMunicipalityCode)
         .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
         .bind("sourceSystem", sourceSystem)
-        .bind("providerTypes", unitTypesToUpload.toTypedArray())
+        .bind("providerTypes", unitTypesToUpload)
         .mapTo<VardaUnit>()
         .toList()
 }

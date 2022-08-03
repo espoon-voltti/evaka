@@ -422,6 +422,6 @@ fun Database.Transaction.decideAssistanceNeedDecision(
         .bind("id", id)
         .bind("status", status)
         .bind("decisionMade", decisionMade)
-        .bind("unreadGuardianIds", unreadGuardianIds?.toTypedArray())
+        .bind("unreadGuardianIds", unreadGuardianIds)
         .updateExactlyOne()
 }

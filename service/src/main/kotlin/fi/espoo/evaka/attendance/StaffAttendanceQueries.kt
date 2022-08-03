@@ -371,7 +371,7 @@ fun Database.Read.getGroupsForEmployees(employeeIds: Set<EmployeeId>): Map<Emplo
     GROUP BY employee_id
     """.trimIndent()
 )
-    .bind("employeeIds", employeeIds.toTypedArray())
+    .bind("employeeIds", employeeIds)
     .mapTo<EmployeeGroups>()
     .associateBy({ it.employeeId }, { it.groupIds })
 
@@ -448,7 +448,7 @@ SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attend
 WHERE employee_id = ANY(:employeeIds) AND (tstzrange(start_time, end_time) && tstzrange(:startTime, :endTime))
 """
     )
-        .bind("employeeIds", employeeIds.toTypedArray())
+        .bind("employeeIds", employeeIds)
         .bind("startTime", HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT))
         .bind("endTime", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT))
         .map { row -> Pair(row.mapColumn<EmployeeId>("employee_id"), row.mapRow<PlannedStaffAttendance>()) }
@@ -477,5 +477,5 @@ WHERE employee_id = :employeeId AND tstzrange(arrived, departed) && :timeRange A
 )
     .bind("employeeId", employeeId)
     .bind("timeRange", timeRange)
-    .bind("attendanceIds", attendanceIds.toTypedArray())
+    .bind("attendanceIds", attendanceIds)
     .execute()

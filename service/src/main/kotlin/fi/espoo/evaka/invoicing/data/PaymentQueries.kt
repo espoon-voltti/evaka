@@ -52,7 +52,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
         WHERE p.id = ANY(:ids)
         """
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<Payment>()
         .list()
 }
@@ -111,7 +111,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
         """
     )
         .bind("searchTerms", params.searchTerms)
-        .bind("area", params.area.toTypedArray())
+        .bind("area", params.area)
         .bindNullable("unit", params.unit)
         .bind("includeMissingDetails", includeMissingDetails)
         .bind("status", params.status)

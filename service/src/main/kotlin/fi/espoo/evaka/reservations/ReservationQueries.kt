@@ -78,7 +78,7 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId:
     this.createUpdate(
         "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
     )
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .bind("questionnaireId", questionnaireId)
         .execute()
 }

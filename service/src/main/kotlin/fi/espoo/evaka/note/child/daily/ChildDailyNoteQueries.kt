@@ -54,7 +54,7 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, to
         )
         """.trimIndent()
     )
-        .bind("groupIds", groupIds.toTypedArray())
+        .bind("groupIds", groupIds)
         .bind("today", today)
         .mapTo<ChildDailyNote>()
         .list()

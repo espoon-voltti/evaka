@@ -175,7 +175,7 @@ fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>
     val sql =
         """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()
 
-    createUpdate(sql).bind("applicationIds", applicationIds.toTypedArray()).execute()
+    createUpdate(sql).bind("applicationIds", applicationIds).execute()
 }
 
 private val decisionUnitQuery =

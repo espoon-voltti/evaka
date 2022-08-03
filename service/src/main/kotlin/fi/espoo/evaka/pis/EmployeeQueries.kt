@@ -212,7 +212,7 @@ WHERE id = :id
 
     val updated = createUpdate(sql)
         .bind("id", id)
-        .bind("roles", globalRoles.toTypedArray())
+        .bind("roles", globalRoles)
         .execute()
 
     if (updated != 1) throw NotFound("employee $id not found")
@@ -379,7 +379,7 @@ FROM employee
 WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", employeeIds.toTypedArray())
+        .bind("ids", employeeIds)
         .mapTo<EmployeeIdWithName>()
         .toList()
         .map { it.id to it.name }

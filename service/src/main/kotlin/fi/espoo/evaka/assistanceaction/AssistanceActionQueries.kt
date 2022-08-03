@@ -40,7 +40,7 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() }.toTypedArray())
+        .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
         .first()
 
@@ -114,7 +114,7 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() }.toTypedArray())
+        .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
         .firstOrNull() ?: throw NotFound("Assistance action $id not found")
 
@@ -159,7 +159,7 @@ fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: As
         """.trimIndent()
     return createUpdate(sql)
         .bind("action_id", actionId)
-        .bind("excluded", excluded.toTypedArray())
+        .bind("excluded", excluded)
         .execute()
 }
 

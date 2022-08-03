@@ -22,7 +22,7 @@ WHERE
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<MessageDraftId>()
         .toSet()
 
@@ -39,7 +39,7 @@ WHERE att.id = ANY(:ids) AND ma.person_id = :personId
         """.trimIndent()
     )
         .bind("personId", personId)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AttachmentId>()
         .toSet()
 
@@ -56,7 +56,7 @@ WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AttachmentId>()
         .toSet()
 
@@ -71,6 +71,6 @@ WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AttachmentId>()
         .toSet()

@@ -262,7 +262,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<Placement
         ORDER BY display_order
     """.trimIndent()
     return createQuery(sql)
-        .bind("placementTypes", placementTypes.toTypedArray())
+        .bind("placementTypes", placementTypes)
         .mapTo<ServiceNeedOptionPublicInfo>()
         .list()
 }

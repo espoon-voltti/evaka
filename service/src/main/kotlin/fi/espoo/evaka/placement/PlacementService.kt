@@ -502,7 +502,7 @@ fun getMissingGroupPlacements(
         FROM person WHERE id = ANY(:childIds)
     """
     )
-        .bind("childIds", gaps.map { it.childId }.toSet().toTypedArray())
+        .bind("childIds", gaps.map { it.childId })
         .mapTo<ChildBasics>()
         .list()
         .associateBy { it.id }

@@ -107,7 +107,7 @@ SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(:ids)
     """.trimIndent()
-).bind("ids", ids.toTypedArray())
+).bind("ids", ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
@@ -355,8 +355,8 @@ fun Database.Transaction.addUnitFeatures(
         WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", daycareIds.toTypedArray())
-        .bind("features", features.toTypedArray())
+        .bind("ids", daycareIds)
+        .bind("features", features)
         .execute()
 }
 
@@ -375,8 +375,8 @@ fun Database.Transaction.removeUnitFeatures(
         WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", daycareIds.toTypedArray())
-        .bind("features", features.toTypedArray())
+        .bind("ids", daycareIds)
+        .bind("features", features)
         .execute()
 }
 

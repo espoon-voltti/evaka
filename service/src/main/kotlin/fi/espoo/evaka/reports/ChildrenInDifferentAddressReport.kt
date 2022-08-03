@@ -81,7 +81,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """.trimIndent()
     return createQuery(sql)
-        .bindNullable("units", units?.toTypedArray())
+        .bindNullable("units", units)
         .mapTo<ChildrenInDifferentAddressReportRow>()
         .toList()
 }

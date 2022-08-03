@@ -38,7 +38,7 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Se
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<UnreadCountByAccount>().toSet()
 }
 
@@ -99,7 +99,7 @@ fun Database.Transaction.insertMessage(
         .bind("threadId", threadId)
         .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
-        .bind("recipientNames", recipientNames.toTypedArray())
+        .bind("recipientNames", recipientNames)
         .mapTo<MessageId>()
         .one()
 }
@@ -156,7 +156,7 @@ WHERE
     id = ANY(:attachmentIds)
         """.trimIndent()
     )
-        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("attachmentIds", attachmentIds)
         .bind("messageContentId", messageContentId)
         .execute()
 }
@@ -735,7 +735,7 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(clock: EvakaClock, employeeOrMobi
     val numAccounts = createQuery(sql)
         .bind("today", clock.today())
         .bind("employeeOrMobileId", employeeOrMobileId)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<Int>()
         .one()
 

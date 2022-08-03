@@ -68,7 +68,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.toTypedArray())
+    .bind("upsertErrors", upsertErrors)
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -103,7 +103,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.toTypedArray())
+    .bind("errors", errors)
     .execute()
 
 fun Database.Read.getEvakaServiceNeedChanges(feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
@@ -407,7 +407,7 @@ fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
         WHERE evaka_child_id = ANY(:childIds)
         """.trimIndent()
     )
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .execute()
 
 fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =

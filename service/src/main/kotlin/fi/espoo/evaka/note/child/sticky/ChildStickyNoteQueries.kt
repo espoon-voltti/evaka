@@ -54,7 +54,7 @@ private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>, 
     )
     """.trimIndent()
 )
-    .bind("groupIds", groupIds.toTypedArray())
+    .bind("groupIds", groupIds)
     .bind("today", today)
     .mapTo<ChildStickyNote>()
     .list()

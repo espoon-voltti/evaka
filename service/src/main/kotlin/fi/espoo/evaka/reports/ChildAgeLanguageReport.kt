@@ -91,10 +91,9 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUni
         ORDER BY ca.name, u.name;
         """.trimIndent()
 
-    @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
-        .bind("authorizedUnitIds", authorizedUnits.ids?.toTypedArray())
+        .bind("authorizedUnitIds", authorizedUnits.ids)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<ChildAgeLanguageReportRow>()
         .toList()

@@ -95,7 +95,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         ORDER BY 1, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
-        .bind("units", authorizedUnits.ids?.toTypedArray())
+        .bind("units", authorizedUnits.ids)
         .bind("from", from)
         .bind("to", to)
         .mapTo<MissingServiceNeedReportRow>()

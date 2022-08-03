@@ -111,7 +111,7 @@ AND (:type = 'ALL' OR
 )
 ORDER BY name
     """.trimIndent()
-).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
+).bindNullable("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
     .bind("type", type)
     .mapTo<UnitStub>()
     .list()
