@@ -71,7 +71,7 @@ fun Database.Read.getAssistanceNeedById(id: AssistanceNeedId): AssistanceNeed {
         WHERE an.id = :id
         GROUP BY an.id, child_id, start_date, end_date, capacity_factor
         """.trimIndent()
-    return createQuery(sql).bind("id", id).mapTo(AssistanceNeed::class.java).first()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeed>().first()
 }
 
 fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNeed> {
@@ -88,7 +88,7 @@ fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNe
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo(AssistanceNeed::class.java)
+        .mapTo<AssistanceNeed>()
         .list()
 }
 
@@ -177,5 +177,5 @@ fun Database.Transaction.deleteAssistanceBasisOptionRefsByNeedId(needId: Assista
 fun Database.Read.getAssistanceBasisOptions(): List<AssistanceBasisOption> {
     //language=sql
     val sql = "SELECT value, name_fi, description_fi FROM assistance_basis_option ORDER BY display_order"
-    return createQuery(sql).mapTo(AssistanceBasisOption::class.java).list()
+    return createQuery(sql).mapTo<AssistanceBasisOption>().list()
 }

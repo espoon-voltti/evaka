@@ -596,7 +596,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? 
 
     return createQuery(sql)
         .bind("id", decisionId)
-        .mapTo(String::class.java)
+        .mapTo<String>()
         .firstOrNull()
 }
 
