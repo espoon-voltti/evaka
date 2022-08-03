@@ -6,18 +6,26 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.langWithDefault
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
@@ -40,6 +48,8 @@ class AssistanceNeedDecisionService(
     private val pdfService: PDFService,
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
+    private val messageProvider: IMessageProvider,
+    private val sfiClient: SfiMessagesClient,
     bucketEnv: BucketEnv,
     emailEnv: EmailEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -54,6 +64,7 @@ class AssistanceNeedDecisionService(
     init {
         asyncJobRunner.registerHandler(::runSendAssistanceNeedDecisionEmail)
         asyncJobRunner.registerHandler(::runCreateAssistanceNeedDecisionPdf)
+        asyncJobRunner.registerHandler(::runSendSfiDecision)
     }
 
     fun runSendAssistanceNeedDecisionEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendAssistanceNeedDecisionEmail) {
@@ -100,6 +111,13 @@ class AssistanceNeedDecisionService(
         }
     }
 
+    fun runSendSfiDecision(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendAssistanceNeedDecisionSfiMessage) {
+        db.transaction { tx ->
+            this.createAndSendSfiDecisionPdf(tx, msg.decisionId)
+            logger.info { "Successfully created assistance need decision pdf for Suomi.fi (id: ${msg.decisionId})." }
+        }
+    }
+
     fun createDecisionPdf(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
         val decision = tx.getAssistanceNeedDecisionById(decisionId)
 
@@ -113,13 +131,65 @@ class AssistanceNeedDecisionService(
         tx.updateAssistanceNeedDocumentKey(decision.id, key)
     }
 
+    fun createAndSendSfiDecisionPdf(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
+        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+
+        if (decision.child?.id == null) {
+            throw IllegalStateException("Assistance need decision has to be associated with a child")
+        }
+
+        val lang = if (decision.language == AssistanceNeedDecisionLanguage.SV) "sv" else "fi"
+
+        tx.getChildGuardians(decision.child.id).mapNotNull { tx.getPersonById(it) }.forEach { guardian ->
+            if (guardian.identity !is ExternalIdentifier.SSN) {
+                logger.info { "Cannot deliver assistance need decision ${decision.id} to guardian via Sfi. SSN is missing." }
+                return@forEach
+            }
+
+            val sendAddress = getSendAddress(
+                messageProvider,
+                guardian,
+                lang
+            )
+
+            val pdf = generatePdf(decision, sendAddress, guardian)
+
+            val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(langWithDefault(lang))
+            val messageContent = messageProvider.getAssistanceNeedDecisionContent(langWithDefault(lang))
+
+            sfiClient.send(
+                SfiMessage(
+                    messageId = decision.id.toString(),
+                    documentId = decision.id.toString(),
+                    documentDisplayName = suomiFiDocumentFileName(decision.language),
+                    documentKey = "",
+                    documentBucket = "",
+                    language = lang,
+                    firstName = guardian.firstName,
+                    lastName = guardian.lastName,
+                    streetAddress = sendAddress.street,
+                    postalCode = sendAddress.postalCode,
+                    postOffice = sendAddress.postOffice,
+                    ssn = guardian.identity.ssn,
+                    messageHeader = messageHeader,
+                    messageContent = messageContent
+                ),
+                pdf
+            )
+        }
+    }
+
     fun getDecisionPdfResponse(dbc: Database.Connection, decisionId: AssistanceNeedDecisionId): ResponseEntity<Any> {
         val documentKey = dbc.read { it.getAssistanceNeedDecisionDocumentKey(decisionId) }
             ?: throw NotFound("No assistance need decision found with ID ($decisionId)")
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun generatePdf(decision: AssistanceNeedDecision): ByteArray {
+    fun generatePdf(
+        decision: AssistanceNeedDecision,
+        sendAddress: DecisionSendAddress? = null,
+        guardian: PersonDTO? = null
+    ): ByteArray {
         return pdfService.render(
             Page(
                 Template(templateProvider.getAssistanceNeedDecisionPath()),
@@ -127,8 +197,14 @@ class AssistanceNeedDecisionService(
                     locale = Locale.Builder().setLanguage(decision.language.name.lowercase()).build()
                     setVariable("decision", decision)
                     setVariable("sentDate", LocalDate.now())
+                    setVariable("sendAddress", sendAddress)
+                    setVariable("guardian", guardian)
                 }
             )
         )
     }
 }
+
+private fun suomiFiDocumentFileName(lang: AssistanceNeedDecisionLanguage) =
+    if (lang == AssistanceNeedDecisionLanguage.SV) "Beslut_om_stödbehov.pdf"
+    else "Päätös_tuen_tarpeesta.pdf"

@@ -74,6 +74,32 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
 """
     }
 
+    override fun getAssistanceNeedDecisionHeader(lang: MessageLanguage): String = when (lang) {
+        MessageLanguage.FI -> "Espoon varhaiskasvatukseen liittyvät päätökset"
+        MessageLanguage.SV -> "Beslut gällande Esbos småbarnspedagogik"
+    }
+
+    override fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String = when (lang) {
+        MessageLanguage.FI ->
+            """
+            Lapsellenne on tehty päätös tuen tarpeesta. Voit katsella päätöstä eVakassa.
+    
+            Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.
+            
+            In English:
+            
+            A decision for special support has been made for your child. You can view the decision on eVaka.
+            
+            As you are a user of Suomi.fi, you can also find the decision in the attachments below.
+            """.trimIndent()
+        MessageLanguage.SV ->
+            """
+            Beslut om behov av stöd har fattats för ditt barn. Du kan se beslutet i eVaka.
+            
+            Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du också läsa beslutet i bilagorna nedan.
+            """.trimIndent()
+    }
+
     override fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
         MessageLanguage.FI -> DecisionSendAddress(
             street = "PL 3125",

@@ -686,7 +686,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
 
     @GetMapping("/messages")
     fun getMessages(db: Database): List<SfiMessage> {
-        return MockSfiMessagesClient.getMessages()
+        return MockSfiMessagesClient.getMessages().map { it.first }
     }
 
     @PostMapping("/messages/clean-up")
