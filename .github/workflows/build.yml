@@ -563,6 +563,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v1
@@ -598,7 +604,7 @@ jobs:
           export EVAKA_GW_IMAGE=${{ needs.api-gateway.outputs.image }}
           export EVAKA_SRV_IMAGE=${{ needs.service.outputs.image }}
           export EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}
-          BUILD=false ./test-e2e run playwright
+          BUILD=false ./test-e2e run playwright | tee e2e.log
 
       - name: Run e2e tests for fork
         if: ${{ github.event.pull_request.head.repo.fork }}
@@ -607,14 +613,23 @@ jobs:
           cd ./compose
           ./build.sh
           ./test-e2e build
-          BUILD=false ./test-e2e run playwright
+          BUILD=false ./test-e2e run playwright | tee e2e.log
 
-      - name: Store screenshots
+      - name: Get logs
+        if: always()
+        run: |
+          cd compose
+          ./test-e2e logs > e2e-all.log
+
+      - name: Store screenshots and logs
+        if: always()
         uses: actions/upload-artifact@v3
-        if: failure()
         with:
-          name: screenshots
-          path: ./frontend/screenshots/
+          name: results
+          path: |
+            frontend/screenshots/
+            compose/e2e.log
+            compose/e2e-all.log
           retention-days: 2
 
   frontend-install:
