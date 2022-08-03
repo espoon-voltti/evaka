@@ -5,7 +5,8 @@
 package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.shared.db.mapColumn
-import org.jdbi.v3.core.mapper.RowMapper
+import fi.espoo.evaka.shared.db.mapRow
+import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.result.ResultBearing
 import org.jdbi.v3.core.result.RowView
 
@@ -39,9 +40,9 @@ inline fun <reified T> ResultBearing.mapToPaged(pageSize: Int): Paged<T> =
 
 data class WithCount<T>(val count: Int, val data: T)
 
-inline fun <reified T> withCountMapper(): RowMapper<WithCount<T>> = RowMapper { rs, ctx ->
+inline fun <reified T> withCountMapper(): RowViewMapper<WithCount<T>> = RowViewMapper { row ->
     WithCount(
-        ctx.mapColumn(rs, "count"),
-        ctx.findRowMapperFor(T::class.java).map { mapper -> mapper.map(rs, ctx) }.orElseThrow { error("ASD") }
+        row.mapColumn("count"),
+        row.mapRow()
     )
 }

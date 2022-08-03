@@ -25,14 +25,12 @@ import org.jdbi.v3.core.mapper.SingleColumnMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
-import org.jdbi.v3.core.statement.StatementContext
 import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.util.PGobject
 import java.lang.reflect.Type
-import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
@@ -157,26 +155,6 @@ inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindN
     value: Collection<T>?
 ): This =
     this.bindNullable(name, value?.toTypedArray())
-
-/**
- * Maps a result set column to a value.
- *
- * This function is often better than rs.getXXX() functions, because configured Jdbi column mappers are
- * used when appropriate and it's not restricted to types supported by the underlying ResultSet.
- */
-inline fun <reified T : Any> StatementContext.mapColumn(rs: ResultSet, name: String): T =
-    mapNullableColumn(rs, name) ?: throw IllegalStateException("Non-nullable column $name was null")
-
-/**
- * Maps a result set column to a nullable value.
- *
- * This function is often better than rs.getXXX() functions, because configured Jdbi column mappers are
- * used when appropriate and it's not restricted to types supported by the underlying ResultSet.
- */
-inline fun <reified T : Any> StatementContext.mapNullableColumn(rs: ResultSet, name: String): T? =
-    findColumnMapperFor(T::class.java).orElseThrow {
-        throw IllegalStateException("No column mapper found for type ${T::class}")
-    }.map(rs, name, this)
 
 /**
  * Maps a row column to a value.
