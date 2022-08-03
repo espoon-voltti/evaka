@@ -11,7 +11,8 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import {
   Child,
-  ChildrenResponse
+  ChildrenResponse,
+  CitizenChildConsent
 } from 'lib-common/generated/api-types/children'
 import {
   ChildPlacement,
@@ -172,5 +173,26 @@ export function getAssistanceNeedDecisionUnreadCounts(): Promise<
       `/citizen/children/assistance-need-decisions/unread-counts`
     )
     .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getChildConsents(): Promise<
+  Result<Record<UUID, CitizenChildConsent[]>>
+> {
+  return client
+    .get<JsonOf<Record<UUID, CitizenChildConsent[]>>>(
+      '/citizen/children/consents'
+    )
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function insertChildConsents(
+  childId: UUID,
+  consents: CitizenChildConsent[]
+): Promise<Result<void>> {
+  return client
+    .post(`/citizen/children/${childId}/consent`, consents)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

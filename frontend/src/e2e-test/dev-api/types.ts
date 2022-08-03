@@ -566,3 +566,10 @@ export interface DevDailyServiceTimeNotification {
   dateFrom: LocalDate
   hasDeletedReservations: boolean
 }
+
+export interface DevChildConsent {
+  guardianId: UUID
+  childId: UUID
+  type: string
+  given: boolean
+}

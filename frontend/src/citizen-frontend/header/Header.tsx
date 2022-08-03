@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ChildrenContext } from 'citizen-frontend/children/state'
+import { childConsentTypes } from 'lib-common/generated/api-types/children'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
@@ -44,7 +45,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   const {
     unreadAssistanceNeedDecisionCounts,
-    refreshUnreadAssistanceNeedDecisionCounts
+    refreshUnreadAssistanceNeedDecisionCounts,
+    childConsents
   } = useContext(ChildrenContext)
 
   useEffect(() => {
@@ -66,6 +68,19 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     [unreadAssistanceNeedDecisionCounts]
   )
 
+  const unconsentedCount = useMemo(
+    () =>
+      Object.values(childConsents.getOrElse({})).reduce(
+        (prev, n) =>
+          prev +
+          childConsentTypes.filter(
+            (type) => !n.some((consent) => consent.type === type)
+          ).length,
+        0
+      ),
+    [childConsents]
+  )
+
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
       <CityLogo />
@@ -73,7 +88,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocuments={unreadDocumentCount}
-        unreadChildren={unreadChildrenCount}
+        unreadChildren={unreadChildrenCount + unconsentedCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav
@@ -81,7 +96,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocumentsCount={unreadDocumentCount}
-        unreadChildrenCount={unreadChildrenCount}
+        unreadChildrenCount={unreadChildrenCount + unconsentedCount}
         hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>

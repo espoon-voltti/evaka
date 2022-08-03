@@ -2067,6 +2067,17 @@ export default {
           )
         }
       }
+    },
+    consent: {
+      title: 'Luvat',
+      evakaProfilePicture: {
+        title: 'Lapsen profiilikuvan käyttö eVakassa',
+        description:
+          'Lapsen profiilikuvan näkyminen eVakassa lisää turvallisuutta päiväkodin arjessa. Lupaa kysytään huoltajan käyttöliittymässä vain kerran. Jos haluat myöhemmin muuttaa vastaustasi, ole yhteydessä henkilökuntaan.',
+        question: 'Lapsen profiilikuvaa saa käyttää eVakassa'
+      },
+      confirm: 'Vahvista',
+      unconsented: 'antamatta lupaa'
     }
   },
   accessibilityStatement: (

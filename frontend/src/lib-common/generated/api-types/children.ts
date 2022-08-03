@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
@@ -19,10 +20,40 @@ export interface Child {
 }
 
 /**
+* Generated from fi.espoo.evaka.children.consent.ChildConsent
+*/
+export interface ChildConsent {
+  childId: UUID
+  given: boolean
+  givenAt: HelsinkiDateTime
+  givenByEmployee: string | null
+  givenByGuardian: string | null
+  id: UUID
+  type: ChildConsentType
+}
+
+/**
+* Generated from fi.espoo.evaka.children.consent.ChildConsentType
+*/
+export const childConsentTypes = [
+  'EVAKA_PROFILE_PICTURE'
+] as const
+
+export type ChildConsentType = typeof childConsentTypes[number]
+
+/**
 * Generated from fi.espoo.evaka.children.ChildrenResponse
 */
 export interface ChildrenResponse {
   children: Child[]
+}
+
+/**
+* Generated from fi.espoo.evaka.children.consent.CitizenChildConsent
+*/
+export interface CitizenChildConsent {
+  given: boolean
+  type: ChildConsentType
 }
 
 /**
@@ -31,4 +62,12 @@ export interface ChildrenResponse {
 export interface Group {
   id: UUID
   name: string
+}
+
+/**
+* Generated from fi.espoo.evaka.children.consent.ChildConsentController.UpdateChildConsentRequest
+*/
+export interface UpdateChildConsentRequest {
+  given: boolean | null
+  type: ChildConsentType
 }

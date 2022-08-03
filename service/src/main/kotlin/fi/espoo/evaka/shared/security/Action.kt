@@ -204,7 +204,9 @@ sealed interface Action {
 
             CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+
+            INSERT_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -238,7 +240,8 @@ sealed interface Action {
             READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = false).self());
+            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = false).self()),
+            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -440,7 +443,10 @@ sealed interface Action {
         READ_SENSITIVE_INFO(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(), IsMobile(requirePinLogin = true).inPlacementUnitOfChild()),
 
         UPLOAD_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
-        DELETE_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild());
+        DELETE_IMAGE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(), IsMobile(requirePinLogin = false).inPlacementUnitOfChild()),
+
+        READ_CHILD_CONSENTS(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()),
+        UPSERT_CHILD_CONSENT(HasUnitRole(STAFF, SPECIAL_EDUCATION_TEACHER, UNIT_SUPERVISOR).inPlacementUnitOfChild());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

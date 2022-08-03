@@ -7,7 +7,10 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
-import { Child } from 'lib-common/generated/api-types/children'
+import {
+  Child,
+  childConsentTypes
+} from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -81,7 +84,8 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
     [navigate, child.id]
   )
 
-  const { unreadAssistanceNeedDecisionCounts } = useContext(ChildrenContext)
+  const { unreadAssistanceNeedDecisionCounts, childConsents } =
+    useContext(ChildrenContext)
 
   const unreadCount = useMemo(
     () =>
@@ -89,6 +93,20 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
         ({ childId }) => childId === child.id
       )?.count ?? 0,
     [unreadAssistanceNeedDecisionCounts, child]
+  )
+
+  const unconsentedCount = useMemo(
+    () =>
+      childConsents
+        .map(
+          (consents) =>
+            childConsentTypes.filter(
+              (type) =>
+                !consents[child.id]?.some((consent) => consent.type === type)
+            ).length
+        )
+        .getOrElse(0),
+    [childConsents, child.id]
   )
 
   const name = `${child.firstName} ${child.lastName}`
@@ -126,11 +144,13 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
         </NameAndGroup>
       </Desktop>
       <ChevronContainer>
-        {unreadCount > 0 && (
+        {unreadCount + unconsentedCount > 0 && (
           <RoundIcon
-            content={unreadCount.toString()}
+            content={(unreadCount + unconsentedCount).toString()}
             color={colors.status.warning}
-            aria-label={`${unreadCount} ${t.children.assistanceNeed.unreadCount}`}
+            aria-label={`${unreadCount + unconsentedCount} ${
+              t.children.assistanceNeed.unreadCount
+            }`}
             size="m"
             data-qa="unread-count"
           />

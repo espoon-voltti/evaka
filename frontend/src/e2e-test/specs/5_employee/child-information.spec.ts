@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { EmployeeDetail } from 'e2e-test/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -20,6 +21,7 @@ import {
 import ChildInformationPage, {
   AdditionalInformationSection,
   BackupCaresSection,
+  ConsentsSection,
   DailyServiceTimeSection,
   FamilyContactsSection,
   GuardiansSection
@@ -32,13 +34,16 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let fixtures: AreaAndPersonFixtures
 let childId: UUID
+let admin: EmployeeDetail
+
+const mockedDate = LocalDate.of(2022, 3, 1)
 
 beforeEach(async () => {
   await resetDatabase()
 
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
-  const admin = await Fixture.employeeAdmin().save()
+  admin = (await Fixture.employeeAdmin().save()).data
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -49,8 +54,8 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open()
-  await employeeLogin(page, admin.data)
+  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  await employeeLogin(page, admin)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.waitUntilLoaded()
@@ -110,9 +115,9 @@ describe('Child Information - daily service times', () => {
     section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
-  const today = LocalDate.todayInHelsinkiTz().format()
-  const in10Days = LocalDate.todayInHelsinkiTz().addDays(10).format()
-  const in40Days = LocalDate.todayInHelsinkiTz().addDays(40).format()
+  const today = mockedDate.format()
+  const in10Days = mockedDate.addDays(10).format()
+  const in40Days = mockedDate.addDays(40).format()
 
   test('can create regular daily service times', async () => {
     const form = await section.create()
@@ -197,7 +202,7 @@ describe('Child Information - daily service times', () => {
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today} – ${LocalDate.todayInHelsinkiTz()
+      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
         .addDays(9)
         .format()}`,
       'ACTIVE'
@@ -227,7 +232,7 @@ describe('Child Information - daily service times', () => {
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today} – ${LocalDate.todayInHelsinkiTz()
+      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
         .addDays(39)
         .format()}`,
       'ACTIVE'
@@ -382,5 +387,59 @@ describe('Child information - guardian information', () => {
     await section.assertGuardianExists(
       fixtures.familyWithTwoGuardians.guardian.ssn
     )
+  })
+})
+
+describe('Child information - consent', () => {
+  let section: ConsentsSection
+  beforeEach(async () => {
+    section = await childInformationPage.openCollapsible('consents')
+  })
+
+  test('profile photo consent can be consented to', async () => {
+    await section.evakaProfilePicYes.check()
+    await section.save()
+    await waitUntilEqual(
+      () => section.evakaProfilePicModifiedBy.innerText,
+      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
+    )
+    await page.reload()
+    section = await childInformationPage.openCollapsible('consents')
+    await section.evakaProfilePicYes.waitUntilChecked(true)
+    await section.evakaProfilePicNo.waitUntilChecked(false)
+    await waitUntilEqual(
+      () => section.evakaProfilePicModifiedBy.innerText,
+      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
+    )
+  })
+
+  test('profile photo consent can be not consented to', async () => {
+    await section.evakaProfilePicNo.check()
+    await section.save()
+    await waitUntilEqual(
+      () => section.evakaProfilePicModifiedBy.innerText,
+      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
+    )
+    await page.reload()
+    section = await childInformationPage.openCollapsible('consents')
+    await section.evakaProfilePicYes.waitUntilChecked(false)
+    await section.evakaProfilePicNo.waitUntilChecked(true)
+    await waitUntilEqual(
+      () => section.evakaProfilePicModifiedBy.innerText,
+      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
+    )
+  })
+
+  test('profile photo consent can be cleared', async () => {
+    await section.evakaProfilePicNo.check()
+    await section.save()
+    await waitUntilEqual(
+      () => section.evakaProfilePicModifiedBy.innerText,
+      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
+    )
+    await section.evakaProfilePicClear.click()
+    await section.save()
+    await section.evakaProfilePicYes.waitUntilChecked(false)
+    await section.evakaProfilePicNo.waitUntilChecked(false)
   })
 })

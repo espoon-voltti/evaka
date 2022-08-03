@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../utils'
-import { Page, TextInput } from '../../utils/page'
+import { Page, Radio, TextInput } from '../../utils/page'
 
 export class CitizenChildrenPage {
   constructor(private readonly page: Page) {}
@@ -57,6 +57,10 @@ export class CitizenChildPage {
 
   async openAssistanceNeedCollapsible() {
     await this.page.findText('Tuen tarve').click()
+  }
+
+  async openConsentCollapsible() {
+    await this.page.findText('Luvat').click()
   }
 
   async assertTerminatablePlacementCount(count: number) {
@@ -141,8 +145,9 @@ export class CitizenChildPage {
   async assertUnreadAssistanceNeedDecisions(count: number) {
     await waitUntilEqual(
       () =>
-        this.page.findByDataQa('assistance-need-decision-unread-count')
-          .innerText,
+        this.page
+          .findByDataQa('assistance-need-decisions')
+          .findByDataQa('count-indicator').innerText,
       count.toString()
     )
   }
@@ -161,5 +166,27 @@ export class CitizenChildPage {
       .nth(nth)
       .findByDataQa('unopened-indicator')
       .waitUntilHidden()
+  }
+
+  readonly evakaProfilePicYes = new Radio(
+    this.page.findByDataQa('consent-profilepic-yes')
+  )
+  readonly evakaProfilePicNo = new Radio(
+    this.page.findByDataQa('consent-profilepic-no')
+  )
+
+  #consentConfirmButton = this.page.findByDataQa('consent-confirm')
+
+  async saveConsent() {
+    await this.#consentConfirmButton.click()
+  }
+
+  async assertUnconsentedCount(count: number) {
+    await waitUntilEqual(
+      () =>
+        this.page.findByDataQa('child-consents').findByDataQa('count-indicator')
+          .innerText,
+      count.toString()
+    )
   }
 }

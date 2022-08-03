@@ -156,7 +156,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: true,
       pedagogicalDocuments: true,
-      income: true
+      income: true,
+      consents: true
     })
   })
 
@@ -178,7 +179,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: false,
-      income: false
+      income: false,
+      consents: true
     })
   })
 
@@ -200,7 +202,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: false,
-      income: true
+      income: true,
+      consents: true
     })
   })
 
@@ -222,7 +225,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: false,
       pedagogicalDocuments: true,
-      income: false
+      income: false,
+      consents: true
     })
   })
 
@@ -246,7 +250,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: true,
       pedagogicalDocuments: true,
-      income: false
+      income: false,
+      consents: true
     })
   })
 
@@ -271,7 +276,8 @@ describe('Child information page sections', () => {
       dailyServiceTimes: true,
       vasuAndLeops: true,
       pedagogicalDocuments: true,
-      income: false
+      income: false,
+      consents: true
     })
   })
 })

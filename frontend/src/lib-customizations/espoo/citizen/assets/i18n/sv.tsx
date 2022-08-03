@@ -2102,6 +2102,17 @@ const sv: Translations = {
           )
         }
       }
+    },
+    consent: {
+      title: 'Samtycken',
+      evakaProfilePicture: {
+        title: 'Samtycke till barns profilbild',
+        description:
+          'Att visa barnets profilbild i eVaka ökar säkerheten i dagvårdens verksamhet. Samtycket begärs endast en gång från vårdnadshavaren. Om du senare vill ändra svaret, kontakta enhetens personal.',
+        question: 'Barnets profilbild kan användas i eVaka'
+      },
+      confirm: 'Bekräfta',
+      unconsented: 'utan samtycke'
     }
   },
   accessibilityStatement: (

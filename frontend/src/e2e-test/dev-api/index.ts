@@ -50,6 +50,7 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  DevChildConsent,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevFixedPeriodQuestionnaire,
@@ -593,6 +594,14 @@ export async function insertDailyServiceTimeNotification(
 ): Promise<void> {
   try {
     await devClient.post('/daily-service-time-notification', data)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertChildConsent(data: DevChildConsent): Promise<void> {
+  try {
+    await devClient.post('/child-consent', data)
   } catch (e) {
     throw new DevApiError(e)
   }

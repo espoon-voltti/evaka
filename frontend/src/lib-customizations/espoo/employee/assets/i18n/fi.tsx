@@ -1121,6 +1121,19 @@ export const fi = {
       removeConfirmation: 'Haluatko poistaa dokumentin?',
       removeConfirmationText:
         'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.'
+    },
+    childConsents: {
+      title: 'Luvat',
+      evakaProfilePicture: {
+        title: 'Lapsen profiilikuvan käyttö eVakassa',
+        description:
+          'Lapsen profiilikuvan näkyminen eVakassa lisää turvallisuutta päiväkodin arjessa. Lupaa kysytään huoltajan käyttöliittymässä vain kerran. Mikäli huoltaja haluaa myöhemmin muuttaa vastaustaan, tehdään se henkilökunnan käyttöliittymässä.',
+        question: 'Lapsen profiilikuvaa saa käyttää eVakassa'
+      },
+      clearAnswer: 'Tyhjennä vastaus',
+      updateAnswer: 'Päivitä vastaus',
+      modifiedBy: 'Merkintä',
+      guardian: 'huoltaja'
     }
   },
   vasu: {
@@ -2742,6 +2755,8 @@ export const fi = {
         'backup_care.child_id': 'Vara- sijoituksia',
         'backup_pickup.child_id': 'Vara- hakijoita',
         'child_attendance.child_id': 'Läsnäoloja',
+        'child_consent.child_id': 'Lupia',
+        'child_consent.given_by_guardian': 'Annettuja lupia',
         'child_images.child_id': 'Kuvia',
         'curriculum_document.child_id': 'Opetussuunnitelemia',
         'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
