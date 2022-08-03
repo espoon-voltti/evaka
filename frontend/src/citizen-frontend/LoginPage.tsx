@@ -29,6 +29,10 @@ import { useUser } from './auth/state'
 import { getStrongLoginUri, getWeakLoginUri } from './header/const'
 import { useTranslation } from './localization'
 
+const ParagraphInfoButton = styled(InfoButton)`
+  margin-left: ${defaultMargins.xs};
+`
+
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
   const user = useUser()
@@ -64,13 +68,13 @@ export default React.memo(function LoginPage() {
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.applying.title}</H2>
             <Gap size="m" />
-            <FlexRow>
-              <P noMargin>{i18n.loginPage.applying.paragraph}</P>
-              <InfoButton
+            <P noMargin>
+              {i18n.loginPage.applying.paragraph}
+              <ParagraphInfoButton
                 aria-label={i18n.common.openExpandingInfo}
                 onClick={() => setShowInfoBoxText(!showInfoBoxText)}
               />
-            </FlexRow>
+            </P>
             {showInfoBoxText && (
               <ExpandingInfoBox
                 info={i18n.loginPage.applying.infoBoxText}
@@ -107,9 +111,4 @@ export default React.memo(function LoginPage() {
 
 const MapLink = styled(LinkWrapperInlineBlock)`
   font-weight: ${fontWeights.semibold};
-`
-
-const FlexRow = styled.div`
-  display: flex;
-  gap: ${defaultMargins.xs};
 `

@@ -200,6 +200,7 @@ export default React.memo(function PlacementTerminationForm({
         <ExpandingInfo
           info={t.children.placementTermination.lastDayInfo}
           ariaLabel={t.common.openExpandingInfo}
+          inlineChildren
         >
           <Label>{t.children.placementTermination.lastDayOfPresence}</Label>
         </ExpandingInfo>

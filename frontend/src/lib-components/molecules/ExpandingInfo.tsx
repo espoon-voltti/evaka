@@ -102,6 +102,7 @@ type ExpandingInfoProps = {
   width?: 'fixed' | 'full' | 'auto'
   margin?: SpacingSize
   'data-qa'?: string
+  inlineChildren?: boolean
 }
 
 export default React.memo(function ExpandingInfo({
@@ -110,23 +111,38 @@ export default React.memo(function ExpandingInfo({
   ariaLabel,
   width = 'fixed',
   margin,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  inlineChildren
 }: ExpandingInfoProps) {
   const [expanded, setExpanded] = useState<boolean>(false)
   const toggleExpanded = useCallback(() => setExpanded((prev) => !prev), [])
   const close = useCallback(() => setExpanded(false), [])
 
+  const content = inlineChildren ? (
+    <div>
+      {children}
+      <InlineInfoButton
+        onClick={toggleExpanded}
+        aria-label={ariaLabel}
+        margin={margin ?? 'zero'}
+        data-qa={dataQa}
+      />
+    </div>
+  ) : (
+    <FixedSpaceRow spacing="xs" alignItems="center">
+      <div>{children}</div>
+      <InfoButton
+        onClick={toggleExpanded}
+        aria-label={ariaLabel}
+        margin={margin ?? 'zero'}
+        data-qa={dataQa}
+      />
+    </FixedSpaceRow>
+  )
+
   return (
     <span aria-live="polite">
-      <FixedSpaceRow spacing="xs" alignItems="center">
-        <div>{children}</div>
-        <InfoButton
-          onClick={toggleExpanded}
-          aria-label={ariaLabel}
-          margin={margin ?? 'zero'}
-          data-qa={dataQa}
-        />
-      </FixedSpaceRow>
+      {content}
       {expanded && (
         <ExpandingInfoBox
           info={info}
@@ -169,6 +185,10 @@ export const InfoButton = React.memo(function InfoButton({
     </RoundIconButton>
   )
 })
+
+const InlineInfoButton = styled(InfoButton)`
+  margin-left: ${defaultMargins.xs};
+`
 
 export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   info,

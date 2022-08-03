@@ -114,6 +114,7 @@ export default React.memo(function VasuPage() {
                     : t.vasu.givePermissionToShareInfoLeops
                 }
                 ariaLabel={t.common.openExpandingInfo}
+                inlineChildren
               >
                 <Label>
                   {vasu.type === 'DAYCARE'

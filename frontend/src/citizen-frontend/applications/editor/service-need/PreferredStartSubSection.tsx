@@ -130,6 +130,7 @@ export default React.memo(function PreferredStartSubSection({
             data-qa="startdate-instructions"
             info={t.applications.editor.serviceNeed.startDate.instructions}
             ariaLabel={t.common.openExpandingInfo}
+            inlineChildren
           >
             <Label htmlFor={labelId}>
               {t.applications.editor.serviceNeed.startDate.label[type]} *

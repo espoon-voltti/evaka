@@ -193,6 +193,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               ]
             }
             ariaLabel={t.common.openExpandingInfo}
+            inlineChildren
           >
             <Label>
               {t.applications.editor.serviceNeed.dailyTime
