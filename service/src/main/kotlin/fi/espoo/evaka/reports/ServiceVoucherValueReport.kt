@@ -413,8 +413,8 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
     return createQuery(sql)
         .bind("effective", VoucherValueDecisionStatus.effective)
         .bind("reportDate", LocalDate.of(year, month, 1))
-        .bindNullable("areaId", areaId)
-        .bindNullable("unitIds", unitIds)
+        .bind("areaId", areaId)
+        .bind("unitIds", unitIds)
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }
@@ -495,8 +495,8 @@ private fun Database.Read.getSnapshotVoucherValues(
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("year", year)
         .bind("month", month)
-        .bindNullable("areaId", areaId)
-        .bindNullable("unitIds", unitIds)
+        .bind("areaId", areaId)
+        .bind("unitIds", unitIds)
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }

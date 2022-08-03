@@ -89,7 +89,7 @@ WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 )
 
 fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
-    .bindNullable("idFilter", authorizedUnits.ids)
+    .bind("idFilter", authorizedUnits.ids)
     .mapTo<Daycare>()
     .toList()
 
@@ -112,7 +112,7 @@ WHERE id = ANY(:ids)
     .toList()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? = getDaycaresQuery()
-    .bindNullable("idFilter", listOf(id))
+    .bind("idFilter", listOf(id))
     .mapTo<Daycare>()
     .asSequence()
     .firstOrNull()

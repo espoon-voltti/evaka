@@ -273,10 +273,10 @@ GROUP BY $groupBy, t
 """
 
     return createQuery(query)
-        .bindNullable("areaId", areaId)
-        .bindNullable("providerType", providerType)
-        .bindNullable("unitId", unitId)
-        .bindNullable("unitIds", aclAuth.ids)
+        .bind("areaId", areaId)
+        .bind("providerType", providerType)
+        .bind("unitId", unitId)
+        .bind("unitIds", aclAuth.ids)
         .bind("start", period.start)
         .bind("end", period.end)
         .map(mapper)

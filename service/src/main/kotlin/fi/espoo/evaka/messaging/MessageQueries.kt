@@ -97,7 +97,7 @@ fun Database.Transaction.insertMessage(
     return createQuery(insertMessageSql)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
-        .bindNullable("repliesToId", repliesToMessageId)
+        .bind("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
         .bind("recipientNames", recipientNames)
         .mapTo<MessageId>()

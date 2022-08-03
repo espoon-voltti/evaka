@@ -75,7 +75,7 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
         ORDER BY ca.name, u.name, co.last_name, co.first_name
         """.trimIndent()
     return createQuery(sql)
-        .bindNullable("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
+        .bind("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
         .mapTo<FamilyConflictReportRow>()
         .toList()
 }

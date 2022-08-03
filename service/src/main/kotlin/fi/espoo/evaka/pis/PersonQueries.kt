@@ -152,7 +152,7 @@ fun Database.Read.searchPeople(
 
     return createQuery(sql)
         .bindMap(freeTextParams)
-        .applyIf(restricted) { bind("userId", user.id) }
+        .applyIf(restricted) { this.bind("userId", user.id) }
         .mapTo<PersonSummary>()
         .toList()
 }

@@ -73,7 +73,7 @@ private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, role
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
         .bind("userId", user.rawId())
-        .bindNullable("roles", roles)
+        .bind("roles", roles)
         .mapTo<DaycareId>()
         .toSet()
 }

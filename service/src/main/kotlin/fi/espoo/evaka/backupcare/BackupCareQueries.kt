@@ -81,7 +81,7 @@ RETURNING id
 )
     .bind("childId", childId)
     .bind("unitId", backupCare.unitId)
-    .bindNullable("groupId", backupCare.groupId)
+    .bind("groupId", backupCare.groupId)
     .bind("start", backupCare.period.start)
     .bind("end", backupCare.period.end)
     .executeAndReturnGeneratedKeys()
@@ -102,7 +102,7 @@ WHERE id = :id
     .bind("id", id)
     .bind("start", period.start)
     .bind("end", period.end)
-    .bindNullable("groupId", groupId)
+    .bind("groupId", groupId)
     .execute()
 
 fun Database.Transaction.deleteBackupCare(id: BackupCareId) = createUpdate(

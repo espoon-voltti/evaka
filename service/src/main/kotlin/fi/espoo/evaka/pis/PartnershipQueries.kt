@@ -82,8 +82,8 @@ fun Database.Read.getPartnersForPerson(personId: PersonId, includeConflicts: Boo
 
     return createQuery(sql)
         .bind("personId", personId)
-        .bindNullable("from", period?.start)
-        .bindNullable("to", period?.end)
+        .bind("from", period?.start)
+        .bind("to", period?.end)
         .bind("includeConflicts", includeConflicts)
         .map(toPartner("p"))
         .toList()

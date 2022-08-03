@@ -190,9 +190,6 @@ class Database(private val jdbi: Jdbi) {
         inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): This =
             bindByType(name, value, createQualifiedType(*qualifiers))
 
-        inline fun <reified T> bindNullable(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): This =
-            bind(name, value, qualifiers)
-
         inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): This =
             registerColumnMapper(createQualifiedType(), mapper)
 

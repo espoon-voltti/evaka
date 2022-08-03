@@ -25,9 +25,9 @@ AND (:daycareId::uuid IS NULL OR daycare_id = :daycareId)
 AND (:period::daterange IS NULL OR daterange(start_date, end_date, '[]') && :period)
 """
 )
-    .bindNullable("groupId", groupId)
-    .bindNullable("daycareId", daycareId)
-    .bindNullable("period", period)
+    .bind("groupId", groupId)
+    .bind("daycareId", daycareId)
+    .bind("period", period)
 
 fun Database.Transaction.createDaycareGroup(daycareId: DaycareId, name: String, startDate: LocalDate): DaycareGroup = createUpdate(
     // language=SQL
@@ -51,7 +51,7 @@ fun Database.Transaction.updateGroup(groupId: GroupId, name: String, startDate: 
         .bind("id", groupId)
         .bind("name", name)
         .bind("startDate", startDate)
-        .bindNullable("endDate", endDate)
+        .bind("endDate", endDate)
         .execute()
         .let { if (it != 1) throw NotFound("Group $groupId not found") }
 }

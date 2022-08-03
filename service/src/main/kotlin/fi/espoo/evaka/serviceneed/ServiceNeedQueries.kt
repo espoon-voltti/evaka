@@ -60,8 +60,8 @@ fun Database.Read.getServiceNeedsByUnit(
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bindNullable("start", startDate)
-        .bindNullable("end", endDate)
+        .bind("start", startDate)
+        .bind("end", endDate)
         .mapTo<ServiceNeed>()
         .toList()
 }

@@ -498,7 +498,7 @@ class FixtureBuilder(
                 .bind("employeeId", employeeFixture.employeeId)
                 .bind("groupId", groupId ?: error("group must be set"))
                 .bind("arrived", from ?: error("arrival time must be set"))
-                .bindNullable("departed", to)
+                .bind("departed", to)
                 .bind("coefficient", coefficient ?: error("occupancyCoefficient must be set"))
                 .updateExactlyOne()
 

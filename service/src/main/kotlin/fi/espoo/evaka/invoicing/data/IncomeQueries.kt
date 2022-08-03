@@ -139,7 +139,7 @@ fun Database.Read.getIncomesForPerson(
 
     return createQuery(sql)
         .bind("personId", personId)
-        .bindNullable("validAt", validAt)
+        .bind("validAt", validAt)
         .map(toIncome(mapper, incomeTypesProvider.get()))
         .toList()
 }

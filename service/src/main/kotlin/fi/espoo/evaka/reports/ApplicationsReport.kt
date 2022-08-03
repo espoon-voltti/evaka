@@ -86,7 +86,7 @@ private fun Database.Read.getApplicationsRows(
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
-        .bindNullable("unitIds", aclAuth.ids)
+        .bind("unitIds", aclAuth.ids)
         .mapTo<ApplicationsReportRow>()
         .toList()
 }

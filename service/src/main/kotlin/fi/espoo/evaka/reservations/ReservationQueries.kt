@@ -67,7 +67,7 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
             .bind("date", date)
             .bind("absenceType", absenceType)
             .bind("userId", userId)
-            .bindNullable("questionnaireId", questionnaireId)
+            .bind("questionnaireId", questionnaireId)
             .add()
     }
 
