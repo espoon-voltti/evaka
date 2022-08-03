@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -75,7 +76,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val countBefore = db.read {
-            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size
+            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).mapTo<Int>().list().size
         }
         assertEquals(1, countBefore)
 
@@ -84,7 +85,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size
+            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).mapTo<Int>().list().size
         }
         assertEquals(0, countAfter)
     }
@@ -134,7 +135,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val countBefore = db.read {
-            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).map { _, _ -> 1 }
+            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).mapTo<Int>()
                 .list().size
         }
         assertEquals(1, countBefore)
@@ -144,7 +145,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).map { _, _ -> 1 }
+            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).mapTo<Int>()
                 .list().size
         }
         assertEquals(1, countAfter)
@@ -182,7 +183,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val countBefore = db.read {
             it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childIdDuplicate)
-                .map { _, _ -> 1 }.list().size
+                .mapTo<Int>().list().size
         }
         assertEquals(1, countBefore)
 
@@ -191,7 +192,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).map { _, _ -> 1 }
+            it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).mapTo<Int>()
                 .list().size
         }
         assertEquals(1, countAfter)

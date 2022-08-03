@@ -356,8 +356,8 @@ fun Database.Read.searchInvoices(
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
     return createQuery("SELECT max(number) FROM invoice")
-        .mapTo(Long::class.java)
-        .first()
+        .mapTo<Long?>()
+        .first() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {

@@ -241,7 +241,7 @@ WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != :id
 AND application_id = (SELECT application_id FROM decision WHERE id = :id)
 """
     ).bind("id", decisionId)
-        .map { rs: ResultSet, _: StatementContext -> rs.getBoolean("blocked") }.first() ?: false
+        .mapTo<Boolean>().first() ?: false
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
@@ -255,7 +255,8 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
         """.trimIndent().trimIndent()
     )
         .bind("id", decisionId)
-        .map { rs -> rs.getColumn("language", String::class.java) }.first()
+        .mapTo<String>()
+        .first()
 }
 
 fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, decisionId: DecisionId, requestedStartDate: LocalDate) {
