@@ -375,7 +375,7 @@ RETURNING id
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
     createQuery(
         """
-SELECT id, concat(first_name, ' ', last_name) name
+SELECT id, concat(first_name, ' ', last_name) AS name
 FROM employee
 WHERE id = ANY(:ids)
         """.trimIndent()
