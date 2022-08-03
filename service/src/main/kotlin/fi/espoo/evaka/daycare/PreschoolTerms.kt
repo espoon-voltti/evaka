@@ -6,7 +6,6 @@ package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 data class PreschoolTerm(

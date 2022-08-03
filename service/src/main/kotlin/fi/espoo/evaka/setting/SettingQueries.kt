@@ -5,7 +5,6 @@
 package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getSettings(): Map<SettingType, String> {
     // language=SQL

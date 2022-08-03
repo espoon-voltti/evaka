@@ -7,7 +7,6 @@ package fi.espoo.evaka.childimages
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
     // language=sql

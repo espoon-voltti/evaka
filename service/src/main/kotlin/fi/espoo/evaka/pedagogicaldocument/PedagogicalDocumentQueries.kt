@@ -6,7 +6,6 @@ package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getPedagogicalDocumentAttachments(
     pedagogicalDocumentId: PedagogicalDocumentId

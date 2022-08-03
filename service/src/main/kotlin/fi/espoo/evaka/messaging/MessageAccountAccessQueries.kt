@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.filterPermittedMessageDrafts(user: AuthenticatedUser.Employee, ids: Collection<MessageDraftId>): Set<MessageDraftId> =
     this.createQuery(

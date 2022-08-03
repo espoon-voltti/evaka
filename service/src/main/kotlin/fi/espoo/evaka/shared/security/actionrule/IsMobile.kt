@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
-import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 

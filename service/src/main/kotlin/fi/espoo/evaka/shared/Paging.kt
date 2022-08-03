@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import org.jdbi.v3.core.mapper.RowViewMapper
-import org.jdbi.v3.core.result.ResultBearing
 import org.jdbi.v3.core.result.RowView
 
 data class Paged<T>(val data: List<T>, val total: Int, val pages: Int) {
@@ -29,13 +29,13 @@ fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =
         Paged.forPageSize(this.map { it.data }, count, pageSize)
     }
 
-fun <T> ResultBearing.mapToPaged(pageSize: Int, countColumn: String, mapper: (row: RowView) -> T): Paged<T> =
+fun <T> Database.Query.mapToPaged(pageSize: Int, countColumn: String, mapper: (row: RowView) -> T): Paged<T> =
     this.map { row -> WithCount(row.mapColumn(countColumn), mapper(row)) }.list().mapToPaged(pageSize)
 
-fun <T> ResultBearing.mapToPaged(pageSize: Int, mapper: (row: RowView) -> T): Paged<T> =
+fun <T> Database.Query.mapToPaged(pageSize: Int, mapper: (row: RowView) -> T): Paged<T> =
     this.mapToPaged(pageSize, "count", mapper)
 
-inline fun <reified T> ResultBearing.mapToPaged(pageSize: Int): Paged<T> =
+inline fun <reified T> Database.Query.mapToPaged(pageSize: Int): Paged<T> =
     this.map(withCountMapper<T>()).list().mapToPaged(pageSize)
 
 data class WithCount<T>(val count: Int, val data: T)

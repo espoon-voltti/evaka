@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -120,7 +119,7 @@ ORDER BY p.id, t
     return createQuery(sql)
         .bind("start_date", from)
         .bind("end_date", to)
-        .registerColumnMapper(UnitType::class.java, UnitType.JDBI_COLUMN_MAPPER)
+        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<RawReportRow>()
         .toList()
 }

@@ -13,14 +13,11 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
-import org.jdbi.v3.core.statement.SqlStatement
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -224,85 +221,91 @@ fun Database.Read.readIncomeStatementForPerson(
         .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
         .firstOrNull()
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindIncomeStatementBody(body: IncomeStatementBody): This =
+private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
     bind("startDate", body.startDate)
-        .bindNullable("endDate", body.endDate)
-        .bindNullable("grossIncomeSource", null as IncomeSource?)
-        .bindNullable("grossEstimatedMonthlyIncome", null as Int?)
-        .bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
-        .bind("grossOtherIncomeInfo", "")
-        .bindNullable("fullTime", null as Boolean?)
-        .bindNullable("startOfEntrepreneurship", null as LocalDate?)
-        .bindNullable("spouseWorksInCompany", null as Boolean?)
-        .bindNullable("startupGrant", null as Boolean?)
-        .bindNullable("checkupConsent", null as Boolean?)
-        .bindNullable("selfEmployedAttachments", null as Boolean?)
-        .bindNullable("selfEmployedEstimatedMonthlyIncome", null as Int?)
-        .bindNullable("selfEmployedIncomeStartDate", null as LocalDate?)
-        .bindNullable("selfEmployedIncomeEndDate", null as LocalDate?)
-        .bindNullable("limitedCompanyIncomeSource", null as IncomeSource?)
-        .bindNullable("partnership", null as Boolean?)
-        .bindNullable("lightEntrepreneur", null as Boolean?)
-        .bind("accountantName", "")
-        .bind("accountantAddress", "")
-        .bind("accountantPhone", "")
-        .bind("accountantEmail", "")
-        .bindNullable("student", null as Boolean?)
-        .bindNullable("alimonyPayer", null as Boolean?)
-        .bindNullable("otherInfo", null as String?)
-        .run {
-            when (body) {
-                is IncomeStatementBody.HighestFee ->
-                    bind("type", IncomeStatementType.HIGHEST_FEE)
-                is IncomeStatementBody.ChildIncome ->
-                    bind("type", IncomeStatementType.CHILD_INCOME)
-                        .bind("otherInfo", body.otherInfo)
-                is IncomeStatementBody.Income -> {
-                    bind("type", IncomeStatementType.INCOME)
-                        .run { if (body.gross != null) bindGross(body.gross) else this }
-                        .run { if (body.entrepreneur != null) bindEntrepreneur(body.entrepreneur) else this }
-                        .bind("student", body.student)
-                        .bind("alimonyPayer", body.alimonyPayer)
-                        .bind("otherInfo", body.otherInfo)
-                }
-            }
+    bindNullable("endDate", body.endDate)
+    bindNullable("grossIncomeSource", null as IncomeSource?)
+    bindNullable("grossEstimatedMonthlyIncome", null as Int?)
+    bindNullable("grossOtherIncome", null as Array<OtherIncome>?)
+    bind("grossOtherIncomeInfo", "")
+    bindNullable("fullTime", null as Boolean?)
+    bindNullable("startOfEntrepreneurship", null as LocalDate?)
+    bindNullable("spouseWorksInCompany", null as Boolean?)
+    bindNullable("startupGrant", null as Boolean?)
+    bindNullable("checkupConsent", null as Boolean?)
+    bindNullable("selfEmployedAttachments", null as Boolean?)
+    bindNullable("selfEmployedEstimatedMonthlyIncome", null as Int?)
+    bindNullable("selfEmployedIncomeStartDate", null as LocalDate?)
+    bindNullable("selfEmployedIncomeEndDate", null as LocalDate?)
+    bindNullable("limitedCompanyIncomeSource", null as IncomeSource?)
+    bindNullable("partnership", null as Boolean?)
+    bindNullable("lightEntrepreneur", null as Boolean?)
+    bind("accountantName", "")
+    bind("accountantAddress", "")
+    bind("accountantPhone", "")
+    bind("accountantEmail", "")
+    bindNullable("student", null as Boolean?)
+    bindNullable("alimonyPayer", null as Boolean?)
+    bindNullable("otherInfo", null as String?)
+    when (body) {
+        is IncomeStatementBody.HighestFee ->
+            bind("type", IncomeStatementType.HIGHEST_FEE)
+        is IncomeStatementBody.ChildIncome -> {
+            bind("type", IncomeStatementType.CHILD_INCOME)
+            bind("otherInfo", body.otherInfo)
         }
+        is IncomeStatementBody.Income -> {
+            bind("type", IncomeStatementType.INCOME)
+            if (body.gross != null) bindGross(body.gross)
+            if (body.entrepreneur != null) bindEntrepreneur(body.entrepreneur)
+            bind("student", body.student)
+            bind("alimonyPayer", body.alimonyPayer)
+            bind("otherInfo", body.otherInfo)
+        }
+    }
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindGross(gross: Gross): This =
+private fun Database.SqlStatement<*>.bindGross(gross: Gross) {
     bind("grossIncomeSource", gross.incomeSource)
-        .bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
-        .bind("grossOtherIncome", gross.otherIncome.toTypedArray())
-        .bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
+    bind("grossEstimatedMonthlyIncome", gross.estimatedMonthlyIncome)
+    bind("grossOtherIncome", gross.otherIncome.toTypedArray())
+    bind("grossOtherIncomeInfo", gross.otherIncomeInfo)
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindEntrepreneur(entrepreneur: Entrepreneur): This =
-    run { if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed) else this }
-        .run { if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany) else this }
-        .bind("fullTime", entrepreneur.fullTime)
-        .bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
-        .bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
-        .bind("startupGrant", entrepreneur.startupGrant)
-        .bind("checkupConsent", entrepreneur.checkupConsent)
-        .bind("partnership", entrepreneur.partnership)
-        .bind("lightEntrepreneur", entrepreneur.lightEntrepreneur)
-        .run { if (entrepreneur.accountant != null) bindAccountant(entrepreneur.accountant) else this }
+private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur) {
+    if (entrepreneur.selfEmployed != null) bindSelfEmployed(entrepreneur.selfEmployed)
+    if (entrepreneur.limitedCompany != null) bindLimitedCompany(entrepreneur.limitedCompany)
+    bind("fullTime", entrepreneur.fullTime)
+    bind("startOfEntrepreneurship", entrepreneur.startOfEntrepreneurship)
+    bind("spouseWorksInCompany", entrepreneur.spouseWorksInCompany)
+    bind("startupGrant", entrepreneur.startupGrant)
+    bind("checkupConsent", entrepreneur.checkupConsent)
+    bind("partnership", entrepreneur.partnership)
+    bind("lightEntrepreneur", entrepreneur.lightEntrepreneur)
+    if (entrepreneur.accountant != null) bindAccountant(entrepreneur.accountant)
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindSelfEmployed(selfEmployed: SelfEmployed): This =
+private fun Database.SqlStatement<*>.bindSelfEmployed(selfEmployed: SelfEmployed) {
     bind("selfEmployedAttachments", selfEmployed.attachments)
-        .run { if (selfEmployed.estimatedIncome != null) bindSelfEmployedEstimation(selfEmployed.estimatedIncome) else this }
+    if (selfEmployed.estimatedIncome != null) bindSelfEmployedEstimation(selfEmployed.estimatedIncome)
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindSelfEmployedEstimation(estimation: EstimatedIncome): This =
+private fun Database.SqlStatement<*>.bindSelfEmployedEstimation(estimation: EstimatedIncome) {
     bind("selfEmployedEstimatedMonthlyIncome", estimation.estimatedMonthlyIncome)
-        .bind("selfEmployedIncomeStartDate", estimation.incomeStartDate)
-        .bindNullable("selfEmployedIncomeEndDate", estimation.incomeEndDate)
+    bind("selfEmployedIncomeStartDate", estimation.incomeStartDate)
+    bindNullable("selfEmployedIncomeEndDate", estimation.incomeEndDate)
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindLimitedCompany(limitedCompany: LimitedCompany): This =
+private fun Database.SqlStatement<*>.bindLimitedCompany(limitedCompany: LimitedCompany) {
     bind("limitedCompanyIncomeSource", limitedCompany.incomeSource)
+}
 
-private fun <This : SqlStatement<This>> SqlStatement<This>.bindAccountant(accountant: Accountant): This =
+private fun Database.SqlStatement<*>.bindAccountant(accountant: Accountant) {
     bind("accountantName", accountant.name)
-        .bind("accountantAddress", accountant.address)
-        .bind("accountantPhone", accountant.phone)
-        .bind("accountantEmail", accountant.email)
+    bind("accountantAddress", accountant.address)
+    bind("accountantPhone", accountant.phone)
+    bind("accountantEmail", accountant.email)
+}
 
 fun Database.Transaction.createIncomeStatement(
     personId: PersonId,
@@ -371,7 +374,9 @@ RETURNING id
         """.trimIndent()
     )
         .bind("personId", personId)
-        .bindIncomeStatementBody(body)
+        .also {
+            it.bindIncomeStatementBody(body)
+        }
         .mapTo<IncomeStatementId>()
         .one()
 }
@@ -413,7 +418,9 @@ WHERE id = :id
         """.trimIndent()
     )
         .bind("id", incomeStatementId)
-        .bindIncomeStatementBody(body)
+        .also {
+            it.bindIncomeStatementBody(body)
+        }
         .execute()
 
     return rowCount == 1

@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.domain
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month

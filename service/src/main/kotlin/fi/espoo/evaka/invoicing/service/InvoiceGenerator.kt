@@ -38,7 +38,6 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.LocalDate

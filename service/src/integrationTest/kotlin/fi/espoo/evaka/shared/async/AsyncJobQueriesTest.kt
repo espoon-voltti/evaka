@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalDate
@@ -96,7 +95,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val completedCount = jdbi.open()
             .use { h ->
-                h.createQuery("SELECT count(*) FROM async_job WHERE completed_at IS NOT NULL").mapTo<Int>().one()
+                h.createQuery("SELECT count(*) FROM async_job WHERE completed_at IS NOT NULL").mapTo(Int::class.java).one()
             }
         assertEquals(2, completedCount)
     }

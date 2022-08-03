@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}

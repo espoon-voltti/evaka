@@ -10,17 +10,15 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
-        .mapTo<VasuChild>()
+        .mapTo<VasuChild>(qualifiers = emptyArray())
         .one()
 
     val guardians = createQuery(
@@ -32,7 +30,7 @@ fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemp
         """.trimIndent()
     )
         .bind("id", childId)
-        .mapTo<VasuGuardian>()
+        .mapTo<VasuGuardian>(qualifiers = emptyArray())
         .list()
 
     val basics = VasuBasics(

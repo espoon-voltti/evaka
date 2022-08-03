@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

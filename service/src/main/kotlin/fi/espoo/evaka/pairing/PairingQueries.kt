@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.security.SecureRandom
 import java.util.UUID
 

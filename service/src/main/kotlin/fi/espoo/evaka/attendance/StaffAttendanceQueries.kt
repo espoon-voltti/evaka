@@ -12,12 +12,10 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
-import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -227,7 +225,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttend
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("occupancyCoefficient", occupancyCoefficient)
-            .one()
+            .updateExactlyOne()
     } else {
         createUpdate(
             """

@@ -22,9 +22,7 @@ import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.ColumnMapperFactory
 import org.jdbi.v3.core.mapper.RowMapperFactory
 import org.jdbi.v3.core.mapper.SingleColumnMapper
-import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
-import org.jdbi.v3.core.statement.SqlStatement
 import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
@@ -36,6 +34,7 @@ import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
 import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 
 /**
  * Registers the given JDBI column mapper, which will be used to map data from database to values of type T.
@@ -141,22 +140,6 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
 }
 
 /**
- * Binds a nullable argument to an SQL statement.
- *
- * SqlStatement.`bind` can't handle null values, because it figures out the type from the passed value, and if the
- * value is null, there is no type information available. This function uses Kotlin reified types to figure out the type
- * at compile-time.
- */
-inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindNullable(name: String, value: T?): This =
-    this.bindByType(name, value, QualifiedType.of(T::class.java))
-
-inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindNullable(
-    name: String,
-    value: Collection<T>?
-): This =
-    this.bindNullable(name, value?.toTypedArray())
-
-/**
  * Maps a row column to a value.
  *
  * This function works with Kotlin better than row.getColumn().
@@ -180,4 +163,4 @@ inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T = mapColumn
  *
  * This function works with Kotlin better than row.getRow().
  */
-inline fun <reified T> RowView.mapRow(type: Class<T> = T::class.java): T = getRow(type)
+inline fun <reified T> RowView.mapRow(): T = getRow(typeOf<T>().asJdbiJavaType()) as T

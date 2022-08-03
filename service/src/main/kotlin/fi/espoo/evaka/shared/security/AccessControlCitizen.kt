@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 
 @Service

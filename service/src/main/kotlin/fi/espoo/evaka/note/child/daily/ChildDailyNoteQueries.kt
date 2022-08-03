@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {

@@ -10,7 +10,6 @@ import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID

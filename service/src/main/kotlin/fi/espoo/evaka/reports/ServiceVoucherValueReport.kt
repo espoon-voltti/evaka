@@ -15,12 +15,10 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -97,7 +95,7 @@ fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int
             .bind("year", year)
             .bind("month", month)
             .bind("takenAt", takenAt)
-            .executeAndReturnGeneratedKeys("id")
+            .executeAndReturnGeneratedKeys()
             .mapTo<UUID>()
             .first()
 

@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.kotlin.mapTo
 import kotlin.Exception
 
 fun getOrCreateVardaChildByOrganizer(

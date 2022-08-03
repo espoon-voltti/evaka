@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Duration
 import java.time.LocalDate
 

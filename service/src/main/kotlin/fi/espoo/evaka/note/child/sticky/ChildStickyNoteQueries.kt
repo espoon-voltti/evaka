@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> = createQuery(

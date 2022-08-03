@@ -6,10 +6,8 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 
 sealed class AclAuthorization {
     abstract fun isAuthorized(id: DaycareId): Boolean

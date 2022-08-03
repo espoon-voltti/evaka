@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
-import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

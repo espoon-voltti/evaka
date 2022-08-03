@@ -9,9 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> = createQuery(
     // language=SQL

@@ -8,10 +8,8 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 private fun Database.Read.createDaycareGroupQuery(groupId: GroupId?, daycareId: DaycareId?, period: DateRange?) = createQuery(

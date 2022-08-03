@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.OffsetDateTime
 
 data class RealtimeOccupancy(

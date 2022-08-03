@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.DayOfWeek
 import java.time.LocalDate

@@ -7,7 +7,6 @@ package fi.espoo.evaka.assistanceneed.decision
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.filterPermittedAssistanceNeedDecisionsForDecisionMaker(user: AuthenticatedUser.Employee, ids: Collection<AssistanceNeedDecisionId>): Set<AssistanceNeedDecisionId> =
     this.createQuery(

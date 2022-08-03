@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(val childId: ChildId, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)

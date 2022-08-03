@@ -12,12 +12,10 @@ import fi.espoo.evaka.invoicing.domain.PaymentDraft
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.deletePaymentDraftsByDateRange(range: DateRange) {
     createUpdate("DELETE FROM payment WHERE status = 'DRAFT' AND period && :range")

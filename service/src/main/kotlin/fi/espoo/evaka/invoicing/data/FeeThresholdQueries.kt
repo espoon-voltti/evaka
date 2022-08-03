@@ -6,8 +6,6 @@ package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
