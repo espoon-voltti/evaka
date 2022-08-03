@@ -68,8 +68,19 @@ export default React.memo(function ImageEditor({
   }, [onReturn, navigate])
 
   const onSave = useCallback(() => {
-    const canvas = previewCanvasRef.current
-    if (!crop || !canvas) return
+    if (!crop || !previewCanvasRef.current) return
+    let canvas = previewCanvasRef.current
+
+    if (canvas.width > 512 || canvas.height > 512) {
+      const resizedCanvas = document.createElement('canvas')
+      resizedCanvas.width = Math.min((canvas.width / canvas.height) * 512, 512)
+      resizedCanvas.height = Math.min((canvas.height / canvas.width) * 512, 512)
+      resizedCanvas
+        .getContext('2d')
+        ?.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height)
+      canvas = resizedCanvas
+    }
+
     setSubmitting(true)
 
     return new Promise<Result<void>>((resolve) =>

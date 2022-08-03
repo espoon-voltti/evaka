@@ -21,7 +21,10 @@ import fi.espoo.evaka.testChild_1
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.util.UUID
+import javax.imageio.ImageIO
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -80,6 +83,15 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(0, newImages.size)
     }
+
+    @Test
+    fun `image larger than 512x512 is not accepted`() {
+        val image = BufferedImage(1024, 1024, BufferedImage.TYPE_INT_RGB)
+        val output = ByteArrayOutputStream()
+        ImageIO.write(image, "jpg", output)
+        uploadImage(testChild_1.id, imageName1, output.toByteArray(), 400)
+    }
+
     private val imageName1 = "test1.jpg"
     private val imageData1 = """
 FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
@@ -102,12 +114,12 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 01
 """.decodeHex()
 
-    private fun uploadImage(childId: ChildId, fileName: String, fileData: ByteArray) {
+    private fun uploadImage(childId: ChildId, fileName: String, fileData: ByteArray, statusCode: Int = 200) {
         val (_, response, _) = http.upload("/children/$childId/image", Method.PUT)
             .add(BlobDataPart(fileData.inputStream(), "file", fileName))
             .asUser(admin)
             .response()
-        assertEquals(200, response.statusCode)
+        assertEquals(statusCode, response.statusCode)
     }
 
     private fun deleteImage(childId: ChildId) {
