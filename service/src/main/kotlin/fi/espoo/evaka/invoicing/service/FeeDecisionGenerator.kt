@@ -31,12 +31,14 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -264,7 +266,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         )
             .bind("placementIds", placements.map { it.id }.toTypedArray())
             .map { row ->
-                row.mapColumn<DateRange>("range") to row.getRow(ServiceNeedValue::class.java)
+                row.mapColumn<DateRange>("range") to row.mapRow<ServiceNeedValue>()
             }
             .toList()
 
@@ -283,9 +285,7 @@ FROM service_need_option WHERE default_option
 """
         )
             .map { row ->
-                row.getColumn("valid_placement_type", fi.espoo.evaka.placement.PlacementType::class.java) to row.getRow(
-                    ServiceNeedValue::class.java
-                )
+                row.mapColumn<PlacementType>("valid_placement_type") to row.mapRow<ServiceNeedValue>()
             }
             .toMap()
 
