@@ -52,7 +52,7 @@ export default React.memo(function ChildHeader({
       />
       <div>
         <H1 noMargin data-qa="child-name">
-          {firstName} {lastName}
+          {`${firstName} ${lastName}`}
         </H1>
         {group && <Title>{group.name}</Title>}
       </div>
