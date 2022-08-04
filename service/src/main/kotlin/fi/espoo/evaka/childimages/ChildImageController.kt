@@ -7,13 +7,16 @@ package fi.espoo.evaka.childimages
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.s3.checkFileContentType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
+import org.apache.commons.imaging.Imaging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+
+const val maxImageSize = 512
 
 @RestController
 class ChildImageController(
@@ -43,7 +48,15 @@ class ChildImageController(
         Audit.ChildImageUpload.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
 
-        db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file) }
+        val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
+
+        val imageSize = Imaging.getImageSize(file.inputStream, null)
+
+        if (imageSize.getWidth() > maxImageSize || imageSize.getHeight() > maxImageSize) {
+            throw BadRequest("Image size must not exceed $maxImageSize pixels")
+        }
+
+        db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file, contentType) }
     }
 
     @DeleteMapping("/children/{childId}/image")

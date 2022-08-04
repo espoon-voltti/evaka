@@ -136,6 +136,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on")
     implementation("org.bouncycastle:bcpkix-jdk15on")
     implementation("org.apache.tika:tika-core")
+    implementation("org.apache.commons:commons-imaging")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
