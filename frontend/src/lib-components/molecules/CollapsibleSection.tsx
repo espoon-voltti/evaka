@@ -77,6 +77,9 @@ type CollapsibleSectionProps = BaseProps & {
   headingComponent?: React.FC<HeadingProps>
 }
 
+/**
+ * @deprecated use CollapsibleContentArea instead
+ */
 export default React.memo(function CollapsibleSection({
   title,
   icon,

@@ -126,6 +126,7 @@ export const CollapsibleContentArea = React.memo(
           data-qa={props['data-qa'] ? `${props['data-qa']}-header` : undefined}
           className={classNames({ open })}
           role="button"
+          aria-expanded={open}
         >
           {title}
           <IconContainer>
