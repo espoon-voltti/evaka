@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
@@ -125,7 +126,8 @@ export default React.memo(function Radio({
   ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const ariaLabel: string = 'ariaLabel' in props ? props.ariaLabel : props.label
+
+  const ariaId = useUniqueId('radio')
 
   return (
     <Wrapper
@@ -141,7 +143,8 @@ export default React.memo(function Radio({
           type="radio"
           checked={checked}
           name={name}
-          aria-label={ariaLabel}
+          id={id ?? ariaId}
+          aria-label={'ariaLabel' in props ? props.ariaLabel : undefined}
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
@@ -150,14 +153,13 @@ export default React.memo(function Radio({
           readOnly={!onChange}
           ref={inputRef}
           small={small}
-          id={id}
         />
         <IconWrapper small={small}>
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>
       <LabelContainer small={small}>
-        <label htmlFor={id}>{props.label}</label>
+        <label htmlFor={id ?? ariaId}>{props.label}</label>
         <ExpandingInfoButtonSlot />
       </LabelContainer>
     </Wrapper>

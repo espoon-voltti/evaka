@@ -20,6 +20,7 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 
 import { SrOnly } from '../SrOnly'
+
 import { StyledButton } from './Button'
 
 const onSuccessTimeout = isAutomatedTest ? 10 : 500

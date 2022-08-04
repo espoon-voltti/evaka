@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { useRef } from 'react'
 import styled from 'styled-components'
 
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
@@ -138,6 +139,8 @@ export default React.memo(function Checkbox({
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const ariaId = useUniqueId('checkbox')
+
   return (
     <Wrapper
       onClick={() => {
@@ -152,7 +155,7 @@ export default React.memo(function Checkbox({
           type="checkbox"
           checked={checked}
           data-qa={dataQa ? `${dataQa}-input` : undefined}
-          aria-label={label}
+          id={ariaId}
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
@@ -167,7 +170,7 @@ export default React.memo(function Checkbox({
       </Box>
       {!hiddenLabel && (
         <LabelContainer>
-          <label>{label}</label>
+          <label htmlFor={ariaId}>{label}</label>
           <ExpandingInfoButtonSlot />
         </LabelContainer>
       )}
