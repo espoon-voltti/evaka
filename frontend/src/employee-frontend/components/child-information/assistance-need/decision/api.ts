@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import DateRange from 'lib-common/date-range'
 import {
   AssistanceNeedDecision,
   AssistanceNeedDecisionBasicsResponse,
@@ -25,12 +25,7 @@ const mapToAssistanceNeedDecision = (
   data: JsonOf<AssistanceNeedDecision>
 ): AssistanceNeedDecision => ({
   ...data,
-  startDate: parseDate(data.startDate),
-  endDate: parseDate(data.endDate),
-  assistanceServicesTime:
-    data.assistanceServicesTime !== null
-      ? FiniteDateRange.parseJson(data.assistanceServicesTime)
-      : null,
+  validityPeriod: DateRange.parseJson(data.validityPeriod),
   decisionMade: parseDate(data.decisionMade),
   guardiansHeardOn: parseDate(data.guardiansHeardOn),
   sentForDecision: parseDate(data.sentForDecision),
@@ -53,8 +48,7 @@ const mapToAssistanceNeedDecisionBasicsReponse = (
   ...data,
   decision: {
     ...data.decision,
-    startDate: parseDate(data.decision.startDate),
-    endDate: parseDate(data.decision.endDate),
+    validityPeriod: DateRange.parseJson(data.decision.validityPeriod),
     decisionMade: parseDate(data.decision.decisionMade),
     sentForDecision: parseDate(data.decision.sentForDecision),
     created: HelsinkiDateTime.parseIso(data.decision.created)

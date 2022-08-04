@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -469,9 +470,14 @@ describe('Citizen children page', () => {
         .with({
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
-          assistanceLevels: ['SPECIAL_ASSISTANCE', 'ENHANCED_ASSISTANCE'],
-          startDate: LocalDate.of(2020, 2, 5),
-          endDate: LocalDate.of(2021, 5, 11),
+          assistanceLevels: [
+            'ASSISTANCE_SERVICES_FOR_TIME',
+            'ENHANCED_ASSISTANCE'
+          ],
+          validityPeriod: new DateRange(
+            LocalDate.of(2020, 2, 5),
+            LocalDate.of(2021, 5, 11)
+          ),
           decisionMade: LocalDate.of(2020, 1, 17)
         })
         .save()
@@ -481,7 +487,8 @@ describe('Citizen children page', () => {
       await childPage.openAssistanceNeedCollapsible()
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
-        assistanceLevel: 'Erityinen tuki, Tehostettu tuki',
+        assistanceLevel:
+          'Tukipalvelut päätöksen voimassaolon aikana, Tehostettu tuki',
         selectedUnit: fixtures.daycareFixture.name,
         validityPeriod: '05.02.2020 – 11.05.2021',
         decisionMade: '17.01.2020',
@@ -495,7 +502,7 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'REJECTED',
           assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          startDate: LocalDate.of(2022, 2, 10),
+          validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
           decisionMade: LocalDate.of(2021, 1, 17)
         })
         .save()
@@ -519,7 +526,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'NEEDS_WORK',
           assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          startDate: LocalDate.of(2022, 2, 10),
           decisionMade: LocalDate.of(2021, 1, 17)
         })
         .save()
@@ -530,8 +536,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'DRAFT',
           assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          startDate: LocalDate.of(2020, 2, 5),
-          endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2021, 1, 17)
         })
         .save()
@@ -553,8 +557,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
           assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          startDate: LocalDate.of(2020, 2, 5),
-          endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
           unreadGuardianIds
         })
@@ -566,8 +568,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'REJECTED',
           assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          startDate: LocalDate.of(2019, 2, 5),
-          endDate: LocalDate.of(2020, 1, 11),
           decisionMade: LocalDate.of(2018, 1, 17),
           unreadGuardianIds
         })
@@ -579,8 +579,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
           assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          startDate: LocalDate.of(2020, 2, 5),
-          endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
           unreadGuardianIds
         })
@@ -609,8 +607,6 @@ describe('Citizen children page', () => {
           selectedUnit: { id: fixtures.daycareFixture.id },
           status: 'ACCEPTED',
           assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          startDate: LocalDate.of(2020, 2, 5),
-          endDate: LocalDate.of(2021, 5, 11),
           decisionMade: LocalDate.of(2020, 1, 17),
           unreadGuardianIds
         })
@@ -692,8 +688,7 @@ describe('Citizen assistance need decision page', () => {
         selectedUnit: { id: fixtures.daycareFixture.id },
         status: 'ACCEPTED',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        startDate: LocalDate.of(2020, 2, 5),
-        endDate: LocalDate.of(2021, 5, 11),
+        validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
         decisionMade: LocalDate.of(2021, 1, 17),
         decisionMaker: {
           employeeId: serviceWorker.id,

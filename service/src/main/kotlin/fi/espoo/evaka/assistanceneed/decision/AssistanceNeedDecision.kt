@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -22,8 +22,7 @@ data class AssistanceNeedDecision(
     val decisionNumber: Long? = null,
     @Nested("child")
     val child: AssistanceNeedDecisionChild?,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
     val language: AssistanceNeedDecisionLanguage,
@@ -55,15 +54,13 @@ data class AssistanceNeedDecision(
     val otherRepresentativeDetails: String?,
 
     val assistanceLevels: Set<AssistanceLevel>,
-    val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?,
 
     val hasDocument: Boolean
 ) {
     fun toForm() = AssistanceNeedDecisionForm(
         decisionNumber,
-        startDate,
-        endDate,
+        validityPeriod,
         status,
         language,
         decisionMade,
@@ -85,15 +82,13 @@ data class AssistanceNeedDecision(
         otherRepresentativeHeard,
         otherRepresentativeDetails,
         assistanceLevels,
-        assistanceServicesTime,
         motivationForDecision
     )
 }
 
 data class AssistanceNeedDecisionForm(
     val decisionNumber: Long? = null,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
     val language: AssistanceNeedDecisionLanguage,
@@ -125,14 +120,12 @@ data class AssistanceNeedDecisionForm(
     val otherRepresentativeDetails: String?,
 
     val assistanceLevels: Set<AssistanceLevel>,
-    val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?
 )
 
 data class AssistanceNeedDecisionBasics(
     val id: AssistanceNeedDecisionId,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
     val decisionMade: LocalDate?,
@@ -243,8 +236,7 @@ data class AssistanceNeedDecisionChild(
 
 data class AssistanceNeedDecisionCitizenListItem(
     val id: AssistanceNeedDecisionId,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
     val decisionMade: LocalDate?,

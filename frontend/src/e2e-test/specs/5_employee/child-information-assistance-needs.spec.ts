@@ -4,6 +4,7 @@
 
 import { addDays, subDays } from 'date-fns'
 
+import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -225,9 +226,12 @@ describe('Child assistance need decisions for employees', () => {
           }
         ],
         sentForDecision: LocalDate.of(2020, 5, 11),
-        startDate: LocalDate.of(2020, 7, 1),
-        endDate: LocalDate.of(2020, 12, 11),
-        decisionMade: LocalDate.of(2020, 6, 2)
+        validityPeriod: new DateRange(
+          LocalDate.of(2020, 7, 1),
+          LocalDate.of(2020, 12, 11)
+        ),
+        decisionMade: LocalDate.of(2020, 6, 2),
+        assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME']
       })
       .save()
 

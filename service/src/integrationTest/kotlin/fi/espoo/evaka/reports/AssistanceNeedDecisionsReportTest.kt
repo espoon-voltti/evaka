@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -41,8 +42,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     private val decisionMaker2 = AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.ADMIN))
 
     private val testDecision = AssistanceNeedDecisionForm(
-        startDate = LocalDate.of(2022, 1, 1),
-        endDate = LocalDate.of(2023, 1, 1),
+        validityPeriod = DateRange(LocalDate.of(2022, 1, 1), null),
         status = AssistanceNeedDecisionStatus.DRAFT,
         language = AssistanceNeedDecisionLanguage.FI,
         decisionMade = LocalDate.of(2021, 12, 31),
@@ -87,7 +87,6 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         otherRepresentativeDetails = null,
 
         assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
-        assistanceServicesTime = null,
         motivationForDecision = "Motivation for decision"
     )
 

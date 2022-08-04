@@ -58,6 +58,7 @@ export interface AssistanceNeedDecisionTexts {
     specialAssistance: string
   }
   startDate: string
+  endDate: string
   selectedUnit: string
   unitMayChange: string
   motivationForDecision: string
@@ -150,13 +151,11 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
   const assistanceLevelTexts: Record<AssistanceLevel, string> = useMemo(
     () => ({
       ASSISTANCE_ENDS: t.assistanceLevel.assistanceEnds,
-      ASSISTANCE_SERVICES_FOR_TIME: `${
-        t.assistanceLevel.assistanceServicesForTime
-      } ${decision?.assistanceServicesTime?.format() ?? ''}`,
+      ASSISTANCE_SERVICES_FOR_TIME: t.assistanceLevel.assistanceServicesForTime,
       ENHANCED_ASSISTANCE: t.assistanceLevel.enhancedAssistance,
       SPECIAL_ASSISTANCE: t.assistanceLevel.specialAssistance
     }),
-    [t, decision]
+    [t]
   )
 
   const [appealInstructionsOpen, setAppealInstructionsOpen] = useState(false)
@@ -288,8 +287,14 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
 
             <OptionalLabelledValue
               label={t.startDate}
-              value={decision.startDate?.format()}
+              value={decision.validityPeriod.start.format()}
               data-qa="start-date"
+            />
+
+            <OptionalLabelledValue
+              label={t.endDate}
+              value={decision.validityPeriod.end?.format()}
+              data-qa="end-date"
             />
 
             <OptionalLabelledValue

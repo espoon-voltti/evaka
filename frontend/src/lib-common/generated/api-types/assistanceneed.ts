@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
@@ -46,13 +47,11 @@ export interface AssistanceNeed {
 */
 export interface AssistanceNeedDecision {
   assistanceLevels: AssistanceLevel[]
-  assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   child: AssistanceNeedDecisionChild | null
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMaker | null
   decisionNumber: number | null
-  endDate: LocalDate | null
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
@@ -69,10 +68,10 @@ export interface AssistanceNeedDecision {
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
-  startDate: LocalDate | null
   status: AssistanceNeedDecisionStatus
   structuralMotivationDescription: string | null
   structuralMotivationOptions: StructuralMotivationOptions
+  validityPeriod: DateRange
   viewOfGuardians: string | null
 }
 
@@ -82,12 +81,11 @@ export interface AssistanceNeedDecision {
 export interface AssistanceNeedDecisionBasics {
   created: HelsinkiDateTime
   decisionMade: LocalDate | null
-  endDate: LocalDate | null
   id: UUID
   selectedUnit: UnitInfoBasics | null
   sentForDecision: LocalDate | null
-  startDate: LocalDate | null
   status: AssistanceNeedDecisionStatus
+  validityPeriod: DateRange
 }
 
 /**
@@ -113,12 +111,11 @@ export interface AssistanceNeedDecisionChild {
 export interface AssistanceNeedDecisionCitizenListItem {
   assistanceLevels: AssistanceLevel[]
   decisionMade: LocalDate | null
-  endDate: LocalDate | null
   id: UUID
   isUnread: boolean
   selectedUnit: UnitInfoBasics | null
-  startDate: LocalDate | null
   status: AssistanceNeedDecisionStatus
+  validityPeriod: DateRange
 }
 
 /**
@@ -146,12 +143,10 @@ export interface AssistanceNeedDecisionEmployeeForm {
 */
 export interface AssistanceNeedDecisionForm {
   assistanceLevels: AssistanceLevel[]
-  assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMakerForm | null
   decisionNumber: number | null
-  endDate: LocalDate | null
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
@@ -166,10 +161,10 @@ export interface AssistanceNeedDecisionForm {
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
-  startDate: LocalDate | null
   status: AssistanceNeedDecisionStatus
   structuralMotivationDescription: string | null
   structuralMotivationOptions: StructuralMotivationOptions
+  validityPeriod: DateRange
   viewOfGuardians: string | null
 }
 

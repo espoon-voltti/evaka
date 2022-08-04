@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,8 +46,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     id = AssistanceNeedDecisionId(UUID.randomUUID()),
                     decisionNumber = 10000,
                     childId = childId,
-                    startDate = LocalDate.of(2020, 1, 1),
-                    endDate = LocalDate.of(2020, 6, 1),
+                    validityPeriod = DateRange(LocalDate.of(2020, 1, 1), null),
                     status = AssistanceNeedDecisionStatus.DRAFT,
                     language = AssistanceNeedDecisionLanguage.FI,
                     decisionMade = LocalDate.of(2019, 9, 1),
@@ -81,7 +81,6 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     otherRepresentativeHeard = false,
                     otherRepresentativeDetails = null,
                     assistanceLevels = emptySet(),
-                    assistanceServicesTime = null,
                     motivationForDecision = null,
                     unreadGuardianIds = null
                 )

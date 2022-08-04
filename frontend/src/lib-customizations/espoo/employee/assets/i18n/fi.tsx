@@ -767,13 +767,16 @@ export const fi = {
       futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
       assistanceLevel: {
         assistanceEnds: 'Tuki päättyy',
-        assistanceServicesForTime: 'Tukipalvelut ajalla',
+        assistanceServicesForTime: 'Tukipalvelut päätöksen voimassaolon aikana',
         enhancedAssistance: 'Tehostettu tuki',
         specialAssistance: 'Erityinen tuki'
       },
       startDate: 'Päätös voimassa alkaen',
+      startDateIndefiniteInfo:
+        'Päätös on voimassa toistaiseksi alkamispäivästä alkaen.',
       startDateInfo:
-        'Päätös on voimassa toistaiseksi alkamispäivästä alkaen. Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
+        'Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
+      endDate: 'Päätös voimassa saakka',
       selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
       unitMayChange:
         'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',

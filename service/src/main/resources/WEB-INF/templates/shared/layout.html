@@ -50,8 +50,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         page-break-after: avoid;
       }
 
-      .page.first-page {
+      .with-address .page.first-page {
         margin-top: 50mm;
+      }
+
+      .without-address .page.first-page {
+        margin-top: 6mm;
       }
 
       .page-break {
@@ -175,7 +179,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     </style>
   </head>
-  <body>
+  <body
+    th:classappend="${guardian} != null or ${sendAddress} != null ? 'with-address' : 'without-address'"
+  >
     <table class="layout-container-table">
       <thead>
         <tr>

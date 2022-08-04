@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import DateRange from 'lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -87,7 +89,6 @@ export default React.memo(function AssistanceNeedDecisionSection({
               setIsCreatingDecision(true)
               void createAssistanceNeedDecision(id, {
                 assistanceLevels: [],
-                assistanceServicesTime: null,
                 careMotivation: null,
                 decisionMade: null,
                 decisionMaker: {
@@ -95,7 +96,6 @@ export default React.memo(function AssistanceNeedDecisionSection({
                   title: null
                 },
                 decisionNumber: null,
-                endDate: null,
                 expertResponsibilities: null,
                 guardianInfo: [],
                 guardiansHeardOn: null,
@@ -124,7 +124,6 @@ export default React.memo(function AssistanceNeedDecisionSection({
                   specialAides: false
                 },
                 servicesMotivation: null,
-                startDate: null,
                 status: 'DRAFT',
                 structuralMotivationDescription: null,
                 structuralMotivationOptions: {
@@ -135,6 +134,10 @@ export default React.memo(function AssistanceNeedDecisionSection({
                   smallerGroup: false,
                   specialGroup: false
                 },
+                validityPeriod: new DateRange(
+                  LocalDate.todayInHelsinkiTz(),
+                  null
+                ),
                 viewOfGuardians: null
               }).then((decision) => {
                 void reloadDecisions()
