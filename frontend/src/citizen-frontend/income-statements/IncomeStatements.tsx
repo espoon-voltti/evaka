@@ -89,12 +89,14 @@ const IncomeStatementsTable = React.memo(function IncomeStatementsTable({
                       icon={faPen}
                       text={t.common.edit}
                       onClick={onEdit(item.id)}
+                      altText={t.common.edit}
                     />
                     <Gap size="xs" horizontal />
                     <ResponsiveInlineButton
                       icon={faTrash}
                       text={t.common.delete}
                       onClick={() => onRemoveIncomeStatement(item.id)}
+                      altText={t.common.delete}
                     />
                   </>
                 )}
