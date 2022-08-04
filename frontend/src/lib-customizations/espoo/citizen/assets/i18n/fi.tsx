@@ -120,7 +120,9 @@ export default {
     logout: 'Kirjaudu ulos',
     openMenu: 'Avaa valikko',
     closeMenu: 'Sulje valikko',
-    goToHomepage: 'Siirry etusivulle'
+    goToHomepage: 'Siirry etusivulle',
+    notifications: 'ilmoitusta',
+    requiresStrongAuth: 'vaatii vahvan tunnistautumisen'
   },
   footer: {
     cityLabel: '© Espoon kaupunki',

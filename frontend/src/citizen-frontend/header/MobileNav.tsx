@@ -245,45 +245,48 @@ const Navigation = React.memo(function Navigation({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <Nav>
+    <Nav role="menu">
       {user.accessibleFeatures.reservations && (
-        <StyledNavLink to="/calendar" onClick={close} data-qa="nav-calendar">
-          <NavLinkText text={t.header.nav.calendar} />
-        </StyledNavLink>
+        <HeaderNavLink
+          to="/calendar"
+          onClick={close}
+          data-qa="nav-calendar"
+          text={t.header.nav.calendar}
+        />
       )}
       {user.accessibleFeatures.messages && (
-        <StyledNavLink to="/messages" onClick={close} data-qa="nav-messages">
-          <NavLinkText text={t.header.nav.messages} />
-          {unreadMessagesCount > 0 && (
-            <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
-          )}
-        </StyledNavLink>
+        <HeaderNavLink
+          to="/messages"
+          onClick={close}
+          data-qa="nav-messages"
+          text={t.header.nav.messages}
+          notificationCount={unreadMessagesCount}
+        />
       )}
       {user.accessibleFeatures.childDocumentation && (
-        <StyledNavLink
+        <HeaderNavLink
           to="/child-documents"
           data-qa="nav-child-documents"
           onClick={close}
-        >
-          <NavLinkText text={t.header.nav.pedagogicalDocuments} />
-          {maybeLockElem}
-          {unreadChildDocumentsCount > 0 && (
-            <FloatingCircledChar>
-              {unreadChildDocumentsCount}
-            </FloatingCircledChar>
-          )}
-        </StyledNavLink>
+          text={t.header.nav.pedagogicalDocuments}
+          notificationCount={unreadChildDocumentsCount}
+          lockElem={maybeLockElem}
+        />
       )}
-      <StyledNavLink to="/children" onClick={close} data-qa="nav-children">
-        <NavLinkText text={t.header.nav.children} />
-        {maybeLockElem}
-        {unreadChildrenCount > 0 && (
-          <FloatingCircledChar>{unreadChildrenCount}</FloatingCircledChar>
-        )}
-      </StyledNavLink>
-      <StyledNavLink to="/applying" onClick={close} data-qa="nav-applications">
-        <NavLinkText text={t.header.nav.applications} /> {maybeLockElem}
-      </StyledNavLink>
+      <HeaderNavLink
+        to="/children"
+        onClick={close}
+        data-qa="nav-children"
+        text={t.header.nav.children}
+        notificationCount={unreadChildrenCount}
+        lockElem={maybeLockElem}
+      />
+      <HeaderNavLink
+        to="/applying"
+        onClick={close}
+        data-qa="nav-applications"
+        text={t.header.nav.applications}
+      />
     </Nav>
   )
 })
@@ -301,14 +304,10 @@ const NavLinkText = React.memo(function NavLinkText({
   )
 })
 
-const Nav = styled.nav`
+const Nav = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-`
-
-const FloatingCircledChar = styled(CircledChar)`
-  float: right;
 `
 
 const StyledNavLink = styled(NavLink)`
@@ -465,3 +464,42 @@ const SubMenuLink = styled(StyledNavLink)`
 const UserName = styled.span`
   font-weight: ${fontWeights.semibold};
 `
+
+const HeaderNavLink = React.memo(function HeaderNavLink({
+  notificationCount,
+  text,
+  lockElem,
+  ...props
+}: {
+  onClick: () => void
+  to: string
+  notificationCount?: number
+  text: string
+  lockElem?: React.ReactNode
+}) {
+  const t = useTranslation()
+
+  return (
+    <StyledNavLink
+      {...props}
+      aria-label={`${text}${
+        lockElem ? `, ${t.header.requiresStrongAuth}` : ''
+      }${
+        notificationCount && notificationCount > 0
+          ? `, ${notificationCount} ${t.header.notifications}`
+          : ''
+      }`}
+      role="menuitem"
+    >
+      <NavLinkText text={text} />
+      {lockElem}
+      {!!notificationCount && (
+        <CircledChar
+          aria-label={`${notificationCount} ${t.header.notifications}`}
+        >
+          {notificationCount}
+        </CircledChar>
+      )}
+    </StyledNavLink>
+  )
+})

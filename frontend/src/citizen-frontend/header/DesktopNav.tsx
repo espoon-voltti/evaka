@@ -60,52 +60,41 @@ export default React.memo(function DesktopNav({
               {user ? (
                 <>
                   {user.accessibleFeatures.reservations && (
-                    <StyledNavLink to="/calendar" data-qa="nav-calendar">
-                      <NavLinkText text={t.header.nav.calendar} />
-                    </StyledNavLink>
+                    <HeaderNavLink
+                      to="/calendar"
+                      data-qa="nav-calendar"
+                      text={t.header.nav.calendar}
+                    />
                   )}
                   {user.accessibleFeatures.messages && (
-                    <StyledNavLink to="/messages" data-qa="nav-messages">
-                      <NavLinkText text={t.header.nav.messages} />{' '}
-                      {unreadMessagesCount > 0 ? (
-                        <CircledChar
-                          aria-label={`${t.header.nav.messageCount(
-                            unreadMessagesCount
-                          )}`}
-                        >
-                          {unreadMessagesCount}
-                        </CircledChar>
-                      ) : (
-                        ''
-                      )}
-                    </StyledNavLink>
+                    <HeaderNavLink
+                      to="/messages"
+                      data-qa="nav-messages"
+                      text={t.header.nav.messages}
+                      notificationCount={unreadMessagesCount}
+                    />
                   )}
                   {user.accessibleFeatures.childDocumentation && (
-                    <StyledNavLink
+                    <HeaderNavLink
                       to="/child-documents"
                       data-qa="nav-child-documents"
-                    >
-                      <NavLinkText text={t.header.nav.pedagogicalDocuments} />
-                      {maybeLockElem}
-                      {isEnduser && unreadChildDocuments > 0 && (
-                        <CircledChar data-qa="unread-child-documents-count">
-                          {unreadChildDocuments}
-                        </CircledChar>
-                      )}
-                    </StyledNavLink>
+                      lockElem={maybeLockElem}
+                      text={t.header.nav.pedagogicalDocuments}
+                      notificationCount={unreadChildDocuments}
+                    />
                   )}
-                  <StyledNavLink to="/children" data-qa="nav-children">
-                    <NavLinkText text={t.header.nav.children} />
-                    {maybeLockElem}
-                    {isEnduser && unreadChildren > 0 && (
-                      <CircledChar data-qa="unread-children-count">
-                        {unreadChildren}
-                      </CircledChar>
-                    )}
-                  </StyledNavLink>
-                  <StyledNavLink to="/applying" data-qa="nav-applying">
-                    <NavLinkText text={t.header.nav.applications} />
-                  </StyledNavLink>
+                  <HeaderNavLink
+                    to="/children"
+                    data-qa="nav-children"
+                    text={t.header.nav.children}
+                    notificationCount={unreadChildren}
+                    lockElem={maybeLockElem}
+                  />
+                  <HeaderNavLink
+                    to="/applying"
+                    data-qa="nav-applying"
+                    text={t.header.nav.applications}
+                  />
                 </>
               ) : null}
             </Nav>
@@ -403,3 +392,42 @@ const DropDownItem = styled.button<{ selected: boolean }>`
 const LanguageShort = styled.span`
   text-transform: uppercase;
 `
+
+const HeaderNavLink = React.memo(function HeaderNavLink({
+  notificationCount,
+  text,
+  lockElem,
+  ...props
+}: {
+  onClick?: () => void
+  to: string
+  notificationCount?: number
+  text: string
+  lockElem?: React.ReactNode
+}) {
+  const t = useTranslation()
+
+  return (
+    <StyledNavLink
+      {...props}
+      aria-label={`${text}${
+        lockElem ? `, ${t.header.requiresStrongAuth}` : ''
+      }${
+        notificationCount && notificationCount > 0
+          ? `, ${notificationCount} ${t.header.notifications}`
+          : ''
+      }`}
+      role="menuitem"
+    >
+      <NavLinkText text={text} />
+      {lockElem}
+      {!!notificationCount && (
+        <CircledChar
+          aria-label={`${notificationCount} ${t.header.notifications}`}
+        >
+          {notificationCount}
+        </CircledChar>
+      )}
+    </StyledNavLink>
+  )
+})

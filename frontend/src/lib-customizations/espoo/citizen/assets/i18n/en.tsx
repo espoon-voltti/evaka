@@ -123,7 +123,9 @@ const en: Translations = {
     logout: 'Log out',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
-    goToHomepage: 'Go to homepage'
+    goToHomepage: 'Go to homepage',
+    notifications: 'notifications',
+    requiresStrongAuth: 'requires strong authentication'
   },
   footer: {
     cityLabel: '© City of Espoo',

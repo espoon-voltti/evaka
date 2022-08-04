@@ -121,7 +121,9 @@ const sv: Translations = {
     logout: 'Logga ut',
     openMenu: 'Öppna menyn',
     closeMenu: 'Stäng menyn',
-    goToHomepage: 'Gå till hemsidan'
+    goToHomepage: 'Gå till hemsidan',
+    notifications: 'meddelanden',
+    requiresStrongAuth: 'kräver stark autentisering'
   },
   footer: {
     cityLabel: '© Esbo stad',
