@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
@@ -18,7 +17,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.json.Json
-import java.time.OffsetDateTime
 
 data class NewEmployee(
     val firstName: String,
@@ -50,9 +48,7 @@ data class DaycareRole(
 
 data class EmployeeWithDaycareRoles(
     val id: EmployeeId,
-    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime,
-    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime?,
     val firstName: String,
     val lastName: String,

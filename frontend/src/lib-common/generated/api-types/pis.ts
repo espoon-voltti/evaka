@@ -64,13 +64,13 @@ export interface DisableSsnRequest {
 * Generated from fi.espoo.evaka.pis.Employee
 */
 export interface Employee {
-  created: Date
+  created: HelsinkiDateTime
   email: string | null
   externalId: ExternalId | null
   firstName: string
   id: UUID
   lastName: string
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 /**
@@ -108,14 +108,14 @@ export interface EmployeeUserResponse {
 * Generated from fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 */
 export interface EmployeeWithDaycareRoles {
-  created: Date
+  created: HelsinkiDateTime
   daycareRoles: DaycareRole[]
   email: string | null
   firstName: string
   globalRoles: UserRole[]
   id: UUID
   lastName: string
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 /**

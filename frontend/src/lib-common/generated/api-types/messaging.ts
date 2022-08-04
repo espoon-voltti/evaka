@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { MessageAttachment } from './attachment'
 import { UUID } from '../../types'
@@ -40,7 +41,7 @@ export interface CitizenMessageBody {
 export interface DraftContent {
   attachments: MessageAttachment[]
   content: string
-  created: Date
+  created: HelsinkiDateTime
   id: UUID
   recipientIds: UUID[]
   recipientNames: string[]
@@ -73,11 +74,11 @@ export interface Message {
   attachments: MessageAttachment[]
   content: string
   id: UUID
-  readAt: Date | null
+  readAt: HelsinkiDateTime | null
   recipientNames: string[] | null
   recipients: MessageAccount[]
   sender: MessageAccount
-  sentAt: Date
+  sentAt: HelsinkiDateTime
 }
 
 /**
@@ -177,7 +178,7 @@ export interface SentMessage {
   contentId: UUID
   recipientNames: string[]
   recipients: MessageAccount[]
-  sentAt: Date
+  sentAt: HelsinkiDateTime
   threadTitle: string
   type: MessageType
   urgent: boolean

@@ -16,6 +16,7 @@ import {
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
@@ -92,7 +93,7 @@ const markMatchingThreadRead = (
           ...t,
           messages: t.messages.map((m) => ({
             ...m,
-            readAt: m.readAt || new Date()
+            readAt: m.readAt ?? HelsinkiDateTime.now()
           }))
         }
       : t

@@ -7,6 +7,7 @@ import {
   AbsenceChild,
   AbsenceType
 } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -44,7 +45,7 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
       absences.map((absence) => ({
         ...absence,
         date: LocalDate.parseIso(absence.date),
-        modifiedAt: new Date(absence.modifiedAt)
+        modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
       }))
     ])
   )

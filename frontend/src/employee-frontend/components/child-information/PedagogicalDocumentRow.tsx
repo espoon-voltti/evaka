@@ -9,7 +9,7 @@ import {
   Attachment,
   PedagogicalDocument
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -33,8 +33,8 @@ interface Props {
   childId: UUID
   attachments: Attachment[]
   description: string
-  created: Date
-  updated: Date
+  created: HelsinkiDateTime
+  updated: HelsinkiDateTime
   initInEditMode: boolean
   onReload: () => void
   onDelete: (d: PedagogicalDocument) => void
@@ -125,7 +125,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       data-qa="table-pedagogical-document-row"
     >
       <DateTd data-qa="pedagogical-document-start-date">
-        {LocalDate.fromSystemTzDate(pedagogicalDocument.created).format()}
+        {pedagogicalDocument.created.toLocalDate().format()}
       </DateTd>
       <DescriptionTd data-qa="pedagogical-document-description">
         {editMode ? (

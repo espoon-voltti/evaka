@@ -11,6 +11,7 @@ import {
   GroupStaffAttendance,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -104,7 +105,7 @@ export async function getStaffAttendances(
           attendanceMap.set(key, {
             ...attendance,
             date: LocalDate.parseIso(attendance.date),
-            updated: new Date(attendance.updated)
+            updated: HelsinkiDateTime.parseIso(attendance.updated)
           })
           return attendanceMap
         },

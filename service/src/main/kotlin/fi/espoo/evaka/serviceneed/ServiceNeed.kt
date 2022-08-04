@@ -5,7 +5,6 @@
 package fi.espoo.evaka.serviceneed
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -23,7 +22,6 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class ServiceNeed(
     val id: ServiceNeedId,
@@ -36,7 +34,6 @@ data class ServiceNeed(
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
     val confirmed: ServiceNeedConfirmation?,
-    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime
 )
 
@@ -50,7 +47,6 @@ data class ServiceNeedOptionSummary(
     val nameFi: String,
     val nameSv: String,
     val nameEn: String,
-    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime
 )
 
@@ -58,7 +54,6 @@ data class ServiceNeedConfirmation(
     @PropagateNull
     val userId: EvakaUserId,
     val name: String,
-    @ForceCodeGenType(OffsetDateTime::class)
     val at: HelsinkiDateTime?
 )
 
@@ -89,7 +84,6 @@ data class ServiceNeedOption(
     val voucherValueDescriptionFi: String,
     val voucherValueDescriptionSv: String,
     val active: Boolean,
-    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 

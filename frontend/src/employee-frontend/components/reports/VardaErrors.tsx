@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -45,15 +46,10 @@ export default React.memo(function VardaErrors() {
       .then(() => setDirty(false))
   }, [dirty])
 
-  const ageInDays = (timestamp: Date): number => {
-    const diff = new Date().getTime() - timestamp.getTime()
-    return Math.round(diff / (1000 * 3600 * 24))
-  }
-
-  const formatTimestamp = (timestamp: Date): string => {
-    return `${LocalDate.fromSystemTzDate(
-      timestamp
-    ).format()} ${timestamp.toLocaleTimeString()}`
+  const ageInDays = (timestamp: HelsinkiDateTime): number => {
+    return LocalDate.todayInHelsinkiTz().differenceInDays(
+      timestamp.toLocalDate()
+    )
   }
 
   const markChildForResetAndReload = async (childId: string) => {
@@ -114,12 +110,12 @@ export default React.memo(function VardaErrors() {
                       </FlatList>
                     </Td>
                     <Td data-qa={`updated-${row.childId}`}>
-                      {formatTimestamp(row.updated)}
+                      {row.updated.format()}
                     </Td>
                     <Td data-qa={`last-reset-${row.childId}`}>
                       {row.resetTimeStamp ? (
                         <>
-                          <span>{formatTimestamp(row.resetTimeStamp)}</span>
+                          <span>{row.resetTimeStamp.format()}</span>
                           <InlineAsyncButton
                             data-qa={`reset-button-${row.childId}`}
                             onClick={() =>

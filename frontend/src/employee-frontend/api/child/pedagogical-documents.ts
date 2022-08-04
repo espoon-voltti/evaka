@@ -7,6 +7,7 @@ import {
   PedagogicalDocument,
   PedagogicalDocumentPostBody
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -23,8 +24,8 @@ export async function getChildPedagogicalDocuments(
       Success.of(
         res.data.map(({ created, updated, ...rest }) => ({
           ...rest,
-          created: new Date(created),
-          updated: new Date(updated)
+          created: HelsinkiDateTime.parseIso(created),
+          updated: HelsinkiDateTime.parseIso(updated)
         }))
       )
     )

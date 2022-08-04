@@ -10,7 +10,7 @@ import { UUID } from 'lib-common/types'
 export interface AttendanceValues {
   count: number
   countOther: number
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 export function staffAttendanceForGroupOrUnit(

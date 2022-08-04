@@ -8,6 +8,7 @@ import {
   DaycarePlacementWithDetails,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -74,14 +75,17 @@ export async function getPlacements(
           endDate: LocalDate.parseIso(sn.endDate),
           option: {
             ...sn.option,
-            updated: new Date(sn.option.updated)
+            updated: HelsinkiDateTime.parseIso(sn.option.updated)
           },
-          updated: new Date(sn.updated),
+          updated: HelsinkiDateTime.parseIso(sn.updated),
           confirmed:
             sn.confirmed != null
               ? {
                   ...sn.confirmed,
-                  at: sn.confirmed.at != null ? new Date(sn.confirmed.at) : null
+                  at:
+                    sn.confirmed.at != null
+                      ? HelsinkiDateTime.parseIso(sn.confirmed.at)
+                      : null
                 }
               : null
         }))

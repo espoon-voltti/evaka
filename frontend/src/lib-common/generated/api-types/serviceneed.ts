@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
@@ -20,14 +21,14 @@ export interface ServiceNeed {
   placementId: UUID
   shiftCare: boolean
   startDate: LocalDate
-  updated: Date
+  updated: HelsinkiDateTime
 }
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedConfirmation
 */
 export interface ServiceNeedConfirmation {
-  at: Date | null
+  at: HelsinkiDateTime | null
   name: string
   userId: UUID
 }
@@ -62,7 +63,7 @@ export interface ServiceNeedOption {
   occupancyCoefficientUnder3y: number
   partDay: boolean
   partWeek: boolean
-  updated: Date
+  updated: HelsinkiDateTime
   validPlacementType: PlacementType
   voucherValueDescriptionFi: string
   voucherValueDescriptionSv: string
@@ -87,7 +88,7 @@ export interface ServiceNeedOptionSummary {
   nameEn: string
   nameFi: string
   nameSv: string
-  updated: Date
+  updated: HelsinkiDateTime
 }
 
 /**

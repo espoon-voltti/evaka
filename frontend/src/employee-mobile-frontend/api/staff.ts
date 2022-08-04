@@ -7,6 +7,7 @@ import {
   StaffAttendanceUpdate,
   UnitStaffAttendance
 } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -22,11 +23,11 @@ export async function getUnitStaffAttendances(
     .then((res) => ({
       ...res,
       date: LocalDate.parseIso(res.date),
-      updated: res.updated ? new Date(res.updated) : null,
+      updated: res.updated ? HelsinkiDateTime.parseIso(res.updated) : null,
       groups: res.groups.map((group) => ({
         ...group,
         date: LocalDate.parseIso(group.date),
-        updated: new Date(group.updated)
+        updated: HelsinkiDateTime.parseIso(group.updated)
       }))
     }))
     .then((v) => Success.of(v))

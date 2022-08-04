@@ -10,6 +10,7 @@ import {
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import Pagination from 'lib-components/Pagination'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -127,7 +128,7 @@ export default React.memo(function ThreadListContainer({
             sender: { ...account },
             sentAt: message.sentAt,
             recipients: message.recipients,
-            readAt: new Date(),
+            readAt: HelsinkiDateTime.now(),
             content: message.content,
             attachments: message.attachments,
             recipientNames: message.recipientNames

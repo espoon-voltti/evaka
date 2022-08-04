@@ -25,6 +25,7 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -1272,7 +1273,7 @@ export class Fixture {
       occupancyCoefficientUnder3y: 0,
       partDay: false,
       partWeek: false,
-      updated: new Date(),
+      updated: HelsinkiDateTime.now(),
       validPlacementType: 'DAYCARE',
       voucherValueDescriptionFi: `Test service need option ${id}`,
       voucherValueDescriptionSv: `Test service need option ${id}`,

@@ -7,6 +7,7 @@
 
 import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { Coordinate } from './shared'
@@ -98,7 +99,7 @@ export interface AbsenceWithModifierInfo {
   childId: UUID
   date: LocalDate
   id: UUID
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   modifiedByType: EvakaUserType
 }
 
@@ -387,7 +388,7 @@ export interface GroupStaffAttendance {
   countOther: number
   date: LocalDate
   groupId: UUID
-  updated: Date
+  updated: HelsinkiDateTime
 }
 
 /**
@@ -518,7 +519,7 @@ export interface UnitStaffAttendance {
   countOther: number
   date: LocalDate
   groups: GroupStaffAttendance[]
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 /**

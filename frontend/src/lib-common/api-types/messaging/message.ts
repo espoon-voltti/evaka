@@ -8,6 +8,7 @@ import {
   MessageThread,
   ThreadReply
 } from '../../generated/api-types/messaging'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { JsonOf } from '../../json'
 
 export const deserializeMessageAccount = (
@@ -30,8 +31,8 @@ export const deserializeMessage = (
   recipients: message.recipients.map((a) =>
     deserializeMessageAccount(a, staffAnnotation)
   ),
-  sentAt: new Date(message.sentAt),
-  readAt: message.readAt ? new Date(message.readAt) : null
+  sentAt: HelsinkiDateTime.parseIso(message.sentAt),
+  readAt: message.readAt ? HelsinkiDateTime.parseIso(message.readAt) : null
 })
 
 export const deserializeMessageThread = (

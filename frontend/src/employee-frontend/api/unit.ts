@@ -32,6 +32,7 @@ import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -328,7 +329,7 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
     endDate: LocalDate.parseIso(serviceNeed.endDate),
     option: {
       ...serviceNeed.option,
-      updated: new Date(serviceNeed.option.updated)
+      updated: HelsinkiDateTime.parseIso(serviceNeed.option.updated)
     },
     confirmed:
       serviceNeed.confirmed != null
@@ -336,11 +337,11 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
             ...serviceNeed.confirmed,
             at:
               serviceNeed.confirmed.at != null
-                ? new Date(serviceNeed.confirmed.at)
+                ? HelsinkiDateTime.parseIso(serviceNeed.confirmed.at)
                 : null
           }
         : null,
-    updated: new Date(serviceNeed.updated)
+    updated: HelsinkiDateTime.parseIso(serviceNeed.updated)
   }))
 }
 
@@ -446,7 +447,7 @@ function mapApplicationsJson(
     serviceNeed: data.serviceNeed
       ? {
           ...data.serviceNeed,
-          updated: new Date(data.serviceNeed.updated)
+          updated: HelsinkiDateTime.parseIso(data.serviceNeed.updated)
         }
       : null,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
