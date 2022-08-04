@@ -35,6 +35,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import {
   ModalCloseButton,
+  ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -197,7 +198,9 @@ export default React.memo(function DayView({
                   disabled={!previousDate}
                   altText={i18n.calendar.previousDay}
                 />
-                <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
+                <ModalHeader headingComponent={DayOfWeek}>
+                  {date.format('EEEEEE d.M.yyyy', lang)}
+                </ModalHeader>
                 <IconButton
                   icon={faChevronRight}
                   onClick={navigateToNextDate}

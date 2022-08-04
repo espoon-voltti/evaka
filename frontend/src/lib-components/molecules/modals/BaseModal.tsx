@@ -4,7 +4,7 @@
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { FocusEventHandler, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -57,7 +57,17 @@ export default React.memo(function BaseModal(props: Props) {
                 <Gap size="m" />
               </>
             )}
-            {!!props.title && <H1 data-qa="title">{props.title}</H1>}
+            {!!props.title && (
+              <ModalHeader
+                headingComponent={(props) => (
+                  <H1 {...props} data-qa="title">
+                    {props.children}
+                  </H1>
+                )}
+              >
+                {props.title}
+              </ModalHeader>
+            )}
             {!!props.text && (
               <P data-qa="text" preserveWhiteSpace>
                 {props.text}
@@ -216,5 +226,29 @@ export const PlainModal = React.memo(function PlainModal(
         </ModalContainer>
       </StaticallyPositionedModal>
     </ModalBackground>
+  )
+})
+
+export const ModalHeader = React.memo(function ModalHeader({
+  children,
+  headingComponent: HeadingComponent = H1,
+  ...props
+}: {
+  children: React.ReactNode
+  headingComponent: React.ComponentType<{
+    tabIndex?: number
+    onBlur?: FocusEventHandler<HTMLElement>
+  }>
+}) {
+  const [isFocusable, setIsFocusable] = useState(true)
+
+  return (
+    <HeadingComponent
+      tabIndex={isFocusable ? 0 : undefined}
+      onBlur={() => setIsFocusable(false)}
+      {...props}
+    >
+      {children}
+    </HeadingComponent>
   )
 })

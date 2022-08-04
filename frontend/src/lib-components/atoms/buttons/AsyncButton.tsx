@@ -19,7 +19,7 @@ import { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 
-import { SrOnly } from '../SrOnly'
+import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import { StyledButton } from './Button'
 
@@ -208,14 +208,14 @@ function AsyncButton<T>({
       aria-busy={buttonState.state === 'in-progress'}
     >
       {buttonState.state === 'in-progress' && (
-        <SrOnly aria-live="polite" id="in-progress">
+        <ScreenReaderOnly aria-live="polite" id="in-progress">
           Ladataan
-        </SrOnly>
+        </ScreenReaderOnly>
       )}
       {buttonState.state === 'success' && (
-        <SrOnly aria-live="assertive" id="success">
+        <ScreenReaderOnly aria-live="assertive" id="success">
           Valmis
-        </SrOnly>
+        </ScreenReaderOnly>
       )}
       <Content>
         <IconContainer

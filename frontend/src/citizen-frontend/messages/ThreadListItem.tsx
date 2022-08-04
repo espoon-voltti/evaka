@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import { SrOnly } from 'lib-components/atoms/SrOnly'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import {
@@ -57,11 +57,11 @@ export default React.memo(function ThreadListItem({
             labels={i18n.messages.types}
           />
         </Header>
-        <SrOnly>
+        <ScreenReaderOnly>
           <Link to={`/messages/${thread.id}`} tabIndex={-1}>
             {i18n.messages.openMessage}
           </Link>
-        </SrOnly>
+        </ScreenReaderOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>

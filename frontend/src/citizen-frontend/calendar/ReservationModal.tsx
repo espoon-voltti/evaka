@@ -30,7 +30,10 @@ import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
-import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
+import {
+  ModalHeader,
+  PlainModal
+} from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
@@ -155,9 +158,15 @@ export default React.memo(function ReservationModal({
             <div>
               <ModalSection>
                 <Gap size="L" sizeOnMobile="zero" />
-                <H1 data-qa="title" noMargin>
+                <ModalHeader
+                  headingComponent={(props) => (
+                    <H1 noMargin data-qa="title" {...props}>
+                      {props.children}
+                    </H1>
+                  )}
+                >
                   {i18n.calendar.reservationModal.title}
-                </H1>
+                </ModalHeader>
               </ModalSection>
 
               <Gap size="zero" sizeOnMobile="s" />

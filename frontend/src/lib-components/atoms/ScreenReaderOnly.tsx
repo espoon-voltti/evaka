@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 
-export const SrOnly = styled.div`
+export const ScreenReaderOnly = styled.div`
   position: absolute;
   left: -10000px;
   top: auto;
