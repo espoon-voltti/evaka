@@ -41,7 +41,7 @@ export function scrollRefIntoView(
 }
 
 export function scrollIntoViewSoftKeyboard(
-  target: HTMLElement,
+  target: Element,
   blockPosition: ScrollLogicalPosition = 'center'
 ) {
   const onResize = () => {

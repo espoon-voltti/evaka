@@ -16,7 +16,9 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import ExpandingInfo, {
+  ExpandingInfoButtonSlot
+} from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
@@ -106,20 +108,21 @@ export default React.memo(function ApplicationCreation() {
             <Gap size="s" />
             {featureFlags.preschoolEnabled && (
               <>
+                <Radio
+                  checked={selectedType === 'PRESCHOOL'}
+                  onChange={() => setSelectedType('PRESCHOOL')}
+                  label={t.applications.creation.preschoolLabel}
+                  data-qa="type-radio-PRESCHOOL"
+                />
                 <ExpandingInfo
                   info={t.applications.creation.preschoolInfo}
                   ariaLabel={t.common.openExpandingInfo}
                 >
-                  <Radio
-                    checked={selectedType === 'PRESCHOOL'}
-                    onChange={() => setSelectedType('PRESCHOOL')}
-                    label={t.applications.creation.preschoolLabel}
-                    data-qa="type-radio-PRESCHOOL"
-                  />
+                  <PreschoolDaycareInfo>
+                    {t.applications.creation.preschoolDaycareInfo}
+                    <ExpandingInfoButtonSlot />
+                  </PreschoolDaycareInfo>
                 </ExpandingInfo>
-                <PreschoolDaycareInfo>
-                  {t.applications.creation.preschoolDaycareInfo}
-                </PreschoolDaycareInfo>
                 <Gap size="s" />
               </>
             )}
@@ -135,19 +138,19 @@ export default React.memo(function ApplicationCreation() {
                 data-qa="type-radio-CLUB"
               />
             </ExpandingInfo>
+            <Gap size="m" />
             {duplicateExists ? (
               <>
-                <Gap size="L" />
                 <AlertBox
-                  thin
                   data-qa="duplicate-application-notification"
                   message={t.applications.creation.duplicateWarning}
+                  noMargin
                 />
+                <Gap size="m" />
               </>
             ) : null}
             {!duplicateExists && shouldUseTransferApplication && (
               <>
-                <Gap size="L" />
                 <InfoBox
                   thin
                   data-qa="transfer-application-notification"
@@ -157,9 +160,9 @@ export default React.memo(function ApplicationCreation() {
                     ]
                   }
                 />
+                <Gap size="m" />
               </>
             )}
-            <Gap size="s" />
             {t.applications.creation.applicationInfo}
           </ContentArea>
           <ContentArea opaque={false} paddingVertical="L">

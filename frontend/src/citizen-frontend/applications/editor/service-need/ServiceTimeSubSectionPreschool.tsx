@@ -114,6 +114,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
               ]
             }
             ariaLabel={t.common.openExpandingInfo}
+            inlineChildren
           >
             <Label>
               {t.applications.editor.serviceNeed.dailyTime

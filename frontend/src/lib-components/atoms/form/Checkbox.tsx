@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { useRef } from 'react'
 import styled from 'styled-components'
 
+import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
 import { BaseProps } from '../../utils'
@@ -19,13 +20,6 @@ const Wrapper = styled.div`
   align-items: flex-start;
   cursor: pointer;
   width: fit-content;
-
-  label {
-    font-size: 1rem;
-    margin-top: 6px;
-    margin-left: ${defaultMargins.s};
-    cursor: pointer;
-  }
 
   &.disabled {
     cursor: not-allowed;
@@ -48,6 +42,13 @@ const Wrapper = styled.div`
       }
     }
   }
+`
+
+const LabelContainer = styled.div`
+  font-size: 1rem;
+  margin-top: 6px;
+  margin-left: ${defaultMargins.s};
+  cursor: pointer;
 `
 
 const Box = styled.div`
@@ -164,7 +165,12 @@ export default React.memo(function Checkbox({
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Box>
-      {!hiddenLabel && <label>{label}</label>}
+      {!hiddenLabel && (
+        <LabelContainer>
+          <label>{label}</label>
+          <ExpandingInfoButtonSlot />
+        </LabelContainer>
+      )}
     </Wrapper>
   )
 })

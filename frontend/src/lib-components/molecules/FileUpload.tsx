@@ -13,6 +13,7 @@ import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { H4, InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faExclamationTriangle,
@@ -104,16 +105,20 @@ const FileInputLabel = styled.label`
   background: ${(p) => p.theme.colors.grayscale.g4};
   border: 1px dashed ${(p) => p.theme.colors.grayscale.g35};
   border-radius: 8px;
-  width: min(500px, 70vw);
+  width: min(500px, 100%);
   padding: 24px;
+  text-align: center;
 
   & input {
     display: none;
   }
 
-  & h4 {
-    font-size: 18px;
-    margin-bottom: 14px;
+  h4 {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0;
   }
 `
 
@@ -475,8 +480,12 @@ export default React.memo(function FileUpload({
         >
           <span role="button" tabIndex={0}>
             {fileInput}
-            <h4>{i18n.upload.input.title}</h4>
-            <p>{i18n.upload.input.text.join('\n')}</p>
+            <H4>{i18n.upload.input.title}</H4>
+            <p>
+              <InformationText>
+                {i18n.upload.input.text.join('\n')}
+              </InformationText>
+            </p>
           </span>
         </FileInputLabel>
       )}

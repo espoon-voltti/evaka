@@ -36,7 +36,6 @@ export default React.memo(function AssistanceNeedSubSection({
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.preparatoryInfo}
             ariaLabel={t.common.openExpandingInfo}
-            margin="xs"
           >
             <Checkbox
               checked={formData.preparatory}
@@ -58,7 +57,6 @@ export default React.memo(function AssistanceNeedSubSection({
           t.applications.editor.serviceNeed.assistanceNeedInstructions[type]
         }
         ariaLabel={t.common.openExpandingInfo}
-        margin="xs"
         data-qa={`assistanceNeedInstructions-${type}`}
       >
         <Checkbox
