@@ -163,7 +163,7 @@ const MenuContainer = styled.div`
   width: 100vw;
   height: calc(100% - ${headerHeightMobile}px);
   padding: ${defaultMargins.s};
-  z-index: 5;
+  z-index: 25;
   display: flex;
   flex-direction: column;
 `
