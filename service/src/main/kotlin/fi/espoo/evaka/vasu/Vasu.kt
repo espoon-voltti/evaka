@@ -75,7 +75,8 @@ data class VasuDocumentSummary(
     val events: List<VasuDocumentEvent> = listOf(),
     @ForceCodeGenType(OffsetDateTime::class)
     val publishedAt: HelsinkiDateTime?,
-    val guardiansThatHaveGivenPermissionToShare: List<PersonId>
+    val guardiansThatHaveGivenPermissionToShare: List<PersonId>,
+    val type: CurriculumType
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -329,6 +330,8 @@ sealed class VasuQuestion(
 
         override fun isValid(section: VasuSection): Boolean {
             if (!super.isValid(section)) return false
+
+            if (this.maxSelections != null && this.value.size > this.maxSelections) return false
 
             return this.dateValue?.keys?.all { key -> options.find { it.key == key }?.date ?: false } ?: true
         }

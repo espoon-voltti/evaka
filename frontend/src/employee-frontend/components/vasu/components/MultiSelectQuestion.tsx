@@ -43,7 +43,7 @@ const SubText = styled(P)`
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options, info, textValue, dateValue },
+  question: { name, options, info, textValue, dateValue, maxSelections },
   questionNumber,
   selectedValues,
   translations
@@ -71,6 +71,11 @@ export function MultiSelectQuestion({
                       label={option.name}
                       onChange={(checked) => onChange(option, checked)}
                       data-qa={`multi-select-question-option-${option.key}`}
+                      disabled={
+                        !!maxSelections &&
+                        selectedValues.length >= maxSelections &&
+                        !selectedValues.includes(option.key)
+                      }
                     />
                     {option.date && (
                       <DatePicker

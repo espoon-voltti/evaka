@@ -13,10 +13,10 @@ import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { tabletMin } from 'lib-components/breakpoints'
-import { ContentArea } from 'lib-components/layout/Container'
+import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { Label } from 'lib-components/typography'
+import { Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
@@ -29,13 +29,6 @@ import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
 import { CitizenVasuEvents } from './sections/CitizenVasuEvents'
 import { CitizenVasuHeader } from './sections/CitizenVasuHeader'
 import { useVasu } from './use-vasu'
-
-const FooterContainer = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: ${defaultMargins.s};
-`
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -70,58 +63,66 @@ export default React.memo(function VasuPage() {
   const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
 
   return (
-    <VasuContainer gapSize="zero" data-qa="vasu-preview">
-      {vasu && (
-        <>
-          <ButtonContainer>
-            <ReturnButton label={t.common.return} />
-            <MobileDownloadButtonContainer>
-              <DownloadButton label={t.common.download} />
-            </MobileDownloadButtonContainer>
-          </ButtonContainer>
-          <Main>
-            <CitizenVasuHeader document={vasu} />
-            {!content.hasDynamicFirstSection && (
-              <CitizenBasicsSection
-                sectionIndex={0}
-                type={vasu.type}
-                basics={vasu.basics}
-                childLanguage={vasu.basics.childLanguage}
-                templateRange={vasu.templateRange}
+    <>
+      <VasuContainer gapSize="zero" data-qa="vasu-preview">
+        {vasu && (
+          <>
+            <ButtonContainer>
+              <ReturnButton label={t.common.return} />
+              <MobileDownloadButtonContainer>
+                <DownloadButton label={t.common.download} />
+              </MobileDownloadButtonContainer>
+            </ButtonContainer>
+            <Main>
+              <CitizenVasuHeader document={vasu} />
+              {!content.hasDynamicFirstSection && (
+                <CitizenBasicsSection
+                  sectionIndex={0}
+                  type={vasu.type}
+                  basics={vasu.basics}
+                  childLanguage={vasu.basics.childLanguage}
+                  templateRange={vasu.templateRange}
+                  translations={translations}
+                />
+              )}
+              <CitizenDynamicSections
+                sections={content.sections}
+                sectionIndex={dynamicSectionsOffset}
+                state={vasu.documentState}
                 translations={translations}
+                vasu={vasu}
               />
-            )}
-            <CitizenDynamicSections
-              sections={content.sections}
-              sectionIndex={dynamicSectionsOffset}
-              state={vasu.documentState}
-              translations={translations}
-              vasu={vasu}
-            />
-            <Gap size="s" />
-            <CitizenVasuEvents document={vasu} content={content} />
-          </Main>
-        </>
-      )}
+              <Gap size="s" />
+              <CitizenVasuEvents document={vasu} content={content} />
+            </Main>
+          </>
+        )}
+      </VasuContainer>
       {vasu && !guardianHasGivenPermissionToShare && (
         <StickyFooter>
-          <FooterContainer>
-            <ContentArea opaque paddingVertical="xs" paddingHorizontal="L">
+          <Container>
+            <ContentArea opaque paddingVertical="m" paddingHorizontal="L">
+              <Label>
+                {vasu.type === 'DAYCARE'
+                  ? t.vasu.givePermissionToShareTitleVasu
+                  : t.vasu.givePermissionToShareTitleLeops}
+              </Label>
               <ExpandingInfo
                 info={
-                  vasu.type === 'DAYCARE'
-                    ? t.vasu.givePermissionToShareInfoVasu
-                    : t.vasu.givePermissionToShareInfoLeops
+                  <div>
+                    {vasu.type === 'DAYCARE'
+                      ? `${t.vasu.givePermissionToShareInfoBase} ${t.vasu.sharingVasuDisclaimer}`
+                      : `${t.vasu.givePermissionToShareInfoBase} ${t.vasu.sharingLeopsDisclaimer}`}
+                  </div>
                 }
                 ariaLabel={t.common.openExpandingInfo}
               >
-                <Label>
+                <P>
                   {vasu.type === 'DAYCARE'
-                    ? t.vasu.givePermissionToShareTitleVasu
-                    : t.vasu.givePermissionToShareTitleLeops}
-                </Label>
+                    ? t.vasu.givePermissionToShareVasuBrief
+                    : t.vasu.givePermissionToShareLeopsBrief}
+                </P>
               </ExpandingInfo>
-              <Gap />
               <Checkbox
                 checked={givePermissionToShareSelected}
                 label={
@@ -149,9 +150,9 @@ export default React.memo(function VasuPage() {
                 data-qa="confirm-button"
               />
             </ContentArea>
-          </FooterContainer>
+          </Container>
         </StickyFooter>
       )}
-    </VasuContainer>
+    </>
   )
 })

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -13,12 +13,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import {
-  CollapsibleContentArea,
-  Container,
-  ContentArea
-} from 'lib-components/layout/Container'
-import { H2, H3 } from 'lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { Dimmed, H2, H3, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faExclamation } from 'lib-icons'
@@ -34,7 +30,6 @@ import { VasuStateChip } from './vasu/components/VasuStateChip'
 
 const VasuTableContainer = styled.table`
   width: 100%;
-  padding-left 16px;
 `
 
 const VasuTr = styled.tr`
@@ -230,68 +225,56 @@ const VasuList = React.memo(function VasuList({
   )
 })
 
-const VasuDisplay = React.memo(function VasuDisplay({
-  items
-}: {
-  items: ChildVasuSummary[]
-}) {
+export default React.memo(function CitizenVasuAndLeops() {
+  const [vasus] = useApiState(() => getGuardianChildVasuSummaries(), [])
+
   const i18n = useTranslation()
-  const [open, setOpen] = useState(true)
   const { unreadVasuDocumentsCount } = useContext<ChildDocumentsState>(
     ChildDocumentsContext
   )
 
-  return (
-    <>
-      <Mobile>
-        <CollapsibleContentArea
-          title={
-            <PaddedDiv>
-              <H2 noMargin>{i18n.vasu.title}</H2>
-            </PaddedDiv>
-          }
-          open={open}
-          toggleOpen={() => setOpen(!open)}
-          opaque
-          paddingVertical="16px 0px 0px 0px;"
-          paddingHorizontal="zero"
-          countIndicator={unreadVasuDocumentsCount}
-          data-qa="vasu-and-leops-collapsible"
-        >
-          <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">
-            <VasuList items={items} />
-          </ContentArea>
-        </CollapsibleContentArea>
-      </Mobile>
+  const [open, setOpen] = useState(vasus.getOrElse([]).length === 0)
 
-      <Desktop>
-        <CollapsibleContentArea
-          title={<H2 noMargin>{i18n.vasu.title}</H2>}
-          open={open}
-          toggleOpen={() => setOpen(!open)}
-          opaque
-          paddingVertical="L"
-          countIndicator={unreadVasuDocumentsCount}
-          data-qa="vasu-and-leops-collapsible"
-        >
-          <ContentArea opaque paddingVertical="s" paddingHorizontal="zero">
-            <VasuList items={items} />
-          </ContentArea>
-        </CollapsibleContentArea>
-      </Desktop>
-    </>
-  )
-})
+  const user = useUser()
 
-export default React.memo(function CitizenVasuAndLeops() {
-  const [vasus] = useApiState(() => getGuardianChildVasuSummaries(), [])
+  const { showVasuDisclaimer, showLeopsDisclaimer } = useMemo(() => {
+    const requiresPermission = vasus
+      .getOrElse([])
+      .flatMap((child) => child.vasuDocumentsSummary)
+      .filter(
+        (vasu) =>
+          !vasu.guardiansThatHaveGivenPermissionToShare.some(
+            (guardianId) => guardianId === user?.id
+          )
+      )
+
+    return {
+      showVasuDisclaimer: requiresPermission.some(
+        (vasu) => vasu.type === 'DAYCARE'
+      ),
+      showLeopsDisclaimer: requiresPermission.some(
+        (vasu) => vasu.type === 'PRESCHOOL'
+      )
+    }
+  }, [vasus, user])
+
   return (
-    <>
-      <Container>
-        {renderResult(vasus, (vasus) => (
-          <VasuDisplay items={vasus} />
-        ))}
-      </Container>
-    </>
+    <CollapsibleContentArea
+      title={<H2>{i18n.vasu.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      countIndicator={unreadVasuDocumentsCount}
+    >
+      {showVasuDisclaimer && <P>{i18n.vasu.sharingVasuDisclaimer}</P>}
+      {showLeopsDisclaimer && <P>{i18n.vasu.sharingLeopsDisclaimer}</P>}
+      {renderResult(vasus, (items) =>
+        items.length === 0 ? (
+          <Dimmed>{i18n.vasu.noVasus}</Dimmed>
+        ) : (
+          <VasuList items={items} />
+        )
+      )}
+    </CollapsibleContentArea>
   )
 })
