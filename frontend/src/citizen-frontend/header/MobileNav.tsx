@@ -174,6 +174,7 @@ const LanguageMenu = React.memo(function LanguageMenu({
   close: () => void
 }) {
   const [lang, setLang] = useLang()
+  const t = useTranslation()
 
   return (
     <LangList>
@@ -185,6 +186,8 @@ const LanguageMenu = React.memo(function LanguageMenu({
               setLang(l)
               close()
             }}
+            aria-label={t.header.lang[l]}
+            lang={l}
           >
             {l}
           </LangButton>

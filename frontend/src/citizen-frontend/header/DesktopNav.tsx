@@ -256,8 +256,9 @@ const LanguageMenu = React.memo(function LanguageMenu({
                 setOpen(false)
               }}
               data-qa={`lang-${l}`}
+              lang={l}
             >
-              <LanguageShort>{l}</LanguageShort>
+              <LanguageShort aria-hidden="true">{l}</LanguageShort>
               <span>{t.header.lang[l]}</span>
             </DropDownItem>
           ))}
