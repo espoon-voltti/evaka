@@ -116,6 +116,14 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
       opaque
       data-qa="child"
       data-qa-value={child.id}
+      role="menuitem"
+      aria-label={`${name}${child.group ? `, ${child.group.name}` : ''}${
+        unreadCount + unconsentedCount
+          ? `, ${unreadCount + unconsentedCount} ${
+              t.children.assistanceNeed.unreadCount
+            }`
+          : ''
+      }`}
     >
       <RoundImage
         size="XL"
@@ -127,7 +135,7 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
         }
         fallbackContent={faUser}
         fallbackColor={colors.grayscale.g15}
-        alt={t.children.childPicture}
+        aria-hidden="true"
       />
       <MobileAndTablet>
         <NameAndGroup>
@@ -156,7 +164,7 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
           />
         )}
         <Gap horizontal size="s" />
-        <IconButton icon={faChevronRight} />
+        <IconButton icon={faChevronRight} aria-hidden="true" />
       </ChevronContainer>
     </ChildContainer>
   )
@@ -177,7 +185,7 @@ export default React.memo(function ChildrenPage() {
           </ContentArea>
           <Gap size="s" />
           {renderResult(childrenResponse, ({ children }) => (
-            <Children>
+            <Children role="menu">
               {children.length > 0 ? (
                 children.map((c) => <ChildItem key={c.id} child={c} />)
               ) : (
