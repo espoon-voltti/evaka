@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import React, { useMemo, useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
@@ -26,16 +26,37 @@ import { farMap } from 'lib-icons'
 
 import Footer from './Footer'
 import { useUser } from './auth/state'
-import { getStrongLoginUri, getWeakLoginUri } from './header/const'
+import { getStrongLoginUriWithPath, getWeakLoginUri } from './header/const'
 import { useTranslation } from './localization'
 
 const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
 `
 
+/**
+ * Ensures that the redirect URL will not contain any host
+ * information, only the path/search params/hash.
+ */
+const getSafeNextPath = (nextParam: string | null) => {
+  if (nextParam === null) {
+    return null
+  }
+
+  const url = new URL(nextParam, window.location.origin)
+
+  return `${url.pathname}${url.search}${url.hash}`
+}
+
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
   const user = useUser()
+
+  const [searchParams] = useSearchParams()
+
+  const nextPath = useMemo(
+    () => getSafeNextPath(searchParams.get('next')),
+    [searchParams]
+  )
 
   const [showInfoBoxText, setShowInfoBoxText] = useState(false)
 
@@ -61,7 +82,10 @@ export default React.memo(function LoginPage() {
             <Gap size="m" />
             <P noMargin>{i18n.loginPage.login.paragraph}</P>
             <Gap size="s" />
-            <LinkButton href={getWeakLoginUri('/')} data-qa="weak-login">
+            <LinkButton
+              href={getWeakLoginUri(nextPath ?? '/')}
+              data-qa="weak-login"
+            >
               {i18n.loginPage.login.link}
             </LinkButton>
           </ContentArea>
@@ -88,7 +112,7 @@ export default React.memo(function LoginPage() {
             </ul>
             <Gap size="s" />
             <LinkButton
-              href={getStrongLoginUri('/applying')}
+              href={getStrongLoginUriWithPath(nextPath ?? '/applying')}
               data-qa="strong-login"
             >
               {i18n.loginPage.applying.link}

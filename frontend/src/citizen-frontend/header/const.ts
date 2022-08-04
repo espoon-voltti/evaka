@@ -10,11 +10,14 @@ export const getWeakLoginUri = (path?: string) =>
   )}`
 
 export const getStrongLoginUri = (path?: string) =>
-  `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
+  getStrongLoginUriWithPath(
     `${path ?? window.location.pathname}${window.location.search}${
       window.location.hash
     }`
-  )}`
+  )
+
+export const getStrongLoginUriWithPath = (path: string) =>
+  `/api/application/auth/saml/login?RelayState=${encodeURIComponent(path)}`
 
 export const getLogoutUri = (user: User) =>
   `/api/application/auth/${
