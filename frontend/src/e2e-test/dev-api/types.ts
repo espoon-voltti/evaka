@@ -446,12 +446,12 @@ export interface AssistanceNeed {
 }
 
 export interface AssistanceNeedDecision {
-  assistanceLevel:
+  assistanceLevels: Array<
     | 'ASSISTANCE_ENDS'
     | 'ASSISTANCE_SERVICES_FOR_TIME'
     | 'ENHANCED_ASSISTANCE'
     | 'SPECIAL_ASSISTANCE'
-    | null
+  >
   assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   childId: UUID

@@ -1523,7 +1523,7 @@ data class DevAssistanceNeedDecision(
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
 
-    val assistanceLevel: AssistanceLevel?,
+    val assistanceLevels: Set<AssistanceLevel>,
     val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?,
 

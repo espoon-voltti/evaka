@@ -280,10 +280,9 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
           <div>
             <OptionalLabelledValue
               label={t.futureLevelOfAssistance}
-              value={
-                decision.assistanceLevel &&
-                assistanceLevelTexts[decision.assistanceLevel]
-              }
+              value={decision.assistanceLevels
+                .map((level) => assistanceLevelTexts[level])
+                .join(', ')}
               data-qa="future-level-of-assistance"
             />
 

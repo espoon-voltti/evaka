@@ -45,7 +45,7 @@ export interface AssistanceNeed {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecision
 */
 export interface AssistanceNeedDecision {
-  assistanceLevel: AssistanceLevel | null
+  assistanceLevels: AssistanceLevel[]
   assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   child: AssistanceNeedDecisionChild | null
@@ -111,7 +111,7 @@ export interface AssistanceNeedDecisionChild {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionCitizenListItem
 */
 export interface AssistanceNeedDecisionCitizenListItem {
-  assistanceLevel: AssistanceLevel | null
+  assistanceLevels: AssistanceLevel[]
   decisionMade: LocalDate | null
   endDate: LocalDate | null
   id: UUID
@@ -145,7 +145,7 @@ export interface AssistanceNeedDecisionEmployeeForm {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionForm
 */
 export interface AssistanceNeedDecisionForm {
-  assistanceLevel: AssistanceLevel | null
+  assistanceLevels: AssistanceLevel[]
   assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   decisionMade: LocalDate | null

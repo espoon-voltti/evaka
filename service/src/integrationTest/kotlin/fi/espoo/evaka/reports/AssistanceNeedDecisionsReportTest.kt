@@ -86,7 +86,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         otherRepresentativeHeard = false,
         otherRepresentativeDetails = null,
 
-        assistanceLevel = AssistanceLevel.ENHANCED_ASSISTANCE,
+        assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
         assistanceServicesTime = null,
         motivationForDecision = "Motivation for decision"
     )

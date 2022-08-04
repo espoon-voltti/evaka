@@ -1300,7 +1300,7 @@ export class Fixture {
   static assistanceNeedDecision(): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
-      assistanceLevel: 'SPECIAL_ASSISTANCE',
+      assistanceLevels: ['SPECIAL_ASSISTANCE'],
       assistanceServicesTime: null,
       careMotivation: null,
       childId: 'not_set',
@@ -1358,7 +1358,7 @@ export class Fixture {
   static preFilledAssistanceNeedDecision(): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
-      assistanceLevel: 'ASSISTANCE_SERVICES_FOR_TIME',
+      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME'],
       assistanceServicesTime: new FiniteDateRange(
         LocalDate.of(2020, 7, 8),
         LocalDate.of(2020, 8, 8)

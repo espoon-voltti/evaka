@@ -167,21 +167,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <h2 th:text="#{decisionAndValidity}"></h2>
           <div
             class="decision-details"
-            th:if="${decision.assistanceLevel} != null"
+            th:unless="${decision.assistanceLevels.empty}"
           >
             <h3 th:text="#{futureLevelOfAssistance}"></h3>
-            <div>
-              <span
-                th:text="#{${'assistanceLevel.' + decision.assistanceLevel}}"
-              ></span>
-              <th:block
-                th:if="${decision.assistanceServicesTime} != null and ${decision.assistanceLevel.toString()} == 'ASSISTANCE_SERVICES_FOR_TIME'"
-              >
-                <span
+            <span th:each="assistanceLevel, i : ${decision.assistanceLevels}">
+              <span th:text="#{${'assistanceLevel.' + assistanceLevel}}"></span
+              ><th:block
+                th:if="${decision.assistanceServicesTime} != null and ${assistanceLevel.toString()} == 'ASSISTANCE_SERVICES_FOR_TIME'"
+                ><span
                   th:replace="~{shared/common :: date-range(${decision.assistanceServicesTime.start}, ${decision.assistanceServicesTime.end})}"
-                ></span>
-              </th:block>
-            </div>
+                ></span></th:block
+              ><span th:unless="${i.last}">,</span>
+            </span>
           </div>
           <div class="decision-details" th:if="${decision.startDate} != null">
             <h3 th:text="#{startDate}"></h3>

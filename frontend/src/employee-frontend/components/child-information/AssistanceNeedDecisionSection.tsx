@@ -86,7 +86,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
             onClick={() => {
               setIsCreatingDecision(true)
               void createAssistanceNeedDecision(id, {
-                assistanceLevel: null,
+                assistanceLevels: [],
                 assistanceServicesTime: null,
                 careMotivation: null,
                 decisionMade: null,
