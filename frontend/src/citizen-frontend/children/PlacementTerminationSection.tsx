@@ -36,7 +36,7 @@ export default React.memo(function PlacementTerminationSection({
 
   return (
     <CollapsibleContentArea
-      title={<H2>t.children.placementTermination.title</H2>}
+      title={<H2>{t.children.placementTermination.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}
       opaque
