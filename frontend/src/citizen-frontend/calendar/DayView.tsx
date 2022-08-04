@@ -679,6 +679,7 @@ const Absence = React.memo(function Absence({
           <InfoButton
             onClick={onClick}
             aria-label={i18n.common.openExpandingInfo}
+            open={open}
           />
         </FixedSpaceColumn>
       </FixedSpaceRow>
