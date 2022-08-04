@@ -62,7 +62,7 @@ const theme: Theme = {
       }
     },
     h3: {
-      weight: 400,
+      weight: 500,
       bold: 600,
       mobile: {
         weight: 500
