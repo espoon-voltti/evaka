@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
 import {
   FeeDecisionSortParam,
   FeeDecisionSummary,
@@ -128,8 +127,8 @@ const FeeDecisions = React.memo(function FeeDecisions({
             </Td>
             <Td>{formatCents(item.finalPrice)}</Td>
             <Td>{item.decisionNumber}</Td>
-            <Td>{formatDate(item.created)}</Td>
-            <Td>{formatDate(item.sentAt)}</Td>
+            <Td>{item.created.toLocalDate().format()}</Td>
+            <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
             <Td>{i18n.feeDecision.status[item.status]}</Td>
             {showCheckboxes ? (
               <Td onClick={(e) => e.stopPropagation()}>

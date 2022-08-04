@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
 import {
   SortDirection,
   VoucherValueDecisionSortParam,
@@ -125,8 +124,8 @@ export default React.memo(function VoucherValueDecisions({
             <Td>{formatCents(item.voucherValue)}</Td>
             <Td>{formatCents(item.finalCoPayment)}</Td>
             <Td>{item.decisionNumber}</Td>
-            <Td>{formatDate(item.created)}</Td>
-            <Td>{formatDate(item.sentAt)}</Td>
+            <Td>{item.created.toLocalDate().format()}</Td>
+            <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
             <Td>{i18n.valueDecision.status[item.status]}</Td>
             {showCheckboxes ? (
               <Td onClick={(e) => e.stopPropagation()}>

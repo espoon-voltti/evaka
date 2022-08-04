@@ -56,7 +56,7 @@ export interface FeeAlteration {
   notes: string
   personId: UUID
   type: Type
-  updatedAt: Date | null
+  updatedAt: HelsinkiDateTime | null
   updatedBy: UUID | null
   validFrom: LocalDate
   validTo: LocalDate | null
@@ -76,10 +76,10 @@ export interface FeeAlterationWithEffect {
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecision
 */
 export interface FeeDecision {
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   approvedById: UUID | null
   children: FeeDecisionChild[]
-  created: Date
+  created: HelsinkiDateTime
   decisionHandlerId: UUID | null
   decisionNumber: number | null
   decisionType: FeeDecisionType
@@ -91,7 +91,7 @@ export interface FeeDecision {
   id: UUID
   partnerId: UUID | null
   partnerIncome: DecisionIncome | null
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   totalFee: number
   validDuring: DateRange
@@ -137,10 +137,10 @@ export interface FeeDecisionChildDetailed {
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 */
 export interface FeeDecisionDetailed {
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   approvedBy: EmployeeWithName | null
   children: FeeDecisionChildDetailed[]
-  created: Date
+  created: HelsinkiDateTime
   decisionNumber: number | null
   decisionType: FeeDecisionType
   documentKey: string | null
@@ -157,7 +157,7 @@ export interface FeeDecisionDetailed {
   partner: PersonDetailed | null
   partnerIncome: DecisionIncome | null
   requiresManualSending: boolean
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   totalFee: number
   totalIncome: number | null
@@ -210,14 +210,14 @@ export type FeeDecisionStatus =
 */
 export interface FeeDecisionSummary {
   annullingDecision: boolean
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   children: PersonBasic[]
-  created: Date
+  created: HelsinkiDateTime
   decisionNumber: number | null
   finalPrice: number
   headOfFamily: PersonBasic
   id: UUID
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
   validDuring: DateRange
 }
@@ -329,7 +329,7 @@ export interface Invoice {
   periodEnd: LocalDate
   periodStart: LocalDate
   rows: InvoiceRow[]
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
@@ -386,7 +386,7 @@ export interface InvoiceDetailed {
   periodEnd: LocalDate
   periodStart: LocalDate
   rows: InvoiceRowDetailed[]
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
@@ -486,13 +486,13 @@ export type InvoiceStatus =
 export interface InvoiceSummary {
   account: number
   codebtor: PersonDetailed | null
-  createdAt: Date | null
+  createdAt: HelsinkiDateTime | null
   headOfFamily: PersonDetailed
   id: UUID
   periodEnd: LocalDate
   periodStart: LocalDate
   rows: InvoiceRowSummary[]
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
@@ -726,7 +726,7 @@ export interface UnitData {
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   approvedById: UUID | null
   assistanceNeedCoefficient: number
   baseCoPayment: number
@@ -734,7 +734,7 @@ export interface VoucherValueDecision {
   child: ChildWithDateOfBirth
   childIncome: DecisionIncome | null
   coPayment: number
-  created: Date
+  created: HelsinkiDateTime
   decisionHandler: UUID | null
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
@@ -749,7 +749,7 @@ export interface VoucherValueDecision {
   partnerId: UUID | null
   partnerIncome: DecisionIncome | null
   placement: VoucherValueDecisionPlacement | null
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   serviceNeed: VoucherValueDecisionServiceNeed | null
   siblingDiscount: number
   status: VoucherValueDecisionStatus
@@ -762,7 +762,7 @@ export interface VoucherValueDecision {
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 */
 export interface VoucherValueDecisionDetailed {
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   approvedBy: EmployeeWithName | null
   assistanceNeedCoefficient: number
   baseCoPayment: number
@@ -771,7 +771,7 @@ export interface VoucherValueDecisionDetailed {
   childAge: number
   childIncome: DecisionIncome | null
   coPayment: number
-  created: Date
+  created: HelsinkiDateTime
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
   documentKey: string | null
@@ -791,7 +791,7 @@ export interface VoucherValueDecisionDetailed {
   partnerIncome: DecisionIncome | null
   placement: VoucherValueDecisionPlacementDetailed
   requiresManualSending: boolean
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   serviceNeed: VoucherValueDecisionServiceNeed
   siblingDiscount: number
   status: VoucherValueDecisionStatus
@@ -851,14 +851,14 @@ export type VoucherValueDecisionStatus =
 */
 export interface VoucherValueDecisionSummary {
   annullingDecision: boolean
-  approvedAt: Date | null
+  approvedAt: HelsinkiDateTime | null
   child: PersonBasic
-  created: Date
+  created: HelsinkiDateTime
   decisionNumber: number | null
   finalCoPayment: number
   headOfFamily: PersonBasic
   id: UUID
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   status: VoucherValueDecisionStatus
   validFrom: LocalDate
   validTo: LocalDate | null

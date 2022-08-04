@@ -6,7 +6,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
@@ -118,7 +117,7 @@ export default React.memo(function VoucherValueDecisionHeading({
             ? [
                 {
                   label: i18n.valueDecision.sentAt,
-                  value: formatDate(sentAt)
+                  value: sentAt.toLocalDate().format()
                 }
               ]
             : []),

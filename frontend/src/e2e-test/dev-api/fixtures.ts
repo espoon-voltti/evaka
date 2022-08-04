@@ -796,7 +796,7 @@ export const feeDecisionsFixture = (
     LocalDate.todayInSystemTz().subYears(1),
     LocalDate.todayInSystemTz().addYears(1)
   ),
-  sentAt: Date | null = null,
+  sentAt: HelsinkiDateTime | null = null,
   id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'
 ): FeeDecision => ({
   id,
@@ -843,7 +843,7 @@ export const feeDecisionsFixture = (
   decisionHandlerId: null,
   decisionNumber: null,
   documentKey: null,
-  created: new Date()
+  created: HelsinkiDateTime.now()
 })
 
 export const voucherValueDecisionsFixture = (
@@ -855,7 +855,7 @@ export const voucherValueDecisionsFixture = (
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.todayInSystemTz().subYears(1),
   validTo = LocalDate.todayInSystemTz().addYears(1),
-  sentAt: Date | null = null
+  sentAt: HelsinkiDateTime | null = null
 ): VoucherValueDecision => ({
   id,
   status,
@@ -895,7 +895,7 @@ export const voucherValueDecisionsFixture = (
   approvedById: null,
   decisionNumber: null,
   documentKey: null,
-  created: new Date(),
+  created: HelsinkiDateTime.now(),
   decisionHandler: null
 })
 
