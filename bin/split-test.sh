@@ -8,6 +8,12 @@
 
 set -euo pipefail
 
+get_seeded_random() {
+  seed="$1"
+  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+    </dev/zero 2>/dev/null
+}
+
 SPLIT_NUMBER="${1:-}"
 SPLIT_MAX="${2:-}"
 
@@ -33,7 +39,7 @@ mkdir -p /tmp/test-split
 
 trap 'rm -rf /tmp/test-split' EXIT
 
-find src/e2e-test/ -type f -name '*.spec.ts' | sort -h > /tmp/test-split/lines
+find src/e2e-test/ -type f -name '*.spec.ts' | sort -h | shuf --random-source=<(get_seeded_random 654) > /tmp/test-split/lines
 
 split --suffix-length=1 --numeric-suffixes=1 --number="l/${SPLIT_MAX}" /tmp/test-split/lines "/tmp/test-split/split."
 
