@@ -293,7 +293,12 @@ const NavLinkText = React.memo(function NavLinkText({
 }: {
   text: string
 }) {
-  return <div data-text={text}>{text}</div>
+  return (
+    <div>
+      <SpaceReservingText aria-hidden="true">{text}</SpaceReservingText>
+      <div>{text}</div>
+    </div>
+  )
 })
 
 const Nav = styled.nav`
@@ -320,8 +325,7 @@ const StyledNavLink = styled(NavLink)`
   margin: ${defaultMargins.xxs} 0;
   border-bottom: 2px solid transparent;
 
-  &:hover,
-  [data-text]::before {
+  &:hover {
     font-weight: ${fontWeights.bold};
     border-color: ${colors.grayscale.g0};
   }
@@ -336,14 +340,15 @@ const StyledNavLink = styled(NavLink)`
     font-weight: ${fontWeights.bold};
     border-color: ${colors.grayscale.g0};
   }
+`
 
-  [data-text]::before {
-    display: block;
-    height: 0;
-    visibility: hidden;
-    content: attr(data-text);
-    text-align: center;
-  }
+const SpaceReservingText = styled.span`
+  display: block;
+  height: 0;
+  visibility: hidden;
+  text-align: center;
+  font-weight: ${fontWeights.bold};
+  border-color: ${colors.grayscale.g0};
 `
 
 const VerticalSpacer = styled.div`
