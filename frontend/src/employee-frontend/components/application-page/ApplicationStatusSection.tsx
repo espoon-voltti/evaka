@@ -5,7 +5,6 @@
 import React from 'react'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import ListGrid from 'lib-components/layout/ListGrid'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
@@ -39,14 +38,12 @@ export default React.memo(function ApplicationStatusSection({
 
         <Label>{i18n.application.state.sent}</Label>
         <span data-qa="application-sent-date">
-          {application.sentDate?.format()}
+          {application.sentDate?.format() ?? ''}
         </span>
 
         <Label>{i18n.application.state.modified}</Label>
         <span data-qa="application-modified-date">
-          {application.modifiedDate
-            ? formatDate(application.modifiedDate, DATE_FORMAT_DATE_TIME)
-            : ''}
+          {application.modifiedDate?.format() ?? ''}
         </span>
 
         <Label inputRow={!!dueDateEditor}>{i18n.application.state.due}</Label>

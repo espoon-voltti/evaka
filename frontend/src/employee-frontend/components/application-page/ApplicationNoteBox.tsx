@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { addSeconds, isAfter } from 'date-fns'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -175,21 +173,19 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 <Label>{props.note.createdByName}</Label>
                 <span>
                   {i18n.application.notes.created}:{' '}
-                  {formatDate(props.note.created, DATE_FORMAT_DATE_TIME)}
+                  {props.note.created.format()}
                 </span>
 
                 {isEdit(props) ? (
                   <DetailText>{i18n.application.notes.editing}</DetailText>
-                ) : isAfter(
-                    props.note.updated,
-                    addSeconds(props.note.created, 1)
+                ) : props.note.updated.isAfter(
+                    props.note.created.addSeconds(1)
                   ) ? (
                   <>
                     <DetailText>
-                      {`${i18n.application.notes.lastEdited}: ${formatDate(
-                        props.note.updated,
-                        DATE_FORMAT_DATE_TIME
-                      )}`}
+                      {`${
+                        i18n.application.notes.lastEdited
+                      }: ${props.note.updated.format()}`}
                     </DetailText>
                     <DetailText>{props.note.updatedByName}</DetailText>
                   </>

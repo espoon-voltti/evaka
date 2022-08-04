@@ -5,8 +5,8 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
-import { formatDate, formatTime } from 'lib-common/date'
 import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { Translations } from '../../state/i18n'
@@ -38,9 +38,9 @@ export const Reservations = React.memo(function Reservations({
         const endDatePart = datePart(endTime, i18n)
 
         return (
-          <Fragment key={startTime.toISOString()}>
+          <Fragment key={startTime.formatIso()}>
             {index !== 0 && <Separator />}
-            <span>{formatTime(startTime)}</span>
+            <span>{startTime.toLocalTime().format('HH:mm')}</span>
             {!!startDatePart && (
               <>
                 <Whitespace />
@@ -48,7 +48,7 @@ export const Reservations = React.memo(function Reservations({
               </>
             )}
             <Dash />
-            <span>{formatTime(endTime)}</span>
+            <span>{endTime.toLocalTime().format('HH:mm')}</span>
             {!!endDatePart && (
               <>
                 <Whitespace />
@@ -62,8 +62,11 @@ export const Reservations = React.memo(function Reservations({
   )
 })
 
-function datePart(dateTime: Date, i18n: Translations): string | undefined {
-  const localDate = LocalDate.fromSystemTzDate(dateTime)
+function datePart(
+  dateTime: HelsinkiDateTime,
+  i18n: Translations
+): string | undefined {
+  const localDate = dateTime.toLocalDate()
   if (localDate.isToday()) {
     return undefined
   }
@@ -72,7 +75,7 @@ function datePart(dateTime: Date, i18n: Translations): string | undefined {
     ? i18n.attendances.serviceTime.tomorrow
     : localDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
     ? i18n.attendances.serviceTime.yesterday
-    : formatDate(dateTime, 'd.M.')
+    : localDate.format('d.M.')
 
   return `(${datePart})`
 }

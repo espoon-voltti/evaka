@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
 import {
   DaycarePlacementWithDetails,
   PlacementType
@@ -242,12 +241,14 @@ export default React.memo(function VasuAndLeops({
   const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
     const publishedAt = getLastPublished(events)
     return [
-      `${i18n.childInformation.vasu.modified}: ${formatDate(modifiedAt)}`,
+      `${i18n.childInformation.vasu.modified}: ${modifiedAt
+        .toLocalDate()
+        .format()}`,
       ...(publishedAt
         ? [
-            `${i18n.childInformation.vasu.published}: ${formatDate(
-              publishedAt
-            )}`.toLowerCase()
+            `${i18n.childInformation.vasu.published}: ${publishedAt
+              .toLocalDate()
+              .format()}`.toLowerCase()
           ]
         : [])
     ].join(', ')

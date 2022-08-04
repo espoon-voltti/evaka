@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { VasuDocumentEvent } from 'lib-common/generated/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 export const getLastPublished = (
   events: VasuDocumentEvent[]
-): Date | undefined =>
-  events.reduce<Date | undefined>((acc, event) => {
+): HelsinkiDateTime | undefined =>
+  events.reduce<HelsinkiDateTime | undefined>((acc, event) => {
     if (event.eventType !== 'PUBLISHED') {
       return acc
     }

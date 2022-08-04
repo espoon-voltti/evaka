@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { EmployeeFeatures } from './shared'
@@ -347,7 +348,7 @@ export interface PersonJSON {
   socialSecurityNumber: string | null
   ssnAddingDisabled: boolean
   streetAddress: string
-  updatedFromVtj: Date | null
+  updatedFromVtj: HelsinkiDateTime | null
 }
 
 /**

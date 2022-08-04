@@ -6,7 +6,6 @@ import React from 'react'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { formatDate } from 'lib-common/date'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, Label } from 'lib-components/typography'
 
@@ -24,6 +23,10 @@ export default React.memo(function BasicsSection({
   formData
 }: BasicsSectionProps) {
   const t = useTranslation()
+
+  const created = application.createdDate?.toLocalDate()
+  const modified = application.modifiedDate?.toLocalDate()
+
   return (
     <div>
       <H2>
@@ -37,13 +40,12 @@ export default React.memo(function BasicsSection({
         columnGap="L"
       >
         <Label>{t.applications.editor.verification.basics.created}</Label>
-        <span>{formatDate(application.createdDate)}</span>
+        <span>{created?.format() ?? ''}</span>
 
-        {formatDate(application.modifiedDate) !==
-          formatDate(application.createdDate) && (
+        {created && modified && !created.isEqual(modified) && (
           <>
             <Label>{t.applications.editor.verification.basics.modified}</Label>
-            <span>{formatDate(application.modifiedDate)}</span>
+            <span>{modified.format()}</span>
           </>
         )}
       </ListGrid>

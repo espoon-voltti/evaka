@@ -23,6 +23,7 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -61,13 +62,13 @@ export async function getApplication(
         dateOfBirth: LocalDate.parseIso(guardian.dateOfBirth),
         dateOfDeath: LocalDate.parseNullableIso(guardian.dateOfDeath),
         updatedFromVtj: guardian.updatedFromVtj
-          ? new Date(guardian.updatedFromVtj)
+          ? HelsinkiDateTime.parseIso(guardian.updatedFromVtj)
           : null
       })),
       attachments: data.attachments.map((attachment) => ({
         ...attachment,
-        updated: new Date(attachment.updated),
-        receivedAt: new Date(attachment.receivedAt)
+        updated: HelsinkiDateTime.parseIso(attachment.updated),
+        receivedAt: HelsinkiDateTime.parseIso(attachment.receivedAt)
       })),
       permittedActions: new Set(data.permittedActions)
     }))
@@ -365,8 +366,8 @@ export async function getApplicationNotes(
       res.data.map(({ note, permittedActions }) => ({
         note: {
           ...note,
-          created: new Date(note.created),
-          updated: new Date(note.updated)
+          created: HelsinkiDateTime.parseIso(note.created),
+          updated: HelsinkiDateTime.parseIso(note.updated)
         },
         permittedActions
       }))

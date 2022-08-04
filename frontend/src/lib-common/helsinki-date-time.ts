@@ -70,6 +70,9 @@ export default class HelsinkiDateTime {
     )
   }
 
+  format(): string {
+    return formatInTimeZone(this.timestamp, EUROPE_HELSINKI, 'dd.MM.yyyy HH:mm')
+  }
   formatIso(): string {
     return formatInTimeZone(
       this.timestamp,

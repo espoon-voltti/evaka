@@ -35,7 +35,7 @@ const ReceivedAtText = styled(Dimmed)`
 interface Props {
   attachment: ApplicationAttachment
   'data-qa': string
-  receivedAt: Date
+  receivedAt: LocalDate
 }
 
 const contentTypeIcon = (contentType: string) => {
@@ -72,7 +72,7 @@ function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
           {attachment.uploadedByEmployee
             ? i18n.application.attachments.receivedByPaperAt
             : i18n.application.attachments.receivedAt}{' '}
-          {LocalDate.fromSystemTzDate(receivedAt).format()}
+          {receivedAt.format()}
         </ReceivedAtText>
       </FixedSpaceRow>
     </AttachmentContainer>

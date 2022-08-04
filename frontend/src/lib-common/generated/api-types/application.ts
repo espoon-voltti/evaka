@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { AttachmentType } from './attachment'
@@ -45,9 +46,9 @@ export interface ApplicationAttachment {
   contentType: string
   id: UUID
   name: string
-  receivedAt: Date
+  receivedAt: HelsinkiDateTime
   type: AttachmentType
-  updated: Date
+  updated: HelsinkiDateTime
   uploadedByEmployee: UUID | null
   uploadedByPerson: UUID | null
 }
@@ -70,16 +71,16 @@ export interface ApplicationDetails {
   checkedByAdmin: boolean
   childId: UUID
   childRestricted: boolean
-  createdDate: Date | null
+  createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
-  dueDateSetManuallyAt: Date | null
+  dueDateSetManuallyAt: HelsinkiDateTime | null
   form: ApplicationForm
   guardianDateOfDeath: LocalDate | null
   guardianId: UUID
   guardianRestricted: boolean
   hideFromGuardian: boolean
   id: UUID
-  modifiedDate: Date | null
+  modifiedDate: HelsinkiDateTime | null
   origin: ApplicationOrigin
   otherGuardianId: UUID | null
   otherGuardianLivesInSameAddress: boolean | null
@@ -125,11 +126,11 @@ export interface ApplicationFormUpdate {
 export interface ApplicationNote {
   applicationId: UUID
   content: string
-  created: Date
+  created: HelsinkiDateTime
   createdBy: UUID
   createdByName: string
   id: UUID
-  updated: Date
+  updated: HelsinkiDateTime
   updatedBy: UUID
   updatedByName: string
 }
@@ -325,8 +326,8 @@ export interface CitizenApplicationSummary {
   applicationStatus: ApplicationStatus
   childId: UUID
   childName: string | null
-  createdDate: Date
-  modifiedDate: Date
+  createdDate: HelsinkiDateTime
+  modifiedDate: HelsinkiDateTime
   preferredUnitName: string | null
   sentDate: LocalDate | null
   startDate: LocalDate | null

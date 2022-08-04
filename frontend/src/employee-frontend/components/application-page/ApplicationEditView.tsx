@@ -19,6 +19,7 @@ import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -172,8 +173,8 @@ export default React.memo(function ApplicationEditView({
                     id: res.value,
                     name: file.name,
                     type,
-                    updated: new Date(),
-                    receivedAt: new Date()
+                    updated: HelsinkiDateTime.now(),
+                    receivedAt: HelsinkiDateTime.now()
                   }
                 ]
               }

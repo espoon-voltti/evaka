@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
@@ -35,7 +34,6 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 @Service
 class PersonService(
@@ -407,7 +405,6 @@ data class PersonJSON(
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
     val ophPersonOid: String? = "",
-    @ForceCodeGenType(OffsetDateTime::class)
     val updatedFromVtj: HelsinkiDateTime? = null
 ) {
     companion object {

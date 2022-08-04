@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.incomestatement
 
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -19,7 +18,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 enum class IncomeStatementType {
     HIGHEST_FEE,
@@ -449,7 +447,6 @@ fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
 
 data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
-    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
     val type: IncomeStatementType,

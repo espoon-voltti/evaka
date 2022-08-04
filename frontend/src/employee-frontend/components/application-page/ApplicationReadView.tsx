@@ -11,6 +11,7 @@ import {
   ApplicationAttachment,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
+import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -143,12 +144,14 @@ export default React.memo(function ApplicationReadView({
       applicationGuardian.residenceCode === otherGuardian.residenceCode) ||
     false
 
-  const attachmentReceivedAt = (attachment: ApplicationAttachment): Date => {
+  const attachmentReceivedAt = (
+    attachment: ApplicationAttachment
+  ): LocalDate => {
     const { sentDate } = application.application
-    if (!sentDate) return attachment.receivedAt
-    else if (sentDate.toSystemTzDate() > attachment.receivedAt)
-      return sentDate.toSystemTzDate()
-    else return attachment.receivedAt
+    if (!sentDate) return attachment.receivedAt.toLocalDate()
+    else if (sentDate.isEqualOrAfter(attachment.receivedAt.toLocalDate()))
+      return sentDate
+    else return attachment.receivedAt.toLocalDate()
   }
 
   return (

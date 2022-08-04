@@ -9,6 +9,7 @@ import {
   GroupNoteBody,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -24,16 +25,16 @@ export async function getNotesByGroup(
       Success.of({
         childDailyNotes: res.data.childDailyNotes.map((note) => ({
           ...note,
-          modifiedAt: new Date(note.modifiedAt)
+          modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt)
         })),
         childStickyNotes: res.data.childStickyNotes.map((note) => ({
           ...note,
-          modifiedAt: new Date(note.modifiedAt),
+          modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
           expires: LocalDate.parseIso(note.expires)
         })),
         groupNotes: res.data.groupNotes.map((note) => ({
           ...note,
-          modifiedAt: new Date(note.modifiedAt),
+          modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
           expires: LocalDate.parseIso(note.expires)
         }))
       })

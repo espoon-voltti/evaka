@@ -12,6 +12,7 @@ import {
   DepartureRequest
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -203,26 +204,32 @@ function deserializeAttendanceResponse(
             ...attendanceChild,
             attendance: attendanceChild.attendance
               ? {
-                  arrived: new Date(attendanceChild.attendance.arrived),
+                  arrived: HelsinkiDateTime.parseIso(
+                    attendanceChild.attendance.arrived
+                  ),
                   departed: attendanceChild.attendance.departed
-                    ? new Date(attendanceChild.attendance.departed)
+                    ? HelsinkiDateTime.parseIso(
+                        attendanceChild.attendance.departed
+                      )
                     : null
                 }
               : null,
             dailyNote: attendanceChild.dailyNote
               ? {
                   ...attendanceChild.dailyNote,
-                  modifiedAt: new Date(attendanceChild.dailyNote.modifiedAt)
+                  modifiedAt: HelsinkiDateTime.parseIso(
+                    attendanceChild.dailyNote.modifiedAt
+                  )
                 }
               : null,
             stickyNotes: attendanceChild.stickyNotes.map((note) => ({
               ...note,
-              modifiedAt: new Date(note.modifiedAt),
+              modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
               expires: LocalDate.parseIso(note.expires)
             })),
             reservations: attendanceChild.reservations.map((reservation) => ({
-              startTime: new Date(reservation.startTime),
-              endTime: new Date(reservation.endTime)
+              startTime: HelsinkiDateTime.parseIso(reservation.startTime),
+              endTime: HelsinkiDateTime.parseIso(reservation.endTime)
             })),
             dailyServiceTimes: attendanceChild.dailyServiceTimes && {
               ...attendanceChild.dailyServiceTimes,
@@ -236,7 +243,7 @@ function deserializeAttendanceResponse(
         .sort((a, b) => compareByProperty(a, b, 'firstName')),
       groupNotes: data.groupNotes.map((groupNote) => ({
         ...groupNote,
-        modifiedAt: new Date(groupNote.modifiedAt),
+        modifiedAt: HelsinkiDateTime.parseIso(groupNote.modifiedAt),
         expires: LocalDate.parseIso(groupNote.expires)
       }))
     }

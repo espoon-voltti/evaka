@@ -10,7 +10,6 @@ import {
   ChildVasuSummary,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
-import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -105,9 +104,7 @@ const VasuTable = React.memo(function VasuTable({
                 />
               </StateTd>
               <DateTd data-qa={`published-at-${vasu.id}`}>
-                {vasu.publishedAt
-                  ? LocalDate.fromSystemTzDate(vasu.publishedAt).format()
-                  : ''}
+                {vasu.publishedAt?.toLocalDate().format() ?? ''}
               </DateTd>
               <PermissionTd data-qa={`permission-to-share-needed-${vasu.id}`}>
                 {!vasu.guardiansThatHaveGivenPermissionToShare.some(
@@ -196,9 +193,7 @@ const VasuList = React.memo(function VasuList({
                   />
                   <Gap horizontal size="xs" />
                   <span data-qa={`published-at-${vasu.id}`}>
-                    {vasu.publishedAt
-                      ? LocalDate.fromSystemTzDate(vasu.publishedAt).format()
-                      : ''}
+                    {vasu.publishedAt?.toLocalDate().format() ?? ''}
                   </span>
                 </MobileStatusRow>
                 <Gap size="xs" />

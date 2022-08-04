@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -64,8 +65,8 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
               id: result.value,
               name: file.name,
               contentType: file.type,
-              updated: new Date(),
-              receivedAt: new Date(),
+              updated: HelsinkiDateTime.now(),
+              receivedAt: HelsinkiDateTime.now(),
               type: 'EXTENDED_CARE'
             }
           ]
