@@ -19,10 +19,11 @@ import { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { faCheck, faTimes } from 'lib-icons'
 
+import { SrOnly } from '../SrOnly'
 import { StyledButton } from './Button'
 
 const onSuccessTimeout = isAutomatedTest ? 10 : 500
-const clearStateTimeout = isAutomatedTest ? 25 : 2000
+const clearStateTimeout = isAutomatedTest ? 25 : 3000
 
 type ButtonState<T> =
   | { state: 'idle' | 'in-progress' | 'failure' }
@@ -112,7 +113,8 @@ function AsyncButton<T>({
       } else {
         setButtonState(inProgress)
         maybePromise
-          .then((result) => {
+          .then(async (result) => {
+            await new Promise((r) => setTimeout(r, 1000))
             if (!mountedRef.current) return
             if (result.isSuccess) {
               handleSuccess(result.value)
@@ -198,11 +200,22 @@ function AsyncButton<T>({
         primary: !!primary && !showIcon,
         disabled
       })}
-      disabled={disabled || showIcon}
+      disabled={disabled}
       onClick={handleClick}
       {...props}
       data-status={buttonState.state === 'idle' ? '' : buttonState.state}
+      aria-busy={buttonState.state === 'in-progress'}
     >
+      {buttonState.state === 'in-progress' && (
+        <SrOnly aria-live="polite" id="in-progress">
+          Ladataan
+        </SrOnly>
+      )}
+      {buttonState.state === 'success' && (
+        <SrOnly aria-live="assertive" id="success">
+          Valmis
+        </SrOnly>
+      )}
       <Content>
         <IconContainer
           style={{
