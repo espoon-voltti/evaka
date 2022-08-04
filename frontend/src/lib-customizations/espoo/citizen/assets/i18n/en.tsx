@@ -97,7 +97,8 @@ const en: Translations = {
         'December'
       ]
     },
-    closeModal: 'Close popup'
+    closeModal: 'Close popup',
+    close: 'Close'
   },
   header: {
     nav: {

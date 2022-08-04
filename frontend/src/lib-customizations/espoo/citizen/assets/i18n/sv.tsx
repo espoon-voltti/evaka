@@ -95,7 +95,8 @@ const sv: Translations = {
         'December'
       ]
     },
-    closeModal: 'Stäng popup'
+    closeModal: 'Stäng popup',
+    close: 'Stäng'
   },
   header: {
     nav: {

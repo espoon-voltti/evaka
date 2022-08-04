@@ -147,6 +147,7 @@ export default React.memo(function GuardianSubSection({
         data-qa="guardian-future-address-info"
         info={t.applications.editor.contactInfo.futureAddressInfo}
         ariaLabel={t.common.openExpandingInfo}
+        closeLabel={t.common.close}
       >
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}

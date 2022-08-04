@@ -116,6 +116,7 @@ export default React.memo(function VasuPage() {
                   </div>
                 }
                 ariaLabel={t.common.openExpandingInfo}
+                closeLabel={t.common.close}
                 inlineChildren
               >
                 <P>

@@ -126,6 +126,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           <ExpandingInfo
             info={i18n.financeBasics.fees.thresholdIncreaseInfo}
             ariaLabel={i18n.common.openExpandingInfo}
+            closeLabel={i18n.common.close}
           >
             <Label>{i18n.financeBasics.fees.thresholdIncrease}</Label>
           </ExpandingInfo>

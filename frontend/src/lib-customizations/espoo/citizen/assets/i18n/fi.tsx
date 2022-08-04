@@ -94,7 +94,8 @@ export default {
         'Joulukuu'
       ]
     },
-    closeModal: 'Sulje ponnahdusikkuna'
+    closeModal: 'Sulje ponnahdusikkuna',
+    close: 'Close'
   },
   header: {
     nav: {

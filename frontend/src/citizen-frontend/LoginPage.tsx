@@ -104,6 +104,7 @@ export default React.memo(function LoginPage() {
               <ExpandingInfoBox
                 info={i18n.loginPage.applying.infoBoxText}
                 close={() => setShowInfoBoxText(false)}
+                closeLabel={i18n.common.close}
               />
             )}
             <ul>

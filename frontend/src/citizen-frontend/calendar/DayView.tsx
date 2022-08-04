@@ -689,6 +689,7 @@ const Absence = React.memo(function Absence({
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
+            closeLabel={i18n.common.close}
           />
         </Colspan2>
       )}
@@ -718,6 +719,7 @@ const DayOff = React.memo(function DayOff() {
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
+            closeLabel={i18n.common.close}
           />
         </Colspan2>
       )}

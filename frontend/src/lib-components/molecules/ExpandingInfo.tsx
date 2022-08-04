@@ -109,6 +109,7 @@ type ExpandingInfoProps = {
   margin?: SpacingSize
   'data-qa'?: string
   inlineChildren?: boolean
+  closeLabel: string
 }
 
 const ExpandingInfoToggleContext = React.createContext<
@@ -138,7 +139,8 @@ export default React.memo(function ExpandingInfo({
   width = 'fixed',
   margin,
   'data-qa': dataQa,
-  inlineChildren
+  inlineChildren,
+  closeLabel
 }: ExpandingInfoProps) {
   const group = useContext(ExpandingInfoGroupContext)
 
@@ -204,6 +206,7 @@ export default React.memo(function ExpandingInfo({
             info={info}
             width={width}
             close={close}
+            closeLabel={closeLabel}
             data-qa={dataQa}
           />
         )}
@@ -286,13 +289,15 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   close,
   width = 'fixed',
   className,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  closeLabel
 }: {
   info: ReactNode
   close: () => void
   width?: 'fixed' | 'full' | 'auto'
   className?: string
   'data-qa'?: string
+  closeLabel: string
 }) {
   const { colors } = useTheme()
 
@@ -305,7 +310,12 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
           {info}
         </InfoContainer>
 
-        <IconButton onClick={close} icon={faTimes} gray />
+        <IconButton
+          onClick={close}
+          icon={faTimes}
+          aria-label={closeLabel}
+          gray
+        />
       </InfoBoxContentArea>
     </InfoBoxContainer>
   )

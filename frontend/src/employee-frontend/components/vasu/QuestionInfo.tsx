@@ -26,6 +26,7 @@ export default React.memo(function QuestionInfo({ children, info }: Props) {
         info={<WhitespacePre>{info}</WhitespacePre>}
         ariaLabel={i18n.common.openExpandingInfo}
         width="full"
+        closeLabel={i18n.common.close}
       >
         {children}
       </ExpandingInfo>

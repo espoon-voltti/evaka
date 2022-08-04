@@ -228,6 +228,7 @@ export default React.memo(function ReservationModal({
                       : i18n.calendar.reservationModal.noReservableDays
                   }
                   inlineChildren
+                  closeLabel={i18n.common.close}
                 >
                   <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
                 </ExpandingInfo>

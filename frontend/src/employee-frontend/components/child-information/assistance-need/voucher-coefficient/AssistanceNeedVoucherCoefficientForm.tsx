@@ -211,6 +211,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
             info={<div>{t.form.titleInfo}</div>}
             ariaLabel={i18n.common.openExpandingInfo}
             width="full"
+            closeLabel={i18n.common.close}
           >
             <LabelLike>{t.form.title}</LabelLike>
           </ExpandingInfo>

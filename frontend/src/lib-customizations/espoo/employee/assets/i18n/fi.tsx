@@ -175,7 +175,8 @@ export const fi = {
     },
     nb: 'Huom',
     validTo: (date: string) => `Voimassa ${date} saakka`,
-    closeModal: 'Sulje ponnahdusikkuna'
+    closeModal: 'Sulje ponnahdusikkuna',
+    close: 'Sulje'
   },
   header: {
     applications: 'Hakemukset',

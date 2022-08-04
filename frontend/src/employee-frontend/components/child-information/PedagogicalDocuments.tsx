@@ -156,7 +156,11 @@ export default React.memo(function PedagogicalDocuments({
         </P>
       )}
       {!!expandingInfo && (
-        <ExpandingInfoBox info={expandingInfo} close={closeExpandingInfo} />
+        <ExpandingInfoBox
+          info={expandingInfo}
+          close={closeExpandingInfo}
+          closeLabel={i18n.common.close}
+        />
       )}
 
       {renderResult(pedagogicalDocuments, (pedagogicalDocuments) => (

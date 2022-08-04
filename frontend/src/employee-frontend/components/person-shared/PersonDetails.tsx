@@ -344,6 +344,7 @@ export default React.memo(function PersonDetails({
                     <ExpandingInfoBox
                       info={i18n.personProfile.ssnAddingDisabledInfo}
                       close={toggleShowSsnAddingDisabledInfo}
+                      closeLabel={i18n.common.close}
                     />
                   ),
                   onlyValue: true

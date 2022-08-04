@@ -269,6 +269,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                     i18n.childInformation.assistanceNeed.fields.capacityFactor
                   }
                   width="full"
+                  closeLabel={i18n.common.close}
                 >
                   <CoefficientInputContainer>
                     <InputField
@@ -309,6 +310,7 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
                       info={basis.descriptionFi}
                       ariaLabel=""
                       width="full"
+                      closeLabel={i18n.common.close}
                     >
                       <CheckboxRow key={basis.value}>
                         <Checkbox
