@@ -797,35 +797,19 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     value = "",
                     multiline = true
                 ),
-                VasuQuestion.RadioGroupQuestion(
-                    name = "Lapsen tuen taso jatkossa",
+                VasuQuestion.MultiSelectQuestion(
+                    name = "Lapsen tuen toteuttamista koskeva hallintopäätös",
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kohtaan kirjataan, jos lapsen tuesta esiopetuksessa ja/tai liittyvässä varhaiskasvatuksessa on annettu hallintopäätös. Leopsiin kirjataan myös päivämäärä, jos hallintopäätös kumotaan. Muihin huomioihin voidaan kirjata hallintopäätökseen liittyviä tarkentavia näkökulmia."
+                        VasuLanguage.SV -> ""
+                    },
                     options = listOf(
                         QuestionOption(
                             key = "general",
                             name = when (lang) {
-                                VasuLanguage.FI -> "Yleinen tuki"
+                                VasuLanguage.FI -> "Tukipalvelut (yleinen tuki)"
                                 VasuLanguage.SV -> ""
                             }
-                        ),
-                        QuestionOption(
-                            key = "",
-                            name = when (lang) {
-                                VasuLanguage.FI -> "Lapsen tuen toteuttamista koskeva hallintopäätös esiopetuksessa ja liittyvässä varhaiskasvatuksessa"
-                                VasuLanguage.SV -> ""
-                            },
-                            isIntervention = true,
-                            info = when (lang) {
-                                VasuLanguage.FI -> "Tähän kohtaan kirjataan, jos lapsen tuesta esiopetuksessa ja/tai liittyvässä varhaiskasvatuksessa on annettu hallintopäätös. Leopsiin kirjataan myös päivämäärä, jos hallintopäätös kumotaan. Muihin huomioihin voidaan kirjata hallintopäätökseen liittyviä tarkentavia näkökulmia."
-                                VasuLanguage.SV -> ""
-                            }
-                        ),
-                        QuestionOption(
-                            key = "during_range",
-                            name = when (lang) {
-                                VasuLanguage.FI -> "Tukipalvelut ajalla"
-                                VasuLanguage.SV -> ""
-                            },
-                            dateRange = true
                         ),
                         QuestionOption(
                             key = "intensified",
@@ -842,7 +826,9 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                             }
                         )
                     ),
-                    value = null
+                    value = emptyList(),
+                    minSelections = 0,
+                    maxSelections = 2
                 ),
                 VasuQuestion.TextQuestion(
                     name = "Muita huomioita",
@@ -928,8 +914,8 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     name = "Tämä oppimissuunnitelma luovutetaan huoltajan/huoltajien luvalla",
                     options = listOf(
                         QuestionOption(
-                            key = "tiedonsaajataho_tuleva_esiopetusryhma",
-                            name = "Tulevaan esiopetusryhmään"
+                            key = "tiedonsaajataho_tuleva_koulu",
+                            name = "Tulevaan kouluun"
                         ),
                         QuestionOption(
                             key = "tiedonsaajataho_neuvola",

@@ -174,6 +174,7 @@ export interface VasuDocumentSummary {
   modifiedAt: Date
   name: string
   publishedAt: Date | null
+  type: CurriculumType
 }
 
 /**

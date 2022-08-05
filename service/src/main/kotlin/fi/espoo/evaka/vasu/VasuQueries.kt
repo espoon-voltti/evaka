@@ -212,7 +212,8 @@ data class SummaryResultRow(
     val basics: VasuBasics,
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
-    val eventType: VasuDocumentEventType? = null
+    val eventType: VasuDocumentEventType? = null,
+    val type: CurriculumType
 )
 
 fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> {
@@ -226,7 +227,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             e.created AS event_created,
             e.event_type,
             vc.published_at,
-            cd.basics
+            cd.basics,
+            ct.type
         FROM curriculum_document cd
         JOIN curriculum_template ct ON cd.template_id = ct.id
         JOIN child c ON c.id = cd.child_id
@@ -259,7 +261,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                         created = it.eventCreated,
                         eventType = it.eventType
                     ) else null
-                }.sortedBy { it.created }
+                }.sortedBy { it.created },
+                type = documents[0].type
             )
         }
 }
