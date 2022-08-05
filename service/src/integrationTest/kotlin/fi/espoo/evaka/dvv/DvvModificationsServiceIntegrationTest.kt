@@ -38,18 +38,27 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     }
 
     @Test
-    fun `get modification token for today`() = db.transaction { tx ->
-        assertEquals("101", tx.getNextDvvModificationToken())
-        val response = dvvModificationsService.getDvvModifications(tx, listOf("nimenmuutos"))
-        assertEquals(1, response.size)
-        assertEquals("102", tx.getNextDvvModificationToken())
-        val createdDvvModificationToken = tx.getDvvModificationToken("101")!!
-        assertEquals("101", createdDvvModificationToken.token)
-        assertEquals("102", createdDvvModificationToken.nextToken)
-        assertEquals(1, createdDvvModificationToken.ssnsSent)
-        assertEquals(1, createdDvvModificationToken.modificationsReceived)
+    fun `get modification token for today`() {
+        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999", dependants = emptyList())
+        createVtjPerson(caretaker)
 
-        tx.deleteDvvModificationToken("101")
+        db.read { assertEquals("101", it.getNextDvvModificationToken()) }
+
+        val updated = updatePeopleFromDvv(listOf("nimenmuutos"))
+
+        db.read {
+            assertEquals(1, updated)
+            assertEquals("102", it.getNextDvvModificationToken())
+            val createdDvvModificationToken = it.getDvvModificationToken("101")!!
+            assertEquals("101", createdDvvModificationToken.token)
+            assertEquals("102", createdDvvModificationToken.nextToken)
+            assertEquals(1, createdDvvModificationToken.ssnsSent)
+            assertEquals(1, createdDvvModificationToken.modificationsReceived)
+        }
+
+        db.transaction { tx ->
+            tx.deleteDvvModificationToken("101")
+        }
     }
 
     @Test

@@ -36,10 +36,10 @@ class DvvModificationsService(
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
-        return db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
+        val result = db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
             val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
-            modificationsForPersons.map { personModifications ->
+            modificationsForPersons.dvvModifications.map { personModifications ->
                 personModifications.tietoryhmat.map { infoGroup ->
                     try {
                         when (infoGroup) {
@@ -75,6 +75,7 @@ class DvvModificationsService(
                             )
                             }: ${e.message}"
                         }
+                        throw e
                     }
                 }
             }
@@ -90,8 +91,18 @@ class DvvModificationsService(
                 }
             }
 
-            modificationsForPersons.size
+            modificationsForPersons
         }
+
+        if (result.token != result.nextToken) {
+            db.transaction {
+                it.storeDvvModificationToken(
+                    result.token, result.nextToken, ssns.size, result.dvvModifications.size
+                )
+            }
+        }
+
+        return result.dvvModifications.size
     }
 
     private fun handleDeath(db: Database.Connection, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
@@ -161,32 +172,29 @@ class DvvModificationsService(
             }
         }
 
-    fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
+    data class DvvModificationsWithToken(
+        val dvvModifications: List<DvvModification>,
+        val token: String,
+        val nextToken: String
+    )
+
+    fun getDvvModifications(tx: Database.Read, ssns: List<String>): DvvModificationsWithToken {
         val token = tx.getNextDvvModificationToken()
-        return getAllPagesOfDvvModifications(tx, ssns, token, emptyList())
+        return getAllPagesOfDvvModifications(ssns, token, emptyList())
     }
 
     fun getAllPagesOfDvvModifications(
-        tx: Database.Transaction,
         ssns: List<String>,
         token: String,
         alreadyFoundDvvModifications: List<DvvModification>
-    ): List<DvvModification> {
+    ): DvvModificationsWithToken {
         logger.debug("Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}")
         return dvvModificationsServiceClient.getModifications(token, ssns).let { dvvModificationsResponse ->
             val combinedModifications = alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
             if (dvvModificationsResponse.ajanTasalla) {
-                if (dvvModificationsResponse.viimeisinKirjausavain != token)
-                    tx.storeDvvModificationToken(
-                        token,
-                        dvvModificationsResponse.viimeisinKirjausavain,
-                        ssns.size,
-                        dvvModificationsResponse.muutokset.size
-                    )
-                combinedModifications
+                DvvModificationsWithToken(dvvModifications = combinedModifications, token = token, nextToken = dvvModificationsResponse.viimeisinKirjausavain)
             } else {
                 getAllPagesOfDvvModifications(
-                    tx,
                     ssns,
                     dvvModificationsResponse.viimeisinKirjausavain,
                     combinedModifications
