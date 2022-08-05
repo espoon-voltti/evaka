@@ -12,10 +12,8 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getServiceNeedsByChild(
@@ -62,8 +60,8 @@ fun Database.Read.getServiceNeedsByUnit(
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bindNullable("start", startDate)
-        .bindNullable("end", endDate)
+        .bind("start", startDate)
+        .bind("end", endDate)
         .mapTo<ServiceNeed>()
         .toList()
 }
@@ -264,7 +262,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<Placement
         ORDER BY display_order
     """.trimIndent()
     return createQuery(sql)
-        .bind("placementTypes", placementTypes.toTypedArray())
+        .bind("placementTypes", placementTypes)
         .mapTo<ServiceNeedOptionPublicInfo>()
         .list()
 }

@@ -10,13 +10,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
@@ -64,10 +61,10 @@ fun Database.Read.getParentships(
         """.trimIndent()
 
     return createQuery(sql)
-        .bindNullable("headOfChild", headOfChildId)
-        .bindNullable("child", childId)
-        .bindNullable("from", period?.start)
-        .bindNullable("to", period?.end)
+        .bind("headOfChild", headOfChildId)
+        .bind("child", childId)
+        .bind("from", period?.start)
+        .bind("to", period?.end)
         .bind("includeConflicts", includeConflicts)
         .map(toParentship("child", "head"))
         .toList()
@@ -163,42 +160,42 @@ private val personColumns = listOf(
     "force_manual_fee_decisions"
 )
 
-private val toParentship: (String, String) -> (ResultSet, StatementContext) -> Parentship = { childAlias, headAlias ->
-    { rs, _ ->
+private val toParentship: (String, String) -> (RowView) -> Parentship = { childAlias, headAlias ->
+    { row ->
         Parentship(
-            id = ParentshipId(rs.getUUID("id")),
-            childId = ChildId(rs.getUUID("child_id")),
-            child = toPersonJSON(childAlias, rs),
-            headOfChildId = PersonId(rs.getUUID("head_of_child")),
-            headOfChild = toPersonJSON(headAlias, rs),
-            startDate = rs.getDate("start_date").toLocalDate(),
-            endDate = rs.getDate("end_date").toLocalDate(),
-            conflict = rs.getBoolean("conflict")
+            id = ParentshipId(row.mapColumn("id")),
+            childId = ChildId(row.mapColumn("child_id")),
+            child = toPersonJSON(childAlias, row),
+            headOfChildId = PersonId(row.mapColumn("head_of_child")),
+            headOfChild = toPersonJSON(headAlias, row),
+            startDate = row.mapColumn("start_date"),
+            endDate = row.mapColumn("end_date"),
+            conflict = row.mapColumn("conflict")
         )
     }
 }
 
-internal val toPersonJSON: (String, ResultSet) -> PersonJSON = { table, rs ->
+internal val toPersonJSON: (String, RowView) -> PersonJSON = { table, row ->
     PersonJSON(
-        id = PersonId(rs.getUUID("${table}_id")),
-        socialSecurityNumber = rs.getString("${table}_social_security_number"),
-        ssnAddingDisabled = rs.getBoolean("${table}_ssn_adding_disabled"),
-        firstName = rs.getString("${table}_first_name"),
-        lastName = rs.getString("${table}_last_name"),
-        email = rs.getString("${table}_email"),
-        phone = rs.getString("${table}_phone"),
-        language = rs.getString("${table}_language"),
-        dateOfBirth = rs.getDate("${table}_date_of_birth").toLocalDate(),
-        dateOfDeath = rs.getDate("${table}_date_of_death")?.toLocalDate(),
-        streetAddress = rs.getString("${table}_street_address"),
-        postOffice = rs.getString("${table}_post_office"),
-        postalCode = rs.getString("${table}_postal_code"),
-        residenceCode = rs.getString("${table}_residence_code"),
-        restrictedDetailsEnabled = rs.getBoolean("${table}_restricted_details_enabled"),
-        invoiceRecipientName = rs.getString("${table}_invoice_recipient_name"),
-        invoicingStreetAddress = rs.getString("${table}_invoicing_street_address"),
-        invoicingPostalCode = rs.getString("${table}_postal_code"),
-        invoicingPostOffice = rs.getString("${table}_post_office"),
-        forceManualFeeDecisions = rs.getBoolean("${table}_force_manual_fee_decisions")
+        id = PersonId(row.mapColumn("${table}_id")),
+        socialSecurityNumber = row.mapColumn("${table}_social_security_number"),
+        ssnAddingDisabled = row.mapColumn("${table}_ssn_adding_disabled"),
+        firstName = row.mapColumn("${table}_first_name"),
+        lastName = row.mapColumn("${table}_last_name"),
+        email = row.mapColumn("${table}_email"),
+        phone = row.mapColumn("${table}_phone"),
+        language = row.mapColumn("${table}_language"),
+        dateOfBirth = row.mapColumn("${table}_date_of_birth"),
+        dateOfDeath = row.mapColumn("${table}_date_of_death"),
+        streetAddress = row.mapColumn("${table}_street_address"),
+        postOffice = row.mapColumn("${table}_post_office"),
+        postalCode = row.mapColumn("${table}_postal_code"),
+        residenceCode = row.mapColumn("${table}_residence_code"),
+        restrictedDetailsEnabled = row.mapColumn("${table}_restricted_details_enabled"),
+        invoiceRecipientName = row.mapColumn("${table}_invoice_recipient_name"),
+        invoicingStreetAddress = row.mapColumn("${table}_invoicing_street_address"),
+        invoicingPostalCode = row.mapColumn("${table}_postal_code"),
+        invoicingPostOffice = row.mapColumn("${table}_post_office"),
+        forceManualFeeDecisions = row.mapColumn("${table}_force_manual_fee_decisions")
     )
 }

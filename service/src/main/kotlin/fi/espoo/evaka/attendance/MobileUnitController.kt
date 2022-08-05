@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -332,7 +331,7 @@ LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(:unitIds)
 """
     )
-        .bind("unitIds", unitIds.toTypedArray())
+        .bind("unitIds", unitIds)
         .bind("date", date)
         .mapTo<UnitStats>()
         .toList()

@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId>) {
@@ -178,7 +177,7 @@ WHERE
         .bind("today", today)
         .bind("from", from)
         .bind("to", to)
-        .bind("statuses", statuses.toTypedArray())
+        .bind("statuses", statuses)
         .mapTo<QueryResult>()
         .list()
         .map {

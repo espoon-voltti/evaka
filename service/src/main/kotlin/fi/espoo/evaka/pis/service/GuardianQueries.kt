@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 private data class GuardianChildPair(val guardianId: PersonId, val childId: ChildId)
 

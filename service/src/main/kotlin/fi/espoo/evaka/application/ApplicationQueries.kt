@@ -31,7 +31,6 @@ import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.postgresql.util.PGobject
 import java.time.LocalDate
@@ -141,7 +140,7 @@ fun Database.Read.activePlacementExists(
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .bind("types", placementTypes.toTypedArray())
+        .bind("types", placementTypes)
         .bind("today", today)
         .mapTo<Int>()
         .list()
@@ -263,7 +262,7 @@ fun Database.Read.fetchApplicationSummaries(
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
             a.duedate,
-            f.document ->> 'preferredStartDate' as preferredStartDate,
+            (f.document ->> 'preferredStartDate')::date as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
             a.type,
             a.status AS application_status,
@@ -361,7 +360,7 @@ fun Database.Read.fetchApplicationSummaries(
                 firstName = row.mapColumn("first_name"),
                 lastName = row.mapColumn("last_name"),
                 socialSecurityNumber = row.mapColumn("social_security_number"),
-                dateOfBirth = row.mapColumn<String?>("date_of_birth")?.let { LocalDate.parse(it) },
+                dateOfBirth = row.mapColumn("date_of_birth"),
                 type = row.mapColumn("type"),
                 placementType = mapRequestedPlacementType(row, "document"),
                 serviceNeed = row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
@@ -372,8 +371,8 @@ fun Database.Read.fetchApplicationSummaries(
                         row.mapColumn("serviceNeedNameEn")
                     )
                 },
-                dueDate = row.mapColumn<String?>("duedate")?.let { LocalDate.parse(it) },
-                startDate = row.mapColumn<String?>("preferredStartDate")?.let { LocalDate.parse(it) },
+                dueDate = row.mapColumn("duedate"),
+                startDate = row.mapColumn("preferredStartDate"),
                 preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
                     PreferredUnit(
                         id = DaycareId(UUID.fromString(it)),
@@ -420,7 +419,7 @@ fun Database.Read.fetchApplicationSummaries(
         """.trimIndent()
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
     val unitMap = createQuery(unitSql)
-        .bind("unitIds", unitIds.toTypedArray())
+        .bind("unitIds", unitIds)
         .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
         .toMap()
 
@@ -625,7 +624,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
                 dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<Array<ApplicationAttachment>>("attachments").toList()
+                attachments = row.mapJsonColumn("attachments")
             )
         }
         .firstOrNull()
@@ -640,7 +639,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
             """.trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap = createQuery(unitSql)
-            .bind("unitIds", unitIds.toTypedArray())
+            .bind("unitIds", unitIds)
             .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
             .toMap()
 
@@ -898,12 +897,12 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
 
         // language=SQL
         createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
 
         // language=SQL
         createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
 
         applicationIds.forEach { applicationId ->
@@ -921,7 +920,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
 
         // language=SQL
         createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
-            .bind("applicationIds", applicationIds.toTypedArray())
+            .bind("applicationIds", applicationIds)
             .execute()
     }
 }

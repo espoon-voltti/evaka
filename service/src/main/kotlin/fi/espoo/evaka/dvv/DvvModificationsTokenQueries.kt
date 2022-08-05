@@ -5,7 +5,6 @@
 package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.storeDvvModificationToken(token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) {
     createUpdate(

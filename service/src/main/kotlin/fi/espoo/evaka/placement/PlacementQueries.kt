@@ -11,18 +11,12 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.user.EvakaUser
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
@@ -98,7 +92,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
     )
         .bind("childId", childId)
         .bind("start", start)
-        .bindNullable("end", end)
+        .bind("end", end)
         .mapTo<Placement>()
         .list()
 }
@@ -299,8 +293,8 @@ fun Database.Read.getDaycarePlacements(
     return createQuery(sql)
         .bind("from", startDate)
         .bind("to", endDate)
-        .bindNullable("daycareId", daycareId)
-        .bindNullable("childId", childId)
+        .bind("daycareId", daycareId)
+        .bind("childId", childId)
         .mapTo<DaycarePlacementDetails>()
         .toList()
 }
@@ -620,26 +614,26 @@ fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
         .firstOrNull() != null
 }
 
-private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacement = { rs, ctx ->
+private val toDaycarePlacement: (RowView) -> DaycarePlacement = { row ->
     DaycarePlacement(
-        id = PlacementId(rs.getUUID("placement_id")),
+        id = row.mapColumn("placement_id"),
         child = ChildBasics(
-            id = ChildId(rs.getUUID("child_id")),
-            socialSecurityNumber = rs.getString("child_ssn"),
-            firstName = rs.getString("child_first_name"),
-            lastName = rs.getString("child_last_name"),
-            dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
+            id = ChildId(row.mapColumn("child_id")),
+            socialSecurityNumber = row.mapColumn("child_ssn"),
+            firstName = row.mapColumn("child_first_name"),
+            lastName = row.mapColumn("child_last_name"),
+            dateOfBirth = row.mapColumn("child_date_of_birth")
         ),
         daycare = DaycareBasics(
-            id = DaycareId(rs.getUUID("unit_id")),
-            name = rs.getString("unit_name"),
-            area = rs.getString("area_name"),
-            providerType = rs.getEnum("provider_type"),
-            enabledPilotFeatures = ctx.mapColumn<Array<PilotFeature>>(rs, "enabled_pilot_features").toList()
+            id = DaycareId(row.mapColumn("unit_id")),
+            name = row.mapColumn("unit_name"),
+            area = row.mapColumn("area_name"),
+            providerType = row.mapColumn("provider_type"),
+            enabledPilotFeatures = row.mapColumn("enabled_pilot_features")
         ),
-        startDate = rs.getDate("placement_start").toLocalDate(),
-        endDate = rs.getDate("placement_end").toLocalDate(),
-        type = rs.getEnum("placement_type")
+        startDate = row.mapColumn("placement_start"),
+        endDate = row.mapColumn("placement_end"),
+        type = row.mapColumn("placement_type")
     )
 }
 
@@ -681,8 +675,8 @@ SET termination_requested_date = :terminationRequestedDate,
 WHERE id = :placementId
         """.trimIndent()
     )
-        .bindNullable("terminationRequestedDate", if (terminatedBy == null) null else terminationRequestedDate)
-        .bindNullable("terminationRequestedBy", terminatedBy)
+        .bind("terminationRequestedDate", if (terminatedBy == null) null else terminationRequestedDate)
+        .bind("terminationRequestedBy", terminatedBy)
         .bind("placementTerminationDate", terminationDate)
         .bind("placementId", placementId)
         .execute()

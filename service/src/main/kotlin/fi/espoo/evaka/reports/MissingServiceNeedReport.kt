@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -96,7 +95,7 @@ private fun Database.Read.getMissingServiceNeedRows(
         ORDER BY 1, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
-        .bind("units", authorizedUnits.ids?.toTypedArray())
+        .bind("units", authorizedUnits.ids)
         .bind("from", from)
         .bind("to", to)
         .mapTo<MissingServiceNeedReportRow>()

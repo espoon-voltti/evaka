@@ -5,7 +5,6 @@
 package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getSettings(): Map<SettingType, String> {
     // language=SQL
@@ -19,7 +18,7 @@ fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     val deleteSql = "DELETE FROM setting WHERE key != ALL(:keys::setting_type[])"
 
     createUpdate(deleteSql)
-        .bind("keys", settings.keys.toTypedArray())
+        .bind("keys", settings.keys)
         .execute()
 
     // language=SQL

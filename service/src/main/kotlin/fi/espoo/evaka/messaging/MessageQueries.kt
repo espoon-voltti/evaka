@@ -18,11 +18,9 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 
@@ -40,7 +38,7 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Se
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<UnreadCountByAccount>().toSet()
 }
 
@@ -99,9 +97,9 @@ fun Database.Transaction.insertMessage(
     return createQuery(insertMessageSql)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
-        .bindNullable("repliesToId", repliesToMessageId)
+        .bind("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
-        .bind("recipientNames", recipientNames.toTypedArray())
+        .bind("recipientNames", recipientNames)
         .mapTo<MessageId>()
         .one()
 }
@@ -158,7 +156,7 @@ WHERE
     id = ANY(:attachmentIds)
         """.trimIndent()
     )
-        .bind("attachmentIds", attachmentIds.toTypedArray())
+        .bind("attachmentIds", attachmentIds)
         .bind("messageContentId", messageContentId)
         .execute()
 }
@@ -737,7 +735,7 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(clock: EvakaClock, employeeOrMobi
     val numAccounts = createQuery(sql)
         .bind("today", clock.today())
         .bind("employeeOrMobileId", employeeOrMobileId)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<Int>()
         .one()
 

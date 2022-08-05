@@ -15,12 +15,10 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -97,7 +95,7 @@ fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int
             .bind("year", year)
             .bind("month", month)
             .bind("takenAt", takenAt)
-            .executeAndReturnGeneratedKeys("id")
+            .executeAndReturnGeneratedKeys()
             .mapTo<UUID>()
             .first()
 
@@ -415,8 +413,8 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
     return createQuery(sql)
         .bind("effective", VoucherValueDecisionStatus.effective)
         .bind("reportDate", LocalDate.of(year, month, 1))
-        .bindNullable("areaId", areaId)
-        .bindNullable("unitIds", unitIds?.toTypedArray())
+        .bind("areaId", areaId)
+        .bind("unitIds", unitIds)
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }
@@ -497,8 +495,8 @@ private fun Database.Read.getSnapshotVoucherValues(
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("year", year)
         .bind("month", month)
-        .bindNullable("areaId", areaId)
-        .bindNullable("unitIds", unitIds?.toTypedArray())
+        .bind("areaId", areaId)
+        .bind("unitIds", unitIds)
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }

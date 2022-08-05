@@ -9,8 +9,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.updateExactlyOne
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> {
     // language=SQL

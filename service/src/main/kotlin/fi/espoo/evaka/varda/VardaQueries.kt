@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
 
@@ -69,7 +68,7 @@ VALUES (
         errors = :upsertErrors
 """
 ).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors.toTypedArray())
+    .bind("upsertErrors", upsertErrors)
     .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
     .execute()
 
@@ -104,7 +103,7 @@ SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors.toTypedArray())
+    .bind("errors", errors)
     .execute()
 
 fun Database.Read.getEvakaServiceNeedChanges(feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
@@ -408,7 +407,7 @@ fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
         WHERE evaka_child_id = ANY(:childIds)
         """.trimIndent()
     )
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .execute()
 
 fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
@@ -489,5 +488,5 @@ GROUP BY evaka_child_id
         """.trimIndent()
     )
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
+        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<List<ServiceNeedId>>("service_need_ids") }
         .toMap()

@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 
@@ -68,7 +67,7 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
             .bind("date", date)
             .bind("absenceType", absenceType)
             .bind("userId", userId)
-            .bindNullable("questionnaireId", questionnaireId)
+            .bind("questionnaireId", questionnaireId)
             .add()
     }
 
@@ -79,7 +78,7 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId:
     this.createUpdate(
         "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
     )
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .bind("questionnaireId", questionnaireId)
         .execute()
 }

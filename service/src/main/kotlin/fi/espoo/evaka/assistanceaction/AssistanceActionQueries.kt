@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId: ChildId, data: AssistanceActionRequest): AssistanceAction {
@@ -41,7 +40,7 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() }.toTypedArray())
+        .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
         .first()
 
@@ -74,7 +73,7 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
         WHERE aa.id = :id
         GROUP BY aa.id, child_id, start_date, end_date, other_action, measures
         """.trimIndent()
-    return createQuery(sql).bind("id", id).mapTo(AssistanceAction::class.java).first()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().first()
 }
 
 fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {
@@ -91,7 +90,7 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo(AssistanceAction::class.java)
+        .mapTo<AssistanceAction>()
         .list()
 }
 
@@ -115,7 +114,7 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() }.toTypedArray())
+        .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
         .firstOrNull() ?: throw NotFound("Assistance action $id not found")
 
@@ -160,12 +159,12 @@ fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: As
         """.trimIndent()
     return createUpdate(sql)
         .bind("action_id", actionId)
-        .bind("excluded", excluded.toTypedArray())
+        .bind("excluded", excluded)
         .execute()
 }
 
 fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> {
     //language=sql
     val sql = "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
-    return createQuery(sql).mapTo(AssistanceActionOption::class.java).list()
+    return createQuery(sql).mapTo<AssistanceActionOption>().list()
 }

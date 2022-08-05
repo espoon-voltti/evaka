@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
-import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID

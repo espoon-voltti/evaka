@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
@@ -71,7 +70,7 @@ fun Database.Read.getAssistanceNeedById(id: AssistanceNeedId): AssistanceNeed {
         WHERE an.id = :id
         GROUP BY an.id, child_id, start_date, end_date, capacity_factor
         """.trimIndent()
-    return createQuery(sql).bind("id", id).mapTo(AssistanceNeed::class.java).first()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeed>().first()
 }
 
 fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNeed> {
@@ -88,7 +87,7 @@ fun Database.Read.getAssistanceNeedsByChild(childId: ChildId): List<AssistanceNe
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo(AssistanceNeed::class.java)
+        .mapTo<AssistanceNeed>()
         .list()
 }
 
@@ -170,12 +169,12 @@ fun Database.Transaction.deleteAssistanceBasisOptionRefsByNeedId(needId: Assista
         """.trimIndent()
     return createUpdate(sql)
         .bind("need_id", needId)
-        .bind("excluded", excluded.toTypedArray())
+        .bind("excluded", excluded)
         .execute()
 }
 
 fun Database.Read.getAssistanceBasisOptions(): List<AssistanceBasisOption> {
     //language=sql
     val sql = "SELECT value, name_fi, description_fi FROM assistance_basis_option ORDER BY display_order"
-    return createQuery(sql).mapTo(AssistanceBasisOption::class.java).list()
+    return createQuery(sql).mapTo<AssistanceBasisOption>().list()
 }

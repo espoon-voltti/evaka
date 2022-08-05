@@ -6,10 +6,8 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 
 sealed class AclAuthorization {
     abstract fun isAuthorized(id: DaycareId): Boolean
@@ -75,7 +73,7 @@ private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, role
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
         .bind("userId", user.rawId())
-        .bindNullable("roles", roles?.toTypedArray())
+        .bind("roles", roles)
         .mapTo<DaycareId>()
         .toSet()
 }

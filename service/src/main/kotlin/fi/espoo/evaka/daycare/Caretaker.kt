@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 import java.time.LocalDate

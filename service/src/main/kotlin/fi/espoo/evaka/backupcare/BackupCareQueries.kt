@@ -9,9 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> = createQuery(
     // language=SQL
@@ -83,7 +81,7 @@ RETURNING id
 )
     .bind("childId", childId)
     .bind("unitId", backupCare.unitId)
-    .bindNullable("groupId", backupCare.groupId)
+    .bind("groupId", backupCare.groupId)
     .bind("start", backupCare.period.start)
     .bind("end", backupCare.period.end)
     .executeAndReturnGeneratedKeys()
@@ -104,7 +102,7 @@ WHERE id = :id
     .bind("id", id)
     .bind("start", period.start)
     .bind("end", period.end)
-    .bindNullable("groupId", groupId)
+    .bind("groupId", groupId)
     .execute()
 
 fun Database.Transaction.deleteBackupCare(id: BackupCareId) = createUpdate(

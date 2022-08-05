@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
-import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
@@ -58,7 +57,7 @@ AND id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )
@@ -75,7 +74,7 @@ AND id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )
@@ -85,7 +84,7 @@ AND id = ANY(:ids)
         Query<ApplicationNoteId> { tx, user, _, ids ->
             tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
                 .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )

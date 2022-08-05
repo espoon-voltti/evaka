@@ -12,12 +12,9 @@ import fi.espoo.evaka.invoicing.domain.PaymentDraft
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Transaction.deletePaymentDraftsByDateRange(range: DateRange) {
     createUpdate("DELETE FROM payment WHERE status = 'DRAFT' AND period && :range")
@@ -54,7 +51,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
         WHERE p.id = ANY(:ids)
         """
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<Payment>()
         .list()
 }
@@ -113,12 +110,12 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
         """
     )
         .bind("searchTerms", params.searchTerms)
-        .bind("area", params.area.toTypedArray())
-        .bindNullable("unit", params.unit)
+        .bind("area", params.area)
+        .bind("unit", params.unit)
         .bind("includeMissingDetails", includeMissingDetails)
         .bind("status", params.status)
-        .bindNullable("paymentDateStart", params.paymentDateStart)
-        .bindNullable("paymentDateEnd", params.paymentDateEnd)
+        .bind("paymentDateStart", params.paymentDateStart)
+        .bind("paymentDateEnd", params.paymentDateEnd)
         .bind("page", params.page)
         .bind("pageSize", params.pageSize)
         .mapToPaged(params.pageSize)

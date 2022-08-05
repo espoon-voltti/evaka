@@ -7,7 +7,6 @@ package fi.espoo.evaka.assistanceneed.decision
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.filterPermittedAssistanceNeedDecisionsForDecisionMaker(user: AuthenticatedUser.Employee, ids: Collection<AssistanceNeedDecisionId>): Set<AssistanceNeedDecisionId> =
     this.createQuery(
@@ -20,7 +19,7 @@ WHERE decision_maker_employee_id = :employeeId
         """.trimIndent()
     )
         .bind("employeeId", user.id)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AssistanceNeedDecisionId>()
         .toSet()
 
@@ -33,6 +32,6 @@ WHERE id = ANY(:ids)
   AND sent_for_decision IS NOT NULL
         """.trimIndent()
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<AssistanceNeedDecisionId>()
         .toSet()

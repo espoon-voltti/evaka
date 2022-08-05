@@ -16,14 +16,12 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 data class DaycareFields(
@@ -91,7 +89,7 @@ WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 )
 
 fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
-    .bindNullable("idFilter", authorizedUnits.ids)
+    .bind("idFilter", authorizedUnits.ids)
     .mapTo<Daycare>()
     .toList()
 
@@ -109,12 +107,12 @@ SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(:ids)
     """.trimIndent()
-).bind("ids", ids.toTypedArray())
+).bind("ids", ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? = getDaycaresQuery()
-    .bindNullable("idFilter", listOf(id))
+    .bind("idFilter", listOf(id))
     .mapTo<Daycare>()
     .asSequence()
     .firstOrNull()
@@ -357,8 +355,8 @@ fun Database.Transaction.addUnitFeatures(
         WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", daycareIds.toTypedArray())
-        .bind("features", features.toTypedArray())
+        .bind("ids", daycareIds)
+        .bind("features", features)
         .execute()
 }
 
@@ -377,8 +375,8 @@ fun Database.Transaction.removeUnitFeatures(
         WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", daycareIds.toTypedArray())
-        .bind("features", features.toTypedArray())
+        .bind("ids", daycareIds)
+        .bind("features", features)
         .execute()
 }
 

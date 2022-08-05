@@ -7,7 +7,6 @@ package fi.espoo.evaka.children
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getChildrenByGuardian(id: PersonId): List<Child> =
     this.createQuery(

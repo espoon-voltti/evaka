@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
     return getGroupNotesForGroups(listOf(groupId))
@@ -30,7 +29,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
     WHERE group_id = ANY(:groupIds)
     """.trimIndent()
 )
-    .bind("groupIds", groupIds.toTypedArray())
+    .bind("groupIds", groupIds)
     .mapTo<GroupNote>()
     .list()
 

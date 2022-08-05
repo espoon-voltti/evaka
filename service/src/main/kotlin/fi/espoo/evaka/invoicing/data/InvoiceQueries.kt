@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -30,7 +29,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
 
@@ -129,7 +127,7 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
     """
 
     return createQuery(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
 }
@@ -187,7 +185,7 @@ fun Database.Read.getInvoiceIdsByDates(range: FiniteDateRange, areas: List<Strin
 
     return createQuery(sql)
         .bind("range", range)
-        .bind("areas", areas.toTypedArray())
+        .bind("areas", areas)
         .bind("draft", InvoiceStatus.DRAFT)
         .mapTo<InvoiceId>()
         .toList()
@@ -357,8 +355,8 @@ fun Database.Read.searchInvoices(
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
     return createQuery("SELECT max(number) FROM invoice")
-        .mapTo(Long::class.java)
-        .first()
+        .mapTo<Long?>()
+        .first() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
@@ -366,7 +364,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
 
     createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
         .bind("status", InvoiceStatus.DRAFT.toString())
-        .bind("draftIds", draftIds.toTypedArray())
+        .bind("draftIds", draftIds)
         .execute()
 }
 
@@ -408,7 +406,7 @@ AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(:invoiceIds)
     """.trimIndent()
 )
-    .bind("invoiceIds", invoiceIds.toTypedArray())
+    .bind("invoiceIds", invoiceIds)
     .execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
@@ -496,7 +494,7 @@ private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) 
     if (invoiceIds.isEmpty()) return
 
     createUpdate("DELETE FROM invoice_row WHERE invoice_id = ANY(:invoiceIds)")
-        .bind("invoiceIds", invoiceIds.toTypedArray())
+        .bind("invoiceIds", invoiceIds)
         .execute()
 }
 
@@ -612,7 +610,7 @@ val toDetailedInvoice = { rv: RowView ->
                     periodEnd = rv.mapColumn("invoice_row_period_end"),
                     product = rv.mapColumn("product"),
                     unitId = rv.mapColumn("unit_id"),
-                    daycareType = rv.mapColumn<Array<CareType>>("type").toSet(),
+                    daycareType = rv.mapColumn("type"),
                     costCenter = rv.mapColumn("cost_center"),
                     subCostCenter = rv.mapColumn("sub_cost_center"),
                     savedCostCenter = rv.mapColumn("saved_cost_center"),

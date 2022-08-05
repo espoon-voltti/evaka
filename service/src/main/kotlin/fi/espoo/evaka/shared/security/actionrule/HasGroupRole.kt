@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
 private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
@@ -67,7 +66,7 @@ AND child_id = ANY(:ids)
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )
@@ -87,7 +86,7 @@ AND curriculum_document.id = ANY(:ids)
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )

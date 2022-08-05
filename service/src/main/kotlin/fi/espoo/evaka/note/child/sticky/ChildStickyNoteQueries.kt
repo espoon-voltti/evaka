@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> = createQuery(
@@ -55,7 +54,7 @@ private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>, 
     )
     """.trimIndent()
 )
-    .bind("groupIds", groupIds.toTypedArray())
+    .bind("groupIds", groupIds)
     .bind("today", today)
     .mapTo<ChildStickyNote>()
     .list()

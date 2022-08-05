@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
-import org.jdbi.v3.core.kotlin.mapTo
 
 private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
@@ -72,7 +71,7 @@ AND child_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -92,7 +91,7 @@ AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -112,7 +111,7 @@ AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -132,7 +131,7 @@ AND img.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -150,7 +149,7 @@ WHERE acl.mobile_device_id = :userId
 AND g.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -169,7 +168,7 @@ WHERE acl.mobile_device_id = :userId
 AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }
@@ -186,7 +185,7 @@ WHERE mobile_device_id = :userId
 AND daycare_id = ANY(:ids)
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .bind("userId", mobileId)
                 .mapTo()
         }

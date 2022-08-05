@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     val sql = """
@@ -65,7 +64,7 @@ AND (
 )
 """
     return this.createQuery(sql)
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<AuthorizedMessageAccount>()
         .toSet()
 }
@@ -78,7 +77,7 @@ fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<Strin
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("ids", accountIds.toTypedArray())
+        .bind("ids", accountIds)
         .mapTo<String>()
         .list()
 }
@@ -164,7 +163,7 @@ common_guardians AS (
 SELECT id, child_id FROM common_guardians
         """.trimIndent()
     )
-        .bind("accountIds", accountIds.toTypedArray())
+        .bind("accountIds", accountIds)
         .mapTo<AccountToChild>()
         .list()
 

@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -67,6 +66,6 @@ fun Database.Transaction.deleteDailyServiceTimesNotifications(notificationIds: L
 DELETE FROM daily_service_time_notification WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", notificationIds.toTypedArray())
+        .bind("ids", notificationIds)
         .execute()
 }

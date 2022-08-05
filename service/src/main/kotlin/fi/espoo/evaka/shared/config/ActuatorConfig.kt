@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.config
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.health.AbstractHealthIndicator
 import org.springframework.boot.actuate.health.Health

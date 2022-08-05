@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(val childId: ChildId, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)
@@ -38,8 +37,8 @@ WHERE kvsr.void_date IS NULL
 AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
 AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
 """
-    ).bind("personIds", params.personIds.toTypedArray())
-        .bind("daycareIds", params.daycareIds.toTypedArray())
+    ).bind("personIds", params.personIds)
+        .bind("daycareIds", params.daycareIds)
         .bind("today", today)
         .mapTo<KoskiStudyRightKey>()
         .list()

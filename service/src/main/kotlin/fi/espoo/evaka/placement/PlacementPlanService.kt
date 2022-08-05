@@ -275,7 +275,7 @@ class PlacementPlanService(
             """.trimIndent()
         )
             .bind("unitId", unitId)
-            .map { rs, _ -> rs.getBoolean("is_svebi") }
+            .mapTo<Boolean>()
             .first()
     }
 }

@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.toEnumSet
-import org.jdbi.v3.core.kotlin.mapTo
 import java.util.EnumSet
 
 private typealias Filter<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
@@ -60,7 +59,7 @@ WHERE attachment.id = ANY(:ids)
 AND evaka_user.type = 'EMPLOYEE'
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )
@@ -94,7 +93,7 @@ WHERE p.child_id = ANY(:ids)
   AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
                 """.trimIndent()
             )
-                .bind("ids", ids.toTypedArray())
+                .bind("ids", ids)
                 .mapTo()
         }
     )

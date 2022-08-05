@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -271,7 +270,7 @@ FROM daily_service_time
 WHERE child_id = ANY(:childIds)
     """.trimIndent()
 )
-    .bind("childIds", childIds.toTypedArray())
+    .bind("childIds", childIds)
     .map { row -> row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times }
     .toList()
     .groupBy { it.first }

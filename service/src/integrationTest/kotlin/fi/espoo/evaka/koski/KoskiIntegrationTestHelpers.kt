@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 

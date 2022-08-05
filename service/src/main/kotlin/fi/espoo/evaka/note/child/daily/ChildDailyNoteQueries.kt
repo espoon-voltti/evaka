@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
@@ -55,7 +54,7 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, to
         )
         """.trimIndent()
     )
-        .bind("groupIds", groupIds.toTypedArray())
+        .bind("groupIds", groupIds)
         .bind("today", today)
         .mapTo<ChildDailyNote>()
         .list()

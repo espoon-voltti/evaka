@@ -13,15 +13,11 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.mapNullableColumn
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
-import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.statement.StatementContext
-import java.sql.ResultSet
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
 
 val personDTOColumns = listOf(
@@ -155,7 +151,7 @@ fun Database.Read.searchPeople(
 
     return createQuery(sql)
         .bindMap(freeTextParams)
-        .applyIf(restricted) { bind("userId", user.id) }
+        .applyIf(restricted) { this.bind("userId", user.id) }
         .mapTo<PersonSummary>()
         .toList()
 }
@@ -353,37 +349,37 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
         .execute()
 }
 
-private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, ctx ->
+private val toPersonDTO: (RowView) -> PersonDTO = { row ->
     PersonDTO(
-        id = PersonId(rs.getUUID("id")),
-        identity = rs.getString("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
+        id = PersonId(row.mapColumn("id")),
+        identity = row.mapColumn<String?>("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
             ?: ExternalIdentifier.NoID,
-        ssnAddingDisabled = rs.getBoolean("ssn_adding_disabled"),
-        firstName = rs.getString("first_name"),
-        lastName = rs.getString("last_name"),
-        preferredName = rs.getString("preferred_name"),
-        email = rs.getString("email"),
-        phone = rs.getString("phone"),
-        backupPhone = rs.getString("backup_phone"),
-        language = rs.getString("language"),
-        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-        dateOfDeath = rs.getDate("date_of_death")?.toLocalDate(),
-        nationalities = (rs.getArray("nationalities").array as Array<*>).filterIsInstance<String>().toList(),
-        restrictedDetailsEnabled = rs.getBoolean("restricted_details_enabled"),
-        restrictedDetailsEndDate = rs.getDate("restricted_details_end_date")?.toLocalDate(),
-        streetAddress = rs.getString("street_address"),
-        postalCode = rs.getString("postal_code"),
-        postOffice = rs.getString("post_office"),
-        residenceCode = rs.getString("residence_code"),
-        updatedFromVtj = ctx.mapNullableColumn(rs, "updated_from_vtj"),
-        vtjGuardiansQueried = ctx.mapNullableColumn(rs, "vtj_guardians_queried"),
-        vtjDependantsQueried = ctx.mapNullableColumn(rs, "vtj_dependants_queried"),
-        invoiceRecipientName = rs.getString("invoice_recipient_name"),
-        invoicingStreetAddress = rs.getString("invoicing_street_address"),
-        invoicingPostalCode = rs.getString("invoicing_postal_code"),
-        invoicingPostOffice = rs.getString("invoicing_post_office"),
-        forceManualFeeDecisions = rs.getBoolean("force_manual_fee_decisions"),
-        ophPersonOid = rs.getString("oph_person_oid")
+        ssnAddingDisabled = row.mapColumn("ssn_adding_disabled"),
+        firstName = row.mapColumn("first_name"),
+        lastName = row.mapColumn("last_name"),
+        preferredName = row.mapColumn("preferred_name"),
+        email = row.mapColumn("email"),
+        phone = row.mapColumn("phone"),
+        backupPhone = row.mapColumn("backup_phone"),
+        language = row.mapColumn("language"),
+        dateOfBirth = row.mapColumn("date_of_birth"),
+        dateOfDeath = row.mapColumn("date_of_death"),
+        nationalities = row.mapColumn("nationalities"),
+        restrictedDetailsEnabled = row.mapColumn("restricted_details_enabled"),
+        restrictedDetailsEndDate = row.mapColumn("restricted_details_end_date"),
+        streetAddress = row.mapColumn("street_address"),
+        postalCode = row.mapColumn("postal_code"),
+        postOffice = row.mapColumn("post_office"),
+        residenceCode = row.mapColumn("residence_code"),
+        updatedFromVtj = row.mapColumn("updated_from_vtj"),
+        vtjGuardiansQueried = row.mapColumn("vtj_guardians_queried"),
+        vtjDependantsQueried = row.mapColumn("vtj_dependants_queried"),
+        invoiceRecipientName = row.mapColumn("invoice_recipient_name"),
+        invoicingStreetAddress = row.mapColumn("invoicing_street_address"),
+        invoicingPostalCode = row.mapColumn("invoicing_postal_code"),
+        invoicingPostOffice = row.mapColumn("invoicing_post_office"),
+        forceManualFeeDecisions = row.mapColumn("force_manual_fee_decisions"),
+        ophPersonOid = row.mapColumn("oph_person_oid")
     )
 }
 

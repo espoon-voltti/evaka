@@ -18,13 +18,10 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
@@ -135,14 +132,14 @@ INSERT INTO voucher_value_decision (
             .bind("partnerId", decision.partnerId)
             .bind("childId", decision.child.id)
             .bind("childDateOfBirth", decision.child.dateOfBirth)
-            .bindNullable("placementUnitId", decision.placement?.unitId)
-            .bindNullable("placementType", decision.placement?.type)
-            .bindNullable("serviceNeedFeeCoefficient", decision.serviceNeed?.feeCoefficient)
-            .bindNullable("serviceNeedVoucherValueCoefficient", decision.serviceNeed?.voucherValueCoefficient)
-            .bindNullable("serviceNeedFeeDescriptionFi", decision.serviceNeed?.feeDescriptionFi)
-            .bindNullable("serviceNeedFeeDescriptionSv", decision.serviceNeed?.feeDescriptionSv)
-            .bindNullable("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed?.voucherValueDescriptionFi)
-            .bindNullable("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed?.voucherValueDescriptionSv)
+            .bind("placementUnitId", decision.placement?.unitId)
+            .bind("placementType", decision.placement?.type)
+            .bind("serviceNeedFeeCoefficient", decision.serviceNeed?.feeCoefficient)
+            .bind("serviceNeedVoucherValueCoefficient", decision.serviceNeed?.voucherValueCoefficient)
+            .bind("serviceNeedFeeDescriptionFi", decision.serviceNeed?.feeDescriptionFi)
+            .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed?.feeDescriptionSv)
+            .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed?.voucherValueDescriptionFi)
+            .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed?.voucherValueDescriptionSv)
             .bind("sentAt", decision.sentAt)
             .execute()
     }
@@ -192,7 +189,7 @@ FROM voucher_value_decision
 WHERE id = ANY(:ids)
         """.trimIndent()
     )
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .mapTo<VoucherValueDecision>()
         .toList()
 }
@@ -250,8 +247,8 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
 
     return createQuery(sql)
         .bind("childId", childId)
-        .bindNullable("period", period)
-        .bindNullable("statuses", statuses)
+        .bind("period", period)
+        .bind("statuses", statuses)
         .mapTo<VoucherValueDecision>()
         .toList()
 }
@@ -260,7 +257,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }
 
@@ -510,7 +507,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
     val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
     createUpdate(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("status", status)
         .execute()
 }
@@ -534,7 +531,7 @@ fun Database.Transaction.setVoucherValueDecisionType(id: VoucherValueDecisionId,
 
 fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDecisionId>, now: HelsinkiDateTime) {
     createUpdate("UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("now", now)
         .execute()
@@ -561,7 +558,7 @@ fun Database.Transaction.annulVoucherValueDecisions(ids: List<VoucherValueDecisi
     if (ids.isEmpty()) return
 
     createUpdate("UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .bind("status", VoucherValueDecisionStatus.ANNULLED)
         .bind("now", now)
         .execute()
@@ -575,6 +572,6 @@ fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
 
 fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", ids)
         .execute()
 }

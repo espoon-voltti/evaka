@@ -48,7 +48,6 @@ import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

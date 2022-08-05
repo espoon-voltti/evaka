@@ -13,11 +13,9 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}

@@ -4,14 +4,18 @@
 
 package fi.espoo.evaka.shared.db
 
+import fi.espoo.evaka.shared.domain.NotFound
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.statement.PreparedBatch
-import org.jdbi.v3.core.statement.Query
-import org.jdbi.v3.core.statement.Update
+import org.jdbi.v3.core.kotlin.bindKotlin
+import org.jdbi.v3.core.mapper.ColumnMapper
+import org.jdbi.v3.core.mapper.RowViewMapper
+import org.jdbi.v3.core.qualifier.QualifiedType
+import org.jdbi.v3.core.result.ResultIterable
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.KClass
 
 // What does it mean when a function accepts a Database/Database.* parameter?
 //
@@ -120,7 +124,7 @@ class Database(private val jdbi: Jdbi) {
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
     open class Read internal constructor(val handle: Handle) {
-        fun createQuery(@Language("sql") sql: String): Query = handle.createQuery(sql)
+        fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
 
         fun setLockTimeout(duration: Duration) = handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
         fun setStatementTimeout(duration: Duration) = handle.execute("SET LOCAL statement_timeout = '${duration.toMillis()}ms'")
@@ -135,8 +139,8 @@ class Database(private val jdbi: Jdbi) {
         private var savepointId: Long = 0
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
-        fun createUpdate(@Language("sql") sql: String): Update = handle.createUpdate(sql)
-        fun prepareBatch(@Language("sql") sql: String): PreparedBatch = handle.prepareBatch(sql)
+        fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
+        fun prepareBatch(@Language("sql") sql: String): PreparedBatch = PreparedBatch(handle.prepareBatch(sql))
         fun execute(@Language("sql") sql: String, vararg args: Any): Int = handle.execute(sql, *args)
 
         /**
@@ -177,6 +181,92 @@ class Database(private val jdbi: Jdbi) {
                 return Transaction(handle, TransactionHooks())
             }
         }
+    }
+
+    abstract class SqlStatement<This : SqlStatement<This>> {
+        protected abstract fun self(): This
+        protected abstract val raw: org.jdbi.v3.core.statement.SqlStatement<*>
+
+        inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): This =
+            bindByType(name, value, createQualifiedType(*qualifiers))
+
+        inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): This =
+            registerColumnMapper(createQualifiedType(), mapper)
+
+        fun <T> registerColumnMapper(type: QualifiedType<T>, mapper: ColumnMapper<T>): This {
+            raw.registerColumnMapper(type, mapper)
+            return self()
+        }
+
+        fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): This {
+            raw.bindByType(name, value, type)
+            return self()
+        }
+
+        fun bindKotlin(value: Any): This {
+            raw.bindKotlin(value)
+            return self()
+        }
+
+        fun bindKotlin(name: String, value: Any): This {
+            raw.bindKotlin(name, value)
+            return self()
+        }
+
+        fun bindMap(map: Map<String, *>): This {
+            raw.bindMap(map)
+            return self()
+        }
+    }
+
+    class Query internal constructor(override val raw: org.jdbi.v3.core.statement.Query) : SqlStatement<Query>(), ResultBearing {
+        override fun self(): Query = this
+
+        inline fun <reified T> mapTo(qualifiers: Array<KClass<out Annotation>> = defaultQualifiers<T>()): ResultIterable<T> =
+            mapTo(createQualifiedType(*qualifiers))
+
+        override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+        override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
+    }
+
+    class Update internal constructor(override val raw: org.jdbi.v3.core.statement.Update) : SqlStatement<Update>() {
+        override fun self(): Update = this
+        fun execute() = raw.execute()
+
+        fun executeAndReturnGeneratedKeys(): UpdateResult = UpdateResult(raw.executeAndReturnGeneratedKeys())
+
+        fun updateExactlyOne(notFoundMsg: String = "Not found", foundMultipleMsg: String = "Found multiple") {
+            val rows = this.execute()
+            if (rows == 0) throw NotFound(notFoundMsg)
+            if (rows > 1) throw Error(foundMultipleMsg)
+        }
+    }
+
+    class PreparedBatch internal constructor(override val raw: org.jdbi.v3.core.statement.PreparedBatch) : SqlStatement<PreparedBatch>() {
+        override fun self(): PreparedBatch = this
+
+        fun add(): PreparedBatch {
+            raw.add()
+            return this
+        }
+        fun execute(): IntArray = raw.execute()
+    }
+
+    @JvmInline
+    value class UpdateResult(private val raw: org.jdbi.v3.core.result.ResultBearing) : ResultBearing {
+        inline fun <reified T> mapTo(qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): ResultIterable<T> =
+            mapTo(createQualifiedType(*qualifiers))
+
+        override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+        override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
+    }
+
+    interface ResultBearing {
+        fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T>
+        fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T>
+        fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T>
     }
 }
 

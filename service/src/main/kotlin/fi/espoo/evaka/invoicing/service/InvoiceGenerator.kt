@@ -38,7 +38,6 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.LocalDate
@@ -225,7 +224,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
             .toMap()
 
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
-            .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys.toTypedArray())
+            .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
             .mapTo<InvoiceCorrection>()
             .groupBy { it.headOfFamilyId }
             .mapValues { (_, corrections) ->
@@ -296,7 +295,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
     return createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
-        .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING).toTypedArray())
+        .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING))
         .mapTo<PersonId>()
         .list()
 }
@@ -319,7 +318,7 @@ fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collecti
 
     return createQuery(sql)
         .bind("range", spanningRange)
-        .bind("categories", categories.toTypedArray())
+        .bind("categories", categories)
         .mapTo<AbsenceStub>()
         .toList()
 }
@@ -347,7 +346,7 @@ internal fun Database.Read.getInvoiceablePlacements(
         """.trimIndent()
     )
         .bind("period", spanningPeriod)
-        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
+        .bind("invoicedTypes", PlacementType.invoiced())
         .map { row -> row.mapColumn<ChildId>("child_id") to row.mapRow<PlacementRow>() }
         .groupBy { (childId) -> childId }
         .mapValues { it.value.map { (_, placements) -> placements } }
@@ -438,7 +437,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
 
     return createQuery(sql)
         .bind("dateRange", dateRange)
-        .bind("childIds", childIds.toTypedArray())
+        .bind("childIds", childIds)
         .map { rv ->
             Triple(
                 DateRange(rv.mapColumn("start_date"), rv.mapColumn("end_date")),
@@ -503,7 +502,7 @@ WHERE
     """
 
     return createQuery(sql)
-        .bind("invoicedTypes", PlacementType.invoiced().toTypedArray())
+        .bind("invoicedTypes", PlacementType.invoiced())
         .mapTo<ChildId>()
         .list()
 }

@@ -8,10 +8,8 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 private fun Database.Read.createDaycareGroupQuery(groupId: GroupId?, daycareId: DaycareId?, period: DateRange?) = createQuery(
@@ -27,9 +25,9 @@ AND (:daycareId::uuid IS NULL OR daycare_id = :daycareId)
 AND (:period::daterange IS NULL OR daterange(start_date, end_date, '[]') && :period)
 """
 )
-    .bindNullable("groupId", groupId)
-    .bindNullable("daycareId", daycareId)
-    .bindNullable("period", period)
+    .bind("groupId", groupId)
+    .bind("daycareId", daycareId)
+    .bind("period", period)
 
 fun Database.Transaction.createDaycareGroup(daycareId: DaycareId, name: String, startDate: LocalDate): DaycareGroup = createUpdate(
     // language=SQL
@@ -53,7 +51,7 @@ fun Database.Transaction.updateGroup(groupId: GroupId, name: String, startDate: 
         .bind("id", groupId)
         .bind("name", name)
         .bind("startDate", startDate)
-        .bindNullable("endDate", endDate)
+        .bind("endDate", endDate)
         .execute()
         .let { if (it != 1) throw NotFound("Group $groupId not found") }
 }

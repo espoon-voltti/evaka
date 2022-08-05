@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.UUID
@@ -115,7 +114,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, now: Helsinki
         .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .bind("sent_at", now)
         .bind("sent_by", user.evakaUserId)
-        .bind("ids", invoiceIds.toTypedArray())
+        .bind("ids", invoiceIds)
         .mapTo<InvoiceId>()
         .list()
 

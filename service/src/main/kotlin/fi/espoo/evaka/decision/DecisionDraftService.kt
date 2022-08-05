@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -176,7 +175,7 @@ fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>
     val sql =
         """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()
 
-    createUpdate(sql).bind("applicationIds", applicationIds.toTypedArray()).execute()
+    createUpdate(sql).bind("applicationIds", applicationIds).execute()
 }
 
 private val decisionUnitQuery =

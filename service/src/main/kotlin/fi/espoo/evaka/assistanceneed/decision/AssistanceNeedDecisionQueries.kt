@@ -8,10 +8,8 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeedDecision(
@@ -424,6 +422,6 @@ fun Database.Transaction.decideAssistanceNeedDecision(
         .bind("id", id)
         .bind("status", status)
         .bind("decisionMade", decisionMade)
-        .bind("unreadGuardianIds", unreadGuardianIds?.toTypedArray())
+        .bind("unreadGuardianIds", unreadGuardianIds)
         .updateExactlyOne()
 }

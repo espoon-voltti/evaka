@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
-import org.jdbi.v3.core.kotlin.mapTo
 
 fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
     this.createQuery(
