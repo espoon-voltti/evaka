@@ -16,7 +16,7 @@ import { tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { Label, P } from 'lib-components/typography'
+import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
@@ -107,6 +107,7 @@ export default React.memo(function VasuPage() {
                   ? t.vasu.givePermissionToShareTitleVasu
                   : t.vasu.givePermissionToShareTitleLeops}
               </Label>
+              <Gap size="s" />
               <ExpandingInfo
                 info={
                   <div>
@@ -119,12 +120,13 @@ export default React.memo(function VasuPage() {
                 closeLabel={t.common.close}
                 inlineChildren
               >
-                <P>
+                <span>
                   {vasu.type === 'DAYCARE'
                     ? t.vasu.givePermissionToShareVasuBrief
                     : t.vasu.givePermissionToShareLeopsBrief}
-                </P>
+                </span>
               </ExpandingInfo>
+              <Gap size="s" />
               <Checkbox
                 checked={givePermissionToShareSelected}
                 label={

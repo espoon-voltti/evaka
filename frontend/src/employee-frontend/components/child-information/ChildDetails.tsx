@@ -8,6 +8,7 @@ import { isLoading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import PersonDetails from '../../components/person-shared/PersonDetails'
@@ -33,8 +34,8 @@ export default React.memo(function ChildDetails({ id }: Props) {
         open={open}
         toggleOpen={() => setOpen(!open)}
         opaque
-        paddingVertical="L"
       >
+        <Gap size="s" />
         {renderResult(person, (person) => (
           <PersonDetails
             person={person}

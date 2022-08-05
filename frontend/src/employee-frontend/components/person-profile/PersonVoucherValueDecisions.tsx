@@ -55,6 +55,7 @@ export default React.memo(function PersonVoucherValueDecisions({
       title={i18n.personProfile.voucherValueDecisions.title}
       data-qa="person-voucher-value-decisions-collapsible"
       startCollapsed={!open}
+      fitted
     >
       {uiMode === 'create-retroactive-value-decisions' ? (
         <Modal

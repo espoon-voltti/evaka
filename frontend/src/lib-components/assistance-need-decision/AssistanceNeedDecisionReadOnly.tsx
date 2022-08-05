@@ -10,14 +10,12 @@ import {
   AssistanceLevel,
   AssistanceNeedDecision
 } from 'lib-common/generated/api-types/assistanceneed'
+import { tabletMin } from 'lib-components/breakpoints'
 import {
   CollapsibleContentArea,
   ContentArea
 } from 'lib-components/layout/Container'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -139,6 +137,24 @@ function BoolObjectList<K extends string, T extends Record<K, boolean>>({
 const someBoolObj = <K extends string>(obj: Record<K, boolean>) =>
   some(obj, (v) => v)
 
+const TitleRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+
+  @media (max-width: ${tabletMin}) {
+    flex-direction: column-reverse;
+    gap: ${defaultMargins.s};
+  }
+`
+
+const ChildName = styled(H2).attrs({
+  as: 'div'
+})`
+  color: ${(p) => p.theme.colors.grayscale.g100};
+`
+
 export default React.memo(function AssistanceNeedDecisionReadOnly({
   decision,
   decisionMakerWarning,
@@ -163,23 +179,19 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
   return (
     <>
       <ContentArea opaque>
-        <FixedSpaceRow
-          alignItems="flex-start"
-          justifyContent="space-between"
-          fullWidth
-        >
+        <TitleRow>
           <FixedSpaceColumn>
             <H1 noMargin data-qa="page-title">
               {t.pageTitle}
             </H1>
-            <H2 noMargin>{decision.child?.name}</H2>
+            <ChildName noMargin>{decision.child?.name}</ChildName>
           </FixedSpaceColumn>
           <AssistanceNeedDecisionInfoHeader
             decisionNumber={decision.decisionNumber || 0}
             decisionStatus={decision.status || 'DRAFT'}
             texts={t}
           />
-        </FixedSpaceRow>
+        </TitleRow>
         <Gap size="s" />
         <FixedSpaceColumn spacing={defaultMargins.s}>
           <H2>{t.neededTypesOfAssistance}</H2>

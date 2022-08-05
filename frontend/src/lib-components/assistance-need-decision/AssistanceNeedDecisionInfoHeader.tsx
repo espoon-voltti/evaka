@@ -31,12 +31,12 @@ export default React.memo(function AssistanceNeedDecisionInfoHeader({
         {t.decisionNumber}{' '}
         <span data-qa="decision-number">{decisionNumber}</span>
       </span>
+      <AssistanceNeedDecisionStatusChip
+        decisionStatus={decisionStatus}
+        texts={t.statuses}
+        data-qa="decision-status"
+      />
       <FixedSpaceColumn spacing={defaultMargins.xs}>
-        <AssistanceNeedDecisionStatusChip
-          decisionStatus={decisionStatus}
-          texts={t.statuses}
-          data-qa="decision-status"
-        />
         <Strong>{t.confidential}</Strong>
         <span>{t.lawReference}</span>
       </FixedSpaceColumn>

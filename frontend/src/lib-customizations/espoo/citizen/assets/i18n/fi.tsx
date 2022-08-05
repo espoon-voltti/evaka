@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { H1, H2, P } from 'lib-components/typography'
+import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -1823,10 +1823,10 @@ export default {
   },
   vasu: {
     title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
-    lastModified: 'Viimeisin muokkauspäivämäärä',
-    lastPublished: 'Viimeksi julkaistu huoltajalle',
     noVasus:
       'Ei varhaiskasvatussuunnitelmia tai esiopetuksen oppimissuunnitelmia',
+    lastModified: 'Viimeisin muokkauspäivämäärä',
+    lastPublished: 'Viimeksi julkaistu huoltajalle',
     leavePage: 'Poistu',
     edited: 'muokattu',
     eventTypes: {
@@ -1996,13 +1996,13 @@ export default {
                 Tähän päätökseen tyytymätön voi tehdä kirjallisen
                 oikaisuvaatimuksen.
               </P>
-              <H2>Oikaisuvaatimusoikeus</H2>
+              <H3>Oikaisuvaatimusoikeus</H3>
               <P>
                 Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
                 jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
                 vaikuttaa (asianosainen).
               </P>
-              <H2>Oikaisuviranomainen</H2>
+              <H3>Oikaisuviranomainen</H3>
               <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
               <P>
                 Etelä-Suomen aluehallintovirasto
@@ -2019,12 +2019,12 @@ export default {
                 <br />
                 Puhelin: 0295 016 000
               </P>
-              <H2>Oikaisuvaatimusaika</H2>
+              <H3>Oikaisuvaatimusaika</H3>
               <P>
                 Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
                 tiedoksisaannista.
               </P>
-              <H2>Tiedoksisaanti</H2>
+              <H3>Tiedoksisaanti</H3>
               <P>
                 Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
                 näytetä, 7 päivän kuluttua kirjeen lähettämisestä, 3 päivän
@@ -2035,7 +2035,7 @@ export default {
                 vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa
                 tehtävän toimittaa ensimmäisenä arkipäivänä sen jälkeen.
               </P>
-              <H2>Oikaisuvaatimus</H2>
+              <H3>Oikaisuvaatimus</H3>
               <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
               <ul>
                 <li>
@@ -2070,7 +2070,7 @@ export default {
                 oikeudenkäynnistä hallintoasioissa annetun lain (808/2019) 32
                 §:ssä säädetään.
               </P>
-              <H2>Oikaisuvaatimuksen toimittaminen</H2>
+              <H3>Oikaisuvaatimuksen toimittaminen</H3>
               <P>
                 Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan
                 kuluessa oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän

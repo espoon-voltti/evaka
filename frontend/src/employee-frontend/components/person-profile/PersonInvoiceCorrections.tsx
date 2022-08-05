@@ -163,6 +163,7 @@ export default React.memo(function PersonInvoiceCorrections({
       title={i18n.personProfile.invoiceCorrections.title}
       data-qa="person-invoice-corrections-collapsible"
       startCollapsed={!open}
+      fitted
     >
       {renderResult(
         combine(children, groupedCorrections, products, unitIds, unitDetails),

@@ -57,6 +57,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
       title={i18n.personProfile.income.title}
       data-qa="person-income-collapsible"
       startCollapsed={!open}
+      fitted
     >
       <H4>{i18n.personProfile.incomeStatement.title}</H4>
       <IncomeStatements personId={id} />

@@ -30,6 +30,7 @@ export default React.memo(function ChildPage() {
     <>
       <Main>
         <Container>
+          <Gap size="s" />
           <ReturnButton label={t.common.return} />
           <Gap size="s" />
           {renderResult(childResponse, (child) => (

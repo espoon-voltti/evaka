@@ -36,6 +36,7 @@ export default React.memo(function PersonFridgeHead() {
         icon={faUser}
         title={i18n.personProfile.personDetails}
         data-qa="person-info-collapsible"
+        fitted
       >
         {renderResult(person, (person) => (
           <PersonDetails

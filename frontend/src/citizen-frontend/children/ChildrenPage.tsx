@@ -73,6 +73,10 @@ const ChevronContainer = styled.div`
   align-items: center;
 `
 
+const NonShrinkingRoundImage = styled(RoundImage)`
+  flex-shrink: 0;
+`
+
 const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
   const navigate = useNavigate()
   const t = useTranslation()
@@ -120,7 +124,7 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
           : ''
       }`}
     >
-      <RoundImage
+      <NonShrinkingRoundImage
         size="XL"
         sizeDesktop="XXL"
         src={

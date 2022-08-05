@@ -19,7 +19,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { H2, H3, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faArrowRight,
@@ -81,6 +81,11 @@ interface ChildApplicationsBlockProps {
   applicationSummaries: CitizenApplicationSummary[]
   reload: () => void
 }
+
+const ChildHeading = styled(H2)`
+  margin: 0;
+  margin-bottom: ${defaultMargins.s};
+`
 
 export default React.memo(function ChildApplicationsBlock({
   childId,
@@ -162,9 +167,9 @@ export default React.memo(function ChildApplicationsBlock({
   return (
     <ContentArea opaque paddingVertical="L" data-qa={`child-${childId}`}>
       <TitleContainer>
-        <H2 noMargin data-qa={`title-applications-child-name-${childId}`}>
+        <ChildHeading data-qa={`title-applications-child-name-${childId}`}>
           {childName}
-        </H2>
+        </ChildHeading>
         <AddButton
           text={t.applicationsList.newApplicationLink}
           onClick={() => navigate(`/applications/new/${childId}`)}

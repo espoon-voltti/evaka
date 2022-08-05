@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { H2, P } from 'lib-components/typography'
+import { H3, P } from 'lib-components/typography'
 
 import { fi } from './fi'
 
@@ -104,12 +104,12 @@ export const sv = {
             En part som missnöjd med beslutet kan göra en skriftlig begäran om
             omprövning.
           </P>
-          <H2>Rätt att begära omprövning</H2>
+          <H3>Rätt att begära omprövning</H3>
           <P>
             En begäran om omprövning får göras av den som beslutet avser, eller
             vars rätt, skyldigheter eller fördel direkt påverkas av beslutet.
           </P>
-          <H2>Myndighet hos vilken omprövningen begärs</H2>
+          <H3>Myndighet hos vilken omprövningen begärs</H3>
           <P>
             Begäran om omprövning görs hos Regionförvaltningsverket i Västra och
             Inre Finland (huvudkontoret i Vasa).
@@ -129,12 +129,12 @@ export const sv = {
             <br />
             Telefonväxel 0295 018 450
           </P>
-          <H2>Tidsfrist för begäran om omprövning</H2>
+          <H3>Tidsfrist för begäran om omprövning</H3>
           <P>
             En begäran om omprövning ska lämnas in inom 30 dagar efter
             delgivningen av beslutet.
           </P>
-          <H2>Delgivning av beslut</H2>
+          <H3>Delgivning av beslut</H3>
           <P>
             Om inte något annat visas, anses en part ha fått del av beslutet sju
             dagar från det att det postades, tre dagar efter att det skickades
@@ -145,7 +145,7 @@ export const sv = {
             maj, julafton, midsommarafton eller lördag, är det möjligt att göra
             begäran om omprövning ännu under följande vardag.
           </P>
-          <H2>Begäran om omprövning</H2>
+          <H3>Begäran om omprövning</H3>
           <P noMargin>
             Begäran om omprövning ska innehålla följande uppgifter:
           </P>
@@ -184,7 +184,7 @@ export const sv = {
             omprövning, så som det föreskrivs i § 32 i lagen om rättegång i
             förvaltningsärenden (808/2019).
           </P>
-          <H2>Att sända begäran om omprövning</H2>
+          <H3>Att sända begäran om omprövning</H3>
           <P>
             En skriftlig begäran om omprövning ska inom tidsfristen sändas till
             myndigheten hos vilken omprövningen begärs. En begäran om omprövning

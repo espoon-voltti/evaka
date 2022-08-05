@@ -55,6 +55,7 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
       title={i18n.personProfile.feeDecisions.title}
       data-qa="person-fee-decisions-collapsible"
       startCollapsed={!open}
+      fitted
     >
       {uiMode === 'create-retroactive-fee-decision' ? (
         <Modal

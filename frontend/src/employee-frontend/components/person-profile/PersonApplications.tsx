@@ -41,6 +41,7 @@ export default React.memo(function PersonApplications({ id, open }: Props) {
         title={i18n.personProfile.applications}
         startCollapsed={!open}
         data-qa="person-applications-collapsible"
+        fitted
       >
         {renderResult(applications, (applications) => (
           <Table data-qa="table-of-applications">
