@@ -93,7 +93,8 @@ SELECT
     END) AS capacity,
 
     ab1.absence_type as absence_paid,
-    ab2.absence_type as absence_free
+    ab2.absence_type as absence_free,
+    7 as staff_dimensioning
 FROM generate_series(:start_date, :end_date, '1 day') t
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
 JOIN daycare u on u.id = pl.unit_id
@@ -155,5 +156,6 @@ data class RawReportRow(
     val capacityFactor: Double,
     val capacity: Double,
     val absencePaid: AbsenceType?,
-    val absenceFree: AbsenceType?
+    val absenceFree: AbsenceType?,
+    val staffDimensioning: Int
 )

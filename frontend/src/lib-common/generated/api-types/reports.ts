@@ -377,6 +377,7 @@ export interface RawReportRow {
   placementType: PlacementType
   postOffice: string
   shiftCare: boolean
+  staffDimensioning: number
   unitId: UUID
   unitName: string
   unitProviderType: ProviderType
