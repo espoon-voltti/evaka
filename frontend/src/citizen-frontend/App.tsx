@@ -21,6 +21,7 @@ import RequireAuth from './RequireAuth'
 import ApplicationCreation from './applications/ApplicationCreation'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
+import { ApplicationsContextProvider } from './applications/state'
 import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
@@ -64,12 +65,14 @@ export default function App() {
                   <PedagogicalDocumentsContextProvider>
                     <HolidayPeriodsContextProvider>
                       <ChildrenContextProvider>
-                        <Content />
-                        <GlobalDialog />
-                        <LoginErrorModal
-                          translations={i18n.login.failedModal}
-                        />
-                        <div id="modal-container" />
+                        <ApplicationsContextProvider>
+                          <Content />
+                          <GlobalDialog />
+                          <LoginErrorModal
+                            translations={i18n.login.failedModal}
+                          />
+                          <div id="modal-container" />
+                        </ApplicationsContextProvider>
                       </ChildrenContextProvider>
                     </HolidayPeriodsContextProvider>
                   </PedagogicalDocumentsContextProvider>

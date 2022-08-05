@@ -38,7 +38,11 @@ export default React.memo(function ChildConsentsSection({
 }: ChildConsentsProps) {
   const t = useTranslation()
 
-  const { childConsents, refreshChildConsents } = useContext(ChildrenContext)
+  const {
+    childConsents,
+    refreshChildConsents,
+    refreshChildConsentNotifications
+  } = useContext(ChildrenContext)
 
   const [open, setOpen] = useState(false)
 
@@ -162,7 +166,10 @@ export default React.memo(function ChildConsentsSection({
             primary
             text={t.children.consent.confirm}
             onClick={onConfirm}
-            onSuccess={refreshChildConsents}
+            onSuccess={() => {
+              refreshChildConsents()
+              refreshChildConsentNotifications()
+            }}
             data-qa="consent-confirm"
           />
         </>

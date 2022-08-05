@@ -45,6 +45,7 @@ type Props = {
   unreadMessagesCount: number
   unreadChildDocumentsCount: number
   unreadChildrenCount: number
+  unreadApplications: number
   hideLoginButton: boolean
 }
 
@@ -54,6 +55,7 @@ export default React.memo(function MobileNav({
   unreadMessagesCount,
   unreadChildDocumentsCount,
   unreadChildrenCount,
+  unreadApplications,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -73,6 +75,7 @@ export default React.memo(function MobileNav({
           (unreadMessagesCount > 0 ||
             unreadChildDocumentsCount > 0 ||
             unreadChildrenCount > 0 ||
+            unreadApplications > 0 ||
             !!(user && !user.email))
 
         return (
@@ -100,6 +103,7 @@ export default React.memo(function MobileNav({
                     unreadMessagesCount={unreadMessagesCount}
                     unreadChildDocumentsCount={unreadChildDocumentsCount}
                     unreadChildrenCount={unreadChildrenCount}
+                    unreadApplications={unreadApplications}
                   />
                 )}
                 <VerticalSpacer />
@@ -231,13 +235,15 @@ const Navigation = React.memo(function Navigation({
   user,
   unreadMessagesCount,
   unreadChildDocumentsCount,
-  unreadChildrenCount
+  unreadChildrenCount,
+  unreadApplications
 }: {
   close: () => void
   user: User
   unreadMessagesCount: number
   unreadChildDocumentsCount: number
   unreadChildrenCount: number
+  unreadApplications: number
 }) {
   const t = useTranslation()
 
@@ -286,6 +292,7 @@ const Navigation = React.memo(function Navigation({
         onClick={close}
         data-qa="nav-applications"
         text={t.header.nav.applications}
+        notificationCount={unreadApplications}
       />
     </Nav>
   )

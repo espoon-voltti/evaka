@@ -241,8 +241,10 @@ sealed interface Action {
             READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = false).self()),
-            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self());
+            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),
+            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_APPLICATION_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

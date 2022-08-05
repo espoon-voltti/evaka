@@ -181,3 +181,10 @@ export function insertChildConsents(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
+
+export function getChildConsentNotifications(): Promise<Result<number>> {
+  return client
+    .get<JsonOf<number>>('/citizen/children/consents/notifications')
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
