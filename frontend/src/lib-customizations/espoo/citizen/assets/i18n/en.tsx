@@ -2007,7 +2007,8 @@ const en: Translations = {
           },
           assistanceLevel: {
             assistanceEnds: 'Assistance ends',
-            assistanceServicesForTime: 'Assistance services during',
+            assistanceServicesForTime:
+              'Assistance services during validity of decision',
             enhancedAssistance: 'Enhanced assistance',
             specialAssistance: 'Special assistance'
           }

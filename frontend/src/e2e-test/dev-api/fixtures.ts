@@ -1301,7 +1301,6 @@ export class Fixture {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
       assistanceLevels: ['SPECIAL_ASSISTANCE'],
-      assistanceServicesTime: null,
       careMotivation: null,
       childId: 'not_set',
       decisionMade: null,
@@ -1339,7 +1338,7 @@ export class Fixture {
         specialAides: false
       },
       servicesMotivation: null,
-      startDate: null,
+      validityPeriod: new DateRange(LocalDate.of(2019, 1, 2), null),
       status: 'DRAFT',
       structuralMotivationDescription: null,
       structuralMotivationOptions: {
@@ -1359,10 +1358,6 @@ export class Fixture {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
       assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME'],
-      assistanceServicesTime: new FiniteDateRange(
-        LocalDate.of(2020, 7, 8),
-        LocalDate.of(2020, 8, 8)
-      ),
       careMotivation: 'Care motivation text',
       childId: 'not_set',
       decisionMade: null,
@@ -1400,7 +1395,7 @@ export class Fixture {
         specialAides: false
       },
       servicesMotivation: 'Services motivation text',
-      startDate: LocalDate.of(2020, 7, 1),
+      validityPeriod: new DateRange(LocalDate.of(2019, 1, 2), null),
       status: 'DRAFT',
       structuralMotivationDescription: 'Structural motivation description text',
       structuralMotivationOptions: {

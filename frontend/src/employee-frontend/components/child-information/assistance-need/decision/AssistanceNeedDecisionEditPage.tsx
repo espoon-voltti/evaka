@@ -103,10 +103,18 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
     }
   }, [formState, childId, id, navigate])
 
-  const missingFields = useMemo(
-    () => requiredFormFields.filter((key) => !formState?.[key]),
-    [formState]
-  )
+  const missingFields = useMemo(() => {
+    const fields = requiredFormFields.filter((key) => !formState?.[key])
+
+    if (
+      formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
+      formState?.validityPeriod.end === null
+    ) {
+      return [...fields, 'endDate' as const]
+    }
+
+    return fields
+  }, [formState])
 
   const [showFormErrors, setShowFormErrors] = useState(false)
 

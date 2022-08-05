@@ -26,7 +26,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <br />
             <span th:utext="#{decision.details.date}"></span>
             <span
-              th:replace="~{shared/common :: date-range(${decision.startDate}, ${decision.endDate})}"
+              th:replace="~{shared/common :: date-range(${decision.validityPeriod.start}, ${decision.validityPeriod.end})}"
             ></span>
           </p>
           <p>
@@ -172,18 +172,22 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <h3 th:text="#{futureLevelOfAssistance}"></h3>
             <span th:each="assistanceLevel, i : ${decision.assistanceLevels}">
               <span th:text="#{${'assistanceLevel.' + assistanceLevel}}"></span
-              ><th:block
-                th:if="${decision.assistanceServicesTime} != null and ${assistanceLevel.toString()} == 'ASSISTANCE_SERVICES_FOR_TIME'"
-                ><span
-                  th:replace="~{shared/common :: date-range(${decision.assistanceServicesTime.start}, ${decision.assistanceServicesTime.end})}"
-                ></span></th:block
               ><span th:unless="${i.last}">,</span>
             </span>
           </div>
-          <div class="decision-details" th:if="${decision.startDate} != null">
+          <div class="decision-details">
             <h3 th:text="#{startDate}"></h3>
             <div
-              th:replace="~{shared/common :: format-date(${decision.startDate})}"
+              th:replace="~{shared/common :: format-date(${decision.validityPeriod.start})}"
+            ></div>
+          </div>
+          <div
+            class="decision-details"
+            th:if="${decision.validityPeriod.end} != null"
+          >
+            <h3 th:text="#{endDate}"></h3>
+            <div
+              th:replace="~{shared/common :: format-date(${decision.validityPeriod.end})}"
             ></div>
           </div>
           <div

@@ -66,13 +66,14 @@ export const sv = {
       futureLevelOfAssistance: 'Nivån för barnets stöd i fortsättningen',
       assistanceLevel: {
         assistanceEnds: 'Stödet upphör',
-        assistanceServicesForTime: 'Stödtjänster för tiden',
+        assistanceServicesForTime: 'Stödtjänster under beslutets giltighetstid',
         enhancedAssistance: 'Intensifierat stöd',
         specialAssistance: 'Specialstöd'
       },
       startDate: 'Beslutet i kraft fr.o.m.',
       startDateInfo:
         'Beslutet gäller från angivet startdatum. Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
+      endDate: 'Beslutet i kraft till',
       selectedUnit: 'Enhet för småbarnspedagogik utvald för beslutet',
       unitMayChange: 'Under semestern kan platsen eller metoden ändras',
       motivationForDecision: 'Motivering för beslutet',

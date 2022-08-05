@@ -48,7 +48,8 @@ class AssistanceNeedDecisionController(
             dbc.transaction { tx ->
                 var decision: AssistanceNeedDecisionForm = body.decision.copy(
                     status = AssistanceNeedDecisionStatus.DRAFT,
-                    sentForDecision = null
+                    sentForDecision = null,
+                    validityPeriod = body.decision.validityPeriod.copy(end = null)
                 )
                 if (decision.guardianInfo.isEmpty()) {
                     val guardianIds = tx.getChildGuardians(childId)
@@ -113,7 +114,12 @@ class AssistanceNeedDecisionController(
                     id,
                     body.decision.copy(
                         sentForDecision = decision.sentForDecision,
-                        status = decision.status
+                        status = decision.status,
+                        validityPeriod =
+                        if (body.decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))
+                            body.decision.validityPeriod
+                        else
+                            body.decision.validityPeriod.copy(end = null)
                     )
                 )
             }
@@ -140,6 +146,10 @@ class AssistanceNeedDecisionController(
 
                 if (hasMissingFields(decision)) {
                     throw BadRequest("Decision has missing fields", "MISSING_FIELDS")
+                }
+
+                if (decision.child?.id == null) {
+                    throw BadRequest("The decision must have a child")
                 }
 
                 tx.updateAssistanceNeedDecision(
@@ -220,6 +230,14 @@ class AssistanceNeedDecisionController(
                     throw BadRequest("The assistance need decision needs to be associated with a child")
                 }
 
+                if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                    tx.endActiveAssistanceNeedDecisions(
+                        decision.id,
+                        decision.validityPeriod.start,
+                        decision.child.id
+                    )
+                }
+
                 tx.decideAssistanceNeedDecision(
                     id,
                     body.status,
@@ -294,7 +312,8 @@ class AssistanceNeedDecisionController(
     }
 
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
-        return decision.selectedUnit == null
+        return decision.selectedUnit == null ||
+            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) && decision.validityPeriod.end == null)
     }
 
     data class AssistanceNeedDecisionBasicsResponse(

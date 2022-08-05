@@ -45,11 +45,8 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
         </FixedSpaceRow>
       </Td>
       <Td data-qa="assistance-need-decision-date">
-        {!decision.startDate && !decision.endDate
-          ? '-'
-          : `${decision.startDate?.format() ?? ''}${
-              decision.endDate ? ` – ${decision.endDate?.format()}` : ''
-            }`}
+        {decision.validityPeriod.start.format()} –{' '}
+        {decision.validityPeriod.end?.format()}
       </Td>
       <Td data-qa="assistance-need-decision-unit-name">
         {decision.selectedUnit?.name ?? '-'}

@@ -1959,11 +1959,13 @@ export default {
           futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
           assistanceLevel: {
             assistanceEnds: 'Tuki päättyy',
-            assistanceServicesForTime: 'Tukipalvelut ajalla',
+            assistanceServicesForTime:
+              'Tukipalvelut päätöksen voimassaolon aikana',
             enhancedAssistance: 'Tehostettu tuki',
             specialAssistance: 'Erityinen tuki'
           },
           startDate: 'Päätös voimassa alkaen',
+          endDate: 'Päätös voimassa saakka',
           selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
           unitMayChange:
             'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',

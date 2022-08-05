@@ -137,8 +137,8 @@ export default React.memo(function AssistanceNeedSection({
                     .join(', ')}
                 </Td>
                 <Td data-qa="validity-period">
-                  {decision.startDate?.format() ?? ''} –{' '}
-                  {decision.endDate?.format() ?? ''}
+                  {decision.validityPeriod.start.format() ?? ''} –{' '}
+                  {decision.validityPeriod.end?.format() ?? ''}
                 </Td>
                 <Td data-qa="selected-unit">{decision.selectedUnit?.name}</Td>
                 <Td data-qa="decision-made">

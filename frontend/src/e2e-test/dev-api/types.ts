@@ -6,7 +6,6 @@ import { TimeRange } from 'lib-common/api-types/child/common'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationForm,
   ApplicationOrigin,
@@ -452,7 +451,6 @@ export interface AssistanceNeedDecision {
     | 'ENHANCED_ASSISTANCE'
     | 'SPECIAL_ASSISTANCE'
   >
-  assistanceServicesTime: FiniteDateRange | null
   careMotivation: string | null
   childId: UUID
   decisionMade: LocalDate | null
@@ -499,7 +497,7 @@ export interface AssistanceNeedDecision {
     specialAides: boolean
   }
   servicesMotivation: string | null
-  startDate: LocalDate | null
+  validityPeriod: DateRange
   status: 'DRAFT' | 'NEEDS_WORK' | 'ACCEPTED' | 'REJECTED'
   structuralMotivationDescription: string | null
   structuralMotivationOptions: {

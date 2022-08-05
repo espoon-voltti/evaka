@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -41,6 +41,7 @@ import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private val logger = KotlinLogging.logger {}
@@ -57,8 +58,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val decisionMaker2 = AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.DIRECTOR))
 
     private val testDecision = AssistanceNeedDecisionForm(
-        startDate = LocalDate.of(2022, 1, 1),
-        endDate = LocalDate.of(2023, 1, 1),
+        validityPeriod = DateRange(LocalDate.of(2022, 1, 1), null),
         status = AssistanceNeedDecisionStatus.DRAFT,
         language = AssistanceNeedDecisionLanguage.FI,
         decisionMade = LocalDate.of(2021, 12, 31),
@@ -106,7 +106,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         otherRepresentativeDetails = null,
 
         assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
-        assistanceServicesTime = null,
         motivationForDecision = "Motivation for decision"
     )
 
@@ -127,8 +126,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
 
         assertEquals(testChild_1.id, assistanceNeedDecision.child?.id)
-        assertEquals(testDecision.startDate, assistanceNeedDecision.startDate)
-        assertEquals(testDecision.endDate, assistanceNeedDecision.endDate)
+        assertEquals(testDecision.validityPeriod, assistanceNeedDecision.validityPeriod)
         assertEquals(testDecision.status, assistanceNeedDecision.status)
         assertEquals(testDecision.language, assistanceNeedDecision.language)
         assertEquals(testDecision.decisionMade, assistanceNeedDecision.decisionMade)
@@ -176,7 +174,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.otherRepresentativeDetails, assistanceNeedDecision.otherRepresentativeDetails)
 
         assertEquals(testDecision.assistanceLevels, assistanceNeedDecision.assistanceLevels)
-        assertEquals(testDecision.assistanceServicesTime, assistanceNeedDecision.assistanceServicesTime)
         assertEquals(testDecision.motivationForDecision, assistanceNeedDecision.motivationForDecision)
     }
 
@@ -418,6 +415,56 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `End date cannot be changed unless assistance services for time is selected`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        whenPutAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = assistanceNeedDecision.copy(
+                    validityPeriod = testDecision.validityPeriod.copy(end = LocalDate.of(2024, 1, 2)),
+                    assistanceLevels = setOf(AssistanceLevel.SPECIAL_ASSISTANCE)
+                ).toForm()
+            ),
+            assistanceNeedDecision.id
+        )
+
+        val updatedDecision = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+
+        assertNull(updatedDecision.validityPeriod.end)
+
+        val end = LocalDate.of(2024, 1, 2)
+
+        whenPutAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = assistanceNeedDecision.copy(
+                    validityPeriod = testDecision.validityPeriod.copy(end = end),
+                    assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
+                ).toForm()
+            ),
+            assistanceNeedDecision.id
+        )
+
+        val updatedDecisionWithAssistanceServices = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        assertEquals(updatedDecisionWithAssistanceServices.validityPeriod.end, end)
+
+        whenPutAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = assistanceNeedDecision.copy(
+                    validityPeriod = testDecision.validityPeriod.copy(end = null),
+                    assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
+                ).toForm()
+            ),
+            assistanceNeedDecision.id
+        )
+
+        whenSendAssistanceNeedDecisionThenExpectStatus(assistanceNeedDecision.id, HttpStatus.BAD_REQUEST)
+    }
+
+    @Test
     fun `Assistance need decision is notified via email to guardians`() {
         db.transaction { it.insertGuardian(testAdult_4.id, testChild_1.id) }
 
@@ -459,8 +506,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun `Decision PDF generation is successful`() {
         val pdf = assistanceNeedDecisionService.generatePdf(
             AssistanceNeedDecision(
-                startDate = LocalDate.of(2022, 1, 1),
-                endDate = LocalDate.of(2023, 1, 1),
+                validityPeriod = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2023, 1, 1)),
                 status = AssistanceNeedDecisionStatus.ACCEPTED,
                 language = AssistanceNeedDecisionLanguage.FI,
                 decisionMade = LocalDate.of(2021, 12, 31),
@@ -519,7 +565,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 otherRepresentativeDetails = null,
 
                 assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
-                assistanceServicesTime = FiniteDateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 6, 5)),
                 motivationForDecision = "Motivation for decision",
                 hasDocument = false,
                 id = AssistanceNeedDecisionId(UUID.randomUUID()),

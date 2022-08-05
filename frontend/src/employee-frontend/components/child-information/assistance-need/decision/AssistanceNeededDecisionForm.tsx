@@ -7,16 +7,13 @@ import React, { useCallback, useMemo, SetStateAction } from 'react'
 import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
-import DateRangeInput from 'employee-frontend/components/common/DateRangeInput'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Employee } from 'employee-frontend/types/employee'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
-import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -161,7 +158,10 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
 export type FieldInfos = Record<
   keyof AssistanceNeedDecisionForm,
   InputInfo | undefined
->
+> & {
+  startDate?: InputInfo
+  endDate?: InputInfo
+}
 
 type AssistanceNeedDecisionFormProps = {
   formState: AssistanceNeedDecisionForm
@@ -459,30 +459,10 @@ export default React.memo(function AssistanceNeedDecisionForm({
           'ASSISTANCE_ENDS',
           t.assistanceLevel.assistanceEnds
         )}
-        <FixedSpaceRow alignItems="center">
-          {renderAssistanceLevelMultiCheckbox(
-            'ASSISTANCE_SERVICES_FOR_TIME',
-            t.assistanceLevel.assistanceServicesForTime
-          )}
-          <DateRangeInput
-            start={
-              formState.assistanceServicesTime?.start ??
-              LocalDate.todayInHelsinkiTz()
-            }
-            end={
-              formState.assistanceServicesTime?.end ??
-              LocalDate.todayInHelsinkiTz().addYears(1)
-            }
-            onValidationResult={(_hasErrors: boolean) => {
-              // implement error handling here
-            }}
-            onChange={(start: LocalDate, end: LocalDate) =>
-              setFieldVal({
-                assistanceServicesTime: new FiniteDateRange(start, end)
-              })
-            }
-          />
-        </FixedSpaceRow>
+        {renderAssistanceLevelMultiCheckbox(
+          'ASSISTANCE_SERVICES_FOR_TIME',
+          t.assistanceLevel.assistanceServicesForTime
+        )}
         {renderAssistanceLevelMultiCheckbox(
           'ENHANCED_ASSISTANCE',
           t.assistanceLevel.enhancedAssistance
@@ -493,18 +473,49 @@ export default React.memo(function AssistanceNeedDecisionForm({
         )}
       </FixedSpaceColumn>
 
-      <FieldWithInfo info={t.startDateInfo} label={t.startDate} spacing="zero">
+      <FieldWithInfo
+        info={
+          formState.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME')
+            ? t.startDateInfo
+            : `${t.startDateIndefiniteInfo} ${t.startDateInfo}`
+        }
+        label={t.startDate}
+        spacing="zero"
+      >
         <DatePicker
           locale={lang}
-          date={formState.startDate}
+          date={formState.validityPeriod.start}
           onChange={(date) => {
-            setFieldVal({ startDate: date })
+            date &&
+              setFieldVal({
+                validityPeriod: formState.validityPeriod.withStart(date)
+              })
           }}
           errorTexts={i18n.validationErrors}
-          hideErrorsBeforeTouched
+          hideErrorsBeforeTouched={!fieldInfos.startDate}
           info={fieldInfos.startDate}
+          maxDate={formState.validityPeriod.end ?? undefined}
         />
       </FieldWithInfo>
+
+      {formState.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') && (
+        <FixedSpaceColumn spacing="zero">
+          <Label>{t.endDate}</Label>
+          <DatePicker
+            locale={lang}
+            date={formState.validityPeriod.end}
+            onChange={(date) => {
+              setFieldVal({
+                validityPeriod: formState.validityPeriod.withEnd(date)
+              })
+            }}
+            errorTexts={i18n.validationErrors}
+            hideErrorsBeforeTouched={!fieldInfos.endDate}
+            info={fieldInfos.endDate}
+            minDate={formState.validityPeriod.start}
+          />
+        </FixedSpaceColumn>
+      )}
 
       <FixedSpaceColumn spacing="zero">
         <Label>{t.selectedUnit}</Label>

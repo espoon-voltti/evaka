@@ -1490,8 +1490,7 @@ data class DevAssistanceNeedDecision(
     val id: AssistanceNeedDecisionId = AssistanceNeedDecisionId(UUID.randomUUID()),
     val decisionNumber: Long?,
     val childId: ChildId,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
     val language: AssistanceNeedDecisionLanguage,
@@ -1523,7 +1522,6 @@ data class DevAssistanceNeedDecision(
     val otherRepresentativeDetails: String?,
 
     val assistanceLevels: Set<AssistanceLevel>,
-    val assistanceServicesTime: FiniteDateRange?,
     val motivationForDecision: String?,
 
     val unreadGuardianIds: List<PersonId>?

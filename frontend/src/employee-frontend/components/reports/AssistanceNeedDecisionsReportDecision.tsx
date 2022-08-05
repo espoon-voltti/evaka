@@ -10,7 +10,10 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from 'employee-frontend/state/user'
-import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedDecision,
+  AssistanceNeedDecisionStatus
+} from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -147,9 +150,9 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                 setLang: () => undefined
               }}
             >
-              <AssistanceNeedDecisionReadOnly
+              <AssistanceNeedDecisionContent
                 decision={decision}
-                decisionMakerWarning={
+                warning={
                   decision.decisionMaker?.employeeId !== user?.id &&
                   permittedActions.includes('UPDATE_DECISION_MAKER') && (
                     <AlertBox
@@ -175,7 +178,6 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                     />
                   )
                 }
-                texts={t}
               />
             </I18nContext.Provider>
           )
@@ -342,6 +344,30 @@ const MismatchDecisionMakerModal = React.memo(
           data-qa="title-input"
         />
       </InfoModal>
+    )
+  }
+)
+
+const AssistanceNeedDecisionContent = React.memo(
+  function AssistanceNeedDecisionContent({
+    decision,
+    warning
+  }: {
+    decision: AssistanceNeedDecision
+    warning: React.ReactNode
+  }) {
+    const {
+      i18n: {
+        childInformation: { assistanceNeedDecision: t }
+      }
+    } = useTranslation()
+
+    return (
+      <AssistanceNeedDecisionReadOnly
+        decision={decision}
+        decisionMakerWarning={warning}
+        texts={t}
+      />
     )
   }
 )
