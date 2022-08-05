@@ -15,6 +15,7 @@ import {
   ServiceVoucherUnitReport,
   ServiceVoucherValueRow
 } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -112,8 +113,9 @@ const StyledTh = styled(Th)`
 
 const monthOptions = range(1, 13)
 
-const minYear = new Date().getFullYear() - 4
-const maxYear = new Date().getFullYear()
+const now = HelsinkiDateTime.now()
+const minYear = now.year - 4
+const maxYear = now.year
 const yearOptions = range(maxYear, minYear - 1, -1)
 
 export default React.memo(function VoucherServiceProviderUnit() {
@@ -144,11 +146,11 @@ export default React.memo(function VoucherServiceProviderUnit() {
       const queryParams = new URLSearchParams(search)
       const year = Number(queryParams.get('year'))
       const month = Number(queryParams.get('month'))
+      const now = HelsinkiDateTime.now()
 
       return {
-        year:
-          year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
-        month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1
+        year: year >= minYear && year <= maxYear ? year : now.year,
+        month: month >= 1 && month <= 12 ? month : now.month
       }
     }
   )

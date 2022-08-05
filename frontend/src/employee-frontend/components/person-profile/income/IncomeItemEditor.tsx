@@ -13,7 +13,6 @@ import {
   incomeEffects,
   IncomeValue
 } from 'lib-common/api-types/income'
-import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -256,7 +255,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           <Gap size="L" />
           <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
             <Label>{i18n.personProfile.income.details.updated}</Label>
-            <span>{formatDate(baseIncome.updatedAt)}</span>
+            <span>{baseIncome.updatedAt.toLocalDate().format()}</span>
 
             <Label>{i18n.personProfile.income.details.handler}</Label>
             <span>{baseIncome.updatedBy}</span>

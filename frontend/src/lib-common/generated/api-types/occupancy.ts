@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
@@ -13,16 +14,16 @@ import { UUID } from '../../types'
 */
 export interface ChildCapacityPoint {
   capacity: number
-  time: Date
+  time: HelsinkiDateTime
 }
 
 /**
 * Generated from fi.espoo.evaka.occupancy.ChildOccupancyAttendance
 */
 export interface ChildOccupancyAttendance {
-  arrived: Date
+  arrived: HelsinkiDateTime
   capacity: number
-  departed: Date | null
+  departed: HelsinkiDateTime | null
 }
 
 /**
@@ -43,7 +44,7 @@ export interface OccupancyPoint {
   childCapacity: number
   occupancyRatio: number | null
   staffCapacity: number
-  time: Date
+  time: HelsinkiDateTime
 }
 
 /**
@@ -107,14 +108,14 @@ export interface RealtimeOccupancy {
 */
 export interface StaffCapacityPoint {
   capacity: number
-  time: Date
+  time: HelsinkiDateTime
 }
 
 /**
 * Generated from fi.espoo.evaka.occupancy.StaffOccupancyAttendance
 */
 export interface StaffOccupancyAttendance {
-  arrived: Date
+  arrived: HelsinkiDateTime
   capacity: number
-  departed: Date | null
+  departed: HelsinkiDateTime | null
 }

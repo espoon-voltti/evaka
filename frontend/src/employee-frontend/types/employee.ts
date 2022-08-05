@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GlobalRole, ScopedRole } from 'lib-common/api-types/employee-auth'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 export interface Employee {
@@ -11,8 +12,8 @@ export interface Employee {
   firstName: string | null
   lastName: string | null
   email: string | null
-  created: Date
-  updated: Date
+  created: HelsinkiDateTime
+  updated: HelsinkiDateTime
 }
 
 interface DaycareRole {

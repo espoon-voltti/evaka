@@ -368,36 +368,36 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
           childAttendances: data.realtime.childAttendances.map(
             (attendance) => ({
               ...attendance,
-              arrived: new Date(attendance.arrived),
+              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
               departed: attendance.departed
-                ? new Date(attendance.departed)
+                ? HelsinkiDateTime.parseIso(attendance.departed)
                 : null
             })
           ),
           staffAttendances: data.realtime.staffAttendances.map(
             (attendance) => ({
               ...attendance,
-              arrived: new Date(attendance.arrived),
+              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
               departed: attendance.departed
-                ? new Date(attendance.departed)
+                ? HelsinkiDateTime.parseIso(attendance.departed)
                 : null
             })
           ),
           childCapacitySumSeries: data.realtime.childCapacitySumSeries.map(
             (dataPoint) => ({
               ...dataPoint,
-              time: new Date(dataPoint.time)
+              time: HelsinkiDateTime.parseIso(dataPoint.time)
             })
           ),
           staffCapacitySumSeries: data.realtime.staffCapacitySumSeries.map(
             (dataPoint) => ({
               ...dataPoint,
-              time: new Date(dataPoint.time)
+              time: HelsinkiDateTime.parseIso(dataPoint.time)
             })
           ),
           occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
             ...dataPoint,
-            time: new Date(dataPoint.time)
+            time: HelsinkiDateTime.parseIso(dataPoint.time)
           }))
         }
       : null
@@ -708,7 +708,7 @@ export interface PairingResponse {
   unitId: UUID
   challengeKey: string
   responseKey: string | null
-  expires: Date
+  expires: HelsinkiDateTime
   status: PairingStatus
   mobileDeviceId: UUID | null
 }
@@ -722,7 +722,7 @@ export async function postPairing(
     .then((pairingResponse) => {
       return {
         ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
+        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
       }
     })
     .then((v) => Success.of(v))
@@ -743,7 +743,7 @@ export async function postPairingResponse(
     .then((pairingResponse) => {
       return {
         ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
+        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
       }
     })
     .then((v) => Success.of(v))

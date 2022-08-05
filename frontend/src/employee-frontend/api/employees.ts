@@ -5,6 +5,7 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -19,8 +20,8 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        created: new Date(data.created),
-        updated: new Date(data.updated)
+        created: HelsinkiDateTime.parseIso(data.created),
+        updated: HelsinkiDateTime.parseIso(data.updated)
       }))
     )
     .then((v) => Success.of(v))
