@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { createSearchParams, Navigate, useLocation } from 'react-router-dom'
 
 import { AuthContext } from './auth/state'
 import { getStrongLoginUri } from './header/const'
@@ -26,14 +26,23 @@ export default React.memo(function RequireAuth({
   const isWeak = user.map((usr) => usr?.authLevel === 'WEAK').getOrElse(false)
   const isLoggedIn = isStrong || isWeak
 
+  const returnUrl = `${location.pathname}${location.search}${location.hash}`
+
   return isLoggedIn ? (
     strength === 'STRONG' && !isStrong ? (
-      refreshRedirect(getStrongLoginUri(location.pathname))
+      refreshRedirect(getStrongLoginUri(returnUrl))
     ) : (
       <>{children}</>
     )
   ) : (
-    <Navigate to="/login" />
+    <Navigate
+      to={{
+        pathname: '/login',
+        search: createSearchParams({
+          next: returnUrl
+        }).toString()
+      }}
+    />
   )
 })
 
