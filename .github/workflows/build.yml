@@ -621,6 +621,7 @@ jobs:
       - name: Run e2e tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
+          set -eo pipefail
           ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
           cd ./compose
           export EVAKA_FRONTEND_IMAGE=${{ needs.frontend.outputs.image }}
@@ -632,6 +633,7 @@ jobs:
       - name: Run e2e tests for fork
         if: ${{ github.event.pull_request.head.repo.fork }}
         run: |
+          set -eo pipefail
           ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
           cd ./compose
           ./build.sh
