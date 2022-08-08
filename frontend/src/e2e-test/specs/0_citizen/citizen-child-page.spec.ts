@@ -488,7 +488,7 @@ describe('Citizen children page', () => {
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
         assistanceLevel:
-          'Tukipalvelut päätöksen voimassaolon aikana, Tehostettu tuki',
+          'Tehostettu tuki, Tukipalvelut päätöksen voimassaolon aikana',
         selectedUnit: fixtures.daycareFixture.name,
         validityPeriod: '05.02.2020 – 11.05.2021',
         decisionMade: '17.01.2020',
