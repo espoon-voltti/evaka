@@ -5,7 +5,6 @@
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
 import helmet from 'helmet'
-import nocache from 'nocache'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
 import createAdSamlStrategy, {
@@ -43,14 +42,20 @@ import mobileDeviceSession, {
 import authStatus from './routes/auth-status'
 import AsyncRedisClient from '../shared/async-redis-client'
 import expressBasicAuth from 'express-basic-auth'
+import { cacheControl } from '../shared/middleware/cache-control'
 
 const app = express()
 const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
 
-const allRoutesExceptChildImages = /^(?!\/api\/internal\/child-images\/)/
-app.use(allRoutesExceptChildImages, nocache())
+app.use(
+  cacheControl((req) =>
+    req.path.startsWith('/api/internal/child-images/')
+      ? 'allow-cache'
+      : 'forbid-cache'
+  )
+)
 
 app.use(
   helmet({
