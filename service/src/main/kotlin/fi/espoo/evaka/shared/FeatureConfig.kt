@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.children.consent.ChildConsentType
+
 data class FeatureConfig(
     /** Does capacity factor affect voucher value decisions?
      *
@@ -65,4 +67,11 @@ data class FeatureConfig(
      * cannot be generated.
      */
     val paymentNumberSeriesStart: Long?,
+
+    /** Enabled child consent types
+     *
+     * All of the enabled child consent types. The consent section will be hidden if no consent
+     * type is enabled.
+     */
+    val enabledChildConsentTypes: Set<ChildConsentType>,
 )

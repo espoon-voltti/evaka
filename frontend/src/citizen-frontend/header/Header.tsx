@@ -8,7 +8,6 @@ import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ChildrenContext } from 'citizen-frontend/children/state'
-import { childConsentTypes } from 'lib-common/generated/api-types/children'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
@@ -72,10 +71,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     () =>
       Object.values(childConsents.getOrElse({})).reduce(
         (prev, n) =>
-          prev +
-          childConsentTypes.filter(
-            (type) => !n.some((consent) => consent.type === type)
-          ).length,
+          prev + n.filter((consent) => consent.given === null).length,
         0
       ),
     [childConsents]

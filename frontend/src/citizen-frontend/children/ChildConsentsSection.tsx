@@ -58,7 +58,7 @@ export default React.memo(function ChildConsentsSection({
       consents
         .map(
           (consents) =>
-            childConsentTypes.filter((type) => !consents.has(type)).length
+            Array.from(consents.values()).filter((v) => v === null).length
         )
         .getOrElse(0),
     [consents]
@@ -110,6 +110,9 @@ export default React.memo(function ChildConsentsSection({
         }))
     )
   }, [childId, form])
+
+  // hide section if no consents are enabled
+  if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
 
   return (
     <CollapsibleContentArea

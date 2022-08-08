@@ -7,10 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
-import {
-  Child,
-  childConsentTypes
-} from 'lib-common/generated/api-types/children'
+import { Child } from 'lib-common/generated/api-types/children'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -100,10 +97,8 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
       childConsents
         .map(
           (consents) =>
-            childConsentTypes.filter(
-              (type) =>
-                !consents[child.id]?.some((consent) => consent.type === type)
-            ).length
+            consents[child.id]?.filter((consent) => consent.given === null)
+              .length ?? 0
         )
         .getOrElse(0),
     [childConsents, child.id]

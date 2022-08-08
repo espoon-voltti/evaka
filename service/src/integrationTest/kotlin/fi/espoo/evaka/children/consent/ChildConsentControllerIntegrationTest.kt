@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val adminId = EmployeeId(UUID.randomUUID())
@@ -81,7 +82,7 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
 
-        assertEquals(0, this.whenGetChildConsentsThenExpectSuccess().size)
+        assertNull(this.whenGetChildConsentsThenExpectSuccess()[0].given)
     }
 
     @Test
@@ -98,7 +99,7 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val consent = this.whenCitizenGetChildConsentsThenExpectSuccess()[testChild_1.id]
 
-        assertEquals(true, consent?.any { it.type == ChildConsentType.EVAKA_PROFILE_PICTURE && it.given })
+        assertEquals(true, consent?.any { it.type == ChildConsentType.EVAKA_PROFILE_PICTURE && it.given == true })
 
         this.whenCitizenPostChildConsentThenExpectStatus(
             listOf(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
@@ -118,6 +119,7 @@ class EspooConfig {
         alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
         invoiceNumberSeriesStart = 5000000000,
         paymentNumberSeriesStart = null, // Payments are not yet in use in Espoo
+        enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
     )
 
     @Bean

@@ -10,6 +10,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.TestInvoiceProductProvider
+import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
@@ -192,4 +193,5 @@ val testFeatureConfig = FeatureConfig(
     alwaysUseDaycareFinanceDecisionHandler = false,
     invoiceNumberSeriesStart = 5000000000,
     paymentNumberSeriesStart = 9000000000,
+    enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
 )

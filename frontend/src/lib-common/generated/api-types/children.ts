@@ -23,12 +23,10 @@ export interface Child {
 * Generated from fi.espoo.evaka.children.consent.ChildConsent
 */
 export interface ChildConsent {
-  childId: UUID
-  given: boolean
-  givenAt: HelsinkiDateTime
+  given: boolean | null
+  givenAt: HelsinkiDateTime | null
   givenByEmployee: string | null
   givenByGuardian: string | null
-  id: UUID
   type: ChildConsentType
 }
 
@@ -52,7 +50,7 @@ export interface ChildrenResponse {
 * Generated from fi.espoo.evaka.children.consent.CitizenChildConsent
 */
 export interface CitizenChildConsent {
-  given: boolean
+  given: boolean | null
   type: ChildConsentType
 }
 
