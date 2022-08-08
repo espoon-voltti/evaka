@@ -15,6 +15,9 @@ export default class AssistanceNeedDecisionEditPage {
   pedagogicalMotivationInput = new TextInput(
     this.page.findByDataQa('pedagogical-motivation-field')
   )
+  guardiansHeardOnInput = new TextInput(
+    this.page.findByDataQa('guardians-heard-on')
+  )
 
   async assertDeciderSelectVisible() {
     await this.#decisionMakerSelect.waitUntilVisible()
@@ -69,5 +72,24 @@ export default class AssistanceNeedDecisionEditPage {
     await new Combobox(
       this.page.findByDataQa('unit-select')
     ).fillAndSelectFirst(unit)
+  }
+
+  async fillDecisionMaker(name: string, title: string): Promise<void> {
+    await this.fillEmployee('decision-maker', name, title)
+  }
+
+  async fillPreparator(name: string, title: string): Promise<void> {
+    await this.fillEmployee('prepared-by-1', name, title)
+  }
+
+  private async fillEmployee(
+    selector: string,
+    name: string,
+    title: string
+  ): Promise<void> {
+    await new Combobox(
+      this.page.findByDataQa(`${selector}-select`)
+    ).fillAndSelectFirst(name)
+    await new TextInput(this.page.findByDataQa(`${selector}-title`)).fill(title)
   }
 }

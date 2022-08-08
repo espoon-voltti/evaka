@@ -23,6 +23,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -93,6 +94,8 @@ interface EmployeeSelectProps {
     phone: string | null
   ) => void
   'data-qa'?: string
+  info?: InputInfo
+  titleInfo?: InputInfo
 }
 
 const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
@@ -105,7 +108,9 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
   selectedPhone,
   hasPhoneField,
   onChange,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  info,
+  titleInfo
 }: EmployeeSelectProps) {
   return (
     <FixedSpaceRow>
@@ -127,6 +132,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
             onChange(employee, selectedTitle, selectedPhone ?? null)
           }
           data-qa={dataQa ? `${dataQa}-select` : undefined}
+          info={info}
         />
       </FixedSpaceColumn>
       <FixedSpaceColumn spacing="zero">
@@ -137,6 +143,8 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
             onChange(selectedEmployee, title, selectedPhone ?? null)
           }
           data-qa={dataQa ? `${dataQa}-title` : undefined}
+          width="L"
+          info={titleInfo}
         />
       </FixedSpaceColumn>
       {hasPhoneField && (
@@ -155,12 +163,22 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
   )
 })
 
-export type FieldInfos = Record<
-  keyof AssistanceNeedDecisionForm,
-  InputInfo | undefined
-> & {
+export interface FieldInfos {
   startDate?: InputInfo
   endDate?: InputInfo
+  preparator?: InputInfo
+  pedagogicalMotivation?: InputInfo
+  careMotivation?: InputInfo
+  guardiansHeardOn?: InputInfo
+  guardianInfo?: InputInfo
+  viewOfGuardians?: InputInfo
+  servicesMotivation?: InputInfo
+  selectedUnit?: InputInfo
+  motivationForDecision?: InputInfo
+  decisionMaker?: InputInfo
+  decisionMakerTitle?: InputInfo
+  preparator1Title?: InputInfo
+  preparator2Title?: InputInfo
 }
 
 type AssistanceNeedDecisionFormProps = {
@@ -169,12 +187,14 @@ type AssistanceNeedDecisionFormProps = {
     SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
   fieldInfos: FieldInfos
+  onStartDateMissing: (missing: boolean) => void
 }
 
 export default React.memo(function AssistanceNeedDecisionForm({
   formState,
   setFormState,
-  fieldInfos
+  fieldInfos,
+  onStartDateMissing
 }: AssistanceNeedDecisionFormProps) {
   const [units] = useApiState(() => getUnits([], 'ALL'), [])
   const [employees] = useApiState(() => getEmployees(), [])
@@ -305,7 +325,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
             setFieldVal({ structuralMotivationDescription: val })
           }
           placeholder={t.structuralMotivationPlaceholder}
-          info={fieldInfos.structuralMotivationDescription}
         />
       </FieldWithInfo>
 
@@ -394,7 +413,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <H2>{t.collaborationWithGuardians}</H2>
 
       <FixedSpaceColumn spacing="zero">
-        <Label>{t.guardiansHeardAt}</Label>
+        <Label>{t.guardiansHeardOn}</Label>
         <DatePicker
           locale={lang}
           date={formState.guardiansHeardOn}
@@ -402,12 +421,19 @@ export default React.memo(function AssistanceNeedDecisionForm({
             setFieldVal({ guardiansHeardOn: date })
           }}
           errorTexts={i18n.validationErrors}
-          hideErrorsBeforeTouched
+          hideErrorsBeforeTouched={!fieldInfos.guardiansHeardOn}
           info={fieldInfos.guardiansHeardOn}
+          data-qa="guardians-heard-on"
         />
       </FixedSpaceColumn>
 
       <FieldWithInfo info={t.guardiansHeardInfo} label={t.guardiansHeard}>
+        {fieldInfos.guardianInfo && (
+          <>
+            <AlertBox message={fieldInfos.guardianInfo.text} noMargin />
+            <Gap size="s" />
+          </>
+        )}
         {formState.guardianInfo.map((guardian) => (
           <GuardianHeardField
             key={guardian.personId}
@@ -486,15 +512,20 @@ export default React.memo(function AssistanceNeedDecisionForm({
           locale={lang}
           date={formState.validityPeriod.start}
           onChange={(date) => {
-            date &&
+            if (date) {
               setFieldVal({
                 validityPeriod: formState.validityPeriod.withStart(date)
               })
+              onStartDateMissing(false)
+            } else {
+              onStartDateMissing(true)
+            }
           }}
           errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched={!fieldInfos.startDate}
           info={fieldInfos.startDate}
           maxDate={formState.validityPeriod.end ?? undefined}
+          required
         />
       </FieldWithInfo>
 
@@ -572,6 +603,9 @@ export default React.memo(function AssistanceNeedDecisionForm({
             phoneLabel={i18n.common.form.phone}
             selectedPhone={formState.preparedBy1?.phoneNumber}
             hasPhoneField
+            info={fieldInfos.preparator}
+            titleInfo={fieldInfos.preparator1Title}
+            data-qa="prepared-by-1"
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.preparator}
@@ -595,6 +629,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             phoneLabel={i18n.common.form.phone}
             selectedPhone={formState.preparedBy2?.phoneNumber}
             hasPhoneField
+            titleInfo={fieldInfos.preparator2Title}
           />
           <EmployeeSelectWithTitle
             employeeLabel={t.decisionMaker}
@@ -616,6 +651,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
               })
             }
             data-qa="decision-maker"
+            info={fieldInfos.decisionMaker}
+            titleInfo={fieldInfos.decisionMakerTitle}
           />
         </FixedSpaceColumn>
       ))}

@@ -46,7 +46,7 @@ export interface AssistanceNeedDecisionTexts {
   }
   services: string
   collaborationWithGuardians: string
-  guardiansHeardAt: string
+  guardiansHeardOn: string
   guardiansHeard: string
   viewOfTheGuardians: string
   decisionAndValidity: string
@@ -238,7 +238,7 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
 
           <div>
             <OptionalLabelledValue
-              label={t.guardiansHeardAt}
+              label={t.guardiansHeardOn}
               value={decision.guardiansHeardOn?.format()}
               data-qa="guardians-heard-at"
             />

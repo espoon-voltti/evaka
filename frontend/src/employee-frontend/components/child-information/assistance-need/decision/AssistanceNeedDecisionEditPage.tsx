@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import concat from 'lodash/concat'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -22,6 +23,7 @@ import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-dec
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { InputInfo } from 'lib-components/atoms/form/InputField'
 import Content, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -32,7 +34,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import Select, { SelectOption } from 'lib-components/molecules/Select'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
+import { featureFlags, Translations } from 'lib-customizations/employee'
 
 import { getPerson } from '../../../../api/person'
 
@@ -42,7 +44,35 @@ import AssistanceNeededDecisionForm, {
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
 import { FooterContainer } from './common'
 
-const requiredFormFields = ['selectedUnit'] as const
+// straightforward required fields, more complex cases are handled
+// in missingFields and fieldInfos useMemos
+const requiredFormFields = [
+  'selectedUnit',
+  'pedagogicalMotivation',
+  'guardiansHeardOn'
+] as const
+
+const getFieldTranslation = (
+  t: Translations['childInformation']['assistanceNeedDecision'],
+  fieldKey: keyof FieldInfos
+): string => {
+  switch (fieldKey) {
+    case 'guardianInfo':
+      return t.guardiansHeardOn
+    case 'viewOfGuardians':
+      return t.viewOfTheGuardians
+    case 'servicesMotivation':
+      return t.servicesPlaceholder
+    case 'decisionMakerTitle':
+      return `${t.decisionMaker}, ${t.title}`
+    case 'preparator1Title':
+      return `${t.preparator} (1.), ${t.title}`
+    case 'preparator2Title':
+      return `${t.preparator} (2.), ${t.title}`
+  }
+
+  return t[fieldKey]
+}
 
 const HorizontalLineWithoutBottomMargin = styled(HorizontalLine)`
   margin-bottom: 0;
@@ -103,32 +133,62 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
     }
   }, [formState, childId, id, navigate])
 
-  const missingFields = useMemo(() => {
-    const fields = requiredFormFields.filter((key) => !formState?.[key])
+  const [startDateMissing, setStartDateMissing] = useState(false)
 
-    if (
-      formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
-      formState?.validityPeriod.end === null
-    ) {
-      return [...fields, 'endDate' as const]
-    }
-
-    return fields
-  }, [formState])
+  const missingFields = useMemo(
+    () =>
+      concat(
+        [] as Array<keyof FieldInfos | undefined | null | false>,
+        requiredFormFields.filter((key) => !formState?.[key]),
+        // must have a start date
+        startDateMissing && 'startDate',
+        // decision-maker is required
+        !formState?.decisionMaker?.employeeId && 'decisionMaker',
+        // at least one preparator must be selected
+        !formState?.preparedBy1?.employeeId &&
+          !formState?.preparedBy2?.employeeId &&
+          'preparator',
+        // decision-maker's title is required
+        !formState?.decisionMaker?.title && 'decisionMakerTitle',
+        // titles are required, if preparator is selected
+        formState?.preparedBy1 &&
+          !formState.preparedBy1.title &&
+          'preparator1Title',
+        formState?.preparedBy2 &&
+          !formState.preparedBy2.title &&
+          'preparator2Title',
+        // there must be an end date if ASSISTANCE_SERVICES_FOR_TIME is selected
+        formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
+          formState?.validityPeriod.end === null &&
+          'endDate'
+      ).filter((field): field is keyof FieldInfos => !!field),
+    [formState, startDateMissing]
+  )
 
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const fieldInfos = useMemo<FieldInfos>(
     () =>
       (showFormErrors
-        ? Object.fromEntries(
-            missingFields.map((field) => [
-              field,
-              { text: i18n.validationErrors.required, status: 'warning' }
-            ])
-          )
+        ? {
+            ...Object.fromEntries(
+              missingFields.map((field) => [
+                field,
+                { text: i18n.validationErrors.required, status: 'warning' }
+              ])
+            ),
+            guardianInfo: !formState?.guardianInfo.every(
+              (guardian) => guardian.isHeard
+            )
+              ? {
+                  text: i18n.childInformation.assistanceNeedDecision
+                    .guardiansHeardValidation,
+                  status: 'warning'
+                }
+              : undefined
+          }
         : {}) as FieldInfos,
-    [missingFields, showFormErrors, i18n]
+    [showFormErrors, missingFields, formState?.guardianInfo, i18n]
   )
 
   return (
@@ -169,6 +229,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                   formState={formState}
                   setFormState={setFormState}
                   fieldInfos={fieldInfos}
+                  onStartDateMissing={setStartDateMissing}
                 />
               </I18nContext.Provider>
             </>
@@ -177,35 +238,42 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       </Content>
       <Gap size="m" />
       <StickyFooter>
-        {showFormErrors && missingFields.length > 0 && (
-          <>
-            <H2>
-              {i18n.childInformation.assistanceNeedDecision.validation.title}
-            </H2>
-            <AlertBox
-              message={
-                <>
-                  <P noMargin>
-                    {
-                      i18n.childInformation.assistanceNeedDecision.validation
-                        .description
-                    }
-                  </P>
-                  <ul>
-                    {missingFields.map((field) => (
-                      <li key={field}>
-                        {field in i18n.childInformation.assistanceNeedDecision
-                          ? i18n.childInformation.assistanceNeedDecision[field]
-                          : field}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              }
-            />
-            <HorizontalLineWithoutBottomMargin slim />
-          </>
-        )}
+        {showFormErrors &&
+          Object.values(fieldInfos).filter((value) => value).length > 0 && (
+            <>
+              <H2>
+                {i18n.childInformation.assistanceNeedDecision.validation.title}
+              </H2>
+              <AlertBox
+                message={
+                  <>
+                    <P noMargin>
+                      {
+                        i18n.childInformation.assistanceNeedDecision.validation
+                          .description
+                      }
+                    </P>
+                    <ul>
+                      {(
+                        Object.entries(fieldInfos).filter(
+                          ([_, value]) => value
+                        ) as [keyof FieldInfos, InputInfo][]
+                      ).map(([field, value]) => (
+                        <li key={field}>
+                          {getFieldTranslation(
+                            i18n.childInformation.assistanceNeedDecision,
+                            field
+                          )}
+                          : {value?.text}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                }
+              />
+              <HorizontalLineWithoutBottomMargin slim />
+            </>
+          )}
         <FooterContainer>
           <AsyncButton
             primary
@@ -255,7 +323,8 @@ const DecisionContents = React.memo(function DecisionContents({
   child,
   formState,
   setFormState,
-  fieldInfos
+  fieldInfos,
+  onStartDateMissing
 }: {
   child: PersonJSON
   formState?: AssistanceNeedDecisionForm
@@ -263,6 +332,7 @@ const DecisionContents = React.memo(function DecisionContents({
     React.SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
   fieldInfos: FieldInfos
+  onStartDateMissing: (missing: boolean) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -292,6 +362,7 @@ const DecisionContents = React.memo(function DecisionContents({
           formState={formState}
           setFormState={setFormState}
           fieldInfos={fieldInfos}
+          onStartDateMissing={onStartDateMissing}
         />
       )}
     </>
