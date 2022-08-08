@@ -650,7 +650,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: results
+          name: e2e-test-results
           path: |
             frontend/screenshots/
             compose/e2e.log
