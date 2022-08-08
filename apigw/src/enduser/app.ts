@@ -5,7 +5,6 @@
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
 import helmet from 'helmet'
-import nocache from 'nocache'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
 import createEvakaCustomerSamlStrategy, {
@@ -28,15 +27,20 @@ import session, {
 import publicRoutes from './publicRoutes'
 import routes from './routes'
 import authStatus from './routes/auth-status'
+import { cacheControl } from '../shared/middleware/cache-control'
 
 const app = express()
 const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
 
-const allRoutesExceptChildImages =
-  /^(?!\/api\/application\/citizen\/child-images\/)/
-app.use(allRoutesExceptChildImages, nocache())
+app.use(
+  cacheControl((req) =>
+    req.path.startsWith('/api/application/citizen/child-images/')
+      ? 'allow-cache'
+      : 'forbid-cache'
+  )
+)
 
 app.use(
   helmet({
