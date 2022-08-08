@@ -361,14 +361,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
             ) : totalMinutes === 0 ? (
               '-'
             ) : (
-              `${Math.floor(totalMinutes / 60)}:${(totalMinutes % 60)
-                .toString()
-                .padStart(2, '0')}${
+              `${formatMinutes(totalMinutes)}${
                 plannedAttendances && plannedAttendances.length > 0
-                  ? ` (${Math.sign(diffPlannedTotalMinutes) === 1 ? '+' : ''}${
-                      Math.sign(diffPlannedTotalMinutes) *
-                      Math.floor(Math.abs(diffPlannedTotalMinutes) / 60)
-                    }.${Math.abs(diffPlannedTotalMinutes) % 60})`
+                  ? ` (${
+                      Math.sign(diffPlannedTotalMinutes) === 1 ? '+' : '-'
+                    }${formatMinutes(Math.abs(diffPlannedTotalMinutes))})`
                   : ''
               }`
             )}
@@ -630,6 +627,12 @@ function validateEditState(
   })
 
   return [body, errors]
+}
+
+function formatMinutes(minutes: number) {
+  return `${Math.floor(minutes / 60)}:${Math.floor(minutes % 60)
+    .toString()
+    .padStart(2, '0')}`
 }
 
 const Content = styled.div`
