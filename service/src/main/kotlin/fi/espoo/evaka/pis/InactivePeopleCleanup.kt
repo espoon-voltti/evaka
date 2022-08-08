@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
 
-val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
     tx.setStatementTimeout(Duration.ofMinutes(20))
