@@ -3836,7 +3836,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // 14 operational days first
-        // then 1 sickleabe
+        // then 1 sickleave
         val sickleaveDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.SICKLEAVE)
         // then planned absences
         val plannedAbsenceDays = listOf(
