@@ -102,7 +102,7 @@ export default React.memo(function ChildConsentsSection({
       childId,
       Object.entries(form)
         .filter(
-          ([_, consent]) => typeof consent.value === 'boolean' && consent.dirty
+          ([, consent]) => typeof consent.value === 'boolean' && consent.dirty
         )
         .map(([type, consent]) => ({
           type: type as ChildConsentType,

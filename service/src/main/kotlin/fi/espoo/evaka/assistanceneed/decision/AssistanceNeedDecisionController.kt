@@ -313,7 +313,15 @@ class AssistanceNeedDecisionController(
 
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
         return decision.selectedUnit == null ||
-            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) && decision.validityPeriod.end == null)
+            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) && decision.validityPeriod.end == null) ||
+            decision.pedagogicalMotivation.isNullOrEmpty() ||
+            decision.guardiansHeardOn == null ||
+            (
+                (decision.preparedBy1?.employeeId == null || decision.preparedBy1.title.isNullOrEmpty()) &&
+                    (decision.preparedBy2?.employeeId == null || decision.preparedBy2.title.isNullOrEmpty())
+                ) ||
+            decision.decisionMaker?.employeeId == null ||
+            decision.guardianInfo.any { !it.isHeard }
     }
 
     data class AssistanceNeedDecisionBasicsResponse(

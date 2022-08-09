@@ -185,7 +185,7 @@ export default React.memo(function StaffAttendanceTable({
           newStartOfWeek.addDays(6)
         )
 
-        const [_, attendance] = await Promise.all([
+        const [, attendance] = await Promise.all([
           loadModalStaffAttendance(unitId, nextWeekRange),
           loadModalAttendance(unitId, nextWeekRange)
         ])

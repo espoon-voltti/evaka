@@ -120,6 +120,20 @@ describe('Assistance Need Decisions - Edit page', () => {
   test('Clicking the preview button opens the decision in preview mode', async () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
     await assistanceNeedDecisionEditPage.selectUnit(daycareFixture.name)
+    await assistanceNeedDecisionEditPage.pedagogicalMotivationInput.fill(
+      'Pedagogical motivation text'
+    )
+    await assistanceNeedDecisionEditPage.guardiansHeardOnInput.fill(
+      '20.04.2020'
+    )
+    await assistanceNeedDecisionEditPage.fillDecisionMaker(
+      serviceWorker.lastName,
+      'aluepäällikkö'
+    )
+    await assistanceNeedDecisionEditPage.fillPreparator(
+      serviceWorker.lastName,
+      'erityisopettaja'
+    )
     await assistanceNeedDecisionEditPage.clickPreviewButton()
 
     await page.page.waitForURL(

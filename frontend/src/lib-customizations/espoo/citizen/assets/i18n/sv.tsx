@@ -1979,7 +1979,7 @@ const sv: Translations = {
           },
           services: 'Stödtjänster och motivering',
           collaborationWithGuardians: 'Samarbete med vårdnadshavarna',
-          guardiansHeardAt: 'Datum för samråd med vårdnadshavarna',
+          guardiansHeardOn: 'Datum för samråd med vårdnadshavarna',
           guardiansHeard:
             'Vårdnadshavare vilka blivit konsulterade, samt metoden som använts',
           viewOfTheGuardians: 'Vårdnadshavarnas syn på stödet som erbjuds',
@@ -1996,7 +1996,7 @@ const sv: Translations = {
           endDate: 'Beslutet i kraft till',
           selectedUnit: 'Enhet för småbarnspedagogik utvald för beslutet',
           unitMayChange: 'Under semestern kan platsen eller metoden ändras',
-          motivationForDecision: 'Motivering för beslutet',
+          motivationForDecision: 'Motivering för nivån för barnets stöd',
           personsResponsible: 'Ansvariga',
           preparator: 'Beslutets förberedare',
           decisionMaker: 'Beslutsfattare',

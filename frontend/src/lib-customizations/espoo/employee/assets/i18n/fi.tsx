@@ -754,10 +754,11 @@ export const fi = {
         'Valitse tästä lapselle esitettävät tukipalvelut. Perustele, miksi lapsi saa näitä tukipalveluja',
       servicesPlaceholder: 'Perustelut valituille tukipalveluille',
       collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
-      guardiansHeardAt: 'Huoltajien kuulemisen päivämäärä',
+      guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
       guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
       guardiansHeardInfo:
         'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
+      guardiansHeardValidation: 'Kaikkia huoltajia tulee olla kuultu.',
       viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
       viewOfTheGuardiansInfo:
         'Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.',
@@ -780,7 +781,7 @@ export const fi = {
       selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
       unitMayChange:
         'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
-      motivationForDecision: 'Perustelut päätökselle',
+      motivationForDecision: 'Perustelut lapsen tuen tasolle',
       personsResponsible: 'Vastuuhenkilöt',
       preparator: 'Päätöksen valmistelija',
       decisionMaker: 'Päättäjä',

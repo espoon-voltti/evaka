@@ -1952,7 +1952,7 @@ export default {
           },
           services: 'Tukipalvelut ja perustelut',
           collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
-          guardiansHeardAt: 'Huoltajien kuulemisen päivämäärä',
+          guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
           guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
           viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
           decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
@@ -1969,7 +1969,7 @@ export default {
           selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
           unitMayChange:
             'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
-          motivationForDecision: 'Perustelut päätökselle',
+          motivationForDecision: 'Perustelut lapsen tuen tasolle',
           personsResponsible: 'Vastuuhenkilöt',
           preparator: 'Päätöksen valmistelija',
           decisionMaker: 'Päättäjä',
