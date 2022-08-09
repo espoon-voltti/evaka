@@ -159,7 +159,7 @@ class AssistanceNeedDecisionService(
 
             sfiClient.send(
                 SfiMessage(
-                    messageId = decision.id.toString(),
+                    messageId = "${decision.id}_${guardian.id}",
                     documentId = decision.id.toString(),
                     documentDisplayName = suomiFiDocumentFileName(decision.language),
                     documentKey = "",
