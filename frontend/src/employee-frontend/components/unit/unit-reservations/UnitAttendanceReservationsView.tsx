@@ -59,7 +59,7 @@ const formatWeekTitle = (dateRange: FiniteDateRange) =>
 
 interface Props {
   unitId: UUID
-  groupId: UUID | 'no-group' | 'staff'
+  groupId: UUID | 'no-group' | 'staff' | 'all'
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   isShiftCareUnit: boolean
@@ -252,12 +252,18 @@ export default React.memo(function UnitAttendanceReservationsView({
               <StaffAttendanceTable
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
-                staffAttendances={staffData.staff.filter((s) =>
-                  s.groups.includes(groupId)
-                )}
-                extraAttendances={staffData.extraAttendances.filter(
-                  (ea) => ea.groupId === groupId
-                )}
+                staffAttendances={
+                  groupId === 'all'
+                    ? staffData.staff
+                    : staffData.staff.filter((s) => s.groups.includes(groupId))
+                }
+                extraAttendances={
+                  groupId === 'all'
+                    ? staffData.extraAttendances
+                    : staffData.extraAttendances.filter(
+                        (ea) => ea.groupId === groupId
+                      )
+                }
                 saveAttendances={saveAttendances}
                 deleteAttendances={deleteAttendances}
                 reloadStaffAttendances={reloadStaffAttendances}
@@ -271,8 +277,14 @@ export default React.memo(function UnitAttendanceReservationsView({
               unitId={unitId}
               operationalDays={childData.operationalDays}
               allDayRows={
-                childData.groups.find((g) => g.group.id === groupId)
-                  ?.children ?? childData.ungrouped
+                groupId === 'all'
+                  ? childData.groups
+                      .flatMap(({ children }) => children)
+                      .concat(childData.ungrouped)
+                  : groupId === 'no-group'
+                  ? childData.ungrouped
+                  : childData.groups.find((g) => g.group.id === groupId)
+                      ?.children ?? []
               }
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}

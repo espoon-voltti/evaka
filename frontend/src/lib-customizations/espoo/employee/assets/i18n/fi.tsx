@@ -1800,6 +1800,7 @@ export const fi = {
       title: 'Varaukset ja läsnäolot',
       noGroup: 'Ei ryhmää',
       staff: 'Henkilökunta',
+      all: 'Kaikki',
       modes: {
         week: 'Viikko',
         month: 'Kuukausi'
