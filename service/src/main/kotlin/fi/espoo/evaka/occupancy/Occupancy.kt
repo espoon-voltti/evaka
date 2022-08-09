@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.occupancy
 
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
@@ -229,11 +230,12 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
         sum(c.amount)
     """.trimIndent()
 
+    val presentStaffAttendanceTypes = "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
     val caretakersJoin = if (type == OccupancyType.REALIZED) """
         LEFT JOIN (
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_realtime
-            WHERE departed IS NOT NULL
+            WHERE departed IS NOT NULL AND type = ANY($presentStaffAttendanceTypes)
             UNION ALL
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_external

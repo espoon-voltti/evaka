@@ -5,6 +5,7 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -132,6 +133,7 @@ fun Database.Read.getChildOccupancyAttendances(
     .mapTo<ChildOccupancyAttendance>()
     .list()
 
+val presentStaffAttendanceTypes = "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
@@ -141,6 +143,7 @@ fun Database.Read.getStaffOccupancyAttendances(
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
     WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && :timeRange
+    AND type = ANY($presentStaffAttendanceTypes)
     
     UNION ALL
     
