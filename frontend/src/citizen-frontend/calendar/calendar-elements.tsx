@@ -11,6 +11,7 @@ import {
   DailyReservationData,
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
@@ -61,8 +62,8 @@ export const Reservations = React.memo(function Reservations({
   )
 
   const groupedChildren = useMemo(
-    () => groupChildren(allChildren, data.children),
-    [data.children, allChildren]
+    () => groupChildren(allChildren, data.children, data.date),
+    [data.children, allChildren, data.date]
   )
 
   return data.children.length === 0 && data.isHoliday ? (
@@ -129,61 +130,68 @@ const GroupedElementText = styled.div`
 
 const groupChildren = (
   allChildren: ReservationChild[],
-  reservedChildren: ChildDailyData[]
+  reservedChildren: ChildDailyData[],
+  date: LocalDate
 ) =>
   Object.entries(
     groupBy(
-      allChildren.map<DailyChildGroupElement>((childInfo) => {
-        const child = reservedChildren.find(
-          ({ childId }) => childId === childInfo.id
+      allChildren
+        .filter((childInfo) =>
+          date.isBetween(childInfo.placementMinStart, childInfo.placementMaxEnd)
         )
+        .map<DailyChildGroupElement>((childInfo) => {
+          const child = reservedChildren.find(
+            ({ childId }) => childId === childInfo.id
+          )
 
-        if (!child) {
+          if (!child) {
+            return {
+              childId: childInfo.id,
+              type: 'missing-reservation'
+            }
+          }
+
+          if (child.attendances.length > 0) {
+            return {
+              childId: child.childId,
+              type: 'attendance',
+              text: child.attendances
+                .map(
+                  ({ startTime, endTime }) => `${startTime}–${endTime ?? ''}`
+                )
+                .join(', ')
+            }
+          }
+
+          if (child.absence) {
+            return {
+              childId: child.childId,
+              type: child.absence === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
+            }
+          }
+
+          if (child.reservations.length > 0) {
+            return {
+              childId: child.childId,
+              type: 'reservation',
+              text: child.reservations
+                .map(({ startTime, endTime }) => `${startTime}–${endTime}`)
+                .join(', ')
+            }
+          }
+
+          if (child.dayOff) {
+            return {
+              childId: child.childId,
+              type: 'day-off'
+            }
+          }
+
           return {
-            childId: childInfo.id,
+            childId: child.childId,
             type: 'missing-reservation'
           }
-        }
-
-        if (child.attendances.length > 0) {
-          return {
-            childId: child.childId,
-            type: 'attendance',
-            text: child.attendances
-              .map(({ startTime, endTime }) => `${startTime}–${endTime ?? ''}`)
-              .join(', ')
-          }
-        }
-
-        if (child.absence) {
-          return {
-            childId: child.childId,
-            type: child.absence === 'FREE_ABSENCE' ? 'absent-free' : 'absent'
-          }
-        }
-
-        if (child.reservations.length > 0) {
-          return {
-            childId: child.childId,
-            type: 'reservation',
-            text: child.reservations
-              .map(({ startTime, endTime }) => `${startTime}–${endTime}`)
-              .join(', ')
-          }
-        }
-
-        if (child.dayOff) {
-          return {
-            childId: child.childId,
-            type: 'day-off'
-          }
-        }
-
-        return {
-          childId: child.childId,
-          type: 'missing-reservation'
-        }
-      }),
+        }),
       ({ type, text }) => JSON.stringify([type, text])
     )
   ).map<GroupedDailyChildren>(([key, children]) => ({
