@@ -40,7 +40,7 @@ export const fi = {
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
     vasuTemplates: 'Vasu-pohjat',
-    assistanceNeedDecision: 'Päätös tuen tarpeesta'
+    assistanceNeedDecision: 'Päätös tuesta'
   },
   common: {
     yes: 'Kyllä',
@@ -692,10 +692,10 @@ export const fi = {
       }
     },
     assistanceNeedDecision: {
-      pageTitle: 'Päätös tuen tarpeesta',
-      sectionTitle: 'Tuen tarpeen päätökset',
+      pageTitle: 'Päätös tuesta',
+      sectionTitle: 'Tuen päätökset',
       description:
-        'Hyväksytyt ja hylätyt päätökset tuen tarpeesta näkyvät huoltajalle eVakassa.',
+        'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
       table: {
         form: 'Lomake',
         inEffect: 'Voimassa',
@@ -2692,8 +2692,8 @@ export const fi = {
         'Vähemmän pitkälle jalostettu laaja tietoaineisto, josta voi itse muodostaa erilaisia raportteja.'
     },
     assistanceNeedDecisions: {
-      title: 'Tuen tarpeen päätökset',
-      description: 'Päättäjälle lähetetyt tuen tarpeen päätökset.',
+      title: 'Tuen päätökset',
+      description: 'Päättäjälle lähetetyt tuen päätökset.',
       sentToDecisionMaker: 'Lähetetty päättäjälle',
       decisionMade: 'Päätös tehty',
       status: 'Tila',
@@ -2748,9 +2748,9 @@ export const fi = {
         'assistance_need.child_id': 'Tuen tarpeita',
         'assistance_need_decision.child_id': 'Tuen tarpeen päätöksiä',
         'assistance_need_decision_guardian.person_id':
-          'Tuen tarpeen päätöksen huoltajana',
+          'Tuen päätöksen huoltajana',
         'assistance_need_voucher_coefficient.child_id':
-          'Tuen tarpeen palvelusetelikertoimia',
+          'Tuen palvelusetelikertoimia',
         'attachment.uploaded_by_person': 'Liitteitä',
         'attendance_reservation.child_id': 'Läsnäolo -varauksia',
         'attendance_reservation.created_by_guardian_id':

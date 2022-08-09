@@ -1917,7 +1917,7 @@ export default {
       title: 'Tuen tarve',
       unreadCount: 'lukematonta',
       decisions: {
-        title: 'Tuen tarpeen päätökset',
+        title: 'Tuen päätökset',
         form: 'Lomake',
         assistanceLevel: 'Tuen taso',
         validityPeriod: 'Voimassa',
@@ -1926,7 +1926,7 @@ export default {
         status: 'Tila',
         openDecision: 'Avaa päätös',
         decision: {
-          pageTitle: 'Päätös tuen tarpeesta',
+          pageTitle: 'Päätös tuesta',
           neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
           pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
           structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',

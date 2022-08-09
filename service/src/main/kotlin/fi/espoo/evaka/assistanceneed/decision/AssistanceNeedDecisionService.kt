@@ -96,9 +96,9 @@ class AssistanceNeedDecisionService(
                     "$decisionId - $guardianId",
                     email,
                     fromAddress,
-                    emailMessageProvider.getAssistanceNeedDecisionEmailSubject(),
-                    emailMessageProvider.getAssistanceNeedDecisionEmailHtml(decision.child.id, decision.id),
-                    emailMessageProvider.getAssistanceNeedDecisionEmailText(decision.child.id, decision.id)
+                    emailMessageProvider.getDecisionEmailSubject(),
+                    emailMessageProvider.getDecisionEmailHtml(decision.child.id, decision.id),
+                    emailMessageProvider.getDecisionEmailText(decision.child.id, decision.id)
                 )
             }
         }

@@ -13,7 +13,7 @@ interface IEmailMessageProvider {
     val subjectForClubApplicationReceivedEmail: String
     val subjectForDaycareApplicationReceivedEmail: String
     val subjectForPreschoolApplicationReceivedEmail: String
-    val subjectForAssistanceNeedDecisionEmail: String
+    val subjectForDecisionEmail: String
 
     fun getPendingDecisionEmailSubject(): String {
         return subjectForPendingDecisionEmail + getMessagePostfix()
@@ -43,12 +43,12 @@ interface IEmailMessageProvider {
     fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String
     fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String
 
-    fun getAssistanceNeedDecisionEmailSubject(): String {
-        return subjectForAssistanceNeedDecisionEmail + getMessagePostfix()
+    fun getDecisionEmailSubject(): String {
+        return subjectForDecisionEmail + getMessagePostfix()
     }
 
-    fun getAssistanceNeedDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
-    fun getAssistanceNeedDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
+    fun getDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
+    fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
 
     private fun getMessagePostfix(): String {
         return if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""

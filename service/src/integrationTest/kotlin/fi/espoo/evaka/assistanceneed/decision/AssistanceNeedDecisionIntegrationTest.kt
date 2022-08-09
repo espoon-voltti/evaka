@@ -42,7 +42,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 private val logger = KotlinLogging.logger {}
 
@@ -379,7 +378,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val messages = MockSfiMessagesClient.getMessages()
         assertEquals(1, messages.size)
-        assertContains(messages[0].first.messageContent, "päätös tuen tarpeesta")
+        assertContains(messages[0].first.messageContent, "päätös tuesta")
         assertNotNull(messages[0].second)
     }
 
@@ -490,12 +489,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             MockEmailClient.emails.map { it.toAddress }.toSet()
         )
         assertEquals(
-            "Päätös tuen tarpeesta / Beslut om behov av stöd / Decision on support need",
+            "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
             getEmailFor(testAdult_4).subject
         )
         assertEquals("Test email sender fi <testemail_fi@test.com>", getEmailFor(testAdult_4).fromAddress)
-        assertTrue(getEmailFor(testAdult_4).htmlBody.contains("/children/${testChild_1.id}/assistance-need-decision/${assistanceNeedDecision.id}"))
-        assertTrue(getEmailFor(testAdult_4).textBody.contains("/children/${testChild_1.id}/assistance-need-decision/${assistanceNeedDecision.id}"))
     }
 
     private fun getEmailFor(person: DevPerson): MockEmail {

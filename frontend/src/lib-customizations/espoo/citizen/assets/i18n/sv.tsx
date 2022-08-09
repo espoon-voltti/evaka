@@ -1945,7 +1945,7 @@ const sv: Translations = {
       title: 'Behov av stöd',
       unreadCount: 'olästa',
       decisions: {
-        title: 'Beslut om behov av stöd',
+        title: 'Beslut om stöd',
         form: 'Form',
         assistanceLevel: 'Nivå av stöd',
         validityPeriod: 'Giltig',
@@ -1954,7 +1954,7 @@ const sv: Translations = {
         status: 'Status',
         openDecision: 'Öppet beslut',
         decision: {
-          pageTitle: 'Beslut om stödbehov',
+          pageTitle: 'Beslut om stöd',
           neededTypesOfAssistance: 'Former av stöd enligt barnets behov',
           pedagogicalMotivation: 'Former och motiveringar för pedagogiskt stöd',
           structuralMotivation: 'Strukturella former av stöd och motivering',

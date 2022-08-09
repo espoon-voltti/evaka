@@ -1988,7 +1988,7 @@ const en: Translations = {
       title: 'Support need',
       unreadCount: 'unread',
       decisions: {
-        title: 'Support need decisions',
+        title: 'Support decisions',
         form: 'Form',
         assistanceLevel: 'Level of support',
         validityPeriod: 'Valid',

@@ -156,11 +156,9 @@ describe('Assistance Need Decisions - Language', () => {
   })
 
   test('Change language to swedish', async () => {
-    await assistanceNeedDecisionEditPage.assertPageTitle(
-      'Päätös tuen tarpeesta'
-    )
+    await assistanceNeedDecisionEditPage.assertPageTitle('Päätös tuesta')
     await assistanceNeedDecisionEditPage.selectLanguage('Ruotsi')
-    await assistanceNeedDecisionEditPage.assertPageTitle('Beslut om stödbehov')
+    await assistanceNeedDecisionEditPage.assertPageTitle('Beslut om stöd')
     await assistanceNeedDecisionEditPage.waitUntilSaved()
 
     await page.goto(
@@ -172,9 +170,7 @@ describe('Assistance Need Decisions - Language', () => {
     )
     const assistanceNeedDecisionPreviewPage =
       new AssistanceNeedDecisionPreviewPage(page)
-    await assistanceNeedDecisionPreviewPage.assertPageTitle(
-      'Beslut om stödbehov'
-    )
+    await assistanceNeedDecisionPreviewPage.assertPageTitle('Beslut om stöd')
   })
 })
 
