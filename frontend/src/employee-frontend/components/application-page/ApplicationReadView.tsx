@@ -12,6 +12,7 @@ import {
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
 import LocalDate from 'lib-common/local-date'
+import { maxOf } from 'lib-common/ordered'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -149,9 +150,7 @@ export default React.memo(function ApplicationReadView({
   ): LocalDate => {
     const { sentDate } = application.application
     if (!sentDate) return attachment.receivedAt.toLocalDate()
-    else if (sentDate.isEqualOrAfter(attachment.receivedAt.toLocalDate()))
-      return sentDate
-    else return attachment.receivedAt.toLocalDate()
+    else return maxOf(sentDate, attachment.receivedAt.toLocalDate())
   }
 
   return (
