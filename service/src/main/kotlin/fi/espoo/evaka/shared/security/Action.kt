@@ -165,7 +165,7 @@ sealed interface Action {
         ACCESS_MESSAGING(HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(), IsMobile(requirePinLogin = true).any()),
 
         CREATE_EMPLOYEE,
-        READ_EMPLOYEES(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
+        READ_EMPLOYEES(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inAnyUnit()),
         SEARCH_EMPLOYEES;
 
         override fun toString(): String = "${javaClass.name}.$name"
