@@ -62,7 +62,7 @@ export default React.memo(function SettingsPage() {
       Object.fromEntries(
         Object.entries(settings.value)
           .map(([key, value]) => [key, value.trim()])
-          .filter(([_, value]) => value !== '')
+          .filter(([, value]) => value !== '')
       )
     )
   }, [settings])

@@ -256,7 +256,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                     <ul>
                       {(
                         Object.entries(fieldInfos).filter(
-                          ([_, value]) => value
+                          ([, value]) => value
                         ) as [keyof FieldInfos, InputInfo][]
                       ).map(([field, value]) => (
                         <li key={field}>
