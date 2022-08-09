@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -116,7 +117,7 @@ export default React.memo(function AssistanceNeedSection({
                   </FixedSpaceRow>
                 </Td>
                 <Td data-qa="assistance-level">
-                  {decision.assistanceLevels
+                  {sortBy(decision.assistanceLevels, (level) => level)
                     .map(
                       (level) =>
                         ({
