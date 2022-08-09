@@ -346,7 +346,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDoc
             """.trimIndent()
         )
             .bind("id", guardianId)
-            .mapTo<VasuGuardian>()
+            .mapTo<VasuGuardian>(qualifiers = emptyArray())
             .first()
     }
 
