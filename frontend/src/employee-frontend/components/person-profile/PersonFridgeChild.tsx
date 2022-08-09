@@ -40,7 +40,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
 
   const getFridgeChildById = (id: UUID) => {
     return fridgeChildren
-      .map((ps) => ps.find(({ data: { child } }) => child.id === id)?.data)
+      .map((ps) => ps.find(({ data }) => data.id === id)?.data)
       .getOrElse(undefined)
   }
 
