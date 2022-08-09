@@ -30,6 +30,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   let header: CitizenHeader
   let calendarPage: CitizenCalendarPage
   let children: PersonDetail[]
+  const today = LocalDate.of(2022, 1, 5)
 
   beforeEach(async () => {
     await resetDatabase()
@@ -45,8 +46,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
           uuidv4(),
           child.id,
           fixtures.daycareFixture.id,
-          LocalDate.todayInSystemTz().formatIso(),
-          LocalDate.todayInSystemTz().addYears(1).formatIso()
+          today.formatIso(),
+          today.addYears(1).formatIso()
         )
       )
     )
@@ -56,7 +57,11 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
         ? { width: 375, height: 812 }
         : { width: 1920, height: 1080 }
 
-    page = await Page.open({ viewport, screen: viewport })
+    page = await Page.open({
+      viewport,
+      screen: viewport,
+      mockedTime: today.toSystemTzDate()
+    })
     await enduserLogin(page)
     header = new CitizenHeader(page, env)
     calendarPage = new CitizenCalendarPage(page, env)
@@ -64,7 +69,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation for all children', async () => {
-    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const firstReservationDay = today.addDays(14)
     const reservation = {
       startTime: '08:00',
       endTime: '16:00',
@@ -83,9 +88,9 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
   test('Citizen creates a repeating weekly reservation for all children', async () => {
     // This should be a monday
-    const firstReservationDay = LocalDate.todayInSystemTz()
+    const firstReservationDay = today
       .addDays(14)
-      .subDays(LocalDate.todayInSystemTz().getIsoDayOfWeek() - 1)
+      .subDays(today.getIsoDayOfWeek() - 1)
     const weekdays = [0, 1, 2, 3, 4]
     const reservations = weekdays.map((index) => ({
       startTime: `08:0${index}`,
@@ -109,7 +114,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
-    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const firstReservationDay = today.addDays(14)
     const reservation = {
       startTime: '08:00',
       endTime: '16:00',
@@ -136,7 +141,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
-    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const firstReservationDay = today.addDays(14)
     const initialReservation = {
       startTime: '08:00',
       endTime: '16:00',
@@ -171,7 +176,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a reservation from day view', async () => {
-    const reservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const reservationDay = today.addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
@@ -190,7 +195,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('If absence modal is opened from day view, that day is filled by default', async () => {
-    const reservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const reservationDay = today.addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
     const absencesModal = await dayView.createAbsence()
@@ -200,7 +205,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Children are grouped correctly in calendar', async () => {
-    const firstReservationDay = LocalDate.todayInSystemTz().addDays(14)
+    const firstReservationDay = today.addDays(14)
     const reservation1 = {
       startTime: '08:00',
       endTime: '16:00',
@@ -239,9 +244,9 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
 
   test('Citizen creates a repeating weekly reservation for all children with absent day', async () => {
     // This should be a monday
-    const firstReservationDay = LocalDate.todayInSystemTz()
+    const firstReservationDay = today
       .addDays(14)
-      .subDays(LocalDate.todayInSystemTz().getIsoDayOfWeek() - 1)
+      .subDays(today.getIsoDayOfWeek() - 1)
     const weekdays = [0, 1, 2, 3, 4]
     const childIds = children.map(({ id }) => id)
     const reservations = weekdays.map<
