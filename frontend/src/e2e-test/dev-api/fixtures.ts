@@ -1357,7 +1357,7 @@ export class Fixture {
   static preFilledAssistanceNeedDecision(): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
-      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME'],
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
       careMotivation: 'Care motivation text',
       childId: 'not_set',
       decisionMade: null,

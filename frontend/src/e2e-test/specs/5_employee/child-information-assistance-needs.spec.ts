@@ -193,7 +193,7 @@ describe('Child assistance need decisions for employees', () => {
 
     const decision = await assistanceNeeds.assistanceNeedDecisions(0)
 
-    expect(decision.date).toEqual('-')
+    expect(decision.date).toEqual('02.01.2019 –')
     expect(decision.unitName).toEqual('-')
     expect(decision.sentDate).toEqual('-')
     expect(decision.decisionMadeDate).toEqual('-')

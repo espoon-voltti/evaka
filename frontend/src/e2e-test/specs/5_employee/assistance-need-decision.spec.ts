@@ -242,11 +242,11 @@ describe('Assistance Need Decisions - Preview page', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.futureLevelOfAssistance,
-      'Tukipalvelut ajalla 08.07.2020 - 08.08.2020'
+      'Tehostettu tuki'
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.startDate,
-      '01.07.2020'
+      '02.01.2019'
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.selectedUnit,

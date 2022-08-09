@@ -265,6 +265,7 @@ export default React.memo(function CitizenVasuAndLeops() {
       toggleOpen={() => setOpen(!open)}
       opaque
       countIndicator={unreadVasuDocumentsCount}
+      data-qa="vasu-and-leops-collapsible"
     >
       {showVasuDisclaimer && <P>{i18n.vasu.sharingVasuDisclaimer}</P>}
       {showLeopsDisclaimer && <P>{i18n.vasu.sharingLeopsDisclaimer}</P>}

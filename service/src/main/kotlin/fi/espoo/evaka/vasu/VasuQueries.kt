@@ -324,7 +324,7 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         """.trimIndent()
     )
         .bind("id", id)
-        .mapTo<VasuPlacement>()
+        .mapTo<VasuPlacement>(qualifiers = emptyArray())
         .list()
 }
 
@@ -346,7 +346,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDoc
             """.trimIndent()
         )
             .bind("id", guardianId)
-            .mapTo<VasuGuardian>()
+            .mapTo<VasuGuardian>(qualifiers = emptyArray())
             .first()
     }
 

@@ -12,42 +12,59 @@ export default class AssistanceNeedDecisionPreviewPage {
     return this.page.findByDataQa(`labelled-value-${label}`).innerText
   }
 
-  readonly pedagogicalMotivation = this.getLabelledValue(
-    'pedagogical-motivation'
-  )
-  readonly assertStructuralMotivationOption = (opt: string) =>
-    this.page
+  get pedagogicalMotivation() {
+    return this.getLabelledValue('pedagogical-motivation')
+  }
+  async assertStructuralMotivationOption(opt: string) {
+    await this.page
       .findByDataQa('structural-motivation-section')
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
-  readonly structuralMotivationDescription = this.page.findByDataQa(
-    'structural-motivation-description'
-  ).innerText
-  readonly careMotivation = this.getLabelledValue('care-motivation')
-  readonly assertServiceOption = (opt: string) =>
-    this.page
+  }
+  get structuralMotivationDescription() {
+    return this.page.findByDataQa('structural-motivation-description').innerText
+  }
+  get careMotivation() {
+    return this.getLabelledValue('care-motivation')
+  }
+  async assertServiceOption(opt: string) {
+    await this.page
       .findByDataQa('services-section')
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
-  readonly guardiansHeardOn = this.getLabelledValue('guardians-heard-at')
-  readonly heardGuardian = (id: string) =>
-    this.page
+  }
+  get guardiansHeardOn() {
+    return this.getLabelledValue('guardians-heard-at')
+  }
+  async heardGuardian(id: string) {
+    return this.page
       .findByDataQa('guardians-heard-section')
       .findByDataQa(`guardian-${id}`).innerText
-  readonly otherRepresentativeDetails = this.page.findByDataQa(
-    'other-representative-details'
-  ).innerText
-  readonly viewOfGuardians = this.getLabelledValue('view-of-the-guardians')
-  readonly futureLevelOfAssistance = this.getLabelledValue(
-    'future-level-of-assistance'
-  )
-  readonly startDate = this.getLabelledValue('start-date')
-  readonly selectedUnit = this.getLabelledValue('selected-unit')
-  readonly motivationForDecision = this.getLabelledValue(
-    'motivation-for-decision'
-  )
-  readonly preparedBy1 = this.getLabelledValue('prepared-by-1')
-  readonly decisionMaker = this.getLabelledValue('decision-maker')
+  }
+  get otherRepresentativeDetails() {
+    return this.page.findByDataQa('other-representative-details').innerText
+  }
+  get viewOfGuardians() {
+    return this.getLabelledValue('view-of-the-guardians')
+  }
+  get futureLevelOfAssistance() {
+    return this.getLabelledValue('future-level-of-assistance')
+  }
+  get startDate() {
+    return this.getLabelledValue('start-date')
+  }
+  get selectedUnit() {
+    return this.getLabelledValue('selected-unit')
+  }
+  get motivationForDecision() {
+    return this.getLabelledValue('motivation-for-decision')
+  }
+  get preparedBy1() {
+    return this.getLabelledValue('prepared-by-1')
+  }
+  get decisionMaker() {
+    return this.getLabelledValue('decision-maker')
+  }
 
   readonly sendDecisionButton = this.page.findByDataQa('send-decision')
   get decisionSentAt() {
