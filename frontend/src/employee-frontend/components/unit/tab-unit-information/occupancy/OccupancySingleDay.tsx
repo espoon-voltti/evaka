@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 
@@ -25,6 +26,7 @@ const Value = styled.div`
 `
 
 interface Props {
+  queryDate: LocalDate
   occupancies: OccupancyResponse
   plannedOccupancies: OccupancyResponse
   realizedOccupancies: OccupancyResponse
@@ -33,6 +35,7 @@ interface Props {
 }
 
 const OccupancySingleDay = React.memo(function OccupancySingleDay({
+  queryDate,
   occupancies,
   plannedOccupancies,
   realizedOccupancies,
@@ -45,6 +48,7 @@ const OccupancySingleDay = React.memo(function OccupancySingleDay({
     return (
       <Container>
         <OccupancyDayGraph
+          queryDate={queryDate}
           occupancy={realtimeOccupancies}
           shiftCareUnit={shiftCareUnit}
         />
