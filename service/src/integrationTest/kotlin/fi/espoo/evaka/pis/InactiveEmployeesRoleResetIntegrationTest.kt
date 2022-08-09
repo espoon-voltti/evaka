@@ -46,20 +46,6 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     }
 
     @Test
-    fun `global roles are reset when last_login is null`() {
-        val employee = DevEmployee(lastLogin = null, roles = setOf(UserRole.ADMIN))
-        val employeeId = db.transaction {
-            it.insertTestEmployee(employee)
-        }
-
-        val resetEmployeeIds = db.transaction { it.clearRolesForInactiveEmployees(firstOfAugust2021) }
-
-        assertEquals(listOf(employee.id), resetEmployeeIds)
-        val globalRoles = db.read { it.getEmployeeWithRoles(employeeId) }!!.globalRoles
-        assertEquals(listOf(), globalRoles)
-    }
-
-    @Test
     fun `global roles are reset when last_login is over 3 months ago`() {
         val employeeId = db.transaction {
             it.insertTestEmployee(
@@ -90,22 +76,6 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
         val scopedRoles = db.read { it.getEmployeeWithRoles(employeeId) }!!.daycareRoles.map { it.role }
         assertEquals(setOf(UserRole.STAFF), scopedRoles.toSet())
-    }
-
-    @Test
-    fun `scoped roles are reset when last_login is null`() {
-        val employeeId = db.transaction {
-            val employeeId = it.insertTestEmployee(DevEmployee(lastLogin = null))
-            val areaId = it.insertTestCareArea(DevCareArea())
-            val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))
-            it.insertDaycareAclRow(daycareId = unitId, employeeId = employeeId, role = UserRole.STAFF)
-            employeeId
-        }
-
-        db.transaction { it.clearRolesForInactiveEmployees(firstOfAugust2021) }
-
-        val scopedRoles = db.read { it.getEmployeeWithRoles(employeeId) }!!.daycareRoles.map { it.role }
-        assertEquals(listOf(), scopedRoles)
     }
 
     @Test
