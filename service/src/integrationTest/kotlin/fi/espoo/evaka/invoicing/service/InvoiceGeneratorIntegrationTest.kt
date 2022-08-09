@@ -1869,6 +1869,52 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `invoice generation with 15 contract days and 1 absence with unplanned absences not counting as surplus days`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 14 operational days first
+        // then 1 other absence
+        val otherAbsenceDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.OTHER_ABSENCE)
+        // then planned absences
+        val plannedAbsenceDays = datesBetween(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 31)
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+
+        initDataForAbsences(
+            listOf(period),
+            otherAbsenceDays + plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
+
+        // Override to not count unplanned absences as contract surplus days
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(unplannedAbsencesAreContractSurplusDays = false),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(21700, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with 15 contract days, 2 fee decisions and 2 surplus days`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))

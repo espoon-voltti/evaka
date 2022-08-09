@@ -68,6 +68,9 @@ data class FeatureConfig(
      */
     val paymentNumberSeriesStart: Long?,
 
+    /** Controls whether unplanned absences are counted as surplus contract days on invoices or not */
+    val unplannedAbsencesAreContractSurplusDays: Boolean,
+
     /** Enabled child consent types
      *
      * All of the enabled child consent types. The consent section will be hidden if no consent

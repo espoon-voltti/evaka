@@ -627,12 +627,14 @@ class DraftInvoiceGenerator(
 
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
-        val unplannedAbsencesBeforePeriod =
-            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && it.date < period.start }.size
-        val unplannedAbsencesInPeriod =
-            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && period.includes(it.date) }.size
+        val unplannedAbsenceSurplusDays = if (featureConfig.unplannedAbsencesAreContractSurplusDays)
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) }
+        else listOf()
+        val (unplannedAbsencesInPeriod, unplannedAbsencesBeforePeriod) = unplannedAbsenceSurplusDays
+            .filter { it.date < period.start || period.includes(it.date) }
+            .partition { period.includes(it.date) }
         val surplusAttendanceDays =
-            attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
+            attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod.size + unplannedAbsencesInPeriod.size - contractDaysPerMonth
 
         val surplusRows = if (surplusAttendanceDays > 0) {
             val surplusDailyPrice = calculateDailyPriceForInvoiceRow(monthlyPrice, dailyFeeDivisor)
