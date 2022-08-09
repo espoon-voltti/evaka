@@ -324,7 +324,7 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         """.trimIndent()
     )
         .bind("id", id)
-        .mapTo<VasuPlacement>()
+        .mapTo<VasuPlacement>(qualifiers = emptyArray())
         .list()
 }
 
