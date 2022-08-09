@@ -14,10 +14,12 @@ import Select from 'lib-components/atoms/dropdowns/Select'
 
 import { useTranslation } from '../../../state/i18n'
 
+type GroupSelectId = UUID | 'no-group' | 'staff' | 'all'
+
 interface Props {
   groups: Result<DaycareGroup[]>
-  selected: UUID | 'no-group' | 'staff' | null
-  onSelect: (val: UUID | 'no-group' | 'staff') => void
+  selected: GroupSelectId | null
+  onSelect: (val: GroupSelectId) => void
   'data-qa'?: string
   realtimeStaffAttendanceEnabled: boolean
 }
@@ -47,6 +49,7 @@ export default React.memo(function GroupSelector({
         )
         .getOrElse([]),
       'no-group',
+      'all',
       ...(realtimeStaffAttendanceEnabled ? ['staff'] : [])
     ],
     [groups, selected, realtimeStaffAttendanceEnabled]
@@ -61,6 +64,8 @@ export default React.memo(function GroupSelector({
               return i18n.unit.attendances.noGroup
             case 'staff':
               return i18n.unit.attendances.staff
+            case 'all':
+              return i18n.unit.attendances.all
             default:
               return gs.find(({ id }) => id === item)?.name ?? ''
           }

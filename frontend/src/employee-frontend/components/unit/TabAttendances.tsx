@@ -35,7 +35,7 @@ import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceRe
 
 type CalendarMode = 'week' | 'month'
 type GroupId = UUID
-type AttendanceGroupFilter = GroupId | 'no-group' | 'staff' | null
+type AttendanceGroupFilter = GroupId | 'no-group' | 'staff' | 'all' | null
 
 const TopRow = styled.div`
   display: flex;
@@ -50,7 +50,8 @@ const GroupSelectorWrapper = styled.div`
 `
 
 const getDefaultGroup = (groupParam: string): AttendanceGroupFilter | null =>
-  ['no-group', 'staff'].includes(groupParam) || UUID_REGEX.test(groupParam)
+  ['no-group', 'staff', 'all'].includes(groupParam) ||
+  UUID_REGEX.test(groupParam)
     ? groupParam
     : null
 
@@ -94,7 +95,8 @@ export default React.memo(function TabAttendances() {
     }
   }, [realtimeStaffAttendanceEnabled])
 
-  const staffOrNoGroupSelected = groupId === 'staff' || groupId === 'no-group'
+  const onlyShowWeeklyView =
+    groupId === 'staff' || groupId === 'no-group' || groupId === 'all'
   return (
     <>
       <ContentArea
@@ -149,7 +151,7 @@ export default React.memo(function TabAttendances() {
         <TopRow>
           <H3 noMargin>{i18n.unit.attendances.title}</H3>
           {(reservationEnabled || realtimeStaffAttendanceEnabled) &&
-            !staffOrNoGroupSelected && (
+            !onlyShowWeeklyView && (
               <FixedSpaceRow spacing="xs">
                 {(['week', 'month'] as const).map((m) => (
                   <ChoiceChip
@@ -174,7 +176,7 @@ export default React.memo(function TabAttendances() {
           />
         </GroupSelectorWrapper>
 
-        {mode === 'month' && groupId !== null && !staffOrNoGroupSelected && (
+        {mode === 'month' && groupId !== null && !onlyShowWeeklyView && (
           <Absences
             groupId={groupId}
             selectedDate={selectedDate}
@@ -184,7 +186,7 @@ export default React.memo(function TabAttendances() {
           />
         )}
 
-        {((mode === 'week' && groupId !== null) || staffOrNoGroupSelected) && (
+        {((mode === 'week' && groupId !== null) || onlyShowWeeklyView) && (
           <UnitAttendanceReservationsView
             unitId={unitId}
             groupId={groupId}
