@@ -82,7 +82,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
     override fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String = when (lang) {
         MessageLanguage.FI ->
             """
-            Lapsellenne on tehty päätös tuen tarpeesta. Voit katsella päätöstä eVakassa.
+            Lapsellenne on tehty päätös tuesta. Voit katsella päätöstä eVakassa.
     
             Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.
             
@@ -94,7 +94,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
             """.trimIndent()
         MessageLanguage.SV ->
             """
-            Beslut om behov av stöd har fattats för ditt barn. Du kan se beslutet i eVaka.
+            Beslut om behov har fattats för ditt barn. Du kan se beslutet i eVaka.
             
             Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du också läsa beslutet i bilagorna nedan.
             """.trimIndent()

@@ -14,7 +14,7 @@ export const sv = {
     ...fi.childInformation,
     assistanceNeedDecision: {
       ...fi.childInformation.assistanceNeedDecision,
-      pageTitle: 'Beslut om stödbehov',
+      pageTitle: 'Beslut om stöd',
       genericPlaceholder: 'Skriv',
       formLanguage: 'Formulärets språk',
       neededTypesOfAssistance: 'Former av stöd enligt barnets behov',
