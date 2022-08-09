@@ -4116,6 +4116,103 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `invoice generation with 15 contract days and 1 surplus day with maximum contract surplus days of 16 results in a normal increase`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 15 operational days first
+        // then planned absences
+        val plannedAbsenceDays = listOf(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 24),
+            LocalDate.of(2019, 1, 25),
+            LocalDate.of(2019, 1, 28),
+            LocalDate.of(2019, 1, 29),
+            LocalDate.of(2019, 1, 30),
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        // then 1 more operational day
+        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+
+        // Override maxContractDaySurplusThreshold feature config
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(23147, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1447, invoiceRow.unitPrice) // 21700 / 15
+                assertEquals(1447, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 2 surplus days with maximum contract surplus days of 16 results in a monthly maximum invoice`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        // 15 operational days first
+        // then planned absences
+        val plannedAbsenceDays = listOf(
+            LocalDate.of(2019, 1, 23),
+            LocalDate.of(2019, 1, 24),
+            LocalDate.of(2019, 1, 25),
+            LocalDate.of(2019, 1, 28),
+            LocalDate.of(2019, 1, 29),
+        )
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+        // then 2 more operational days
+        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+
+        // Override maxContractDaySurplusThreshold feature config
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
+                assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `Force majeure and free absence types are free`() {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))

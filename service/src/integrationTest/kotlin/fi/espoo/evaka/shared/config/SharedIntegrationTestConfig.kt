@@ -194,5 +194,6 @@ val testFeatureConfig = FeatureConfig(
     invoiceNumberSeriesStart = 5000000000,
     paymentNumberSeriesStart = 9000000000,
     unplannedAbsencesAreContractSurplusDays = true,
+    maxContractDaySurplusThreshold = null,
     enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
 )
