@@ -279,3 +279,48 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     }, Promise.resolve())
   })
 }
+
+describe('Citizen calendar child visibility', () => {
+  let page: Page
+  let header: CitizenHeader
+  let calendarPage: CitizenCalendarPage
+  const today = LocalDate.of(2022, 1, 5)
+
+  beforeEach(async () => {
+    await resetDatabase()
+    const fixtures = await initializeAreaAndPersonData()
+    const child = fixtures.enduserChildFixtureJari
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        fixtures.daycareFixture.id,
+        today.formatIso(),
+        today.addYears(1).formatIso()
+      )
+    ])
+
+    page = await Page.open({
+      mockedTime: today.toSystemTzDate()
+    })
+    await enduserLogin(page)
+    header = new CitizenHeader(page, 'desktop')
+    calendarPage = new CitizenCalendarPage(page, 'desktop')
+    await header.selectTab('calendar')
+  })
+
+  test('Child visible only while placement is active', async () => {
+    await calendarPage.assertChildCountOnDay(today.subDays(1), 0)
+    await calendarPage.assertChildCountOnDay(today, 1)
+    await calendarPage.assertChildCountOnDay(today.addYears(1), 1)
+    await calendarPage.assertChildCountOnDay(today.addYears(1).addDays(1), 0)
+  })
+
+  test('Day popup contains message if no children placements on that date', async () => {
+    let dayView = await calendarPage.openDayView(today.subDays(1))
+    await dayView.assertNoActivePlacementsMsgVisible()
+    await dayView.close()
+    dayView = await calendarPage.openDayView(today.addYears(1).addDays(1))
+    await dayView.assertNoActivePlacementsMsgVisible()
+  })
+})
