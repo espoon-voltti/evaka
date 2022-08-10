@@ -82,8 +82,8 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
 fun Database.Transaction.loginEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
-INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[])
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, last_login)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], now())
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = now(), first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
 RETURNING id, first_name, last_name, email, external_id, created, updated, roles
