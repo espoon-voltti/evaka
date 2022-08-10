@@ -475,6 +475,7 @@ class FixtureBuilder(
         private var to: HelsinkiDateTime? = null
         private var groupId: GroupId? = null
         private var coefficient: BigDecimal? = null
+        private var type: StaffAttendanceType? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
         fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
@@ -486,13 +487,15 @@ class FixtureBuilder(
 
         fun withCoefficient(coefficient: BigDecimal) = this.apply { this.coefficient = coefficient }
 
+        fun withType(type: StaffAttendanceType) = this.apply { this.type = type }
+
         fun inGroup(groupId: GroupId) = this.apply { this.groupId = groupId }
 
         fun save(): EmployeeFixture {
             tx.createUpdate(
                 """
-                INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient)
-                VALUES (:employeeId, :groupId, :arrived, :departed, :coefficient)
+                INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type)
+                VALUES (:employeeId, :groupId, :arrived, :departed, :coefficient, :type)
                 """.trimIndent()
             )
                 .bind("employeeId", employeeFixture.employeeId)
@@ -500,6 +503,7 @@ class FixtureBuilder(
                 .bind("arrived", from ?: error("arrival time must be set"))
                 .bind("departed", to)
                 .bind("coefficient", coefficient ?: error("occupancyCoefficient must be set"))
+                .bind("type", type ?: error("type must be set"))
                 .updateExactlyOne()
 
             return employeeFixture

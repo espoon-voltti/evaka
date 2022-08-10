@@ -6,6 +6,7 @@ package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
@@ -36,6 +37,8 @@ import fi.espoo.evaka.snDefaultPartDayDaycare
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -180,14 +183,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun Database.Transaction.addRealtimeAttendanceToday(employeeId: EmployeeId, minusDaysFromNow: Long = 0) =
-        FixtureBuilder.EmployeeFixture(this, today, employeeId)
-            .addRealtimeAttendance()
-            .inGroup(daycareGroup1)
-            .withCoefficient(BigDecimal(7))
-            .arriving(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)))
-            .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 45)))
-            .save()
+    private fun Database.Transaction.addRealtimeAttendanceToday(
+        employeeId: EmployeeId,
+        minusDaysFromNow: Long = 0,
+        type: StaffAttendanceType = StaffAttendanceType.PRESENT
+    ) = FixtureBuilder.EmployeeFixture(this, today, employeeId)
+        .addRealtimeAttendance()
+        .inGroup(daycareGroup1)
+        .withCoefficient(BigDecimal(7))
+        .withType(type)
+        .arriving(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)))
+        .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 45)))
+        .save()
 
     private fun assertRealtimeAttendances(expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>) {
         val (rangeStart, rangeEnd) = expectedCaretakers.map { it.first }.let {
@@ -399,6 +406,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .addRealtimeAttendance()
                 .inGroup(daycareGroup1)
                 .withCoefficient(BigDecimal(3.5))
+                .withType(StaffAttendanceType.PRESENT)
                 .arriving(LocalTime.of(16, 15))
                 .departing(today.plusDays(1), LocalTime.of(0, 0))
                 .save()
@@ -435,6 +443,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .addRealtimeAttendance()
                 .inGroup(daycareGroup1)
                 .withCoefficient(BigDecimal(3.5))
+                .withType(StaffAttendanceType.PRESENT)
                 .arriving(LocalTime.of(16, 15))
                 .save()
         }
@@ -472,6 +481,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .addRealtimeAttendance()
                 .inGroup(daycareGroup1)
                 .withCoefficient(BigDecimal(7))
+                .withType(StaffAttendanceType.PRESENT)
                 .arriving(HelsinkiDateTime.of(today, LocalTime.of(8, 0)))
                 .save()
 
@@ -523,6 +533,40 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     1,
                     2.0,
                     7.1
+                )
+            )
+        )
+    }
+
+    @ParameterizedTest(name = "Realized occupancy with realtime staff attendance type {0}")
+    @EnumSource(names = ["PRESENT", "OVERTIME", "JUSTIFIED_CHANGE", "TRAINING", "OTHER_WORK"])
+    fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(type: StaffAttendanceType) {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement()
+                        .ofType(PlacementType.DAYCARE)
+                        .toUnit(daycareInArea1)
+                        .fromDay(0)
+                        .toDay(0)
+                        .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
+                }
+
+            tx.addRealtimeAttendanceToday(employeeId, 0, type)
+        }
+
+        val (expectedCaretakers, expectedPercentage) = when (type) {
+            StaffAttendanceType.PRESENT, StaffAttendanceType.OVERTIME, StaffAttendanceType.JUSTIFIED_CHANGE -> 1.0 to 14.3
+            StaffAttendanceType.TRAINING, StaffAttendanceType.OTHER_WORK -> null to null
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today to OccupancyValues(
+                    1.0,
+                    1,
+                    expectedCaretakers,
+                    expectedPercentage
                 )
             )
         )
