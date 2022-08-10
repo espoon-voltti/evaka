@@ -258,7 +258,7 @@ export default {
     realized: 'Toteutunut aika',
     reservationsAndRealized: 'Läsnäoloaika',
     noActivePlacements:
-      'Lapsellasi ei ole kyseisenä päivänä voimassa olevaa varhaiskasvatus- tai esiopetuspaikkaa.',
+      'Lapsesi ei ole varhaiskasvatuksessa tai esiopetuksessa tänä päivänä',
     attendanceWarning: 'Läsnäoloaika ylittää varauksen',
     reservationModal: {
       title: 'Ilmoita läsnäolo',
