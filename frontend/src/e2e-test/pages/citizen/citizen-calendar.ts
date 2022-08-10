@@ -171,6 +171,13 @@ export default class CitizenCalendarPage {
     return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
       .innerText
   }
+
+  async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
+    const childImages = this.page
+      .findByDataQa(`desktop-calendar-day-${date.formatIso()}`)
+      .findAllByDataQa('child-image')
+    await childImages.assertCount(expectedCount)
+  }
 }
 
 class ReservationsModal {
@@ -335,6 +342,10 @@ class DayView extends Element {
         this.#reservationsOfChild(childId).findByDataQa('absence').textContent,
       value
     )
+  }
+
+  async assertNoActivePlacementsMsgVisible() {
+    await this.findByDataQa('no-active-placements-msg').waitUntilVisible()
   }
 
   async edit() {

@@ -206,98 +206,116 @@ export default React.memo(function DayView({
                 />
               </DayPicker>
               <Gap size="m" />
-              <ReservationTitle>
-                <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
-              </ReservationTitle>
-              <Gap size="s" />
-              {zip(childrenWithReservations, editorState).map(
-                ([childWithReservation, childState], childIndex) => {
-                  if (!childWithReservation || !childState) return null
+              {childrenWithReservations.length === 0 ? (
+                <span data-qa="no-active-placements-msg">
+                  {i18n.calendar.noActivePlacements}
+                </span>
+              ) : (
+                <>
+                  <ReservationTitle>
+                    <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
+                  </ReservationTitle>
+                  <Gap size="s" />
+                  {zip(childrenWithReservations, editorState).map(
+                    ([childWithReservation, childState], childIndex) => {
+                      if (!childWithReservation || !childState) return null
 
-                  const {
-                    child,
-                    absence,
-                    reservations,
-                    attendances,
-                    dayOff,
-                    reservationEditable,
-                    markedByEmployee
-                  } = childWithReservation
+                      const {
+                        child,
+                        absence,
+                        reservations,
+                        attendances,
+                        dayOff,
+                        reservationEditable,
+                        markedByEmployee
+                      } = childWithReservation
 
-                  const showAttendanceWarning =
-                    !editing &&
-                    reservationsAndAttendancesDiffer(reservations, attendances)
+                      const showAttendanceWarning =
+                        !editing &&
+                        reservationsAndAttendancesDiffer(
+                          reservations,
+                          attendances
+                        )
 
-                  return (
-                    <div key={child.id} data-qa={`reservations-of-${child.id}`}>
-                      {childIndex !== 0 ? <Separator /> : null}
-                      <FixedSpaceRow>
-                        <FixedSpaceColumn>
-                          <RoundChildImage
-                            imageId={child.imageId}
-                            initialLetter={
-                              (child.preferredName || child.firstName || '?')[0]
-                            }
-                            colorIndex={childIndex}
-                            size={48}
-                          />
-                        </FixedSpaceColumn>
-                        <FixedSpaceColumn
-                          spacing="zero"
-                          justifyContent="center"
+                      return (
+                        <div
+                          key={child.id}
+                          data-qa={`reservations-of-${child.id}`}
                         >
-                          <ChildNameHeading noMargin data-qa="child-name">
-                            {formatPreferredName(child)}
-                          </ChildNameHeading>
-                        </FixedSpaceColumn>
-                      </FixedSpaceRow>
-                      <Gap size="s" />
-                      <Grid>
-                        <LabelLike>{i18n.calendar.reservation}</LabelLike>
-                        {editing &&
-                        (reservationEditable || reservations.length) ? (
-                          <EditReservation
-                            childId={child.id}
-                            canAddSecondReservation={
-                              !reservations[1] && child.inShiftCareUnit
-                            }
-                            childState={childState}
-                            editorStateSetter={editorStateSetter}
-                            editorAbsenceSetter={editorAbsenceSetter}
-                            addSecondReservation={addSecondReservation}
-                            removeSecondReservation={removeSecondReservation}
-                          />
-                        ) : absence ? (
-                          <Absence
-                            absence={absence}
-                            markedByEmployee={markedByEmployee}
-                          />
-                        ) : reservations.length === 0 && dayOff ? (
-                          <DayOff />
-                        ) : (
-                          <Reservations reservations={reservations} />
-                        )}
-                        <LabelLike>{i18n.calendar.realized}</LabelLike>
-                        <span>
-                          {attendances.length > 0
-                            ? attendances
-                                .map(
-                                  ({ startTime, endTime }) =>
-                                    `${startTime} – ${endTime ?? ''}`
-                                )
-                                .join(', ')
-                            : '–'}
-                        </span>
-                        {showAttendanceWarning && (
-                          <Warning>
-                            {i18n.calendar.attendanceWarning}
-                            <StatusIcon status="warning" />
-                          </Warning>
-                        )}
-                      </Grid>
-                    </div>
-                  )
-                }
+                          {childIndex !== 0 ? <Separator /> : null}
+                          <FixedSpaceRow>
+                            <FixedSpaceColumn>
+                              <RoundChildImage
+                                imageId={child.imageId}
+                                initialLetter={
+                                  (child.preferredName ||
+                                    child.firstName ||
+                                    '?')[0]
+                                }
+                                colorIndex={childIndex}
+                                size={48}
+                              />
+                            </FixedSpaceColumn>
+                            <FixedSpaceColumn
+                              spacing="zero"
+                              justifyContent="center"
+                            >
+                              <ChildNameHeading noMargin data-qa="child-name">
+                                {formatPreferredName(child)}
+                              </ChildNameHeading>
+                            </FixedSpaceColumn>
+                          </FixedSpaceRow>
+                          <Gap size="s" />
+                          <Grid>
+                            <LabelLike>{i18n.calendar.reservation}</LabelLike>
+                            {editing &&
+                            (reservationEditable || reservations.length) ? (
+                              <EditReservation
+                                childId={child.id}
+                                canAddSecondReservation={
+                                  !reservations[1] && child.inShiftCareUnit
+                                }
+                                childState={childState}
+                                editorStateSetter={editorStateSetter}
+                                editorAbsenceSetter={editorAbsenceSetter}
+                                addSecondReservation={addSecondReservation}
+                                removeSecondReservation={
+                                  removeSecondReservation
+                                }
+                              />
+                            ) : absence ? (
+                              <Absence
+                                absence={absence}
+                                markedByEmployee={markedByEmployee}
+                              />
+                            ) : reservations.length === 0 && dayOff ? (
+                              <DayOff />
+                            ) : (
+                              <Reservations reservations={reservations} />
+                            )}
+                            <LabelLike>{i18n.calendar.realized}</LabelLike>
+                            <span>
+                              {attendances.length > 0
+                                ? attendances
+                                    .map(
+                                      ({ startTime, endTime }) =>
+                                        `${startTime} – ${endTime ?? ''}`
+                                    )
+                                    .join(', ')
+                                : '–'}
+                            </span>
+                            {showAttendanceWarning && (
+                              <Warning>
+                                {i18n.calendar.attendanceWarning}
+                                <StatusIcon status="warning" />
+                              </Warning>
+                            )}
+                          </Grid>
+                        </div>
+                      )
+                    }
+                  )}
+                </>
               )}
               {confirmationModal ? (
                 <InfoModal
@@ -314,33 +332,35 @@ export default React.memo(function DayView({
                 />
               ) : null}
             </Content>
-            <ButtonFooter>
-              {editable ? (
-                editing ? (
-                  <Button
-                    disabled={saving}
-                    onClick={save}
-                    text={i18n.common.save}
-                    data-qa="save"
-                  />
+            {childrenWithReservations.length > 0 && (
+              <ButtonFooter>
+                {editable ? (
+                  editing ? (
+                    <Button
+                      disabled={saving}
+                      onClick={save}
+                      text={i18n.common.save}
+                      data-qa="save"
+                    />
+                  ) : (
+                    <Button
+                      onClick={startEditing}
+                      text={i18n.common.edit}
+                      data-qa="edit"
+                    />
+                  )
                 ) : (
-                  <Button
-                    onClick={startEditing}
-                    text={i18n.common.edit}
-                    data-qa="edit"
-                  />
-                )
-              ) : (
-                <EmptyButtonFooterElement />
-              )}
-              <Button
-                primary
-                text={i18n.calendar.newAbsence}
-                onClick={onCreateAbsence}
-                disabled={!absenceEditable}
-                data-qa="create-absence"
-              />
-            </ButtonFooter>
+                  <EmptyButtonFooterElement />
+                )}
+                <Button
+                  primary
+                  text={i18n.calendar.newAbsence}
+                  onClick={onCreateAbsence}
+                  disabled={!absenceEditable}
+                  data-qa="create-absence"
+                />
+              </ButtonFooter>
+            )}
           </BottomFooterContainer>
         </HighlightBorder>
         <ModalCloseButton
