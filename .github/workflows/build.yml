@@ -653,6 +653,7 @@ jobs:
           name: e2e-test-results
           path: |
             frontend/screenshots/
+            frontend/traces/
             compose/e2e.log
             compose/e2e-all.log
           retention-days: 2
