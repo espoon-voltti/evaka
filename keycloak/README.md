@@ -35,6 +35,12 @@ You can test the login and signup flows in the following URLs:
 
 Received emails can be accessed at <http://localhost:8025/>, but it must be configured for realms.
 
+## Creating local user
+
+[Create KeyCloak user using admin panel for selected realm](https://www.keycloak.org/docs/latest/server_admin/#assembly-managing-users_server_administration_guide).
+
+To link KeyCloak user with Evaka set `suomi_nationalIdentificationNumber` for KeyCloak user.
+
 ### Configure
 
 Mock KeyCloak Evaka realm is imported from `compose-resources/configuration/evaka.json`.

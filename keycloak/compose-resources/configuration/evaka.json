@@ -2185,7 +2185,34 @@
     "realmRoles" : [ "default-roles-evaka-customer" ],
     "notBefore" : 0,
     "groups" : [ ]
-  } ],
+  }, {
+    "id" : "18e1e8d9-b464-46a7-8790-f34f436989c5",
+    "createdTimestamp" : 1660122418515,
+    "username" : "johannes.karhula@evaka.test",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Johannes Olavi Antero Tapio",
+    "lastName" : "Karhula",
+    "email" : "johannes.karhula@evaka.test",
+    "attributes" : {
+      "suomi_nationalIdentificationNumber" : [ "070644-937X" ],
+      "suomi_sn" : [ "Karhula" ],
+      "suomi_givenName" : [ "Johannes Olavi Antero Tapio" ]
+    },
+    "credentials" : [ {
+      "id" : "8354e9fd-b3a9-4268-8247-044ff60e75d6",
+      "type" : "password",
+      "createdDate" : 1660122430350,
+      "secretData" : "{\"value\":\"L0is9lUFiYJYWBmxX2pkyM6SSfDBCNChmDulPoHXyeZUNX66sx6sxwslY9gq/ondC7uVN2ESBab+YECGco9/dA==\",\"salt\":\"ZTrAwH8XmmOx9u3IM/UPiw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-evaka-customer" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }  ],
   "scopeMappings" : [ {
     "clientScope" : "offline_access",
     "roles" : [ "offline_access" ]
