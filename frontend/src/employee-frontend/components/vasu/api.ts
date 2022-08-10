@@ -11,6 +11,7 @@ import {
   VasuDocumentEventType,
   VasuDocumentSummary
 } from 'lib-common/generated/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -21,7 +22,10 @@ import { mapVasuContent } from './vasu-content'
 
 const mapVasuDocumentEvent = (
   e: JsonOf<VasuDocumentEvent>
-): VasuDocumentEvent => ({ ...e, created: new Date(e.created) })
+): VasuDocumentEvent => ({
+  ...e,
+  created: HelsinkiDateTime.parseIso(e.created)
+})
 
 const mapVasuDocumentResponse = ({
   events,
@@ -34,7 +38,7 @@ const mapVasuDocumentResponse = ({
   ...rest,
   content: mapVasuContent(content),
   events: events.map(mapVasuDocumentEvent),
-  modifiedAt: new Date(modifiedAt),
+  modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
   templateRange: FiniteDateRange.parseJson(templateRange),
   basics: {
     ...basics,
@@ -70,8 +74,10 @@ export async function getVasuDocumentSummaries(
         res.data.map(({ events, modifiedAt, publishedAt, ...rest }) => ({
           ...rest,
           events: events.map(mapVasuDocumentEvent),
-          modifiedAt: new Date(modifiedAt),
-          publishedAt: publishedAt ? new Date(publishedAt) : null
+          modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+          publishedAt: publishedAt
+            ? HelsinkiDateTime.parseIso(publishedAt)
+            : null
         }))
       )
     )

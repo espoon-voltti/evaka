@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { endOfYesterday } from 'date-fns'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { formatDate, formatTime } from 'lib-common/date'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -28,7 +28,7 @@ export interface Props {
   date: LocalDate
   count: number
   countOther: number
-  updated: Date | null
+  updated: HelsinkiDateTime | null
   realizedOccupancy: number | undefined
   onConfirm: (value: StaffAttendanceUpdate) => Promise<Result<void>>
 }
@@ -163,11 +163,16 @@ const ConfirmButton = styled(AsyncButton)`
   padding: 0;
 `
 
-function updatedTime(i18n: Translations, date: Date | null): string {
+function updatedTime(
+  i18n: Translations,
+  date: HelsinkiDateTime | null
+): string {
   if (!date) return i18n.staff.notUpdated
-  if (date <= endOfYesterday()) {
-    return `${i18n.staff.updated} ${formatDate(date)}`
+  const yesterday = HelsinkiDateTime.now().toLocalDate().subDays(1)
+  const endOfYesterday = HelsinkiDateTime.fromLocal(yesterday, LocalTime.MAX)
+  if (date.isEqualOrBefore(endOfYesterday)) {
+    return `${i18n.staff.updated} ${date.toLocalDate().format()}`
   } else {
-    return `${i18n.staff.updatedToday} ${formatTime(date)}`
+    return `${i18n.staff.updatedToday} ${date.toLocalTime().format('HH:mm')}`
   }
 }

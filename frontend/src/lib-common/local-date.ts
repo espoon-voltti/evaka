@@ -32,13 +32,14 @@ import {
 import { DateFormat, DateFormatWithWeekday, locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
 import LocalTime from './local-time'
+import { Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
 const fiPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/
 
 type Lang = 'fi' | 'sv' | 'en'
-export default class LocalDate {
+export default class LocalDate implements Ordered<LocalDate> {
   private constructor(
     readonly year: number,
     readonly month: number,

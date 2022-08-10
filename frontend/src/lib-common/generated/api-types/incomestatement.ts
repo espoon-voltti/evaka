@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { ProviderType } from './daycare'
 import { UUID } from '../../types'
@@ -22,7 +23,7 @@ export interface ChildBasicInfo {
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
-  created: Date
+  created: HelsinkiDateTime
   id: UUID
   personId: UUID
   personName: string

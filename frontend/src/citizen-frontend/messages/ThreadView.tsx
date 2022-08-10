@@ -13,7 +13,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import {
   Message,
   MessageThread
@@ -92,7 +91,9 @@ const SingleMessage = React.memo(function SingleMessage({
     <MessageContainer>
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
-        <InformationText>{formatDate(message.sentAt)}</InformationText>
+        <InformationText>
+          {message.sentAt.toLocalDate().format()}
+        </InformationText>
       </TitleRow>
       <InformationText>
         {(message.recipientNames

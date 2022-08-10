@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
@@ -48,7 +49,7 @@ export interface MobileDeviceIdentity {
 export interface Pairing {
   challengeKey: string
   employeeId: UUID | null
-  expires: Date
+  expires: HelsinkiDateTime
   id: UUID
   mobileDeviceId: UUID | null
   responseKey: string | null

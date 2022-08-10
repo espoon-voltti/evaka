@@ -86,13 +86,11 @@ export function CitizenVasuEvents({
         </ChipContainer>
         <EventRow
           label={i18n.vasu.lastModified}
-          date={LocalDate.fromSystemTzDate(modifiedAt)}
+          date={modifiedAt.toLocalDate()}
         />
         <EventRow
           label={i18n.vasu.lastPublished}
-          date={
-            lastPublished ? LocalDate.fromSystemTzDate(lastPublished) : null
-          }
+          date={lastPublished?.toLocalDate() ?? null}
         />
         {trackedDates.map(([label, date]) => (
           <EventRow key={label} label={label} date={date} />
@@ -106,7 +104,7 @@ export function CitizenVasuEvents({
               <EventRow
                 key={id}
                 label={i18n.vasu.eventTypes[eventType]}
-                date={LocalDate.fromSystemTzDate(created)}
+                date={created.toLocalDate()}
               />
             ))}
           </ListGrid>

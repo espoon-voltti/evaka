@@ -14,7 +14,6 @@ import {
   InvoiceSummary,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
-import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Loader from 'lib-components/atoms/Loader'
@@ -308,8 +307,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
           </Td>
           <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
           <Td data-qa="invoice-created-at">
-            {item.createdAt &&
-              LocalDate.fromSystemTzDate(item.createdAt).format()}
+            {item.createdAt?.toLocalDate().format() ?? ''}
           </Td>
           <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
           <Td>

@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { AbsenceType } from './daycare'
 import { AssistanceActionOption } from './assistanceaction'
@@ -510,14 +511,14 @@ export type UnitType =
 */
 export interface VardaErrorReportRow {
   childId: UUID
-  created: Date
+  created: HelsinkiDateTime
   errors: string[]
-  resetTimeStamp: Date | null
+  resetTimeStamp: HelsinkiDateTime | null
   serviceNeedEndDate: string
   serviceNeedId: UUID
   serviceNeedOptionName: string
   serviceNeedStartDate: string
-  updated: Date
+  updated: HelsinkiDateTime
 }
 
 /**

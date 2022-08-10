@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
@@ -16,7 +15,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.OffsetDateTime
 
 data class ContactInfo(
     val id: String,
@@ -64,9 +62,7 @@ data class ChildAttendance(
 )
 
 data class AttendanceTimes(
-    @ForceCodeGenType(OffsetDateTime::class)
     val arrived: HelsinkiDateTime,
-    @ForceCodeGenType(OffsetDateTime::class)
     val departed: HelsinkiDateTime?
 )
 
@@ -75,8 +71,6 @@ data class ChildAbsence(
 )
 
 data class AttendanceReservation(
-    @ForceCodeGenType(OffsetDateTime::class)
     val startTime: HelsinkiDateTime,
-    @ForceCodeGenType(OffsetDateTime::class)
     val endTime: HelsinkiDateTime
 )

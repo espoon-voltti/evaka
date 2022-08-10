@@ -4,7 +4,6 @@
 
 import React, { Fragment, useCallback, useMemo } from 'react'
 
-import { formatDate } from 'lib-common/date'
 import {
   AbsenceCategory,
   AbsenceWithModifierInfo
@@ -166,7 +165,7 @@ export default React.memo(function AbsenceCell({
                 {index !== 0 && <br />}
                 {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
                 <br />
-                {`${formatDate(modifiedAt)} ${
+                {`${modifiedAt.toLocalDate().format()} ${
                   i18n.absences.modifiedByType[modifiedByType]
                 }`}
               </Fragment>

@@ -9,16 +9,7 @@ import {
   ChartOptions,
   TooltipModel
 } from 'chart.js'
-import {
-  compareAsc,
-  isBefore,
-  max,
-  min,
-  roundToNearestMinutes,
-  setHours,
-  setMinutes,
-  subHours
-} from 'date-fns'
+import { compareAsc, isBefore, max, min, roundToNearestMinutes } from 'date-fns'
 import { fi } from 'date-fns/locale'
 import ceil from 'lodash/ceil'
 import first from 'lodash/first'
@@ -76,7 +67,7 @@ const Graph = React.memo(function Graph({
     children: <span></span>
   })
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
-  const currentMinute = getCurrentMinute().getTime()
+  const currentMinute = getCurrentMinute()
 
   const showTooltip = useCallback(() => {
     if (!tooltipVisible) {
@@ -91,8 +82,9 @@ const Graph = React.memo(function Graph({
     (time: Date): number =>
       occupancy.childAttendances.filter(
         (a) =>
-          compareAsc(a.arrived, time) <= 0 &&
-          (a.departed === null || compareAsc(time, a.departed) < 0)
+          compareAsc(a.arrived.toSystemTzDate(), time) <= 0 &&
+          (a.departed === null ||
+            compareAsc(time, a.departed.toSystemTzDate()) < 0)
       ).length,
     [occupancy]
   )
@@ -159,7 +151,7 @@ const Graph = React.memo(function Graph({
     () =>
       graphData(
         queryDate,
-        new Date(currentMinute),
+        currentMinute,
         occupancy,
         i18n,
         tooltipHandler,
@@ -185,7 +177,7 @@ const Graph = React.memo(function Graph({
 
 function graphData(
   queryDate: LocalDate,
-  now: Date,
+  now: HelsinkiDateTime,
   occupancy: RealtimeOccupancy,
   i18n: Translations,
   tooltipHandler: (args: {
@@ -197,37 +189,38 @@ function graphData(
   data: ChartData<'line', DatePoint[]>
   graphOptions: ChartOptions<'line'>
 } {
-  const minTime = queryDate.isEqual(LocalDate.fromSystemTzDate(now))
+  const minTime = queryDate.isEqual(now.toLocalDate())
     ? shiftCareUnit
-      ? subHours(now, 16)
-      : setTime(now, 0, 0)
-    : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0)).toSystemTzDate()
-  const filterData = (p: { time: Date }) => !isBefore(p.time, minTime)
+      ? now.subHours(16)
+      : now.withTime(LocalTime.of(0, 0))
+    : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+  const filterData = (p: { time: HelsinkiDateTime }) =>
+    !p.time.isBefore(minTime)
 
   const childData = occupancy.occupancySeries.filter(filterData).map((p) => ({
-    x: p.time,
+    x: p.time.toSystemTzDate(),
     y: p.childCapacity
   }))
 
   const staffData = occupancy.occupancySeries.filter(filterData).map((p) => ({
-    x: p.time,
+    x: p.time.toSystemTzDate(),
     y: p.staffCapacity
   }))
 
   if (shiftCareUnit) {
     const lastDataPointBeforeMin = first(
       sortBy(
-        occupancy.occupancySeries.filter(({ time }) => isBefore(time, minTime)),
-        ({ time }) => -1 * time.getTime()
+        occupancy.occupancySeries.filter(({ time }) => time.isBefore(minTime)),
+        ({ time }) => -1 * time.timestamp
       )
     )
     if (lastDataPointBeforeMin) {
       staffData.splice(0, 0, {
-        x: minTime,
+        x: minTime.toSystemTzDate(),
         y: lastDataPointBeforeMin.staffCapacity
       })
       childData.splice(0, 0, {
-        x: minTime,
+        x: minTime.toSystemTzDate(),
         y: lastDataPointBeforeMin.childCapacity
       })
     }
@@ -241,46 +234,38 @@ function graphData(
   if (
     lastStaffAttendance &&
     lastStaffAttendance.y > 0 &&
-    isBefore(lastStaffAttendance.x, now)
+    isBefore(lastStaffAttendance.x, now.toSystemTzDate())
   ) {
-    staffData.push({ ...lastStaffAttendance, x: new Date(now) })
-    childData.push({ ...lastChildAttendance, x: new Date(now) })
+    staffData.push({ ...lastStaffAttendance, x: now.toSystemTzDate() })
+    childData.push({ ...lastChildAttendance, x: now.toSystemTzDate() })
   }
 
-  const queryDateIsCurrent = queryDate.isEqual(LocalDate.fromSystemTzDate(now))
+  const queryDateIsCurrent = queryDate.isEqual(now.toLocalDate())
   const xMin = shiftCareUnit
-    ? queryDateIsCurrent
-      ? subHours(now, 16)
-      : HelsinkiDateTime.fromLocal(
-          queryDate,
-          LocalTime.of(0, 0)
-        ).toSystemTzDate()
+    ? (queryDateIsCurrent
+        ? now.subHours(16)
+        : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0))
+      ).toSystemTzDate()
     : min(
         [
-          queryDateIsCurrent
-            ? setTime(new Date(), 6, 0)
-            : HelsinkiDateTime.fromLocal(
-                queryDate,
-                LocalTime.of(6, 0)
-              ).toSystemTzDate(),
+          (queryDateIsCurrent
+            ? now.withTime(LocalTime.of(6, 0))
+            : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(6, 0))
+          ).toSystemTzDate(),
           firstStaffAttendance?.x
         ].filter((time): time is Date => !!time)
       )
   const xMax = shiftCareUnit
-    ? queryDateIsCurrent
-      ? now
-      : HelsinkiDateTime.fromLocal(
-          queryDate,
-          LocalTime.of(23, 59, 59)
-        ).toSystemTzDate()
+    ? (queryDateIsCurrent
+        ? now
+        : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(23, 59, 59))
+      ).toSystemTzDate()
     : max(
         [
-          queryDateIsCurrent
-            ? setTime(now, 18, 0)
-            : HelsinkiDateTime.fromLocal(
-                queryDate,
-                LocalTime.of(18, 0)
-              ).toSystemTzDate(),
+          (queryDateIsCurrent
+            ? now.withTime(LocalTime.of(18, 0))
+            : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(18, 0))
+          ).toSystemTzDate(),
           lastStaffAttendance?.x
         ].filter((time): time is Date => !!time)
       )
@@ -368,12 +353,8 @@ function line(
   }
 }
 
-function getCurrentMinute(): Date {
-  return roundToNearestMinutes(new Date())
-}
-
-function setTime(date: Date, hours: number, minutes: number): Date {
-  return setHours(setMinutes(date, minutes), hours)
+function getCurrentMinute(): HelsinkiDateTime {
+  return HelsinkiDateTime.fromSystemTzDate(roundToNearestMinutes(new Date()))
 }
 
 const GraphPlaceholder = styled.div`

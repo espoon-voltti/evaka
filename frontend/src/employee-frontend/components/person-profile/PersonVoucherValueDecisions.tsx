@@ -7,7 +7,6 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -115,9 +114,9 @@ export default React.memo(function PersonVoucherValueDecisions({
                   <Td>{decision.decisionNumber}</Td>
                   <Td>{formatCents(decision.voucherValue)}</Td>
                   <Td>{formatCents(decision.finalCoPayment)}</Td>
-                  <Td>{formatDate(decision.created)}</Td>
+                  <Td>{decision.created.toLocalDate().format()}</Td>
                   <Td data-qa="voucher-value-decision-sent-at">
-                    {formatDate(decision.sentAt)}
+                    {decision.sentAt?.toLocalDate().format() ?? ''}
                   </Td>
                   <Td>{i18n.valueDecision.status[decision.status]}</Td>
                 </Tr>

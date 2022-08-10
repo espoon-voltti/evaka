@@ -14,11 +14,12 @@ import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 
 import LocalDate from './local-date'
 import LocalTime from './local-time'
+import { Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 const EUROPE_HELSINKI = 'Europe/Helsinki'
 
-export default class HelsinkiDateTime {
+export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
   private constructor(readonly timestamp: number) {}
 
   get year(): number {
@@ -70,6 +71,9 @@ export default class HelsinkiDateTime {
     )
   }
 
+  format(): string {
+    return formatInTimeZone(this.timestamp, EUROPE_HELSINKI, 'dd.MM.yyyy HH:mm')
+  }
   formatIso(): string {
     return formatInTimeZone(
       this.timestamp,

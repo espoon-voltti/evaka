@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Attachment } from 'lib-common/api-types/attachment'
-import { formatDate } from 'lib-common/date'
 import Title from 'lib-components/atoms/Title'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -64,7 +63,7 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
         <Label>{i18n.personProfile.income.details.notes}</Label>
         <span>{income.notes}</span>
         <Label>{i18n.personProfile.income.details.updated}</Label>
-        <span>{formatDate(income.updatedAt)}</span>
+        <span>{income.updatedAt.toLocalDate().format()}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
         <span>
           {income.applicationId

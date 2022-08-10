@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import {
@@ -63,7 +64,7 @@ describe('Person finance decisions', () => {
           daycareFixture.id,
           null,
           new DateRange(sentAt, sentAt),
-          sentAt.toSystemTzDate(),
+          sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
           uuidv4()
         )
       ])
@@ -97,7 +98,7 @@ describe('Person finance decisions', () => {
           'SENT',
           sentAt,
           sentAt,
-          sentAt.toSystemTzDate()
+          sentAt.toHelsinkiDateTime(LocalTime.of(12, 0))
         )
       ])
     }

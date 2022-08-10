@@ -4,7 +4,6 @@
 
 import React from 'react'
 
-import { formatTime } from 'lib-common/date'
 import { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -26,7 +25,7 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
     return null
   }
 
-  const arrivalDate = LocalDate.fromSystemTzDate(arrival)
+  const arrivalDate = arrival.toLocalDate()
   const dateInfo = arrivalDate.isEqual(LocalDate.todayInSystemTz())
     ? ''
     : arrivalDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
@@ -38,13 +37,13 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
       {arrival ? (
         <ArrivalTime>
           <span>{i18n.attendances.arrivalTime}</span>
-          <span>{`${dateInfo} ${formatTime(arrival)}`}</span>
+          <span>{`${dateInfo} ${arrival.toLocalTime().format('HH:mm')}`}</span>
         </ArrivalTime>
       ) : null}
       {departure ? (
         <ArrivalTime>
           <span>{i18n.attendances.departureTime}</span>
-          <span>{formatTime(departure)}</span>
+          <span>{departure.toLocalTime().format('HH:mm')}</span>
         </ArrivalTime>
       ) : null}
     </FixedSpaceRow>

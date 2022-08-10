@@ -6,6 +6,7 @@ import React from 'react'
 
 import { Result } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import { renderResult } from '../async-rendering'
@@ -31,7 +32,7 @@ export type ThreadListItem = {
   unread: boolean
   onClick: () => void
   type: MessageType
-  timestamp?: Date
+  timestamp?: HelsinkiDateTime
   messageCount?: number
   dataQa?: string
 }

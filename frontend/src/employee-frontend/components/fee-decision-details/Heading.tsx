@@ -6,13 +6,13 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import DateRange from 'lib-common/date-range'
 import {
   PersonDetailed,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionType } from 'lib-common/generated/api-types/invoicing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -32,7 +32,7 @@ interface Props {
   partner: PersonDetailed | null
   decisionNumber: number | null
   validDuring: DateRange
-  sentAt: Date | null
+  sentAt: HelsinkiDateTime | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
   approvedBy: { firstName: string; lastName: string } | null
@@ -164,7 +164,7 @@ export default React.memo(function Heading({
       },
       {
         label: i18n.feeDecision.sentAt,
-        value: formatDate(sentAt)
+        value: sentAt?.toLocalDate().format() ?? ''
       },
       {
         label: i18n.feeDecision.relief,

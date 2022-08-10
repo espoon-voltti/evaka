@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { UUID } from '../../types'
 
 /**
@@ -22,10 +23,10 @@ export interface Attachment {
 export interface PedagogicalDocument {
   attachments: Attachment[]
   childId: UUID
-  created: Date
+  created: HelsinkiDateTime
   description: string
   id: UUID
-  updated: Date
+  updated: HelsinkiDateTime
 }
 
 /**
@@ -36,7 +37,7 @@ export interface PedagogicalDocumentCitizen {
   childFirstName: string
   childId: UUID
   childPreferredName: string | null
-  created: Date
+  created: HelsinkiDateTime
   description: string
   id: UUID
   isRead: boolean

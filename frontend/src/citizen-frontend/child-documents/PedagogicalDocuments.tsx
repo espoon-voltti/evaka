@@ -16,7 +16,6 @@ import {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
-import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, {
@@ -240,7 +239,7 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
       {items.map((item) => (
         <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
           <ListItemHead>
-            <span>{LocalDate.fromSystemTzDate(item.created).format()}</span>
+            <span>{item.created.toLocalDate().format()}</span>
             {showChildrenNames && (
               <span>{item.childPreferredName || item.childFirstName}</span>
             )}
@@ -292,7 +291,7 @@ const PedagogicalDocumentsTable = React.memo(
           {items.map((item) => (
             <ItemTr key={item.id} documentIsRead={item.isRead}>
               <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
-                {LocalDate.fromSystemTzDate(item.created).format()}
+                {item.created.toLocalDate().format()}
               </DateTd>
               {showChildrenNames && (
                 <Td data-qa={`pedagogical-document-child-name-${item.id}`}>

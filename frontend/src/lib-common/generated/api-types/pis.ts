@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { EmployeeFeatures } from './shared'
@@ -63,13 +64,13 @@ export interface DisableSsnRequest {
 * Generated from fi.espoo.evaka.pis.Employee
 */
 export interface Employee {
-  created: Date
+  created: HelsinkiDateTime
   email: string | null
   externalId: ExternalId | null
   firstName: string
   id: UUID
   lastName: string
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 /**
@@ -107,14 +108,14 @@ export interface EmployeeUserResponse {
 * Generated from fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 */
 export interface EmployeeWithDaycareRoles {
-  created: Date
+  created: HelsinkiDateTime
   daycareRoles: DaycareRole[]
   email: string | null
   firstName: string
   globalRoles: UserRole[]
   id: UUID
   lastName: string
-  updated: Date | null
+  updated: HelsinkiDateTime | null
 }
 
 /**
@@ -347,7 +348,7 @@ export interface PersonJSON {
   socialSecurityNumber: string | null
   ssnAddingDisabled: boolean
   streetAddress: string
-  updatedFromVtj: Date | null
+  updatedFromVtj: HelsinkiDateTime | null
 }
 
 /**

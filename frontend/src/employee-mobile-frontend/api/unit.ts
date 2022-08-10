@@ -4,6 +4,8 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
+import { Pairing } from 'lib-common/generated/api-types/pairing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 
 import { client } from './client'
@@ -14,15 +16,7 @@ type PairingStatus =
   | 'READY'
   | 'PAIRED'
 
-export interface PairingResponse {
-  id: string
-  unitId: string
-  challengeKey: string
-  responseKey: string | null
-  expires: Date
-  status: PairingStatus
-  mobileDeviceId: string | null
-}
+export type PairingResponse = Pairing
 
 export interface PairingStatusResponse {
   status: PairingStatus
@@ -39,7 +33,7 @@ export function postPairingChallenge(
     .then((pairingResponse) => {
       return {
         ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
+        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
       }
     })
     .then((v) => Success.of(v))

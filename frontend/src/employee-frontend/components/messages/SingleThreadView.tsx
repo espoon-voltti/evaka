@@ -13,7 +13,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import {
   Message,
   MessageThread,
@@ -93,9 +92,7 @@ function SingleMessage({
     <MessageContainer>
       <TitleRow>
         <Bold>{message.sender.name}</Bold>
-        <InformationText>
-          {formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}
-        </InformationText>
+        <InformationText>{message.sentAt.format()}</InformationText>
       </TitleRow>
       <InformationText>
         {(message.recipientNames || message.recipients.map((r) => r.name)).join(

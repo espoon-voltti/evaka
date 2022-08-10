@@ -4,6 +4,7 @@
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -28,7 +29,7 @@ export interface Income extends IncomeBody {
   total: number
   totalIncome: number
   totalExpenses: number
-  updatedAt: Date
+  updatedAt: HelsinkiDateTime
   updatedBy: string
   applicationId: UUID | null
   notes: string

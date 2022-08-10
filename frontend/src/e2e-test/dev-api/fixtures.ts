@@ -25,6 +25,7 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -795,7 +796,7 @@ export const feeDecisionsFixture = (
     LocalDate.todayInSystemTz().subYears(1),
     LocalDate.todayInSystemTz().addYears(1)
   ),
-  sentAt: Date | null = null,
+  sentAt: HelsinkiDateTime | null = null,
   id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe'
 ): FeeDecision => ({
   id,
@@ -842,7 +843,7 @@ export const feeDecisionsFixture = (
   decisionHandlerId: null,
   decisionNumber: null,
   documentKey: null,
-  created: new Date()
+  created: HelsinkiDateTime.now()
 })
 
 export const voucherValueDecisionsFixture = (
@@ -854,7 +855,7 @@ export const voucherValueDecisionsFixture = (
   status: 'DRAFT' | 'SENT' = 'DRAFT',
   validFrom = LocalDate.todayInSystemTz().subYears(1),
   validTo = LocalDate.todayInSystemTz().addYears(1),
-  sentAt: Date | null = null
+  sentAt: HelsinkiDateTime | null = null
 ): VoucherValueDecision => ({
   id,
   status,
@@ -894,7 +895,7 @@ export const voucherValueDecisionsFixture = (
   approvedById: null,
   decisionNumber: null,
   documentKey: null,
-  created: new Date(),
+  created: HelsinkiDateTime.now(),
   decisionHandler: null
 })
 
@@ -1272,7 +1273,7 @@ export class Fixture {
       occupancyCoefficientUnder3y: 0,
       partDay: false,
       partWeek: false,
-      updated: new Date(),
+      updated: HelsinkiDateTime.now(),
       validPlacementType: 'DAYCARE',
       voucherValueDescriptionFi: `Test service need option ${id}`,
       voucherValueDescriptionSv: `Test service need option ${id}`,

@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isToday, Locale } from 'date-fns'
+import { Locale } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
-import { fi, sv, enGB } from 'date-fns/locale'
+import { enGB, fi, sv } from 'date-fns/locale'
+
+import HelsinkiDateTime from './helsinki-date-time'
 
 export const locales: { fi: Locale; sv: Locale; en: Locale } = {
   fi,
@@ -62,6 +64,8 @@ export function isValidTime(time: string): boolean {
   return timeRegex.test(time)
 }
 
-export function formatDateOrTime(date: Date): string {
-  return isToday(date) ? formatTime(date) : formatDate(date, 'dd.MM.')
+export function formatDateOrTime(timestamp: HelsinkiDateTime): string {
+  return timestamp.toLocalDate().isToday()
+    ? timestamp.toLocalTime().format('HH:mm')
+    : timestamp.toLocalDate().format('dd.MM.')
 }

@@ -4,6 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -27,7 +28,7 @@ export async function getPedagogicalDocuments(): Promise<
 export function deserializePedagogicalDocument(
   data: JsonOf<PedagogicalDocumentCitizen>
 ): PedagogicalDocumentCitizen {
-  const created = new Date(data.created)
+  const created = HelsinkiDateTime.parseIso(data.created)
   return { ...data, created }
 }
 

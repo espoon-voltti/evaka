@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.OffsetDateTime
 
 @RestController
 @RequestMapping("/pedagogical-document")
@@ -109,9 +107,7 @@ data class PedagogicalDocument(
     val childId: ChildId,
     val description: String,
     val attachments: List<Attachment> = emptyList(),
-    @ForceCodeGenType(OffsetDateTime::class)
     val created: HelsinkiDateTime,
-    @ForceCodeGenType(OffsetDateTime::class)
     val updated: HelsinkiDateTime
 )
 

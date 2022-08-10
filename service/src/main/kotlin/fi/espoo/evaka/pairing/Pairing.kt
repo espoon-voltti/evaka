@@ -4,13 +4,11 @@
 
 package fi.espoo.evaka.pairing
 
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.OffsetDateTime
 import java.util.UUID
 
 data class Pairing(
@@ -19,7 +17,6 @@ data class Pairing(
     val employeeId: EmployeeId? = null,
     val challengeKey: String,
     val responseKey: String?,
-    @ForceCodeGenType(OffsetDateTime::class)
     val expires: HelsinkiDateTime,
     val status: PairingStatus,
     val mobileDeviceId: MobileDeviceId? = null

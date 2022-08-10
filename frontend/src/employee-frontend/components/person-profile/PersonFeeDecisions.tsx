@@ -7,7 +7,6 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -24,8 +23,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faChild, faPlus } from 'lib-icons'
 
 import {
-  getPersonFeeDecisions,
-  createRetroactiveFeeDecisions
+  createRetroactiveFeeDecisions,
+  getPersonFeeDecisions
 } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -93,9 +92,9 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
                   </Td>
                   <Td>{formatCents(feeDecision.totalFee)}</Td>
                   <Td>{feeDecision.decisionNumber}</Td>
-                  <DateTd>{formatDate(feeDecision.created)}</DateTd>
+                  <DateTd>{feeDecision.created.toLocalDate().format()}</DateTd>
                   <DateTd data-qa="fee-decision-sent-at">
-                    {formatDate(feeDecision.sentAt)}
+                    {feeDecision.sentAt?.toLocalDate().format() ?? ''}
                   </DateTd>
                   <StatusTd>
                     {i18n.feeDecision.status[feeDecision.status]}

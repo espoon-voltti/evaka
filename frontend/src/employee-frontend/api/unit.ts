@@ -32,6 +32,7 @@ import {
   ServiceNeed,
   ServiceNeedOptionSummary
 } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -328,7 +329,7 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
     endDate: LocalDate.parseIso(serviceNeed.endDate),
     option: {
       ...serviceNeed.option,
-      updated: new Date(serviceNeed.option.updated)
+      updated: HelsinkiDateTime.parseIso(serviceNeed.option.updated)
     },
     confirmed:
       serviceNeed.confirmed != null
@@ -336,11 +337,11 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
             ...serviceNeed.confirmed,
             at:
               serviceNeed.confirmed.at != null
-                ? new Date(serviceNeed.confirmed.at)
+                ? HelsinkiDateTime.parseIso(serviceNeed.confirmed.at)
                 : null
           }
         : null,
-    updated: new Date(serviceNeed.updated)
+    updated: HelsinkiDateTime.parseIso(serviceNeed.updated)
   }))
 }
 
@@ -367,36 +368,36 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
           childAttendances: data.realtime.childAttendances.map(
             (attendance) => ({
               ...attendance,
-              arrived: new Date(attendance.arrived),
+              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
               departed: attendance.departed
-                ? new Date(attendance.departed)
+                ? HelsinkiDateTime.parseIso(attendance.departed)
                 : null
             })
           ),
           staffAttendances: data.realtime.staffAttendances.map(
             (attendance) => ({
               ...attendance,
-              arrived: new Date(attendance.arrived),
+              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
               departed: attendance.departed
-                ? new Date(attendance.departed)
+                ? HelsinkiDateTime.parseIso(attendance.departed)
                 : null
             })
           ),
           childCapacitySumSeries: data.realtime.childCapacitySumSeries.map(
             (dataPoint) => ({
               ...dataPoint,
-              time: new Date(dataPoint.time)
+              time: HelsinkiDateTime.parseIso(dataPoint.time)
             })
           ),
           staffCapacitySumSeries: data.realtime.staffCapacitySumSeries.map(
             (dataPoint) => ({
               ...dataPoint,
-              time: new Date(dataPoint.time)
+              time: HelsinkiDateTime.parseIso(dataPoint.time)
             })
           ),
           occupancySeries: data.realtime.occupancySeries.map((dataPoint) => ({
             ...dataPoint,
-            time: new Date(dataPoint.time)
+            time: HelsinkiDateTime.parseIso(dataPoint.time)
           }))
         }
       : null
@@ -446,7 +447,7 @@ function mapApplicationsJson(
     serviceNeed: data.serviceNeed
       ? {
           ...data.serviceNeed,
-          updated: new Date(data.serviceNeed.updated)
+          updated: HelsinkiDateTime.parseIso(data.serviceNeed.updated)
         }
       : null,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
@@ -707,7 +708,7 @@ export interface PairingResponse {
   unitId: UUID
   challengeKey: string
   responseKey: string | null
-  expires: Date
+  expires: HelsinkiDateTime
   status: PairingStatus
   mobileDeviceId: UUID | null
 }
@@ -721,7 +722,7 @@ export async function postPairing(
     .then((pairingResponse) => {
       return {
         ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
+        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
       }
     })
     .then((v) => Success.of(v))
@@ -742,7 +743,7 @@ export async function postPairingResponse(
     .then((pairingResponse) => {
       return {
         ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
+        expires: HelsinkiDateTime.parseIso(pairingResponse.expires)
       }
     })
     .then((v) => Success.of(v))

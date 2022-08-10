@@ -6,6 +6,7 @@ import { format, parse } from 'date-fns'
 import isInteger from 'lodash/isInteger'
 
 import HelsinkiDateTime from './helsinki-date-time'
+import { Ordered } from './ordered'
 import { isAutomatedTest, mockNow } from './utils/helpers'
 
 // ISO local time with nanosecond precision
@@ -13,7 +14,7 @@ const isoPattern = /^(\d{2}):(\d{2}):(\d{2}).(\d{9})$/
 
 const hourMinutePattern = /^(\d{2}):(\d{2})$/
 
-export default class LocalTime {
+export default class LocalTime implements Ordered<LocalTime> {
   private constructor(
     readonly hour: number,
     readonly minute: number,

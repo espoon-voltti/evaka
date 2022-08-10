@@ -7,6 +7,7 @@ import minBy from 'lodash/minBy'
 import React, { useMemo } from 'react'
 
 import { Result } from 'lib-common/api'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -68,8 +69,8 @@ export default React.memo(function PreferredStartSubSection({
               id: result.value,
               name: file.name,
               contentType: file.type,
-              updated: new Date(),
-              receivedAt: new Date(),
+              updated: HelsinkiDateTime.now(),
+              receivedAt: HelsinkiDateTime.now(),
               type: 'URGENCY'
             }
           ]

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 
@@ -15,7 +16,7 @@ export interface ChildDailyNote {
   childId: UUID
   feedingNote: ChildDailyNoteLevel | null
   id: UUID
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   note: string
   reminderNote: string
   reminders: ChildDailyNoteReminder[]
@@ -64,7 +65,7 @@ export interface ChildStickyNote {
   childId: UUID
   expires: LocalDate
   id: UUID
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   note: string
 }
 
@@ -83,7 +84,7 @@ export interface GroupNote {
   expires: LocalDate
   groupId: UUID
   id: UUID
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   note: string
 }
 

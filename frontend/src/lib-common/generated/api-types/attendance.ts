@@ -59,8 +59,8 @@ export interface Attendance {
 * Generated from fi.espoo.evaka.attendance.AttendanceReservation
 */
 export interface AttendanceReservation {
-  endTime: Date
-  startTime: Date
+  endTime: HelsinkiDateTime
+  startTime: HelsinkiDateTime
 }
 
 /**
@@ -92,8 +92,8 @@ export interface AttendanceTimeRange {
 * Generated from fi.espoo.evaka.attendance.AttendanceTimes
 */
 export interface AttendanceTimes {
-  arrived: Date
-  departed: Date | null
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
 }
 
 /**

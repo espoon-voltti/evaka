@@ -33,6 +33,7 @@ import {
   StartingPlacementsRow,
   VardaErrorReportRow
 } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -471,10 +472,10 @@ export async function getVardaErrorsReport(): Promise<
       Success.of(
         res.data.map((row) => ({
           ...row,
-          updated: new Date(row.updated),
-          created: new Date(row.created),
+          updated: HelsinkiDateTime.parseIso(row.updated),
+          created: HelsinkiDateTime.parseIso(row.created),
           resetTimeStamp: row.resetTimeStamp
-            ? new Date(row.resetTimeStamp)
+            ? HelsinkiDateTime.parseIso(row.resetTimeStamp)
             : null
         }))
       )

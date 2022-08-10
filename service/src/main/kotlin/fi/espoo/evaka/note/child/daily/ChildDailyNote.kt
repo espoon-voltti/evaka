@@ -5,11 +5,9 @@
 package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.OffsetDateTime
 
 data class ChildDailyNote(
     val id: ChildDailyNoteId,
@@ -20,7 +18,6 @@ data class ChildDailyNote(
     val sleepingMinutes: Int?,
     val reminders: List<ChildDailyNoteReminder> = emptyList(),
     val reminderNote: String,
-    @ForceCodeGenType(OffsetDateTime::class)
     val modifiedAt: HelsinkiDateTime
 )
 

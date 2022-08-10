@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
@@ -128,7 +129,7 @@ export interface VasuDocument {
   events: VasuDocumentEvent[]
   id: UUID
   language: VasuLanguage
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   templateName: string
   templateRange: FiniteDateRange
   type: CurriculumType
@@ -138,7 +139,7 @@ export interface VasuDocument {
 * Generated from fi.espoo.evaka.vasu.VasuDocumentEvent
 */
 export interface VasuDocumentEvent {
-  created: Date
+  created: HelsinkiDateTime
   eventType: VasuDocumentEventType
   id: UUID
 }
@@ -171,9 +172,9 @@ export interface VasuDocumentSummary {
   events: VasuDocumentEvent[]
   guardiansThatHaveGivenPermissionToShare: UUID[]
   id: UUID
-  modifiedAt: Date
+  modifiedAt: HelsinkiDateTime
   name: string
-  publishedAt: Date | null
+  publishedAt: HelsinkiDateTime | null
   type: CurriculumType
 }
 

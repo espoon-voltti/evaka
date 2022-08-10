@@ -24,6 +24,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 
@@ -133,8 +134,8 @@ const deserializeApplicationsOfChild = (
     ...json2,
     sentDate: LocalDate.parseNullableIso(json2.sentDate),
     startDate: LocalDate.parseNullableIso(json2.startDate),
-    createdDate: new Date(json2.createdDate),
-    modifiedDate: new Date(json2.modifiedDate)
+    createdDate: HelsinkiDateTime.parseIso(json2.createdDate),
+    modifiedDate: HelsinkiDateTime.parseIso(json2.modifiedDate)
   }))
 })
 

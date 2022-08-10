@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -18,7 +19,7 @@ export interface PartialFeeAlteration {
 export interface FeeAlteration extends PartialFeeAlteration {
   id: UUID
   notes: string
-  updatedAt: Date
+  updatedAt: HelsinkiDateTime
   updatedBy: UUID
 }
 

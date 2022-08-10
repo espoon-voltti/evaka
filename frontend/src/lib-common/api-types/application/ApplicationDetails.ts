@@ -14,6 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { AttachmentType } from '../../generated/api-types/attachment'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import { JsonOf } from '../../json'
 import { Attachment } from '../attachment'
 
@@ -31,8 +32,8 @@ export interface ApplicationDetails {
   guardianRestricted: boolean
   guardianDateOfDeath: LocalDate | null
   checkedByAdmin: boolean
-  createdDate: Date | null
-  modifiedDate: Date | null
+  createdDate: HelsinkiDateTime | null
+  modifiedDate: HelsinkiDateTime | null
   sentDate: LocalDate | null
   dueDate: LocalDate | null
   transferApplication: boolean
@@ -78,14 +79,18 @@ export const deserializeApplicationDetails = (
     }
   },
   guardianDateOfDeath: LocalDate.parseNullableIso(json.guardianDateOfDeath),
-  createdDate: json.createdDate ? new Date(json.createdDate) : null,
-  modifiedDate: json.modifiedDate ? new Date(json.modifiedDate) : null,
+  createdDate: json.createdDate
+    ? HelsinkiDateTime.parseIso(json.createdDate)
+    : null,
+  modifiedDate: json.modifiedDate
+    ? HelsinkiDateTime.parseIso(json.modifiedDate)
+    : null,
   sentDate: LocalDate.parseNullableIso(json.sentDate),
   dueDate: LocalDate.parseNullableIso(json.dueDate),
   attachments: json.attachments.map(({ updated, receivedAt, ...rest }) => ({
     ...rest,
-    updated: new Date(updated),
-    receivedAt: new Date(receivedAt)
+    updated: HelsinkiDateTime.parseIso(updated),
+    receivedAt: HelsinkiDateTime.parseIso(receivedAt)
   }))
 })
 
@@ -194,8 +199,8 @@ export interface ApplicationClubDetails {
 }
 
 export interface ApplicationAttachment extends Attachment {
-  updated: Date
-  receivedAt: Date
+  updated: HelsinkiDateTime
+  receivedAt: HelsinkiDateTime
   type: AttachmentType
   uploadedByEmployee?: UUID
   uploadedByPerson?: UUID

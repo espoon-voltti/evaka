@@ -11,6 +11,7 @@ import styled from 'styled-components'
 import { Loading, Result, Success } from 'lib-common/api'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -55,9 +56,10 @@ const LockedDate = styled(FixedSpaceRow)`
 
 const monthOptions = range(1, 13)
 
-const minYear = new Date().getFullYear() - 4
+const now = HelsinkiDateTime.now()
+const minYear = now.year - 4
 // Max year is next year if current date is in December and current year otherwise
-const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
+const maxYear = now.year + (now.month === 12 ? 1 : 0)
 const yearOptions = range(maxYear, minYear - 1, -1)
 
 function getFilename(year: number, month: number, areaName: string) {
@@ -91,10 +93,11 @@ export default React.memo(function VoucherServiceProviders() {
     // intentionally converts empty string into undefined
     const areaId = queryParams.get('areaId') || undefined
 
+    const now = HelsinkiDateTime.now()
+
     return {
-      year:
-        year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
-      month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1,
+      year: year >= minYear && year <= maxYear ? year : now.year,
+      month: month >= 1 && month <= 12 ? month : now.month,
       areaId
     }
   })

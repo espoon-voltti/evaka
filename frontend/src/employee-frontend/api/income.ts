@@ -5,6 +5,7 @@
 import partition from 'lodash/partition'
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -24,7 +25,7 @@ export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
         validTo: income.validTo
           ? LocalDate.parseIso(income.validTo)
           : undefined,
-        updatedAt: new Date(income.updatedAt)
+        updatedAt: HelsinkiDateTime.parseIso(income.updatedAt)
       }))
     )
     .then((v) => Success.of(v))

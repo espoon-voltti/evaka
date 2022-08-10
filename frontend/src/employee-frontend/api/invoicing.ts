@@ -165,15 +165,17 @@ export async function getFeeDecision(
           ...childJson,
           child: deserializePersonDetailed(childJson.child)
         })),
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
         financeDecisionHandlerFirstName: json.financeDecisionHandlerFirstName
           ? json.financeDecisionHandlerFirstName
           : null,
         financeDecisionHandlerLastName: json.financeDecisionHandlerLastName
           ? json.financeDecisionHandlerLastName
           : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-        created: new Date(json.created)
+        approvedAt: json.approvedAt
+          ? HelsinkiDateTime.parseIso(json.approvedAt)
+          : null,
+        created: HelsinkiDateTime.parseIso(json.created)
       })
     )
     .catch((e) => Failure.fromError(e))
@@ -194,9 +196,11 @@ export async function getVoucherValueDecision(
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
         partner: json.partner ? deserializePersonDetailed(json.partner) : null,
         child: deserializePersonDetailed(json.child),
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-        created: new Date(json.created)
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+        approvedAt: json.approvedAt
+          ? HelsinkiDateTime.parseIso(json.approvedAt)
+          : null,
+        created: HelsinkiDateTime.parseIso(json.created)
       })
     )
     .catch((e) => Failure.fromError(e))
@@ -236,9 +240,11 @@ export async function getFeeDecisions(
           ...childJson,
           dateOfBirth: LocalDate.parseIso(childJson.dateOfBirth)
         })),
-        created: new Date(json.created),
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+        created: HelsinkiDateTime.parseIso(json.created),
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+        approvedAt: json.approvedAt
+          ? HelsinkiDateTime.parseIso(json.approvedAt)
+          : null
       }))
     }))
     .then((v) => Success.of(v))
@@ -257,9 +263,11 @@ export async function getPersonFeeDecisions(
           validDuring: DateRange.parseJson(json.validDuring),
           validFrom: LocalDate.parseIso(json.validFrom),
           validTo: LocalDate.parseNullableIso(json.validTo),
-          sentAt: json.sentAt ? new Date(json.sentAt) : null,
-          approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-          created: new Date(json.created),
+          sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+          approvedAt: json.approvedAt
+            ? HelsinkiDateTime.parseIso(json.approvedAt)
+            : null,
+          created: HelsinkiDateTime.parseIso(json.created),
           children: json.children.map((childJson) => ({
             ...childJson,
             child: {
@@ -310,9 +318,11 @@ const parseVoucherValueDecisionSummaryJson = (
     ...json.child,
     dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
   },
-  sentAt: json.sentAt ? new Date(json.sentAt) : null,
-  approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
-  created: new Date(json.created)
+  sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+  approvedAt: json.approvedAt
+    ? HelsinkiDateTime.parseIso(json.approvedAt)
+    : null,
+  created: HelsinkiDateTime.parseIso(json.created)
 })
 
 export async function getPersonVoucherValueDecisions(
@@ -341,7 +351,7 @@ export async function getPersonInvoices(
           periodEnd: LocalDate.parseIso(json.periodEnd),
           dueDate: LocalDate.parseIso(json.dueDate),
           invoiceDate: LocalDate.parseIso(json.invoiceDate),
-          sentAt: json.sentAt ? new Date(json.sentAt) : null,
+          sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
           rows: json.rows.map((rowJson) => ({
             ...rowJson,
             periodStart: LocalDate.parseIso(rowJson.periodStart),
@@ -370,7 +380,7 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
         periodEnd: LocalDate.parseIso(rowJson.periodEnd),
         child: deserializePersonDetailed(rowJson.child)
       })),
-      sentAt: json.sentAt ? new Date(json.sentAt) : null
+      sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
@@ -401,8 +411,10 @@ export async function getInvoices(
         codebtor: json.codebtor
           ? deserializePersonDetailed(json.codebtor)
           : null,
-        createdAt: json.createdAt ? new Date(json.createdAt) : null,
-        sentAt: json.sentAt ? new Date(json.sentAt) : null,
+        createdAt: json.createdAt
+          ? HelsinkiDateTime.parseIso(json.createdAt)
+          : null,
+        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
         rows: json.rows.map((rowJson) => ({
           ...rowJson,
           child: deserializePersonBasic(rowJson.child)

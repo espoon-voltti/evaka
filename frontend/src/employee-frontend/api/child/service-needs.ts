@@ -10,6 +10,7 @@ import {
   ServiceNeedOptionPublicInfo,
   ServiceNeedUpdateRequest
 } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -55,7 +56,7 @@ const deserializeServiceNeedOptions = (
 ): ServiceNeedOption[] => {
   return options.map((option) => ({
     ...option,
-    updated: new Date(option.updated)
+    updated: HelsinkiDateTime.parseIso(option.updated)
   }))
 }
 

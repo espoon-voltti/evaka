@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 
@@ -12,7 +13,9 @@ export const deserializePersonJSON = (
   ...data,
   dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
   dateOfDeath: LocalDate.parseNullableIso(data.dateOfDeath),
-  updatedFromVtj: data.updatedFromVtj ? new Date(data.updatedFromVtj) : null
+  updatedFromVtj: data.updatedFromVtj
+    ? HelsinkiDateTime.parseIso(data.updatedFromVtj)
+    : null
 })
 
 export type SearchColumn =

@@ -6,6 +6,7 @@ import {
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 
 export const deserializeDraftContent = ({
@@ -13,7 +14,7 @@ export const deserializeDraftContent = ({
   ...rest
 }: JsonOf<DraftContent>): DraftContent => ({
   ...rest,
-  created: new Date(created)
+  created: HelsinkiDateTime.parseIso(created)
 })
 
 export const deserializeSentMessage = ({
@@ -21,5 +22,5 @@ export const deserializeSentMessage = ({
   ...rest
 }: JsonOf<SentMessage>): SentMessage => ({
   ...rest,
-  sentAt: new Date(sentAt)
+  sentAt: HelsinkiDateTime.parseIso(sentAt)
 })

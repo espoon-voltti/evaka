@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -23,7 +24,7 @@ export async function getFeeAlterations(
         ...feeAlteration,
         validFrom: LocalDate.parseIso(feeAlteration.validFrom),
         validTo: LocalDate.parseNullableIso(feeAlteration.validTo),
-        updatedAt: new Date(feeAlteration.updatedAt)
+        updatedAt: HelsinkiDateTime.parseIso(feeAlteration.updatedAt)
       }))
     )
     .then((v) => Success.of(v))

@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { isEqual } from 'date-fns'
 import noop from 'lodash/noop'
 import React, { useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import {
   ApplicationStatus,
   CitizenApplicationSummary
@@ -218,14 +216,14 @@ export default React.memo(function ChildApplicationsBlock({
 
                 <Label>{t.applicationsList.created}</Label>
                 <span data-qa={`application-created-${applicationId}`}>
-                  {formatDate(createdDate)}
+                  {createdDate.toLocalDate().format()}
                 </span>
 
-                {!isEqual(modifiedDate, createdDate) && (
+                {!modifiedDate.isEqual(createdDate) && (
                   <>
                     <Label>{t.applicationsList.modified}</Label>
                     <span data-qa={`application-modified-${applicationId}`}>
-                      {formatDate(modifiedDate)}
+                      {modifiedDate.toLocalDate().format()}
                     </span>
                   </>
                 )}

@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -51,6 +52,6 @@ export const TypeAndDate = styled.div`
   align-items: flex-end;
 `
 
-export function Timestamp({ date }: { date: Date }) {
+export function Timestamp({ date }: { date: HelsinkiDateTime }) {
   return <span>{formatDateOrTime(date)}</span>
 }

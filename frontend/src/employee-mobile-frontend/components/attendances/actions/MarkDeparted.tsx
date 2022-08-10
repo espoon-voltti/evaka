@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter, parse } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,6 +9,8 @@ import { combine } from 'lib-common/api'
 import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -58,10 +59,13 @@ function validateTime(
   }
 
   try {
-    const parsedTime = parse(time, 'HH:mm', mockNow() ?? new Date())
-
-    if (!isAfter(parsedTime, attendance.arrived)) {
-      return `${i18n.attendances.arrived} ${formatTime(attendance.arrived)}`
+    const parsedTime = LocalTime.parse(time, 'HH:mm')
+    const parsedTimestamp =
+      LocalDate.todayInSystemTz().toHelsinkiDateTime(parsedTime)
+    if (!parsedTimestamp.isAfter(attendance.arrived)) {
+      return `${i18n.attendances.arrived} ${attendance.arrived
+        .toLocalTime()
+        .format('HH:mm')}`
     }
   } catch (e) {
     return i18n.attendances.timeError
