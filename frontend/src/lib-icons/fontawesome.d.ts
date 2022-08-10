@@ -23,6 +23,7 @@ declare module 'Icons' {
   const faBabyCarriage: IconDefinition
   const faCalendarAlt: IconDefinition
   const faCalendarPlus: IconDefinition
+  const faCar: IconDefinition
   const faCheck: IconDefinition
   const faCheckCircle: IconDefinition
   const faChevronDown: IconDefinition

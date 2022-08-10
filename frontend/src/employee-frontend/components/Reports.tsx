@@ -14,6 +14,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  faCar,
   faChild,
   faClock,
   faCopy,
@@ -374,6 +375,24 @@ export default React.memo(function Reports() {
               </TitleRow>
               <Description>
                 {i18n.reports.voucherServiceProviders.description}
+              </Description>
+            </ReportItem>
+          )}
+          {user?.permittedGlobalActions.has(
+            'READ_ATTENDANCE_RESERVATION_REPORT'
+          ) && (
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon size="L" color={colors.main.m2} content={faCar} />
+                <LinkTitle
+                  to="/reports/attendance-reservation"
+                  data-qa="report-attendance-reservation"
+                >
+                  {i18n.reports.attendanceReservation.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.attendanceReservation.description}
               </Description>
             </ReportItem>
           )}

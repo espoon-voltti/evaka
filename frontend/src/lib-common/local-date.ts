@@ -10,6 +10,7 @@ import {
   addYears,
   differenceInDays,
   differenceInYears,
+  endOfWeek,
   format,
   getISODay,
   getISOWeek,
@@ -103,6 +104,11 @@ export default class LocalDate implements Ordered<LocalDate> {
   startOfWeek(): LocalDate {
     return LocalDate.fromSystemTzDate(
       startOfWeek(this.toSystemTzDate(), { weekStartsOn: 1 })
+    )
+  }
+  endOfWeek(): LocalDate {
+    return LocalDate.fromSystemTzDate(
+      endOfWeek(this.toSystemTzDate(), { weekStartsOn: 1 })
     )
   }
   startOfMonth(): LocalDate {
