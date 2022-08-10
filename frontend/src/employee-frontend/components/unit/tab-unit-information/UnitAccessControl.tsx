@@ -37,6 +37,7 @@ import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 
 import { getEmployees } from '../../../api/employees'
 import {
+  addDaycareAclEarlyChildhoodEducationSecretary,
   addDaycareAclSpecialEducationTeacher,
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -45,6 +46,7 @@ import {
   deleteMobileDevice,
   getMobileDevices,
   putMobileDeviceName,
+  removeDaycareAclEarlyChildhoodEducationSecretary,
   removeDaycareAclSpecialEducationTeacher,
   removeDaycareAclStaff,
   removeDaycareAclSupervisor,
@@ -594,6 +596,17 @@ export default React.memo(function UnitAccessControl({
       ),
     [daycareAclRows, i18n]
   )
+  const earlyChildhoodEducationSecretaries = useMemo(
+    () =>
+      daycareAclRows.map((daycareAclRows) =>
+        formatRowsOfRole(
+          daycareAclRows,
+          'EARLY_CHILDHOOD_EDUCATION_SECRETARY',
+          i18n
+        )
+      ),
+    [daycareAclRows, i18n]
+  )
   const staff = useMemo(
     () =>
       daycareAclRows.map((daycareAclRows) =>
@@ -610,6 +623,12 @@ export default React.memo(function UnitAccessControl({
   const addSpecialEducationTeacher = useCallback(
     (employeeId: UUID) =>
       addDaycareAclSpecialEducationTeacher(unitId, employeeId),
+    [unitId]
+  )
+
+  const addEarlyChildhoodEducationSecretary = useCallback(
+    (employeeId: UUID) =>
+      addDaycareAclEarlyChildhoodEducationSecretary(unitId, employeeId),
     [unitId]
   )
 
@@ -768,6 +787,40 @@ export default React.memo(function UnitAccessControl({
                 <AddAcl
                   employees={candidateEmployees}
                   onSave={addSpecialEducationTeacher}
+                  onSuccess={reloadDaycareAclRows}
+                />
+              )}
+            </>
+          )
+        )}
+      </ContentArea>
+      <ContentArea opaque data-qa="daycare-acl-eces">
+        <H2>{i18n.unit.accessControl.earlyChildhoodEducationSecretary}</H2>
+        {renderResult(
+          combine(earlyChildhoodEducationSecretaries, candidateEmployees),
+          ([earlyChildhoodEducationSecretaries, candidateEmployees]) => (
+            <>
+              <AclTable
+                rows={earlyChildhoodEducationSecretaries}
+                onDeleteAclRow={(employeeId) =>
+                  openRemoveModal({
+                    employeeId,
+                    removeFn: removeDaycareAclEarlyChildhoodEducationSecretary
+                  })
+                }
+                unitGroups={groups}
+                onChangeAclGroups={updateStaffGroupAcls}
+                editPermitted={permittedActions.has('UPDATE_STAFF_GROUP_ACL')}
+                deletePermitted={permittedActions.has(
+                  'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+                )}
+              />
+              {permittedActions.has(
+                'INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
+              ) && (
+                <AddAcl
+                  employees={candidateEmployees}
+                  onSave={addEarlyChildhoodEducationSecretary}
                   onSuccess={reloadDaycareAclRows}
                 />
               )}

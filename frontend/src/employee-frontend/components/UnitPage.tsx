@@ -12,11 +12,13 @@ import React, {
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { UnitResponse } from 'employee-frontend/api/unit'
 import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useQuery } from 'lib-common/utils/useQuery'
+import Spinner from 'lib-components/atoms/state/Spinner'
 import Container from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
@@ -30,6 +32,11 @@ import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabAttendances from './unit/TabAttendances'
+
+const defaultTab = (unit: UnitResponse) => {
+  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'attendances'
+  return 'groups'
+}
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
@@ -101,11 +108,16 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 
   const tabs = useMemo(
     () => [
-      {
-        id: 'attendances',
-        link: `/units/${id}/attendances`,
-        label: i18n.unit.tabs.attendances
-      },
+      ...(unitInformation.isSuccess &&
+      unitInformation.value.permittedActions.has('READ_ATTENDANCES')
+        ? [
+            {
+              id: 'attendances',
+              link: `/units/${id}/attendances`,
+              label: i18n.unit.tabs.attendances
+            }
+          ]
+        : []),
       {
         id: 'groups',
         link: `/units/${id}/groups`,
@@ -140,9 +152,24 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
     [id, i18n, unitData, unitInformation]
   )
 
+  if (unitInformation.isLoading) {
+    return (
+      <Container>
+        <Spinner />
+      </Container>
+    )
+  }
+  if (unitInformation.isFailure) {
+    return (
+      <Container>
+        <p>{i18n.common.loadingFailed}</p>
+      </Container>
+    )
+  }
+
   return (
     <>
-      {unitInformation.isSuccess && <Tabs tabs={tabs} />}
+      <Tabs tabs={tabs} />
       <Gap size="s" />
       <Container>
         <Routes>
@@ -167,7 +194,12 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             }
           />
-          <Route index element={<Navigate replace to="attendances" />} />
+          <Route
+            index
+            element={
+              <Navigate replace to={defaultTab(unitInformation.value)} />
+            }
+          />
         </Routes>
       </Container>
     </>

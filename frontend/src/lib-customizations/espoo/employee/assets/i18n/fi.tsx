@@ -1659,6 +1659,7 @@ export const fi = {
     accessControl: {
       unitSupervisors: 'Yksikön johtajat',
       specialEducationTeachers: 'Varhaiskasvatuksen erityisopettajat',
+      earlyChildhoodEducationSecretary: 'Varhaiskasvatussihteerit',
       staff: 'Yksikön henkilökunta',
       email: 'Sähköpostiosoite',
       removeConfirmation:
@@ -3487,6 +3488,7 @@ export const fi = {
       FINANCE_ADMIN: 'Talous',
       SERVICE_WORKER: 'Palveluohjaus',
       SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
+      EARLY_CHILDHOOD_EDUCATION_SECRETARY: 'Varhaiskasvatussihteeri',
       STAFF: 'Henkilökunta',
       UNIT_SUPERVISOR: 'Johtaja',
       MOBILE: 'Mobiili'

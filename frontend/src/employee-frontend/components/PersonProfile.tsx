@@ -114,6 +114,13 @@ const layouts: Layouts<typeof components> = {
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
     { component: 'decisions', open: false }
+  ],
+  ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
+    { component: 'family-overview', open: true },
+    { component: 'partners', open: false },
+    { component: 'fridge-children', open: false },
+    { component: 'dependants', open: false },
+    { component: 'decisions', open: false }
   ]
 }
 

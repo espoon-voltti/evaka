@@ -255,3 +255,5 @@ V254__multiple_assistance_need_levels.sql
 V255__drop_unused.sql
 V256__assistance_need_decision_ending.sql
 V257__employee_last_login_not_null.sql
+V258__early_childhood_education_secretary_role.sql
+V259__early_childhood_education_secretary_acl.sql

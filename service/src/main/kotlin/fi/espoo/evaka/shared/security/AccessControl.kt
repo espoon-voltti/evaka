@@ -44,7 +44,8 @@ class AccessControl(
                 UserRole.SERVICE_WORKER,
                 UserRole.FINANCE_ADMIN,
                 UserRole.UNIT_SUPERVISOR,
-                UserRole.SPECIAL_EDUCATION_TEACHER
+                UserRole.SPECIAL_EDUCATION_TEACHER,
+                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
             ),
             reports = user.hasOneOfRoles(
                 UserRole.ADMIN,
@@ -53,7 +54,8 @@ class AccessControl(
                 UserRole.SERVICE_WORKER,
                 UserRole.FINANCE_ADMIN,
                 UserRole.UNIT_SUPERVISOR,
-                UserRole.SPECIAL_EDUCATION_TEACHER
+                UserRole.SPECIAL_EDUCATION_TEACHER,
+                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
             ),
             settings = user.isAdmin,
             unitFeatures = user.hasOneOfRoles(UserRole.ADMIN),
@@ -63,13 +65,14 @@ class AccessControl(
                 UserRole.FINANCE_ADMIN,
                 UserRole.UNIT_SUPERVISOR,
                 UserRole.STAFF,
-                UserRole.SPECIAL_EDUCATION_TEACHER
+                UserRole.SPECIAL_EDUCATION_TEACHER,
+                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
             ),
             createUnits = hasPermissionFor(user, Action.Global.CREATE_UNIT),
             vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
             personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
 
-            // Everyone else except FINANCE_ADMIN
+            // Everyone else except FINANCE_ADMIN & EARLY_CHILDHOOD_EDUCATION_SECRETARY
             pinCode = user.hasOneOfRoles(
                 UserRole.ADMIN,
                 UserRole.REPORT_VIEWER,
@@ -84,7 +87,7 @@ class AccessControl(
     private fun isMessagingEnabled(user: AuthenticatedUser.Employee): Boolean {
         @Suppress("DEPRECATION")
         return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
-            .intersect(setOf(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)).isNotEmpty()
+            .intersect(setOf(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)).isNotEmpty()
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
