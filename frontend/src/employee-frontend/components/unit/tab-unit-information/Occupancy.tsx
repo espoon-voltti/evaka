@@ -70,6 +70,7 @@ export default React.memo(function OccupancyContainer({
     <Container data-qa="occupancies">
       {startDate.isEqual(endDate) ? (
         <OccupancySingleDay
+          queryDate={startDate}
           occupancies={occupancies.confirmed}
           plannedOccupancies={occupancies.planned}
           realizedOccupancies={occupancies.realized}

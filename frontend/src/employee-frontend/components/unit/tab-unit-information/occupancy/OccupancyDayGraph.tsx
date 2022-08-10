@@ -29,6 +29,9 @@ import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -39,11 +42,13 @@ import { ChartTooltip, ChartTooltipData } from './ChartTooltip'
 type DatePoint = { x: Date; y: number | null }
 
 interface Props {
+  queryDate: LocalDate
   occupancy: RealtimeOccupancy
   shiftCareUnit: boolean
 }
 
 export default React.memo(function OccupancyDayGraph({
+  queryDate,
   occupancy,
   shiftCareUnit
 }: Props) {
@@ -53,11 +58,19 @@ export default React.memo(function OccupancyDayGraph({
       {i18n.unit.occupancy.realtime.noData}
     </GraphPlaceholder>
   ) : (
-    <Graph occupancy={occupancy} shiftCareUnit={shiftCareUnit} />
+    <Graph
+      queryDate={queryDate}
+      occupancy={occupancy}
+      shiftCareUnit={shiftCareUnit}
+    />
   )
 })
 
-const Graph = React.memo(function Graph({ occupancy, shiftCareUnit }: Props) {
+const Graph = React.memo(function Graph({
+  queryDate,
+  occupancy,
+  shiftCareUnit
+}: Props) {
   const { i18n } = useTranslation()
   const [tooltipData, setTooltipData] = useState<ChartTooltipData>({
     children: <span></span>
@@ -145,13 +158,14 @@ const Graph = React.memo(function Graph({ occupancy, shiftCareUnit }: Props) {
   const { data, graphOptions } = useMemo(
     () =>
       graphData(
+        queryDate,
         new Date(currentMinute),
         occupancy,
         i18n,
         tooltipHandler,
         shiftCareUnit
       ),
-    [currentMinute, occupancy, i18n, tooltipHandler, shiftCareUnit]
+    [queryDate, currentMinute, occupancy, i18n, tooltipHandler, shiftCareUnit]
   )
 
   if (data.datasets.length === 0)
@@ -170,6 +184,7 @@ const Graph = React.memo(function Graph({ occupancy, shiftCareUnit }: Props) {
 })
 
 function graphData(
+  queryDate: LocalDate,
   now: Date,
   occupancy: RealtimeOccupancy,
   i18n: Translations,
@@ -182,9 +197,12 @@ function graphData(
   data: ChartData<'line', DatePoint[]>
   graphOptions: ChartOptions<'line'>
 } {
-  const shiftCareMinTime = subHours(now, 16)
-  const filterData = (p: { time: Date }) =>
-    !isBefore(p.time, shiftCareUnit ? shiftCareMinTime : setTime(now, 0, 0))
+  const minTime = queryDate.isEqual(LocalDate.fromSystemTzDate(now))
+    ? shiftCareUnit
+      ? subHours(now, 16)
+      : setTime(now, 0, 0)
+    : HelsinkiDateTime.fromLocal(queryDate, LocalTime.of(0, 0)).toSystemTzDate()
+  const filterData = (p: { time: Date }) => !isBefore(p.time, minTime)
 
   const childData = occupancy.occupancySeries.filter(filterData).map((p) => ({
     x: p.time,
@@ -199,19 +217,17 @@ function graphData(
   if (shiftCareUnit) {
     const lastDataPointBeforeMin = first(
       sortBy(
-        occupancy.occupancySeries.filter(({ time }) =>
-          isBefore(time, shiftCareMinTime)
-        ),
+        occupancy.occupancySeries.filter(({ time }) => isBefore(time, minTime)),
         ({ time }) => -1 * time.getTime()
       )
     )
     if (lastDataPointBeforeMin) {
       staffData.splice(0, 0, {
-        x: shiftCareMinTime,
+        x: minTime,
         y: lastDataPointBeforeMin.staffCapacity
       })
       childData.splice(0, 0, {
-        x: shiftCareMinTime,
+        x: minTime,
         y: lastDataPointBeforeMin.childCapacity
       })
     }
@@ -231,22 +247,43 @@ function graphData(
     childData.push({ ...lastChildAttendance, x: new Date(now) })
   }
 
+  const queryDateIsCurrent = queryDate.isEqual(LocalDate.fromSystemTzDate(now))
   const xMin = shiftCareUnit
-    ? firstStaffAttendance?.x.getTime() ?? 0
+    ? queryDateIsCurrent
+      ? subHours(now, 16)
+      : HelsinkiDateTime.fromLocal(
+          queryDate,
+          LocalTime.of(0, 0)
+        ).toSystemTzDate()
     : min(
         [
-          // 6 AM
-          setTime(new Date(), 6, 0),
-          staffData[0]?.x
+          queryDateIsCurrent
+            ? setTime(new Date(), 6, 0)
+            : HelsinkiDateTime.fromLocal(
+                queryDate,
+                LocalTime.of(6, 0)
+              ).toSystemTzDate(),
+          firstStaffAttendance?.x
         ].filter((time): time is Date => !!time)
-      ).getTime()
+      )
   const xMax = shiftCareUnit
-    ? staffData[staffData.length - 1]?.x.getTime() ?? 0
-    : max([
-        // 6 PM
-        setTime(new Date(), 18, 0),
-        now
-      ]).getTime()
+    ? queryDateIsCurrent
+      ? now
+      : HelsinkiDateTime.fromLocal(
+          queryDate,
+          LocalTime.of(23, 59, 59)
+        ).toSystemTzDate()
+    : max(
+        [
+          queryDateIsCurrent
+            ? setTime(now, 18, 0)
+            : HelsinkiDateTime.fromLocal(
+                queryDate,
+                LocalTime.of(18, 0)
+              ).toSystemTzDate(),
+          lastStaffAttendance?.x
+        ].filter((time): time is Date => !!time)
+      )
 
   const data: ChartData<'line', DatePoint[]> = {
     datasets: [
@@ -267,8 +304,8 @@ function graphData(
     scales: {
       x: {
         type: 'time',
-        min: xMin,
-        max: xMax,
+        min: xMin.getTime(),
+        max: xMax.getTime(),
         time: {
           displayFormats: {
             hour: 'HH:00'
