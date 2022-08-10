@@ -81,12 +81,12 @@ describe('Citizen map page', () => {
     await mapPage.listItemFor(clubFixture).waitUntilHidden()
     await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
 
-    await mapPage.clubFilter.click()
+    await mapPage.clubFilter.check()
     await mapPage.listItemFor(clubFixture).waitUntilVisible()
     await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
     await mapPage.listItemFor(preschoolFixture).waitUntilHidden()
 
-    await mapPage.preschoolFilter.click()
+    await mapPage.preschoolFilter.check()
     await mapPage.listItemFor(clubFixture).waitUntilHidden()
     await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
     await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()

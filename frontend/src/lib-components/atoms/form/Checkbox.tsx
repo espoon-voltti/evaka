@@ -19,7 +19,6 @@ const diameter = '30px'
 const Wrapper = styled.div`
   display: flex;
   align-items: flex-start;
-  cursor: pointer;
   width: fit-content;
 
   &.disabled {
@@ -49,7 +48,6 @@ const LabelContainer = styled.div`
   font-size: 1rem;
   margin-top: 6px;
   margin-left: ${defaultMargins.s};
-  cursor: pointer;
 `
 
 const Box = styled.div`
@@ -104,6 +102,8 @@ const IconWrapper = styled.div`
 
   font-size: 25px;
   color: ${(p) => p.theme.colors.grayscale.g0};
+
+  pointer-events: none; // let click event go through icon to the checkbox
 `
 
 interface CommonProps extends BaseProps {
@@ -142,14 +142,7 @@ export default React.memo(function Checkbox({
   const ariaId = useUniqueId('checkbox')
 
   return (
-    <Wrapper
-      onClick={() => {
-        inputRef.current?.focus()
-        if (!disabled && onChange) onChange(!checked)
-      }}
-      className={classNames(className, { disabled })}
-      data-qa={dataQa}
-    >
+    <Wrapper className={classNames(className, { disabled })} data-qa={dataQa}>
       <Box>
         <CheckboxInput
           type="checkbox"
@@ -159,7 +152,7 @@ export default React.memo(function Checkbox({
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
-            if (onChange) onChange(!checked)
+            if (onChange) onChange(e.target.checked)
           }}
           readOnly={!onChange}
           ref={inputRef}

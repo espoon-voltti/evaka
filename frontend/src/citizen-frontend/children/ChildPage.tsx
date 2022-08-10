@@ -42,9 +42,7 @@ export default React.memo(function ChildPage() {
               <Gap size="s" />
               <AssistanceNeedSection childId={childId} />
               <Gap size="s" />
-              <ContentArea opaque>
-                <PlacementTerminationSection childId={childId} />
-              </ContentArea>
+              <PlacementTerminationSection childId={childId} />
             </>
           ))}
         </Container>

@@ -124,7 +124,7 @@ const NavLinkText = React.memo(function NavLinkText({
   return (
     <div>
       <SpaceReservingText aria-hidden="true">{text}</SpaceReservingText>
-      <div>{text}</div>
+      <div data-qa="nav-text">{text}</div>
     </div>
   )
 })
@@ -404,6 +404,7 @@ const HeaderNavLink = React.memo(function HeaderNavLink({
   notificationCount?: number
   text: string
   lockElem?: React.ReactNode
+  'data-qa'?: string
 }) {
   const t = useTranslation()
 
@@ -424,6 +425,7 @@ const HeaderNavLink = React.memo(function HeaderNavLink({
       {!!notificationCount && (
         <CircledChar
           aria-label={`${notificationCount} ${t.header.notifications}`}
+          data-qa={props['data-qa'] && `${props['data-qa']}-notification-count`}
         >
           {notificationCount}
         </CircledChar>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, Page, TextInput } from '../../utils/page'
+import { Checkbox, Page, Radio, TextInput } from '../../utils/page'
 
 export default class CitizenIncomePage {
   constructor(private readonly page: Page) {}
@@ -53,7 +53,9 @@ export default class CitizenIncomePage {
   }
 
   async selectEntrepreneurSpouse(yesNo: 'yes' | 'no') {
-    await this.page.find(`[data-qa="entrepreneur-spouse-${yesNo}"]`).click()
+    await new Radio(
+      this.page.findByDataQa(`entrepreneur-spouse-${yesNo}`)
+    ).check()
   }
 
   private async toggleCheckbox(

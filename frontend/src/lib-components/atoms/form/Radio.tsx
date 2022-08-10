@@ -19,7 +19,6 @@ const diameter = '36px'
 const Wrapper = styled.div`
   display: inline-flex;
   align-items: flex-start;
-  cursor: pointer;
   width: fit-content;
 
   &.disabled {
@@ -47,7 +46,6 @@ const Wrapper = styled.div`
 const LabelContainer = styled.div<SizeProps>`
   margin-top: ${(p) => (p.small ? '3px' : '6px')};
   margin-left: ${defaultMargins.s};
-  cursor: pointer;
 `
 
 interface SizeProps {
@@ -103,6 +101,8 @@ const IconWrapper = styled.div<SizeProps>`
 
   font-size: ${(p) => (p.small ? '20px' : '25px')};
   color: ${(p) => p.theme.colors.grayscale.g0};
+
+  pointer-events: none; // let click event go through icon to the radio button
 `
 
 type RadioProps = BaseProps & {
@@ -133,7 +133,6 @@ export default React.memo(function Radio({
     <Wrapper
       onClick={() => {
         inputRef.current?.focus()
-        if (!disabled && onChange) onChange()
       }}
       className={classNames(className, { disabled })}
       data-qa={dataQa}

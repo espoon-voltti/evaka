@@ -17,7 +17,7 @@ export default class CitizenPedagogicalDocumentsPage {
   readonly #downloadAttachment = (id: string) =>
     this.page.find(`[data-qa="attachment-${id}-download"]`)
   readonly #unreadDocumentCount = this.page.find(
-    '[data-qa="unread-child-documents-count"]'
+    '[data-qa="nav-child-documents-notification-count"]'
   )
 
   async assertUnreadPedagogicalDocumentIndicatorCount(expectedCount: number) {
