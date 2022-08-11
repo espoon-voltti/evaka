@@ -530,7 +530,14 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }
-"""
+    """.trimIndent(),
+    "rikkinainen_tietue" to """
+{
+  "henkilotunnus": "rikkinainen_tietue",
+  "bogus": [],
+  "bogus": "2021-09-14T12:01:04.568Z"
+}
+    """.trimIndent(),
 )
 
 data class ModificationsRequest(

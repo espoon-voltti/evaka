@@ -4,23 +4,20 @@
 
 package fi.espoo.evaka.dvv
 
-import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonBySSN
-import fi.espoo.evaka.pis.service.FridgeFamilyService
-import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -30,16 +27,14 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
-    private val personService: PersonService,
-    private val fridgeFamilyService: FridgeFamilyService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
-        return db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
+        val result = db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
             val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
-            modificationsForPersons.map { personModifications ->
+            modificationsForPersons.dvvModifications.map { personModifications ->
                 personModifications.tietoryhmat.map { infoGroup ->
                     try {
                         when (infoGroup) {
@@ -75,23 +70,33 @@ class DvvModificationsService(
                             )
                             }: ${e.message}"
                         }
+                        throw e
                     }
                 }
             }
 
             logger.info("Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ")
 
-            ssnsToUpdateFromVtj.forEach { ssn ->
-                db.transaction { tx ->
-                    personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
-                }?.let {
-                    logger.info("Refreshing all VTJ information for person ${it.id}")
-                    fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), clock)
-                }
+            db.transaction { tx ->
+                asyncJobRunner.plan(
+                    tx,
+                    payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
+                    runAt = HelsinkiDateTime.now()
+                )
             }
 
-            modificationsForPersons.size
+            modificationsForPersons
         }
+
+        if (result.token != result.nextToken) {
+            db.transaction {
+                it.storeDvvModificationToken(
+                    result.token, result.nextToken, ssns.size, result.dvvModifications.size
+                )
+            }
+        }
+
+        return result.dvvModifications.size
     }
 
     private fun handleDeath(db: Database.Connection, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
@@ -161,32 +166,29 @@ class DvvModificationsService(
             }
         }
 
-    fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
+    data class DvvModificationsWithToken(
+        val dvvModifications: List<DvvModification>,
+        val token: String,
+        val nextToken: String
+    )
+
+    fun getDvvModifications(tx: Database.Read, ssns: List<String>): DvvModificationsWithToken {
         val token = tx.getNextDvvModificationToken()
-        return getAllPagesOfDvvModifications(tx, ssns, token, emptyList())
+        return getAllPagesOfDvvModifications(ssns, token, emptyList())
     }
 
     fun getAllPagesOfDvvModifications(
-        tx: Database.Transaction,
         ssns: List<String>,
         token: String,
         alreadyFoundDvvModifications: List<DvvModification>
-    ): List<DvvModification> {
+    ): DvvModificationsWithToken {
         logger.debug("Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}")
         return dvvModificationsServiceClient.getModifications(token, ssns).let { dvvModificationsResponse ->
             val combinedModifications = alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
             if (dvvModificationsResponse.ajanTasalla) {
-                if (dvvModificationsResponse.viimeisinKirjausavain != token)
-                    tx.storeDvvModificationToken(
-                        token,
-                        dvvModificationsResponse.viimeisinKirjausavain,
-                        ssns.size,
-                        dvvModificationsResponse.muutokset.size
-                    )
-                combinedModifications
+                DvvModificationsWithToken(dvvModifications = combinedModifications, token = token, nextToken = dvvModificationsResponse.viimeisinKirjausavain)
             } else {
                 getAllPagesOfDvvModifications(
-                    tx,
                     ssns,
                     dvvModificationsResponse.viimeisinKirjausavain,
                     combinedModifications

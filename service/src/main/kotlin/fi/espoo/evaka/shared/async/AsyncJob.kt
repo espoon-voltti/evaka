@@ -179,6 +179,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendAssistanceNeedDecisionSfiMessage(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    data class UpdateFromVtj(val ssn: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 data class JobParams<T : AsyncJobPayload>(
