@@ -9,7 +9,6 @@ import { readableColor } from 'polished'
 import React, { useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { faCheck } from 'lib-icons'
 
 import { tabletMin } from '../breakpoints'
@@ -62,10 +61,8 @@ export const SelectionChip = React.memo(function SelectionChip({
   'data-qa': dataQa,
   showIcon = true
 }: SelectionChipProps) {
-  const ariaId = useUniqueId('selection-chip')
-
   const onClick = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
+    (e: React.UIEvent<HTMLElement>) => {
       e.preventDefault()
       onChange(!selected)
     },
@@ -73,33 +70,30 @@ export const SelectionChip = React.memo(function SelectionChip({
   )
 
   return (
-    <div data-qa={dataQa} onClick={onClick}>
-      <SelectionChipWrapper>
-        <SelectionChipInnerWrapper
-          className={classNames({ checked: selected })}
+    <SelectionChipWrapper
+      role="checkbox"
+      aria-label={text}
+      aria-checked={selected}
+      onClick={onClick}
+      onKeyUp={(ev) => ev.key === 'Enter' && onClick(ev)}
+      data-qa={dataQa}
+      tabIndex={0}
+    >
+      <SelectionChipInnerWrapper className={classNames({ checked: selected })}>
+        {showIcon && selected && (
+          <IconWrapper>
+            <FontAwesomeIcon icon={faCheck} />
+          </IconWrapper>
+        )}
+        <StyledLabel
+          className={classNames({ checked: showIcon && selected })}
+          aria-hidden="true"
+          onClick={preventDefault}
         >
-          <HiddenInput
-            type="checkbox"
-            onChange={() => onChange(!selected)}
-            onClick={preventDefault}
-            checked={selected}
-            id={ariaId}
-          />
-          {showIcon && selected && (
-            <IconWrapper>
-              <FontAwesomeIcon icon={faCheck} />
-            </IconWrapper>
-          )}
-          <StyledLabel
-            className={classNames({ checked: showIcon && selected })}
-            htmlFor={ariaId}
-            onClick={preventDefault}
-          >
-            {text}
-          </StyledLabel>
-        </SelectionChipInnerWrapper>
-      </SelectionChipWrapper>
-    </div>
+          {text}
+        </StyledLabel>
+      </SelectionChipInnerWrapper>
+    </SelectionChipWrapper>
   )
 })
 
@@ -133,13 +127,13 @@ const SelectionChipWrapper = styled.div`
   border-radius: 1000px;
   cursor: pointer;
   outline: none;
+  border: 2px solid transparent;
 
   &:focus,
   &:focus-within {
-    border: 2px solid ${(p) => p.theme.colors.main.m1};
-    border-radius: 1000px;
-    margin: -2px;
+    border-color: ${(p) => p.theme.colors.main.m1};
   }
+
   padding: 2px;
 `
 
@@ -153,6 +147,7 @@ const SelectionChipInnerWrapper = styled.div`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   color: ${(p) => p.theme.colors.main.m2};
   border: 1px solid ${(p) => p.theme.colors.main.m2};
+  min-height: 36px;
   &.checked {
     background-color: ${(p) => p.theme.colors.main.m2};
     color: ${(p) => p.theme.colors.grayscale.g0};
@@ -161,16 +156,6 @@ const SelectionChipInnerWrapper = styled.div`
   @media (max-width: ${tabletMin}) {
     height: 40px;
   }
-`
-
-const HiddenInput = styled.input`
-  outline: none;
-  appearance: none;
-  border: none;
-  background: none;
-  margin: 0;
-  height: 32px;
-  width: 0;
 `
 
 const IconWrapper = styled.div`

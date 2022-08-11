@@ -262,6 +262,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                       info={option.descriptionFi}
                       ariaLabel=""
                       width="full"
+                      closeLabel={i18n.common.close}
                     >
                       <CheckboxRow>
                         <Checkbox
@@ -342,6 +343,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                       )}
                       ariaLabel=""
                       width="full"
+                      closeLabel={i18n.common.close}
                     >
                       <CheckboxRow key={measure}>
                         <Checkbox

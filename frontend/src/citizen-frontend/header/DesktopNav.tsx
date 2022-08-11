@@ -60,52 +60,41 @@ export default React.memo(function DesktopNav({
               {user ? (
                 <>
                   {user.accessibleFeatures.reservations && (
-                    <StyledNavLink to="/calendar" data-qa="nav-calendar">
-                      <NavLinkText text={t.header.nav.calendar} />
-                    </StyledNavLink>
+                    <HeaderNavLink
+                      to="/calendar"
+                      data-qa="nav-calendar"
+                      text={t.header.nav.calendar}
+                    />
                   )}
                   {user.accessibleFeatures.messages && (
-                    <StyledNavLink to="/messages" data-qa="nav-messages">
-                      <NavLinkText text={t.header.nav.messages} />{' '}
-                      {unreadMessagesCount > 0 ? (
-                        <CircledChar
-                          aria-label={`${t.header.nav.messageCount(
-                            unreadMessagesCount
-                          )}`}
-                        >
-                          {unreadMessagesCount}
-                        </CircledChar>
-                      ) : (
-                        ''
-                      )}
-                    </StyledNavLink>
+                    <HeaderNavLink
+                      to="/messages"
+                      data-qa="nav-messages"
+                      text={t.header.nav.messages}
+                      notificationCount={unreadMessagesCount}
+                    />
                   )}
                   {user.accessibleFeatures.childDocumentation && (
-                    <StyledNavLink
+                    <HeaderNavLink
                       to="/child-documents"
                       data-qa="nav-child-documents"
-                    >
-                      <NavLinkText text={t.header.nav.pedagogicalDocuments} />
-                      {maybeLockElem}
-                      {isEnduser && unreadChildDocuments > 0 && (
-                        <CircledChar data-qa="unread-child-documents-count">
-                          {unreadChildDocuments}
-                        </CircledChar>
-                      )}
-                    </StyledNavLink>
+                      lockElem={maybeLockElem}
+                      text={t.header.nav.pedagogicalDocuments}
+                      notificationCount={unreadChildDocuments}
+                    />
                   )}
-                  <StyledNavLink to="/children" data-qa="nav-children">
-                    <NavLinkText text={t.header.nav.children} />
-                    {maybeLockElem}
-                    {isEnduser && unreadChildren > 0 && (
-                      <CircledChar data-qa="unread-children-count">
-                        {unreadChildren}
-                      </CircledChar>
-                    )}
-                  </StyledNavLink>
-                  <StyledNavLink to="/applying" data-qa="nav-applying">
-                    <NavLinkText text={t.header.nav.applications} />
-                  </StyledNavLink>
+                  <HeaderNavLink
+                    to="/children"
+                    data-qa="nav-children"
+                    text={t.header.nav.children}
+                    notificationCount={unreadChildren}
+                    lockElem={maybeLockElem}
+                  />
+                  <HeaderNavLink
+                    to="/applying"
+                    data-qa="nav-applying"
+                    text={t.header.nav.applications}
+                  />
                 </>
               ) : null}
             </Nav>
@@ -132,7 +121,12 @@ const NavLinkText = React.memo(function NavLinkText({
 }: {
   text: string
 }) {
-  return <div data-text={text}>{text}</div>
+  return (
+    <div>
+      <SpaceReservingText aria-hidden="true">{text}</SpaceReservingText>
+      <div data-qa="nav-text">{text}</div>
+    </div>
+  )
 })
 
 const Container = styled.div`
@@ -169,8 +163,7 @@ const StyledNavLink = styled(NavLink)`
     padding: 0 ${defaultMargins.m};
   }
 
-  &:hover,
-  [data-text]::before {
+  &:hover {
     font-weight: ${fontWeights.bold};
   }
 
@@ -184,13 +177,13 @@ const StyledNavLink = styled(NavLink)`
     border-bottom-color: ${colors.grayscale.g0};
     font-weight: ${fontWeights.bold};
   }
+`
 
-  [data-text]::before {
-    display: block;
-    height: 0;
-    visibility: hidden;
-    content: attr(data-text);
-  }
+const SpaceReservingText = styled.span`
+  font-weight: ${fontWeights.bold};
+  display: block;
+  height: 0;
+  visibility: hidden;
 `
 
 const Login = styled(Link)`
@@ -256,8 +249,9 @@ const LanguageMenu = React.memo(function LanguageMenu({
                 setOpen(false)
               }}
               data-qa={`lang-${l}`}
+              lang={l}
             >
-              <LanguageShort>{l}</LanguageShort>
+              <LanguageShort aria-hidden="true">{l}</LanguageShort>
               <span>{t.header.lang[l]}</span>
             </DropDownItem>
           ))}
@@ -364,7 +358,7 @@ const DropDownIcon = styled(FontAwesomeIcon)`
 
 const DropDown = styled.ul<{ alignRight: boolean }>`
   position: absolute;
-  z-index: 10;
+  z-index: 30;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -398,3 +392,44 @@ const DropDownItem = styled.button<{ selected: boolean }>`
 const LanguageShort = styled.span`
   text-transform: uppercase;
 `
+
+const HeaderNavLink = React.memo(function HeaderNavLink({
+  notificationCount,
+  text,
+  lockElem,
+  ...props
+}: {
+  onClick?: () => void
+  to: string
+  notificationCount?: number
+  text: string
+  lockElem?: React.ReactNode
+  'data-qa'?: string
+}) {
+  const t = useTranslation()
+
+  return (
+    <StyledNavLink
+      {...props}
+      aria-label={`${text}${
+        lockElem ? `, ${t.header.requiresStrongAuth}` : ''
+      }${
+        notificationCount && notificationCount > 0
+          ? `, ${notificationCount} ${t.header.notifications}`
+          : ''
+      }`}
+      role="menuitem"
+    >
+      <NavLinkText text={text} />
+      {lockElem}
+      {!!notificationCount && (
+        <CircledChar
+          aria-label={`${notificationCount} ${t.header.notifications}`}
+          data-qa={props['data-qa'] && `${props['data-qa']}-notification-count`}
+        >
+          {notificationCount}
+        </CircledChar>
+      )}
+    </StyledNavLink>
+  )
+})

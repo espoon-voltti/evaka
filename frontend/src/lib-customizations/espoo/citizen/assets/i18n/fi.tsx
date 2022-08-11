@@ -94,7 +94,8 @@ export default {
         'Joulukuu'
       ]
     },
-    closeModal: 'Sulje ponnahdusikkuna'
+    closeModal: 'Sulje ponnahdusikkuna',
+    close: 'Close'
   },
   header: {
     nav: {
@@ -119,7 +120,9 @@ export default {
     logout: 'Kirjaudu ulos',
     openMenu: 'Avaa valikko',
     closeMenu: 'Sulje valikko',
-    goToHomepage: 'Siirry etusivulle'
+    goToHomepage: 'Siirry etusivulle',
+    notifications: 'ilmoitusta',
+    requiresStrongAuth: 'vaatii vahvan tunnistautumisen'
   },
   footer: {
     cityLabel: '© Espoon kaupunki',

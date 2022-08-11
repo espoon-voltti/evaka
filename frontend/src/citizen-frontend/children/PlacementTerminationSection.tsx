@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H2, P } from 'lib-components/typography'
 
 import { renderResult } from '../async-rendering'
@@ -32,12 +32,14 @@ export default React.memo(function PlacementTerminationSection({
     [childId]
   )
 
+  const [open, setOpen] = useState(false)
+
   return (
-    <CollapsibleSection
-      title={t.children.placementTermination.title}
-      startCollapsed
-      fitted
-      headingComponent={H2}
+    <CollapsibleContentArea
+      title={<H2 noMargin>{t.children.placementTermination.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
     >
       {renderResult(placementsResponse, ({ placements }) => {
         const terminatedPlacements = placements.filter((p) =>
@@ -72,6 +74,6 @@ export default React.memo(function PlacementTerminationSection({
           </FixedSpaceColumn>
         )
       })}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })

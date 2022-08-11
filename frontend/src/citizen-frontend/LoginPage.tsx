@@ -97,12 +97,14 @@ export default React.memo(function LoginPage() {
               <ParagraphInfoButton
                 aria-label={i18n.common.openExpandingInfo}
                 onClick={() => setShowInfoBoxText(!showInfoBoxText)}
+                open={showInfoBoxText}
               />
             </P>
             {showInfoBoxText && (
               <ExpandingInfoBox
                 info={i18n.loginPage.applying.infoBoxText}
                 close={() => setShowInfoBoxText(false)}
+                closeLabel={i18n.common.close}
               />
             )}
             <ul>

@@ -115,6 +115,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
               ]
             }
             ariaLabel={t.common.openExpandingInfo}
+            closeLabel={t.common.close}
             inlineChildren
           >
             <Label>
@@ -162,6 +163,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.shiftCare.instructions}
             ariaLabel={t.common.openExpandingInfo}
+            closeLabel={t.common.close}
             margin="xs"
           >
             <Checkbox

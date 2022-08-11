@@ -320,6 +320,7 @@ export default React.memo(function CreateQuestionModal({
                 ariaLabel=""
                 key={`key-${i}`}
                 width="full"
+                closeLabel=""
               >
                 <FixedSpaceRow spacing="xs" alignItems="center">
                   <InputField

@@ -129,6 +129,7 @@ export default React.memo(function AssistanceNeedRow({
                     }
                     ariaLabel=""
                     width="full"
+                    closeLabel={i18n.common.close}
                   >
                     <span data-qa="assistance-need-multiplier">
                       {formatDecimal(assistanceNeed.capacityFactor)}

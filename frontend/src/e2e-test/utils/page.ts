@@ -320,7 +320,31 @@ export class Radio extends Checkable {
   }
 }
 
-export class SelectionChip extends Checkable {}
+export class SelectionChip extends Element {
+  async check() {
+    if (!this.checked) {
+      await this.click()
+      await this.waitUntilChecked(true)
+    }
+  }
+
+  async uncheck() {
+    if (await this.checked) {
+      await this.click()
+      await this.waitUntilChecked(false)
+    }
+  }
+
+  get checked(): Promise<boolean> {
+    return this.getAttribute('aria-checked').then(
+      (ariaChecked) => ariaChecked === 'true'
+    )
+  }
+
+  async waitUntilChecked(checked = true) {
+    await waitUntilEqual(() => this.checked, checked)
+  }
+}
 
 export class Select extends Element {
   #input = this.find('select')

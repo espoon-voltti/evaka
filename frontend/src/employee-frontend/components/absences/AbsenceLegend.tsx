@@ -71,6 +71,7 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
           key={t}
           info={i18n.absences.absenceTypeInfo[t]}
           ariaLabel={i18n.common.openExpandingInfo}
+          closeLabel={i18n.common.close}
         >
           <AbsenceLegendRow>
             {icons ? (

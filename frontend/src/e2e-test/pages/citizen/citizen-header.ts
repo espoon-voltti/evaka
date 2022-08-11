@@ -20,11 +20,13 @@ export default class CitizenHeader {
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
   #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
-  #applyingTab = this.page.find('[data-qa="nav-applying"]')
+  #applyingTab = this.page.findByDataQa('nav-applying').findByDataQa('nav-text')
   #unreadChildDocumentsCount = this.page.findAllByDataQa(
-    'unread-child-documents-count'
+    'nav-child-documents-notification-count'
   )
-  #unreadChildrenCount = this.page.findAllByDataQa('unread-children-count')
+  #unreadChildrenCount = this.page.findAllByDataQa(
+    'nav-children-notification-count'
+  )
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)

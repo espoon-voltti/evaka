@@ -4,10 +4,10 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import {
@@ -57,11 +57,11 @@ export default React.memo(function ThreadListItem({
             labels={i18n.messages.types}
           />
         </Header>
-        <SrOnly>
+        <ScreenReaderOnly>
           <Link to={`/messages/${thread.id}`} tabIndex={-1}>
             {i18n.messages.openMessage}
           </Link>
-        </SrOnly>
+        </ScreenReaderOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
           <span>{formatDateOrTime(lastMessage.sentAt)}</span>
@@ -88,12 +88,3 @@ export default React.memo(function ThreadListItem({
     </Container>
   )
 })
-
-const SrOnly = styled.div`
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-`

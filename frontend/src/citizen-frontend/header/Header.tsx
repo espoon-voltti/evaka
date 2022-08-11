@@ -100,7 +100,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 })
 
 const HeaderContainer = styled.header<{ showMenu: boolean }>`
-  z-index: 9;
+  z-index: 25;
   color: ${colors.grayscale.g0};
   background-color: ${colors.main.m2};
   display: grid;

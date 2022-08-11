@@ -194,6 +194,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               ]
             }
             ariaLabel={t.common.openExpandingInfo}
+            closeLabel={t.common.close}
             inlineChildren
           >
             <Label>
@@ -260,6 +261,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         data-qa="shiftcare-instructions"
         info={t.applications.editor.serviceNeed.shiftCare.instructions}
         ariaLabel={t.common.openExpandingInfo}
+        closeLabel={t.common.close}
         margin="xs"
       >
         <Checkbox

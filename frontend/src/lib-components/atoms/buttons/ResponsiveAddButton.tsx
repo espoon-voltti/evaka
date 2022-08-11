@@ -15,7 +15,12 @@ interface ResponsiveAddButtonProps extends AddButtonProps {
 
 const ResponsiveText = styled.span<{ breakpoint: string }>`
   @media (max-width: ${(p) => p.breakpoint}) {
-    display: none;
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 `
 

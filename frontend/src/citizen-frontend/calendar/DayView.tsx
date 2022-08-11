@@ -35,6 +35,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import {
   ModalCloseButton,
+  ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -197,7 +198,9 @@ export default React.memo(function DayView({
                   disabled={!previousDate}
                   altText={i18n.calendar.previousDay}
                 />
-                <DayOfWeek>{date.format('EEEEEE d.M.yyyy', lang)}</DayOfWeek>
+                <ModalHeader headingComponent={DayOfWeek}>
+                  {date.format('EEEEEE d.M.yyyy', lang)}
+                </ModalHeader>
                 <IconButton
                   icon={faChevronRight}
                   onClick={navigateToNextDate}
@@ -699,6 +702,7 @@ const Absence = React.memo(function Absence({
           <InfoButton
             onClick={onClick}
             aria-label={i18n.common.openExpandingInfo}
+            open={open}
           />
         </FixedSpaceColumn>
       </FixedSpaceRow>
@@ -708,6 +712,7 @@ const Absence = React.memo(function Absence({
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
+            closeLabel={i18n.common.close}
           />
         </Colspan2>
       )}
@@ -737,6 +742,7 @@ const DayOff = React.memo(function DayOff() {
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
+            closeLabel={i18n.common.close}
           />
         </Colspan2>
       )}

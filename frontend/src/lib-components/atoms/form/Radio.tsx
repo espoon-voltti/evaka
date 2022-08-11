@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ExpandingInfoButtonSlot } from 'lib-components/molecules/ExpandingInfo'
 import { faCheck } from 'lib-icons'
 
@@ -18,7 +19,6 @@ const diameter = '36px'
 const Wrapper = styled.div`
   display: inline-flex;
   align-items: flex-start;
-  cursor: pointer;
   width: fit-content;
 
   &.disabled {
@@ -46,7 +46,6 @@ const Wrapper = styled.div`
 const LabelContainer = styled.div<SizeProps>`
   margin-top: ${(p) => (p.small ? '3px' : '6px')};
   margin-left: ${defaultMargins.s};
-  cursor: pointer;
 `
 
 interface SizeProps {
@@ -102,6 +101,8 @@ const IconWrapper = styled.div<SizeProps>`
 
   font-size: ${(p) => (p.small ? '20px' : '25px')};
   color: ${(p) => p.theme.colors.grayscale.g0};
+
+  pointer-events: none; // let click event go through icon to the radio button
 `
 
 type RadioProps = BaseProps & {
@@ -125,13 +126,13 @@ export default React.memo(function Radio({
   ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const ariaLabel: string = 'ariaLabel' in props ? props.ariaLabel : props.label
+
+  const ariaId = useUniqueId('radio')
 
   return (
     <Wrapper
       onClick={() => {
         inputRef.current?.focus()
-        if (!disabled && onChange) onChange()
       }}
       className={classNames(className, { disabled })}
       data-qa={dataQa}
@@ -141,7 +142,8 @@ export default React.memo(function Radio({
           type="radio"
           checked={checked}
           name={name}
-          aria-label={ariaLabel}
+          id={id ?? ariaId}
+          aria-label={'ariaLabel' in props ? props.ariaLabel : undefined}
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
@@ -150,14 +152,13 @@ export default React.memo(function Radio({
           readOnly={!onChange}
           ref={inputRef}
           small={small}
-          id={id}
         />
         <IconWrapper small={small}>
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>
       <LabelContainer small={small}>
-        <label htmlFor={id}>{props.label}</label>
+        <label htmlFor={id ?? ariaId}>{props.label}</label>
         <ExpandingInfoButtonSlot />
       </LabelContainer>
     </Wrapper>

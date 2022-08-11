@@ -109,6 +109,7 @@ type ExpandingInfoProps = {
   margin?: SpacingSize
   'data-qa'?: string
   inlineChildren?: boolean
+  closeLabel: string
 }
 
 const ExpandingInfoToggleContext = React.createContext<
@@ -116,6 +117,7 @@ const ExpandingInfoToggleContext = React.createContext<
       ariaLabel: string
       margin?: SpacingSize
       dataQa?: string
+      expanded: boolean
       toggleExpanded: () => void
       hasSlot: (has: boolean) => void
     }
@@ -137,7 +139,8 @@ export default React.memo(function ExpandingInfo({
   width = 'fixed',
   margin,
   'data-qa': dataQa,
-  inlineChildren
+  inlineChildren,
+  closeLabel
 }: ExpandingInfoProps) {
   const group = useContext(ExpandingInfoGroupContext)
 
@@ -169,6 +172,7 @@ export default React.memo(function ExpandingInfo({
         aria-label={ariaLabel}
         margin={margin ?? 'zero'}
         data-qa={dataQa}
+        open={expanded}
       />
     </div>
   ) : (
@@ -179,6 +183,7 @@ export default React.memo(function ExpandingInfo({
         aria-label={ariaLabel}
         margin={margin ?? 'zero'}
         data-qa={dataQa}
+        open={expanded}
       />
     </FixedSpaceRow>
   )
@@ -190,7 +195,8 @@ export default React.memo(function ExpandingInfo({
         ariaLabel,
         margin,
         dataQa,
-        hasSlot: setHasSlot
+        hasSlot: setHasSlot,
+        expanded
       }}
     >
       <span aria-live="polite">
@@ -200,6 +206,7 @@ export default React.memo(function ExpandingInfo({
             info={info}
             width={width}
             close={close}
+            closeLabel={closeLabel}
             data-qa={dataQa}
           />
         )}
@@ -233,6 +240,7 @@ export const ExpandingInfoButtonSlot = React.memo(
         aria-label={info.ariaLabel}
         margin={info.margin ?? 'zero'}
         data-qa={info.dataQa}
+        open={info.expanded}
       />
     )
   }
@@ -243,13 +251,15 @@ export const InfoButton = React.memo(function InfoButton({
   'aria-label': ariaLabel,
   margin,
   className,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  open
 }: {
   onClick: React.MouseEventHandler<HTMLButtonElement>
   'aria-label': string
   margin?: SpacingSize
   className?: string
   'data-qa'?: string
+  open?: boolean
 }) {
   const { colors } = useTheme()
 
@@ -263,6 +273,7 @@ export const InfoButton = React.memo(function InfoButton({
       type="button"
       role="button"
       aria-label={ariaLabel}
+      aria-expanded={open}
     >
       <FontAwesomeIcon icon={fasInfo} />
     </RoundIconButton>
@@ -278,13 +289,15 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   close,
   width = 'fixed',
   className,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  closeLabel
 }: {
   info: ReactNode
   close: () => void
   width?: 'fixed' | 'full' | 'auto'
   className?: string
   'data-qa'?: string
+  closeLabel: string
 }) {
   const { colors } = useTheme()
 
@@ -297,7 +310,12 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
           {info}
         </InfoContainer>
 
-        <IconButton onClick={close} icon={faTimes} gray />
+        <IconButton
+          onClick={close}
+          icon={faTimes}
+          aria-label={closeLabel}
+          gray
+        />
       </InfoBoxContentArea>
     </InfoBoxContainer>
   )
