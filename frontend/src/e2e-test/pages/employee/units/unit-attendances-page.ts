@@ -41,6 +41,13 @@ export class UnitAttendancesPage {
       .waitUntilVisible()
   }
 
+  async assertAbsenceCount(type: string, expectedCount: number) {
+    await this.page
+      .findAllByDataQa('absence-cell')
+      .findAll(`.absence-cell-right-${type}`)
+      .assertCount(expectedCount)
+  }
+
   async setFilterStartDate(date: LocalDate) {
     await new DatePickerDeprecated(
       this.page.find('[data-qa="unit-filter-start-date"]')

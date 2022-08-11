@@ -2469,7 +2469,8 @@ export const fi = {
       FORCE_MAJEURE: 'Maksuton päivä',
       FREE_ABSENCE: 'Maksuton poissaolo',
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
-      NO_ABSENCE: 'Ei poissaoloa'
+      NO_ABSENCE: 'Ei poissaoloa',
+      NO_SERVICE_TIME: 'Poissaolo, vapaapäivä'
     },
     absenceTypesShort: {
       OTHER_ABSENCE: 'Poissaolo',

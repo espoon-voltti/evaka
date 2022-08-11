@@ -327,3 +327,27 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 })
+
+describe('Daily service times in the unit calendar', () => {
+  beforeEach(async () => {
+    await Fixture.dailyServiceTime(child1Fixture.id)
+      .with({
+        type: 'IRREGULAR',
+        regularTimes: null,
+        mondayTimes: { start: '08:00', end: '16:00' },
+        tuesdayTimes: { start: '08:00', end: '16:00' },
+        wednesdayTimes: { start: '08:00', end: '16:00' },
+        thursdayTimes: { start: '08:00', end: '16:00' },
+        fridayTimes: null,
+        saturdayTimes: null,
+        sundayTimes: null
+      })
+      .save()
+  })
+
+  test('Fridays and weekends are marked as off for child with irregular service times and Fridays and weekends off', async () => {
+    calendarPage = await loadUnitCalendarPage()
+    // Feb 2023 has 4 Fridays and weekends
+    await calendarPage.assertAbsenceCount('OTHER_ABSENCE', 12)
+  })
+})

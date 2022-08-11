@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import DateRange from 'lib-common/date-range'
 import {
   AbsenceCategory,
   AbsenceChild,
@@ -33,6 +35,16 @@ export interface CellPart {
   position: string
 }
 
+const deserializeDailyServiceTimes = (
+  json: JsonOf<DailyServiceTimes[]> | null
+): DailyServiceTimes[] | null =>
+  json === null
+    ? null
+    : json.map((dst) => ({
+        ...dst,
+        validityPeriod: DateRange.parseJson(dst.validityPeriod)
+      }))
+
 export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
   ...json,
   child: {
@@ -48,5 +60,6 @@ export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
         modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
       }))
     ])
-  )
+  ),
+  dailyServiceTimes: deserializeDailyServiceTimes(json.dailyServiceTimes)
 })

@@ -547,7 +547,7 @@ export interface DevDailyServiceTime {
   childId: UUID
   type: DailyServiceTimesType
   validityPeriod: DateRange
-  regularTimes: TimeRange
+  regularTimes: TimeRange | null
   mondayTimes: TimeRange | null
   tuesdayTimes: TimeRange | null
   wednesdayTimes: TimeRange | null

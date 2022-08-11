@@ -11,6 +11,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { Coordinate } from './shared'
+import { DailyServiceTimes } from '../../api-types/child/common'
 import { DaycareAclRow } from './shared'
 import { EvakaUserType } from './user'
 import { PersonJSON } from './pis'
@@ -43,6 +44,7 @@ export interface AbsenceChild {
   attendanceTotalHours: number | null
   backupCares: Record<string, boolean>
   child: Child
+  dailyServiceTimes: DailyServiceTimes[] | null
   placements: Record<string, AbsenceCategory[]>
   reservationTotalHours: number | null
 }

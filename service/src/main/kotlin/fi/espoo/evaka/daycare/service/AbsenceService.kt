@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -56,11 +55,12 @@ class AbsenceService {
 
         val children = placementList.map { (child, placements) ->
             val placementDateRanges = placements.map { it.dateRange }
+            val childDailyServiceTimes = dailyServiceTimes[child.id]?.map { it.times }
             val supplementedReservations = supplementReservationsWithDailyServiceTimes(
                 placementDateRanges,
                 setOfOperationalDays,
                 reservations[child.id],
-                dailyServiceTimes[child.id]?.map { it.times },
+                childDailyServiceTimes,
                 absenceList[child.id]
             )
 
@@ -76,7 +76,8 @@ class AbsenceService {
                 reservationTotalHours = sumOfHours(supplementedReservations, placementDateRanges, range),
                 attendanceTotalHours = attendances[child.id]
                     ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                    ?.let { sumOfHours(it, placementDateRanges, range) }
+                    ?.let { sumOfHours(it, placementDateRanges, range) },
+                dailyServiceTimes = childDailyServiceTimes?.filter { it.validityPeriod.overlaps(DateRange.ofMonth(year, Month.of(month))) }
             )
         }
 
@@ -211,7 +212,8 @@ data class AbsenceChild(
     val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
     val backupCares: Map<LocalDate, Boolean>,
     val reservationTotalHours: Int?,
-    val attendanceTotalHours: Int?
+    val attendanceTotalHours: Int?,
+    val dailyServiceTimes: List<DailyServiceTimes>?
 )
 
 data class Child(

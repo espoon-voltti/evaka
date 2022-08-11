@@ -5,6 +5,11 @@
 import React, { Fragment, useCallback, useMemo } from 'react'
 
 import {
+  DailyServiceTimes,
+  getTimesOnWeekday,
+  isIrregular
+} from 'lib-common/api-types/child/common'
+import {
   AbsenceCategory,
   AbsenceWithModifierInfo
 } from 'lib-common/generated/api-types/daycare'
@@ -35,6 +40,14 @@ function AbsenceCellPart({
   return <div className={`absence-cell-${position} ${specificClass}`} />
 }
 
+const isServiceTimeFreeDay = (
+  dailyServiceTimes: DailyServiceTimes | undefined,
+  date: LocalDate
+) =>
+  dailyServiceTimes &&
+  isIrregular(dailyServiceTimes) &&
+  !getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
+
 interface AbsenceCellProps {
   childId: UUID
   selectedCells: Cell[]
@@ -43,6 +56,7 @@ interface AbsenceCellProps {
   categories: AbsenceCategory[] | undefined
   absences: AbsenceWithModifierInfo[] | undefined
   backupCare: boolean
+  dailyServiceTimes?: DailyServiceTimes[] | null
 }
 
 const getCellId = (childId: UUID, date: LocalDate) =>
@@ -53,7 +67,8 @@ function getCellParts(
   date: LocalDate,
   categories: AbsenceCategory[],
   absences: AbsenceWithModifierInfo[] | undefined,
-  backupCare: boolean
+  backupCare: boolean,
+  dailyServiceTimes: DailyServiceTimes | undefined
 ): CellPart[] {
   return categories.map((category) => {
     const position = category === 'BILLABLE' ? 'right' : 'left'
@@ -80,6 +95,15 @@ function getCellParts(
         absenceType,
         position
       }
+    } else if (isServiceTimeFreeDay(dailyServiceTimes, date)) {
+      return {
+        id: `${childId}-${date.formatIso()}-service-time-off`,
+        childId,
+        date,
+        category,
+        absenceType: 'OTHER_ABSENCE',
+        position
+      }
     } else {
       return {
         id: `${childId}-${date.formatIso()}-${category}`,
@@ -103,18 +127,27 @@ const AbsenceCellParts = React.memo(function AbsenceCellParts({
   absences,
   backupCare,
   isSelected,
-  toggle
-}: AbsenceCellProps & {
+  toggle,
+  dailyServiceTimes
+}: Omit<AbsenceCellProps, 'dailyServiceTimes'> & {
   id: UUID
   isSelected: boolean
   toggle: (parts: CellPart[]) => void
+  dailyServiceTimes?: DailyServiceTimes
 }) {
   const parts = useMemo(
     () =>
       categories
-        ? getCellParts(childId, date, categories, absences, backupCare)
+        ? getCellParts(
+            childId,
+            date,
+            categories,
+            absences,
+            backupCare,
+            dailyServiceTimes
+          )
         : [],
-    [absences, backupCare, categories, childId, date]
+    [absences, backupCare, categories, childId, date, dailyServiceTimes]
   )
   if (parts.length === 0) {
     return <DisabledCell />
@@ -145,9 +178,15 @@ export default React.memo(function AbsenceCell({
   date,
   categories,
   absences,
-  backupCare
+  backupCare,
+  dailyServiceTimes
 }: AbsenceCellProps) {
   const { i18n } = useTranslation()
+
+  const relevantServiceTimes = useMemo(
+    () => dailyServiceTimes?.find((dst) => dst.validityPeriod.includes(date)),
+    [dailyServiceTimes, date]
+  )
 
   const id = useMemo(() => getCellId(childId, date), [childId, date])
   const isSelected = useMemo(
@@ -159,6 +198,8 @@ export default React.memo(function AbsenceCell({
     () =>
       backupCare
         ? i18n.absences.absenceTypes['TEMPORARY_RELOCATION']
+        : isServiceTimeFreeDay(relevantServiceTimes, date)
+        ? i18n.absences.absenceTypes['NO_SERVICE_TIME']
         : absences?.map(
             ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
               <Fragment key={index}>
@@ -171,7 +212,7 @@ export default React.memo(function AbsenceCell({
               </Fragment>
             )
           ),
-    [absences, backupCare, i18n]
+    [absences, backupCare, i18n, relevantServiceTimes, date]
   )
 
   const toggle = useCallback(
@@ -197,6 +238,7 @@ export default React.memo(function AbsenceCell({
         backupCare={backupCare}
         isSelected={isSelected}
         toggle={toggle}
+        dailyServiceTimes={relevantServiceTimes}
       />
     </Tooltip>
   )
