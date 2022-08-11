@@ -20,9 +20,9 @@ import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -65,7 +65,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     fun `modification token is not updated if there is an exception during update`() {
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 
-        assertThrows(Exception::class.java) {
+        assertThrows<Exception> {
             updatePeopleFromDvv(listOf("rikkinainen_tietue"))
         }
 
