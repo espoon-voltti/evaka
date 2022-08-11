@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -440,8 +439,15 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
         .merge()
-        .firstOrNull()?.let {
-            it.copy(isElementaryFamily = isElementaryFamily(it.headOfFamily.id, it.partner?.id, it.children.map { it.child.id }))
+        .firstOrNull()?.let { it ->
+            it.copy(
+                partnerIsCodebtor = partnerIsCodebtor(
+                    it.headOfFamily.id,
+                    it.partner?.id,
+                    it.children.map { c -> c.child.id },
+                    it.validDuring
+                )
+            )
         }
 }
 
@@ -628,21 +634,27 @@ fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
         .execute()
 }
 
-fun Database.Read.isElementaryFamily(
+fun Database.Read.partnerIsCodebtor(
     headOfFamilyId: PersonId,
     partnerId: PersonId?,
-    childIds: List<ChildId>
+    childIds: List<ChildId>,
+    dateRange: DateRange
 ): Boolean = partnerId != null && createQuery(
     """
-SELECT
-    COALESCE((
-    SELECT array_agg(DISTINCT(head.child_id)) as child_ids
-    FROM guardian head JOIN guardian partner ON head.child_id = partner.child_id
-    WHERE head.guardian_id = :headOfFamilyId and partner.guardian_id = :partnerId), '{}') @>:childIds
-    """.trimIndent()
+WITH partner_children AS (
+    SELECT COALESCE(ARRAY_AGG(child_id), '{}') AS ids
+    FROM guardian WHERE guardian_id = :partnerId
+), partner_fridge_children AS (
+    SELECT COALESCE(ARRAY_AGG(child_id), '{}') AS ids
+    FROM fridge_child WHERE NOT conflict AND head_of_child = :partnerId AND daterange(start_date, end_date, '[]') && :dateRange
+)
+SELECT (partner_children.ids || partner_fridge_children.ids) && :childIds
+FROM partner_children, partner_fridge_children
+"""
 )
     .bind("headOfFamilyId", headOfFamilyId)
     .bind("partnerId", partnerId)
     .bind("childIds", childIds)
+    .bind("dateRange", dateRange)
     .mapTo<Boolean>()
     .first()

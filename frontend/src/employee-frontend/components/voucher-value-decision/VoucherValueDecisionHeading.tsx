@@ -41,7 +41,7 @@ export default React.memo(function VoucherValueDecisionHeading({
     financeDecisionHandlerLastName,
     decisionType,
     documentKey,
-    isElementaryFamily
+    partnerIsCodebtor
   },
   changeDecisionType,
   newDecisionType
@@ -93,7 +93,7 @@ export default React.memo(function VoucherValueDecisionHeading({
               </Link>
             )
           },
-          ...(partner && isElementaryFamily
+          ...(partner && partnerIsCodebtor
             ? [
                 {
                   label: i18n.valueDecision.partner,

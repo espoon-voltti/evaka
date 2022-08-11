@@ -14,9 +14,9 @@ import fi.espoo.evaka.invoicing.data.getDetailedFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
-import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.lockFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionType
 import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
@@ -94,11 +94,19 @@ class FeeDecisionService(
         val (conflicts, waitingForSending) = decisions
             .flatMap {
                 tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
-                tx.findFeeDecisionsForHeadOfFamily(
+                val ownDecisions = tx.findFeeDecisionsForHeadOfFamily(
                     it.headOfFamilyId,
                     DateRange(it.validFrom, it.validTo),
                     listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                 )
+                val partnerDecisions = it.partnerId?.let { partnerId ->
+                    tx.findFeeDecisionsForHeadOfFamily(
+                        partnerId,
+                        DateRange(it.validFrom, it.validTo),
+                        listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                    )
+                } ?: listOf()
+                ownDecisions + partnerDecisions
             }
             .distinctBy { it.id }
             .filter { !ids.contains(it.id) }
@@ -155,8 +163,13 @@ class FeeDecisionService(
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
         val decision = tx.getFeeDecision(id)?.let {
-            val isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, it.children.map { it.child.id })
-            it.copy(isElementaryFamily = isElementaryFamily)
+            val partnerIsCodebtor = tx.partnerIsCodebtor(
+                it.headOfFamily.id,
+                it.partner?.id,
+                it.children.map { c -> c.child.id },
+                it.validDuring
+            )
+            it.copy(partnerIsCodebtor = partnerIsCodebtor)
         } ?: throw NotFound("No fee decision found with ID ($id)")
 
         if (!decision.documentKey.isNullOrBlank()) {

@@ -7,8 +7,8 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
-import fi.espoo.evaka.invoicing.data.isElementaryFamily
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
+import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -111,7 +112,14 @@ class VoucherValueDecisionService(
 
     private fun getDecision(tx: Database.Read, decisionId: VoucherValueDecisionId): VoucherValueDecisionDetailed =
         tx.getVoucherValueDecision(decisionId)?.let {
-            it.copy(isElementaryFamily = tx.isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
+            it.copy(
+                partnerIsCodebtor = tx.partnerIsCodebtor(
+                    it.headOfFamily.id,
+                    it.partner?.id,
+                    listOf(it.child.id),
+                    DateRange(it.validFrom, it.validTo)
+                )
+            )
         } ?: error("No voucher value decision found with ID ($decisionId)")
 
     private fun generatePdf(decision: VoucherValueDecisionDetailed, settings: Map<SettingType, String>): ByteArray {

@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
-import fi.espoo.evaka.invoicing.data.isElementaryFamily
+import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -96,7 +96,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 tx.getFreeJulyChildren(range.start.year)
             } else emptyList()
 
-        val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions) }
+        val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions, range) }
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -125,15 +125,24 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val codebtors: Map<PersonId, PersonId?> = mapOf()
     )
 
-    private fun getInvoiceCodebtor(tx: Database.Transaction, decisions: List<FeeDecision>): PersonId? {
+    private fun getInvoiceCodebtor(
+        tx: Database.Transaction,
+        decisions: List<FeeDecision>,
+        dateRange: DateRange
+    ): PersonId? {
         val partners = decisions.map { it.partnerId }.distinct()
         if (partners.size != 1) return null
 
-        val familyCompositions = decisions.map { Triple(it.headOfFamilyId, it.partnerId, it.children.map { it.child }) }
         return partners.first().takeIf {
-            familyCompositions.all { (head, partner, children) ->
-                if (partner == null) false
-                else tx.isElementaryFamily(head, partner, children.map { it.id })
+            decisions.all { decision ->
+                if (decision.partnerId == null) false
+                else tx.partnerIsCodebtor(
+                    decision.headOfFamilyId,
+                    decision.partnerId,
+                    decision.children.map { it.child.id },
+                    decision.validDuring.intersection(dateRange)
+                        ?: error("Decision is not valid during invoice period $dateRange")
+                )
             }
         }
     }

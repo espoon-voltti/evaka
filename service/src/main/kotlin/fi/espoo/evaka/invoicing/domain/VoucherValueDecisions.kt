@@ -63,14 +63,13 @@ data class VoucherValueDecision(
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
         if (this.isEmpty() && decision.isEmpty()) {
-            return this.headOfFamilyId == decision.headOfFamilyId
+            return setOf(this.headOfFamilyId, this.partnerId) == setOf(decision.headOfFamilyId, decision.partnerId)
         }
 
-        return this.headOfFamilyId == decision.headOfFamilyId &&
-            this.partnerId == decision.partnerId &&
-            this.headOfFamilyIncome == decision.headOfFamilyIncome &&
-            this.partnerIncome == decision.partnerIncome &&
-            this.familySize == decision.familySize &&
+        return setOf(this.headOfFamilyId to this.headOfFamilyIncome, this.partnerId to this.partnerIncome) == setOf(
+            decision.headOfFamilyId to decision.headOfFamilyIncome,
+            decision.partnerId to decision.partnerIncome
+        ) && this.familySize == decision.familySize &&
             this.child == decision.child &&
             this.placement == decision.placement &&
             this.serviceNeed == decision.serviceNeed &&
@@ -212,7 +211,7 @@ data class VoucherValueDecisionDetailed(
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
-    val isElementaryFamily: Boolean? = false
+    val partnerIsCodebtor: Boolean? = false
 ) {
     val incomeEffect
         get() = getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)

@@ -3203,7 +3203,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `invoice codebtor is not set when partner on decision is not every child's guardian`() {
+    fun `invoice codebtor is not set when partner on decision is not any child's guardian`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         initByPeriodAndPlacementType(
             period,
@@ -3213,7 +3213,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
-            it.insertGuardian(testAdult_2.id, testChild_1.id)
             it.insertGuardian(testAdult_1.id, testChild_2.id)
         }
 

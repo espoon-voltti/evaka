@@ -40,7 +40,7 @@ interface Props {
   decisionType: FeeDecisionType
   changeDecisionType: (type: FeeDecisionType) => void
   newDecisionType: FeeDecisionType
-  isElementaryFamily: boolean | null
+  partnerIsCodebtor: boolean | null
 }
 
 function displayDecisionNumber(number: number) {
@@ -61,7 +61,7 @@ export default React.memo(function Heading({
   decisionType,
   changeDecisionType,
   newDecisionType,
-  isElementaryFamily
+  partnerIsCodebtor
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -123,7 +123,7 @@ export default React.memo(function Heading({
       valueWidth?: string
       'data-qa'?: string
     }[] =
-      partner && isElementaryFamily
+      partner && partnerIsCodebtor
         ? [
             {
               label: i18n.feeDecision.partner,
