@@ -31,6 +31,7 @@ import { DailyReservationRequest } from 'lib-common/generated/api-types/reservat
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import {
   Caretakers,
+  GroupOccupancies,
   UnitOccupancies
 } from 'lib-common/generated/api-types/units'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -100,11 +101,6 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
       })
     )
     .catch((e) => Failure.fromError(e))
-}
-
-export type GroupOccupancies = {
-  confirmed: Record<UUID, OccupancyResponse>
-  realized: Record<UUID, OccupancyResponse>
 }
 
 interface MissingGroupPlacementCommon {
