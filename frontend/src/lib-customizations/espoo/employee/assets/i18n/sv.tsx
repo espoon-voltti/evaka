@@ -68,7 +68,7 @@ export const sv = {
         assistanceEnds: 'Stödet upphör',
         assistanceServicesForTime: 'Stödtjänster under beslutets giltighetstid',
         enhancedAssistance: 'Intensifierat stöd',
-        specialAssistance: 'Specialstöd'
+        specialAssistance: 'Särskilt stöd'
       },
       startDate: 'Beslutet i kraft fr.o.m.',
       startDateInfo:
