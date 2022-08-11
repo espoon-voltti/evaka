@@ -1992,7 +1992,7 @@ const sv: Translations = {
             assistanceServicesForTime:
               'Stödtjänster under beslutets giltighetstid',
             enhancedAssistance: 'Intensifierat stöd',
-            specialAssistance: 'Specialstöd'
+            specialAssistance: 'Särskilt stöd'
           },
           startDate: 'Beslutet i kraft fr.o.m.',
           endDate: 'Beslutet i kraft till',
