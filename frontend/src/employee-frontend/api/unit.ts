@@ -18,11 +18,11 @@ import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   CreateDaycareResponse,
-  DaycareFields,
-  Stats
+  DaycareFields
 } from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyPeriod,
+  OccupancyResponse,
   OccupancyResponseSpeculated,
   RealtimeOccupancy
 } from 'lib-common/generated/api-types/occupancy'
@@ -30,6 +30,7 @@ import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import { Caretakers } from 'lib-common/generated/api-types/units'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -99,12 +100,6 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export type OccupancyResponse = {
-  occupancies: OccupancyPeriod[]
-  max?: OccupancyPeriod
-  min?: OccupancyPeriod
-}
-
 export type UnitOccupancies = {
   planned: OccupancyResponse
   confirmed: OccupancyResponse
@@ -115,11 +110,6 @@ export type UnitOccupancies = {
 export type GroupOccupancies = {
   confirmed: Record<UUID, OccupancyResponse>
   realized: Record<UUID, OccupancyResponse>
-}
-
-export type Caretakers = {
-  unitCaretakers: Stats
-  groupCaretakers: Record<UUID, Stats>
 }
 
 interface MissingGroupPlacementCommon {
