@@ -15,8 +15,8 @@ export function round(num: number, scale = 0) {
   return Math.round(Math.pow(10, scale) * num) / Math.pow(10, scale)
 }
 
-export const formatPercentage = (value?: number) =>
-  value !== undefined ? `${value.toFixed(1).replace('.', ',')} %` : undefined
+export const formatPercentage = (value: number | undefined | null) =>
+  value != null ? `${value.toFixed(1).replace('.', ',')} %` : undefined
 
 export const stringToNumber = (str: string): number | undefined => {
   const normalized = str.replace(',', '.')

@@ -125,14 +125,6 @@ export interface DaycareGroupWithPlacements extends DaycareGroup {
   placements: DaycareGroupPlacementDetailed[]
 }
 
-export interface Occupancy {
-  period: FiniteDateRange
-  sum: number
-  headcount: number
-  caretakers?: number
-  percentage?: number
-}
-
 export interface UnitChildrenCapacityFactors {
   childId: UUID
   serviceNeedFactor: number

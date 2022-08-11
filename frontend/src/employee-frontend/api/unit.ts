@@ -22,6 +22,7 @@ import {
   Stats
 } from 'lib-common/generated/api-types/daycare'
 import {
+  OccupancyPeriod,
   OccupancyResponseSpeculated,
   RealtimeOccupancy
 } from 'lib-common/generated/api-types/occupancy'
@@ -38,7 +39,6 @@ import {
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,
-  Occupancy,
   TerminatedPlacement,
   Unit,
   UnitChildrenCapacityFactors
@@ -100,9 +100,9 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
 }
 
 export type OccupancyResponse = {
-  occupancies: Occupancy[]
-  max?: Occupancy
-  min?: Occupancy
+  occupancies: OccupancyPeriod[]
+  max?: OccupancyPeriod
+  min?: OccupancyPeriod
 }
 
 export type UnitOccupancies = {
@@ -326,7 +326,7 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
   }))
 }
 
-const mapOccupancyPeriod = (p: JsonOf<Occupancy>): Occupancy => ({
+const mapOccupancyPeriod = (p: JsonOf<OccupancyPeriod>): OccupancyPeriod => ({
   ...p,
   period: FiniteDateRange.parseJson(p.period)
 })
