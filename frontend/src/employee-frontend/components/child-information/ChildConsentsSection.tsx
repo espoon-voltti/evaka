@@ -49,7 +49,10 @@ export function getChildConsents(
       Success.of(
         res.data.map((consent) => ({
           ...consent,
-          givenAt: HelsinkiDateTime.parseIso(consent.givenAt)
+          givenAt:
+            consent.givenAt === null
+              ? null
+              : HelsinkiDateTime.parseIso(consent.givenAt)
         }))
       )
     )
@@ -138,11 +141,15 @@ export default React.memo(function ChildConsentsSection({
       consents
         .map(
           (consents) =>
-            childConsentTypes.filter((type) => !consents.has(type)).length
+            Array.from(consents.values()).filter(({ given }) => given === null)
+              .length
         )
         .getOrElse(0),
     [consents]
   )
+
+  // hide section if no consents are enabled
+  if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
 
   return (
     <CollapsibleContentArea
@@ -196,12 +203,12 @@ export default React.memo(function ChildConsentsSection({
               </>
             )}
           </FixedSpaceRow>
-          {evakaProfilePicture && (
+          {evakaProfilePicture && evakaProfilePicture.given !== null && (
             <>
               <Gap size="m" />
               <Dimmed data-qa="consent-profilepic-modified-by">
                 {i18n.childInformation.childConsents.modifiedBy}:{' '}
-                {evakaProfilePicture.givenAt.toLocalDate().format()}{' '}
+                {evakaProfilePicture.givenAt?.toLocalDate().format()}{' '}
                 {evakaProfilePicture.givenByEmployee ??
                   `${evakaProfilePicture.givenByGuardian ?? ''} (${
                     i18n.childInformation.childConsents.guardian

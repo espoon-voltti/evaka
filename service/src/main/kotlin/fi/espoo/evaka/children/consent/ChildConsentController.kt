@@ -6,6 +6,7 @@ package fi.espoo.evaka.children.consent
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ChildConsentController(
     private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
 ) {
     @GetMapping("/children/{childId}/consent")
     fun getChildConsents(
@@ -32,7 +34,11 @@ class ChildConsentController(
         accessControl.requirePermissionFor(user, Action.Child.READ_CHILD_CONSENTS, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getChildConsentsByChild(childId)
+                val consents = tx.getChildConsentsByChild(childId)
+                featureConfig.enabledChildConsentTypes.map { type ->
+                    consents.find { it.type == type }
+                        ?: ChildConsent(type, null, null, null, null)
+                }
             }
         }
     }
@@ -46,7 +52,11 @@ class ChildConsentController(
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILD_CONSENTS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCitizenChildConsentsForGuardian(user.id)
+                tx.getCitizenChildConsentsForGuardian(user.id).mapValues { consent ->
+                    featureConfig.enabledChildConsentTypes.map { type ->
+                        CitizenChildConsent(type, consent.value.find { it.type == type }?.given)
+                    }
+                }
             }
         }
     }
@@ -63,7 +73,7 @@ class ChildConsentController(
         accessControl.requirePermissionFor(user, Action.Child.UPSERT_CHILD_CONSENT, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                body.forEach { consent ->
+                body.filter { featureConfig.enabledChildConsentTypes.contains(it.type) }.forEach { consent ->
                     if (consent.given == null) {
                         tx.deleteChildConsentEmployee(childId, consent.type)
                     } else {
@@ -85,8 +95,8 @@ class ChildConsentController(
         accessControl.requirePermissionFor(user, Action.Citizen.Child.INSERT_CHILD_CONSENTS, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                body.forEach { consent ->
-                    if (!tx.insertChildConsentCitizen(childId, consent.type, consent.given, user.id)) {
+                body.filter { featureConfig.enabledChildConsentTypes.contains(it.type) }.forEach { consent ->
+                    if (consent.given == null || !tx.insertChildConsentCitizen(childId, consent.type, consent.given, user.id)) {
                         throw Forbidden("Citizens may not modify consent that has already been given.")
                     }
                 }

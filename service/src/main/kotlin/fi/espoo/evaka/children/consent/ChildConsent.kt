@@ -5,8 +5,6 @@
 package fi.espoo.evaka.children.consent
 
 import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.shared.ChildConsentId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -16,17 +14,15 @@ enum class ChildConsentType {
 }
 
 data class ChildConsent(
-    val id: ChildConsentId,
-    val childId: ChildId,
     val type: ChildConsentType,
-    val given: Boolean,
+    val given: Boolean?,
     val givenByGuardian: String?,
     val givenByEmployee: String?,
-    val givenAt: HelsinkiDateTime
+    val givenAt: HelsinkiDateTime?
 )
 
 data class CitizenChildConsent(
     @PropagateNull
     val type: ChildConsentType,
-    val given: Boolean
+    val given: Boolean?
 )
