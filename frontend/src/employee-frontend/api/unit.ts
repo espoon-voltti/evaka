@@ -13,7 +13,7 @@ import {
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { ApplicationUnitSummary } from 'lib-common/generated/api-types/application'
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
@@ -28,10 +28,7 @@ import {
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import {
-  ServiceNeed,
-  ServiceNeedOptionSummary
-} from 'lib-common/generated/api-types/serviceneed'
+import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -150,22 +147,6 @@ interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
 export type MissingGroupPlacement =
   | MissingGroupPlacementStandard
   | MissingGroupPlacementBackupCare
-
-export type ApplicationUnitSummary = {
-  applicationId: UUID
-  firstName: string
-  lastName: string
-  dateOfBirth: LocalDate
-  guardianFirstName: string
-  guardianLastName: string
-  guardianPhone: string | null
-  guardianEmail: string | null
-  requestedPlacementType: PlacementType
-  serviceNeed: ServiceNeedOptionSummary | null
-  preferredStartDate: LocalDate
-  preferenceOrder: number
-  status: ApplicationStatus
-}
 
 export type UnitData = {
   groups: DaycareGroup[]
@@ -444,12 +425,6 @@ function mapApplicationsJson(
 ): ApplicationUnitSummary {
   return {
     ...data,
-    serviceNeed: data.serviceNeed
-      ? {
-          ...data.serviceNeed,
-          updated: HelsinkiDateTime.parseIso(data.serviceNeed.updated)
-        }
-      : null,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     preferredStartDate: LocalDate.parseIso(data.preferredStartDate)
   }
