@@ -26,7 +26,7 @@ import {
   OccupancyResponseSpeculated
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import {
@@ -102,32 +102,6 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     )
     .catch((e) => Failure.fromError(e))
 }
-
-interface MissingGroupPlacementCommon {
-  placementId: UUID
-  placementPeriod: FiniteDateRange
-  childId: UUID
-  firstName: string | null
-  lastName: string | null
-  dateOfBirth: LocalDate
-  gap: FiniteDateRange
-}
-
-interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
-  placementType: PlacementType
-  backup: false
-  serviceNeeds: ServiceNeed[]
-}
-
-interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
-  placementType: null
-  backup: true
-  serviceNeeds: ServiceNeed[]
-}
-
-export type MissingGroupPlacement =
-  | MissingGroupPlacementStandard
-  | MissingGroupPlacementBackupCare
 
 export type UnitData = {
   groups: DaycareGroup[]

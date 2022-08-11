@@ -7,6 +7,7 @@ import React, { useContext, useState } from 'react'
 import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -17,10 +18,7 @@ import { Bold } from 'lib-components/typography'
 import { faChild } from 'lib-icons'
 
 import { updateBackupCare } from '../../../../api/child/backup-care'
-import {
-  createGroupPlacement,
-  MissingGroupPlacement
-} from '../../../../api/unit'
+import { createGroupPlacement } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
