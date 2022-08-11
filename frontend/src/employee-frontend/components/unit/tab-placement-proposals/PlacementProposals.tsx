@@ -15,6 +15,7 @@ import styled from 'styled-components'
 
 import {
   PlacementPlanConfirmationStatus,
+  PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
@@ -35,7 +36,6 @@ import {
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { DaycarePlacementPlan } from '../../../types/unit'
 
 const ButtonRow = styled.div`
   display: flex;
@@ -50,7 +50,7 @@ interface DynamicState {
 
 type Props = {
   unitId: UUID
-  placementPlans: DaycarePlacementPlan[]
+  placementPlans: PlacementPlanDetails[]
   loadUnitData: () => void
 }
 
@@ -160,9 +160,9 @@ export default React.memo(function PlacementProposals({
   )
 
   const sortedRows = sortBy(placementPlans, [
-    (p: DaycarePlacementPlan) => p.child.lastName,
-    (p: DaycarePlacementPlan) => p.child.firstName,
-    (p: DaycarePlacementPlan) => p.period.start
+    (p: PlacementPlanDetails) => p.child.lastName,
+    (p: PlacementPlanDetails) => p.child.firstName,
+    (p: PlacementPlanDetails) => p.period.start
   ])
 
   return (

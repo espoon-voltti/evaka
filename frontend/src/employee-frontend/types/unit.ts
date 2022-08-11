@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
-import {
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason,
-  PlacementType
-} from 'lib-common/generated/api-types/placement'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import { EvakaUser } from 'lib-common/generated/api-types/user'
 import LocalDate from 'lib-common/local-date'
@@ -58,20 +53,6 @@ export interface TerminatedPlacement {
   child: ChildBasics
   terminatedBy: EvakaUser
   currentDaycareGroupName: string | null
-}
-
-export interface DaycarePlacementPlan {
-  id: UUID
-  unitId: UUID
-  applicationId: UUID
-  type: PlacementType
-  period: FiniteDateRange
-  preschoolDaycarePeriod: FiniteDateRange | null
-  child: ChildBasics
-  unitConfirmationStatus: PlacementPlanConfirmationStatus
-  unitRejectReason: PlacementPlanRejectReason | null
-  unitRejectOtherReason: string | null
-  rejectedByCitizen: boolean
 }
 
 export interface DaycareGroupPlacement {

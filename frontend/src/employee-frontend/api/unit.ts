@@ -26,7 +26,10 @@ import {
   OccupancyResponseSpeculated
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
+import {
+  MissingGroupPlacement,
+  PlacementPlanDetails
+} from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import {
@@ -42,7 +45,6 @@ import { UUID } from 'lib-common/types'
 import {
   DaycareGroup,
   DaycarePlacement,
-  DaycarePlacementPlan,
   TerminatedPlacement,
   Unit,
   UnitChildrenCapacityFactors
@@ -112,8 +114,8 @@ export type UnitData = {
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
-  placementProposals?: DaycarePlacementPlan[]
-  placementPlans?: DaycarePlacementPlan[]
+  placementProposals?: PlacementPlanDetails[]
+  placementPlans?: PlacementPlanDetails[]
   applications?: ApplicationUnitSummary[]
   permittedPlacementActions: Record<UUID, Set<Action.Placement>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
@@ -360,8 +362,8 @@ function mapGroupOccupancyJson(
 }
 
 function mapPlacementPlanJson(
-  data: JsonOf<DaycarePlacementPlan>
-): DaycarePlacementPlan {
+  data: JsonOf<PlacementPlanDetails>
+): PlacementPlanDetails {
   return {
     ...data,
     period: FiniteDateRange.parseJson(data.period),
