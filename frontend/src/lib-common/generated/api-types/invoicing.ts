@@ -36,6 +36,7 @@ export type DistinctiveParams =
   | 'UNCONFIRMED_HOURS'
   | 'EXTERNAL_CHILD'
   | 'RETROACTIVE'
+  | 'NO_STARTING_PLACEMENTS'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.EmployeeWithName

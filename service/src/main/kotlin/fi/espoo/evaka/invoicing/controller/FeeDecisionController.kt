@@ -60,7 +60,8 @@ enum class SortDirection {
 enum class DistinctiveParams {
     UNCONFIRMED_HOURS,
     EXTERNAL_CHILD,
-    RETROACTIVE
+    RETROACTIVE,
+    NO_STARTING_PLACEMENTS
 }
 
 @RestController
@@ -226,7 +227,8 @@ data class SearchFeeDecisionRequest(
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val searchByStartDate: Boolean = false,
-    val financeDecisionHandlerId: EmployeeId?
+    val financeDecisionHandlerId: EmployeeId?,
+
 )
 
 data class FeeDecisionTypeRequest(
