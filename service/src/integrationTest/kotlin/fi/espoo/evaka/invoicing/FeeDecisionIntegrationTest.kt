@@ -37,6 +37,7 @@ import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -1241,6 +1242,60 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         assertEquals(1, draftDecisions.size)
         assertEquals(notToBeCreated.id, draftDecisions.first().id)
+    }
+
+    @Test
+    fun `confirmDrafts updates end dates of conflicting decisions correctly with different heads of families`() {
+        val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
+        val conflict = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            status = FeeDecisionStatus.SENT,
+            validDuring = draft.validDuring.copy(start = draft.validFrom.minusDays(30))
+        )
+        val secondDraft = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            headOfFamilyId = testAdult_5.id,
+            validDuring = draft.validDuring.copy(start = draft.validFrom.plusDays(15))
+        )
+        val secondConflict = secondDraft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            headOfFamilyId = testAdult_5.id,
+            status = FeeDecisionStatus.SENT,
+            validDuring = draft.validDuring.copy(start = secondDraft.validFrom.minusDays(15))
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict, secondDraft, secondConflict)) }
+
+        val (_, response) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id, secondDraft.id)))
+            .response()
+        assertEquals(200, response.statusCode)
+
+        http.get("/decisions/${conflict.id}")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val updatedConflict = conflict.copy(
+                    validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
+                )
+                assertEqualEnough(
+                    updatedConflict.let(::toDetailed),
+                    deserializeResult(result.get()).data
+                )
+            }
+
+        http.get("/decisions/${secondConflict.id}")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val updatedConflict = secondConflict.copy(
+                    validDuring = secondConflict.validDuring.copy(end = secondDraft.validFrom.minusDays(1))
+                )
+                assertEqualEnough(
+                    updatedConflict.let(::toDetailed),
+                    deserializeResult(result.get()).data
+                )
+            }
     }
 
     @Test
