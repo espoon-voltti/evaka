@@ -7,6 +7,7 @@ on:
 
 env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
+  ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
   AWS_REGION: eu-west-1
 
 jobs:
@@ -607,6 +608,12 @@ jobs:
         shell: bash
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+      - name: Login to public ECR
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        shell: bash
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_PUBLIC_REGISTRY }}
 
       - name: Prepare e2e tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
