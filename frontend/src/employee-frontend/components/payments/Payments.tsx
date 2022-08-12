@@ -257,6 +257,7 @@ const PaymentTableBody = React.memo(function PaymentTableBody({
         <Tr
           key={item.id}
           onClick={() => navigate(`/finance/payments/${item.id}`)}
+          data-qa="table-payment-row"
         >
           <Td>{item.unit.name}</Td>
           <Td>{item.period.format()}</Td>

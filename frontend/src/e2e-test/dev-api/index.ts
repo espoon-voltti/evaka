@@ -56,6 +56,7 @@ import {
   DevFixedPeriodQuestionnaire,
   DevHolidayPeriod,
   DevIncome,
+  DevPayment,
   DevVardaReset,
   DevVardaServiceNeed,
   EmployeeDetail,
@@ -208,36 +209,31 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
   try {
     await devClient.post(
       `/daycares`,
-      fixture.map((it) => ({
-        id: it.id,
-        areaId: it.careAreaId,
-        name: it.name,
-        type: it.type,
-        costCenter: it.costCenter,
-        visitingAddress: {
-          streetAddress: it.streetAddress,
-          postalCode: it.postalCode,
-          postOffice: it.postOffice
-        },
-        decisionCustomization: {
-          daycareName: it.decisionDaycareName,
-          preschoolName: it.decisionPreschoolName,
-          handler: it.decisionHandler,
-          handlerAddress: it.decisionHandlerAddress
-        },
-        openingDate: it.openingDate,
-        closingDate: it.closingDate,
-        daycareApplyPeriod: it.daycareApplyPeriod,
-        preschoolApplyPeriod: it.preschoolApplyPeriod,
-        clubApplyPeriod: it.clubApplyPeriod,
-        providerType: it.providerType,
-        operationDays: it.operationDays,
-        roundTheClock: it.roundTheClock,
-        location: it.location,
-        language: it.language,
-        enabledPilotFeatures: it.enabledPilotFeatures,
-        invoicedByMunicipality: it.invoicedByMunicipality
-      }))
+      fixture.map(
+        ({
+          streetAddress,
+          postalCode,
+          postOffice,
+          decisionDaycareName,
+          decisionPreschoolName,
+          decisionHandler,
+          decisionHandlerAddress,
+          ...daycare
+        }) => ({
+          ...daycare,
+          visitingAddress: {
+            streetAddress,
+            postalCode,
+            postOffice
+          },
+          decisionCustomization: {
+            daycareName: decisionDaycareName,
+            preschoolName: decisionPreschoolName,
+            handler: decisionHandler,
+            handlerAddress: decisionHandlerAddress
+          }
+        })
+      )
     )
   } catch (e) {
     throw new DevApiError(e)
@@ -1082,6 +1078,14 @@ export async function insertStaffRealtimeAttendance(body: {
 export async function revokeVasuSharingPermission(docId: UUID): Promise<void> {
   try {
     await devClient.post(`/vasu/revokeSharingPermission/${docId}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertPayment(body: DevPayment): Promise<void> {
+  try {
+    await devClient.post('/payments', body)
   } catch (e) {
     throw new DevApiError(e)
   }

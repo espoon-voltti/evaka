@@ -357,7 +357,7 @@ describe('Child mobile attendance list', () => {
     const childId = enduserChildFixtureKaarina.id
 
     await Fixture.daycare()
-      .with({ ...daycare2Fixture, careAreaId: careAreaFixture.id })
+      .with({ ...daycare2Fixture, areaId: careAreaFixture.id })
       .save()
 
     const daycareGroup2Fixture = (

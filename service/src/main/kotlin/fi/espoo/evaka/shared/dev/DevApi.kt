@@ -57,6 +57,7 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
+import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
@@ -113,6 +114,7 @@ import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -1254,6 +1256,11 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                     .execute()
             }
         }
+
+    @PostMapping("/payments")
+    fun addPayment(db: Database, @RequestBody body: DevPayment) = db.connect { dbc ->
+        dbc.transaction { it.insertDevPayment(body) }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1741,4 +1748,21 @@ data class DevChildConsent(
     val childId: ChildId,
     val type: ChildConsentType,
     val given: Boolean
+)
+
+data class DevPayment(
+    val id: PaymentId,
+    val unitId: DaycareId,
+    val unitName: String,
+    val unitBusinessId: String?,
+    val unitIban: String?,
+    val unitProviderId: String?,
+    val period: FiniteDateRange,
+    val number: Int,
+    val amount: Int,
+    val status: PaymentStatus,
+    val paymentDate: LocalDate?,
+    val dueDate: LocalDate?,
+    val sentAt: HelsinkiDateTime?,
+    val sentBy: EmployeeId?
 )

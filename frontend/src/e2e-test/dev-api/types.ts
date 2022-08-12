@@ -6,6 +6,7 @@ import { TimeRange } from 'lib-common/api-types/child/common'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import { HighestFee } from 'lib-common/api-types/incomeStatement'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationForm,
   ApplicationOrigin,
@@ -21,6 +22,7 @@ import {
   FixedPeriodQuestionnaireBody,
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
+import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   Coordinate,
@@ -28,6 +30,7 @@ import {
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -49,7 +52,7 @@ export interface CareArea {
 
 export interface Daycare {
   id: UUID
-  careAreaId: UUID
+  areaId: UUID
   name: string
   type: ('CENTRE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB')[]
   openingDate?: string | null
@@ -78,6 +81,9 @@ export interface Daycare {
   location?: Coordinate | null
   enabledPilotFeatures: PilotFeature[]
   invoicedByMunicipality?: boolean | null
+  businessId: string
+  iban: string
+  providerId: string
 }
 
 export interface ChildAttendance {
@@ -570,4 +576,21 @@ export interface DevChildConsent {
   childId: UUID
   type: string
   given: boolean
+}
+
+export interface DevPayment {
+  id: UUID
+  unitId: UUID
+  unitName: string
+  unitBusinessId: string | null
+  unitIban: string | null
+  unitProviderId: string | null
+  period: FiniteDateRange
+  number: number
+  amount: number
+  status: PaymentStatus
+  paymentDate: LocalDate | null
+  dueDate: LocalDate | null
+  sentAt: HelsinkiDateTime | null
+  sentBy: UUID | null
 }

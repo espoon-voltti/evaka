@@ -52,7 +52,7 @@ const Actions = React.memo(function Actions({
         disabled={checkedIds.length === 0}
         text={i18n.payments.buttons.sendPayments(checkedIds.length)}
         onClick={actions.openModal}
-        data-qa="open-send-invoices-dialog"
+        data-qa="open-send-payments-dialog"
       />
     </StickyActionBar>
   ) : null

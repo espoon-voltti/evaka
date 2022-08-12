@@ -104,6 +104,7 @@ const Modal = React.memo(function Modal({
       onSuccess={onSendDone}
       rejectAction={actions.closeModal}
       rejectLabel={i18n.common.cancel}
+      data-qa="send-payments-modal"
     >
       <ModalContent>
         <Label>{i18n.payments.sendModal.paymentDate}</Label>
