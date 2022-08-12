@@ -9,7 +9,13 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useSearchParams
+} from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UnitResponse } from 'employee-frontend/api/unit'
@@ -99,12 +105,17 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
       .join(',')
   }
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   useEffect(() => {
     const openList = openGroupsToStringList(openGroups)
-    openList.length > 0
-      ? navigate(`?open_groups=${openList}`, { replace: true })
-      : navigate('?', { replace: true })
-  }, [openGroups, navigate])
+    if (openList.length > 0) {
+      searchParams.set('open_groups', openList)
+      setSearchParams(searchParams, {
+        replace: true
+      })
+    }
+  }, [openGroups, navigate, setSearchParams, searchParams])
 
   const tabs = useMemo(
     () => [
