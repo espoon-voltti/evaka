@@ -321,7 +321,9 @@ class AssistanceNeedDecisionController(
                     (decision.preparedBy2?.employeeId == null || decision.preparedBy2.title.isNullOrEmpty())
                 ) ||
             decision.decisionMaker?.employeeId == null ||
-            decision.guardianInfo.any { !it.isHeard }
+            decision.guardianInfo.any { !it.isHeard || it.details.isNullOrEmpty() } ||
+            decision.assistanceLevels.isEmpty() ||
+            (decision.otherRepresentativeHeard && decision.otherRepresentativeDetails.isNullOrEmpty())
     }
 
     data class AssistanceNeedDecisionBasicsResponse(
