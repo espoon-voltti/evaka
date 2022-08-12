@@ -41,14 +41,7 @@ import {
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights, H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import {
-  faChevronLeft,
-  faChevronRight,
-  faPlus,
-  fasUserMinus,
-  faTrash,
-  faUserMinus
-} from 'lib-icons'
+import { faChevronLeft, faChevronRight, faPlus, faTrash } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
@@ -164,7 +157,8 @@ export default React.memo(function DayView({
     saving,
     save,
     navigate,
-    confirmationModal
+    confirmationModal,
+    stopEditing
   } = useEditState(
     date,
     childrenWithReservations,
@@ -341,9 +335,9 @@ export default React.memo(function DayView({
                   editing ? (
                     <Button
                       disabled={saving}
-                      onClick={save}
-                      text={i18n.common.save}
-                      data-qa="save"
+                      onClick={stopEditing}
+                      text={i18n.common.cancel}
+                      data-qa="cancel"
                     />
                   ) : (
                     <Button
@@ -355,13 +349,23 @@ export default React.memo(function DayView({
                 ) : (
                   <EmptyButtonFooterElement />
                 )}
-                <Button
-                  primary
-                  text={i18n.calendar.newAbsence}
-                  onClick={onCreateAbsence}
-                  disabled={!absenceEditable}
-                  data-qa="create-absence"
-                />
+                {editing ? (
+                  <Button
+                    primary
+                    disabled={saving}
+                    onClick={save}
+                    text={i18n.common.save}
+                    data-qa="save"
+                  />
+                ) : (
+                  <Button
+                    primary
+                    text={i18n.calendar.newAbsence}
+                    onClick={onCreateAbsence}
+                    disabled={!absenceEditable}
+                    data-qa="create-absence"
+                  />
+                )}
               </ButtonFooter>
             )}
           </BottomFooterContainer>
@@ -420,6 +424,7 @@ function useEditState(
 
   const [editing, setEditing] = useState(false)
   const startEditing = useCallback(() => setEditing(true), [])
+  const stopEditing = useCallback(() => setEditing(false), [])
 
   const initialEditorState: EditorState[] = useMemo(
     () =>
@@ -443,23 +448,36 @@ function useEditState(
     (childId: UUID, index: number, field: 'startTime' | 'endTime') =>
       (value: string) =>
         setEditorState((state) =>
-          state.map((childState) =>
-            childState.child.id === childId
-              ? {
-                  ...childState,
-                  reservations: childState.reservations.map((timeRange, i) =>
-                    index === i
-                      ? addTimeRangeValidationErrors({
-                          ...timeRange,
-                          [field]: value
-                        })
-                      : timeRange
+          state.map((childState) => {
+            if (childState.child.id !== childId) return childState
+
+            const reservations = childState.reservations.map((timeRange, i) =>
+              index === i
+                ? addTimeRangeValidationErrors({
+                    ...timeRange,
+                    [field]: value
+                  })
+                : timeRange
+            )
+
+            return {
+              ...childState,
+              reservations,
+              absent: childrenWithReservations.find(
+                (child) => child.child.id === childId
+              )?.absence
+                ? !reservations.every(
+                    (reservation) =>
+                      reservation.errors.startTime === undefined &&
+                      reservation.errors.endTime === undefined &&
+                      reservation.startTime.length > 0 &&
+                      reservation.endTime.length > 0
                   )
-                }
-              : childState
-          )
+                : false
+            }
+          })
         ),
-    []
+    [childrenWithReservations]
   )
 
   const editorAbsenceSetter = useCallback(
@@ -593,7 +611,8 @@ function useEditState(
     saving,
     save,
     navigate,
-    confirmationModal
+    confirmationModal,
+    stopEditing
   }
 }
 
@@ -602,7 +621,6 @@ const EditReservation = React.memo(function EditReservation({
   canAddSecondReservation,
   childState,
   editorStateSetter,
-  editorAbsenceSetter,
   addSecondReservation,
   removeSecondReservation
 }: {
@@ -618,8 +636,6 @@ const EditReservation = React.memo(function EditReservation({
   addSecondReservation: (childId: UUID) => void
   removeSecondReservation: (childId: UUID) => void
 }) {
-  const i18n = useTranslation()
-
   const onChangeFirst = useCallback(
     (field: 'startTime' | 'endTime') => editorStateSetter(childId, 0, field),
     [editorStateSetter, childId]
@@ -632,21 +648,10 @@ const EditReservation = React.memo(function EditReservation({
   return (
     <FixedSpaceColumn>
       <FixedSpaceRow alignItems="center">
-        {childState.absent ? (
-          <>
-            {i18n.calendar.absent}
-            <Gap horizontal size="s" />
-          </>
-        ) : (
-          <TimeRangeInput
-            value={childState.reservations[0]}
-            onChange={onChangeFirst}
-            data-qa="first-reservation"
-          />
-        )}
-        <IconButton
-          icon={childState.absent ? fasUserMinus : faUserMinus}
-          onClick={() => editorAbsenceSetter(childId, !childState.absent)}
+        <TimeRangeInput
+          value={childState.reservations[0]}
+          onChange={onChangeFirst}
+          data-qa="first-reservation"
         />
         {canAddSecondReservation && (
           <IconButton
