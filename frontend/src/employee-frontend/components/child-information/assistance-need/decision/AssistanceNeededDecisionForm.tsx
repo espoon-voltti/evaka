@@ -139,6 +139,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
           }
           data-qa={dataQa ? `${dataQa}-select` : undefined}
           info={info}
+          clearable
         />
       </FixedSpaceColumn>
       <FixedSpaceColumn spacing="zero">
