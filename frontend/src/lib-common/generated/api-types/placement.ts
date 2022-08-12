@@ -279,9 +279,9 @@ export type TerminatablePlacementType =
   | 'PRESCHOOL'
 
 /**
-* Generated from fi.espoo.evaka.placement.TerminatedPlacements
+* Generated from fi.espoo.evaka.placement.TerminatedPlacement
 */
-export interface TerminatedPlacements {
+export interface TerminatedPlacement {
   child: ChildBasics
   currentDaycareGroupName: string | null
   endDate: LocalDate

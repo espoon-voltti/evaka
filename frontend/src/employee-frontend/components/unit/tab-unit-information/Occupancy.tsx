@@ -5,10 +5,10 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { UnitOccupancies } from 'lib-common/generated/api-types/units'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { UnitOccupancies } from '../../../api/unit'
 import OccupancyCard from '../../../components/unit/tab-unit-information/occupancy/OccupancyCard'
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'
 import OccupancySingleDay from '../../../components/unit/tab-unit-information/occupancy/OccupancySingleDay'

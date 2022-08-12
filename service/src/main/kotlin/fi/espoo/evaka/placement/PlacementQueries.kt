@@ -336,7 +336,7 @@ fun Database.Read.getTerminatedPlacements(
     daycareId: DaycareId,
     terminationRequestedMinDate: LocalDate?,
     terminationRequestedMaxDate: LocalDate?
-): List<TerminatedPlacements> = createQuery(
+): List<TerminatedPlacement> = createQuery(
     """
 SELECT
     pl.id, pl.end_date, pl.type, pl.termination_requested_date, 
@@ -363,10 +363,10 @@ SELECT
     .bind("daycareId", daycareId)
     .bind("terminationRequestedMinDate", terminationRequestedMinDate)
     .bind("terminationRequestedMaxDate", terminationRequestedMaxDate)
-    .mapTo<TerminatedPlacements>()
+    .mapTo<TerminatedPlacement>()
     .list()
 
-data class TerminatedPlacements(
+data class TerminatedPlacement(
     val id: PlacementId,
     val endDate: LocalDate,
     val type: PlacementType,

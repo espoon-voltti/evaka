@@ -14,7 +14,7 @@ import { OccupancyResponse } from './occupancy'
 import { PlacementPlanDetails } from './placement'
 import { RealtimeOccupancy } from './occupancy'
 import { Stats } from './daycare'
-import { TerminatedPlacements } from './placement'
+import { TerminatedPlacement } from './placement'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
 
@@ -50,7 +50,7 @@ export interface UnitDataResponse {
   placementPlans: PlacementPlanDetails[] | null
   placementProposals: PlacementPlanDetails[] | null
   placements: DaycarePlacementWithDetails[]
-  recentlyTerminatedPlacements: TerminatedPlacements[]
+  recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
   unitOccupancies: UnitOccupancies | null
 }

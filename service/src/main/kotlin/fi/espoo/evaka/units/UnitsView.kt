@@ -27,7 +27,7 @@ import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
-import fi.espoo.evaka.placement.TerminatedPlacements
+import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
@@ -185,7 +185,7 @@ data class UnitDataResponse(
     val placements: List<DaycarePlacementWithDetails>,
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,
-    val recentlyTerminatedPlacements: List<TerminatedPlacements>,
+    val recentlyTerminatedPlacements: List<TerminatedPlacement>,
     val caretakers: Caretakers,
     val unitOccupancies: UnitOccupancies? = null,
     val groupOccupancies: GroupOccupancies? = null,

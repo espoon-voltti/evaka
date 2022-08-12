@@ -18,6 +18,7 @@ import {
   ChildDailyNote,
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
+import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
@@ -50,11 +51,7 @@ import {
 
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { getNotesByGroup } from '../../../../api/daycare-notes'
-import {
-  deleteGroup,
-  deleteGroupPlacement,
-  OccupancyResponse
-} from '../../../../api/unit'
+import { deleteGroup, deleteGroupPlacement } from '../../../../api/unit'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'

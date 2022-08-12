@@ -8,9 +8,8 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 
 import { formatDate } from 'lib-common/date'
+import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import colors from 'lib-customizations/common'
-
-import { OccupancyResponse } from '../../../../api/unit'
 
 type DatePoint = { x: Date; y: number | null | undefined }
 

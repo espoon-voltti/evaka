@@ -5,12 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
+import {
+  OccupancyResponse,
+  RealtimeOccupancy
+} from 'lib-common/generated/api-types/occupancy'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 
-import { OccupancyResponse } from '../../../../api/unit'
 import { useTranslation } from '../../../../state/i18n'
 
 import OccupancyDayGraph from './OccupancyDayGraph'

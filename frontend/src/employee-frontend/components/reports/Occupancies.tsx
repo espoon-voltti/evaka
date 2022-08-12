@@ -197,7 +197,7 @@ function getDisplayCells(
               return caretakersMissingSymbol
             }
 
-            return formatPercentage(occupancy.percentage ?? undefined) ?? ''
+            return formatPercentage(occupancy.percentage) ?? ''
           } else {
             return occupancy?.[usedValues]?.toString() ?? ''
           }

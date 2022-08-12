@@ -13,25 +13,30 @@ import {
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { ApplicationUnitSummary } from 'lib-common/generated/api-types/application'
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   CreateDaycareResponse,
-  DaycareFields,
-  Stats
+  DaycareFields
 } from 'lib-common/generated/api-types/daycare'
 import {
-  OccupancyResponseSpeculated,
-  RealtimeOccupancy
+  OccupancyPeriod,
+  OccupancyResponse,
+  OccupancyResponseSpeculated
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import {
-  ServiceNeed,
-  ServiceNeedOptionSummary
-} from 'lib-common/generated/api-types/serviceneed'
+  MissingGroupPlacement,
+  PlacementPlanDetails
+} from 'lib-common/generated/api-types/placement'
+import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
+import {
+  Caretakers,
+  GroupOccupancies,
+  UnitOccupancies
+} from 'lib-common/generated/api-types/units'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -40,8 +45,6 @@ import { UUID } from 'lib-common/types'
 import {
   DaycareGroup,
   DaycarePlacement,
-  DaycarePlacementPlan,
-  Occupancy,
   TerminatedPlacement,
   Unit,
   UnitChildrenCapacityFactors
@@ -102,71 +105,6 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export type OccupancyResponse = {
-  occupancies: Occupancy[]
-  max?: Occupancy
-  min?: Occupancy
-}
-
-export type UnitOccupancies = {
-  planned: OccupancyResponse
-  confirmed: OccupancyResponse
-  realized: OccupancyResponse
-  realtime: RealtimeOccupancy | null
-}
-
-export type GroupOccupancies = {
-  confirmed: Record<UUID, OccupancyResponse>
-  realized: Record<UUID, OccupancyResponse>
-}
-
-export type Caretakers = {
-  unitCaretakers: Stats
-  groupCaretakers: Record<UUID, Stats>
-}
-
-interface MissingGroupPlacementCommon {
-  placementId: UUID
-  placementPeriod: FiniteDateRange
-  childId: UUID
-  firstName: string | null
-  lastName: string | null
-  dateOfBirth: LocalDate
-  gap: FiniteDateRange
-}
-
-interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
-  placementType: PlacementType
-  backup: false
-  serviceNeeds: ServiceNeed[]
-}
-
-interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
-  placementType: null
-  backup: true
-  serviceNeeds: ServiceNeed[]
-}
-
-export type MissingGroupPlacement =
-  | MissingGroupPlacementStandard
-  | MissingGroupPlacementBackupCare
-
-export type ApplicationUnitSummary = {
-  applicationId: UUID
-  firstName: string
-  lastName: string
-  dateOfBirth: LocalDate
-  guardianFirstName: string
-  guardianLastName: string
-  guardianPhone: string | null
-  guardianEmail: string | null
-  requestedPlacementType: PlacementType
-  serviceNeed: ServiceNeedOptionSummary | null
-  preferredStartDate: LocalDate
-  preferenceOrder: number
-  status: ApplicationStatus
-}
-
 export type UnitData = {
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
@@ -176,8 +114,8 @@ export type UnitData = {
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
-  placementProposals?: DaycarePlacementPlan[]
-  placementPlans?: DaycarePlacementPlan[]
+  placementProposals?: PlacementPlanDetails[]
+  placementPlans?: PlacementPlanDetails[]
   applications?: ApplicationUnitSummary[]
   permittedPlacementActions: Record<UUID, Set<Action.Placement>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
@@ -345,7 +283,7 @@ function mapServiceNeedsJson(data: JsonOf<ServiceNeed[]>): ServiceNeed[] {
   }))
 }
 
-const mapOccupancyPeriod = (p: JsonOf<Occupancy>): Occupancy => ({
+const mapOccupancyPeriod = (p: JsonOf<OccupancyPeriod>): OccupancyPeriod => ({
   ...p,
   period: FiniteDateRange.parseJson(p.period)
 })
@@ -424,8 +362,8 @@ function mapGroupOccupancyJson(
 }
 
 function mapPlacementPlanJson(
-  data: JsonOf<DaycarePlacementPlan>
-): DaycarePlacementPlan {
+  data: JsonOf<PlacementPlanDetails>
+): PlacementPlanDetails {
   return {
     ...data,
     period: FiniteDateRange.parseJson(data.period),
@@ -444,12 +382,6 @@ function mapApplicationsJson(
 ): ApplicationUnitSummary {
   return {
     ...data,
-    serviceNeed: data.serviceNeed
-      ? {
-          ...data.serviceNeed,
-          updated: HelsinkiDateTime.parseIso(data.serviceNeed.updated)
-        }
-      : null,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     preferredStartDate: LocalDate.parseIso(data.preferredStartDate)
   }

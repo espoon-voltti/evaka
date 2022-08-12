@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
+import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { formatPercentage } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -13,7 +14,6 @@ import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 
-import { OccupancyResponse } from '../../../../api/unit'
 import { useTranslation } from '../../../../state/i18n'
 
 interface CardProps {

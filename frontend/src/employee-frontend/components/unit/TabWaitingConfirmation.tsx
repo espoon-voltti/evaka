@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
+import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -21,7 +22,6 @@ import { faFileAlt, faTimes } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
-import { DaycarePlacementPlan } from '../../types/unit'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { NotificationCounter } from '../UnitPage'
@@ -35,14 +35,14 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `
 
-function earliestStartDate(p: DaycarePlacementPlan) {
+function earliestStartDate(p: PlacementPlanDetails) {
   return p.preschoolDaycarePeriod?.start &&
     p.preschoolDaycarePeriod.start < p.period.start
     ? p.preschoolDaycarePeriod.start
     : p.period.start
 }
 
-function latestEndDate(p: DaycarePlacementPlan) {
+function latestEndDate(p: PlacementPlanDetails) {
   return p.preschoolDaycarePeriod?.end &&
     p.preschoolDaycarePeriod.end > p.period.end
     ? p.preschoolDaycarePeriod.end
@@ -57,11 +57,11 @@ export default React.memo(function TabWaitingConfirmation() {
 
   const sortedRows = useMemo(
     () =>
-      unitData.map((unitData): DaycarePlacementPlan[] =>
+      unitData.map((unitData): PlacementPlanDetails[] =>
         sortBy(unitData.placementPlans ?? [], [
-          (p: DaycarePlacementPlan) => p.child.lastName,
-          (p: DaycarePlacementPlan) => p.child.firstName,
-          (p: DaycarePlacementPlan) => p.period.start
+          (p: PlacementPlanDetails) => p.child.lastName,
+          (p: PlacementPlanDetails) => p.child.firstName,
+          (p: PlacementPlanDetails) => p.period.start
         ])
       ),
     [unitData]

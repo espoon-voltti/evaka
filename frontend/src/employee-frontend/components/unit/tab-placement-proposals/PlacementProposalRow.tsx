@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import {
   PlacementPlanConfirmationStatus,
+  PlacementPlanDetails,
   PlacementPlanRejectReason
 } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
@@ -20,7 +21,6 @@ import { faFileAlt } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../../constants'
 import { useTranslation } from '../../../state/i18n'
-import { DaycarePlacementPlan } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { isPartDayPlacement } from '../../../utils/placements'
 import { CareTypeChip } from '../../common/CareTypeLabel'
@@ -41,7 +41,7 @@ const CenteredRow = styled(Tr)`
 `
 
 type Props = {
-  placementPlan: DaycarePlacementPlan
+  placementPlan: PlacementPlanDetails
   confirmationState: PlacementPlanConfirmationStatus
   submitting: boolean
   onChange: (
