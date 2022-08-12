@@ -714,6 +714,7 @@ jobs:
           - environment: test
           - environment: staging
           - environment: prod
+          - environment: tute
     steps:
       - name: Get branch name
         id: variables
@@ -732,7 +733,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ~/.aws
-          echo '${{ secrets.AWS_CONFIG }}' > ~/.aws/config
+          echo '${{ secrets.EVAKA_AWS_CONFIG }}' > ~/.aws/config
 
       - name: Login to ECR
         shell: bash
