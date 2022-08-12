@@ -331,6 +331,20 @@ class ApplicationControllerCitizen(
             decisionService.getDecisionPdf(dbc, decision)
         }
     }
+
+    @GetMapping("/applications/by-guardian/notifications")
+    fun getGuardianApplicationNotifications(
+        db: Database,
+        user: AuthenticatedUser.Citizen
+    ): Int {
+        Audit.ApplicationReadNotifications.log(targetId = user.id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS, user.id)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.fetchApplicationNotificationCountForCitizen(user.id)
+            }
+        }
+    }
 }
 
 data class ApplicationsOfChild(

@@ -7,6 +7,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
@@ -45,16 +46,20 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const {
     unreadAssistanceNeedDecisionCounts,
     refreshUnreadAssistanceNeedDecisionCounts,
-    childConsents
+    childConsentNotifications
   } = useContext(ChildrenContext)
+
+  const { waitingConfirmationCount, refreshWaitingConfirmationCount } =
+    useContext(ApplicationsContext)
 
   useEffect(() => {
     if (user) {
       refreshUnreadPedagogicalDocumentsCount()
       refreshUnreadVasuDocumentsCount()
       refreshUnreadAssistanceNeedDecisionCounts()
+      refreshWaitingConfirmationCount()
     }
-  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, refreshUnreadAssistanceNeedDecisionCounts, user])
+  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, refreshUnreadAssistanceNeedDecisionCounts, refreshWaitingConfirmationCount, user])
 
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
@@ -67,16 +72,6 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     [unreadAssistanceNeedDecisionCounts]
   )
 
-  const unconsentedCount = useMemo(
-    () =>
-      Object.values(childConsents.getOrElse({})).reduce(
-        (prev, n) =>
-          prev + n.filter((consent) => consent.given === null).length,
-        0
-      ),
-    [childConsents]
-  )
-
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
       <CityLogo />
@@ -84,7 +79,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocuments={unreadDocumentCount}
-        unreadChildren={unreadChildrenCount + unconsentedCount}
+        unreadChildren={unreadChildrenCount + childConsentNotifications}
+        unreadApplications={waitingConfirmationCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav
@@ -92,7 +88,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildDocumentsCount={unreadDocumentCount}
-        unreadChildrenCount={unreadChildrenCount + unconsentedCount}
+        unreadChildrenCount={unreadChildrenCount + childConsentNotifications}
+        unreadApplications={waitingConfirmationCount}
         hideLoginButton={hideLoginButton}
       />
     </HeaderContainer>

@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import React, { useContext } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer from 'citizen-frontend/Footer'
+import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import Main from 'lib-components/atoms/Main'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -40,6 +41,8 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 
+  const { waitingConfirmationCount } = useContext(ApplicationsContext)
+
   const tabs = [
     {
       id: 'applications',
@@ -48,7 +51,8 @@ export default React.memo(function ApplyingRouter({ scrollToTop }: Props) {
         <>
           {t.header.nav.applications} {maybeLockElem}
         </>
-      )
+      ),
+      counter: waitingConfirmationCount
     },
     {
       id: 'map',

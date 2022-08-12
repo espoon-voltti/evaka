@@ -104,6 +104,22 @@ class ChildConsentController(
         }
     }
 
+    @GetMapping("/citizen/children/consents/notifications")
+    fun getCitizenChildConsentNotifications(
+        db: Database,
+        user: AuthenticatedUser.Citizen
+    ): Int {
+        Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS, user.id)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.getCitizenConsentedChildConsentTypes(user.id).map { knownConsentTypes ->
+                    featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.value.contains(it) }.size
+                }.sum()
+            }
+        }
+    }
+
     data class UpdateChildConsentRequest(
         val type: ChildConsentType,
         val given: Boolean?

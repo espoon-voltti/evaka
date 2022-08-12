@@ -35,6 +35,7 @@ interface Props {
   unreadMessagesCount: number
   unreadChildDocuments: number
   unreadChildren: number
+  unreadApplications: number
   hideLoginButton: boolean
 }
 
@@ -42,6 +43,7 @@ export default React.memo(function DesktopNav({
   unreadMessagesCount,
   unreadChildDocuments,
   unreadChildren,
+  unreadApplications,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -94,6 +96,7 @@ export default React.memo(function DesktopNav({
                     to="/applying"
                     data-qa="nav-applying"
                     text={t.header.nav.applications}
+                    notificationCount={unreadApplications}
                   />
                 </>
               ) : null}

@@ -1045,3 +1045,18 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .mapTo<ApplicationId>()
     .list()
+
+fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int {
+    // language=SQL
+    val sql =
+        """
+        SELECT COUNT(*)
+        FROM application_view a
+        WHERE guardianId = :guardianId AND NOT a.hidefromguardian AND a.status = 'WAITING_CONFIRMATION'
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("guardianId", citizenId)
+        .mapTo<Int>()
+        .one()
+}

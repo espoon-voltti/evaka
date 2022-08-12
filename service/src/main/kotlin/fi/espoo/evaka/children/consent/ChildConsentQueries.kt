@@ -101,3 +101,17 @@ RETURNING id
         .bind("givenBy", givenBy)
         .mapTo<ChildConsentId>()
         .firstOrNull() != null
+
+fun Database.Read.getCitizenConsentedChildConsentTypes(guardianId: PersonId): Map<ChildId, List<ChildConsentType>> =
+    this.createQuery(
+        """
+SELECT g.child_id, cc.type
+FROM guardian g
+LEFT JOIN child_consent cc ON cc.child_id = g.child_id
+WHERE g.guardian_id = :guardianId
+        """.trimIndent()
+    )
+        .bind("guardianId", guardianId)
+        .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type")) }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { it.value.filterNotNull() }

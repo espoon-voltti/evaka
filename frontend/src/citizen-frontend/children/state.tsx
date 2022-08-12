@@ -11,20 +11,28 @@ import { CitizenChildConsent } from 'lib-common/generated/api-types/children'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getAssistanceNeedDecisionUnreadCounts, getChildConsents } from './api'
+import {
+  getAssistanceNeedDecisionUnreadCounts,
+  getChildConsentNotifications,
+  getChildConsents
+} from './api'
 
 interface ChildrenContext {
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
   refreshUnreadAssistanceNeedDecisionCounts: () => void
   childConsents: Result<Record<UUID, CitizenChildConsent[]>>
   refreshChildConsents: () => void
+  childConsentNotifications: number
+  refreshChildConsentNotifications: () => void
 }
 
 const defaultValue: ChildrenContext = {
   unreadAssistanceNeedDecisionCounts: [],
   refreshUnreadAssistanceNeedDecisionCounts: () => undefined,
   childConsents: Loading.of(),
-  refreshChildConsents: () => undefined
+  refreshChildConsents: () => undefined,
+  childConsentNotifications: 0,
+  refreshChildConsentNotifications: () => undefined
 }
 
 export const ChildrenContext = createContext(defaultValue)
@@ -49,9 +57,21 @@ export const ChildrenContextProvider = React.memo(
     )
 
     const [childConsents, refreshChildConsents] = useApiState(
-      () => (!user ? Promise.resolve(Success.of({})) : getChildConsents()),
+      () =>
+        user?.authLevel === 'STRONG'
+          ? getChildConsents()
+          : Promise.resolve(Success.of({})),
       [user]
     )
+
+    const [childConsentNotifications, refreshChildConsentNotifications] =
+      useApiState(
+        () =>
+          !user
+            ? Promise.resolve(Success.of(0))
+            : getChildConsentNotifications(),
+        [user]
+      )
 
     return (
       <ChildrenContext.Provider
@@ -60,7 +80,9 @@ export const ChildrenContextProvider = React.memo(
             unreadAssistanceNeedDecisionCounts.getOrElse([]),
           refreshUnreadAssistanceNeedDecisionCounts,
           childConsents,
-          refreshChildConsents
+          refreshChildConsents,
+          childConsentNotifications: childConsentNotifications.getOrElse(0),
+          refreshChildConsentNotifications
         }}
       >
         {children}
