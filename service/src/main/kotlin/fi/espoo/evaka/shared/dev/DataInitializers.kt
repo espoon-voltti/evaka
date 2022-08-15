@@ -1130,14 +1130,15 @@ data class DevFridgeChild(
     val childId: ChildId,
     val headOfChild: PersonId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
+    val conflict: Boolean = false
 )
 
 fun Database.Transaction.insertFridgeChild(pickup: DevFridgeChild) = insertTestDataRow(
     pickup,
     """
-INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date)
-VALUES (:id, :childId, :headOfChild, :startDate, :endDate)
+INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict)
+VALUES (:id, :childId, :headOfChild, :startDate, :endDate, :conflict)
 RETURNING id
 """
 )
