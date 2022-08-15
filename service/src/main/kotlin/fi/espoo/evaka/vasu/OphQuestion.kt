@@ -486,8 +486,12 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
-                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä"
+                        VasuLanguage.FI -> "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä/huoltajien kuuleminen hallintopäätöstä koskien"
                         VasuLanguage.SV -> "Samarbete med vårdnadshavaren/-havarna och synpunkter på innehållet i barnets plan"
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Tähän kohtaan kirjataan huoltajien kuuleminen, mikäli tuesta tehdään hallintopäätös."
+                        VasuLanguage.SV -> ""
                     },
                     multiline = true,
                     value = ""
