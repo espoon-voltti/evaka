@@ -270,6 +270,7 @@ describe('Child message thread', () => {
     await userSeesNewMessagesIndicator()
     await staffLoginsToMessagesPage()
 
+    await nav.selectGroup(daycareGroup.data.id)
     await messagesPage.messagesExist()
     await messagesPage.openFirstThread()
 
