@@ -76,6 +76,18 @@ export interface AssistanceNeedsAndActionsReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportRow
+*/
+export interface AttendanceReservationReportRow {
+  capacityFactor: number
+  childCount: number
+  childCountOver3: number
+  childCountUnder3: number
+  dateTime: HelsinkiDateTime
+  staffCountRequired: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.ChildAgeLanguageReportRow
 */
 export interface ChildAgeLanguageReportRow {

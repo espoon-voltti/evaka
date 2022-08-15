@@ -26,6 +26,7 @@ export const Table = styled.table`
 
 interface ThProps {
   sticky?: boolean
+  stickyColumn?: boolean
   top?: string
   hidden?: boolean
   align?: 'left' | 'right' | 'center'
@@ -54,6 +55,13 @@ export const Th = styled.th<ThProps>`
           white-space: nowrap;
         `
       : ''}
+  ${(p) =>
+    p.stickyColumn
+      ? `
+          left: 0;
+          z-index: 3 !important;
+        `
+      : ''}
 `
 
 export const Td = styled.td<{
@@ -66,6 +74,7 @@ export const Td = styled.td<{
   borderStyle?: Property.BorderStyle
   horizontalPadding?: SpacingSize
   verticalPadding?: SpacingSize
+  sticky?: boolean
 }>`
   line-height: 1.3em;
   border-style: ${(p) => p.borderStyle ?? 'solid'};
@@ -96,6 +105,15 @@ export const Td = styled.td<{
           white-space: nowrap;
         `
       : ''}
+  ${(p) =>
+    p.sticky
+      ? `
+          position: sticky;
+          left: 0;
+          z-index: 3;
+          background-color: ${p.theme.colors.grayscale.g0};
+        `
+      : ''}
 `
 
 export interface TrProps {
@@ -122,7 +140,7 @@ export const Thead = styled.thead<{ sticky?: boolean }>`
       ? `
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 9;
   background-color: ${p.theme.colors.grayscale.g0};`
       : ''}
 `

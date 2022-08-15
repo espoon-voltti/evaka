@@ -2634,6 +2634,7 @@ export const fi = {
     downloadButton: 'Lataa raportti',
     common: {
       total: 'Yhteensä',
+      totalShort: 'Yht',
       careAreaName: 'Palvelualue',
       unitName: 'Yksikkö',
       groupName: 'Ryhmä',
@@ -2655,10 +2656,13 @@ export const fi = {
       },
       period: 'Ajanjakso',
       date: 'Päivämäärä',
+      clock: 'Klo',
       startDate: 'Alkaen',
       endDate: 'Päättyen',
       childName: 'Lapsen nimi',
-      child: 'Lapsi'
+      child: 'Lapsi',
+      under3y: '<3v',
+      over3y: '3+'
     },
     applications: {
       title: 'Saapuneet hakemukset',
@@ -2729,6 +2733,13 @@ export const fi = {
       rejectDecision: 'Hylkää päätös',
       returnDecisionForEditing: 'Palauta korjattavaksi',
       approveDecision: 'Hyväksy päätös'
+    },
+    attendanceReservation: {
+      title: 'Päiväkohtaiset lapsen tulo- ja lähtöajat',
+      description:
+        'Raportti lasten varauksista ja henkilökunnan määrän tarpeesta',
+      capacityFactor: 'Lask',
+      staffCountRequired: 'Hlökunta'
     },
     duplicatePeople: {
       title: 'Monistuneet kuntalaiset',

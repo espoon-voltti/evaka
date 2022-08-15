@@ -10,6 +10,7 @@ import {
   ApplicationsReportRow,
   AssistanceNeedDecisionsReportRow,
   AssistanceNeedsAndActionsReport,
+  AttendanceReservationReportRow,
   ChildAgeLanguageReportRow,
   ChildrenInDifferentAddressReportRow,
   DecisionsReportRow,
@@ -536,5 +537,35 @@ export async function getAssistanceNeedDecisionUnreadCount(): Promise<
   return client
     .get<JsonOf<number>>('/reports/assistance-need-decisions/unread-count')
     .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface AttendanceReservationReportFilters {
+  start: LocalDate
+  end: LocalDate
+}
+
+export async function getAssistanceReservationReport(
+  unitId: string,
+  filters: AttendanceReservationReportFilters
+): Promise<Result<AttendanceReservationReportRow[]>> {
+  return client
+    .get<JsonOf<AttendanceReservationReportRow[]>>(
+      `/reports/attendance-reservation/${unitId}`,
+      {
+        params: {
+          start: filters.start.formatIso(),
+          end: filters.end.formatIso()
+        }
+      }
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((row) => ({
+          ...row,
+          dateTime: HelsinkiDateTime.parseIso(row.dateTime)
+        }))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }
