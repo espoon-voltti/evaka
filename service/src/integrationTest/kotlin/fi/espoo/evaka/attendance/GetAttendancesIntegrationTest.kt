@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -202,7 +201,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val child = expectOneChild()
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
-        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet()
+        )
     }
 
     @Test
