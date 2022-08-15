@@ -153,7 +153,7 @@ export default React.memo(function ReservationModal({
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
-        <ReservationModalBackground>
+        <ModalBackground>
           <BottomFooterContainer>
             <div>
               <ModalSection>
@@ -287,7 +287,7 @@ export default React.memo(function ReservationModal({
                 )}
               </ModalSection>
             </div>
-            <ReservationModalButtons>
+            <ModalButtons>
               <Button
                 onClick={onClose}
                 data-qa="modal-cancelBtn"
@@ -311,10 +311,10 @@ export default React.memo(function ReservationModal({
                 }}
                 data-qa="modal-okBtn"
               />
-            </ReservationModalButtons>
+            </ModalButtons>
           </BottomFooterContainer>
-        </ReservationModalBackground>
-        <ReservationModalCloseButton
+        </ModalBackground>
+        <ModalCloseButton
           onClick={onClose}
           altText={i18n.common.closeModal}
           icon={faTimes}
@@ -324,14 +324,14 @@ export default React.memo(function ReservationModal({
   )
 })
 
-const ReservationModalCloseButton = styled(IconButton)`
+export const ModalCloseButton = styled(IconButton)`
   position: absolute;
   top: ${defaultMargins.s};
   right: ${defaultMargins.s};
   color: ${(p) => p.theme.colors.main.m2};
 `
 
-const ReservationModalButtons = styled.div`
+export const ModalButtons = styled.div`
   display: flex;
   justify-content: space-between;
   gap: ${defaultMargins.s};
@@ -345,7 +345,7 @@ const ReservationModalButtons = styled.div`
   }
 `
 
-const ModalSection = styled.section`
+export const ModalSection = styled.section`
   padding: 0 ${defaultMargins.L};
 
   @media (max-width: ${tabletMin}) {
@@ -358,7 +358,7 @@ const ModalSection = styled.section`
   }
 `
 
-const ReservationModalBackground = styled.div`
+export const ModalBackground = styled.div`
   height: 100%;
 
   @media (max-width: ${tabletMin}) {
