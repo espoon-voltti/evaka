@@ -256,7 +256,11 @@ const PaymentTableBody = React.memo(function PaymentTableBody({
       {payments.map((item) => (
         <Tr
           key={item.id}
-          onClick={() => navigate(`/finance/payments/${item.id}`)}
+          onClick={() =>
+            navigate(
+              `/reports/voucher-service-providers/${item.unit.id}?year=${item.period.start.year}&month=${item.period.start.month}`
+            )
+          }
           data-qa="table-payment-row"
         >
           <Td>{item.unit.name}</Td>
