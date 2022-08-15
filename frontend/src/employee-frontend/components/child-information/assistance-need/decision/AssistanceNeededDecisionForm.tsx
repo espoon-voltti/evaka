@@ -18,6 +18,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -73,7 +74,7 @@ const GuardianHeardField = React.memo(function GuardianHeardField({
         label={guardian.name ?? ''}
         onChange={(checked) => onChange({ ...guardian, isHeard: checked })}
       />
-      <InputField
+      <TextArea
         value={guardian.details ?? ''}
         placeholder={placeholder}
         onChange={(val) => onChange({ ...guardian, details: val })}
@@ -246,7 +247,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
         label={t.pedagogicalMotivation}
         spacing="zero"
       >
-        <InputField
+        <TextArea
           value={formState.pedagogicalMotivation ?? ''}
           onChange={(val) => setFieldVal({ pedagogicalMotivation: val })}
           placeholder={t.genericPlaceholder}
@@ -331,7 +332,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             })
           }
         />
-        <InputField
+        <TextArea
           value={formState.structuralMotivationDescription ?? ''}
           onChange={(val) =>
             setFieldVal({ structuralMotivationDescription: val })
@@ -345,7 +346,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
         label={t.careMotivation}
         spacing="zero"
       >
-        <InputField
+        <TextArea
           value={formState.careMotivation ?? ''}
           onChange={(val) => setFieldVal({ careMotivation: val })}
           placeholder={t.genericPlaceholder}
@@ -414,7 +415,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             })
           }
         />
-        <InputField
+        <TextArea
           value={formState.servicesMotivation ?? ''}
           onChange={(val) => setFieldVal({ servicesMotivation: val })}
           placeholder={t.servicesPlaceholder}
@@ -488,7 +489,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
         label={t.viewOfTheGuardians}
         spacing="zero"
       >
-        <InputField
+        <TextArea
           value={formState.viewOfGuardians ?? ''}
           onChange={(val) => setFieldVal({ viewOfGuardians: val })}
           placeholder={t.genericPlaceholder}
@@ -588,7 +589,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
 
       <FixedSpaceColumn spacing="zero">
         <Label>{t.motivationForDecision}</Label>
-        <InputField
+        <TextArea
           value={formState.motivationForDecision ?? ''}
           onChange={(val) => setFieldVal({ motivationForDecision: val })}
           placeholder={t.genericPlaceholder}
