@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
+import partition from 'lodash/partition'
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -13,15 +14,17 @@ export function useSyncQueryParams(queryParams: Record<string, string>) {
   const [currentParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
-    if (
-      !isEqual(
-        Object.fromEntries(Array.from(currentParams.entries())),
-        queryParams
+    const [relevantParams, extraParams] = partition(
+      Array.from(currentParams.entries()),
+      ([key]) => Object.keys(queryParams).includes(key)
+    )
+    if (!isEqual(Object.fromEntries(relevantParams), queryParams)) {
+      setSearchParams(
+        { ...Object.fromEntries(extraParams), ...queryParams },
+        {
+          replace: true
+        }
       )
-    ) {
-      setSearchParams(queryParams, {
-        replace: true
-      })
     }
   }, [currentParams, queryParams, setSearchParams])
 }
