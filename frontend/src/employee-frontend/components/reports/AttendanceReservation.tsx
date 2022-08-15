@@ -300,5 +300,5 @@ const AttendanceReservationReportTd = styled(
         };`
       : ''}
   ${(props) =>
-    props.isFuture ? `color: ${props.theme.colors.grayscale.g35};` : ''}
+    props.isFuture ? `color: ${props.theme.colors.grayscale.g70};` : ''}
 `
