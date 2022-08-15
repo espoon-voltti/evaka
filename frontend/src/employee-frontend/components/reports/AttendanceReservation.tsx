@@ -2,17 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled, { DefaultTheme, useTheme } from 'styled-components'
 
-import { Unit } from 'employee-frontend/api/daycare'
 import { getDaycares } from 'employee-frontend/api/unit'
-import { Loading, Result } from 'lib-common/api'
+import { Loading } from 'lib-common/api'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -49,21 +48,14 @@ export default React.memo(function AttendanceReservation() {
     }
   )
 
-  const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
-  const loadUnits = useRestApi(getDaycares, setUnits)
-  useEffect(() => {
-    void loadUnits()
-  }, [loadUnits])
-
-  const [report, setReport] = useState<
-    Result<AttendanceReservationReportRow[]>
-  >(Loading.of())
-  const loadReport = useRestApi(getAssistanceReservationReport, setReport)
-  useEffect(() => {
-    if (unitId !== null) {
-      void loadReport(unitId, filters)
-    }
-  }, [loadReport, unitId, filters])
+  const [units] = useApiState(getDaycares, [])
+  const [report] = useApiState(
+    () =>
+      unitId !== null
+        ? getAssistanceReservationReport(unitId, filters)
+        : Promise.resolve(Loading.of<AttendanceReservationReportRow[]>()),
+    [unitId, filters]
+  )
 
   const filteredRows = report
     .map<AttendanceReservationReportRow[]>((row) => row)
