@@ -252,10 +252,13 @@
         "never"
       ],
       "react/prop-types": "off",
-      "react/self-closing-comp": ["error", {
-        "component": true,
-        "html": true
-      }],
+      "react/self-closing-comp": [
+        "error",
+        {
+          "component": true,
+          "html": true
+        }
+      ],
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [
         "warn",
@@ -263,7 +266,21 @@
           "additionalHooks": "(useApiState)"
         }
       ],
-      "no-console": ["error", { "allow": ["warn", "error"] }]
+      "no-console": [
+        "error",
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ],
+      "prefer-arrow-callback": [
+        "error",
+        {
+          "allowNamedFunctions": true
+        }
+      ]
     },
     "overrides": [
       {
