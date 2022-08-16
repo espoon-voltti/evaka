@@ -101,7 +101,7 @@ export default React.memo(function AttendanceReservation() {
               locale={lang}
               errorTexts={i18n.validationErrors}
               required={true}
-            ></DateRangePicker>
+            />
           </FlexRow>
         </FilterRow>
         <FilterRow>
@@ -160,7 +160,7 @@ export default React.memo(function AttendanceReservation() {
             <TableScrollable data-qa="report-attendance-reservation-table">
               <Thead sticky>
                 <Tr>
-                  <Th></Th>
+                  <Th />
                   {dates.map((date) => {
                     return (
                       <Th key={date} colSpan={5} align="center">

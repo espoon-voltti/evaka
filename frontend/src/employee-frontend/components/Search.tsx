@@ -172,8 +172,8 @@ export default React.memo(function Search() {
                   {customers.value.length > 99 && (
                     <Tr>
                       <Td>{i18n.personSearch.maxResultsFound}</Td>
-                      <Td></Td>
-                      <Td></Td>
+                      <Td />
+                      <Td />
                     </Tr>
                   )}
                 </>

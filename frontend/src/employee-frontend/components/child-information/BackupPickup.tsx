@@ -206,7 +206,7 @@ function BackupPickup({ id }: BackupPickupProps) {
                   <Th>{i18n.childInformation.backupPickups.name}</Th>
                   <Th>{i18n.childInformation.backupPickups.phone}</Th>
                   <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
-                    <Th></Th>
+                    <Th />
                   </RequireRole>
                 </Tr>
               </Thead>
