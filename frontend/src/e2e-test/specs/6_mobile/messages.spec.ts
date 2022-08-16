@@ -244,13 +244,6 @@ describe('Child message thread', () => {
     )
   })
 
-  test('Employee does not see messages to personal account', async () => {
-    await initCitizenPage()
-    await citizenSendsPersonalMessageToEmployee()
-    await employeeLoginsToMessagesPage()
-    await messagesPage.messagesDontExist()
-  })
-
   test('Message button goes to unread messages if user has no pin session', async () => {
     await listPage.gotoMessages()
     await unreadMessageCountsPage.groupLinksExist()
@@ -295,9 +288,6 @@ describe('Child message thread', () => {
     await nav.selectGroup(daycareGroup.data.id)
     await waitUntilTrue(() => messagesPage.messagesExist())
     await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Otsikko')
-
-    await nav.selectGroup(daycareGroup3.data.id)
-    await messagesPage.messagesDontExist()
   })
 
   test('Staff without group access sees info that no accounts were found', async () => {
@@ -391,14 +381,4 @@ async function employeeLoginsToMessagesPage() {
 async function employeeLoginsToMessagesPageThroughGroup() {
   await listPage.gotoMessages()
   await employeeNavigatesToMessagesSelectingGroup()
-}
-
-async function citizenSendsPersonalMessageToEmployee() {
-  const title = 'Otsikko'
-  const content = 'Testiviestin sisältö'
-  const receivers = [`${empLastName} ${empFirstName}`]
-  await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-  await citizenMessagesPage.sendNewMessage(title, content, receivers)
-  await citizenPage.close()
 }
