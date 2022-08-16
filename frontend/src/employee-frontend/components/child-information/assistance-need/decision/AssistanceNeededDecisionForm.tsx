@@ -58,11 +58,13 @@ const FieldWithInfo = React.memo(function FieldWithInfo({
 const GuardianHeardField = React.memo(function GuardianHeardField({
   guardian,
   placeholder,
-  onChange
+  onChange,
+  info
 }: {
   guardian: AssistanceNeedDecisionGuardian
   placeholder: string
   onChange: (guardian: AssistanceNeedDecisionGuardian) => void
+  info?: InputInfo
 }) {
   return (
     <div>
@@ -75,6 +77,7 @@ const GuardianHeardField = React.memo(function GuardianHeardField({
         value={guardian.details ?? ''}
         placeholder={placeholder}
         onChange={(val) => onChange({ ...guardian, details: val })}
+        info={info}
       />
     </div>
   )
@@ -139,6 +142,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
           }
           data-qa={dataQa ? `${dataQa}-select` : undefined}
           info={info}
+          clearable
         />
       </FixedSpaceColumn>
       <FixedSpaceColumn spacing="zero">
@@ -185,6 +189,8 @@ export interface FieldInfos {
   decisionMakerTitle?: InputInfo
   preparator1Title?: InputInfo
   preparator2Title?: InputInfo
+  guardianDetails?: Record<string, InputInfo>
+  otherRepresentative?: InputInfo
 }
 
 type AssistanceNeedDecisionFormProps = {
@@ -452,6 +458,11 @@ export default React.memo(function AssistanceNeedDecisionForm({
                 )
               })
             }}
+            info={
+              guardian.id
+                ? fieldInfos.guardianDetails?.[guardian.id]
+                : undefined
+            }
           />
         ))}
         <GuardianHeardField
@@ -469,6 +480,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
               otherRepresentativeDetails: g.details
             })
           }}
+          info={fieldInfos.otherRepresentative}
         />
       </FieldWithInfo>
       <FieldWithInfo

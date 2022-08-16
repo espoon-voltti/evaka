@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import concat from 'lodash/concat'
+import isEmpty from 'lodash/isEmpty'
+import omit from 'lodash/omit'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -69,6 +71,10 @@ const getFieldTranslation = (
       return `${t.preparator} (1.), ${t.title}`
     case 'preparator2Title':
       return `${t.preparator} (2.), ${t.title}`
+    case 'otherRepresentative':
+      return t.otherLegalRepresentation
+    case 'guardianDetails':
+      return t.guardiansHeard
   }
 
   return t[fieldKey]
@@ -160,7 +166,9 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
         // there must be an end date if ASSISTANCE_SERVICES_FOR_TIME is selected
         formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
           formState?.validityPeriod.end === null &&
-          'endDate'
+          'endDate',
+        // at least one assistance level must be selected
+        formState?.assistanceLevels.length === 0 && 'futureLevelOfAssistance'
       ).filter((field): field is keyof FieldInfos => !!field),
     [formState, startDateMissing]
   )
@@ -185,10 +193,41 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                     .guardiansHeardValidation,
                   status: 'warning'
                 }
-              : undefined
+              : undefined,
+            guardianDetails: Object.fromEntries(
+              formState?.guardianInfo
+                .filter(
+                  (guardian) =>
+                    !guardian.details || guardian.details.trim().length === 0
+                )
+                .map<[string, InputInfo]>((guardian) => [
+                  guardian.id ?? '',
+                  {
+                    text: i18n.validationErrors.required,
+                    status: 'warning'
+                  }
+                ]) ?? []
+            ),
+            otherRepresentative:
+              formState?.otherRepresentativeHeard &&
+              (!formState?.otherRepresentativeDetails ||
+                formState?.otherRepresentativeDetails.trim().length === 0)
+                ? {
+                    text: i18n.validationErrors.required,
+                    status: 'warning'
+                  }
+                : undefined
           }
         : {}) as FieldInfos,
-    [showFormErrors, missingFields, formState?.guardianInfo, i18n]
+    [
+      showFormErrors,
+      missingFields,
+      formState?.guardianInfo,
+      formState?.otherRepresentativeHeard,
+      formState?.otherRepresentativeDetails,
+      i18n.childInformation.assistanceNeedDecision.guardiansHeardValidation,
+      i18n.validationErrors.required
+    ]
   )
 
   return (
@@ -239,7 +278,8 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       <Gap size="m" />
       <StickyFooter>
         {showFormErrors &&
-          Object.values(fieldInfos).filter((value) => value).length > 0 && (
+          Object.values(fieldInfos).filter((value) => value && !isEmpty(value))
+            .length > 0 && (
             <>
               <H2>
                 {i18n.childInformation.assistanceNeedDecision.validation.title}
@@ -255,9 +295,12 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                     </P>
                     <ul>
                       {(
-                        Object.entries(fieldInfos).filter(
-                          ([, value]) => value
-                        ) as [keyof FieldInfos, InputInfo][]
+                        Object.entries(
+                          omit(fieldInfos, ['guardianDetails'])
+                        ).filter(([, value]) => value) as [
+                          keyof FieldInfos,
+                          InputInfo
+                        ][]
                       ).map(([field, value]) => (
                         <li key={field}>
                           {getFieldTranslation(
@@ -267,6 +310,24 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                           : {value?.text}
                         </li>
                       ))}
+                      {Object.entries(fieldInfos.guardianDetails ?? {}).map(
+                        ([id, value]) =>
+                          value && (
+                            <li key={id}>
+                              {getFieldTranslation(
+                                i18n.childInformation.assistanceNeedDecision,
+                                'guardianDetails'
+                              )}{' '}
+                              (
+                              {
+                                formState?.guardianInfo.find(
+                                  (guardian) => guardian.id === id
+                                )?.name
+                              }
+                              ): {value?.text}
+                            </li>
+                          )
+                      )}
                     </ul>
                   </>
                 }

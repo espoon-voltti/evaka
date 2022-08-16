@@ -17,72 +17,72 @@ export const sv = {
       pageTitle: 'Beslut om stöd',
       genericPlaceholder: 'Skriv',
       formLanguage: 'Formulärets språk',
-      neededTypesOfAssistance: 'Former av stöd enligt barnets behov',
-      pedagogicalMotivation: 'Former och motiveringar för pedagogiskt stöd',
+      neededTypesOfAssistance: 'Stödformer utgående från barnets behov',
+      pedagogicalMotivation: 'Pedagogiska stödformer och motivering',
       pedagogicalMotivationInfo:
         'Anteckna en presentation av de former av pedagogiskt stöd barnet behöver, såsom lösningar relaterade till dagens struktur, dagsrytm och lärmiljö samt pedagogiska och specialpedagogiska lösningar. Förklara kort varför barnet får dessa former av stöd.',
-      structuralMotivation: 'Strukturella former av stöd och motivering',
+      structuralMotivation: 'Strukturella stödformer och motivering',
       structuralMotivationInfo:
         'Välj de former av strukturellt stöd barnet behöver. Förklara varför barnet får dessa former av stöd.',
       structuralMotivationOptions: {
         smallerGroup: 'Minskad gruppstorlek',
         specialGroup: 'Specialgrupp',
-        smallGroup: 'Liten grupp',
-        groupAssistant: 'Gruppassistent',
-        childAssistant: 'Personlig assistent för barnet',
-        additionalStaff: 'Ökning av mänskliga resurser'
+        smallGroup: 'Smågrupp',
+        groupAssistant: 'Assistent för gruppen',
+        childAssistant: 'Assistent för barnet',
+        additionalStaff: 'Ökade personalresurser'
       },
       structuralMotivationPlaceholder:
-        'Beskrivning av och motivering för de valda formerna av strukturellt stöd',
-      careMotivation: 'Former och motivering för vårdnadsstöd',
+        'Beskrivning och motivering av de valda strukturella stödformerna',
+      careMotivation: 'Vårdinriktade stödformer och motivering',
       careMotivationInfo:
         'Anteckna de vårdformer som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, träning och relaterade hjälpmedel. Förklara varför barnet får dessa former av stöd.',
       serviceOptions: {
         consultationSpecialEd:
-          'Konsultation av speciallärare i smågbarnspedagogik',
+          'Konsultation med speciallärare inom småbarnspedagogik',
         partTimeSpecialEd:
-          'Deltidsundervisning av speciallärare i småbarnspedagogik',
+          'Undervisning på deltid av speciallärare inom småbarnspedagogik',
         fullTimeSpecialEd:
-          'Heltidsundervisning av speciallärare i småbarnspedagogik',
-        interpretationAndAssistanceServices: 'Tolk- och assistanstjänster',
+          'Undervisning på heltid av speciallärare inom småbarnspedagogik',
+        interpretationAndAssistanceServices: 'Tolknings-och assistenttjänster',
         specialAides: 'Hjälpmedel'
       },
       services: 'Stödtjänster och motivering',
       servicesInfo:
         'Välj stödtjänster för barnet här. Förklara varför barnet får dessa stödtjänster',
-      servicesPlaceholder: 'Motivering för valda stödtjänster',
-      collaborationWithGuardians: 'Samarbete med vårdnadshavarna',
-      guardiansHeardOn: 'Datum för samråd med vårdnadshavarna',
-      guardiansHeard:
-        'Vårdnadshavare vilka blivit konsulterade, samt metoden som använts',
+      servicesPlaceholder: 'Motivering av de valda vårdinriktade stödformer',
+      collaborationWithGuardians: 'Samarbete med vårdnadshavare',
+      guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
+      guardiansHeard: 'Vårdnadshavare som hörts och förfaringssätt vid hörande',
       guardiansHeardInfo:
         'Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här hur och när han eller hon har kallats för att höras och hur och när barnets plan för småbarnspedagogiken har kommunicerats till vårdnadshavaren. Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt att företräda sig själv åt en annan förmyndare.',
-      viewOfTheGuardians: 'Vårdnadshavarnas syn på stödet som erbjuds',
+      viewOfTheGuardians: 'Vårdnadshavarnas syn på det rekommenderade stödet',
       viewOfTheGuardiansInfo:
         'Anteckna vårdnadshavarnas syn på det stöd som erbjuds barnet.',
       otherLegalRepresentation:
-        'Annat juridiskt ombud (namn, telefonnummer och metod för konsultation)',
-      decisionAndValidity: 'Beslut om stödets nivå samt giltighet',
-      futureLevelOfAssistance: 'Nivån för barnets stöd i fortsättningen',
+        'Annan laglig företrädare (namn, telefonnummer och förfaringssätt vid hörande)',
+      decisionAndValidity:
+        'Beslut om stödnivån och när beslutet träder i kraft',
+      futureLevelOfAssistance: 'Barnets stödnivå framöver',
       assistanceLevel: {
-        assistanceEnds: 'Stödet upphör',
+        assistanceEnds: 'Stödet avslutas',
         assistanceServicesForTime: 'Stödtjänster under beslutets giltighetstid',
         enhancedAssistance: 'Intensifierat stöd',
         specialAssistance: 'Särskilt stöd'
       },
-      startDate: 'Beslutet i kraft fr.o.m.',
+      startDate: 'Beslutet träder i kraft',
       startDateInfo:
         'Beslutet gäller från angivet startdatum. Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
       endDate: 'Beslutet i kraft till',
-      selectedUnit: 'Enhet för småbarnspedagogik utvald för beslutet',
-      unitMayChange: 'Under semestern kan platsen eller metoden ändras',
-      motivationForDecision: 'Motivering för nivån för barnets stöd',
-      personsResponsible: 'Ansvariga',
-      preparator: 'Beslutets förberedare',
+      selectedUnit: 'Enheten där stödet ges',
+      unitMayChange: 'Enheten kan ändras under semestertider',
+      motivationForDecision: 'Motivering av beslut',
+      personsResponsible: 'Ansvarspersoner',
+      preparator: 'Beredare av beslutet',
       decisionMaker: 'Beslutsfattare',
       title: 'Titel',
       disclaimer:
-        'Ett beslut enligt 15 e § förskolelagen kan verkställas även om det överklagas.',
+        'Ett beslut som fattats i enlighet med Lag om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.',
       decisionNumber: 'Beslutsnummer',
       statuses: {
         DRAFT: 'Utkast',
