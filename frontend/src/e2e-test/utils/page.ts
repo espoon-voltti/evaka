@@ -322,7 +322,7 @@ export class Radio extends Checkable {
 
 export class SelectionChip extends Element {
   async check() {
-    if (!this.checked) {
+    if (!(await this.checked)) {
       await this.click()
       await this.waitUntilChecked(true)
     }
