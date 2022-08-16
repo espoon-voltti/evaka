@@ -197,6 +197,7 @@ export function PaymentStatusFilter({
             checked={toggled === id}
             onChange={toggle(id)}
             small
+            data-qa={`status-filter-${id}`}
           />
         ))}
       </FixedSpaceColumn>

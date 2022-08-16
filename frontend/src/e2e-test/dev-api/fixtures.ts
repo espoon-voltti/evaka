@@ -47,6 +47,7 @@ import {
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
   DevIncome,
+  DevPayment,
   DevStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
@@ -83,6 +84,7 @@ import {
   insertHolidayPeriod,
   insertHolidayQuestionnaire,
   insertIncome,
+  insertPayment,
   insertPedagogicalDocuments,
   insertPersonFixture,
   insertPlacementPlan,
@@ -115,7 +117,7 @@ export const careArea2Fixture: CareArea = {
 
 export const clubFixture: Daycare = {
   id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
-  careAreaId: careAreaFixture.id,
+  areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen kerho',
   type: ['CLUB'],
   openingDate: '2020-01-01',
@@ -133,12 +135,15 @@ export const clubFixture: Daycare = {
   providerType: 'MUNICIPAL',
   operationDays: [1, 2, 3, 4, 5],
   roundTheClock: true,
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
+  businessId: '',
+  iban: '',
+  providerId: ''
 }
 
 export const daycareFixture: Daycare = {
   id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
-  careAreaId: careAreaFixture.id,
+  areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen päiväkoti',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
   costCenter: '31500',
@@ -163,12 +168,15 @@ export const daycareFixture: Daycare = {
     'VASU_AND_PEDADOC',
     'MOBILE_MESSAGING',
     'PLACEMENT_TERMINATION'
-  ]
+  ],
+  businessId: '',
+  iban: '',
+  providerId: ''
 }
 
 export const daycare2Fixture: Daycare = {
   id: '6f540c39-e7f6-4222-a004-c527403378ec',
-  careAreaId: careArea2Fixture.id,
+  areaId: careArea2Fixture.id,
   name: 'Mustan aukon päiväkoti',
   type: ['CENTRE'],
   costCenter: '31501',
@@ -187,12 +195,15 @@ export const daycare2Fixture: Daycare = {
     lon: 24.669
   },
 
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS']
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS'],
+  businessId: '',
+  iban: '',
+  providerId: ''
 }
 
 export const daycareFixturePrivateVoucher: Daycare = {
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
-  careAreaId: careAreaFixture.id,
+  areaId: careAreaFixture.id,
   name: 'PS-yksikkö',
   type: ['CENTRE'],
   costCenter: '31500',
@@ -218,12 +229,15 @@ export const daycareFixturePrivateVoucher: Daycare = {
     'MOBILE_MESSAGING',
     'PLACEMENT_TERMINATION'
   ],
-  invoicedByMunicipality: false
+  invoicedByMunicipality: false,
+  businessId: '',
+  iban: '',
+  providerId: ''
 }
 
 export const preschoolFixture: Daycare = {
   id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
-  careAreaId: careAreaFixture.id,
+  areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen eskari',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
   costCenter: '31501',
@@ -246,7 +260,10 @@ export const preschoolFixture: Daycare = {
     'MOBILE',
     'VASU_AND_PEDADOC',
     'PLACEMENT_TERMINATION'
-  ]
+  ],
+  businessId: '',
+  iban: '',
+  providerId: ''
 }
 
 export const enduserGuardianFixture: PersonDetail = {
@@ -1030,7 +1047,7 @@ export class Fixture {
     const id = uniqueLabel()
     return new DaycareBuilder({
       id: uuidv4(),
-      careAreaId: '',
+      areaId: '',
       name: `daycare_${id}`,
       type: ['CENTRE'],
       costCenter: `costCenter_${id}`,
@@ -1044,7 +1061,10 @@ export class Fixture {
       providerType: 'MUNICIPAL',
       operationDays: [1, 2, 3, 4, 5],
       roundTheClock: true,
-      enabledPilotFeatures: ['MESSAGING', 'MOBILE']
+      enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
+      businessId: '',
+      iban: '',
+      providerId: ''
     })
   }
 
@@ -1608,6 +1628,28 @@ export class Fixture {
       given
     })
   }
+
+  static payment(): PaymentBuilder {
+    return new PaymentBuilder({
+      id: uuidv4(),
+      period: new FiniteDateRange(
+        LocalDate.todayInHelsinkiTz(),
+        LocalDate.todayInHelsinkiTz()
+      ),
+      status: 'DRAFT',
+      number: 1,
+      amount: 0,
+      unitId: 'not set',
+      unitName: 'not set',
+      unitBusinessId: null,
+      unitIban: null,
+      unitProviderId: null,
+      paymentDate: null,
+      dueDate: null,
+      sentAt: null,
+      sentBy: null
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -1638,7 +1680,7 @@ export class DaycareBuilder extends FixtureBuilder<Daycare> {
   }
 
   careArea(careArea: CareAreaBuilder): DaycareBuilder {
-    this.data.careAreaId = careArea.data.id
+    this.data.areaId = careArea.data.id
     return this
   }
 
@@ -2094,5 +2136,16 @@ export class ChildConsentBuilder extends FixtureBuilder<DevChildConsent> {
 
   copy() {
     return new ChildConsentBuilder({ ...this.data })
+  }
+}
+
+export class PaymentBuilder extends FixtureBuilder<DevPayment> {
+  async save() {
+    await insertPayment(this.data)
+    return this
+  }
+
+  copy() {
+    return new PaymentBuilder({ ...this.data })
   }
 }

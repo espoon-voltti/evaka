@@ -35,7 +35,7 @@ interface PaymentIntegrationClient {
 
     class MockClient(private val jsonMapper: JsonMapper) : PaymentIntegrationClient {
         override fun send(payments: List<Payment>): SendResult {
-            logger.info("Mock payment integration client got invoices ${jsonMapper.writeValueAsString(payments)}")
+            logger.info("Mock payment integration client got payments ${jsonMapper.writeValueAsString(payments)}")
             return SendResult(succeeded = payments)
         }
     }

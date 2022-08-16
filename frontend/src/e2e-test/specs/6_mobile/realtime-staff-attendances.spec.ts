@@ -39,7 +39,7 @@ beforeEach(async () => {
   await Fixture.daycare()
     .with({
       ...daycare2Fixture,
-      careAreaId: fixtures.careAreaFixture.id,
+      areaId: fixtures.careAreaFixture.id,
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
     })
     .save()

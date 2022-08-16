@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
@@ -14,6 +15,7 @@ import {
   Combobox,
   DatePickerDeprecated,
   Page,
+  Radio,
   Select,
   TextInput
 } from '../../../utils/page'
@@ -42,6 +44,11 @@ export class FinancePage {
 
   async selectIncomeStatementsTab() {
     await this.page.find(`[data-qa="income-statements-tab"]`).click()
+  }
+
+  async selectPaymentsTab() {
+    await this.page.find(`[data-qa="payments-tab"]`).click()
+    return new PaymentsPage(this.page)
   }
 }
 
@@ -440,5 +447,40 @@ export class IncomeStatementsPage {
           .find('[data-qa="income-statement-type"]').textContent,
       expecteTypeText
     )
+  }
+}
+
+export class PaymentsPage {
+  constructor(private readonly page: Page) {}
+
+  async setStatusFilter(status: PaymentStatus) {
+    const radio = new Radio(this.page.findByDataQa(`status-filter-${status}`))
+    if (await radio.checked) {
+      return
+    }
+    await radio.click()
+  }
+
+  async assertPaymentCount(count: number) {
+    await waitUntilEqual(
+      () => this.page.findAllByDataQa('table-payment-row').count(),
+      count
+    )
+  }
+
+  async togglePayments(toggled: boolean) {
+    const toggle = new Checkbox(this.page.findByDataQa('toggle-all-payments'))
+    await toggle.waitUntilChecked(!toggled)
+    await toggle.click()
+    await toggle.waitUntilChecked(toggled)
+  }
+
+  async sendPayments() {
+    await this.page.findByDataQa('open-send-payments-dialog').click()
+    const modal = this.page.findByDataQa('send-payments-modal')
+    await modal.waitUntilVisible()
+    const sendButton = new AsyncButton(modal.findByDataQa('modal-okBtn'))
+    await sendButton.click()
+    await modal.waitUntilHidden()
   }
 }

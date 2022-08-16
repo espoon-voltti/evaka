@@ -70,7 +70,7 @@ beforeEach(async () => {
   await Fixture.daycare()
     .with(daycare2Fixture)
     .with({
-      careAreaId: careArea.id
+      areaId: careArea.id
     })
     .save()
 

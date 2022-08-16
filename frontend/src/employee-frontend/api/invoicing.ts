@@ -649,17 +649,12 @@ export async function getPayments(
 }
 
 export async function sendPayments(
-  paymentsIds: string[],
+  paymentIds: string[],
   paymentDate: LocalDate,
   dueDate: LocalDate
 ): Promise<Result<void>> {
   return client
-    .post<void>('/payments/send', paymentsIds, {
-      params: {
-        invoiceDate: paymentDate.formatIso(),
-        dueDate: dueDate.formatIso()
-      }
-    })
+    .post<void>('/payments/send', { paymentDate, dueDate, paymentIds })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

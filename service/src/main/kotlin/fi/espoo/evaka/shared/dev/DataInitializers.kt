@@ -52,6 +52,7 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
+import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -1271,3 +1272,12 @@ VALUES (:id, :headOfFamilyId, :childId, :unitId, :product, :period, :amount, :un
 RETURNING id
 """
 ).let(::InvoiceCorrectionId)
+
+fun Database.Transaction.insertDevPayment(payment: DevPayment) = insertTestDataRow(
+    payment,
+    """
+INSERT INTO payment (id, unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id, period, number, amount, status, payment_date, due_date, sent_at, sent_by)
+VALUES (:id, :unitId, :unitName, :unitBusinessId, :unitIban, :unitProviderId, :period, :number, :amount, :status, :paymentDate, :dueDate, :sentAt, :sentBy)
+RETURNING id
+"""
+).let(::PaymentId)

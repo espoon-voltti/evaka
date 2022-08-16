@@ -80,6 +80,12 @@ class EspooConfig {
         PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
 
     @Bean
+    @Profile("local")
+    fun paymentIntegrationMockClient(jsonMapper: JsonMapper): PaymentIntegrationClient =
+        PaymentIntegrationClient.MockClient(jsonMapper)
+
+    @Bean
+    @Profile("production")
     fun paymentIntegrationClient(): PaymentIntegrationClient = PaymentIntegrationClient.FailingClient()
 
     @Bean
@@ -118,7 +124,7 @@ class EspooConfig {
         freeAbsenceGivesADailyRefund = true,
         alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
         invoiceNumberSeriesStart = 5000000000,
-        paymentNumberSeriesStart = null, // Payments are not yet in use in Espoo
+        paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
         enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
     )
 
