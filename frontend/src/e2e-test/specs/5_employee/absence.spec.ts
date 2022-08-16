@@ -4,44 +4,50 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
+import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  createDaycarePlacementFixture,
-  daycareGroupFixture,
-  Fixture,
-  uuidv4
-} from '../../dev-api/fixtures'
-import { DaycarePlacement } from '../../dev-api/types'
+import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let daycarePlacementFixture: DaycarePlacement
 let page: Page
 let unitPage: UnitPage
+
+const today = LocalDate.todayInSystemTz()
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await insertDefaultServiceNeedOptions()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  const group = await Fixture.daycareGroup().with(daycareGroupFixture).save()
 
-  daycarePlacementFixture = createDaycarePlacementFixture(
-    uuidv4(),
-    fixtures.enduserChildFixtureJari.id,
-    fixtures.daycareFixture.id
-  )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await Fixture.placement()
+    .with({
+      childId: fixtures.enduserChildFixtureJari.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: today.formatIso(),
+      endDate: today.addYears(1).formatIso()
+    })
+    .save()
+  const kaarinaPlacement = await Fixture.placement()
+    .with({
+      childId: fixtures.enduserChildFixtureKaarina.id,
+      unitId: fixtures.daycareFixture.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: today.formatIso(),
+      endDate: today.addYears(1).formatIso()
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .withPlacement(kaarinaPlacement)
+    .withGroup(group)
+    .save()
+
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
     fixtures.daycareFixture.id
   ).save()
@@ -64,14 +70,14 @@ describe('Employee - Absences', () => {
     )
 
     await missingPlacementsSection.assertRowCount(0)
-    await groupSection.assertChildCount(1)
+    await groupSection.assertChildCount(2)
 
     await groupSection.removeGroupPlacement(0)
     await missingPlacementsSection.assertRowCount(1)
-    await groupSection.assertChildCount(0)
+    await groupSection.assertChildCount(1)
   })
 
-  test('User can open the diary page and add an absence for a child', async () => {
+  test('User can open the diary page and add an absence for a child with only one absence category', async () => {
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
     const groupsPage = await unitPage.openGroupsPage()
 
@@ -82,26 +88,119 @@ describe('Employee - Absences', () => {
       daycareGroupFixture.id
     )
     const diaryPage = await groupSection.openDiary()
-    await diaryPage.assertUnitName(fixtures.daycareFixture.name)
-    await diaryPage.assertSelectedGroup(daycareGroupFixture.id)
 
     // Can add an absence
-    await diaryPage.addAbsenceToChild(0, 'SICKLEAVE')
-    await diaryPage.childHasAbsence(0, 'SICKLEAVE')
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'SICKLEAVE'
+    )
+    await diaryPage.childHasAbsence(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'SICKLEAVE',
+      'BILLABLE'
+    )
 
     // Can change the absence type
-    await diaryPage.addAbsenceToChild(0, 'UNKNOWN_ABSENCE')
-    await diaryPage.childHasAbsence(0, 'UNKNOWN_ABSENCE')
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'UNKNOWN_ABSENCE'
+    )
+    await diaryPage.childHasAbsence(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'UNKNOWN_ABSENCE',
+      'BILLABLE'
+    )
 
     // Hover shows type and who is the absence maker
-    await diaryPage.assertTooltipContains(0, [
-      'Varhaiskasvatus: Ilmoittamaton poissaolo',
-      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
-    ])
+    await diaryPage.assertTooltipContains(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      [
+        'Varhaiskasvatus: Ilmoittamaton poissaolo',
+        `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+      ]
+    )
 
     // Can clear an absence
-    await diaryPage.addAbsenceToChild(0, 'NO_ABSENCE')
-    await diaryPage.childHasNoAbsence(0)
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'NO_ABSENCE'
+    )
+    await diaryPage.childHasNoAbsence(
+      fixtures.enduserChildFixtureJari.id,
+      today,
+      'BILLABLE'
+    )
+  })
+
+  test('User can open the diary page and add an absence for a child with two absence categories', async () => {
+    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+    const diaryPage = await groupSection.openDiary()
+
+    // Can add an absence
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'SICKLEAVE',
+      ['BILLABLE']
+    )
+    await diaryPage.childHasAbsence(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'SICKLEAVE',
+      'BILLABLE'
+    )
+
+    // Can change the absence type
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'UNKNOWN_ABSENCE',
+      ['NONBILLABLE']
+    )
+    await diaryPage.childHasAbsence(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'UNKNOWN_ABSENCE',
+      'NONBILLABLE'
+    )
+
+    // Hover shows type and who is the absence maker
+    await diaryPage.assertTooltipContains(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      [
+        'Varhaiskasvatus: Ilmoittamaton poissaolo',
+        `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+      ]
+    )
+
+    // Can clear an absence
+    await diaryPage.addAbsenceToChild(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'NO_ABSENCE',
+      ['BILLABLE', 'NONBILLABLE']
+    )
+    await diaryPage.childHasNoAbsence(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'BILLABLE'
+    )
+    await diaryPage.childHasNoAbsence(
+      fixtures.enduserChildFixtureKaarina.id,
+      today,
+      'NONBILLABLE'
+    )
   })
 
   test('User can add a staff attendance', async () => {
