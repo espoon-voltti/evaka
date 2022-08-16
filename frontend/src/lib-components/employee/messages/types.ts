@@ -6,7 +6,7 @@ import {
   Group,
   MessageReceiver,
   AuthorizedMessageAccount,
-  UpsertableDraftContent
+  UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -24,7 +24,7 @@ export const isGroupMessageAccount = (
 export interface SaveDraftParams {
   accountId: UUID
   draftId: UUID
-  content: UpsertableDraftContent
+  content: UpdatableDraftContent
 }
 
 export const deserializeReceiver = (

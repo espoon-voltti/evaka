@@ -193,12 +193,12 @@ class MessageController(
         user: AuthenticatedUser,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
-        @RequestBody content: UpsertableDraftContent,
+        @RequestBody content: UpdatableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, accountId)
-            dbc.transaction { it.upsertDraft(accountId, draftId, content) }
+            dbc.transaction { it.updateDraft(accountId, draftId, content) }
         }
     }
 
