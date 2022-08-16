@@ -24,6 +24,7 @@ export default React.memo(function AbsenceModal({
   onCancel,
   selectedAbsenceType,
   setSelectedAbsenceType,
+  showCategorySelection,
   selectedCategories,
   updateCategories
 }: {
@@ -32,6 +33,7 @@ export default React.memo(function AbsenceModal({
   onCancel: () => void
   selectedAbsenceType: AbsenceType | null
   setSelectedAbsenceType: (value: AbsenceType | null) => void
+  showCategorySelection: boolean
   selectedCategories: AbsenceCategory[]
   updateCategories: (value: AbsenceCategory) => void
 }) {
@@ -68,18 +70,22 @@ export default React.memo(function AbsenceModal({
           />
         </FixedSpaceColumn>
 
-        <Label>{i18n.absences.modal.placementSectionLabel}</Label>
-        <FixedSpaceColumn spacing="xs">
-          {absenceCategories.map((category, index) => (
-            <Checkbox
-              key={index}
-              label={i18n.absences.absenceCategories[category]}
-              checked={selectedCategories.includes(category)}
-              onChange={() => updateCategories(category)}
-              data-qa={`absences-select-${category}`}
-            />
-          ))}
-        </FixedSpaceColumn>
+        {showCategorySelection && (
+          <>
+            <Label>{i18n.absences.modal.placementSectionLabel}</Label>
+            <FixedSpaceColumn spacing="xs">
+              {absenceCategories.map((category, index) => (
+                <Checkbox
+                  key={index}
+                  label={i18n.absences.absenceCategories[category]}
+                  checked={selectedCategories.includes(category)}
+                  onChange={() => updateCategories(category)}
+                  data-qa={`absences-select-${category}`}
+                />
+              ))}
+            </FixedSpaceColumn>
+          </>
+        )}
       </FixedSpaceColumn>
     </FormModal>
   )

@@ -3,8 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import flatMap from 'lodash/flatMap'
-import partition from 'lodash/partition'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import { Loading } from 'lib-common/api'
@@ -114,34 +119,38 @@ export default React.memo(function Absences({
     }
   }, [absences, setTitle])
 
-  const updateCategories = useCallback(
-    (category: AbsenceCategory) => {
-      const included = selectedCategories.includes(category)
-      const without = selectedCategories.filter((item) => item !== category)
-      setSelectedCategories(included ? without : [category, ...without])
-    },
-    [selectedCategories, setSelectedCategories]
+  const showCategorySelection = useMemo(
+    () => selectedCells.some(({ parts }) => parts.length > 1),
+    [selectedCells]
   )
+
+  const updateCategories = useCallback((category: AbsenceCategory) => {
+    setSelectedCategories((categories) =>
+      categories.includes(category)
+        ? categories.filter((c) => c !== category)
+        : [...categories, category]
+    )
+  }, [])
 
   const updateAbsences = useCallback(() => {
     const selectedParts: CellPart[] = flatMap(
       selectedCells,
       ({ parts }) => parts
     )
-    const [billableParts, otherParts] = partition(
-      selectedParts,
-      (part) => part.category === 'BILLABLE'
-    )
 
-    const payload: AbsenceDelete[] = flatMap(selectedCategories, (category) =>
-      category === 'BILLABLE' ? billableParts : otherParts
-    ).map(({ childId, date, category }) => {
-      return {
+    const sentParts = showCategorySelection
+      ? selectedParts.filter((part) =>
+          selectedCategories.includes(part.category)
+        )
+      : selectedParts
+
+    const payload: AbsenceDelete[] = sentParts.map(
+      ({ childId, date, category }) => ({
         childId,
         date,
         category
-      }
-    })
+      })
+    )
 
     ;(selectedAbsenceType === null
       ? deleteGroupAbsences(groupId, payload)
@@ -164,7 +173,8 @@ export default React.memo(function Absences({
     resetModalState,
     selectedAbsenceType,
     selectedCategories,
-    selectedCells
+    selectedCells,
+    showCategorySelection
   ])
 
   return (
@@ -172,10 +182,13 @@ export default React.memo(function Absences({
       {modalVisible && selectedCells.length > 0 && (
         <AbsenceModal
           onSave={updateAbsences}
-          saveDisabled={selectedCategories.length === 0}
+          saveDisabled={
+            showCategorySelection && selectedCategories.length === 0
+          }
           onCancel={resetModalState}
           selectedAbsenceType={selectedAbsenceType}
           setSelectedAbsenceType={setSelectedAbsenceType}
+          showCategorySelection={showCategorySelection}
           selectedCategories={selectedCategories}
           updateCategories={updateCategories}
         />

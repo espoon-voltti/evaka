@@ -110,7 +110,7 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
             } hover-highlight absence-cell-wrapper`}
-            data-qa="absence-cell"
+            data-qa={`absence-cell-${child.id}-${date.formatIso()}`}
           >
             <AbsenceCell
               selectedCells={selectedCells}
