@@ -34,9 +34,7 @@ export interface PedagogicalDocument {
 */
 export interface PedagogicalDocumentCitizen {
   attachments: Attachment[]
-  childFirstName: string
   childId: UUID
-  childPreferredName: string | null
   created: HelsinkiDateTime
   description: string
   id: UUID

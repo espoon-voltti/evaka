@@ -33,7 +33,6 @@ import { getLogoutUri } from './const'
 
 interface Props {
   unreadMessagesCount: number
-  unreadChildDocuments: number
   unreadChildren: number
   unreadApplications: number
   hideLoginButton: boolean
@@ -41,7 +40,6 @@ interface Props {
 
 export default React.memo(function DesktopNav({
   unreadMessagesCount,
-  unreadChildDocuments,
   unreadChildren,
   unreadApplications,
   hideLoginButton
@@ -74,15 +72,6 @@ export default React.memo(function DesktopNav({
                       data-qa="nav-messages"
                       text={t.header.nav.messages}
                       notificationCount={unreadMessagesCount}
-                    />
-                  )}
-                  {user.accessibleFeatures.childDocumentation && (
-                    <HeaderNavLink
-                      to="/child-documents"
-                      data-qa="nav-child-documents"
-                      lockElem={maybeLockElem}
-                      text={t.header.nav.pedagogicalDocuments}
-                      notificationCount={unreadChildDocuments}
                     />
                   )}
                   <HeaderNavLink

@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { ChildrenContext } from 'citizen-frontend/children/state'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -19,8 +20,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../localization'
-import { ChildDocumentsContext, ChildDocumentsState } from '../state'
+import { useTranslation } from '../../../../localization'
 
 import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'
@@ -48,9 +48,7 @@ export default React.memo(function VasuPage() {
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
 
-  const { refreshUnreadVasuDocumentsCount } = useContext<ChildDocumentsState>(
-    ChildDocumentsContext
-  )
+  const { refreshUnreadVasuDocumentsCount } = useContext(ChildrenContext)
 
   const {
     vasu,
@@ -104,16 +102,16 @@ export default React.memo(function VasuPage() {
             <ContentArea opaque paddingVertical="m" paddingHorizontal="L">
               <Label>
                 {vasu.type === 'DAYCARE'
-                  ? t.vasu.givePermissionToShareTitleVasu
-                  : t.vasu.givePermissionToShareTitleLeops}
+                  ? t.children.vasu.givePermissionToShareTitleVasu
+                  : t.children.vasu.givePermissionToShareTitleLeops}
               </Label>
               <Gap size="s" />
               <ExpandingInfo
                 info={
                   <div>
                     {vasu.type === 'DAYCARE'
-                      ? `${t.vasu.givePermissionToShareInfoBase} ${t.vasu.sharingVasuDisclaimer}`
-                      : `${t.vasu.givePermissionToShareInfoBase} ${t.vasu.sharingLeopsDisclaimer}`}
+                      ? `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingVasuDisclaimer}`
+                      : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
                   </div>
                 }
                 ariaLabel={t.common.openExpandingInfo}
@@ -122,8 +120,8 @@ export default React.memo(function VasuPage() {
               >
                 <span>
                   {vasu.type === 'DAYCARE'
-                    ? t.vasu.givePermissionToShareVasuBrief
-                    : t.vasu.givePermissionToShareLeopsBrief}
+                    ? t.children.vasu.givePermissionToShareVasuBrief
+                    : t.children.vasu.givePermissionToShareLeopsBrief}
                 </span>
               </ExpandingInfo>
               <Gap size="s" />
@@ -131,8 +129,8 @@ export default React.memo(function VasuPage() {
                 checked={givePermissionToShareSelected}
                 label={
                   vasu.type === 'DAYCARE'
-                    ? t.vasu.givePermissionToShareVasu
-                    : t.vasu.givePermissionToShareLeops
+                    ? t.children.vasu.givePermissionToShareVasu
+                    : t.children.vasu.givePermissionToShareLeops
                 }
                 onChange={setGivePermissionToShareSelected}
                 data-qa="confirm-checkbox"

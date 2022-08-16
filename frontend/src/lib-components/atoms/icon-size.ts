@@ -15,9 +15,9 @@ export const fontSizeByIconSize = (size: IconSize): number => {
     case 'L':
       return 18
     case 'XL':
-      return 44
+      return 32
     case 'XXL':
-      return 80
+      return 42
   }
 }
 

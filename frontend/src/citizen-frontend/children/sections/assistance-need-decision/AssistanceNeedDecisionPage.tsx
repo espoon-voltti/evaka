@@ -21,11 +21,12 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
+import { ChildrenContext } from '../../state'
+
 import {
   getAssistanceNeedDecision,
   markAssistanceNeedDecisionAsRead
 } from './api'
-import { ChildrenContext } from './state'
 
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { id } = useNonNullableParams<{ childId: UUID; id: UUID }>()

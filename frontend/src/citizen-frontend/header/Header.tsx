@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sum from 'lodash/sum'
 import sumBy from 'lodash/sumBy'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -13,10 +14,6 @@ import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
-import {
-  ChildDocumentsContext,
-  ChildDocumentsState
-} from '../child-documents/state'
 import { MessageContext, MessagePageState } from '../messages/state'
 
 import CityLogo from './CityLogo'
@@ -37,16 +34,13 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   }, [refreshUnreadMessagesCount, user])
 
   const {
+    unreadAssistanceNeedDecisionCounts,
+    refreshUnreadAssistanceNeedDecisionCounts,
+    childConsentNotifications,
     unreadPedagogicalDocumentsCount,
     unreadVasuDocumentsCount,
     refreshUnreadPedagogicalDocumentsCount,
     refreshUnreadVasuDocumentsCount
-  } = useContext<ChildDocumentsState>(ChildDocumentsContext)
-
-  const {
-    unreadAssistanceNeedDecisionCounts,
-    refreshUnreadAssistanceNeedDecisionCounts,
-    childConsentNotifications
   } = useContext(ChildrenContext)
 
   const { waitingConfirmationCount, refreshWaitingConfirmationCount } =
@@ -64,13 +58,22 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
 
-  const unreadDocumentCount =
-    (unreadPedagogicalDocumentsCount || 0) + (unreadVasuDocumentsCount || 0)
-
-  const unreadChildrenCount = useMemo(
+  const unreadAssistanceNeedDecisionCount = useMemo(
     () => sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count),
     [unreadAssistanceNeedDecisionCounts]
   )
+
+  const unreadChildDocumentsCount = useMemo(
+    () =>
+      sum(Object.values(unreadPedagogicalDocumentsCount ?? {})) +
+      sum(Object.values(unreadVasuDocumentsCount ?? {})),
+    [unreadPedagogicalDocumentsCount, unreadVasuDocumentsCount]
+  )
+
+  const unreadChildrenCount =
+    unreadAssistanceNeedDecisionCount +
+    childConsentNotifications +
+    unreadChildDocumentsCount
 
   return (
     <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
@@ -78,8 +81,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <EvakaLogo />
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildDocuments={unreadDocumentCount}
-        unreadChildren={unreadChildrenCount + childConsentNotifications}
+        unreadChildren={unreadChildrenCount}
         unreadApplications={waitingConfirmationCount}
         hideLoginButton={hideLoginButton}
       />
@@ -87,8 +89,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildDocumentsCount={unreadDocumentCount}
-        unreadChildrenCount={unreadChildrenCount + childConsentNotifications}
+        unreadChildrenCount={unreadChildrenCount}
         unreadApplications={waitingConfirmationCount}
         hideLoginButton={hideLoginButton}
       />

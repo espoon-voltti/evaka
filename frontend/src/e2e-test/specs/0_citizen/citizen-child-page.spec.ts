@@ -14,6 +14,7 @@ import {
   resetDatabase
 } from '../../dev-api'
 import {
+  addConsentsForChildren,
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -109,7 +110,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
@@ -131,7 +132,7 @@ describe('Citizen children page', () => {
       await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
@@ -151,7 +152,7 @@ describe('Citizen children page', () => {
       )
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(0)
@@ -185,7 +186,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
       const placementLabel = `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
       await childPage.togglePlacement(placementLabel)
       await childPage.fillTerminationDate(mockedDate)
@@ -261,7 +262,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
@@ -304,7 +305,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(1)
@@ -367,7 +368,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await childPage.assertTerminatablePlacementCount(2)
@@ -420,7 +421,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openTerminationCollapsible()
+      await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
       await assertTerminatablePlacements([
@@ -445,24 +446,14 @@ describe('Citizen children page', () => {
   describe('Assistance need decisions table', () => {
     beforeEach(async () => {
       // child consent counts affect the unread count too
-      await Fixture.childConsent(
-        fixtures.enduserChildFixtureKaarina.id,
-        'EVAKA_PROFILE_PICTURE',
-        fixtures.enduserGuardianFixture.id,
-        true
-      ).save()
-      await Fixture.childConsent(
-        fixtures.enduserChildFixtureJari.id,
-        'EVAKA_PROFILE_PICTURE',
-        fixtures.enduserGuardianFixture.id,
-        true
-      ).save()
-      await Fixture.childConsent(
-        fixtures.enduserChildFixturePorriHatterRestricted.id,
-        'EVAKA_PROFILE_PICTURE',
-        fixtures.enduserGuardianFixture.id,
-        true
-      ).save()
+      await addConsentsForChildren(
+        [
+          fixtures.enduserChildFixtureKaarina.id,
+          fixtures.enduserChildFixtureJari.id,
+          fixtures.enduserChildFixturePorriHatterRestricted.id
+        ],
+        fixtures.enduserGuardianFixture.id
+      )
     })
     test('Has an accepted decision', async () => {
       await Fixture.preFilledAssistanceNeedDecision()
@@ -484,7 +475,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openAssistanceNeedCollapsible()
+      await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
         assistanceLevel:
@@ -509,7 +500,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openAssistanceNeedCollapsible()
+      await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
         assistanceLevel: 'Tehostettu tuki',
@@ -542,7 +533,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openAssistanceNeedCollapsible()
+      await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(
         () => childPage.getAssistanceNeedDecisionRowCount(),
@@ -617,7 +608,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openAssistanceNeedCollapsible()
+      await childPage.openCollapsible('assistance-need-decisions')
 
       await childPage.assertAssistanceNeedDecisionRowUnread(0)
       await childPage.assistanceNeedDecisionRowClick(0)
@@ -625,7 +616,7 @@ describe('Citizen children page', () => {
 
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openAssistanceNeedCollapsible()
+      await childPage.openCollapsible('assistance-need-decisions')
       await childPage.assertNotAssistanceNeedDecisionRowUnread(0)
     })
   })
@@ -634,7 +625,7 @@ describe('Citizen children page', () => {
     test('can give consent once', async () => {
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openConsentCollapsible()
+      await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.check()
       await childPage.saveConsent()
       await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
@@ -642,7 +633,7 @@ describe('Citizen children page', () => {
       await page.reload()
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')
-      await childPage.openConsentCollapsible()
+      await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.waitUntilChecked(true)
       await childPage.evakaProfilePicNo.waitUntilChecked(false)
       await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
@@ -666,7 +657,7 @@ describe('Citizen children page', () => {
       await childrenPage.openChildPage('Kaarina')
       await childPage.assertUnconsentedCount(1)
 
-      await childPage.openConsentCollapsible()
+      await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.check()
       await childPage.saveConsent()
 
@@ -704,7 +695,7 @@ describe('Citizen assistance need decision page', () => {
 
     await header.selectTab('children')
     await childrenPage.openChildPage('Kaarina')
-    await childPage.openAssistanceNeedCollapsible()
+    await childPage.openCollapsible('assistance-need-decisions')
     await childPage.assistanceNeedDecisionRowClick(0)
 
     await page.page.waitForURL(

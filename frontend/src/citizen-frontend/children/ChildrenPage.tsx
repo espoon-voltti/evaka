@@ -85,8 +85,12 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
     [navigate, child.id]
   )
 
-  const { unreadAssistanceNeedDecisionCounts, childConsents } =
-    useContext(ChildrenContext)
+  const {
+    unreadAssistanceNeedDecisionCounts,
+    childConsents,
+    unreadPedagogicalDocumentsCount,
+    unreadVasuDocumentsCount
+  } = useContext(ChildrenContext)
 
   const unreadCount = useMemo(
     () =>
@@ -108,6 +112,12 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
     [childConsents, child.id]
   )
 
+  const totalUnread =
+    unreadCount +
+    unconsentedCount +
+    (unreadPedagogicalDocumentsCount?.[child.id] ?? 0) +
+    (unreadVasuDocumentsCount?.[child.id] ?? 0)
+
   const name = `${child.firstName} ${child.lastName}`
   return (
     <ChildContainer
@@ -117,10 +127,8 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
       data-qa-value={child.id}
       role="menuitem"
       aria-label={`${name}${child.group ? `, ${child.group.name}` : ''}${
-        unreadCount + unconsentedCount
-          ? `, ${unreadCount + unconsentedCount} ${
-              t.children.assistanceNeed.unreadCount
-            }`
+        totalUnread
+          ? `, ${totalUnread} ${t.children.assistanceNeed.unreadCount}`
           : ''
       }`}
     >
@@ -151,13 +159,11 @@ const ChildItem = React.memo(function ChildItem({ child }: { child: Child }) {
         </NameAndGroup>
       </Desktop>
       <ChevronContainer>
-        {unreadCount + unconsentedCount > 0 && (
+        {totalUnread > 0 && (
           <RoundIcon
-            content={(unreadCount + unconsentedCount).toString()}
+            content={totalUnread.toString()}
             color={colors.status.warning}
-            aria-label={`${unreadCount + unconsentedCount} ${
-              t.children.assistanceNeed.unreadCount
-            }`}
+            aria-label={`${totalUnread} ${t.children.assistanceNeed.unreadCount}`}
             size="m"
             data-qa="unread-count"
           />

@@ -9,13 +9,11 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.AuthenticatedUserType
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.result.RowView
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,26 +21,33 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/citizen/pedagogical-documents")
+@RequestMapping("/citizen")
 class PedagogicalDocumentControllerCitizen(
     private val accessControl: AccessControl
 ) {
-    @GetMapping
-    fun getPedagogicalDocumentsByGuardian(
+    @GetMapping("/children/{childId}/pedagogical-documents")
+    fun getPedagogicalDocumentsForChild(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
-        Audit.PedagogicalDocumentReadByGuardian.log(user.id)
+        Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId)
+
         return db.connect { dbc ->
             dbc.read {
-                it.findPedagogicalDocumentsByGuardian(user.id, user.type).filter { pd ->
+                val documents = it.getPedagogicalDocumentsByChildForGuardian(childId, user.id).filter { pd ->
                     pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
+
+                if (user.authLevel == CitizenAuthLevel.STRONG)
+                    documents
+                else
+                    documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
             }
         }
     }
 
-    @PostMapping("/{documentId}/mark-read")
+    @PostMapping("/pedagogical-documents/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
         db: Database,
         user: AuthenticatedUser.Citizen,
@@ -55,44 +60,16 @@ class PedagogicalDocumentControllerCitizen(
         }
     }
 
-    @GetMapping("/unread-count")
+    @GetMapping("/pedagogical-documents/unread-count")
     fun getUnreadPedagogicalDocumentCount(
         db: Database,
         user: AuthenticatedUser.Citizen
-    ): Number {
+    ): Map<ChildId, Int> {
         Audit.PedagogicalDocumentCountUnread.log(user.id)
         return db.connect { dbc ->
             dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
         }
     }
-}
-
-private fun Database.Read.findPedagogicalDocumentsByGuardian(
-    guardianId: PersonId,
-    userType: AuthenticatedUserType
-): List<PedagogicalDocumentCitizen> {
-    return this.createQuery(
-        """
-            SELECT 
-                pd.id,
-                pd.child_id,
-                pd.description,
-                pd.created,
-                pd.updated,
-                pdr.read_at is not null is_read,
-                chp.first_name,
-                chp.preferred_name
-            FROM pedagogical_document pd
-            JOIN guardian g ON pd.child_id = g.child_id
-            LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
-            LEFT JOIN person chp ON chp.id = pd.child_id
-            WHERE g.guardian_id = :guardian_id
-            ORDER BY pd.created DESC
-        """.trimIndent()
-    )
-        .bind("guardian_id", guardianId)
-        .map { row -> mapPedagogicalDocumentCitizen(row, userType, getPedagogicalDocumentAttachments(row.mapColumn("id"))) }
-        .filterNotNull()
 }
 
 private fun Database.Transaction.markDocumentReadByGuardian(documentId: PedagogicalDocumentId, guardianId: PersonId) =
@@ -107,7 +84,7 @@ private fun Database.Transaction.markDocumentReadByGuardian(documentId: Pedagogi
         .bind("personId", guardianId)
         .execute()
 
-private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Int =
+private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Map<ChildId, Int> =
     this.createQuery(
         """
             WITH ready_documents AS (
@@ -116,42 +93,16 @@ private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): In
                 LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
                 WHERE LENGTH(pd.description) > 0 OR a.id IS NOT NULL
             )
-            SELECT count(*)
+            SELECT d.child_id, count(*) as unread_count
             FROM ready_documents d
             JOIN guardian g ON d.child_id = g.child_id AND g.guardian_id = :personId
             WHERE NOT EXISTS (
                 SELECT 1 FROM pedagogical_document_read pdr
                 WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :personId
             )
+            GROUP BY d.child_id
         """.trimIndent()
     )
         .bind("personId", personId)
-        .mapTo<Int>()
-        .first()
-
-data class PedagogicalDocumentCitizen(
-    val id: PedagogicalDocumentId,
-    val childId: ChildId,
-    val description: String,
-    val attachments: List<Attachment> = emptyList(),
-    val created: HelsinkiDateTime,
-    val isRead: Boolean,
-    val childFirstName: String,
-    val childPreferredName: String?
-)
-
-fun mapPedagogicalDocumentCitizen(row: RowView, userType: AuthenticatedUserType, attachments: List<Attachment>): PedagogicalDocumentCitizen? {
-    val id: PedagogicalDocumentId = row.mapColumn("id") ?: return null
-
-    return PedagogicalDocumentCitizen(
-        id = id,
-        childId = row.mapColumn("child_id"),
-        description = row.mapColumn("description"),
-        attachments = attachments.map { if (userType === AuthenticatedUserType.citizen_weak) it.copy(name = "") else it },
-        created = row.mapColumn("created"),
-        isRead = row.mapColumn("is_read"),
-        childFirstName = row.mapColumn("first_name"),
-        childPreferredName = row.mapColumn("preferred_name")
-
-    )
-}
+        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Int>("unread_count") }
+        .toMap()

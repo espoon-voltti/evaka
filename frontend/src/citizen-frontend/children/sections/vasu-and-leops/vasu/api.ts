@@ -5,7 +5,6 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  ChildVasuSummary,
   CitizenGetVasuDocumentResponse,
   VasuDocument,
   VasuDocumentEvent
@@ -15,7 +14,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { client } from '../../api-client'
+import { client } from '../../../../api-client'
 
 import { mapVasuContent } from './vasu-content'
 
@@ -52,31 +51,6 @@ const mapVasuDocumentResponse = ({
       })) ?? null
   }
 })
-
-export async function getGuardianChildVasuSummaries(): Promise<
-  Result<ChildVasuSummary[]>
-> {
-  return client
-    .get<JsonOf<ChildVasuSummary[]>>(`/citizen/vasu/children/vasu-summaries`)
-    .then((res) =>
-      Success.of(
-        res.data.map((childVasuSummary) => ({
-          ...childVasuSummary,
-          vasuDocumentsSummary: childVasuSummary.vasuDocumentsSummary.map(
-            ({ events, modifiedAt, publishedAt, ...rest }) => ({
-              ...rest,
-              events: events.map(mapVasuDocumentEvent),
-              modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-              publishedAt: publishedAt
-                ? HelsinkiDateTime.parseIso(publishedAt)
-                : null
-            })
-          )
-        }))
-      )
-    )
-    .catch((e) => Failure.fromError(e))
-}
 
 export async function getCitizenVasuDocument(
   id: UUID

@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { useUser } from 'citizen-frontend/auth/state'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
@@ -15,16 +16,20 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
-import AssistanceNeedSection from './AssistanceNeedSection'
-import ChildConsentsSection from './ChildConsentsSection'
 import ChildHeader from './ChildHeader'
-import PlacementTerminationSection from './PlacementTerminationSection'
 import { getChild } from './api'
+import AssistanceNeedSection from './sections/assistance-need-decision/AssistanceNeedSection'
+import ChildConsentsSection from './sections/consents/ChildConsentsSection'
+import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
+import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
+import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
   const t = useTranslation()
   const { childId } = useNonNullableParams<{ childId: string }>()
   const [childResponse] = useApiState(() => getChild(childId), [childId])
+
+  const user = useUser()
 
   return (
     <>
@@ -38,6 +43,14 @@ export default React.memo(function ChildPage() {
               <ContentArea opaque>
                 <ChildHeader child={child} />
               </ContentArea>
+              {user?.accessibleFeatures.childDocumentation && (
+                <>
+                  <Gap size="s" />
+                  <PedagogicalDocumentsSection childId={childId} />
+                  <Gap size="s" />
+                  <VasuAndLeopsSection childId={childId} />
+                </>
+              )}
               <Gap size="s" />
               <ChildConsentsSection childId={childId} />
               <Gap size="s" />

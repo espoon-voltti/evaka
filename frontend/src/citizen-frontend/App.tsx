@@ -26,12 +26,10 @@ import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
-import ChildDocuments from './child-documents/ChildDocuments'
-import { PedagogicalDocumentsContextProvider } from './child-documents/state'
-import VasuPage from './child-documents/vasu/VasuPage'
-import AssistanceNeedDecisionPage from './children/AssistanceNeedDecisionPage'
 import ChildPage from './children/ChildPage'
 import ChildrenPage from './children/ChildrenPage'
+import AssistanceNeedDecisionPage from './children/sections/assistance-need-decision/AssistanceNeedDecisionPage'
+import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import { ChildrenContextProvider } from './children/state'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Header from './header/Header'
@@ -62,20 +60,18 @@ export default function App() {
             <AuthContextProvider>
               <OverlayContextProvider>
                 <MessageContextProvider>
-                  <PedagogicalDocumentsContextProvider>
-                    <HolidayPeriodsContextProvider>
-                      <ChildrenContextProvider>
-                        <ApplicationsContextProvider>
-                          <Content />
-                          <GlobalDialog />
-                          <LoginErrorModal
-                            translations={i18n.login.failedModal}
-                          />
-                          <div id="modal-container" />
-                        </ApplicationsContextProvider>
-                      </ChildrenContextProvider>
-                    </HolidayPeriodsContextProvider>
-                  </PedagogicalDocumentsContextProvider>
+                  <HolidayPeriodsContextProvider>
+                    <ChildrenContextProvider>
+                      <ApplicationsContextProvider>
+                        <Content />
+                        <GlobalDialog />
+                        <LoginErrorModal
+                          translations={i18n.login.failedModal}
+                        />
+                        <div id="modal-container" />
+                      </ApplicationsContextProvider>
+                    </ChildrenContextProvider>
+                  </HolidayPeriodsContextProvider>
                 </MessageContextProvider>
               </OverlayContextProvider>
             </AuthContextProvider>
@@ -252,14 +248,6 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth strength="WEAK">
                 <CalendarPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/child-documents"
-            element={
-              <RequireAuth>
-                <ChildDocuments />
               </RequireAuth>
             }
           />

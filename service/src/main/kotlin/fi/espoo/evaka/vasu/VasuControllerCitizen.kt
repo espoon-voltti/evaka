@@ -31,27 +31,17 @@ class VasuControllerCitizen(
         val lastName: String
     )
 
-    data class ChildVasuSummary(
-        val child: ChildBasicInfo,
-        val vasuDocumentsSummary: List<VasuDocumentSummary>
-    )
-
-    @GetMapping("/children/vasu-summaries")
-    fun getGuardianChildVasuSummaries(
+    @GetMapping("/children/{childId}/vasu-summaries")
+    fun getChildVasuSummaries(
         db: Database,
-        user: AuthenticatedUser
-    ): List<ChildVasuSummary> {
-        Audit.ChildVasuDocumentsReadByGuardian.log(user.rawId())
+        user: AuthenticatedUser,
+        @PathVariable childId: ChildId
+    ): List<VasuDocumentSummary> {
+        Audit.ChildVasuDocumentsReadByGuardian.log(targetId = childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getGuardianDependants(PersonId(user.rawId()))
-                children.map { child ->
-                    ChildVasuSummary(
-                        child = ChildBasicInfo(id = child.id, firstName = child.firstName, lastName = child.lastName),
-                        vasuDocumentsSummary = tx.getVasuDocumentSummaries(child.id).filter { it.publishedAt != null }
-                    )
-                }
+                tx.getVasuDocumentSummaries(childId).filter { it.publishedAt != null }
             }
         }
     }
@@ -60,17 +50,17 @@ class VasuControllerCitizen(
     fun getGuardianUnreadVasuCount(
         db: Database,
         user: AuthenticatedUser
-    ): Number {
+    ): Map<ChildId, Int> {
         Audit.ChildVasuDocumentsReadByGuardian.log(user.rawId())
         return db.connect { dbc ->
             dbc.read { tx ->
                 val children = tx.getGuardianDependants(PersonId(user.rawId()))
-                children.map { child ->
-                    tx.getVasuDocumentSummaries(child.id)
+                children.associate { child ->
+                    child.id to tx.getVasuDocumentSummaries(child.id)
                         .filter { it.publishedAt != null }
                         .filterNot { doc -> doc.guardiansThatHaveGivenPermissionToShare.contains(PersonId(user.evakaUserId.raw)) }
                         .size
-                }.sum()
+                }
             }
         }
     }

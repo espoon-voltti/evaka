@@ -8,7 +8,7 @@ import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/place
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 
-import { useTranslation } from '../localization'
+import { useTranslation } from '../../../localization'
 
 interface Props {
   placements: TerminatablePlacementGroup[]

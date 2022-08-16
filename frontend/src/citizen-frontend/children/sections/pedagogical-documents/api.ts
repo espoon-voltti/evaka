@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { client } from 'citizen-frontend/api-client'
 import { Failure, Result, Success } from 'lib-common/api'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
-import { client } from '../api-client'
-
-export async function getPedagogicalDocuments(): Promise<
-  Result<PedagogicalDocumentCitizen[]>
-> {
+export async function getPedagogicalDocuments(
+  childId: UUID
+): Promise<Result<PedagogicalDocumentCitizen[]>> {
   try {
     const data = await client
       .get<JsonOf<PedagogicalDocumentCitizen[]>>(
-        '/citizen/pedagogical-documents/'
+        `/citizen/children/${childId}/pedagogical-documents`
       )
       .then((res) => res.data.map(deserializePedagogicalDocument))
     return Success.of(data)
@@ -25,12 +24,12 @@ export async function getPedagogicalDocuments(): Promise<
   }
 }
 
-export function deserializePedagogicalDocument(
+const deserializePedagogicalDocument = (
   data: JsonOf<PedagogicalDocumentCitizen>
-): PedagogicalDocumentCitizen {
-  const created = HelsinkiDateTime.parseIso(data.created)
-  return { ...data, created }
-}
+): PedagogicalDocumentCitizen => ({
+  ...data,
+  created: HelsinkiDateTime.parseIso(data.created)
+})
 
 export async function markPedagogicalDocumentRead(
   documentId: UUID
@@ -44,22 +43,13 @@ export async function markPedagogicalDocumentRead(
 }
 
 export async function getUnreadPedagogicalDocumentsCount(): Promise<
-  Result<number>
+  Result<Record<UUID, number>>
 > {
   try {
     const count = await client
-      .get<number>(`/citizen/pedagogical-documents/unread-count`)
-      .then((res) => res.data)
-    return Success.of(count)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function getUnreadVasuDocumentsCount(): Promise<Result<number>> {
-  try {
-    const count = await client
-      .get<number>(`/citizen/vasu/children/unread-count`)
+      .get<JsonOf<Record<UUID, number>>>(
+        `/citizen/pedagogical-documents/unread-count`
+      )
       .then((res) => res.data)
     return Success.of(count)
   } catch (e) {

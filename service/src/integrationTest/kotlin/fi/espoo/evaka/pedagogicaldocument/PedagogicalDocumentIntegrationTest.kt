@@ -64,7 +64,6 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun deserializeGetResultCitizen(json: String) = jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
     private fun deserializePutResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
     private fun deserializePostResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
-    private fun deserializeUnreadCount(json: String) = jsonMapper.readValue<Number>(json)
 
     @BeforeEach
     private fun beforeEach() {
@@ -110,13 +109,14 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         .asUser(user)
         .responseString()
 
-    private fun getPedagogicalDocumentsAsCitizen(user: AuthenticatedUser.Citizen) = http.get("/citizen/pedagogical-documents")
-        .asUser(user)
-        .responseString()
+    private fun getPedagogicalDocumentsAsCitizen(user: AuthenticatedUser.Citizen, childId: ChildId) =
+        http.get("/citizen/children/$childId/pedagogical-documents")
+            .asUser(user)
+            .responseString()
 
     private fun getUnreadCount(user: AuthenticatedUser.Citizen) = http.get("/citizen/pedagogical-documents/unread-count")
         .asUser(user)
-        .responseString()
+        .responseObject<Map<ChildId, Int>>(jsonMapper).third.get()
 
     @Test
     fun `creating new document`() {
@@ -306,7 +306,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(res.get()).id
         val attachmentId = uploadAttachment(id)
 
-        val parsed = deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get())
+        val parsed = deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get())
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments.get(0)
@@ -323,25 +323,25 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `guardian finds new document only when it has attachment or description`() {
         val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        assertEquals(emptyList(), deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get()))
-        assertEquals(0, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(emptyList(), deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()))
+        assertEquals(0, getUnreadCount(guardian).values.sum())
 
         uploadAttachment(id1)
 
-        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get()).size)
-        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(1, getUnreadCount(guardian).values.sum())
 
         val id2 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get()).size)
+        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
 
         http.put("/pedagogical-document/$id2")
             .jsonBody("""{"id": "$id2", "childId": "${testChild_1.id}", "description": "123123"}""")
             .asUser(employee)
             .responseString()
 
-        assertEquals(2, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get()).size)
-        assertEquals(2, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(2, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(2, getUnreadCount(guardian).values.sum())
     }
 
     @Test
@@ -353,13 +353,13 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .asUser(employee)
             .responseString()
 
-        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(1, getUnreadCount(guardian).values.sum())
 
         http.post("/citizen/pedagogical-documents/$id1/mark-read")
             .asUser(guardian)
             .responseString()
 
-        assertEquals(0, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(0, getUnreadCount(guardian).values.sum())
     }
 
     @Test
@@ -372,7 +372,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .responseString()
 
         assertEquals(1, deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get()).size)
-        assertEquals(1, deserializeUnreadCount(getUnreadCount(guardian).third.get()))
+        assertEquals(1, getUnreadCount(guardian).values.sum())
 
         val (_, res, _) = http.delete("/pedagogical-document/$id")
             .asUser(employee)
@@ -380,7 +380,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         assertEquals(200, res.statusCode)
         assertEquals(0, deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get()).size)
-        assertEquals(0, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian).third.get()).size)
+        assertEquals(0, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
     }
 
     private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {

@@ -4,15 +4,14 @@
 
 import React, { useState } from 'react'
 
+import { renderResult } from 'citizen-frontend/async-rendering'
+import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
+import { useTranslation } from 'citizen-frontend/localization'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H2, P } from 'lib-components/typography'
-
-import { renderResult } from '../async-rendering'
-import { useTranslation } from '../localization'
+import { P } from 'lib-components/typography'
 
 import NonTerminatablePlacement from './NonTerminatablePlacement'
 import PlacementTerminationForm from './PlacementTerminationForm'
@@ -35,11 +34,12 @@ export default React.memo(function PlacementTerminationSection({
   const [open, setOpen] = useState(false)
 
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{t.children.placementTermination.title}</H2>}
+    <ResponsiveWholePageCollapsible
+      title={t.children.placementTermination.title}
       open={open}
       toggleOpen={() => setOpen(!open)}
       opaque
+      data-qa="collapsible-termination"
     >
       {renderResult(placementsResponse, ({ placements }) => {
         const terminatedPlacements = placements.filter((p) =>
@@ -74,6 +74,6 @@ export default React.memo(function PlacementTerminationSection({
           </FixedSpaceColumn>
         )
       })}
-    </CollapsibleContentArea>
+    </ResponsiveWholePageCollapsible>
   )
 })

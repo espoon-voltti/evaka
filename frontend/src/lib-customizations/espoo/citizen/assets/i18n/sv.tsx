@@ -107,7 +107,6 @@ const sv: Translations = {
       income: 'Inkomst',
       messages: 'Meddelanden',
       calendar: 'Kalender',
-      pedagogicalDocuments: 'Tillväxt och inlärning',
       children: 'Barn',
       messageCount: (n: number) =>
         n > 1 ? `${n} nya meddelanden` : `${n} nytt meddelande`
@@ -1828,73 +1827,6 @@ const sv: Translations = {
       returnMessage: 'Gå tillbaka till inloggningen'
     }
   },
-  childDocuments: {
-    title: 'Tillväxt och inlärning',
-    description:
-      'På denna sida publiceras barnets plan för lärande samt bilder och andra dokument som berör utveckling, välbefinnande och vardagen inom enheten.',
-    deletionDisclaimer:
-      'Dessa dokument kommer att raderas när barnets plats upphör. Ladda ner dokumenten till din egen enhet som du vill behålla dem.'
-  },
-  pedagogicalDocuments: {
-    title: 'Tillväxt och inlärning',
-    table: {
-      date: 'Datum',
-      child: 'Barn',
-      document: 'Dokument',
-      description: 'Beskrivning'
-    },
-    toggleExpandText: 'Visa eller göm texten'
-  },
-  vasu: {
-    title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',
-    lastModified: 'Senaste redigeringsdatum',
-    lastPublished: 'Senaste publicering för vårdnadshavare',
-    noVasus:
-      'Inga planer för småbarnspedagogik eller lärande inom förskoleundervisning',
-    leavePage: 'Lämna sidan',
-    edited: 'Redigerad',
-    eventTypes: {
-      PUBLISHED: 'Publicerad till vårdnadshavare',
-      MOVED_TO_READY: 'Publicerat i Behandlad-läge',
-      RETURNED_TO_READY: 'Återställt från Behandlad-läge',
-      MOVED_TO_REVIEWED: 'Publicerat i Granskad-läge',
-      RETURNED_TO_REVIEWED: 'Återställt från Granskad-läge',
-      MOVED_TO_CLOSED: 'Avslutad'
-    },
-    states: {
-      DRAFT: 'Utkast',
-      READY: 'Behandlad',
-      REVIEWED: 'Granskad',
-      CLOSED: 'Avslutad'
-    },
-    state: 'Planens läge',
-    events: {
-      DAYCARE: 'Händelser gällande barnets plan för småbarnspedagogik',
-      PRESCHOOL:
-        'Händelser gällande plan för barnets lärande inom förskoleundervisning'
-    },
-    noRecord: 'Inga anmärkningar',
-    givePermissionToShareTitleVasu:
-      'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
-    givePermissionToShareTitleLeops:
-      'Bekräftelse att överföra plan för barnets lärande inom förskoleundervisning till övriga mottagare',
-    givePermissionToShareVasu:
-      'Jag bekräftar att barnets plan för småbarnspedagogik får överföras till de parter som nämns i avsnittet ”Mottagare”.',
-    givePermissionToShareLeops:
-      'Jag bekräftar att barnets plan för lärande inom förskoleundervisning får överförs till de parter som nämns i avsnittet ”Mottagare”.',
-    givePermissionToShareInfoBase:
-      'Var i kontakt med personalen på barnets enhet om du vill göra ändringar i de mottagare som nämns i planen.',
-    givePermissionToShareReminder:
-      'Bekräfta mottagarna planen kan överföras till',
-    sharingVasuDisclaimer:
-      'Då ett barn byter till en annan enhet inom Esbo stad överförs barnets plan för småbarnspedagogik och andra dokument till den nya enheten (gäller även småbarnspedagogik som ordnas som köpavtalstjänst i Esbo). Vårdnadshavaren får information om överföringen på förhand. Ifall barnets plan för småbarnspedagogik måste överföras till en utomstående part ska vårdnadshavarna ge sitt samtycke. Om ett barn deltar i privat småbarnspedagogik eller i småbarnspedagogik i en annan kommun ska barnets plan för småbarnspedagogik överföras till den nya enheten. Planen kan överföras även utan tillstånd ifall informationen är nödvändig för att enheten ska kunna ordna småbarnspedagogik för barnet (Lag om småbarnspedagogik 41 § 3 st.). Planen för småbarnspedagogik kan överföras till anordnaren av förskole- eller grundläggande utbildning ifall det är nödvändigt för att anordnaren ska kunna ordna undervisning eller utbildning för barnet (Lag om grundläggande utbildning 41 §). Vårdnadshavarna informeras om överföringen på förhand.',
-    sharingLeopsDisclaimer:
-      'Barnets plan för lärande inom förskoleundervisning kan överföras till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning även utan vårdnadshavarnas samtycke, ifall det är nödvändigt för att ordna småbarnspedagogik, förskoleundervisning eller grundutbildning för barnet (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 40 § ja 41 §).',
-    givePermissionToShareVasuBrief:
-      'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om grundläggande utbildning 41 §)',
-    givePermissionToShareLeopsBrief:
-      'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 40 § ja 41 §)'
-  },
   placement: {
     type: {
       CLUB: 'Klubb',
@@ -2132,6 +2064,71 @@ const sv: Translations = {
       },
       confirm: 'Bekräfta',
       unconsented: 'utan samtycke'
+    },
+    pedagogicalDocuments: {
+      title: 'Tillväxt och inlärning',
+      table: {
+        date: 'Datum',
+        child: 'Barn',
+        document: 'Dokument',
+        description: 'Beskrivning'
+      },
+      readMore: 'Läs mer',
+      collapseReadMore: 'Visa mindre',
+      nextPage: 'Nästa sida',
+      previousPage: 'Föregående sida',
+      pageCount: (current: number, total: number) =>
+        `Sida ${current} av ${total}`
+    },
+    vasu: {
+      title: 'Plan för småbarnspedagogik och lärande inom förskoleundervisning',
+      lastModified: 'Senaste redigeringsdatum',
+      lastPublished: 'Senaste publicering för vårdnadshavare',
+      noVasus:
+        'Inga planer för småbarnspedagogik eller lärande inom förskoleundervisning',
+      leavePage: 'Lämna sidan',
+      edited: 'Redigerad',
+      eventTypes: {
+        PUBLISHED: 'Publicerad till vårdnadshavare',
+        MOVED_TO_READY: 'Publicerat i Behandlad-läge',
+        RETURNED_TO_READY: 'Återställt från Behandlad-läge',
+        MOVED_TO_REVIEWED: 'Publicerat i Granskad-läge',
+        RETURNED_TO_REVIEWED: 'Återställt från Granskad-läge',
+        MOVED_TO_CLOSED: 'Avslutad'
+      },
+      states: {
+        DRAFT: 'Utkast',
+        READY: 'Behandlad',
+        REVIEWED: 'Granskad',
+        CLOSED: 'Avslutad'
+      },
+      state: 'Planens läge',
+      events: {
+        DAYCARE: 'Händelser gällande barnets plan för småbarnspedagogik',
+        PRESCHOOL:
+          'Händelser gällande plan för barnets lärande inom förskoleundervisning'
+      },
+      noRecord: 'Inga anmärkningar',
+      givePermissionToShareTitleVasu:
+        'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
+      givePermissionToShareTitleLeops:
+        'Bekräftelse att överföra plan för barnets lärande inom förskoleundervisning till övriga mottagare',
+      givePermissionToShareVasu:
+        'Jag bekräftar att barnets plan för småbarnspedagogik får överföras till de parter som nämns i avsnittet ”Mottagare”.',
+      givePermissionToShareLeops:
+        'Jag bekräftar att barnets plan för lärande inom förskoleundervisning får överförs till de parter som nämns i avsnittet ”Mottagare”.',
+      givePermissionToShareInfoBase:
+        'Var i kontakt med personalen på barnets enhet om du vill göra ändringar i de mottagare som nämns i planen.',
+      givePermissionToShareReminder:
+        'Bekräfta mottagarna planen kan överföras till',
+      sharingVasuDisclaimer:
+        'Då ett barn byter till en annan enhet inom Esbo stad överförs barnets plan för småbarnspedagogik och andra dokument till den nya enheten (gäller även småbarnspedagogik som ordnas som köpavtalstjänst i Esbo). Vårdnadshavaren får information om överföringen på förhand. Ifall barnets plan för småbarnspedagogik måste överföras till en utomstående part ska vårdnadshavarna ge sitt samtycke. Om ett barn deltar i privat småbarnspedagogik eller i småbarnspedagogik i en annan kommun ska barnets plan för småbarnspedagogik överföras till den nya enheten. Planen kan överföras även utan tillstånd ifall informationen är nödvändig för att enheten ska kunna ordna småbarnspedagogik för barnet (Lag om småbarnspedagogik 41 § 3 st.). Planen för småbarnspedagogik kan överföras till anordnaren av förskole- eller grundläggande utbildning ifall det är nödvändigt för att anordnaren ska kunna ordna undervisning eller utbildning för barnet (Lag om grundläggande utbildning 41 §). Vårdnadshavarna informeras om överföringen på förhand.',
+      sharingLeopsDisclaimer:
+        'Barnets plan för lärande inom förskoleundervisning kan överföras till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning även utan vårdnadshavarnas samtycke, ifall det är nödvändigt för att ordna småbarnspedagogik, förskoleundervisning eller grundutbildning för barnet (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 40 § ja 41 §).',
+      givePermissionToShareVasuBrief:
+        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om grundläggande utbildning 41 §)',
+      givePermissionToShareLeopsBrief:
+        'Vid behov kommer nödvändiga uppgifter att överföras. (Lag om småbarnspedagogik 41 §, Lag om grundläggande utbildning 40 § ja 41 §)'
     }
   },
   accessibilityStatement: (
