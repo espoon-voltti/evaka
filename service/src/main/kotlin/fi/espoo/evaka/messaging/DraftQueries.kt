@@ -7,7 +7,6 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.bindKotlin
 
 fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
     this.createQuery(
@@ -44,26 +43,24 @@ fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId 
         .one()
 }
 
-fun Database.Transaction.upsertDraft(accountId: MessageAccountId, id: MessageDraftId, draft: UpsertableDraftContent) {
-    this.createUpdate(
+fun Database.Transaction.updateDraft(accountId: MessageAccountId, id: MessageDraftId, draft: UpdatableDraftContent) =
+    createUpdate(
         """
-        INSERT INTO message_draft (id, account_id, title, content, urgent, type, recipient_ids, recipient_names)
-        VALUES (:id, :accountId, :title, :content, :urgent, :type, :recipientIds, :recipientNames)
-        ON CONFLICT (id)
-        DO UPDATE SET
-             account_id = excluded.account_id,
-             title = excluded.title,
-             content = excluded.content,
-             urgent = excluded.urgent,
-             type = excluded.type,
-             recipient_ids = excluded.recipient_ids,
-             recipient_names = excluded.recipient_names
+        UPDATE message_draft
+        SET
+            account_id = :accountId,
+            title = :title,
+            content = :content,
+            urgent = :urgent,
+            type = :type,
+            recipient_ids = :recipientIds,
+            recipient_names = :recipientNames
+        WHERE id = :id
         """.trimIndent()
     ).bindKotlin(draft)
         .bind("id", id)
         .bind("accountId", accountId)
-        .execute()
-}
+        .updateExactlyOne()
 
 fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: MessageDraftId) {
     this.createUpdate("DELETE FROM message_draft WHERE id = :id AND account_id = :accountId")

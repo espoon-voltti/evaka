@@ -210,9 +210,9 @@ export interface UnreadCountByAccountAndGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.UpsertableDraftContent
+* Generated from fi.espoo.evaka.messaging.UpdatableDraftContent
 */
-export interface UpsertableDraftContent {
+export interface UpdatableDraftContent {
   content: string
   recipientIds: UUID[]
   recipientNames: string[]

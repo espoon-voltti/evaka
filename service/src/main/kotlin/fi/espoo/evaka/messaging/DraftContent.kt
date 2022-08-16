@@ -23,7 +23,7 @@ data class DraftContent(
     val attachments: List<MessageAttachment>,
 )
 
-data class UpsertableDraftContent(
+data class UpdatableDraftContent(
     val type: MessageType,
     val title: String,
     val content: String,

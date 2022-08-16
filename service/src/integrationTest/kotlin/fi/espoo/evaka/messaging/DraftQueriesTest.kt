@@ -39,7 +39,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val id = db.transaction { it.initDraft(accountId) }
 
-        val fullContent = UpsertableDraftContent(
+        val fullContent = UpdatableDraftContent(
             type = type,
             title = title,
             content = content,
@@ -47,20 +47,20 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             recipientNames = recipientNames,
             urgent = false
         )
-        upsert(id, fullContent)
+        update(id, fullContent)
         assertContent(fullContent)
 
-        upsert(id, fullContent.copy(title = "Dogs"))
+        update(id, fullContent.copy(title = "Dogs"))
         assertContent(fullContent.copy(title = "Dogs"))
 
         db.transaction { it.deleteDraft(accountId, id) }
         assertEquals(0, db.read { it.getDrafts(accountId) }.size)
     }
 
-    private fun upsert(draftId: MessageDraftId, content: UpsertableDraftContent) =
-        db.transaction { it.upsertDraft(accountId, draftId, content) }
+    private fun update(draftId: MessageDraftId, content: UpdatableDraftContent) =
+        db.transaction { it.updateDraft(accountId, draftId, content) }
 
-    private fun assertContent(expected: UpsertableDraftContent) {
+    private fun assertContent(expected: UpdatableDraftContent) {
         val actual = db.read { it.getDrafts(accountId)[0] }
         assertEquals(expected.title, actual.title)
         assertEquals(expected.type, actual.type)

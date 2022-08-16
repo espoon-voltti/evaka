@@ -13,7 +13,7 @@ import {
   DraftContent,
   AuthorizedMessageAccount,
   PostMessageBody,
-  UpsertableDraftContent
+  UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -55,13 +55,13 @@ import Combobox from '../../atoms/dropdowns/Combobox'
 import Checkbox from '../../atoms/form/Checkbox'
 import { InfoBox } from '../../molecules/MessageBoxes'
 
-type Message = UpsertableDraftContent & {
+type Message = UpdatableDraftContent & {
   sender: ReactSelectOption
   recipientAccountIds: UUID[]
   attachments: Attachment[]
 }
 
-const messageToUpsertableDraftWithAccount = (m: Message): Draft => ({
+const messageToUpdatableDraftWithAccount = (m: Message): Draft => ({
   content: m.content,
   urgent: m.urgent,
   recipientIds: m.recipientIds,
@@ -212,7 +212,7 @@ export default React.memo(function MessageEditor({
 
   useEffect(
     function syncDraftContentOnMessageChanges() {
-      contentTouched && setDraft(messageToUpsertableDraftWithAccount(message))
+      contentTouched && setDraft(messageToUpdatableDraftWithAccount(message))
     },
     [contentTouched, message, setDraft]
   )

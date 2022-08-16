@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Result } from 'lib-common/api'
-import { UpsertableDraftContent } from 'lib-common/generated/api-types/messaging'
+import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
@@ -14,7 +14,7 @@ import { SaveDraftParams } from 'lib-components/employee/messages/types'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 
-export type Draft = UpsertableDraftContent & { accountId: UUID }
+export type Draft = UpdatableDraftContent & { accountId: UUID }
 
 const draftToSaveParams = ({ accountId, ...content }: Draft, id: string) => ({
   content,
