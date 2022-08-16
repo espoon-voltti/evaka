@@ -5,7 +5,7 @@
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Checkbox, Page, TextInput } from '../../utils/page'
+import { Checkbox, Page } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 
@@ -51,8 +51,6 @@ export class ApplicationWorkbenchPage {
   searchFilter = new SearchFilter(this.page)
   decisionEditorPage = new DecisionEditorPage(this.page)
 
-  #applicationNoteContent = this.page.findByDataQa('application-note-content')
-
   #applicationPlacementProposalStatusIndicator = this.page.findByDataQa(
     'placement-proposal-status'
   )
@@ -80,17 +78,6 @@ export class ApplicationWorkbenchPage {
   #withdrawPlacementProposalsButton = this.page.findByDataQa(
     'action-bar-withdrawPlacementProposal'
   )
-
-  async addNote(note: string) {
-    await this.page.findByDataQa('add-note').click()
-    await this.fillNote(note)
-    await this.page.findByDataQa('save-note').click()
-  }
-
-  async deleteNote() {
-    await this.page.findByDataQa('delete-note').click()
-    await this.page.findByDataQa('modal-okBtn').click()
-  }
 
   getApplicationListItem(applicationId: string) {
     return this.#applicationList.find(
@@ -188,19 +175,6 @@ export class ApplicationWorkbenchPage {
       .innerText
     const match = tooltip.match(matchingText)
     return match ? match.length > 0 : false
-  }
-
-  async verifyNoteExists(note: string) {
-    await waitUntilTrue(async () =>
-      (await this.#applicationNoteContent.innerText).includes(note)
-    )
-  }
-
-  async fillNote(note: string) {
-    const noteTextArea = new TextInput(
-      this.page.findByDataQa('note-container').find('textarea')
-    )
-    await noteTextArea.fill(note)
   }
 
   async openDecisionEditorById(applicationId: string) {

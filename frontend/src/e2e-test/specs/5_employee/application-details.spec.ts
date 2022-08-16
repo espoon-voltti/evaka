@@ -211,4 +211,22 @@ describe('Application details', () => {
     await applicationReadView.acceptDecision('DAYCARE')
     await applicationDetailsPage.assertApplicationStatus('Paikka vastaanotettu')
   })
+
+  test('Service worker can create, edit and delete application notes', async () => {
+    const serviceWorker = await Fixture.employeeServiceWorker().save()
+    await employeeLogin(page, serviceWorker.data)
+    await page.goto(config.employeeUrl)
+
+    const application = await applicationWorkbench.openApplicationById(
+      singleParentApplication.id
+    )
+    const newNote = 'New note.'
+    await application.addNote(newNote)
+    await application.assertNote(0, newNote)
+    const editedNote = 'Edited note.'
+    await application.editNote(0, editedNote)
+    await application.assertNote(0, editedNote)
+    await application.deleteNote(0)
+    await application.assertNoNote(0)
+  })
 })
