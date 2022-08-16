@@ -396,31 +396,31 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `search works with distinctions param NO_STARTING_PLACEMENTS`() {
-        val testDecision = testDecisions[0]
-        val alreadyStartedChild = testDecisions[0].children.get(0)
+        val testDecisionWithOneStartingChild = testDecisions[0]
+        val firstPlacementStartingThisMonthChild = testDecisionWithOneStartingChild.children.get(0)
         db.transaction {
             it.insertPlacement(
                 PlacementType.DAYCARE,
-                alreadyStartedChild.child.id,
-                alreadyStartedChild.placement.unitId,
-                LocalDate.now().minusMonths(1),
-                LocalDate.now().minusMonths(1)
-            )
-        }
-
-        val startingChild = testDecisions[1].children.get(0)
-        val testDecisionWithStartingChild = testDecisions[1]
-        db.transaction {
-            it.insertPlacement(
-                PlacementType.DAYCARE,
-                startingChild.child.id,
-                startingChild.placement.unitId,
+                firstPlacementStartingThisMonthChild.child.id,
+                firstPlacementStartingThisMonthChild.placement.unitId,
                 LocalDate.now(),
                 LocalDate.now()
             )
         }
 
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecision, testDecisionWithStartingChild)) }
+        val testDecisionWithNoStartingChild = testDecisions[3]
+        val previousPlacementChild = testDecisionWithNoStartingChild.children.get(0)
+        db.transaction {
+            it.insertPlacement(
+                PlacementType.DAYCARE,
+                previousPlacementChild.child.id,
+                previousPlacementChild.placement.unitId,
+                LocalDate.now().minusMonths(1),
+                LocalDate.now()
+            )
+        }
+
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecisionWithOneStartingChild, testDecisionWithNoStartingChild)) }
 
         val (_, _, result) = http.post("/decisions/search")
             .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["NO_STARTING_PLACEMENTS"]}""")
@@ -428,7 +428,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
 
         assertEqualEnough(
-            listOf(testDecision.let(::toSummary)),
+            listOf(testDecisionWithNoStartingChild.let(::toSummary)),
             deserializeListResult(result.get()).data
         )
     }

@@ -325,7 +325,7 @@ fun Database.Read.searchFeeDecisions(
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> lower(valid_during)" else null,
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
-        if (noStartingPlacements) "first_placement_starting_this_month.child_id IS NULL" else null
+        if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null
     )
 
     val youngestChildQuery =
@@ -345,17 +345,18 @@ fun Database.Read.searchFeeDecisions(
 
     val firstPlacementStartingThisMonthChildQuery =
         """
-        WITH first_placement_starting_this_month AS (    
-            SELECT p.child_id
+        WITH decisions_with_first_placement_starting_this_month AS (    
+            SELECT DISTINCT(fdc.fee_decision_id)
             FROM placement p
             JOIN person c ON p.child_id = c.id
+            JOIN fee_decision_child fdc ON c.id = fdc.child_id
             LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
             WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         )
         """.trimIndent()
 
     val firstPlacementStartingThisMonthChildIdsQueryJoin =
-        "LEFT JOIN first_placement_starting_this_month ON child.id = first_placement_starting_this_month.child_id"
+        "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
 
     // language=sql
     val sql =
