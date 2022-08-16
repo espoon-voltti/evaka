@@ -91,6 +91,6 @@ describe('Child Income statements', () => {
 
     // Delete
     await child1ISList.deleteChildIncomeStatement(0)
-    await child1ISList.assertChildIncomeStatementRowCount(0)
+    await child1ISList.assertIncomeStatementMissingWarningIsShown()
   })
 })
