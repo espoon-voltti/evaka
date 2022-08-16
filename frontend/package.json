@@ -262,7 +262,8 @@
         {
           "additionalHooks": "(useApiState)"
         }
-      ]
+      ],
+      "no-console": ["error", { "allow": ["warn", "error"] }]
     },
     "overrides": [
       {
