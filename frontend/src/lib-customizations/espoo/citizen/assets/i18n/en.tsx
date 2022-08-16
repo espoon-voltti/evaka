@@ -1074,7 +1074,7 @@ const en: Translations = {
               early childhood education has started.
             </P>
           ),
-          CLUB: <P></P>
+          CLUB: <P />
         },
         emphasis: (
           <strong>

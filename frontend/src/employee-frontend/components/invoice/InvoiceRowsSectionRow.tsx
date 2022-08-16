@@ -130,7 +130,7 @@ function InvoiceRowSectionRow({
             selectedItem={unitId}
             unitDetails={unitDetails}
             update={update}
-          ></UnitCombobox>
+          />
         ) : (
           <div>
             <span>{unit?.name}</span>

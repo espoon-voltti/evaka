@@ -90,7 +90,7 @@ export default React.memo(function ReportInvoices() {
                   )
                 )}
                 <Tr>
-                  <Td></Td>
+                  <Td />
                   <Td>{report.value.totalAmountOfInvoices}</Td>
                   <Td>{formatCents(report.value.totalSumCents)}</Td>
                   <Td>{report.value.totalAmountWithoutSSN}</Td>

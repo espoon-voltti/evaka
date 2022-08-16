@@ -1032,7 +1032,7 @@ const sv: Translations = {
               från det att barnet har inlett.
             </P>
           ),
-          CLUB: <P></P>
+          CLUB: <P />
         },
         emphasis: (
           <strong>

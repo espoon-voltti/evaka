@@ -586,7 +586,7 @@ export default React.memo(function Occupancies() {
                                     ? faChevronUp
                                     : faChevronDown
                                 }
-                              ></AccordionIcon>
+                              />
                             </span>
                             <span>{areaName}</span>
                           </div>

@@ -1024,7 +1024,7 @@ export default {
               kun lapsi on aloittanut varhaiskasvatuksessa.
             </P>
           ),
-          CLUB: <P></P>
+          CLUB: <P />
         },
         emphasis: (
           <strong>

@@ -64,7 +64,7 @@ const Graph = React.memo(function Graph({
 }: Props) {
   const { i18n } = useTranslation()
   const [tooltipData, setTooltipData] = useState<ChartTooltipData>({
-    children: <span></span>
+    children: <span />
   })
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
   const currentMinute = getCurrentMinute()
