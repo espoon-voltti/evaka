@@ -779,6 +779,7 @@ export const fi = {
       startDateInfo:
         'Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
       endDate: 'Päätös voimassa saakka',
+      endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
       selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
       unitMayChange:
         'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',

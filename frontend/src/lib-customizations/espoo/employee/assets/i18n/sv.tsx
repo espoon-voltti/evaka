@@ -74,6 +74,7 @@ export const sv = {
       startDateInfo:
         'Beslutet gäller från angivet startdatum. Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
       endDate: 'Beslutet i kraft till',
+      endDateServices: 'Beslutet angående stödtjänster i kraft till',
       selectedUnit: 'Enheten där stödet ges',
       unitMayChange: 'Enheten kan ändras under semestertider',
       motivationForDecision: 'Motivering av beslut',

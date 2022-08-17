@@ -550,7 +550,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
 
       {formState.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') && (
         <FixedSpaceColumn spacing="zero">
-          <Label>{t.endDate}</Label>
+          <Label>{t.endDateServices}</Label>
           <DatePicker
             locale={lang}
             date={formState.validityPeriod.end}

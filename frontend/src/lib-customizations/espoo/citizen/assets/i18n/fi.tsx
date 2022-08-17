@@ -1971,6 +1971,7 @@ export default {
           },
           startDate: 'Päätös voimassa alkaen',
           endDate: 'Päätös voimassa saakka',
+          endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
           selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
           unitMayChange:
             'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',

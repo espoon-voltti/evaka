@@ -199,6 +199,7 @@ class AssistanceNeedDecisionService(
                     setVariable("sentDate", LocalDate.now())
                     setVariable("sendAddress", sendAddress)
                     setVariable("guardian", guardian)
+                    setVariable("hasAssistanceServices", decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))
                 }
             )
         )
