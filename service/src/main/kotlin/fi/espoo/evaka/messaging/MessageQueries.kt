@@ -703,20 +703,28 @@ fun Database.Read.getReceiversForNewMessage(
         }
 }
 
-fun Database.Read.isEmployeeAuthorizedToSendTo(clock: EvakaClock, employeeOrMobileId: Id<*>, accountIds: Set<MessageAccountId>): Boolean {
+fun Database.Read.isEmployeeAccountAuthorizedToSendTo(clock: EvakaClock, senderId: MessageAccountId, accountIds: Set<MessageAccountId>): Boolean {
     // language=SQL
     val sql = """
         WITH children AS (
             SELECT child_id
             FROM child_daycare_acl(:today)
             JOIN mobile_device_daycare_acl_view USING (daycare_id)
-            WHERE mobile_device_id = :employeeOrMobileId
+            WHERE mobile_device_id = (SELECT message_account.employee_id FROM message_account WHERE message_account.id = :senderId)
             
             UNION ALL
             
             SELECT child_id
             FROM employee_child_daycare_acl(:today)
-            WHERE employee_id = :employeeOrMobileId
+            WHERE employee_id = (SELECT message_account.employee_id FROM message_account WHERE message_account.id = :senderId)
+
+            UNION ALL
+
+            SELECT child_id
+            FROM daycare_group_placement
+            JOIN placement ON daycare_placement_id = placement.id
+            WHERE daycare_group_id = (SELECT message_account.daycare_group_id FROM message_account WHERE message_account.id = :senderId)
+            AND :today BETWEEN daycare_group_placement.start_date AND daycare_group_placement.end_date
         ), receivers AS (
             SELECT DISTINCT g.guardian_id AS receiver_id
             FROM children c
@@ -734,7 +742,7 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(clock: EvakaClock, employeeOrMobi
 
     val numAccounts = createQuery(sql)
         .bind("today", clock.today())
-        .bind("employeeOrMobileId", employeeOrMobileId)
+        .bind("senderId", senderId)
         .bind("accountIds", accountIds)
         .mapTo<Int>()
         .one()

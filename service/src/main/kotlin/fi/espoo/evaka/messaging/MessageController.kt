@@ -105,7 +105,15 @@ class MessageController(
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         accessControl.requirePermissionFor(user, Action.Global.ACCESS_MESSAGING)
-        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!)) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getUnreadMessagesCounts(
+                    tx.getEmployeeMessageAccountIds(
+                        getEmployeeId(user)!!
+                    )
+                )
+            }
+        }
     }
 
     @GetMapping("/unread/{unitId}")
@@ -141,7 +149,7 @@ class MessageController(
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, accountId)
 
-            checkAuthorizedRecipients(dbc, user, body.recipientAccountIds)
+            checkAuthorizedRecipients(dbc, accountId, body.recipientAccountIds)
             val groupedRecipients = dbc.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
             dbc.transaction { tx ->
                 messageService.createMessageThreadsForRecipientGroups(
@@ -275,19 +283,12 @@ class MessageController(
 
     private fun checkAuthorizedRecipients(
         db: Database.Connection,
-        user: AuthenticatedUser,
+        accountId: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>
     ) {
-        val employeeOrMobileId = when (user) {
-            is AuthenticatedUser.MobileDevice -> user.employeeId ?: user.id
-            is AuthenticatedUser.Employee -> user.id
-            else -> null
-        }
-        (
-            employeeOrMobileId != null && db.read {
-                it.isEmployeeAuthorizedToSendTo(RealEvakaClock(), employeeOrMobileId, recipientAccountIds)
-            }
-            ) || throw Forbidden("Not authorized to send to the given recipients")
+        db.read {
+            it.isEmployeeAccountAuthorizedToSendTo(RealEvakaClock(), accountId, recipientAccountIds)
+        } || throw Forbidden("Not authorized to send to the given recipients")
     }
 
     fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {
