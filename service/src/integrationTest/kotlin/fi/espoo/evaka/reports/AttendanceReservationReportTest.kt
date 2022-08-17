@@ -45,27 +45,12 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter.ISO_DATE
 
 internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val unitSupervisor =
-        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val admin =
+        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
 
     @BeforeEach
     fun setup() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
-    }
-
-    @Test
-    fun `unit supervisor without correct acl returns 403`() {
-        val startDate = LocalDate.of(2022, 8, 8)
-        val endDate = LocalDate.of(2022, 8, 14)
-
-        val (_, res) = http.get(
-            "/reports/attendance-reservation/${testDaycare2.id}",
-            listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-        )
-            .asUser(unitSupervisor)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        assertThat(res.statusCode).isEqualTo(403)
     }
 
     @Test
@@ -77,7 +62,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(startDate, endDate.minusDays(2)) // Mon-Fri
@@ -93,7 +78,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
@@ -111,7 +96,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -120,7 +105,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
@@ -144,7 +129,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -153,7 +138,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
@@ -177,7 +162,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -186,7 +171,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date).also {
@@ -217,7 +202,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 endDate = date
             )
             tx.insertTestServiceNeed(
-                confirmedBy = unitSupervisor.evakaUserId,
+                confirmedBy = admin.evakaUserId,
                 placementId = placementId,
                 period = FiniteDateRange(date, date),
                 optionId = snDaycareContractDays10.id
@@ -228,7 +213,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -237,7 +222,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date).also {
@@ -274,7 +259,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = startDate,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
             tx.insertTestReservation(
@@ -283,7 +268,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = endDate,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -292,7 +277,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(startDate, endDate).also {
@@ -333,7 +318,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = testChild_1.id,
-                    updatedBy = unitSupervisor.evakaUserId,
+                    updatedBy = admin.evakaUserId,
                     startDate = date,
                     endDate = date,
                     capacityFactor = 5.0
@@ -345,7 +330,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -354,7 +339,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date).also {
@@ -397,7 +382,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = unitSupervisor.evakaUserId
+                    createdBy = admin.evakaUserId
                 )
             )
         }
@@ -406,7 +391,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date).also {
@@ -454,7 +439,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                             date = date,
                             startTime = LocalTime.of(8, 15),
                             endTime = LocalTime.of(15, 48),
-                            createdBy = unitSupervisor.evakaUserId
+                            createdBy = admin.evakaUserId
                         )
                     )
                 }
@@ -464,7 +449,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             "/reports/attendance-reservation/${testDaycare.id}",
             listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
         )
-            .asUser(unitSupervisor)
+            .asUser(admin)
             .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date).also {
