@@ -1992,22 +1992,36 @@ export default {
           appealInstructionsTitle: 'Oikaisuvaatimusohje',
           appealInstructions: (
             <>
-              <P>
-                Tähän päätökseen tyytymätön voi tehdä kirjallisen
-                oikaisuvaatimuksen.
-              </P>
               <H3>Oikaisuvaatimusoikeus</H3>
               <P>
                 Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
                 jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
                 vaikuttaa (asianosainen).
               </P>
+              <H3>Oikaisuvaatimusaika</H3>
+              <P>
+                Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
+                tiedoksisaannista.
+              </P>
+              <H3>Tiedoksisaanti</H3>
+              <P>
+                Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+                näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
+                saantitodistukseen tai tiedoksiantotodistukseen merkittynä
+                päivänä. Käytettäessä tavallista sähköistä tiedoksiantoa
+                asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+                näytetä kolmantena päivänä viestin lähettämisestä.
+                Tiedoksisaantipäivää ei lueta määräaikaan. Jos määräajan
+                viimeinen päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä,
+                joulu- tai juhannusaatto tai arkilauantai, saa tehtävän
+                toimittaa ensimmäisenä arkipäivänä sen jälkeen.
+              </P>
               <H3>Oikaisuviranomainen</H3>
               <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
               <P>
                 Etelä-Suomen aluehallintovirasto
                 <br />
-                Käyntiosoite: Wähäjärvenkatu 6, 13200 Hämeenlinna
+                Käyntiosoite: Ratapihantie 9, 00521 Helsinki
                 <br />
                 Virastoaika: ma-pe 8.00–16.15
                 <br />
@@ -2019,28 +2033,17 @@ export default {
                 <br />
                 Puhelin: 0295 016 000
               </P>
-              <H3>Oikaisuvaatimusaika</H3>
+              <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
               <P>
-                Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
-                tiedoksisaannista.
+                Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen
+                asiakirja täyttää vaatimuksen kirjallisesta muodosta.
               </P>
-              <H3>Tiedoksisaanti</H3>
-              <P>
-                Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-                näytetä, 7 päivän kuluttua kirjeen lähettämisestä, 3 päivän
-                kuluttua sähköpostin lähettämisestä, saantitodistuksen
-                osoittamana aikana tai erilliseen tiedoksisaantitodistukseen
-                merkittynä aikana. Tiedoksisaantipäivää ei lueta määräaikaan.
-                Jos määräajan viimeinen päivä on pyhäpäivä, itsenäisyyspäivä,
-                vapunpäivä, joulu- tai juhannusaatto tai arkilauantai, saa
-                tehtävän toimittaa ensimmäisenä arkipäivänä sen jälkeen.
-              </P>
-              <H3>Oikaisuvaatimus</H3>
               <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
               <ul>
                 <li>
-                  Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite ja
-                  puhelinnumero
+                  Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
+                  puhelinnumero ja muut asian hoitamiseksi tarvittavat
+                  yhteystiedot
                 </li>
                 <li>päätös, johon haetaan oikaisua</li>
                 <li>
@@ -2049,6 +2052,18 @@ export default {
                 </li>
                 <li>vaatimuksen perusteet</li>
               </ul>
+              <P>
+                Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
+                viestinä, yhteystietona pyydetään ilmoittamaan myös
+                sähköpostiosoite.
+              </P>
+              <P>
+                Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen
+                laillinen edustajansa tai asiamiehensä tai jos
+                oikaisuvaatimuksen laatijana on joku muu henkilö,
+                oikaisuvaatimuksessa on ilmoitettava myös tämän nimi ja
+                kotikunta.
+              </P>
               <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
               <ul>
                 <li>
@@ -2065,11 +2080,6 @@ export default {
                   toimitettu viranomaiselle.
                 </li>
               </ul>
-              <P>
-                Asiamiehen on liitettävä valituskirjelmään valtakirja, kuten
-                oikeudenkäynnistä hallintoasioissa annetun lain (808/2019) 32
-                §:ssä säädetään.
-              </P>
               <H3>Oikaisuvaatimuksen toimittaminen</H3>
               <P>
                 Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan
