@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 
 import { ApplicationsContext } from 'citizen-frontend/applications/state'
+import { Failure } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -82,7 +83,11 @@ export default React.memo(function DecisionResponse({
   }
 
   const handleAcceptDecision = async () => {
-    if (requestedStartDate === null) throw new Error('Parsed date was null')
+    if (requestedStartDate === null) {
+      return Failure.of({
+        message: 'Missing field'
+      })
+    }
     setSubmitting(true)
     return acceptDecision(applicationId, decisionId, requestedStartDate)
   }
