@@ -197,7 +197,12 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           {isRead(props) && (props.editable || props.deletable) && (
             <FixedSpaceRow spacing="xs">
               {props.editable && (
-                <IconButton icon={faPen} onClick={props.onStartEdit} size="s" />
+                <IconButton
+                  icon={faPen}
+                  onClick={props.onStartEdit}
+                  size="s"
+                  data-qa="edit-note"
+                />
               )}
               {props.deletable && (
                 <IconButton
