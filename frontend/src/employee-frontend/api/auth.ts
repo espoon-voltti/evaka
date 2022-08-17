@@ -15,10 +15,20 @@ import { client } from './client'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
 
-const redirectUri =
-  window.location.pathname === '/employee/login'
-    ? '/employee'
-    : `${window.location.pathname}${window.location.search}${window.location.hash}`
+const redirectUri = (() => {
+  if (window.location.pathname === '/employee/login') {
+    return '/employee'
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  params.delete('loginError')
+
+  const searchParams = params.toString()
+
+  return `${window.location.pathname}${
+    searchParams.length > 0 ? '?' : ''
+  }${searchParams}${window.location.hash}`
+})()
 
 export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
   const relayState = encodeURIComponent(redirectUri)
