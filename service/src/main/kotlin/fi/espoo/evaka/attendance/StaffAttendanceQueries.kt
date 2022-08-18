@@ -44,7 +44,12 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
             SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type))
             FROM staff_attendance_plan p
             WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(:rangeStart, :rangeEnd)
-        ), '[]'::jsonb) AS planned_attendances
+        ), '[]'::jsonb) AS planned_attendances,
+        EXISTS(
+            SELECT 1 FROM staff_attendance_realtime osar
+            WHERE osar.employee_id = dacl.employee_id
+              AND :now < osar.arrived
+        ) AS has_future_attendances
     FROM daycare_acl dacl
     JOIN employee e on e.id = dacl.employee_id
     LEFT JOIN LATERAL (
@@ -69,6 +74,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
     .bind("unitId", unitId)
     .bind("rangeStart", now.atStartOfDay())
     .bind("rangeEnd", now.atEndOfDay())
+    .bind("now", now)
     .mapTo<StaffMember>()
     .list()
 
@@ -80,23 +86,40 @@ fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendan
 """
 ).bind("id", id).mapTo<StaffMemberAttendance>().firstOrNull()
 
-fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceExternalId): ExternalStaffMember? = createQuery(
+fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceExternalId, now: HelsinkiDateTime): ExternalStaffMember? = createQuery(
     """
-    SELECT id, name, group_id, arrived
-    FROM staff_attendance_external
+    SELECT
+        sae.id, sae.name, sae.group_id, sae.arrived,
+        EXISTS(
+            SELECT 1 FROM staff_attendance_external osae
+            WHERE osae.name = sae.name
+              AND :now < osae.arrived
+        ) AS has_future_attendances
+    FROM staff_attendance_external sae
     WHERE id = :id
 """
-).bind("id", id).mapTo<ExternalStaffMember>().firstOrNull()
+)
+    .bind("id", id)
+    .bind("now", now)
+    .mapTo<ExternalStaffMember>()
+    .firstOrNull()
 
-fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalStaffMember> = createQuery(
+fun Database.Read.getExternalStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<ExternalStaffMember> = createQuery(
     """
-    SELECT sae.id, sae.name, sae.group_id, sae.arrived
+    SELECT
+        sae.id, sae.name, sae.group_id, sae.arrived,
+        EXISTS(
+            SELECT 1 FROM staff_attendance_external osae
+            WHERE osae.name = sae.name
+              AND :now < osae.arrived
+        ) AS has_future_attendances
     FROM staff_attendance_external sae
     JOIN daycare_group dg on sae.group_id = dg.id
     WHERE dg.daycare_id = :unitId AND departed IS NULL 
     """.trimIndent()
 )
     .bind("unitId", unitId)
+    .bind("now", now)
     .mapTo<ExternalStaffMember>()
     .list()
 

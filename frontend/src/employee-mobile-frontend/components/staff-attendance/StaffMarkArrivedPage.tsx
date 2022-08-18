@@ -31,6 +31,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
@@ -56,7 +57,9 @@ export default React.memo(function StaffMarkArrivedPage() {
   }>()
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(reloadUnitInfo, [reloadUnitInfo])
+  useEffect(() => {
+    reloadUnitInfo()
+  }, [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
@@ -202,11 +205,30 @@ export default React.memo(function StaffMarkArrivedPage() {
                 (!attendanceType ||
                   !staffAttendanceDifferenceReasons.includes(attendanceType)))
 
+            const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+
+            const hasFutureCurrentDay =
+              staffMember.latestCurrentDayAttendance &&
+              (!staffMember.latestCurrentDayAttendance.departed ||
+                (parsedTime &&
+                  staffMember.latestCurrentDayAttendance.arrived.isAfter(
+                    HelsinkiDateTime.now().withTime(parsedTime)
+                  )))
+
+            const hasConflictingFuture =
+              staffMember.hasFutureAttendances || !!hasFutureCurrentDay
+
             return (
               <>
                 <Title centered noMargin>
                   {i18n.attendances.staff.loginWithPin}
                 </Title>
+                {hasConflictingFuture && (
+                  <AlertBox
+                    message={i18n.attendances.staff.hasFutureAttendance}
+                    wide
+                  />
+                )}
                 <Gap />
                 {!pinSet ? (
                   <ErrorSegment title={i18n.attendances.staff.pinNotSet} />

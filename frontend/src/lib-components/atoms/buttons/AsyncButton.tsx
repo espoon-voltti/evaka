@@ -106,7 +106,7 @@ function AsyncButton<T>({
       if (preventDefault) e.preventDefault()
 
       if (!mountedRef.current) return
-      if (isInProgress) return
+      if (isInProgress || isSuccess) return
 
       const maybePromise = onClick()
       if (maybePromise === undefined) {
@@ -114,8 +114,7 @@ function AsyncButton<T>({
       } else {
         setButtonState(inProgress)
         maybePromise
-          .then(async (result) => {
-            await new Promise((r) => setTimeout(r, 1000))
+          .then((result) => {
             if (!mountedRef.current) return
             if (result.isSuccess) {
               handleSuccess(result.value)
@@ -148,7 +147,14 @@ function AsyncButton<T>({
           })
       }
     },
-    [preventDefault, isInProgress, onClick, handleSuccess, handleFailure]
+    [
+      preventDefault,
+      isInProgress,
+      onClick,
+      handleSuccess,
+      handleFailure,
+      isSuccess
+    ]
   )
 
   useEffect(() => {

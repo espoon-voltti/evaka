@@ -238,7 +238,9 @@ export const fi = {
       differenceReason: 'Kirjaa syy',
       differenceInfo:
         'Saavut työvuorostasi poikkeavaan aikaan. Valitse syykoodi.',
-      differenceInfoToggle: 'Poikkeaa työvuorostasi'
+      differenceInfoToggle: 'Poikkeaa työvuorostasi',
+      hasFutureAttendance:
+        'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.'
     }
   },
   childInfo: {

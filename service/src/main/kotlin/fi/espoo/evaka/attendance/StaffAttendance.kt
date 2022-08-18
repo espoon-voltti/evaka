@@ -45,6 +45,7 @@ data class ExternalStaffMember(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
+    val hasFutureAttendances: Boolean
 )
 
 data class StaffMember(
@@ -57,7 +58,8 @@ data class StaffMember(
     @Json
     val attendances: List<StaffMemberAttendance>,
     @Json
-    val plannedAttendances: List<PlannedStaffAttendance>
+    val plannedAttendances: List<PlannedStaffAttendance>,
+    val hasFutureAttendances: Boolean
 ) {
     val present: GroupId?
         get() = latestCurrentDayAttendance?.takeIf { it.departed == null && it.type.presentInGroup() }?.groupId
