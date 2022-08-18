@@ -13,7 +13,7 @@ import { faAngleDown, faAngleUp } from 'lib-icons'
 import { desktopMin } from '../breakpoints'
 import { H3, HeadingProps } from '../typography'
 import { BaseProps } from '../utils'
-import { defaultMargins } from '../white-space'
+import { defaultMargins, Gap } from '../white-space'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -112,6 +112,7 @@ export default React.memo(function CollapsibleSection({
               <FontAwesomeIcon icon={icon} />
             </IconWrapper>
           )}
+          {fitted && icon && <Gap horizontal size="xs" />}
           <Heading fitted noMargin={fitted}>
             {title}
           </Heading>

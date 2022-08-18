@@ -8,7 +8,6 @@ import styled, { useTheme } from 'styled-components'
 
 import { faAngleLeft } from 'lib-icons'
 
-import { tabletMin } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'
 
 import InlineButton from './InlineButton'
@@ -25,8 +24,8 @@ export const ReturnButtonWrapper = styled.div<WrapperProps>`
     justify-content: flex-start;
   }
 
-  @media (max-width: ${tabletMin}) {
-    margin-left: ${defaultMargins.m};
+  @media (max-width: 1215px) {
+    margin-left: ${defaultMargins.s};
   }
 
   @media print {

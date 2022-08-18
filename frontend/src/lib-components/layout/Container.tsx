@@ -97,6 +97,7 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
         count: number
         ariaLabel: string
       }
+  icon?: IconDefinition
 }
 
 const IconContainer = styled.div`
@@ -110,6 +111,7 @@ export const CollapsibleContentArea = React.memo(
     title,
     children,
     countIndicator = 0,
+    icon,
     ...props
   }: CollapsibleContentAreaProps) {
     const { colors } = useTheme()
@@ -128,6 +130,7 @@ export const CollapsibleContentArea = React.memo(
           role="button"
           aria-expanded={open}
         >
+          {icon && <FontAwesomeIcon icon={icon} />}
           {title}
           <IconContainer>
             {showCountIndicator && (
@@ -167,9 +170,6 @@ const TitleContainer = styled.button`
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 16px 8px;
-  margin: -16px -8px;
   overflow: visible;
   font: inherit;
   font-size: inherit;
@@ -179,9 +179,18 @@ const TitleContainer = styled.button`
   outline: none;
   border: 2px solid transparent;
   border-radius: 2px;
+  text-align: left;
+  gap: ${defaultMargins.xs};
+  margin: -${defaultMargins.xs};
+  padding: ${defaultMargins.xs};
+  width: calc(100% + 2 * ${defaultMargins.xs});
 
   :focus {
     border-color: ${(p) => p.theme.colors.main.m2Focus};
+  }
+
+  & > * {
+    margin: 0;
   }
 `
 

@@ -35,6 +35,7 @@ export default React.memo(function PersonInvoices({ id, open }: Props) {
         title={i18n.personProfile.invoices}
         data-qa="person-invoices-collapsible"
         startCollapsed={!open}
+        fitted
       >
         {renderResult(invoices, (invoices) => (
           <Table data-qa="table-of-invoices">

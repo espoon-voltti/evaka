@@ -111,6 +111,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
         title={i18n.personProfile.familyOverview.title}
         data-qa="family-overview-collapsible"
         startCollapsed={!open}
+        fitted
       >
         {renderResult(family, (family) => (
           <>

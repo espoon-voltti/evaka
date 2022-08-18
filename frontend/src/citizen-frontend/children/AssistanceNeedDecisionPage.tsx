@@ -49,23 +49,28 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   return (
     <>
       <Content>
-        <Gap size="m" />
+        <Gap size="s" />
         <FixedSpaceRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
-          <InlineButton
-            icon={faArrowDownToLine}
-            text={i18n.common.download}
-            onClick={() => {
-              window.open(
-                `/api/application/citizen/children/assistance-need-decision/${id}/pdf`,
-                '_blank',
-                'noopener,noreferrer'
-              )
-            }}
-            data-qa="assistance-need-decision-download-btn"
-            disabled={!assistanceNeedDecision.getOrElse(undefined)?.hasDocument}
-            color={colors.main.m1}
-          />
+          <FixedSpaceRow>
+            <InlineButton
+              icon={faArrowDownToLine}
+              text={i18n.common.download}
+              onClick={() => {
+                window.open(
+                  `/api/application/citizen/children/assistance-need-decision/${id}/pdf`,
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }}
+              data-qa="assistance-need-decision-download-btn"
+              disabled={
+                !assistanceNeedDecision.getOrElse(undefined)?.hasDocument
+              }
+              color={colors.main.m1}
+            />
+            <Gap horizontal sizeOnMobile="xs" size="zero" />
+          </FixedSpaceRow>
         </FixedSpaceRow>
         <Gap size="s" />
 

@@ -85,6 +85,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
         title={i18n.personProfile.fridgeChildOfHead}
         startCollapsed={!open}
         data-qa="person-children-collapsible"
+        fitted
       >
         <AddButtonRow
           text={i18n.personProfile.fridgeChildAdd}

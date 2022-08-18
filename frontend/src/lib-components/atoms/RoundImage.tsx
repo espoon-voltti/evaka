@@ -53,6 +53,7 @@ interface Props {
   size: IconSize
   sizeDesktop?: IconSize
   alt?: string
+  className?: string
 }
 
 export const RoundImage = React.memo(function RoundImage({
@@ -61,10 +62,16 @@ export const RoundImage = React.memo(function RoundImage({
   size,
   sizeDesktop,
   src,
-  alt
+  alt,
+  className
 }: Props) {
   return (
-    <ImageContainer size={size} sizeDesktop={sizeDesktop} color={fallbackColor}>
+    <ImageContainer
+      size={size}
+      sizeDesktop={sizeDesktop}
+      color={fallbackColor}
+      className={className}
+    >
       {src ? (
         <Image size={size} sizeDesktop={sizeDesktop} src={src} alt={alt} />
       ) : (

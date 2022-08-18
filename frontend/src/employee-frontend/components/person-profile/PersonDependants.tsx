@@ -36,6 +36,7 @@ export default React.memo(function PersonDependants({ id, open }: Props) {
         title={i18n.personProfile.dependants}
         startCollapsed={!open}
         data-qa="person-dependants-collapsible"
+        fitted
       >
         {renderResult(dependants, (dependants) => (
           <Table data-qa="table-of-dependants">

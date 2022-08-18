@@ -10,7 +10,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import CircularLabel from '../components/common/CircularLabel'
 import WarningLabel from '../components/common/WarningLabel'
@@ -134,10 +134,12 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
 
   return (
     <Container>
-      <ContentArea opaque>
-        <div className="person-profile-wrapper" data-person-id={id}>
+      <div className="person-profile-wrapper" data-person-id={id}>
+        <ContentArea opaque>
           <HeaderRow>
-            <Title size={1}> {i18n.personProfile.title}</Title>
+            <Title size={1} noMargin>
+              {i18n.personProfile.title}
+            </Title>
             <InfoLabelContainer>
               {person.isSuccess && person.value.dateOfDeath && (
                 <CircularLabel
@@ -157,18 +159,23 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
               )}
             </InfoLabelContainer>
           </HeaderRow>
+        </ContentArea>
+        <Gap size="s" />
+        <ContentArea opaque>
           <PersonFridgeHead />
-          {layout.map(({ component, open }) => {
-            const Component = components[component]
-            return (
-              <Fragment key={component}>
-                <div className="separator-gap-small" />
+        </ContentArea>
+        {layout.map(({ component, open }) => {
+          const Component = components[component]
+          return (
+            <Fragment key={component}>
+              <Gap size="s" />
+              <ContentArea opaque>
                 <Component id={id} open={open} />
-              </Fragment>
-            )
-          })}
-        </div>
-      </ContentArea>
+              </ContentArea>
+            </Fragment>
+          )
+        })}
+      </div>
     </Container>
   )
 })

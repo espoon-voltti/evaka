@@ -37,6 +37,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
         title={i18n.personProfile.decision.decisions}
         startCollapsed={!open}
         data-qa="person-decisions-collapsible"
+        fitted
       >
         {renderResult(decisions, (decisions) => (
           <Table data-qa="table-of-decisions">
