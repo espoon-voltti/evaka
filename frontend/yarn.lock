@@ -4319,10 +4319,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:^3.7.1":
-  version: 3.7.1
-  resolution: "chart.js@npm:3.7.1"
-  checksum: f9d118d3b7dd3c36b6da7a8d71ac9e5d9673b81095cc66c3f61ff91674e20020c6700f8c9c6f93713fa8474eb471ded106114346ccc6afa88b4a7d0eb73dcea4
+"chart.js@npm:^3.9.1":
+  version: 3.9.1
+  resolution: "chart.js@npm:3.9.1"
+  checksum: 9ab0c0ac01215af0b3f020f2e313030fd6e347b48ed17d5484ee9c4e8ead45e78ae71bea16c397621c386b409ce0b14bf17f9f6c2492cd15b56c0f433efdfff6
   languageName: node
   linkType: hard
 
@@ -5117,9 +5117,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"downshift@npm:^6.1.7":
-  version: 6.1.7
-  resolution: "downshift@npm:6.1.7"
+"downshift@npm:^6.1.9":
+  version: 6.1.9
+  resolution: "downshift@npm:6.1.9"
   dependencies:
     "@babel/runtime": ^7.14.8
     compute-scroll-into-view: ^1.0.17
@@ -5128,7 +5128,7 @@ __metadata:
     tslib: ^2.3.0
   peerDependencies:
     react: ">=16.12.0"
-  checksum: 0904ed8f285d31ee00e471dcddd57e72468bee354b191167bcaebe690ec292647fe4c31f483665094d750e72dd71e5d7db695acef33ab5dba6a39fed0112bab6
+  checksum: 5b888b6ebd2083334758d49e9e7b669eb8d0475273cdb5af2aa5f8c363b62f56c79aeca43758c99642056e94f68cbd8086f79a0a96726b3e8b8726cb24fd1d1b
   languageName: node
   linkType: hard
 
@@ -5897,7 +5897,7 @@ __metadata:
     axios: ^0.27.2
     babel-loader: ^8.2.5
     babel-plugin-styled-components: ^2.0.7
-    chart.js: ^3.7.1
+    chart.js: ^3.9.1
     chartjs-adapter-date-fns: ^2.0.0
     classnames: ^2.3.1
     compute-scroll-into-view: ^1.0.17
@@ -5907,7 +5907,7 @@ __metadata:
     csstype: ^3.1.0
     date-fns: ^2.29.1
     date-fns-tz: ^1.3.6
-    downshift: ^6.1.7
+    downshift: ^6.1.9
     esbuild: ^0.15.5
     eslint: ^8.22.0
     eslint-config-prettier: ^8.5.0
@@ -5943,7 +5943,7 @@ __metadata:
     prettier: ^2.6.2
     react: ^17.0.2
     react-autosize-textarea: ^7.1.0
-    react-chartjs-2: ^4.1.0
+    react-chartjs-2: ^4.3.1
     react-csv: ^2.2.2
     react-datepicker: ^4.7.0
     react-day-picker: 7.4.10
@@ -9707,13 +9707,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-chartjs-2@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "react-chartjs-2@npm:4.1.0"
+"react-chartjs-2@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "react-chartjs-2@npm:4.3.1"
   peerDependencies:
     chart.js: ^3.5.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: fe01bdaf80c8a806af36e772719f420862e15e393a32c4c15b0e5fb8167143648e3f465b1b3ee8c4889f9531fff6ad6d34832606029ebf7d2751729198eb6121
+  checksum: 574d12cc43b9b4a0f1e04cc692982e16ef7083c03da2a8a9fc2180fe9bcadc793008f81d8f4eec5465925eff84c95d7c523cb74376858b363ae75a83bb3c2a5d
   languageName: node
   linkType: hard
 
