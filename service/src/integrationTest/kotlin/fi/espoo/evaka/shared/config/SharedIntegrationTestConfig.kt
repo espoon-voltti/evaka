@@ -193,5 +193,8 @@ val testFeatureConfig = FeatureConfig(
     alwaysUseDaycareFinanceDecisionHandler = false,
     invoiceNumberSeriesStart = 5000000000,
     paymentNumberSeriesStart = 9000000000,
+    unplannedAbsencesAreContractSurplusDays = true,
+    maxContractDaySurplusThreshold = null,
+    useContractDaysAsDailyFeeDivisor = true,
     enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
 )

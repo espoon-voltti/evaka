@@ -125,6 +125,9 @@ class EspooConfig {
         alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
         invoiceNumberSeriesStart = 5000000000,
         paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
+        unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
+        maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
+        useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
         enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
     )
 

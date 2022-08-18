@@ -85,8 +85,6 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
-
-        val absences = allAbsences.filter { it.absenceType != AbsenceType.PLANNED_ABSENCE }
         val plannedAbsences =
             allAbsences.filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }.groupBy { it.childId }
                 .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }.toMap()
@@ -105,7 +103,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             areaIds = areaIds,
             operationalDays = operationalDays,
             feeThresholds = feeThresholds,
-            absences = absences,
+            absences = allAbsences,
             plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
             codebtors = codebtors

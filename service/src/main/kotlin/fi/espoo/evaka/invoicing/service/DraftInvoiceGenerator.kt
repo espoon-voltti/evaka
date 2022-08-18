@@ -205,6 +205,7 @@ class DraftInvoiceGenerator(
                 if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
 
                 val contractDaysPerMonth = separatePeriods.first().second.contractDaysPerMonth
+                    .takeIf { featureConfig.useContractDaysAsDailyFeeDivisor }
                 val childPlannedAbsences = plannedAbsences[child.id] ?: setOf()
 
                 val dailyFeeDivisor = contractDaysPerMonth
@@ -303,10 +304,6 @@ class DraftInvoiceGenerator(
                 ?: false
         }
 
-        fun hasAnyAbsence(childId: ChildId, date: LocalDate): Boolean {
-            return hasPlannedAbsence(childId, date) || hasAbsence(childId, date)
-        }
-
         return getOperationalDaysForChildsUnits(placementsList, operationalDays)
             .mapValues { (childId, allOperationalDays) ->
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
@@ -320,7 +317,7 @@ class DraftInvoiceGenerator(
                     hasSickleave(childId, date) || hasPlannedAbsence(childId, date)
                 }
                 val atLeast11SickLeaves = childOperationalDays.filter { date -> hasSickleave(childId, date) }.size >= 11
-                val allAbsences = childOperationalDays.all { date -> hasAnyAbsence(childId, date) }
+                val allAbsences = childOperationalDays.all { date -> hasAbsence(childId, date) }
 
                 if (allSickLeaves) {
                     FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
@@ -559,7 +556,6 @@ class DraftInvoiceGenerator(
             initialRows.sumOf { it.price },
             maxPrice,
             unitId,
-            dailyFeeDivisor,
             contractDaysPerMonth,
             attendanceDates,
             absences,
@@ -615,7 +611,6 @@ class DraftInvoiceGenerator(
         invoiceRowSum: Int,
         maxPrice: Int,
         unitId: DaycareId,
-        dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
@@ -627,19 +622,26 @@ class DraftInvoiceGenerator(
 
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
-        val unplannedAbsencesBeforePeriod =
-            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && it.date < period.start }.size
-        val unplannedAbsencesInPeriod =
-            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) && period.includes(it.date) }.size
-        val surplusAttendanceDays =
-            attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod + unplannedAbsencesInPeriod - contractDaysPerMonth
+        val unplannedAbsenceSurplusDays = if (featureConfig.unplannedAbsencesAreContractSurplusDays)
+            absences.filter { !plannedAbsenceTypes.contains(it.absenceType) }
+        else listOf()
+        val (unplannedAbsencesInPeriod, unplannedAbsencesBeforePeriod) = unplannedAbsenceSurplusDays
+            .filter { it.date < period.start || period.includes(it.date) }
+            .partition { period.includes(it.date) }
+        val attendanceDays =
+            attendancesBeforePeriod + attendancesInPeriod + unplannedAbsencesBeforePeriod.size + unplannedAbsencesInPeriod.size
 
-        val surplusRows = if (surplusAttendanceDays > 0) {
-            val surplusDailyPrice = calculateDailyPriceForInvoiceRow(monthlyPrice, dailyFeeDivisor)
+        return if (contractDaysPerMonth < attendanceDays) {
+            val surplusAttendanceDays = attendanceDays - contractDaysPerMonth
+            val surplusDailyPrice = calculateDailyPriceForInvoiceRow(monthlyPrice, contractDaysPerMonth)
             val totalAddition = surplusAttendanceDays * surplusDailyPrice
-            val (amount, unitPrice) =
-                if (invoiceRowSum + totalAddition > maxPrice) 1 to (maxPrice - invoiceRowSum)
-                else surplusAttendanceDays to surplusDailyPrice
+            val (amount, unitPrice) = when {
+                // surplus days increase takes invoice row sum above max price threshold
+                invoiceRowSum + totalAddition > maxPrice -> 1 to (maxPrice - invoiceRowSum)
+                // total attendances days is over the max contract day surplus threshold
+                featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE < attendanceDays -> 1 to (maxPrice - invoiceRowSum)
+                else -> surplusAttendanceDays to surplusDailyPrice
+            }
             listOf(
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
@@ -654,8 +656,6 @@ class DraftInvoiceGenerator(
                 )
             )
         } else listOf()
-
-        return surplusRows
     }
 
     private fun dailyAbsenceRefund(

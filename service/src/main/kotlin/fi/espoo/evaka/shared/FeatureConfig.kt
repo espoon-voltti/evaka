@@ -68,6 +68,15 @@ data class FeatureConfig(
      */
     val paymentNumberSeriesStart: Long?,
 
+    /** Controls whether unplanned absences are counted as surplus contract days on invoices or not */
+    val unplannedAbsencesAreContractSurplusDays: Boolean,
+
+    /** Optionally set a threshold of surplus contract days after which the monthly maximum is invoiced. */
+    val maxContractDaySurplusThreshold: Int?,
+
+    /** Controls whether to use the number of contract days or the number of operational days as daily price divisor */
+    val useContractDaysAsDailyFeeDivisor: Boolean,
+
     /** Enabled child consent types
      *
      * All of the enabled child consent types. The consent section will be hidden if no consent
