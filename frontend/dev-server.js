@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+/* eslint-disable no-console */
+
 const assert = require('assert')
 
 const express = require('express')

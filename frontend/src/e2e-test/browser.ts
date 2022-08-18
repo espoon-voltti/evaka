@@ -158,10 +158,12 @@ function configurePage(page: Page) {
         ) {
           return
         }
+        // eslint-disable-next-line no-console
         console.log(`page ${page.url()} console.${msg.type()}`, ...args)
       })()
   )
   page.on('pageerror', (err) => {
+    // eslint-disable-next-line no-console
     console.log(`Page ${page.url()}`, err)
   })
 }

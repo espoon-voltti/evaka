@@ -9,6 +9,8 @@
 // Nice to have:
 // - Use babel-plugin-styled-components
 
+/* eslint-disable no-console */
+
 const fs = require('fs/promises')
 const path = require('path')
 
