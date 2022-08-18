@@ -30,6 +30,7 @@ WITH people_with_no_archive_data AS (
         SELECT 1 FROM voucher_value_decision
         WHERE voucher_value_decision.head_of_family_id = person.id OR voucher_value_decision.partner_id = person.id OR voucher_value_decision.child_id = person.id
     )
+    AND NOT EXISTS (SELECT 1 FROM invoice_correction WHERE head_of_family_id = person.id AND NOT applied_completely)
     AND NOT EXISTS (
         SELECT 1 FROM curriculum_document
         WHERE curriculum_document.child_id = person.id
