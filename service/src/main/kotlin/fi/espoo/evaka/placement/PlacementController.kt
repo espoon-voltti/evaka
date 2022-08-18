@@ -178,17 +178,24 @@ class PlacementController(
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId
     ) {
-        Audit.PlacementCancel.log(targetId = placementId)
         accessControl.requirePermissionFor(user, Action.Placement.DELETE, placementId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
-                )
+                tx.cancelPlacement(placementId).also {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                it.childId,
+                                DateRange(it.startDate, it.endDate)
+                            )
+                        )
+                    )
+                }
             }
+        }.also {
+            Audit.PlacementCancel.log(targetId = placementId, objectId = "${it.childId} ${it.unitId}")
         }
     }
 

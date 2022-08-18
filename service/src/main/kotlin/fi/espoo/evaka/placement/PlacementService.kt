@@ -221,7 +221,7 @@ private fun Database.Transaction.clearOldPlacements(childId: ChildId, from: Loca
                 // old placement is within new placement (or identical)
                 !old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    val (_, _, _) = cancelPlacement(old.id)
+                    cancelPlacement(old.id).let {}
                 }
 
                 // old placement encloses new placement

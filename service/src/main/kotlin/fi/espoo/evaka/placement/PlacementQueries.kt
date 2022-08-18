@@ -180,13 +180,14 @@ fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementI
         .execute()
 }
 
-fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, LocalDate, LocalDate> {
-    data class QueryResult(
-        val childId: ChildId,
-        val startDate: LocalDate,
-        val endDate: LocalDate
-    )
+data class CancelPlacementResult(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
 
+fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult {
     getPlacement(id) ?: throw NotFound("Placement $id not found")
 
     createUpdate("DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id")
@@ -195,11 +196,10 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<ChildId, Local
 
     deleteServiceNeedsFromPlacement(id)
 
-    return createQuery("DELETE FROM placement WHERE id = :id RETURNING child_id, start_date, end_date")
+    return createQuery("DELETE FROM placement WHERE id = :id RETURNING child_id, unit_id, start_date, end_date")
         .bind("id", id)
-        .mapTo<QueryResult>()
+        .mapTo<CancelPlacementResult>()
         .first()
-        .let { Triple(it.childId, it.startDate, it.endDate) }
 }
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
