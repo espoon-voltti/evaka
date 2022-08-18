@@ -464,7 +464,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED)
-            this.createQuery("SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
+            this.createQuery("SELECT child_id, date, category FROM absences_in_range(:childIds, :range)")
                 .bind("childIds", childIds)
                 .bind("range", range)
                 .mapTo<Absence>()
