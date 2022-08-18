@@ -78,11 +78,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val person2 = AuthenticatedUser.Citizen(id = person2Id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id, CitizenAuthLevel.STRONG)
     private val person4 = AuthenticatedUser.Citizen(id = person4Id, CitizenAuthLevel.STRONG)
-    private val groupId = GroupId(UUID.randomUUID())
+    private val groupId1 = GroupId(UUID.randomUUID())
+    private val groupId2 = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
-    private fun insertChild(tx: Database.Transaction, child: DevPerson) {
+    private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
         tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
         tx.insertTestChild(DevChild(id = child.id))
 
@@ -124,7 +125,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
-                    id = groupId,
+                    id = groupId1,
+                    daycareId = testDaycare.id,
+                    startDate = placementStart
+                )
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = groupId2,
                     daycareId = testDaycare.id,
                     startDate = placementStart
                 )
@@ -137,7 +145,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 1 and 2 are guardians of child 1
             testChild_1.let {
-                insertChild(tx, it)
+                insertChild(tx, it, groupId1)
                 tx.insertGuardian(person1Id, it.id)
                 tx.insertGuardian(person2Id, it.id)
                 tx.insertTestParentship(fridgeHeadId, it.id) // parentship alone does not allow messaging if not a guardian
@@ -145,25 +153,25 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 2 and 3 are guardian of child 3
             testChild_3.let {
-                insertChild(tx, it)
+                insertChild(tx, it, groupId1)
                 tx.insertGuardian(person2Id, it.id)
                 tx.insertGuardian(person3Id, it.id)
             }
 
             testChild_4.let {
-                insertChild(tx, it)
+                insertChild(tx, it, groupId2)
                 tx.insertGuardian(person4Id, it.id)
             }
 
             testChild_5.let {
-                insertChild(tx, it)
+                insertChild(tx, it, groupId1)
                 tx.insertTestParentship(fridgeHeadId, it.id) // no guardian, no messages
             }
 
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
             tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId1, groupId2))
 
             tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor"))
             tx.upsertEmployeeMessageAccount(employee2Id)
@@ -174,16 +182,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `only guardians are returned in valid recipients`() {
         val receivers = getReceivers(testDaycare.id, employee1)
-        assertEquals(1, receivers.size)
+        assertEquals(2, receivers.size)
 
-        val group1Receivers = receivers[0]
-        assertEquals(groupId, group1Receivers.groupId)
+        val group1Receivers = receivers.find { it.groupId == groupId1 }
+        assertNotNull(group1Receivers)
 
         // fridge head of child 1 is not in the receivers
         val children = listOf(
             testChild_1.id to setOf(testAdult_1, testAdult_2),
-            testChild_3.id to setOf(testAdult_2, testAdult_3),
-            testChild_4.id to setOf(testAdult_4)
+            testChild_3.id to setOf(testAdult_2, testAdult_3)
         )
         assertEquals(children.map { it.first }.toSet(), group1Receivers.receivers.map { it.childId }.toSet())
         children.forEach { (childId, guardianAccountIds) ->
@@ -363,7 +370,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `guardian can send a message only to group, not group staff`() {
         db.transaction {
-            it.createDaycareGroupMessageAccount(groupId)
+            it.createDaycareGroupMessageAccount(groupId1)
         }
         // Group account and the employee personal account
         assertEquals(getCitizenReceivers(person1).size, 2)
@@ -659,6 +666,34 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         downloadAttachment(person3, attachmentIds.first(), 403)
     }
 
+    @Test
+    fun `employee with access to two groups cannot send messages as group1 to group2`() {
+        val group1Account = db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
+        val group2Account = db.transaction { it.createDaycareGroupMessageAccount(groupId2) }
+        // person4 is the guardian of testChild_4 that is placed in group2
+        val person4Account = db.transaction { it.getCitizenMessageAccount(person4Id) }
+
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = group1Account,
+            recipients = listOf(person4Account),
+            user = employee1,
+            statusCode = 403
+        )
+
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = group2Account,
+            recipients = listOf(person4Account),
+            user = employee1,
+            statusCode = 200
+        )
+    }
+
     private fun deleteAttachment(
         user: AuthenticatedUser.Employee,
         attachmentId: AttachmentId,
@@ -720,6 +755,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
         attachmentIds: Set<AttachmentId> = setOf(),
         draftId: MessageDraftId? = null,
+        statusCode: Int = 200
     ) = http.post("/messages/$sender")
         .jsonBody(
             jsonMapper.writeValueAsString(
@@ -737,7 +773,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
         .asUser(user)
         .response()
-        .also { assertEquals(200, it.second.statusCode) }
+        .also { assertEquals(statusCode, it.second.statusCode) }
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
