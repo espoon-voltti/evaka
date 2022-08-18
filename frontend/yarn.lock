@@ -2933,6 +2933,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/linkify-it@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@types/linkify-it@npm:3.0.2"
+  checksum: dff8f10fafb885422474e456596f12d518ec4cdd6c33cca7a08e7c86b912d301ed91cf5a7613e148c45a12600dc9ab3d85ad16d5b48dc1aaeda151a68f16b536
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:^4.14.183":
   version: 4.14.183
   resolution: "@types/lodash@npm:4.14.183"
@@ -2968,6 +2975,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/punycode@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@types/punycode@npm:2.1.0"
+  checksum: 6835698becab395eb9ac186970fd7879aeb522ea72d516ef9d681d787989653fcc2439ecc07d48280e1ca11862773b806efeec3fdbd1207528829a83b65d4275
+  languageName: node
+  linkType: hard
+
 "@types/react-csv@npm:^1.1.3":
   version: 1.1.3
   resolution: "@types/react-csv@npm:1.1.3"
@@ -2995,6 +3009,15 @@ __metadata:
   dependencies:
     "@types/react": ^17
   checksum: 23caf98aa03e968811560f92a2c8f451694253ebe16b670929b24eaf0e7fa62ba549abe9db0ac028a9d8a9086acd6ab9c6c773f163fa21224845edbc00ba6232
+  languageName: node
+  linkType: hard
+
+"@types/react-linkify@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@types/react-linkify@npm:1.0.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: e39435c6f261a3b95b71f18cb3728fbbbb3180e5e911e642f344a1ec15005d1d564b5c67d3f475ca3695dc0a2a3b9971cfbf1074a2050549c6c5d250816b4fee
   languageName: node
   linkType: hard
 
@@ -5882,12 +5905,15 @@ __metadata:
     "@types/form-data": ^2.5.0
     "@types/jest": ^27.5.2
     "@types/leaflet": ^1.7.11
+    "@types/linkify-it": ^3.0.2
     "@types/lodash": ^4.14.183
     "@types/node": ^16.11.49
+    "@types/punycode": ^2.1.0
     "@types/react": ^17.0.48
     "@types/react-csv": ^1.1.3
     "@types/react-datepicker": 4.4.2
     "@types/react-dom": ^17.0.17
+    "@types/react-linkify": ^1.0.1
     "@types/react-router-dom": ^5.3.3
     "@types/react-select": 3.0.22
     "@types/styled-components": ^5.1.26
@@ -5933,6 +5959,7 @@ __metadata:
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
     lib-icons: "link:src/lib-icons"
+    linkify-it: ^4.0.1
     lodash: ^4.17.21
     make-error-cause: ^2.3.0
     playwright: ^1.25.0
@@ -5941,6 +5968,7 @@ __metadata:
     postcss-loader: ^7.0.1
     postcss-preset-env: ^7.8.0
     prettier: ^2.6.2
+    punycode: ^2.1.1
     react: ^17.0.2
     react-autosize-textarea: ^7.1.0
     react-chartjs-2: ^4.3.1
@@ -5951,6 +5979,7 @@ __metadata:
     react-focus-lock: 2.9.1
     react-image-crop: ^9.1.1
     react-leaflet: ^3.2.5
+    react-linkify: ^1.0.0-alpha
     react-router-dom: ^6.3.0
     react-select: ^3.0.8
     react-spring: ^9.5.2
@@ -8029,6 +8058,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"linkify-it@npm:^2.0.3":
+  version: 2.2.0
+  resolution: "linkify-it@npm:2.2.0"
+  dependencies:
+    uc.micro: ^1.0.1
+  checksum: d198871d0b3f3cfdb745dae564bfd6743474f20cd0ef1057e6ca29451834749e7f3da52b59b4de44e98f31a1e5c71bdad160490d4ae54de251cbcde57e4d7837
+  languageName: node
+  linkType: hard
+
+"linkify-it@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "linkify-it@npm:4.0.1"
+  dependencies:
+    uc.micro: ^1.0.1
+  checksum: 3e0a29921269c14eb7ac6f5db2da68d4854ea9acca6e9014a323f75f2dd39b197ffab57c1fbd6a906ceb021aad3ee6d7ba7d0181236dd9630ffc452b392f7f71
+  languageName: node
+  linkType: hard
+
 "load-bmfont@npm:^1.3.1, load-bmfont@npm:^1.4.0":
   version: 1.4.1
   resolution: "load-bmfont@npm:1.4.1"
@@ -9852,6 +9899,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-linkify@npm:^1.0.0-alpha":
+  version: 1.0.0-alpha
+  resolution: "react-linkify@npm:1.0.0-alpha"
+  dependencies:
+    linkify-it: ^2.0.3
+    tlds: ^1.199.0
+  checksum: abff36e1fdd9db822278292379e070d471d96ddda2d199565edd9ecff3d17faa31a3c83bd2be8fa4c0f9589dd97553ba77c553047b94cfd94e0f528b9e91fafa
+  languageName: node
+  linkType: hard
+
 "react-onclickoutside@npm:^6.12.0":
   version: 6.12.0
   resolution: "react-onclickoutside@npm:6.12.0"
@@ -10907,6 +10964,15 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
+"tlds@npm:^1.199.0":
+  version: 1.231.0
+  resolution: "tlds@npm:1.231.0"
+  bin:
+    tlds: bin.js
+  checksum: a77078c8d329c8a1f91d58459f48174a4d2be2cea1e48b8d732a3122dd394b23c5c18187882ad0139d01076191167242afa2307ec3f63c0ae9dcea0c9e9b48cc
+  languageName: node
+  linkType: hard
+
 "tmpl@npm:1.0.x":
   version: 1.0.5
   resolution: "tmpl@npm:1.0.5"
@@ -11193,6 +11259,13 @@ resolve@^2.0.0-next.3:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 96d3030cb01143570567cb4f3a616b10df65f658f0e74e853e77a089a6a954e35c800be7db8b9bfe9a1ae05d9c2897e281359f65e4caa1caf266368e1c4febd3
+  languageName: node
+  linkType: hard
+
+"uc.micro@npm:^1.0.1":
+  version: 1.0.6
+  resolution: "uc.micro@npm:1.0.6"
+  checksum: 6898bb556319a38e9cf175e3628689347bd26fec15fc6b29fa38e0045af63075ff3fea4cf1fdba9db46c9f0cbf07f2348cd8844889dd31ebd288c29fe0d27e7a
   languageName: node
   linkType: hard
 

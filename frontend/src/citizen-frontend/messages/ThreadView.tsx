@@ -20,6 +20,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Linkify from 'lib-components/atoms/Linkify'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -102,7 +103,7 @@ const SingleMessage = React.memo(function SingleMessage({
         ).join(', ')}
       </InformationText>
       <MessageContent data-qa="thread-reader-content">
-        {message.content}
+        <Linkify>{message.content}</Linkify>
       </MessageContent>
       {message.attachments.length > 0 && (
         <>

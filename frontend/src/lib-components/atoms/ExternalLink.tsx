@@ -21,7 +21,7 @@ export default React.memo(function ExternalLink({
   'data-qa': dataQa
 }: ExternalLinkProps) {
   const targetProps = newTab
-    ? { target: '_blank', rel: 'noreferrer' }
+    ? { target: '_blank', rel: 'noopener noreferrer' }
     : undefined
   return (
     <a href={href} data-qa={dataQa} {...targetProps}>

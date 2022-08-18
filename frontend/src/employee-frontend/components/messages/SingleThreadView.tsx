@@ -21,6 +21,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import Linkify from 'lib-components/atoms/Linkify'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -100,7 +101,7 @@ function SingleMessage({
         )}
       </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
-        {message.content}
+        <Linkify>{message.content}</Linkify>
       </MessageContent>
       {message.attachments.length > 0 && (
         <>
