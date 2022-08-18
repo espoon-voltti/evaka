@@ -5945,7 +5945,7 @@ __metadata:
     react-autosize-textarea: ^7.1.0
     react-chartjs-2: ^4.3.1
     react-csv: ^2.2.2
-    react-datepicker: ^4.7.0
+    react-datepicker: ^4.8.0
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
     react-focus-lock: 2.9.1
@@ -9735,9 +9735,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "react-datepicker@npm:4.7.0"
+"react-datepicker@npm:^4.8.0":
+  version: 4.8.0
+  resolution: "react-datepicker@npm:4.8.0"
   dependencies:
     "@popperjs/core": ^2.9.2
     classnames: ^2.2.6
@@ -9746,9 +9746,9 @@ __metadata:
     react-onclickoutside: ^6.12.0
     react-popper: ^2.2.5
   peerDependencies:
-    react: ^16.9.0 || ^17
-    react-dom: ^16.9.0 || ^17
-  checksum: e79d9c0c4832f061499296643b8ded4d5ecde3ceca0b3fff1d69669227fcd6418ce7c1c657ab672f76412507c1d47237bb327ed9d3e9b1c38b98c58c81be7aec
+    react: ^16.9.0 || ^17 || ^18
+    react-dom: ^16.9.0 || ^17 || ^18
+  checksum: d31a1002c5c6220fd8a5201f3a71015ac09b003d71f59ebc6fc0f9c452268f924f0244e69c223f64763ebb2131031ce5e792872631bfb364c34b8ea730258e6c
   languageName: node
   linkType: hard
 
