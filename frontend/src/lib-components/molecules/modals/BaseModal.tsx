@@ -188,6 +188,7 @@ const ModalIcon = styled.div<{ type?: ModalType }>`
 const ModalTitle = styled.div`
   margin-bottom: ${defaultMargins.XXL};
   margin-top: ${defaultMargins.XXL};
+  text-align: center;
 
   @media (max-width: ${tabletMin}) {
     margin-bottom: ${defaultMargins.L};
