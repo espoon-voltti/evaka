@@ -398,9 +398,12 @@ export async function updateServiceWorkerNote(
   applicationId: UUID,
   text: string
 ): Promise<Result<void>> {
-  return client.put(`/note/service-worker/application/${applicationId}`, {
-    text
-  })
+  return client
+    .put(`/note/service-worker/application/${applicationId}`, {
+      text
+    })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
