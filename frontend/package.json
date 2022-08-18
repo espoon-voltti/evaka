@@ -70,7 +70,7 @@
   "devDependencies": {
     "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
-    "@playwright/test": "^1.21.1",
+    "@playwright/test": "^1.25.0",
     "@sentry/webpack-plugin": "^1.18.9",
     "@types/form-data": "^2.5.0",
     "@types/jest": "^27.4.1",
@@ -110,7 +110,7 @@
     "jest-environment-node": "^27.5.1",
     "jest-junit": "^13.1.0",
     "make-error-cause": "^2.3.0",
-    "playwright": "^1.21.1",
+    "playwright": "^1.25.0",
     "postcss": "^8.4.12",
     "postcss-loader": "^6.2.1",
     "postcss-preset-env": "^7.4.3",
