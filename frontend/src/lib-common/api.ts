@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 export interface Response<T> {
   data: T
@@ -84,9 +84,13 @@ export class Failure<T> {
 
   static fromError<T>(e: unknown): Failure<T> {
     if (axios.isAxiosError(e)) {
-      const response: AxiosResponse<{ errorCode?: string }> | undefined =
-        e.response as AxiosResponse<{ errorCode?: string }>
-      return new Failure(e.message, response?.status, response?.data.errorCode)
+      const data = e.response?.data as { errorCode?: string } | undefined
+      const errorCode = data?.errorCode
+      return new Failure(
+        e.message,
+        e.response?.status,
+        typeof errorCode === 'string' ? errorCode : undefined
+      )
     } else if (e instanceof Error) {
       return new Failure(e.message)
     } else {
