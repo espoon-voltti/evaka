@@ -213,6 +213,7 @@ describe('Child message thread', () => {
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
+    await nav.selectGroup(daycareGroupId)
     await waitUntilTrue(() => messagesPage.messagesExist())
   })
 
