@@ -2011,7 +2011,7 @@ const en: Translations = {
             REJECTED: 'Rejected'
           },
           assistanceLevel: {
-            assistanceEnds: 'Assistance ends',
+            assistanceEnds: 'Special/enhanced assistance ends',
             assistanceServicesForTime:
               'Assistance services during validity of decision',
             enhancedAssistance: 'Enhanced assistance',

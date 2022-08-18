@@ -1994,7 +1994,7 @@ const sv: Translations = {
             'Beslut om stödnivån och när beslutet träder i kraft',
           futureLevelOfAssistance: 'Barnets stödnivå framöver',
           assistanceLevel: {
-            assistanceEnds: 'Stödet avslutas',
+            assistanceEnds: 'Särskilda/intensifierade stödet avslutas',
             assistanceServicesForTime:
               'Stödtjänster under beslutets giltighetstid',
             enhancedAssistance: 'Intensifierat stöd',

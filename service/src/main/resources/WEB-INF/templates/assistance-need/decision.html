@@ -42,7 +42,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             th:if="${decision.pedagogicalMotivation} != null"
           >
             <h3 th:text="#{pedagogicalMotivation}"></h3>
-            <div th:text="${decision.pedagogicalMotivation}"></div>
+            <div
+              class="multi-line"
+              th:text="${decision.pedagogicalMotivation}"
+            ></div>
           </div>
           <div
             class="decision-details"
@@ -78,6 +81,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div
               th:if="${decision.structuralMotivationDescription} != null"
               th:text="${decision.structuralMotivationDescription}"
+              class="multi-line"
             ></div>
           </div>
           <div
@@ -85,7 +89,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             th:if="${decision.careMotivation} != null"
           >
             <h3 th:text="#{careMotivation}"></h3>
-            <div th:text="${decision.careMotivation}"></div>
+            <div class="multi-line" th:text="${decision.careMotivation}"></div>
           </div>
           <div
             class="decision-details"
@@ -117,6 +121,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div
               th:text="${decision.servicesMotivation}"
               th:if="${decision.servicesMotivation} != null"
+              class="multi-line"
             ></div>
           </div>
         </div>
@@ -159,7 +164,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             th:if="${decision.viewOfGuardians} != null"
           >
             <h3 th:text="#{viewOfTheGuardians}"></h3>
-            <div th:text="${decision.viewOfGuardians}"></div>
+            <div class="multi-line" th:text="${decision.viewOfGuardians}"></div>
           </div>
         </div>
 
@@ -208,7 +213,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             th:if="${decision.motivationForDecision} != null"
           >
             <h3 th:text="#{motivationForDecision}"></h3>
-            <div th:text="${decision.motivationForDecision}"></div>
+            <div
+              class="multi-line"
+              th:text="${decision.motivationForDecision}"
+            ></div>
           </div>
         </div>
 

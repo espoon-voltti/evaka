@@ -768,7 +768,7 @@ export const fi = {
       decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
       futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
       assistanceLevel: {
-        assistanceEnds: 'Tuki päättyy',
+        assistanceEnds: 'Erityinen/tehostettu tuki päättyy',
         assistanceServicesForTime: 'Tukipalvelut päätöksen voimassaolon aikana',
         enhancedAssistance: 'Tehostettu tuki',
         specialAssistance: 'Erityinen tuki'

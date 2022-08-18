@@ -89,6 +89,10 @@ const LabelContainer = styled.div`
   margin-bottom: ${defaultMargins.s};
 `
 
+const Value = styled.div`
+  white-space: pre-line;
+`
+
 const OptionalLabelledValue = React.memo(function OptionalLabelledValue({
   label,
   value,
@@ -106,7 +110,7 @@ const OptionalLabelledValue = React.memo(function OptionalLabelledValue({
     <LabelContainer>
       <Label>{label}</Label>
       <Gap size="xs" />
-      <div data-qa={`labelled-value-${dataQa ?? label}`}>{value}</div>
+      <Value data-qa={`labelled-value-${dataQa ?? label}`}>{value}</Value>
     </LabelContainer>
   )
 })
