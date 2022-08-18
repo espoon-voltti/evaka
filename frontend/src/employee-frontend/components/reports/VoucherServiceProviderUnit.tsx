@@ -261,8 +261,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       r.serviceVoucherValue,
                       true
                     ),
-                    serviceVoucherCoPayment: formatCents(
-                      r.serviceVoucherCoPayment,
+                    serviceVoucherFinalCoPayment: formatCents(
+                      r.serviceVoucherFinalCoPayment,
                       true
                     ),
                     realizedAmount: formatCents(r.realizedAmount, true)
@@ -278,7 +278,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                     serviceNeedDescription: null,
                     assistanceNeedCapacityFactor: null,
                     serviceVoucherValue: null,
-                    serviceVoucherCoPayment: null,
+                    serviceVoucherFinalCoPayment: null,
                     realizedAmount: formatCents(
                       sortedReport.value.voucherTotal,
                       true
@@ -334,8 +334,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                   {
                     label:
                       i18n.reports.voucherServiceProviderUnit
-                        .serviceVoucherCoPayment,
-                    key: 'serviceVoucherCoPayment'
+                        .serviceVoucherFinalCoPayment,
+                    key: 'serviceVoucherFinalCoPayment'
                   },
                   {
                     label:
@@ -380,7 +380,7 @@ export default React.memo(function VoucherServiceProviderUnit() {
                   <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
-                        .serviceVoucherCoPayment
+                        .serviceVoucherFinalCoPayment
                     }
                   </StyledTh>
                   <StyledTh>
