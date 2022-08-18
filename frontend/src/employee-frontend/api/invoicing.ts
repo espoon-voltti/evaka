@@ -450,16 +450,6 @@ export async function getInvoiceCodes(): Promise<Result<InvoiceCodes>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function generateFeeDecisions(
-  starting: string,
-  targetHeads: string[]
-): Promise<void> {
-  return client.post(`/fee-decision-generator/generate`, {
-    starting,
-    targetHeads
-  })
-}
-
 export async function markFeeDecisionSent(
   ids: string[]
 ): Promise<Result<void>> {
