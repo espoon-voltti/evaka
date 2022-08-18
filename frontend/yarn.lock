@@ -1656,15 +1656,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:0.1.18":
-  version: 0.1.18
-  resolution: "@fortawesome/react-fontawesome@npm:0.1.18"
+"@fortawesome/react-fontawesome@npm:0.1.19":
+  version: 0.1.19
+  resolution: "@fortawesome/react-fontawesome@npm:0.1.19"
   dependencies:
     prop-types: ^15.8.1
   peerDependencies:
     "@fortawesome/fontawesome-svg-core": ~1 || ~6
     react: ">=16.x"
-  checksum: eba711234541928e1877435905bcd94ab6aea1cf228833a55fc7c6a2fc18dd08d3f7f327ca4af0f3ba365188ad0869d7ecd31be5940d27f4e2bbe7e12cbcf520
+  checksum: 77dbe1d5fa156a2ff4aa069d6c11f0ba1fcf43df72c9f03f1eec353d23798513a1f2773957a2bc3107fb8dc79fa606999ed91bf21659745bcc166abc4072819e
   languageName: node
   linkType: hard
 
@@ -2900,13 +2900,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^27.4.1":
-  version: 27.4.1
-  resolution: "@types/jest@npm:27.4.1"
+"@types/jest@npm:^27.5.2":
+  version: 27.5.2
+  resolution: "@types/jest@npm:27.5.2"
   dependencies:
     jest-matcher-utils: ^27.0.0
     pretty-format: ^27.0.0
-  checksum: 5184f3eef4832d01ee8f59bed15eec45ccc8e29c724a5e6ce37bf74396b37bdf04f557000f45ba4fc38ae6075cf9cfcce3d7a75abc981023c61ceb27230a93e4
+  checksum: 7e11c6826aa429ad990dc262e4e4b54aa36573287fddf15773e4137f07d11d3105f0dd9f1baff73252160a057df23f5529bb83b1bf83cd3f45f9460a5ca5c22e
   languageName: node
   linkType: hard
 
@@ -2924,12 +2924,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/leaflet@npm:^1.7.9":
-  version: 1.7.9
-  resolution: "@types/leaflet@npm:1.7.9"
+"@types/leaflet@npm:^1.7.11":
+  version: 1.7.11
+  resolution: "@types/leaflet@npm:1.7.11"
   dependencies:
     "@types/geojson": "*"
-  checksum: 1a8c18b50d1b7726e99d86f9087733216b830c545a97ea95a83ff45e51e555bbef8f4eab654de603f539b9a297d352f8c443895f75cc5c52a7b488eaed664c04
+  checksum: 6613dbc91f174545ed39183a8564a344152f1884f02ab4dbc002b6bd4816d8525b5247e62217694763daf727ca5e589f40144dc809edb7194064e6bdc2f4369a
   languageName: node
   linkType: hard
 
@@ -2968,33 +2968,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-csv@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@types/react-csv@npm:1.1.2"
+"@types/react-csv@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@types/react-csv@npm:1.1.3"
   dependencies:
     "@types/react": "*"
-  checksum: 0c69c969544cfbbf9b921e3bc8933d83a976af6edd1e126098467d47bb1e3f5c49b1aa6ecd3d5ec0b713c08ec5371ded4db121a91929ace893ef06d200557f49
+  checksum: 1b4b131bf79ab8fcf973dc26c9ed6cfca6e09d6abf4ce1d32b4caaba6a069beb6435b77048ce496820a7c3add0f137b5358b6d4f29d2fbd676c7b000d0345673
   languageName: node
   linkType: hard
 
-"@types/react-datepicker@npm:4.4.0":
-  version: 4.4.0
-  resolution: "@types/react-datepicker@npm:4.4.0"
+"@types/react-datepicker@npm:4.4.2":
+  version: 4.4.2
+  resolution: "@types/react-datepicker@npm:4.4.2"
   dependencies:
     "@popperjs/core": ^2.9.2
     "@types/react": "*"
     date-fns: ^2.0.1
     react-popper: ^2.2.5
-  checksum: afe8e6e10e7aa84ca8eda80c4addf15263a5cfc43070235c8cebe92734ac6579c888ba6174e9dcf87d93d21d96b26076c598fd50e2ca774bdfe472c31f1bb1ce
+  checksum: 6816335cfcdb587dc5ef7b40abbbf242d31f8dfb443467eb4b5899fdcab059a3e49dd7d6cec4d8469953667dd041237f4b08e3a4a79440efb9280f0c53402667
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:*, @types/react-dom@npm:^17.0.15":
-  version: 17.0.15
-  resolution: "@types/react-dom@npm:17.0.15"
+"@types/react-dom@npm:*, @types/react-dom@npm:^17.0.17":
+  version: 17.0.17
+  resolution: "@types/react-dom@npm:17.0.17"
   dependencies:
     "@types/react": ^17
-  checksum: 7b90372bd7207d3860e1043ebfe10fd21fbd9ec3417a29593ca14359774830c888ba4ebb25cf0510628607496f8d35b09d23d329ea709b9311f5866185c5fd67
+  checksum: 23caf98aa03e968811560f92a2c8f451694253ebe16b670929b24eaf0e7fa62ba549abe9db0ac028a9d8a9086acd6ab9c6c773f163fa21224845edbc00ba6232
   languageName: node
   linkType: hard
 
@@ -3039,14 +3039,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^17, @types/react@npm:^17.0.44":
-  version: 17.0.44
-  resolution: "@types/react@npm:17.0.44"
+"@types/react@npm:*, @types/react@npm:^17, @types/react@npm:^17.0.48":
+  version: 17.0.48
+  resolution: "@types/react@npm:17.0.48"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: ebee02778ca08f954c316dc907802264e0121c87b8fa2e7e0156ab0ef2a1b0a09d968c016a3600ec4c9a17dc09b4274f292d9b15a1a5369bb7e4072def82808f
+  checksum: b683fa33f751ced0b8c8715df9f40de15513c1d7ce66064a75cdfb8805cc913b0b214a2e7022ef0b724bd62a1e8651d040cd265dd0452bde03cca9b8e495742d
   languageName: node
   linkType: hard
 
@@ -3064,14 +3064,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/styled-components@npm:^5.1.25":
-  version: 5.1.25
-  resolution: "@types/styled-components@npm:5.1.25"
+"@types/styled-components@npm:^5.1.26":
+  version: 5.1.26
+  resolution: "@types/styled-components@npm:5.1.26"
   dependencies:
     "@types/hoist-non-react-statics": "*"
     "@types/react": "*"
     csstype: ^3.0.2
-  checksum: 60ce64f13283b01da54fd3a4c5703769d8575c979d5ec6b67ad124c2d4df980c9b96bb91af87e03f6447a816a5d2b0270c63eefad60cfa885091b594984525f5
+  checksum: 84f53b3101739b20d1731554fb7735bc2f3f5d050a8b392e9845403c8c8bbd729737d033978649f9195a97b557875b010d46e35a4538564a2d0dbcce661dbf76
   languageName: node
   linkType: hard
 
@@ -5874,23 +5874,23 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": 1.3.0
     "@fortawesome/free-regular-svg-icons": 6.0.0
     "@fortawesome/free-solid-svg-icons": 6.0.0
-    "@fortawesome/react-fontawesome": 0.1.18
+    "@fortawesome/react-fontawesome": 0.1.19
     "@playwright/test": ^1.25.0
     "@sentry/browser": ^7.11.1
     "@sentry/react": ^7.11.1
     "@sentry/webpack-plugin": ^1.19.0
     "@types/form-data": ^2.5.0
-    "@types/jest": ^27.4.1
-    "@types/leaflet": ^1.7.9
+    "@types/jest": ^27.5.2
+    "@types/leaflet": ^1.7.11
     "@types/lodash": ^4.14.183
     "@types/node": ^16.11.49
-    "@types/react": ^17.0.44
-    "@types/react-csv": ^1.1.2
-    "@types/react-datepicker": 4.4.0
-    "@types/react-dom": ^17.0.15
+    "@types/react": ^17.0.48
+    "@types/react-csv": ^1.1.3
+    "@types/react-datepicker": 4.4.2
+    "@types/react-dom": ^17.0.17
     "@types/react-router-dom": ^5.3.3
     "@types/react-select": 3.0.22
-    "@types/styled-components": ^5.1.25
+    "@types/styled-components": ^5.1.26
     "@types/uuid": ^8.3.4
     "@typescript-eslint/eslint-plugin": ^5.33.1
     "@typescript-eslint/parser": ^5.33.1
@@ -5923,7 +5923,7 @@ __metadata:
     fork-ts-checker-webpack-plugin: ^7.2.13
     history: ^5.3.0
     html-webpack-plugin: ^5.5.0
-    intersection-observer: ^0.12.0
+    intersection-observer: ^0.12.2
     jest: ^27.5.1
     jest-circus: ^27.5.1
     jest-environment-node: ^27.5.1
@@ -5954,7 +5954,7 @@ __metadata:
     react-router-dom: ^6.3.0
     react-select: ^3.0.8
     react-spring: ^9.4.4
-    seamless-scroll-polyfill: 2.1.8
+    seamless-scroll-polyfill: 2.2.0
     style-loader: ^3.3.1
     styled-components: 5.3.5
     ts-jest: ^27.1.5
@@ -6955,10 +6955,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"intersection-observer@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "intersection-observer@npm:0.12.0"
-  checksum: 96d2f3ea4995b7b429b79646467c975230cfbe3ede7fb08d0c022cfe6ee0c89dfa98aa4377e8b5f7bee880322eb118e6c0275607a53043f9c50921da8363c1e8
+"intersection-observer@npm:^0.12.2":
+  version: 0.12.2
+  resolution: "intersection-observer@npm:0.12.2"
+  checksum: d1fa9ebbb1e0baafe88ad95545bbb93f92bdcb8789912a2bd11b2463ab177ef185052c9c79c26187833d633f404acb077d4b1249353c5f6e2ca5cd64f50e216b
   languageName: node
   linkType: hard
 
@@ -10313,10 +10313,10 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"seamless-scroll-polyfill@npm:2.1.8":
-  version: 2.1.8
-  resolution: "seamless-scroll-polyfill@npm:2.1.8"
-  checksum: 909b1a0be8db8b9052d4f164c66768ce0a5e74d348af8cefdb401d16ed2ad3f1e6645da67ea28ce563bc75a99001a1a7fc545a3504a1e1df94901bb525149738
+"seamless-scroll-polyfill@npm:2.2.0":
+  version: 2.2.0
+  resolution: "seamless-scroll-polyfill@npm:2.2.0"
+  checksum: 8845d3ff0b71b8afdc5ff4337559bfa973c5ad823b227cda85a21f3f84edcfb28e2aba15affc1cfdfa5654567b912c8f27084edf3edaabed2049f4eeb71d67ef
   languageName: node
   linkType: hard
 
