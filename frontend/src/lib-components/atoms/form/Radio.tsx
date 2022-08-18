@@ -32,12 +32,15 @@ const Wrapper = styled.div`
 
   @media (hover: hover) {
     &:hover:not(.disabled) {
-      input:checked {
-        border-color: ${(p) => p.theme.colors.main.m2Hover};
-        background-color: ${(p) => p.theme.colors.main.m2Hover};
-      }
-      input:not(:checked) {
-        border-color: ${(p) => p.theme.colors.grayscale.g100};
+      input[type='radio'] {
+        &:checked {
+          border-color: ${(p) => p.theme.colors.main.m2Hover};
+          background-color: ${(p) => p.theme.colors.main.m2Hover};
+        }
+
+        &:not(:checked) {
+          border-color: ${(p) => p.theme.colors.grayscale.g100};
+        }
       }
     }
   }

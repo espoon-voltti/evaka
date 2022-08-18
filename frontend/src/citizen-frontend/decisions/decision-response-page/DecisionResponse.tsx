@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { Failure } from 'lib-common/api'
@@ -15,12 +16,13 @@ import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2, H3, Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
@@ -181,14 +183,16 @@ export default React.memo(function DecisionResponse({
                 onChange={() => setAcceptChecked(true)}
                 name={`${decision.id}-accept`}
                 label={
-                  <>
-                    {t.decisions.applicationDecisions.response.accept1}
+                  <FixedSpaceFlexWrap horizontalSpacing="xs">
+                    <div>
+                      {t.decisions.applicationDecisions.response.accept1}
+                    </div>
                     {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
                       decisionType
                     ) ? (
-                      <span> {startDate} </span>
+                      <div>{startDate}</div>
                     ) : (
-                      <span onClick={(e) => e.stopPropagation()}>
+                      <DatePickerContainer onClick={(e) => e.stopPropagation()}>
                         <DatePicker
                           date={requestedStartDate}
                           onChange={(date) => setRequestedStartDate(date)}
@@ -208,10 +212,12 @@ export default React.memo(function DecisionResponse({
                           }
                           errorTexts={t.validationErrors}
                         />
-                      </span>
+                      </DatePickerContainer>
                     )}
-                    {t.decisions.applicationDecisions.response.accept2}
-                  </>
+                    <div>
+                      {t.decisions.applicationDecisions.response.accept2}
+                    </div>
+                  </FixedSpaceFlexWrap>
                 }
                 ariaLabel={`${
                   t.decisions.applicationDecisions.response.accept1
@@ -307,3 +313,7 @@ export default React.memo(function DecisionResponse({
     </div>
   )
 })
+
+const DatePickerContainer = styled.div`
+  margin-top: -${defaultMargins.s};
+`
