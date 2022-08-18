@@ -19,12 +19,6 @@ export default class MobileMessagesPage {
     return (await this.page.findAll('[data-qa="message-preview"]').count()) > 0
   }
 
-  async messagesDontExist() {
-    const els = this.page.findAll('[data-qa="message-preview"]')
-
-    return (await els.count()) === 0
-  }
-
   async openFirstThread() {
     await this.page.find(`[data-qa="message-preview"]`).click()
   }
