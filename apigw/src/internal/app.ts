@@ -69,7 +69,6 @@ app.get('/health', (_, res) => {
     : res.status(200).json({ status: 'UP' })
 })
 app.use(tracing)
-app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
 app.use(touchSessionMaxAge)
 app.use(cookieParser(cookieSecret))
@@ -135,7 +134,7 @@ function internalApiRouter() {
     router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
   }
 
-  router.post('/auth/mobile', mobileDeviceSession)
+  router.post('/auth/mobile', express.json(), mobileDeviceSession)
 
   router.use(checkMobileEmployeeIdToken(new AsyncRedisClient(redisClient)))
 
@@ -154,10 +153,12 @@ function internalApiRouter() {
   router.use(csrf)
   router.post(
     '/auth/pin-login',
+    express.json(),
     pinLoginRequestHandler(new AsyncRedisClient(redisClient))
   )
   router.post(
     '/auth/pin-logout',
+    express.json(),
     pinLogoutRequestHandler(new AsyncRedisClient(redisClient))
   )
   router.post(
