@@ -5948,7 +5948,7 @@ __metadata:
     react-datepicker: ^4.7.0
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
-    react-focus-lock: 2.8.1
+    react-focus-lock: 2.9.1
     react-image-crop: ^9.1.1
     react-leaflet: ^3.2.5
     react-router-dom: ^6.3.0
@@ -6253,12 +6253,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"focus-lock@npm:^0.10.2":
-  version: 0.10.2
-  resolution: "focus-lock@npm:0.10.2"
+"focus-lock@npm:^0.11.2":
+  version: 0.11.2
+  resolution: "focus-lock@npm:0.11.2"
   dependencies:
     tslib: ^2.0.3
-  checksum: 4be2cbc0217410413f617c03720df74c3c950983f5914aa8b82c6a7ce98fab873e22e5af0818f6832d1249f86ef33357c7dc344074a09206134657d1f53915d7
+  checksum: f1a62ea7bbdf71fcc7311a49d84e2f0a37f479539007152c887802e44d4910638611421aec915867353c63212c513e5aab4194bb7fe693d1d8dc1c4c7d43366b
   languageName: node
   linkType: hard
 
@@ -9717,14 +9717,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-clientside-effect@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "react-clientside-effect@npm:1.2.5"
+"react-clientside-effect@npm:^1.2.6":
+  version: 1.2.6
+  resolution: "react-clientside-effect@npm:1.2.6"
   dependencies:
     "@babel/runtime": ^7.12.13
   peerDependencies:
-    react: ^15.3.0 || ^16.0.0 || ^17.0.0
-  checksum: 1ce12cabd73567b5d593ec604d0f2a59d5b818e49a96ebb2403281d43f2bbfa4091af64128d5d36e2214d30c6f9f9b043839b15515dfff9ce6851ee62c72eccc
+    react: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 7db6110027a51458b1a46109d2b63dd822825f483c71afef7c0c0a671f3b1aa155049dbd8651c9d536ffac83601f8823b7c3f8916b4f4ee5c3cb7647a85cce4e
   languageName: node
   linkType: hard
 
@@ -9783,19 +9783,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-lock@npm:2.8.1":
-  version: 2.8.1
-  resolution: "react-focus-lock@npm:2.8.1"
+"react-focus-lock@npm:2.9.1":
+  version: 2.9.1
+  resolution: "react-focus-lock@npm:2.9.1"
   dependencies:
     "@babel/runtime": ^7.0.0
-    focus-lock: ^0.10.2
+    focus-lock: ^0.11.2
     prop-types: ^15.6.2
-    react-clientside-effect: ^1.2.5
-    use-callback-ref: ^1.2.5
-    use-sidecar: ^1.0.5
+    react-clientside-effect: ^1.2.6
+    use-callback-ref: ^1.3.0
+    use-sidecar: ^1.1.2
   peerDependencies:
+    "@types/react": ^16.8.0 || ^17.0.0 || ^18.0.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 501c757b5dc742778389206c224d4f3a342008f3e4e2c346da40c0d2432642ccf555bdb2afc4ff6c0ac9f01b792ce9d1d3150fa43eceae4289174547b2412f51
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 4dbc2166ac397d9e9340bd0722c6165c23f21629515f13e9cb96eaff82aa1543a2f7f3cccf15689821f19166e3a3ce59f380c43643099eb119b5f9c529b23181
   languageName: node
   linkType: hard
 
@@ -11096,7 +11100,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
@@ -11297,28 +11301,34 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"use-callback-ref@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "use-callback-ref@npm:1.2.5"
+"use-callback-ref@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "use-callback-ref@npm:1.3.0"
+  dependencies:
+    tslib: ^2.0.0
   peerDependencies:
-    "@types/react": ^16.8.0 || ^17.0.0
-    react: ^16.8.0 || ^17.0.0
+    "@types/react": ^16.8.0 || ^17.0.0 || ^18.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: b0027242311ed3fb006575c3be69efe31946f17129f2464707f4fcf2e167b91917236569a1d622c57b36843bc05efd9740a4ba51591553ad6fe2799cc12b138e
+  checksum: 7913df383a5a6fcb399212eedefaac2e0c6f843555202d4e3010bac3848afe38ecaa3d0d6500ad1d936fbeffd637e6c517e68edb024af5e6beca7f27f3ce7b21
   languageName: node
   linkType: hard
 
-"use-sidecar@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "use-sidecar@npm:1.0.5"
+"use-sidecar@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "use-sidecar@npm:1.1.2"
   dependencies:
     detect-node-es: ^1.1.0
-    tslib: ^1.9.3
+    tslib: ^2.0.0
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0
-  checksum: 9207ad8af787f4005b55813dd34ab392c06c5c86971182068f74f4aca5781c067085813167d438d460a84289d67dc915d04f2309dfc016172423c65bfd22bb3e
+    "@types/react": ^16.9.0 || ^17.0.0 || ^18.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 925d1922f9853e516eaad526b6fed1be38008073067274f0ecc3f56b17bb8ab63480140dd7c271f94150027c996cea4efe83d3e3525e8f3eda22055f6a39220b
   languageName: node
   linkType: hard
 
