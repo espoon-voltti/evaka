@@ -112,8 +112,11 @@ export async function updateApplication({
   dueDate,
   form,
   id
-}: ApplicationDetails): Promise<void> {
-  return client.put(`v2/applications/${id}`, { form, dueDate })
+}: ApplicationDetails): Promise<Result<void>> {
+  return client
+    .put(`v2/applications/${id}`, { form, dueDate })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createPaperApplication(

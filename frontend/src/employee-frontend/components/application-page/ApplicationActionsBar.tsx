@@ -76,11 +76,15 @@ export default React.memo(function ApplicationActionsBar({
           textDone={i18n.common.saved}
           disabled={!editedApplication || errors}
           onClick={() =>
-            updateApplication(editedApplication).then(() =>
-              editedApplication.status === 'CREATED'
-                ? sendApplication(editedApplication.id)
-                : Success.of()
-            )
+            updateApplication(editedApplication).then((result) => {
+              if (result.isSuccess) {
+                return editedApplication.status === 'CREATED'
+                  ? sendApplication(editedApplication.id)
+                  : Success.of()
+              } else {
+                return result
+              }
+            })
           }
           onSuccess={() => {
             setEditing(false)
