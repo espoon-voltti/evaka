@@ -294,7 +294,8 @@ fun Database.Read.searchFeeDecisions(
         "espooPostOffice" to "ESPOO",
         "start_date" to startDate,
         "end_date" to endDate,
-        "finance_decision_handler" to financeDecisionHandlerId
+        "finance_decision_handler" to financeDecisionHandlerId,
+        "firstPlacementStartDate" to LocalDate.now().withDayOfMonth(1)
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -307,6 +308,8 @@ fun Database.Read.searchFeeDecisions(
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
 
     val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
+
+    val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
 
     val (numberQuery, numberParams) = disjointNumberQuery("decision", "decision_number", numberParamsRaw)
 
@@ -321,7 +324,8 @@ fun Database.Read.searchFeeDecisions(
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> lower(valid_during)" else null,
-        if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null
+        if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
+        if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null
     )
 
     val youngestChildQuery =
@@ -339,11 +343,27 @@ fun Database.Read.searchFeeDecisions(
         """.trimIndent()
     val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
 
+    val firstPlacementStartingThisMonthChildQuery =
+        """
+        WITH decisions_with_first_placement_starting_this_month AS (    
+            SELECT DISTINCT(fdc.fee_decision_id)
+            FROM placement p
+            JOIN person c ON p.child_id = c.id
+            JOIN fee_decision_child fdc ON c.id = fdc.child_id
+            LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
+            WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
+        )
+        """.trimIndent()
+
+    val firstPlacementStartingThisMonthChildIdsQueryJoin =
+        "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
+
     // language=sql
     val sql =
         """
         WITH decision_ids AS (
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
+            ${if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
@@ -358,6 +378,7 @@ fun Database.Read.searchFeeDecisions(
                 GROUP BY fee_decision.id
             ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
+            ${if (noStartingPlacements) firstPlacementStartingThisMonthChildIdsQueryJoin else ""}
             ${if (conditions.isNotEmpty()) """
             WHERE ${conditions.joinToString("\nAND ")}
         """.trimIndent() else ""}

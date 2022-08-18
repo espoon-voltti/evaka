@@ -386,7 +386,8 @@ export function FeeDecisionDistinctionsFilter({
   const distinctiveDetails: DistinctiveParams[] = [
     'UNCONFIRMED_HOURS',
     'EXTERNAL_CHILD',
-    'RETROACTIVE'
+    'RETROACTIVE',
+    'NO_STARTING_PLACEMENTS'
   ]
 
   return (

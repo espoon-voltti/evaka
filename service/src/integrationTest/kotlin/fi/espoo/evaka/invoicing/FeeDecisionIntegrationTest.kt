@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -389,6 +390,45 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         assertEqualEnough(
             listOf(oldDecision.let(::toSummary)),
+            deserializeListResult(result.get()).data
+        )
+    }
+
+    @Test
+    fun `search works with distinctions param NO_STARTING_PLACEMENTS`() {
+        val testDecisionWithOneStartingChild = testDecisions[0]
+        val firstPlacementStartingThisMonthChild = testDecisionWithOneStartingChild.children.get(0)
+        db.transaction {
+            it.insertPlacement(
+                PlacementType.DAYCARE,
+                firstPlacementStartingThisMonthChild.child.id,
+                firstPlacementStartingThisMonthChild.placement.unitId,
+                LocalDate.now(),
+                LocalDate.now()
+            )
+        }
+
+        val testDecisionWithNoStartingChild = testDecisions[3]
+        val previousPlacementChild = testDecisionWithNoStartingChild.children.get(0)
+        db.transaction {
+            it.insertPlacement(
+                PlacementType.DAYCARE,
+                previousPlacementChild.child.id,
+                previousPlacementChild.placement.unitId,
+                LocalDate.now().minusMonths(1),
+                LocalDate.now()
+            )
+        }
+
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecisionWithOneStartingChild, testDecisionWithNoStartingChild)) }
+
+        val (_, _, result) = http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["NO_STARTING_PLACEMENTS"]}""")
+            .asUser(user)
+            .responseString()
+
+        assertEqualEnough(
+            listOf(testDecisionWithNoStartingChild.let(::toSummary)),
             deserializeListResult(result.get()).data
         )
     }
