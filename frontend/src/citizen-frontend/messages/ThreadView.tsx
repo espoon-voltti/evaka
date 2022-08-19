@@ -88,11 +88,13 @@ const SingleMessage = React.memo(function SingleMessage({
   message: Message
 }) {
   return (
-    <MessageContainer>
+    <MessageContainer role="comment">
       <TitleRow>
         <SenderName>{message.sender.name}</SenderName>
         <InformationText>
-          {message.sentAt.toLocalDate().format()}
+          <time dateTime={message.sentAt.formatIso()}>
+            {message.sentAt.toLocalDate().format()}
+          </time>
         </InformationText>
       </TitleRow>
       <InformationText>
@@ -208,6 +210,7 @@ export default React.memo(function ThreadView({
           {title}
         </H2>
       </StickyTitleRow>
+      <Gap size="s" />
       {messages.map((message, idx) => (
         <React.Fragment key={`${message.id}-fragment`}>
           {idx === messages.length - 1 && !replyEditorVisible && (

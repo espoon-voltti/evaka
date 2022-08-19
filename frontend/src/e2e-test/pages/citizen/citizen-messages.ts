@@ -20,7 +20,7 @@ export default class CitizenMessagesPage {
   #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
   #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
   #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
-  #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
+  #newMessageButton = this.page.findAllByDataQa('new-message-btn').first()
   #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
   #receiverSelection = this.page.find('[data-qa="select-receiver"]')
   #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))

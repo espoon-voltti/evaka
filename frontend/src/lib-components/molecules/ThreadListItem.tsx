@@ -39,7 +39,8 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   color: ${(p) => p.theme.colors.grayscale.g100};
   padding: ${defaultMargins.s} ${defaultMargins.m};
   cursor: pointer;
-  border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+  border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+  position: relative;
 
   &:focus {
     outline: none;
@@ -50,9 +51,15 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   ${(p) =>
     !p.isRead
       ? `
-    border-left-color: ${p.theme.colors.main.m3} !important;
-    border-left-width: 6px !important;
-    padding-left: calc(${defaultMargins.m} - 6px) !important;
+    &:before {
+      background-color: ${p.theme.colors.status.success};
+      width: 6px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      content: '';
+    }
   `
       : ''}
 

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -13,9 +14,12 @@ import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
@@ -74,23 +78,38 @@ export default React.memo(function ThreadList({
         </MobileOnly>
       )}
       <Container className={selectedThread ? 'desktop-only' : undefined}>
-        <Gap size="s" />
+        <Gap size="s" sizeOnMobile="m" />
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
         </HeaderContainer>
-        <Gap size="xs" />
-        <DottedLine />
-        <Gap size="s" />
-        <HeaderContainer>
-          <Button
-            text={t.messages.messageEditor.newMessage}
+        <Gap size="xs" sizeOnMobile="m" />
+        <TabletAndDesktop>
+          <DottedLine />
+          <Gap size="s" />
+          <HeaderContainer>
+            <Button
+              text={t.messages.messageEditor.newMessage}
+              onClick={() => setEditorVisible(true)}
+              primary
+              data-qa="new-message-btn"
+              disabled={!newMessageButtonEnabled}
+            />
+          </HeaderContainer>
+          <Gap size="s" />
+        </TabletAndDesktop>
+        <MobileOnly>
+          <FloatingButton
             onClick={() => setEditorVisible(true)}
             primary
             data-qa="new-message-btn"
             disabled={!newMessageButtonEnabled}
-          />
-        </HeaderContainer>
-        <Gap size="s" />
+          >
+            <FixedSpaceRow spacing="xs" alignItems="center">
+              <FontAwesomeIcon icon={faPlus} />
+              <div>{t.messages.messageEditor.newMessage}</div>
+            </FixedSpaceRow>
+          </FloatingButton>
+        </MobileOnly>
 
         {threadLoadingResult.isSuccess && threads.length === 0 && (
           <>
@@ -159,6 +178,7 @@ const Container = styled.div`
   @media (max-width: ${tabletMin}) {
     width: 100%;
     max-width: 100%;
+    min-height: auto;
   }
 
   &.desktop-only {
@@ -180,6 +200,14 @@ const ThreadListItems = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+`
+
+const FloatingButton = styled(Button)`
+  position: fixed;
+  bottom: ${defaultMargins.s};
+  right: ${defaultMargins.s};
+  border-radius: 40px;
+  z-index: 10;
 `
 
 const OnEnterView = React.memo(function IsInView({
