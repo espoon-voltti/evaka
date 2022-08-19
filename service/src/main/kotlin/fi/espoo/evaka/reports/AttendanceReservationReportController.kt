@@ -61,14 +61,14 @@ private fun Database.Read.getAttendanceReservationReport(
             coalesce(an.capacity_factor, 1) AS assistance_need_factor
           FROM attendance_reservation ar
           JOIN person p ON p.id = ar.child_id
-          JOIN realized_placement_one(ar.date) rp ON rp.child_id = p.id
-          JOIN daycare u ON u.id = rp.unit_id
-          LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ar.date
+          JOIN placement pl ON pl.child_id = p.id AND ar.date BETWEEN pl.start_date AND pl.end_date
+          LEFT JOIN backup_care bc ON bc.child_id = p.id AND ar.date BETWEEN bc.start_date AND bc.end_date
+          JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
+          LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ar.date
           LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-          LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = rp.placement_type AND default_sno.default_option
-          LEFT JOIN assistance_need an ON an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> ar.date
-          WHERE rp.unit_id = :unitId
-            AND daterange(:start, :end, '[]') @> ar.date
+          LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
+          LEFT JOIN assistance_need an ON an.child_id = p.id AND ar.date BETWEEN an.start_date AND an.end_date
+          WHERE u.id = :unitId AND ar.date BETWEEN :start AND :end
         )
         SELECT
           dateTime AT TIME ZONE 'Europe/Helsinki' AS dateTime,
