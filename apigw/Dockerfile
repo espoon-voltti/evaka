@@ -20,8 +20,9 @@ RUN yarn build
 
 FROM builder AS test
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN yarn lint
-RUN yarn test-ci
+RUN yarn test-ci | tee test-results.txt
 
 FROM "${BASE_IMAGE}"
 

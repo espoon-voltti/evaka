@@ -338,6 +338,64 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Build API-gateway test image
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: espoon-voltti/voltti-actions/docker-build-s3@master
+        id: test
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          registry: ${{ env.ECR_REGISTRY }}
+          name: evaka/api-gateway-test
+          path: ./apigw
+          push: false
+          load: true
+          target: test
+          build-args: |
+            build=${{ github.run_number }}
+            commit=${{ github.sha }}
+            BASE_IMAGE=${{ needs.yarn.outputs.image }}
+          cache_from_images: |
+            ${{ needs.base.outputs.image_name }}
+            ${{ needs.yarn.outputs.image_name }}
+
+      - name: Extract apigw test files
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          docker create -ti --name instance "${{ steps.test.outputs.image }}" sh
+          docker cp instance:/project/test-results.txt ./test-results.txt
+          docker rm -f instance
+
+      - name: Build docker tests and image
+        if: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          cd ./evaka-base
+          ./build.sh
+          cd ../apigw
+
+          EXIT_CODE=0
+          ./build-docker.sh test || EXIT_CODE=1
+
+          docker create -ti --name instance "evaka/api-gateway-test" sh
+          docker cp instance:/project/test-results.txt ./test-results.txt
+          docker rm -f instance
+
+          ./build-docker.sh
+
+          exit $EXIT_CODE
+
+      - name: Store test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-gateway-test-results
+          path: apigw/test-results.txt
+          retention-days: 2
+
       - name: Build API-gateway image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
@@ -560,7 +618,7 @@ jobs:
           ./compose-integration build
           ./compose-integration run integration-test
 
-      - name: Store build
+      - name: Store test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
