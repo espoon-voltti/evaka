@@ -45,7 +45,8 @@ export default React.memo(function OccupancyDayGraph({
   shiftCareUnit
 }: Props) {
   const { i18n } = useTranslation()
-  return occupancy.occupancySeries.length === 0 ? (
+  return occupancy.occupancySeries.length === 0 ||
+    queryDate.isAfter(LocalDate.todayInHelsinkiTz()) ? (
     <GraphPlaceholder data-qa="no-data-placeholder">
       {i18n.unit.occupancy.realtime.noData}
     </GraphPlaceholder>
@@ -200,13 +201,6 @@ const Graph = React.memo(function Graph({
       ) : null,
     [i18n, tooltipParams.data]
   )
-
-  if (data.datasets.length === 0)
-    return (
-      <GraphPlaceholder data-qa="no-data-placeholder">
-        {i18n.unit.occupancy.realtime.noData}
-      </GraphPlaceholder>
-    )
 
   return (
     <div onMouseOver={showTooltip} onMouseOut={hideTooltip}>
