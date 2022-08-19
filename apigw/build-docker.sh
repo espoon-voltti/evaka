@@ -8,10 +8,20 @@ set -euo pipefail
 
 cd "$( dirname "${BASH_SOURCE[0]}")"
 
-DOCKER_IMAGE=${DOCKER_IMAGE:-evaka/api-gateway}
-DOCKER_TAG=${DOCKER_TAG:-local}
-GIT_SHA=$(git rev-parse HEAD)
+if [ "${1:-}" = "test" ]; then
+    DOCKER_IMAGE=${DOCKER_IMAGE:-evaka/api-gateway-test}
+    DOCKER_TAG=${DOCKER_TAG:-local}
+    GIT_SHA=$(git rev-parse HEAD)
 
-docker build --build-arg commit="${GIT_SHA}" --build-arg build=local -t "${DOCKER_IMAGE}" .
-docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE}:${DOCKER_TAG}"
-docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${DOCKER_IMAGE}:${GIT_SHA}"
+    docker build --build-arg commit="${GIT_SHA}" --build-arg build=local -t "${DOCKER_IMAGE}" --target test .
+    docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE}:${DOCKER_TAG}"
+    docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${DOCKER_IMAGE}:${GIT_SHA}"
+else
+    DOCKER_IMAGE=${DOCKER_IMAGE:-evaka/api-gateway}
+    DOCKER_TAG=${DOCKER_TAG:-local}
+    GIT_SHA=$(git rev-parse HEAD)
+
+    docker build --build-arg commit="${GIT_SHA}" --build-arg build=local -t "${DOCKER_IMAGE}" .
+    docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE}:${DOCKER_TAG}"
+    docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${DOCKER_IMAGE}:${GIT_SHA}"
+fi
