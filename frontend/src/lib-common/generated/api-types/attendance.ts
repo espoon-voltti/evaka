@@ -212,6 +212,7 @@ export interface ExternalStaffDepartureRequest {
 export interface ExternalStaffMember {
   arrived: HelsinkiDateTime
   groupId: UUID
+  hasFutureAttendances: boolean
   id: UUID
   name: string
 }
@@ -324,6 +325,7 @@ export interface StaffMember {
   employeeId: UUID
   firstName: string
   groupIds: UUID[]
+  hasFutureAttendances: boolean
   lastName: string
   latestCurrentDayAttendance: StaffMemberAttendance | null
   plannedAttendances: PlannedStaffAttendance[]

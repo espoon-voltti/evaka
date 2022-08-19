@@ -116,7 +116,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             }
             tx.markExternalStaffArrival(ExternalStaffArrival("Foo Present", group1.id, now.minusDays(1), occupancyCoefficientSeven))
         }
-        val externalAttendances = db.read { it.getExternalStaffAttendances(testDaycare.id) }
+        val externalAttendances = db.read { it.getExternalStaffAttendances(testDaycare.id, now) }
 
         assertEquals(1, externalAttendances.size)
         assertEquals("Foo Present", externalAttendances[0].name)

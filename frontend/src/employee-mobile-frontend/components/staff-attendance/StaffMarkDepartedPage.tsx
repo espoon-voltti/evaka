@@ -54,7 +54,9 @@ export default React.memo(function StaffMarkDepartedPage() {
   }>()
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(reloadUnitInfo, [reloadUnitInfo])
+  useEffect(() => {
+    reloadUnitInfo()
+  }, [reloadUnitInfo])
 
   const { staffAttendanceResponse, reloadStaffAttendance } = useContext(
     StaffAttendanceContext
