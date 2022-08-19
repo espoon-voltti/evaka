@@ -363,39 +363,6 @@ jobs:
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
 
-      - name: Extract apigw test files
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: |
-          docker create -ti --name instance "${{ steps.test.outputs.image }}" sh
-          docker cp instance:/project/test-results.txt ./test-results.txt
-          docker rm -f instance
-
-      - name: Build docker tests and image
-        if: ${{ github.event.pull_request.head.repo.fork }}
-        run: |
-          cd ./evaka-base
-          ./build.sh
-          cd ../apigw
-
-          EXIT_CODE=0
-          ./build-docker.sh test || EXIT_CODE=1
-
-          docker create -ti --name instance "evaka/api-gateway-test" sh
-          docker cp instance:/project/test-results.txt ./test-results.txt
-          docker rm -f instance
-
-          ./build-docker.sh
-
-          exit $EXIT_CODE
-
-      - name: Store test results
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: api-gateway-test-results
-          path: apigw/test-results.txt
-          retention-days: 2
-
       - name: Build API-gateway image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
@@ -418,6 +385,16 @@ jobs:
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
+
+      - name: Build docker tests and image
+        if: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          cd ./evaka-base
+          ./build.sh
+          cd ../apigw
+
+          ./build-docker.sh test
+          ./build-docker.sh
     outputs:
       image: ${{ steps.build.outputs.image }}
 
