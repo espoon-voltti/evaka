@@ -769,9 +769,7 @@ describe('Citizen assistance need decision page', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.preparedBy1,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n${
-        serviceWorker.email ?? ''
-      }\n010202020202`
+      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.decisionMaker,

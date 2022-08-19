@@ -40,7 +40,7 @@ export const fi = {
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
     vasuTemplates: 'Vasu-pohjat',
-    assistanceNeedDecision: 'Päätös tuesta'
+    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
   },
   common: {
     yes: 'Kyllä',
@@ -693,15 +693,15 @@ export const fi = {
       }
     },
     assistanceNeedDecision: {
-      pageTitle: 'Päätös tuesta',
-      sectionTitle: 'Tuen päätökset',
+      pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
+      sectionTitle: 'Päätökset tuesta varhaiskasvatuksessa',
       description:
         'Hyväksytyt ja hylätyt päätökset tuesta näkyvät huoltajalle eVakassa.',
       table: {
         form: 'Lomake',
         inEffect: 'Voimassa',
         unit: 'Yksikkö',
-        sentToDecisionMaker: 'Lähetetty päättäjälle',
+        sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
         decisionMadeOn: 'Päätös tehty',
         status: 'Tila'
       },
@@ -783,12 +783,15 @@ export const fi = {
       unitMayChange:
         'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
       motivationForDecision: 'Perustelut lapsen tuen tasolle',
+      jurisdiction: 'Toimivalta',
+      jurisdictionText:
+        'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
       personsResponsible: 'Vastuuhenkilöt',
       preparator: 'Päätöksen valmistelija',
-      decisionMaker: 'Päättäjä',
+      decisionMaker: 'Päätöksen tekijä',
       title: 'Titteli',
       disclaimer:
-        'Varhaiskasvatuslain 15 e § :n mukainen päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
+        'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
       decisionNumber: 'Päätösnumero',
       statuses: {
         DRAFT: 'Luonnos',
@@ -796,14 +799,14 @@ export const fi = {
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
-      confidential: 'Salassapidettävä',
-      lawReference: 'Varhaiskasvatuslaki 15 §',
+      confidential: 'Salassa pidettävä',
+      lawReference: 'Varhaiskasvatuslaki 40 §',
       noRecord: 'Ei merkintää',
       leavePage: 'Poistu',
       preview: 'Esikatsele',
       modifyDecision: 'Muokkaa',
-      sendToDecisionMaker: 'Lähetä päättäjälle',
-      sentToDecisionMaker: 'Lähetetty päättäjälle',
+      sendToDecisionMaker: 'Lähetä päätöksen tekijälle',
+      sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       appealInstructionsTitle: 'Oikaisuvaatimusohje',
       appealInstructions: (
         <>
@@ -2702,8 +2705,8 @@ export const fi = {
     },
     assistanceNeedDecisions: {
       title: 'Tuen päätökset',
-      description: 'Päättäjälle lähetetyt tuen päätökset.',
-      sentToDecisionMaker: 'Lähetetty päättäjälle',
+      description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
+      sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       decisionMade: 'Päätös tehty',
       status: 'Tila',
       returnForEditModal: {

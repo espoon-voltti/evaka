@@ -221,6 +221,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
 
         <div class="decision-details-container">
+          <h2 th:text="#{jurisdiction}"></h2>
+          <p th:text="#{jurisdictionText}"></p>
+        </div>
+
+        <div class="decision-details-container">
           <h2 th:text="#{personsResponsible}"></h2>
           <div class="decision-details" th:if="${decision.preparedBy1} != null">
             <h3 th:text="#{preparator}"></h3>
@@ -229,7 +234,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <span th:text="${decision.preparedBy1.name}"></span>,
                 <span th:text="${decision.preparedBy1.title}"></span>
               </div>
-              <div th:text="${decision.preparedBy1.email}"></div>
               <div th:text="${decision.preparedBy1.phoneNumber}"></div>
             </div>
           </div>
@@ -240,7 +244,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <span th:text="${decision.preparedBy2.name}"></span>,
                 <span th:text="${decision.preparedBy2.title}"></span>
               </div>
-              <div th:text="${decision.preparedBy2.email}"></div>
               <div th:text="${decision.preparedBy2.phoneNumber}"></div>
             </div>
           </div>

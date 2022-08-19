@@ -77,6 +77,9 @@ export const sv = {
       selectedUnit: 'Enheten där stödet ges',
       unitMayChange: 'Enheten kan ändras under semestertider',
       motivationForDecision: 'Motivering av beslut',
+      jurisdiction: 'Befogenhet',
+      jurisdictionText:
+        'Delegationsbeslut om beslutanderätten för tjänsteinnehavarna av personalen vid den finskspråkiga småbarnspedagogiken och tillväxt- och lärandegrenen A del 3 § 3 pkt',
       personsResponsible: 'Ansvarspersoner',
       preparator: 'Beredare av beslutet',
       decisionMaker: 'Beslutsfattare',
@@ -91,7 +94,7 @@ export const sv = {
         REJECTED: 'Avvisat'
       },
       confidential: 'Konfidentiellt',
-      lawReference: 'Lagen om småbarnspedagogik 15 §',
+      lawReference: 'Lagen om småbarnspedagogik 40 §',
       noRecord: 'Ingen anmärkning',
       leavePage: 'Stäng',
       modifyDecision: 'Redigera',

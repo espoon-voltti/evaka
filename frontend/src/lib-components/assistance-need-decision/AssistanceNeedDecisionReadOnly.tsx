@@ -75,6 +75,8 @@ export interface AssistanceNeedDecisionTexts {
   lawReference: string
   appealInstructionsTitle: string
   appealInstructions: JSX.Element
+  jurisdiction: string
+  jurisdictionText: string
 }
 
 const List = styled.ul`
@@ -339,6 +341,9 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             />
           </div>
 
+          <H2>{t.jurisdiction}</H2>
+          <P noMargin>{t.jurisdictionText}</P>
+
           <H2>{t.personsResponsible}</H2>
 
           <div>
@@ -350,7 +355,6 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
                     <div>
                       {decision.preparedBy1.name}, {decision.preparedBy1.title}
                     </div>
-                    <div>{decision.preparedBy1.email}</div>
                     <div>{decision.preparedBy1.phoneNumber}</div>
                   </LabelContainer>
                 )
@@ -366,7 +370,6 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
                     <div>
                       {decision.preparedBy2.name}, {decision.preparedBy2.title}
                     </div>
-                    <div>{decision.preparedBy2.email}</div>
                     <div>{decision.preparedBy2.phoneNumber}</div>
                   </LabelContainer>
                 )

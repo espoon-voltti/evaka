@@ -2005,6 +2005,9 @@ const sv: Translations = {
           selectedUnit: 'Enheten där stödet ges',
           unitMayChange: 'Enheten kan ändras under semestertider',
           motivationForDecision: 'Motivering av beslut',
+          jurisdiction: 'Befogenhet',
+          jurisdictionText:
+            'Delegationsbeslut om beslutanderätten för tjänsteinnehavarna av personalen vid den finskspråkiga småbarnspedagogiken och tillväxt- och lärandegrenen A del 3 § 3 pkt',
           personsResponsible: 'Ansvarspersoner',
           preparator: 'Beredare av beslutet',
           decisionMaker: 'Beslutsfattare',
@@ -2018,7 +2021,7 @@ const sv: Translations = {
             REJECTED: 'Avvisat'
           },
           confidential: 'Konfidentiellt',
-          lawReference: 'Lagen om småbarnspedagogik 15 §',
+          lawReference: 'Lagen om småbarnspedagogik 40 §',
           appealInstructionsTitle: 'Anvisningar för begäran om omprövning',
           appealInstructions: (
             <>

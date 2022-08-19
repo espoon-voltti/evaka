@@ -501,20 +501,20 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <FixedSpaceColumn spacing={defaultMargins.s}>
         <Label>{t.futureLevelOfAssistance}</Label>
         {renderAssistanceLevelMultiCheckbox(
-          'ASSISTANCE_ENDS',
-          t.assistanceLevel.assistanceEnds
-        )}
-        {renderAssistanceLevelMultiCheckbox(
-          'ASSISTANCE_SERVICES_FOR_TIME',
-          t.assistanceLevel.assistanceServicesForTime
+          'SPECIAL_ASSISTANCE',
+          t.assistanceLevel.specialAssistance
         )}
         {renderAssistanceLevelMultiCheckbox(
           'ENHANCED_ASSISTANCE',
           t.assistanceLevel.enhancedAssistance
         )}
         {renderAssistanceLevelMultiCheckbox(
-          'SPECIAL_ASSISTANCE',
-          t.assistanceLevel.specialAssistance
+          'ASSISTANCE_SERVICES_FOR_TIME',
+          t.assistanceLevel.assistanceServicesForTime
+        )}
+        {renderAssistanceLevelMultiCheckbox(
+          'ASSISTANCE_ENDS',
+          t.assistanceLevel.assistanceEnds
         )}
       </FixedSpaceColumn>
 
@@ -596,6 +596,9 @@ export default React.memo(function AssistanceNeedDecisionForm({
           info={fieldInfos.motivationForDecision}
         />
       </FixedSpaceColumn>
+
+      <H2>{t.jurisdiction}</H2>
+      <P noMargin>{t.jurisdictionText}</P>
 
       <H2>{t.personsResponsible}</H2>
       {renderResult(employees, (employees) => (
