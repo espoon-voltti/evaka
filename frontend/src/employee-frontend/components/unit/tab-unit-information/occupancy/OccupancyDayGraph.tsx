@@ -230,13 +230,21 @@ function graphData(
   const lastStaffAttendance = staffData[staffData.length - 1]
   const lastChildAttendance = childData[childData.length - 1]
 
-  // If staff is still present, extend the graph up to current time
+  // If staff are still present, extend the staff graph up to current time
   if (
     lastStaffAttendance &&
     lastStaffAttendance.y > 0 &&
     isBefore(lastStaffAttendance.x, now.toSystemTzDate())
   ) {
     staffData.push({ ...lastStaffAttendance, x: now.toSystemTzDate() })
+  }
+
+  // If children are still present, extend the child graph up to current time
+  if (
+    lastChildAttendance &&
+    lastChildAttendance.y > 0 &&
+    isBefore(lastChildAttendance.x, now.toSystemTzDate())
+  ) {
     childData.push({ ...lastChildAttendance, x: now.toSystemTzDate() })
   }
 
