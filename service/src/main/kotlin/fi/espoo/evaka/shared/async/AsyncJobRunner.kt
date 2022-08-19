@@ -56,7 +56,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         }
     )
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
-    private val runningCount: AtomicInteger = AtomicInteger(0)
+    private val activeWorkerCount: AtomicInteger = AtomicInteger(0)
 
     private val handlersLock: Lock = ReentrantLock()
     private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> = ConcurrentHashMap()
@@ -66,7 +66,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         get() = periodicRunner.get() != null
 
     val isBusy: Boolean
-        get() = runningCount.get() > 0
+        get() = activeWorkerCount.get() > 0
 
     inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit) =
         registerHandler(AsyncJobType(P::class)) { db, clock, msg -> db.connect { handler(it, clock, msg) } }
@@ -133,14 +133,19 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
     private fun runPendingJobs(clock: EvakaClock, maxCount: Int = 1_000) {
         Database(jdbi).connect { db ->
             var remaining = maxCount
-            do {
-                val job = db.transaction { it.claimJob(handlers.keys) }
-                if (job != null) {
-                    runPendingJob(db, clock, job)
-                }
-                remaining -= 1
-                config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
-            } while (job != null && remaining > 0)
+            activeWorkerCount.incrementAndGet()
+            try {
+                do {
+                    val job = db.transaction { it.claimJob(handlers.keys) }
+                    if (job != null) {
+                        runPendingJob(db, clock, job)
+                    }
+                    remaining -= 1
+                    config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
+                } while (job != null && remaining > 0)
+            } finally {
+                activeWorkerCount.decrementAndGet()
+            }
         }
     }
 
@@ -153,7 +158,6 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         try {
             MdcKey.TRACE_ID.set(job.jobId.toString())
             MdcKey.SPAN_ID.set(job.jobId.toString())
-            runningCount.incrementAndGet()
             logger.info(logMeta) { "Running async job $job" }
             val completed = db.transaction { tx ->
                 tx.setLockTimeout(Duration.ofSeconds(5))
@@ -177,7 +181,6 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {
-            runningCount.decrementAndGet()
             MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()
             MdcKey.SPAN_ID.unset()
