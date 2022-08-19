@@ -46,13 +46,14 @@ class ChildConsentController(
     @GetMapping("/citizen/children/consents")
     fun getCitizenChildConsents(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        evakaClock: EvakaClock
     ): Map<ChildId, List<CitizenChildConsent>> {
         Audit.ChildConsentsReadCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILD_CONSENTS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCitizenChildConsentsForGuardian(user.id).mapValues { consent ->
+                tx.getCitizenChildConsentsForGuardian(user.id, evakaClock.today()).mapValues { consent ->
                     featureConfig.enabledChildConsentTypes.map { type ->
                         CitizenChildConsent(type, consent.value.find { it.type == type }?.given)
                     }
@@ -107,13 +108,14 @@ class ChildConsentController(
     @GetMapping("/citizen/children/consents/notifications")
     fun getCitizenChildConsentNotifications(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        evakaClock: EvakaClock
     ): Int {
         Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCitizenConsentedChildConsentTypes(user.id).map { knownConsentTypes ->
+                tx.getCitizenConsentedChildConsentTypes(user.id, evakaClock.today()).map { knownConsentTypes ->
                     featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.value.contains(it) }.size
                 }.sum()
             }

@@ -631,6 +631,34 @@ describe('Citizen children page', () => {
   })
 
   describe('Consents', () => {
+    beforeEach(async () => {
+      await Fixture.placement()
+        .with({
+          unitId: fixtures.daycareFixture.id,
+          childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
+          startDate: mockedDate.subDays(10).formatIso()
+        })
+        .save()
+
+      await Fixture.placement()
+        .with({
+          unitId: fixtures.daycareFixture.id,
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          startDate: mockedDate.subDays(10).formatIso()
+        })
+        .save()
+
+      await Fixture.placement()
+        .with({
+          unitId: fixtures.daycareFixture.id,
+          childId: fixtures.enduserChildFixtureJari.id,
+          startDate: mockedDate.subDays(10).formatIso()
+        })
+        .save()
+
+      await page.reload()
+    })
+
     test('can give consent once', async () => {
       await header.selectTab('children')
       await childrenPage.openChildPage('Kaarina')

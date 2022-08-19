@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
 fun Database.Read.getChildConsentsByChild(childId: ChildId): List<ChildConsent> =
     this.createQuery(
@@ -29,16 +30,24 @@ WHERE child_id = :childId
         .mapTo<ChildConsent>()
         .list()
 
-fun Database.Read.getCitizenChildConsentsForGuardian(guardianId: PersonId): Map<ChildId, List<CitizenChildConsent>> =
+fun Database.Read.getCitizenChildConsentsForGuardian(
+    guardianId: PersonId,
+    today: LocalDate
+): Map<ChildId, List<CitizenChildConsent>> =
     this.createQuery(
         """
 SELECT g.child_id, cc.type, cc.given
 FROM guardian g
 LEFT JOIN child_consent cc ON cc.child_id = g.child_id
-WHERE g.guardian_id = :guardianId
+WHERE g.guardian_id = :guardianId AND EXISTS(
+    SELECT 1 FROM placement p
+    WHERE daterange(p.start_date, p.end_date, '[]') @> :today
+      AND p.child_id = g.child_id
+)
         """.trimIndent()
     )
         .bind("guardianId", guardianId)
+        .bind("today", today)
         .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapRow<CitizenChildConsent?>()) }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }
@@ -102,16 +111,24 @@ RETURNING id
         .mapTo<ChildConsentId>()
         .firstOrNull() != null
 
-fun Database.Read.getCitizenConsentedChildConsentTypes(guardianId: PersonId): Map<ChildId, List<ChildConsentType>> =
+fun Database.Read.getCitizenConsentedChildConsentTypes(
+    guardianId: PersonId,
+    today: LocalDate
+): Map<ChildId, List<ChildConsentType>> =
     this.createQuery(
         """
 SELECT g.child_id, cc.type
 FROM guardian g
 LEFT JOIN child_consent cc ON cc.child_id = g.child_id
-WHERE g.guardian_id = :guardianId
+WHERE g.guardian_id = :guardianId AND EXISTS(
+    SELECT 1 FROM placement p
+    WHERE daterange(p.start_date, p.end_date, '[]') @> :today
+      AND p.child_id = g.child_id
+)
         """.trimIndent()
     )
         .bind("guardianId", guardianId)
+        .bind("today", today)
         .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type")) }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }
