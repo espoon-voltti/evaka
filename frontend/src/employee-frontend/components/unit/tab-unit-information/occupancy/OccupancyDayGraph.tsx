@@ -13,6 +13,7 @@ import { compareAsc, isBefore, max, min, roundToNearestMinutes } from 'date-fns'
 import { fi } from 'date-fns/locale'
 import ceil from 'lodash/ceil'
 import first from 'lodash/first'
+import isEqual from 'lodash/isEqual'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useCallback, useState } from 'react'
 import { Line } from 'react-chartjs-2'
@@ -28,7 +29,7 @@ import colors from 'lib-customizations/common'
 
 import { Translations, useTranslation } from '../../../../state/i18n'
 
-import { ChartTooltip, ChartTooltipData } from './ChartTooltip'
+import { ChartTooltip } from './ChartTooltip'
 
 type DatePoint = { x: Date; y: number | null }
 
@@ -63,9 +64,24 @@ const Graph = React.memo(function Graph({
   shiftCareUnit
 }: Props) {
   const { i18n } = useTranslation()
-  const [tooltipData, setTooltipData] = useState<ChartTooltipData>({
-    children: <span />
-  })
+  const [tooltipParams, setTooltipParams] = useState<{
+    position?: {
+      x: number
+      y: number
+      xAlign: string
+      yAlign: string
+      caretX: number
+      caretY: number
+    }
+    data?: {
+      date: Date
+      utilization: number
+      children: number
+      childrenPresent: number
+      staffPresent: number
+      staffRequired: number
+    }
+  }>({})
   const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
   const currentMinute = getCurrentMinute()
 
@@ -99,52 +115,36 @@ const Graph = React.memo(function Graph({
       chart: Chart<'line', DatePoint[]>
       tooltip: TooltipModel<'line'>
     }) => {
-      const date = new Date(datasets[0].data[tooltip.dataPoints[0].dataIndex].x)
-      const child = datasets[0].data[tooltip.dataPoints[0].dataIndex].y ?? 0
+      const date = datasets[0].data[tooltip.dataPoints?.[0]?.dataIndex]?.x
+      if (!date) {
+        setTooltipParams((previous) => (isEqual(previous, {}) ? previous : {}))
+        return
+      }
+
+      const children = datasets[0].data[tooltip.dataPoints[0].dataIndex].y ?? 0
       const staff = datasets[1].data[tooltip.dataPoints[0].dataIndex].y
-      const utilization = child === 0 ? 0 : ceil((child / (staff ?? 1)) * 100)
-
-      const staffRequired = ceil(child / 7)
-
+      const utilization =
+        children === 0 ? 0 : ceil((children / (staff ?? 1)) * 100)
+      const staffRequired = ceil(children / 7)
       const staffPresent = (staff ?? 0) / 7
-
       const childrenPresent = getChildrenPresentAtTime(date)
-      const body = (
-        <>
-          <span>{formatTime(date)}</span>
-          <Gap size="xs" />
-          <table>
-            <tbody>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.utilization}</td>
-                <td>{utilization}%</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.children}</td>
-                <td>{parseFloat(child.toFixed(1))}</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.childrenPresent}</td>
-                <td>{parseFloat(childrenPresent.toFixed(1))}</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.staffPresent}</td>
-                <td>{parseFloat(staffPresent.toFixed(1))}</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.staffRequired}</td>
-                <td>{parseFloat(staffRequired.toFixed(1))}</td>
-              </tr>
-            </tbody>
-          </table>
-        </>
-      )
-      setTooltipData({
-        tooltip,
-        children: body
+
+      setTooltipParams((previous) => {
+        const { x, y, xAlign, yAlign, caretX, caretY } = tooltip
+        const position = { x, y, xAlign, yAlign, caretX, caretY }
+        const data = {
+          date,
+          utilization,
+          children,
+          childrenPresent,
+          staffPresent,
+          staffRequired
+        }
+        const updated = { position, data }
+        return isEqual(previous, updated) ? previous : updated
       })
     },
-    [setTooltipData, getChildrenPresentAtTime, i18n]
+    [getChildrenPresentAtTime]
   )
 
   const { data, graphOptions } = useMemo(
@@ -160,6 +160,47 @@ const Graph = React.memo(function Graph({
     [queryDate, currentMinute, occupancy, i18n, tooltipHandler, shiftCareUnit]
   )
 
+  const tooltipContent = useMemo(
+    () =>
+      tooltipParams.data ? (
+        <>
+          <span>{formatTime(tooltipParams.data.date)}</span>
+          <Gap size="xs" />
+          <table>
+            <tbody>
+              <tr>
+                <td>{i18n.unit.occupancy.realtime.utilization}</td>
+                <td>{tooltipParams.data.utilization}%</td>
+              </tr>
+              <tr>
+                <td>{i18n.unit.occupancy.realtime.children}</td>
+                <td>{parseFloat(tooltipParams.data.children.toFixed(1))}</td>
+              </tr>
+              <tr>
+                <td>{i18n.unit.occupancy.realtime.childrenPresent}</td>
+                <td>
+                  {parseFloat(tooltipParams.data.childrenPresent.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>{i18n.unit.occupancy.realtime.staffPresent}</td>
+                <td>
+                  {parseFloat(tooltipParams.data.staffPresent.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>{i18n.unit.occupancy.realtime.staffRequired}</td>
+                <td>
+                  {parseFloat(tooltipParams.data.staffRequired.toFixed(1))}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </>
+      ) : null,
+    [i18n, tooltipParams.data]
+  )
+
   if (data.datasets.length === 0)
     return (
       <GraphPlaceholder data-qa="no-data-placeholder">
@@ -170,7 +211,11 @@ const Graph = React.memo(function Graph({
   return (
     <div onMouseOver={showTooltip} onMouseOut={hideTooltip}>
       <Line data={data} options={graphOptions} height={100} />
-      <ChartTooltip visible={tooltipVisible} data={tooltipData} />
+      <ChartTooltip
+        position={tooltipParams.position}
+        content={tooltipContent}
+        visible={tooltipVisible}
+      />
     </div>
   )
 })
