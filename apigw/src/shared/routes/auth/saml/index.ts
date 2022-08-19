@@ -39,7 +39,7 @@ function getDefaultPageUrl(req: express.Request): string {
 }
 
 function getRedirectUrl(req: express.Request): string {
-  const relayState = req.body.RelayState || req.query.RelayState
+  const relayState = req.body?.RelayState || req.query.RelayState
 
   if (typeof relayState === 'string' && path.isAbsolute(relayState)) {
     if (evakaBaseUrl === 'local') {

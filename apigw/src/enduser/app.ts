@@ -54,7 +54,6 @@ app.get('/health', (_, res) => {
     : res.status(200).json({ status: 'UP' })
 })
 app.use(tracing)
-app.use(express.json())
 app.use(cookieParser())
 app.use(session('enduser', redisClient))
 app.use(touchSessionMaxAge)
