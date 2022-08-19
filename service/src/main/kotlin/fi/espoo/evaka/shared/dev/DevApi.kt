@@ -728,6 +728,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
         db: Database,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ) {
@@ -748,6 +749,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                 actionFn.invoke(tx, fakeAdmin, applicationId)
             }
         }
+        runAllAsyncJobs(clock)
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
