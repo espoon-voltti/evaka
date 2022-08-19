@@ -204,7 +204,7 @@ async function callSLOEndpointAndAssertResult(
   )
   const res = await tester.client.post(
     SP_LOGOUT_CALLBACK_ENDPOINT,
-    { SAMLRequest: idpInitiatedLogoutRequest },
+    new URLSearchParams({ SAMLRequest: idpInitiatedLogoutRequest }),
     {
       maxRedirects: 0,
       validateStatus: () => true
