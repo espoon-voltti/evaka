@@ -555,7 +555,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   operationalDays,
   attendances,
   saveAttendances,
-  deleteAttendances,
+  deleteAttendances: _deleteAttendances,
   reloadStaffAttendances,
   openDetails,
   groupFilter,
@@ -724,6 +724,12 @@ const AttendanceRow = React.memo(function AttendanceRow({
     []
   )
 
+  const deleteAttendances = useCallback(
+    (ids: string[]) =>
+      employeeId ? _deleteAttendances(ids, []) : _deleteAttendances([], ids),
+    [_deleteAttendances, employeeId]
+  )
+
   const removeAttendances = useCallback(
     (trackingIds: string[]) => {
       setForm((formValue) => {
@@ -740,8 +746,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
         if (deletedAttendances.length > 0) {
           addToQueue(() =>
             deleteAttendances(
-              deletedAttendances.map(({ attendanceId }) => attendanceId),
-              []
+              deletedAttendances.map(({ attendanceId }) => attendanceId)
             )
           )
         }
@@ -904,8 +909,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
     if (deletableAttendances.length > 0) {
       addToQueue(() =>
         deleteAttendances(
-          deletableAttendances.map(({ attendanceId }) => attendanceId),
-          []
+          deletableAttendances.map(({ attendanceId }) => attendanceId)
         )
       )
 
