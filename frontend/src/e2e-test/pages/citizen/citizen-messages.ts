@@ -88,6 +88,8 @@ export default class CitizenMessagesPage {
     await this.#openReplyEditorButton.click()
     await this.#messageReplyContent.fill(content)
     await this.#sendReplyButton.click()
+    // the content is cleared and the button is disabled once the reply has been sent
+    await waitUntilTrue(() => this.#sendReplyButton.disabled)
   }
 
   async sendNewMessage(title: string, content: string, receivers: string[]) {
