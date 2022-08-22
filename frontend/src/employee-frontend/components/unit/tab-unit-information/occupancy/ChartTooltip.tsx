@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { TooltipModel } from 'chart.js'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 
 import colors from 'lib-customizations/common'
@@ -13,65 +12,65 @@ type Position = {
   y: number
 }
 
-export type ChartTooltipData = {
-  tooltip?: TooltipModel<'line'>
-  children: JSX.Element
+export interface ChartTooltipProps {
+  position?: {
+    x: number
+    y: number
+    xAlign: string
+    yAlign: string
+    caretX: number
+    caretY: number
+  }
+  content: ReactNode
+  visible: boolean
 }
 
 export const ChartTooltip = React.memo(function ChartTooltip({
-  data: { tooltip, children },
+  position,
+  content,
   visible
-}: {
-  data: ChartTooltipData
-  visible: boolean
-}) {
-  if (tooltip === undefined) {
+}: ChartTooltipProps) {
+  if (position === undefined) {
     return null
   }
 
   const align =
-    tooltip.xAlign !== 'center'
-      ? tooltip.xAlign
-      : tooltip.yAlign !== 'center'
-      ? tooltip.yAlign
+    position.xAlign !== 'center'
+      ? position.xAlign
+      : position.yAlign !== 'center'
+      ? position.yAlign
       : 'left'
   const pos =
     align === 'left'
       ? {
-          x: tooltip.caretX + caretSize,
-          y: tooltip.y
+          x: position.caretX + caretSize,
+          y: position.y
         }
       : align === 'right'
       ? {
-          x: tooltip.caretX - caretSize - tooltipWidth,
-          y: tooltip.y
+          x: position.caretX - caretSize - tooltipWidth,
+          y: position.y
         }
       : align === 'bottom'
       ? {
-          x: tooltip.x,
-          y: tooltip.caretY - caretSize - tooltipHeight
+          x: position.x,
+          y: position.caretY - caretSize - tooltipHeight
         }
       : {
           // top
-          x: tooltip.x - tooltipWidth / 2,
-          y: tooltip.caretY + caretSize
+          x: position.x - tooltipWidth / 2,
+          y: position.caretY + caretSize
         }
 
-  // make sure the tooltip fits inside the chart width
-  const rect = tooltip.chart.canvas.getBoundingClientRect()
-  if (pos.x + tooltipWidth > rect.right) {
-    pos.x = pos.x - (tooltipWidth - (rect.right - pos.x)) - 16
-  }
-
   const caretPos = {
-    x: tooltip.caretX - caretSize,
-    y: tooltip.caretY - caretSize
+    x: position.caretX - caretSize,
+    y: position.caretY - caretSize
   }
   return (
     <>
       <Caret pos={caretPos} className={align} opacity={visible ? 1 : 0} />
       <PositionedDiv pos={pos} opacity={visible ? 1 : 0} className={align}>
-        <TooltipBody>{children}</TooltipBody>
+        <TooltipBody>{content}</TooltipBody>
       </PositionedDiv>
     </>
   )
