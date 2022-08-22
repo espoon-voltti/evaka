@@ -69,6 +69,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
       status: status.length > 0 ? status : undefined,
       area: searchFilters.area,
       unit: searchFilters.unit,
+      distinctions: searchFilters.distinctiveDetails,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
         ? searchFilters.financeDecisionHandlerId

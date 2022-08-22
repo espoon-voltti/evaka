@@ -95,7 +95,8 @@ class VoucherValueDecisionController(
                         body.startDate,
                         body.endDate,
                         body.searchByStartDate,
-                        body.financeDecisionHandlerId
+                        body.financeDecisionHandlerId,
+                        body.distinctions ?: emptyList()
                     )
                 }
         }
@@ -286,6 +287,10 @@ enum class VoucherValueDecisionSortParam {
     STATUS
 }
 
+enum class VoucherValueDecisionDistinctiveParams {
+    NO_STARTING_PLACEMENTS
+}
+
 data class SearchVoucherValueDecisionRequest(
     val page: Int,
     val pageSize: Int,
@@ -294,6 +299,7 @@ data class SearchVoucherValueDecisionRequest(
     val status: VoucherValueDecisionStatus,
     val area: List<String>?,
     val unit: DaycareId?,
+    val distinctions: List<VoucherValueDecisionDistinctiveParams>?,
     val searchTerms: String?,
     val financeDecisionHandlerId: EmployeeId?,
     val startDate: LocalDate?,

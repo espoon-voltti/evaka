@@ -19,6 +19,7 @@ import {
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
+  VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -568,6 +569,42 @@ export function ValueDecisionDateFilter({
         onChange={setSearchByStartDate}
         data-qa="value-decision-search-by-start-date"
       />
+    </>
+  )
+}
+
+interface VoucherValueDecisionDistinctionsFilterProps {
+  toggled: VoucherValueDecisionDistinctiveParams[]
+  toggle: (
+    distinctiveDetails: VoucherValueDecisionDistinctiveParams
+  ) => () => void
+}
+
+export function VoucherValueDecisionDistinctionsFilter({
+  toggled,
+  toggle
+}: VoucherValueDecisionDistinctionsFilterProps) {
+  const { i18n } = useTranslation()
+
+  const distinctiveDetails: VoucherValueDecisionDistinctiveParams[] = [
+    'NO_STARTING_PLACEMENTS'
+  ]
+
+  return (
+    <>
+      <Label>{i18n.filters.distinctiveDetails}</Label>
+      <Gap size="xs" />
+      <FixedSpaceColumn spacing="xs">
+        {distinctiveDetails.map((id) => (
+          <Checkbox
+            key={id}
+            label={i18n.feeDecision.distinctiveDetails[id]}
+            checked={toggled.includes(id)}
+            onChange={toggle(id)}
+            data-qa={`voucher-value-decision-distinction-filter-${id}`}
+          />
+        ))}
+      </FixedSpaceColumn>
     </>
   )
 }
