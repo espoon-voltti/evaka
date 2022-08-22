@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -211,7 +212,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(testAdult_1.id, decisions.first().headOfFamilyId)
         }
 
-        changeHeadOfFamily(testChild_1, testAdult_2.id)
+        changeHeadOfFamily(testChild_1, testAdult_5.id)
         sendAllValueDecisions()
 
         getAllValueDecisions().let { decisions ->
@@ -221,7 +222,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(testAdult_1.id, annulled.headOfFamilyId)
             val sent = decisions.find { it.status == VoucherValueDecisionStatus.SENT }
             assertNotNull(sent)
-            assertEquals(testAdult_2.id, sent.headOfFamilyId)
+            assertEquals(testAdult_5.id, sent.headOfFamilyId)
         }
     }
 

@@ -402,7 +402,14 @@ WHERE decision.id = :id
         .bind("id", id)
         .mapTo<VoucherValueDecisionDetailed>()
         .singleOrNull()?.let {
-            it.copy(isElementaryFamily = isElementaryFamily(it.headOfFamily.id, it.partner?.id, listOf(it.child.id)))
+            it.copy(
+                partnerIsCodebtor = partnerIsCodebtor(
+                    it.headOfFamily.id,
+                    it.partner?.id,
+                    listOf(it.child.id),
+                    DateRange(it.validFrom, it.validTo)
+                )
+            )
         }
 }
 

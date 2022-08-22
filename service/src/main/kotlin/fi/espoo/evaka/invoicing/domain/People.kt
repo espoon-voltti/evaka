@@ -61,10 +61,9 @@ data class FridgeFamily(
     val headOfFamily: PersonId,
     val partner: PersonId?,
     val children: List<ChildWithDateOfBirth>,
-    val period: DateRange,
-    val fridgeSiblings: List<ChildWithDateOfBirth>
+    val period: DateRange
 ) {
     fun getSize(): Int {
-        return 1 + (if (partner != null) 1 else 0) + children.size + fridgeSiblings.size
+        return 1 + (if (partner != null) 1 else 0) + children.size
     }
 }

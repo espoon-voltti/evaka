@@ -153,10 +153,10 @@ export interface FeeDecisionDetailed {
   headOfFamilyIncome: DecisionIncome | null
   id: UUID
   incomeEffect: IncomeEffect
-  isElementaryFamily: boolean | null
   isRetroactive: boolean
   partner: PersonDetailed | null
   partnerIncome: DecisionIncome | null
+  partnerIsCodebtor: boolean | null
   requiresManualSending: boolean
   sentAt: HelsinkiDateTime | null
   status: FeeDecisionStatus
@@ -786,10 +786,10 @@ export interface VoucherValueDecisionDetailed {
   headOfFamilyIncome: DecisionIncome | null
   id: UUID
   incomeEffect: IncomeEffect
-  isElementaryFamily: boolean | null
   isRetroactive: boolean
   partner: PersonDetailed | null
   partnerIncome: DecisionIncome | null
+  partnerIsCodebtor: boolean | null
   placement: VoucherValueDecisionPlacementDetailed
   requiresManualSending: boolean
   sentAt: HelsinkiDateTime | null

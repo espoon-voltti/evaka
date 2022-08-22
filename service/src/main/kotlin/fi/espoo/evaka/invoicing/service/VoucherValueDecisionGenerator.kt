@@ -62,8 +62,6 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     families: List<FridgeFamily>
 ) {
     val children = families.flatMap { it.children }.toSet()
-    val fridgeSiblings = families.flatMap { it.fridgeSiblings }.toSet()
-
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
@@ -76,7 +74,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
         }
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
-    val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
+    val placements = getPaidPlacements(from, children).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
 
     val newDrafts =
@@ -174,7 +172,7 @@ private fun generateNewValueDecisions(
                 assistanceNeedCoefficients.find { it.validityPeriod.contains(period) }?.coefficient
                     ?: BigDecimal("1.00")
 
-            val validPlacements = (family.children + family.fridgeSiblings)
+            val validPlacements = family.children
                 .mapNotNull { child ->
                     val childPlacements = allPlacements[child] ?: listOf()
                     val validPlacement = childPlacements.find { (dateRange, _) ->

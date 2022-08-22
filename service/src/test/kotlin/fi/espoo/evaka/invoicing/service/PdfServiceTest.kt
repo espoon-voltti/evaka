@@ -237,7 +237,7 @@ class PdfServiceTest {
             "decisionMakerName" to "",
             "decisionMakerTitle" to "",
             "showTotalIncome" to true,
-            "isElementaryFamily" to false,
+            "partnerIsCodebtor" to false,
             "hasChildIncome" to true
         )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
@@ -291,7 +291,7 @@ class PdfServiceTest {
             "decisionMakerName" to "",
             "decisionMakerTitle" to "",
             "showTotalIncome" to true,
-            "isElementaryFamily" to false,
+            "partnerIsCodebtor" to false,
             "hasChildIncome" to true
         )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }

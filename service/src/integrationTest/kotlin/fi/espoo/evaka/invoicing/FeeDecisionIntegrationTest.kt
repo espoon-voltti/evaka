@@ -35,9 +35,12 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDaycarePartDay25
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -1284,6 +1287,276 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `confirmDrafts updates end dates of conflicting decisions correctly with different heads of families`() {
+        val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
+        val conflict = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            status = FeeDecisionStatus.SENT,
+            validDuring = draft.validDuring.copy(start = draft.validFrom.minusDays(30))
+        )
+        val secondDraft = draft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            headOfFamilyId = testAdult_5.id,
+            validDuring = draft.validDuring.copy(start = draft.validFrom.plusDays(15))
+        )
+        val secondConflict = secondDraft.copy(
+            id = FeeDecisionId(UUID.randomUUID()),
+            headOfFamilyId = testAdult_5.id,
+            status = FeeDecisionStatus.SENT,
+            validDuring = draft.validDuring.copy(start = secondDraft.validFrom.minusDays(15))
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict, secondDraft, secondConflict)) }
+
+        val (_, response) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id, secondDraft.id)))
+            .response()
+        assertEquals(200, response.statusCode)
+
+        http.get("/decisions/${conflict.id}")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val updatedConflict = conflict.copy(
+                    validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
+                )
+                assertEqualEnough(
+                    updatedConflict.let(::toDetailed),
+                    deserializeResult(result.get()).data
+                )
+            }
+
+        http.get("/decisions/${secondConflict.id}")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val updatedConflict = secondConflict.copy(
+                    validDuring = secondConflict.validDuring.copy(end = secondDraft.validFrom.minusDays(1))
+                )
+                assertEqualEnough(
+                    updatedConflict.let(::toDetailed),
+                    deserializeResult(result.get()).data
+                )
+            }
+    }
+
+    @Test
+    fun `confirmDrafts replaces both parents decisions with a new combined decision`() {
+        val decisionPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val sentDecisions = listOf(
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                partnerId = testAdult_2.id,
+                period = decisionPeriod,
+                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                familySize = 4,
+                children = listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 0,
+                        fee = 28900
+                    )
+                )
+            ),
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_2.id,
+                partnerId = testAdult_1.id,
+                period = decisionPeriod,
+                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                familySize = 4,
+                children = listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 14500
+                    )
+                )
+            )
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(sentDecisions) }
+        val newDraft = createFeeDecisionFixture(
+            status = FeeDecisionStatus.DRAFT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = testAdult_1.id,
+            partnerId = testAdult_2.id,
+            period = decisionPeriod,
+            feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+            familySize = 4,
+            children = listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 0,
+                    fee = 28900
+                ),
+                createFeeDecisionChildFixture(
+                    childId = testChild_2.id,
+                    dateOfBirth = testChild_2.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 50,
+                    fee = 8700
+                )
+            )
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(newDraft)) }
+
+        val (_, response) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(listOf(newDraft.id)))
+            .response()
+        assertEquals(200, response.statusCode)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
+
+        http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val newSentDecisions = deserializeListResult(result.get()).data
+                assertEquals(1, newSentDecisions.size)
+                assertEquals(newDraft.id, newSentDecisions.first().id)
+            }
+
+        http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["ANNULLED"]}""")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val annulledDecisions = deserializeListResult(result.get()).data
+                assertEquals(2, annulledDecisions.size)
+                assertEquals(sentDecisions.map { it.id }.toSet(), annulledDecisions.map { it.id }.toSet())
+            }
+    }
+
+    @Test
+    fun `confirmDrafts updates both parents decisions end dates when a new combined decision is sent`() {
+        val decisionPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val sentDecisions = listOf(
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                partnerId = testAdult_2.id,
+                period = decisionPeriod,
+                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                familySize = 4,
+                children = listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 0,
+                        fee = 28900
+                    )
+                )
+            ),
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_2.id,
+                partnerId = testAdult_1.id,
+                period = decisionPeriod,
+                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                familySize = 4,
+                children = listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 14500
+                    )
+                )
+            )
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(sentDecisions) }
+        val newDraft = createFeeDecisionFixture(
+            status = FeeDecisionStatus.DRAFT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = testAdult_1.id,
+            partnerId = testAdult_2.id,
+            period = decisionPeriod.copy(start = decisionPeriod.start.plusDays(31)),
+            feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+            familySize = 4,
+            children = listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 0,
+                    fee = 28900
+                ),
+                createFeeDecisionChildFixture(
+                    childId = testChild_2.id,
+                    dateOfBirth = testChild_2.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 50,
+                    fee = 8700
+                )
+            )
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(newDraft)) }
+
+        val (_, response) = http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(jsonMapper.writeValueAsString(listOf(newDraft.id)))
+            .response()
+        assertEquals(200, response.statusCode)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
+
+        http.post("/decisions/search")
+            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
+            .asUser(user)
+            .responseString()
+            .let { (_, _, result) ->
+                val decisions = deserializeListResult(result.get()).data
+                assertEquals(3, decisions.size)
+                decisions.find { it.id == sentDecisions.first().id }.let {
+                    assertNotNull(it)
+                    assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
+                }
+                decisions.find { it.id == sentDecisions.last().id }.let {
+                    assertNotNull(it)
+                    assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
+                }
+                assertNotNull(decisions.find { it.id == newDraft.id })
+            }
+    }
+
+    @Test
     fun `date range picker does not return anything with range before first decision`() {
         val now = LocalDate.now()
         val oldDecision = testDecisions[0].copy(validDuring = DateRange(now.minusMonths(2), now.minusMonths(1)))
@@ -1588,7 +1861,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
 
         deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(true, decisionForFamily.isElementaryFamily)
+            assertEquals(true, decisionForFamily.partnerIsCodebtor)
         }
     }
 
@@ -1613,17 +1886,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
 
         deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(true, decisionForFamily.isElementaryFamily)
+            assertEquals(true, decisionForFamily.partnerIsCodebtor)
         }
     }
 
     @Test
-    fun `Fee decision indicates not an elementary family for a family with two partners and one common child and one not common child`() {
+    fun `Fee decision indicates elementary family for a family with two partners and one common child and one not common child`() {
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
             it.insertGuardian(testAdult_1.id, testChild_2.id)
 
-            // Adult 2 is only the parent of child 2, not child 1 -> not an elementary family
+            // Adult 2 is the parent of child 2 -> an elementary family
             it.insertGuardian(testAdult_2.id, testChild_2.id)
         }
 
@@ -1638,7 +1911,30 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .responseString()
 
         deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(false, decisionForFamily.isElementaryFamily)
+            assertEquals(true, decisionForFamily.partnerIsCodebtor)
+        }
+    }
+
+    @Test
+    fun `Fee decision indicates elementary family for a family with two partners and partner has no dependants child`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            // Adult 2 is not a guardian of either child -> not an elementary family
+        }
+
+        val decision = createFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChild_1, testChild_2))
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+        }
+
+        val (_, _, result0) = http.get("/decisions/${decision.id}")
+            .asUser(user)
+            .responseString()
+
+        deserializeResult(result0.get()).data.let { decisionForFamily ->
+            assertEquals(false, decisionForFamily.partnerIsCodebtor)
         }
     }
 

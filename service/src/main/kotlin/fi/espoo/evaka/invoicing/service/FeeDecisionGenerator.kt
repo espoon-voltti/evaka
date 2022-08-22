@@ -54,8 +54,6 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     families: List<FridgeFamily>
 ) {
     val children = families.flatMap { it.children }.toSet()
-    val fridgeSiblings = families.flatMap { it.fridgeSiblings }.toSet()
-
     val prices = getFeeThresholds(from)
     val partnerIds = families.mapNotNull { it.partner }
     val childIds = children.map { it.id }
@@ -69,7 +67,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
 
     val feeAlterations = getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, adultIncomes)
 
-    val placements = getPaidPlacements(from, children + fridgeSiblings).toMap()
+    val placements = getPaidPlacements(from, children).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
 
     val newDrafts = generateFeeDecisions(
@@ -97,8 +95,43 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
             FeeDecisionStatus.SENT
         )
     )
+    val partnerDecisions = activeDecisions.mapNotNull { it.partnerId }.flatMap { partnerId ->
+        findFeeDecisionsForHeadOfFamily(
+            partnerId,
+            null,
+            listOf(
+                FeeDecisionStatus.WAITING_FOR_SENDING,
+                FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                FeeDecisionStatus.SENT
+            )
+        )
+    }
+    val combinedActiveDecisions = run {
+        activeDecisions
+            .flatMap { decision ->
+                val pairs = partnerDecisions.filter {
+                    decision.headOfFamilyId == it.partnerId &&
+                        decision.partnerId == it.headOfFamilyId &&
+                        decision.validDuring.overlaps(it.validDuring)
+                }
+                asDistinctPeriods(pairs.map { it.validDuring } + decision.validDuring, decision.validDuring)
+                    .map { period ->
+                        val pair = pairs.find { it.validDuring.overlaps(period) }
+                        period to if (pair != null) {
+                            decision.copy(
+                                validDuring = period,
+                                children = (decision.children + pair.children)
+                                    .sortedBy { it.siblingDiscount }
+                                    .sortedByDescending { it.child.dateOfBirth }
+                            )
+                        } else decision.copy(validDuring = period)
+                    }
+            }
+            .let { mergePeriods(it) }
+            .map { it.second }
+    }
 
-    val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
+    val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, combinedActiveDecisions)
     deleteFeeDecisions(existingDrafts.map { it.id })
     upsertFeeDecisions(updatedDecisions.updatedDrafts + updatedDecisions.updatedActiveDecisions)
 }
@@ -153,7 +186,7 @@ private fun generateFeeDecisions(
                 }?.toDecisionIncome()
             }
 
-            val validPlacements = (family.children + family.fridgeSiblings)
+            val validPlacements = family.children
                 .mapNotNull { child ->
                     val childPlacements = allPlacements[child] ?: listOf()
                     val validPlacement = childPlacements.find { (dateRange, _) ->

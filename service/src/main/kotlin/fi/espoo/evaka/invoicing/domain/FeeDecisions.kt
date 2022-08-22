@@ -55,23 +55,29 @@ data class FeeDecision(
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
     override fun contentEquals(decision: FeeDecision): Boolean {
         if (this.isEmpty() && decision.isEmpty()) {
-            return this.headOfFamilyId == decision.headOfFamilyId
+            return setOf(this.headOfFamilyId, this.partnerId) == setOf(decision.headOfFamilyId, decision.partnerId)
         }
 
-        return this.children.toSet() == decision.children.toSet() &&
-            this.headOfFamilyId == decision.headOfFamilyId &&
-            this.partnerId == decision.partnerId &&
-            this.headOfFamilyIncome == decision.headOfFamilyIncome &&
-            this.partnerIncome == decision.partnerIncome &&
+        return setOf(this.headOfFamilyId to this.headOfFamilyIncome, this.partnerId to this.partnerIncome) == setOf(
+            decision.headOfFamilyId to decision.headOfFamilyIncome,
+            decision.partnerId to decision.partnerIncome
+        ) && this.children.toSet() == decision.children.toSet() &&
             this.familySize == decision.familySize &&
             this.feeThresholds == decision.feeThresholds
     }
 
     override fun overlapsWith(other: FeeDecision): Boolean {
-        return this.headOfFamilyId == other.headOfFamilyId && DateRange(
-            this.validFrom,
-            this.validTo
-        ).overlaps(DateRange(other.validFrom, other.validTo))
+        return DateRange(this.validFrom, this.validTo).overlaps(DateRange(other.validFrom, other.validTo)) && (
+            // Check if any of the adults are on the other decision
+            this.headOfFamilyId == other.headOfFamilyId ||
+                (
+                    this.partnerId != null && other.partnerId != null && (
+                        this.headOfFamilyId == other.partnerId ||
+                            this.partnerId == other.headOfFamilyId ||
+                            this.partnerId == other.partnerId
+                        )
+                    )
+            )
     }
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
@@ -159,7 +165,7 @@ data class FeeDecisionDetailed(
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val isElementaryFamily: Boolean? = false
+    val partnerIsCodebtor: Boolean? = false
 ) : Mergeable<FeeDecisionChildDetailed, FeeDecisionDetailed> {
     val totalFee
         get() = children.fold(0) { sum, part -> sum + part.finalFee }
@@ -310,10 +316,16 @@ fun getTotalIncome(
 ): Int? = when {
     headIncomeEffect == IncomeEffect.INCOME && (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) ->
         (headIncomeTotal ?: 0) + (partnerIncomeTotal ?: 0)
+
     else -> null
 }
 
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscountMultiplier: BigDecimal, minFee: Int): Int {
+fun calculateFeeBeforeFeeAlterations(
+    baseFee: Int,
+    serviceNeedCoefficient: BigDecimal,
+    siblingDiscountMultiplier: BigDecimal,
+    minFee: Int
+): Int {
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
     val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
     return feeBeforeRounding.let { fee ->
