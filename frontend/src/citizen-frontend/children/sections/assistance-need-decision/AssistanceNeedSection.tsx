@@ -7,20 +7,19 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { renderResult } from 'citizen-frontend/async-rendering'
+import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
+import { useTranslation } from 'citizen-frontend/localization'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H2, H3 } from 'lib-components/typography'
+import { H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faFileAlt } from 'lib-icons'
-
-import { renderResult } from '../async-rendering'
-import { useTranslation } from '../localization'
 
 import { getAssistanceNeedDecisions } from './api'
 
@@ -63,8 +62,8 @@ export default React.memo(function AssistanceNeedSection({
   const [open, setOpen] = useState(false)
 
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{t.children.assistanceNeed.title}</H2>}
+    <ResponsiveWholePageCollapsible
+      title={t.children.assistanceNeed.title}
       countIndicator={{
         count: unreadCount,
         ariaLabel: `${unreadCount} ${t.children.assistanceNeed.unreadCount}`
@@ -72,7 +71,7 @@ export default React.memo(function AssistanceNeedSection({
       opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
-      data-qa="assistance-need-decisions"
+      data-qa="collapsible-assistance-need-decisions"
     >
       <H3>{t.children.assistanceNeed.decisions.title}</H3>
       {renderResult(assistanceNeedDecisions, (decisions) => (
@@ -169,7 +168,7 @@ export default React.memo(function AssistanceNeedSection({
           </Tbody>
         </ResponsiveTable>
       ))}
-    </CollapsibleContentArea>
+    </ResponsiveWholePageCollapsible>
   )
 })
 

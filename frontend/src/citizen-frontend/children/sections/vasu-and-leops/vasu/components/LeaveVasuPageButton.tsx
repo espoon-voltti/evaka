@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 
-import { useTranslation } from '../../../localization'
+import { useTranslation } from '../../../../../localization'
 
 export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
   childId,
@@ -24,7 +24,7 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
   return (
     <ExitButtonWrapper>
       <Button
-        text={i18n.vasu.leavePage}
+        text={i18n.children.vasu.leavePage}
         onClick={() => navigate(`/child-information/${childId}`)}
         disabled={disabled}
       />

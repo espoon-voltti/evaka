@@ -10,6 +10,7 @@ import {
   resetDatabase
 } from '../../dev-api'
 import {
+  addConsentsForChildren,
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -18,6 +19,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  CitizenChildPage,
+  CitizenChildrenPage
+} from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import { Page } from '../../utils/page'
@@ -43,6 +48,15 @@ beforeEach(async () => {
     )
   ])
 
+  await addConsentsForChildren(
+    [
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.enduserChildFixtureKaarina.id,
+      fixtures.enduserChildFixturePorriHatterRestricted.id
+    ],
+    fixtures.enduserGuardianFixture.id
+  )
+
   page = await Page.open()
   await enduserLogin(page)
   header = new CitizenHeader(page)
@@ -51,9 +65,9 @@ beforeEach(async () => {
 
 describe('Citizen pedagogical documents', () => {
   describe('Citizen main page pedagogical documents header', () => {
-    test('Number of unread pedagogical documents is show correctly', async () => {
+    test('Number of unread pedagogical documents is shown correctly', async () => {
       await page.reload()
-      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
+      await header.assertUnreadChildrenCount(0)
 
       const pd = await Fixture.pedagogicalDocument()
         .with({
@@ -73,13 +87,18 @@ describe('Citizen pedagogical documents', () => {
       )
 
       await page.reload()
-      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorCount(
-        1
-      )
+      await header.assertUnreadChildrenCount(1)
 
-      await header.selectTab('child-documents')
+      await header.selectTab('children')
+      const childrenPage = new CitizenChildrenPage(page)
+      await childrenPage.openChildPage(
+        fixtures.enduserChildFixtureJari.firstName
+      )
+      const childPage = new CitizenChildPage(page)
+      await childPage.openCollapsible('pedagogical-documents')
+
       await pedagogicalDocumentsPage.downloadAttachment(attachmentId)
-      await pedagogicalDocumentsPage.assertUnreadPedagogicalDocumentIndicatorIsNotShown()
+      await header.assertUnreadChildrenCount(0)
     })
   })
 
@@ -92,70 +111,18 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('child-documents')
+      await header.selectTab('children')
+      const childrenPage = new CitizenChildrenPage(page)
+      await childrenPage.openChildPage(
+        fixtures.enduserChildFixtureJari.firstName
+      )
+      const childPage = new CitizenChildPage(page)
+      await childPage.openCollapsible('pedagogical-documents')
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
         pd.data.id,
         LocalDate.todayInSystemTz().format(),
         pd.data.description
-      )
-    })
-
-    test('Childrens names are not shown if only documents for one child exist', async () => {
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureJari.id,
-          description: 'e2e test description'
-        })
-        .save()
-
-      await header.selectTab('child-documents')
-
-      await pedagogicalDocumentsPage.assertChildNameIsNotShown(pd.data.id)
-    })
-
-    test('Childrens names are shown if documents for more than one child exist', async () => {
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureJari.id,
-          description: 'e2e test description'
-        })
-        .save()
-      const pd2 = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureKaarina.id,
-          description: 'e2e test description too'
-        })
-        .save()
-
-      await header.selectTab('child-documents')
-
-      await pedagogicalDocumentsPage.assertChildNameIsShown(pd.data.id)
-      await pedagogicalDocumentsPage.assertChildNameIsShown(pd2.data.id)
-    })
-
-    test('Childrens preferred names are shown if known', async () => {
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureJari.id,
-          description: 'e2e test description'
-        })
-        .save()
-      const pd2 = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureKaarina.id,
-          description: 'e2e test description too'
-        })
-        .save()
-
-      await header.selectTab('child-documents')
-
-      // Jari has a preferred name
-      await pedagogicalDocumentsPage.assertChildNameIs(pd.data.id, 'Jari')
-      // Kaarina does not have any preferred name
-      await pedagogicalDocumentsPage.assertChildNameIs(
-        pd2.data.id,
-        'Kaarina Veera Nelli'
       )
     })
   })

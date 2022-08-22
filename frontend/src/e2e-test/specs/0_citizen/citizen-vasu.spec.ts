@@ -16,21 +16,28 @@ import {
   resetDatabase,
   revokeVasuSharingPermission
 } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import {
+  addConsentsForChildren,
+  initializeAreaAndPersonData
+} from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   enduserGuardianFixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import { PersonDetail } from '../../dev-api/types'
+import {
+  CitizenChildPage,
+  CitizenChildrenPage
+} from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { ChildDocumentsPage } from '../../pages/employee/vasu/child-documents'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let childId: UUID
+let child: PersonDetail
 let child2Id: UUID
 let templateId: UUID
 let vasuDocId: UUID
@@ -43,19 +50,30 @@ beforeEach(async () => {
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  child = fixtures.familyWithTwoGuardians.children[0]
   child2Id = fixtures.enduserChildFixtureJari.id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
-    childId,
+    child.id,
     unitId
   )
 
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
   templateId = await insertVasuTemplateFixture()
-  vasuDocId = await insertVasuDocument(childId, templateId)
+  vasuDocId = await insertVasuDocument(child.id, templateId)
   await publishVasuDocument(vasuDocId)
+
+  await addConsentsForChildren(
+    [
+      fixtures.enduserChildFixtureKaarina.id,
+      fixtures.enduserChildFixtureJari.id,
+      fixtures.enduserChildFixturePorriHatterRestricted.id,
+      ...fixtures.familyWithTwoGuardians.children.map(({ id }) => id)
+    ],
+    fixtures.enduserGuardianFixture.id
+  )
+
   page = await Page.open()
   header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page)
@@ -80,17 +98,17 @@ describe('Citizen vasu document page', () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,
-        childId: childId
+        childId: child.id
       }
     ])
 
     const vasuPage = await openDocument()
-    await header.assertUnreadChildDocumentsCount(1)
+    await header.assertUnreadChildrenCount(1)
     await vasuPage.assertTitleChildName('Antero Onni Leevi Aatu Högfors')
     await vasuPage.givePermissionToShare()
 
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-    await header.assertUnreadChildDocumentsCount(0)
+    await header.assertUnreadChildrenCount(0)
     await revokeVasuSharingPermission(vasuDocId)
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsVisible()
@@ -102,36 +120,39 @@ describe('Citizen child documents listing page', () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,
-        childId: childId
+        childId: child.id
       }
     ])
     await page.reload()
-    await header.selectTab('child-documents')
-    const childDocumentsPage = new ChildDocumentsPage(page)
-    await childDocumentsPage.vasuCollapsible.open()
-    await childDocumentsPage.assertVasuRow(
+    await header.selectTab('children')
+    const childrenPage = new CitizenChildrenPage(page)
+    await childrenPage.openChildPage(child.firstName)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('vasu')
+    await childPage.assertVasuRow(
       vasuDocId,
       'Luonnos',
       LocalDate.todayInSystemTz().format('dd.MM.yyyy')
     )
   })
 
-  test('Documents for more than 1 child are shown', async () => {
+  test('Indicators for more than 1 child are shown', async () => {
     await insertGuardianFixtures([
       {
         guardianId: enduserGuardianFixture.id,
-        childId: childId
+        childId: child.id
       },
       {
         guardianId: enduserGuardianFixture.id,
         childId: child2Id
       }
     ])
-    await insertVasu(childId)
+    // first child (`child`) has a vasu already created in beforeEach
     await insertVasu(child2Id)
     await page.reload()
-    await header.selectTab('child-documents')
-    const childDocumentsPage = new ChildDocumentsPage(page)
-    await childDocumentsPage.assertVasuChildCount(2)
+    await header.selectTab('children')
+    const childrenPage = new CitizenChildrenPage(page)
+    await childrenPage.assertChildUnreadCount(child.id, 1)
+    await childrenPage.assertChildUnreadCount(child2Id, 1)
   })
 })

@@ -51,16 +51,15 @@ export class CitizenChildPage {
     await this.page.findText('Palaa').click()
   }
 
-  async openTerminationCollapsible() {
-    await this.page.findText('Paikan irtisanominen').click()
-  }
-
-  async openAssistanceNeedCollapsible() {
-    await this.page.findText('Tuen tarve').click()
-  }
-
-  async openConsentCollapsible() {
-    await this.page.findText('Luvat').click()
+  async openCollapsible(
+    collapsible:
+      | 'termination'
+      | 'assistance-need-decisions'
+      | 'consents'
+      | 'pedagogical-documents'
+      | 'vasu'
+  ) {
+    await this.page.findByDataQa(`collapsible-${collapsible}`).click()
   }
 
   async assertTerminatablePlacementCount(count: number) {
@@ -146,7 +145,7 @@ export class CitizenChildPage {
     await waitUntilEqual(
       () =>
         this.page
-          .findByDataQa('assistance-need-decisions')
+          .findByDataQa('collapsible-assistance-need-decisions')
           .findByDataQa('count-indicator').innerText,
       count.toString()
     )
@@ -184,9 +183,37 @@ export class CitizenChildPage {
   async assertUnconsentedCount(count: number) {
     await waitUntilEqual(
       () =>
-        this.page.findByDataQa('child-consents').findByDataQa('count-indicator')
-          .innerText,
+        this.page
+          .findByDataQa('collapsible-consents')
+          .findByDataQa('count-indicator').innerText,
       count.toString()
     )
+  }
+
+  readonly #vasuRowStateChip = (vasuId: string) =>
+    this.page.find(`[data-qa="state-chip-${vasuId}"] >> visible=true`)
+  readonly #vasuRowPublishedAt = (vasuId: string) =>
+    this.page.find(`[data-qa="published-at-${vasuId}"] >> visible=true`)
+  readonly #vasuChildContainer = this.page.findAll(
+    `[data-qa="vasu-child-container"] >> visible=true`
+  )
+
+  async assertVasuRow(
+    vasuId: string,
+    expectedStatus: string,
+    expectedPublishedAt: string
+  ) {
+    await waitUntilEqual(
+      () => this.#vasuRowStateChip(vasuId).textContent,
+      expectedStatus
+    )
+    await waitUntilEqual(
+      () => this.#vasuRowPublishedAt(vasuId).textContent,
+      expectedPublishedAt
+    )
+  }
+
+  async assertVasuChildCount(expectedCount: number) {
+    await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }
 }

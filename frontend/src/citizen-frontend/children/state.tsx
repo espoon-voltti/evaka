@@ -11,11 +11,13 @@ import { CitizenChildConsent } from 'lib-common/generated/api-types/children'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
+import { getAssistanceNeedDecisionUnreadCounts } from './sections/assistance-need-decision/api'
 import {
-  getAssistanceNeedDecisionUnreadCounts,
   getChildConsentNotifications,
   getChildConsents
-} from './api'
+} from './sections/consents/api'
+import { getUnreadPedagogicalDocumentsCount } from './sections/pedagogical-documents/api'
+import { getUnreadVasuDocumentsCount } from './sections/vasu-and-leops/api'
 
 interface ChildrenContext {
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
@@ -24,6 +26,10 @@ interface ChildrenContext {
   refreshChildConsents: () => void
   childConsentNotifications: number
   refreshChildConsentNotifications: () => void
+  unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
+  unreadVasuDocumentsCount: Record<UUID, number> | undefined
+  refreshUnreadPedagogicalDocumentsCount: () => void
+  refreshUnreadVasuDocumentsCount: () => void
 }
 
 const defaultValue: ChildrenContext = {
@@ -32,7 +38,11 @@ const defaultValue: ChildrenContext = {
   childConsents: Loading.of(),
   refreshChildConsents: () => undefined,
   childConsentNotifications: 0,
-  refreshChildConsentNotifications: () => undefined
+  refreshChildConsentNotifications: () => undefined,
+  unreadPedagogicalDocumentsCount: undefined,
+  unreadVasuDocumentsCount: undefined,
+  refreshUnreadPedagogicalDocumentsCount: () => undefined,
+  refreshUnreadVasuDocumentsCount: () => undefined
 }
 
 export const ChildrenContext = createContext(defaultValue)
@@ -73,6 +83,26 @@ export const ChildrenContextProvider = React.memo(
         [user]
       )
 
+    const [
+      unreadPedagogicalDocumentsCount,
+      refreshUnreadPedagogicalDocumentsCount
+    ] = useApiState(
+      () =>
+        !user
+          ? Promise.resolve(Success.of({}))
+          : getUnreadPedagogicalDocumentsCount(),
+      [user]
+    )
+
+    const [unreadVasuDocumentsCount, refreshUnreadVasuDocumentsCount] =
+      useApiState(
+        () =>
+          !user
+            ? Promise.resolve(Success.of({}))
+            : getUnreadVasuDocumentsCount(),
+        [user]
+      )
+
     return (
       <ChildrenContext.Provider
         value={{
@@ -82,7 +112,13 @@ export const ChildrenContextProvider = React.memo(
           childConsents,
           refreshChildConsents,
           childConsentNotifications: childConsentNotifications.getOrElse(0),
-          refreshChildConsentNotifications
+          refreshChildConsentNotifications,
+          unreadPedagogicalDocumentsCount:
+            unreadPedagogicalDocumentsCount.getOrElse(undefined),
+          unreadVasuDocumentsCount:
+            unreadVasuDocumentsCount.getOrElse(undefined),
+          refreshUnreadPedagogicalDocumentsCount,
+          refreshUnreadVasuDocumentsCount
         }}
       >
         {children}

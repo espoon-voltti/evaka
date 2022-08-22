@@ -22,8 +22,8 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { useLang, useTranslation } from '../localization'
+import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
+import { useLang, useTranslation } from '../../../localization'
 
 import { terminatePlacement } from './api'
 

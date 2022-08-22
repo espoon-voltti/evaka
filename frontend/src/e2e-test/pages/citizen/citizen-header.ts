@@ -21,9 +21,6 @@ export default class CitizenHeader {
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
   #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
   #applyingTab = this.page.findByDataQa('nav-applying').findByDataQa('nav-text')
-  #unreadChildDocumentsCount = this.page.findAllByDataQa(
-    'nav-child-documents-notification-count'
-  )
   #unreadChildrenCount = this.page.findAllByDataQa(
     'nav-children-notification-count'
   )
@@ -139,17 +136,6 @@ export default class CitizenHeader {
     }
 
     await personalDetailsLink.click()
-  }
-
-  async assertUnreadChildDocumentsCount(expectedCount: number) {
-    expectedCount != 0
-      ? await waitUntilEqual(
-          () => this.#unreadChildDocumentsCount.first().textContent,
-          expectedCount.toString()
-        )
-      : await waitUntilFalse(
-          () => this.#unreadChildDocumentsCount.first().visible
-        )
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {

@@ -86,7 +86,7 @@ export const ContentArea = styled.section<ContentAreaProps>`
       : ''}
 `
 
-type CollapsibleContentAreaProps = ContentAreaProps & {
+export type CollapsibleContentAreaProps = ContentAreaProps & {
   open: boolean
   toggleOpen: () => void
   title: ReactNode
@@ -164,7 +164,7 @@ export const CollapsibleContentArea = React.memo(
   }
 )
 
-const TitleContainer = styled.button`
+export const TitleContainer = styled.button`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -194,7 +194,7 @@ const TitleContainer = styled.button`
   }
 `
 
-const TitleIcon = styled(FontAwesomeIcon)`
+export const TitleIcon = styled(FontAwesomeIcon)`
   cursor: pointer;
   color: ${(p) => p.theme.colors.main.m2};
   height: 24px !important;
@@ -202,6 +202,7 @@ const TitleIcon = styled(FontAwesomeIcon)`
 `
 const Collapsible = styled.div<{ open: boolean }>`
   display: ${(props) => (props.open ? 'block' : 'none')};
+  margin-top: ${defaultMargins.s};
 `
 
 export default Container

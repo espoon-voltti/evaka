@@ -13,7 +13,7 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
+import { useTranslation } from '../../../../../localization'
 import { VasuStateChip } from '../components/VasuStateChip'
 import { isDateQuestion } from '../vasu-content'
 import { getLastPublished } from '../vasu-events'
@@ -40,7 +40,7 @@ function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
       {date ? (
         <span>{date.format()}</span>
       ) : (
-        <Dimmed>{i18n.vasu.noRecord}</Dimmed>
+        <Dimmed>{i18n.children.vasu.noRecord}</Dimmed>
       )}
     </>
   )
@@ -78,18 +78,21 @@ export function CitizenVasuEvents({
 
   return (
     <Container opaque data-qa="vasu-event-list">
-      <H2>{i18n.vasu.events[type]}</H2>
+      <H2>{i18n.children.vasu.events[type]}</H2>
       <ListGrid labelWidth={labelWidth}>
-        <Label>{i18n.vasu.state}</Label>
+        <Label>{i18n.children.vasu.state}</Label>
         <ChipContainer>
-          <VasuStateChip state={documentState} labels={i18n.vasu.states} />
+          <VasuStateChip
+            state={documentState}
+            labels={i18n.children.vasu.states}
+          />
         </ChipContainer>
         <EventRow
-          label={i18n.vasu.lastModified}
+          label={i18n.children.vasu.lastModified}
           date={modifiedAt.toLocalDate()}
         />
         <EventRow
-          label={i18n.vasu.lastPublished}
+          label={i18n.children.vasu.lastPublished}
           date={lastPublished?.toLocalDate() ?? null}
         />
         {trackedDates.map(([label, date]) => (
@@ -103,7 +106,7 @@ export function CitizenVasuEvents({
             {events.map(({ id, eventType, created }) => (
               <EventRow
                 key={id}
-                label={i18n.vasu.eventTypes[eventType]}
+                label={i18n.children.vasu.eventTypes[eventType]}
                 date={created.toLocalDate()}
               />
             ))}

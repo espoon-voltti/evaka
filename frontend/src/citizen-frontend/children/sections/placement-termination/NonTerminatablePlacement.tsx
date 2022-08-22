@@ -7,7 +7,7 @@ import React from 'react'
 import { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
 import { H3, InformationText, P } from 'lib-components/typography'
 
-import { useTranslation } from '../localization'
+import { useTranslation } from '../../../localization'
 
 interface Props {
   group: TerminatablePlacementGroup

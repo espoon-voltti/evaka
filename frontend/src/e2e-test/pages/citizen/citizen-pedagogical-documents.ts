@@ -16,20 +16,6 @@ export default class CitizenPedagogicalDocumentsPage {
     this.page.find(`[data-qa="pedagogical-document-description-${id}"]`)
   readonly #downloadAttachment = (id: string) =>
     this.page.find(`[data-qa="attachment-${id}-download"]`)
-  readonly #unreadDocumentCount = this.page.find(
-    '[data-qa="nav-child-documents-notification-count"]'
-  )
-
-  async assertUnreadPedagogicalDocumentIndicatorCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#unreadDocumentCount.innerText,
-      expectedCount.toString()
-    )
-  }
-
-  async assertUnreadPedagogicalDocumentIndicatorIsNotShown() {
-    await this.#unreadDocumentCount.waitUntilHidden()
-  }
 
   async assertPedagogicalDocumentExists(
     id: string,

@@ -43,7 +43,6 @@ type Props = {
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
   unreadMessagesCount: number
-  unreadChildDocumentsCount: number
   unreadChildrenCount: number
   unreadApplications: number
   hideLoginButton: boolean
@@ -53,7 +52,6 @@ export default React.memo(function MobileNav({
   showMenu,
   setShowMenu,
   unreadMessagesCount,
-  unreadChildDocumentsCount,
   unreadChildrenCount,
   unreadApplications,
   hideLoginButton
@@ -73,7 +71,6 @@ export default React.memo(function MobileNav({
         const showAttentionIndicator =
           !showMenu &&
           (unreadMessagesCount > 0 ||
-            unreadChildDocumentsCount > 0 ||
             unreadChildrenCount > 0 ||
             unreadApplications > 0 ||
             !!(user && !user.email))
@@ -101,7 +98,6 @@ export default React.memo(function MobileNav({
                     close={close}
                     user={user}
                     unreadMessagesCount={unreadMessagesCount}
-                    unreadChildDocumentsCount={unreadChildDocumentsCount}
                     unreadChildrenCount={unreadChildrenCount}
                     unreadApplications={unreadApplications}
                   />
@@ -234,14 +230,12 @@ const Navigation = React.memo(function Navigation({
   close,
   user,
   unreadMessagesCount,
-  unreadChildDocumentsCount,
   unreadChildrenCount,
   unreadApplications
 }: {
   close: () => void
   user: User
   unreadMessagesCount: number
-  unreadChildDocumentsCount: number
   unreadChildrenCount: number
   unreadApplications: number
 }) {
@@ -267,16 +261,6 @@ const Navigation = React.memo(function Navigation({
           data-qa="nav-messages"
           text={t.header.nav.messages}
           notificationCount={unreadMessagesCount}
-        />
-      )}
-      {user.accessibleFeatures.childDocumentation && (
-        <HeaderNavLink
-          to="/child-documents"
-          data-qa="nav-child-documents"
-          onClick={close}
-          text={t.header.nav.pedagogicalDocuments}
-          notificationCount={unreadChildDocumentsCount}
-          lockElem={maybeLockElem}
         />
       )}
       <HeaderNavLink

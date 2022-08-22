@@ -2,43 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import uniq from 'lodash/uniq'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { faChevronRight } from 'Icons'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { renderResult } from 'citizen-frontend/async-rendering'
+import { getAttachmentUrl } from 'citizen-frontend/attachments'
+import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
+import { ChildrenContext } from 'citizen-frontend/children/state'
+import { useTranslation } from 'citizen-frontend/localization'
 import {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import Container, {
-  CollapsibleContentArea,
-  ContentArea
-} from 'lib-components/layout/Container'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { tabletMin } from 'lib-components/breakpoints'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { fontWeights, H2 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
-import { faArrowDown, faChevronDown, faChevronUp } from 'lib-icons'
-
-import { renderResult } from '../async-rendering'
-import { getAttachmentUrl } from '../attachments'
-import { useTranslation } from '../localization'
+import { fontWeights } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import {
+  faArrowDown,
+  faChevronDown,
+  faChevronLeft,
+  faChevronUp
+} from 'lib-icons'
 
 import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
-import { Desktop, Mobile, PaddedDiv } from './components'
-import { ChildDocumentsContext, ChildDocumentsState } from './state'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
@@ -125,6 +127,16 @@ const AttachmentRow = React.memo(function AttachmentRow({
   )
 })
 
+export const ResponsiveDescription = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.s};
+
+  @media (max-width: ${tabletMin}) {
+    flex-direction: row;
+  }
+`
+
 const ItemDescription = React.memo(function ItemDescription({
   item,
   clampLines,
@@ -144,24 +156,51 @@ const ItemDescription = React.memo(function ItemDescription({
   // A description with more than 50 characters per line will be collapsed
   const shouldShowExpandButton = item.description.length > 50 * clampLines
 
+  const ariaId = useUniqueId('expandable-text')
+
   return (
-    <FixedSpaceRow spacing="xs" alignItems="end">
+    <ResponsiveDescription>
       <ExpandableText
         expanded={expanded}
         clampLines={clampLines}
         data-qa={dataQa}
+        id={ariaId}
       >
         {item.description}
       </ExpandableText>
       {shouldShowExpandButton && (
-        <IconButton
-          onClick={toggleExpanded}
-          data-qa={`${dataQa}-button`}
-          icon={expanded ? faChevronUp : faChevronDown}
-          altText={t.pedagogicalDocuments.toggleExpandText}
-        />
+        <div>
+          <TabletAndDesktop>
+            <InlineButton
+              onClick={toggleExpanded}
+              data-qa={`${dataQa}-button`}
+              icon={expanded ? faChevronUp : faChevronDown}
+              aria-expanded={expanded}
+              aria-controls={ariaId}
+              text={
+                expanded
+                  ? t.children.pedagogicalDocuments.collapseReadMore
+                  : t.children.pedagogicalDocuments.readMore
+              }
+            />
+          </TabletAndDesktop>
+          <MobileOnly>
+            <IconButton
+              onClick={toggleExpanded}
+              data-qa={`${dataQa}-button`}
+              icon={expanded ? faChevronUp : faChevronDown}
+              aria-expanded={expanded}
+              aria-controls={ariaId}
+              altText={
+                expanded
+                  ? t.children.pedagogicalDocuments.collapseReadMore
+                  : t.children.pedagogicalDocuments.readMore
+              }
+            />
+          </MobileOnly>
+        </div>
       )}
-    </FixedSpaceRow>
+    </ResponsiveDescription>
   )
 })
 
@@ -173,53 +212,14 @@ const PedagogicalDocumentsDisplay = React.memo(
     items: PedagogicalDocumentCitizen[]
     onRead: (doc: PedagogicalDocumentCitizen) => void
   }) {
-    const t = useTranslation()
-    const [open, setOpen] = useState(true)
-
-    const { unreadPedagogicalDocumentsCount } = useContext<ChildDocumentsState>(
-      ChildDocumentsContext
-    )
-
-    const moreThanOneChild = useMemo(
-      () => uniq(items.map((doc) => doc.childId)).length > 1,
-      [items]
-    )
-
     return (
       <>
-        <Mobile>
-          <ContentArea opaque paddingVertical="L" paddingHorizontal="zero">
-            <PaddedDiv>
-              <H2 noMargin>{t.pedagogicalDocuments.title}</H2>
-            </PaddedDiv>
-            {items.length > 0 && (
-              <PedagogicalDocumentsList
-                items={items}
-                showChildrenNames={moreThanOneChild}
-                onRead={onRead}
-              />
-            )}
-          </ContentArea>
-        </Mobile>
-        <Desktop>
-          <CollapsibleContentArea
-            title={<H2 noMargin>{t.pedagogicalDocuments.title}</H2>}
-            open={open}
-            toggleOpen={() => setOpen(!open)}
-            opaque
-            paddingVertical="L"
-            data-qa="pedagogical-documents-collapsible"
-            countIndicator={unreadPedagogicalDocumentsCount}
-          >
-            {items.length > 0 && (
-              <PedagogicalDocumentsTable
-                items={items}
-                showChildrenNames={moreThanOneChild}
-                onRead={onRead}
-              />
-            )}
-          </CollapsibleContentArea>
-        </Desktop>
+        <MobileOnly>
+          <PedagogicalDocumentsList items={items} onRead={onRead} />
+        </MobileOnly>
+        <TabletAndDesktop>
+          <PedagogicalDocumentsTable items={items} onRead={onRead} />
+        </TabletAndDesktop>
       </>
     )
   }
@@ -227,11 +227,9 @@ const PedagogicalDocumentsDisplay = React.memo(
 
 const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
   items,
-  showChildrenNames,
   onRead
 }: {
   items: PedagogicalDocumentCitizen[]
-  showChildrenNames: boolean
   onRead: (doc: PedagogicalDocumentCitizen) => void
 }) {
   return (
@@ -240,9 +238,6 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
         <ListItem key={item.id} documentIsRead={item.isRead} spacing="xs">
           <ListItemHead>
             <span>{item.created.toLocalDate().format()}</span>
-            {showChildrenNames && (
-              <span>{item.childPreferredName || item.childFirstName}</span>
-            )}
           </ListItemHead>
           <ItemDescription
             item={item}
@@ -266,74 +261,126 @@ const PedagogicalDocumentsList = React.memo(function PedagogicalDocumentsList({
   )
 })
 
+const PAGE_SIZE = 10
+
+const Pagination = React.memo(function Pagination({
+  page,
+  total,
+  setPage
+}: {
+  page: number
+  total: number
+  setPage: (page: number) => void
+}) {
+  const t = useTranslation()
+
+  return (
+    <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+      <IconButton
+        icon={faChevronLeft}
+        altText={t.children.pedagogicalDocuments.previousPage}
+        disabled={page === 0}
+        onClick={() => setPage(page - 1)}
+      />
+      <div>{t.children.pedagogicalDocuments.pageCount(page + 1, total)}</div>
+      <IconButton
+        icon={faChevronRight}
+        altText={t.children.pedagogicalDocuments.nextPage}
+        disabled={page + 1 >= total}
+        onClick={() => setPage(page + 1)}
+      />
+    </FixedSpaceRow>
+  )
+})
+
 const PedagogicalDocumentsTable = React.memo(
   function PedagogicalDocumentsTable({
     items,
-    showChildrenNames,
     onRead
   }: {
     items: PedagogicalDocumentCitizen[]
-    showChildrenNames: boolean
     onRead: (doc: PedagogicalDocumentCitizen) => void
   }) {
     const t = useTranslation()
+
+    const [page, setPage] = useState(0)
+
     return (
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>{t.pedagogicalDocuments.table.date}</Th>
-            {showChildrenNames && <Th>{t.pedagogicalDocuments.table.child}</Th>}
-            <Th>{t.pedagogicalDocuments.table.description}</Th>
-            <Th>{t.pedagogicalDocuments.table.document}</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {items.map((item) => (
-            <ItemTr key={item.id} documentIsRead={item.isRead}>
-              <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
-                {item.created.toLocalDate().format()}
-              </DateTd>
-              {showChildrenNames && (
-                <Td data-qa={`pedagogical-document-child-name-${item.id}`}>
-                  <div>{item.childPreferredName || item.childFirstName}</div>
-                </Td>
-              )}
-              <DescriptionTd>
-                <ItemDescription
-                  item={item}
-                  clampLines={3}
-                  dataQa={`pedagogical-document-description-${item.id}`}
-                />
-              </DescriptionTd>
-              <AttachmentsTd>
-                <AttachmentsContainer>
-                  {item.attachments.map((attachment) => (
-                    <AttachmentRow
-                      key={attachment.id}
-                      pedagogicalDocument={item}
-                      attachment={attachment}
-                      onRead={onRead}
-                      dataQa={`attachment-${attachment.id}`}
+      <div>
+        <Pagination
+          total={Math.ceil(items.length / PAGE_SIZE)}
+          page={page}
+          setPage={setPage}
+        />
+        <Gap size="s" />
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>{t.children.pedagogicalDocuments.table.date}</Th>
+              <Th>{t.children.pedagogicalDocuments.table.description}</Th>
+              <Th>{t.children.pedagogicalDocuments.table.document}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items
+              .slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+              .map((item) => (
+                <ItemTr key={item.id} documentIsRead={item.isRead}>
+                  <DateTd data-qa={`pedagogical-document-date-${item.id}`}>
+                    {!item.isRead && <UnreadIndicator />}
+                    {item.created.toLocalDate().format()}
+                  </DateTd>
+                  <DescriptionTd>
+                    <ItemDescription
+                      item={item}
+                      clampLines={3}
+                      dataQa={`pedagogical-document-description-${item.id}`}
                     />
-                  ))}
-                </AttachmentsContainer>
-              </AttachmentsTd>
-            </ItemTr>
-          ))}
-        </Tbody>
-      </Table>
+                  </DescriptionTd>
+                  <AttachmentsTd>
+                    <AttachmentsContainer>
+                      {item.attachments.map((attachment) => (
+                        <AttachmentRow
+                          key={attachment.id}
+                          pedagogicalDocument={item}
+                          attachment={attachment}
+                          onRead={onRead}
+                          dataQa={`attachment-${attachment.id}`}
+                        />
+                      ))}
+                    </AttachmentsContainer>
+                  </AttachmentsTd>
+                </ItemTr>
+              ))}
+          </Tbody>
+        </Table>
+        <Gap size="s" />
+        <Pagination
+          total={Math.ceil(items.length / PAGE_SIZE)}
+          page={page}
+          setPage={setPage}
+        />
+      </div>
     )
   }
 )
 
-export default React.memo(function PedagogicalDocuments() {
+export default React.memo(function PedagogicalDocumentsSection({
+  childId
+}: {
+  childId: UUID
+}) {
+  const [open, setOpen] = useState(false)
+
   const [pedagogicalDocuments, loadData] = useApiState(
-    getPedagogicalDocuments,
-    []
+    () => getPedagogicalDocuments(childId),
+    [childId]
   )
 
-  const { refreshUnreadPedagogicalDocumentsCount } =
-    useContext<ChildDocumentsState>(ChildDocumentsContext)
+  const {
+    refreshUnreadPedagogicalDocumentsCount,
+    unreadPedagogicalDocumentsCount
+  } = useContext(ChildrenContext)
 
   useEffect(refreshUnreadPedagogicalDocumentsCount, [
     refreshUnreadPedagogicalDocumentsCount,
@@ -344,22 +391,42 @@ export default React.memo(function PedagogicalDocuments() {
     void markPedagogicalDocumentRead(doc.id).then(loadData)
   }
 
+  const t = useTranslation()
+
   return (
-    <Container>
+    <CollapsibleOrWholePageContainer
+      title={t.children.pedagogicalDocuments.title}
+      opaque
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      data-qa="collapsible-pedagogical-documents"
+      countIndicator={unreadPedagogicalDocumentsCount?.[childId]}
+      contentPadding="zero"
+    >
       {renderResult(pedagogicalDocuments, (items) => (
         <PedagogicalDocumentsDisplay items={items} onRead={onRead} />
       ))}
-    </Container>
+    </CollapsibleOrWholePageContainer>
   )
 })
 
 const ItemTr = styled(Tr)<{ documentIsRead: boolean }>`
   font-weight: ${(p) =>
     p.documentIsRead ? fontWeights.normal : fontWeights.semibold};
+  position: relative;
 
   button {
     font-weight: ${fontWeights.semibold};
   }
+`
+
+const UnreadIndicator = styled.div`
+  background-color: ${(p) => p.theme.colors.status.success};
+  width: 6px;
+  position: absolute;
+  left: 0.5px;
+  top: 0.5px;
+  bottom: 0.5px;
 `
 
 const DateTd = styled(Td)`
@@ -391,7 +458,7 @@ const ListItem = styled(FixedSpaceColumn)<{ documentIsRead: boolean }>`
   padding: ${defaultMargins.s};
   ${(p) =>
     !p.documentIsRead && `padding-left: calc(${defaultMargins.s} - 6px)`};
-  border-top: 1px solid #b1b1b1;
+  border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   border-left: ${(p) =>
     p.documentIsRead ? 'none' : `6px solid ${p.theme.colors.status.success}`};
   font-weight: ${fontWeights.semibold};

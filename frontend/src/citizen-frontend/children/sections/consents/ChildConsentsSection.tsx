@@ -10,6 +10,7 @@ import React, {
   useState
 } from 'react'
 
+import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { Failure } from 'lib-common/api'
 import {
   ChildConsentType,
@@ -19,15 +20,14 @@ import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H2, H3, LabelLike, P } from 'lib-components/typography'
+import { H3, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../localization'
+import { useTranslation } from '../../../localization'
+import { ChildrenContext } from '../../state'
 
 import { insertChildConsents } from './api'
-import { ChildrenContext } from './state'
 
 interface ChildConsentsProps {
   childId: UUID
@@ -119,8 +119,8 @@ export default React.memo(function ChildConsentsSection({
   if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
 
   return (
-    <CollapsibleContentArea
-      title={<H2 noMargin>{t.children.consent.title}</H2>}
+    <ResponsiveWholePageCollapsible
+      title={t.children.consent.title}
       countIndicator={{
         count: unconsentedCount,
         ariaLabel: `${unconsentedCount} ${t.children.consent.unconsented}`
@@ -128,7 +128,7 @@ export default React.memo(function ChildConsentsSection({
       opaque
       open={open}
       toggleOpen={() => setOpen(!open)}
-      data-qa="child-consents"
+      data-qa="collapsible-consents"
     >
       {form ? (
         <>
@@ -176,6 +176,6 @@ export default React.memo(function ChildConsentsSection({
       ) : (
         <SpinnerSegment />
       )}
-    </CollapsibleContentArea>
+    </ResponsiveWholePageCollapsible>
   )
 })

@@ -106,7 +106,6 @@ export default {
       income: 'Tulotiedot',
       messages: 'Viestit',
       calendar: 'Kalenteri',
-      pedagogicalDocuments: 'Kasvu ja oppiminen',
       children: 'Lapset',
       messageCount: (n: number) =>
         n > 1 ? `${n} uutta viestiä` : `${n} uusi viesti`
@@ -1804,72 +1803,6 @@ export default {
       returnMessage: 'Palaa takaisin'
     }
   },
-  childDocuments: {
-    title: 'Kasvu ja oppiminen',
-    description:
-      'Tälle sivulle julkaistaan lapsen varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunitelma sekä kootaan lapsen kasvuun, oppimiseen ja päiväkotiarkeen liittyviä kuvia ja muita dokumentteja.',
-    deletionDisclaimer:
-      'Nämä dokumentit poistuvat, kun lapsen sijoitus päättyy. Tallenna tiedostot, jotka haluat säilyttää hyvissä ajoin omalle koneellesi.'
-  },
-  pedagogicalDocuments: {
-    title: 'Lapsen arkeen liittyviä dokumentteja',
-    table: {
-      date: 'Päivämäärä',
-      child: 'Lapsi',
-      document: 'Dokumentti',
-      description: 'Kuvaus'
-    },
-    toggleExpandText: 'Näytä tai piilota teksti'
-  },
-  vasu: {
-    title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
-    noVasus:
-      'Ei varhaiskasvatussuunnitelmia tai esiopetuksen oppimissuunnitelmia',
-    lastModified: 'Viimeisin muokkauspäivämäärä',
-    lastPublished: 'Viimeksi julkaistu huoltajalle',
-    leavePage: 'Poistu',
-    edited: 'muokattu',
-    eventTypes: {
-      PUBLISHED: 'Julkaistu huoltajalle',
-      MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
-      RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
-      MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
-      RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
-      MOVED_TO_CLOSED: 'Päättynyt'
-    },
-    states: {
-      DRAFT: 'Luonnos',
-      READY: 'Laadittu',
-      REVIEWED: 'Arvioitu',
-      CLOSED: 'Päättynyt'
-    },
-    state: 'Suunnitelman tila',
-    events: {
-      DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
-      PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
-    },
-    noRecord: 'Ei merkintää',
-    givePermissionToShareTitleVasu:
-      'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
-    givePermissionToShareTitleLeops:
-      'Vahvistus esiopetuksen oppimissuunnitelman luovuttamisesta muille tiedonsaajatahoille',
-    givePermissionToShareVasu:
-      'Vahvistan, että lapsen varhaiskasvatussuunitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
-    givePermissionToShareLeops:
-      'Vahvistan, että lapsen esiopetuksen oppimissuunnitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
-    givePermissionToShareInfoBase:
-      'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan.',
-    givePermissionToShareReminder:
-      'Vahvista tiedonsaajatahot, joille suunnitelman saa luovuttaa',
-    sharingVasuDisclaimer:
-      'Lapsen vaihtaessa toiseen Espoon kaupungin varhaiskasvatusyksikköön, lapsen varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirtyvät automaattisesti (koskee myös Espoon ostopalveluna järjestettävää varhaiskasvatusta). Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle taholle pyydämme huoltajilta luvan. Lapsen siirtyessä yksityiseen tai toisen kunnan varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman huoltajan lupaa, mikäli tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (Varhaiskasvatuslaki 40§ ja 41§). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (Perusopetuslaki 41§). Luovuttamisesta informoidaan huoltajaa etukäteen.',
-    sharingLeopsDisclaimer:
-      'Esiopetuksen oppimissuunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §).',
-    givePermissionToShareVasuBrief:
-      'Tarvittaessa välttämättömät tiedot siirretään. (Perusopetuslaki 41§)',
-    givePermissionToShareLeopsBrief:
-      'Tarvittaessa välttämättömät tiedot siirretään. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §)'
-  },
   placement: {
     type: {
       CLUB: 'Kerho',
@@ -2093,6 +2026,69 @@ export default {
       },
       confirm: 'Vahvista',
       unconsented: 'antamatta lupaa'
+    },
+    pedagogicalDocuments: {
+      title: 'Lapsen arkeen liittyviä dokumentteja',
+      table: {
+        date: 'Päivämäärä',
+        child: 'Lapsi',
+        document: 'Dokumentti',
+        description: 'Kuvaus'
+      },
+      readMore: 'Lue lisää',
+      collapseReadMore: 'Vähemmän',
+      nextPage: 'Seuraava sivu',
+      previousPage: 'Edellinen sivu',
+      pageCount: (current: number, total: number) => `Sivu ${current}/${total}`
+    },
+    vasu: {
+      title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
+      noVasus:
+        'Ei varhaiskasvatussuunnitelmia tai esiopetuksen oppimissuunnitelmia',
+      lastModified: 'Viimeisin muokkauspäivämäärä',
+      lastPublished: 'Viimeksi julkaistu huoltajalle',
+      leavePage: 'Poistu',
+      edited: 'muokattu',
+      eventTypes: {
+        PUBLISHED: 'Julkaistu huoltajalle',
+        MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
+        RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
+        MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
+        RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
+        MOVED_TO_CLOSED: 'Päättynyt'
+      },
+      states: {
+        DRAFT: 'Luonnos',
+        READY: 'Laadittu',
+        REVIEWED: 'Arvioitu',
+        CLOSED: 'Päättynyt'
+      },
+      state: 'Suunnitelman tila',
+      events: {
+        DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
+        PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
+      },
+      noRecord: 'Ei merkintää',
+      givePermissionToShareTitleVasu:
+        'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      givePermissionToShareTitleLeops:
+        'Vahvistus esiopetuksen oppimissuunnitelman luovuttamisesta muille tiedonsaajatahoille',
+      givePermissionToShareVasu:
+        'Vahvistan, että lapsen varhaiskasvatussuunitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      givePermissionToShareLeops:
+        'Vahvistan, että lapsen esiopetuksen oppimissuunnitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
+      givePermissionToShareInfoBase:
+        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan.',
+      givePermissionToShareReminder:
+        'Vahvista tiedonsaajatahot, joille suunnitelman saa luovuttaa',
+      sharingVasuDisclaimer:
+        'Lapsen vaihtaessa toiseen Espoon kaupungin varhaiskasvatusyksikköön, lapsen varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirtyvät automaattisesti (koskee myös Espoon ostopalveluna järjestettävää varhaiskasvatusta). Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle taholle pyydämme huoltajilta luvan. Lapsen siirtyessä yksityiseen tai toisen kunnan varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman huoltajan lupaa, mikäli tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (Varhaiskasvatuslaki 40§ ja 41§). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (Perusopetuslaki 41§). Luovuttamisesta informoidaan huoltajaa etukäteen.',
+      sharingLeopsDisclaimer:
+        'Esiopetuksen oppimissuunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §).',
+      givePermissionToShareVasuBrief:
+        'Tarvittaessa välttämättömät tiedot siirretään. (Perusopetuslaki 41§)',
+      givePermissionToShareLeopsBrief:
+        'Tarvittaessa välttämättömät tiedot siirretään. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 40 § ja 41 §)'
     }
   },
   accessibilityStatement: (
