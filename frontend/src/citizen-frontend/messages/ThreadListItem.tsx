@@ -64,7 +64,9 @@ export default React.memo(function ThreadListItem({
         </ScreenReaderOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>{thread.title}</Truncated>
-          <span>{formatDateOrTime(lastMessage.sentAt)}</span>
+          <time dateTime={lastMessage.sentAt.formatIso()}>
+            {formatDateOrTime(lastMessage.sentAt)}
+          </time>
         </TitleAndDate>
         <Truncated>
           {lastMessage.content

@@ -14,7 +14,8 @@ import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
-import { defaultMargins } from 'lib-components/white-space'
+import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
@@ -82,6 +83,9 @@ export default React.memo(function MessagesPage() {
         {([id, receivers]) => (
           <>
             <Main>
+              <TabletAndDesktop>
+                <Gap size="L" />
+              </TabletAndDesktop>
               <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
                 <ThreadList
                   accountId={id}
