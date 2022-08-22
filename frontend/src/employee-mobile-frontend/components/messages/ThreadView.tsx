@@ -13,6 +13,7 @@ import {
   AuthorizedMessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
+import Linkify from 'lib-components/atoms/Linkify'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights } from 'lib-components/typography'
@@ -125,7 +126,7 @@ function SingleMessage({ message, ours }: { message: Message; ours: boolean }) {
         <SentDate white={ours}>{formatDateOrTime(message.sentAt)}</SentDate>
       </TitleRow>
       <MessageContent data-qa="single-message-content">
-        {message.content}
+        <Linkify>{message.content}</Linkify>
       </MessageContent>
     </MessageContainer>
   )
