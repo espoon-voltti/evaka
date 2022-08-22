@@ -47,6 +47,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Bold, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -382,7 +383,13 @@ export default React.memo(function VasuTemplateEditor() {
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
         {question.options.map((opt) => (
-          <>
+          <ExpandingInfo
+            info={opt.info}
+            key={opt.key}
+            ariaLabel=""
+            closeLabel=""
+            width="full"
+          >
             <FixedSpaceRow>
               <Checkbox checked={false} label={opt.name} key={opt.key} />
               {opt.date && (
@@ -396,7 +403,7 @@ export default React.memo(function VasuTemplateEditor() {
               )}
             </FixedSpaceRow>
             {!!opt.subText && <P noMargin>{opt.subText}</P>}
-          </>
+          </ExpandingInfo>
         ))}
       </FixedSpaceColumn>
     )
