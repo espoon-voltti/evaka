@@ -2992,7 +2992,7 @@ export const fi = {
       end: 'Päättyen',
       serviceVoucherValue: 'Ps korkein arvo',
       serviceVoucherRealizedValue: 'Ps arvo / kk',
-      serviceVoucherCoPayment: 'Omavastuu',
+      serviceVoucherFinalCoPayment: 'Omavastuu',
       serviceNeed: 'Palveluntarve',
       assistanceNeed: 'Tuen tarve',
       partTime: 'Osa/Koko',
