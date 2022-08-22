@@ -94,7 +94,7 @@ export class GatewayTester {
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
-        postData,
+        new URLSearchParams(postData),
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302
@@ -105,7 +105,7 @@ export class GatewayTester {
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',
-        postData,
+        new URLSearchParams(postData),
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302
