@@ -59,18 +59,22 @@ export default React.memo(function UnitList() {
                   utilization
                 }) => {
                   return (
-                    <UnitContainer key={id} to={`/units/${id}`}>
+                    <UnitContainer
+                      key={id}
+                      to={`/units/${id}`}
+                      data-qa={`unit-${id}`}
+                    >
                       <FixedSpaceColumn spacing="s" fullWidth>
                         <H2 noMargin>{name}</H2>
                         <UnitRow spacing="m">
                           <div>
-                            <Stat>
+                            <Stat data-qa="child-count">
                               {presentChildren}/{totalChildren}
                             </Stat>
                             <StatDesc>{i18n.units.children}</StatDesc>
                           </div>
                           <div>
-                            <Stat>
+                            <Stat data-qa="staff-count">
                               {presentStaff}
                               {presentStaffOther ? (
                                 <OtherStaff>+{presentStaffOther}</OtherStaff>
@@ -80,7 +84,7 @@ export default React.memo(function UnitList() {
                             <StatDesc>{i18n.units.staff}</StatDesc>
                           </div>
                           <div>
-                            <Stat>
+                            <Stat data-qa="utilization">
                               {utilization.toFixed
                                 ? utilization.toFixed(1)
                                 : utilization}{' '}

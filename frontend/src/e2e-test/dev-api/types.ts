@@ -13,6 +13,7 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import {
   DecisionStatus,
@@ -593,4 +594,14 @@ export interface DevPayment {
   dueDate: LocalDate | null
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
+}
+
+export interface DevRealtimeStaffAttendance {
+  id: UUID
+  employeeId: UUID
+  groupId: UUID
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  occupancyCoefficient: number
+  type: StaffAttendanceType
 }

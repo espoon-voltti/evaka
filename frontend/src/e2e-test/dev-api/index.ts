@@ -25,7 +25,6 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -57,6 +56,7 @@ import {
   DevHolidayPeriod,
   DevIncome,
   DevPayment,
+  DevRealtimeStaffAttendance,
   DevVardaReset,
   DevVardaServiceNeed,
   EmployeeDetail,
@@ -802,6 +802,23 @@ export async function postMobileDevice(
   }
 }
 
+interface PersonalMobileDevice {
+  id: UUID
+  employeeId: UUID
+  name: string
+  longTermToken: UUID
+}
+
+export async function postPersonalMobileDevice(
+  device: PersonalMobileDevice
+): Promise<void> {
+  try {
+    await devClient.post<PairingResponse>(`/mobile/personal-devices`, device)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function getDecisionsByApplication(
   applicationId: string
 ): Promise<Decision[]> {
@@ -1060,14 +1077,9 @@ export async function upsertOccupancyCoefficient(body: {
   }
 }
 
-export async function insertStaffRealtimeAttendance(body: {
-  id: UUID
-  employeeId: UUID
-  groupId: UUID
-  arrived: HelsinkiDateTime
-  departed?: HelsinkiDateTime
-  occupancyCoefficient: number
-}): Promise<void> {
+export async function insertStaffRealtimeAttendance(
+  body: DevRealtimeStaffAttendance
+): Promise<void> {
   try {
     await devClient.post('/realtime-staff-attendance', body)
   } catch (e) {
