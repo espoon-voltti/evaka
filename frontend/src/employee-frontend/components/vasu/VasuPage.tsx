@@ -33,31 +33,33 @@ export default React.memo(function VasuPage() {
   const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
 
   return (
-    <VasuContainer gapSize="zero" data-qa="vasu-preview">
-      {vasu && (
-        <>
-          <VasuHeader document={vasu} />
-          {!content.hasDynamicFirstSection && (
-            <BasicsSection
-              sectionIndex={0}
-              type={vasu.type}
-              basics={vasu.basics}
-              childLanguage={vasu.basics.childLanguage}
-              templateRange={vasu.templateRange}
+    <>
+      <VasuContainer gapSize="zero" data-qa="vasu-preview">
+        {vasu && (
+          <>
+            <VasuHeader document={vasu} />
+            {!content.hasDynamicFirstSection && (
+              <BasicsSection
+                sectionIndex={0}
+                type={vasu.type}
+                basics={vasu.basics}
+                childLanguage={vasu.basics.childLanguage}
+                templateRange={vasu.templateRange}
+                translations={translations}
+              />
+            )}
+            <DynamicSections
+              sections={content.sections}
+              sectionIndex={dynamicSectionsOffset}
+              state={vasu.documentState}
               translations={translations}
+              vasu={vasu}
             />
-          )}
-          <DynamicSections
-            sections={content.sections}
-            sectionIndex={dynamicSectionsOffset}
-            state={vasu.documentState}
-            translations={translations}
-            vasu={vasu}
-          />
-          <Gap size="s" />
-          <VasuEvents document={vasu} content={content} />
-        </>
-      )}
+            <Gap size="s" />
+            <VasuEvents document={vasu} content={content} />
+          </>
+        )}
+      </VasuContainer>
       <StickyFooter>
         <FooterContainer>
           {vasu && (
@@ -69,6 +71,6 @@ export default React.memo(function VasuPage() {
           )}
         </FooterContainer>
       </StickyFooter>
-    </VasuContainer>
+    </>
   )
 })
