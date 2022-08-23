@@ -190,7 +190,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             class="decision-details"
             th:if="${decision.validityPeriod.end} != null"
           >
-            <h3 th:text="#{endDate}"></h3>
+            <th:block th:switch="${hasAssistanceServices}">
+              <h3 th:case="${true}" th:text="#{endDateServices}"></h3>
+              <h3 th:case="*" th:text="#{endDate}"></h3>
+            </th:block>
             <div
               th:replace="~{shared/common :: format-date(${decision.validityPeriod.end})}"
             ></div>

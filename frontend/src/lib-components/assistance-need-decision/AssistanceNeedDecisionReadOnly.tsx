@@ -57,6 +57,7 @@ export interface AssistanceNeedDecisionTexts {
   }
   startDate: string
   endDate: string
+  endDateServices: string
   selectedUnit: string
   unitMayChange: string
   motivationForDecision: string
@@ -310,7 +311,13 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             />
 
             <OptionalLabelledValue
-              label={t.endDate}
+              label={
+                decision.assistanceLevels.includes(
+                  'ASSISTANCE_SERVICES_FOR_TIME'
+                )
+                  ? t.endDateServices
+                  : t.endDate
+              }
               value={decision.validityPeriod.end?.format()}
               data-qa="end-date"
             />

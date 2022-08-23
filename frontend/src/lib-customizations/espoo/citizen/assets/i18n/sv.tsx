@@ -1934,6 +1934,7 @@ const sv: Translations = {
           },
           startDate: 'Beslutet träder i kraft',
           endDate: 'Beslutet i kraft till',
+          endDateServices: 'Beslutet angående stödtjänster i kraft till',
           selectedUnit: 'Enheten där stödet ges',
           unitMayChange: 'Enheten kan ändras under semestertider',
           motivationForDecision: 'Motivering av beslut',
