@@ -122,7 +122,6 @@ export interface AssistanceNeedDecisionCitizenListItem {
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 */
 export interface AssistanceNeedDecisionEmployee {
-  email: string | null
   employeeId: UUID | null
   name: string | null
   phoneNumber: string | null

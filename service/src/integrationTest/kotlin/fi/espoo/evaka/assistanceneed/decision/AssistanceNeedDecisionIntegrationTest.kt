@@ -139,7 +139,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.preparedBy1?.title, assistanceNeedDecision.preparedBy1?.title)
         assertEquals(testDecision.preparedBy1?.phoneNumber, assistanceNeedDecision.preparedBy1?.phoneNumber)
         assertEquals(assistanceNeedDecision.preparedBy1?.name, "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")
-        assertEquals(assistanceNeedDecision.preparedBy1?.email, testDecisionMaker_1.email)
         assertEquals(assistanceNeedDecision.preparedBy2, null)
         assertEquals(testDecision.decisionMaker?.employeeId, assistanceNeedDecision.decisionMaker?.employeeId)
         assertEquals(testDecision.decisionMaker?.title, assistanceNeedDecision.decisionMaker?.title)

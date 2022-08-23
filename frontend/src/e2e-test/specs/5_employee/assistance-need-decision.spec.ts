@@ -170,7 +170,9 @@ describe('Assistance Need Decisions - Language', () => {
   })
 
   test('Change language to swedish', async () => {
-    await assistanceNeedDecisionEditPage.assertPageTitle('Päätös tuesta')
+    await assistanceNeedDecisionEditPage.assertPageTitle(
+      'Päätös tuesta varhaiskasvatuksessa'
+    )
     await assistanceNeedDecisionEditPage.selectLanguage('Ruotsi')
     await assistanceNeedDecisionEditPage.assertPageTitle('Beslut om stöd')
     await assistanceNeedDecisionEditPage.waitUntilSaved()
@@ -268,9 +270,7 @@ describe('Assistance Need Decisions - Preview page', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.preparedBy1,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n${
-        serviceWorker.email ?? ''
-      }\n010202020202`
+      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPreviewPage.decisionMaker,

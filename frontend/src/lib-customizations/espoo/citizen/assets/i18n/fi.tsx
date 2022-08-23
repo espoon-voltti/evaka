@@ -1855,7 +1855,7 @@ export default {
       title: 'Tuen tarve',
       unreadCount: 'lukematonta',
       decisions: {
-        title: 'Tuen päätökset',
+        title: 'Päätökset tuesta varhaiskasvatuksessa',
         form: 'Lomake',
         assistanceLevel: 'Tuen taso',
         validityPeriod: 'Voimassa',
@@ -1864,7 +1864,7 @@ export default {
         status: 'Tila',
         openDecision: 'Avaa päätös',
         decision: {
-          pageTitle: 'Päätös tuesta',
+          pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
           neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
           pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
           structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
@@ -1908,11 +1908,14 @@ export default {
           unitMayChange:
             'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
           motivationForDecision: 'Perustelut lapsen tuen tasolle',
+          jurisdiction: 'Toimivalta',
+          jurisdictionText:
+            'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
           personsResponsible: 'Vastuuhenkilöt',
           preparator: 'Päätöksen valmistelija',
-          decisionMaker: 'Päättäjä',
+          decisionMaker: 'Päätöksen tekijä',
           disclaimer:
-            'Varhaiskasvatuslain 15 e § :n mukainen päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
+            'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
           decisionNumber: 'Päätösnumero',
           statuses: {
             DRAFT: 'Luonnos',
@@ -1920,8 +1923,8 @@ export default {
             ACCEPTED: 'Hyväksytty',
             REJECTED: 'Hylätty'
           },
-          confidential: 'Salassapidettävä',
-          lawReference: 'Varhaiskasvatuslaki 15 §',
+          confidential: 'Salassa pidettävä',
+          lawReference: 'Varhaiskasvatuslaki 40 §',
           appealInstructionsTitle: 'Oikaisuvaatimusohje',
           appealInstructions: (
             <>

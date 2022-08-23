@@ -149,7 +149,6 @@ data class AssistanceNeedDecisionEmployee(
     val employeeId: EmployeeId?,
     val title: String?,
     val name: String? = null,
-    val email: String? = null,
     val phoneNumber: String?
 ) {
     fun toForm() = AssistanceNeedDecisionEmployeeForm(employeeId, title, phoneNumber)
