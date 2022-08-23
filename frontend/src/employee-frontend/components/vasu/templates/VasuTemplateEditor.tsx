@@ -626,6 +626,7 @@ export default React.memo(function VasuTemplateEditor() {
                             icon={faArrowUp}
                             onClick={() => moveSection(sectionIndex, 'up')}
                             disabled={sectionIndex === 0}
+                            aria-label={i18n.vasuTemplates.moveUp}
                           />
                           <IconButton
                             icon={faArrowDown}
@@ -634,11 +635,13 @@ export default React.memo(function VasuTemplateEditor() {
                               sectionIndex ===
                               template.content.sections.length - 1
                             }
+                            aria-label={i18n.vasuTemplates.moveDown}
                           />
                           <IconButton
                             icon={faTrash}
                             onClick={() => removeSection(sectionIndex)}
                             disabled={section.questions.length > 0}
+                            aria-label={i18n.common.remove}
                           />
                         </FixedSpaceRow>
                       </div>
@@ -674,6 +677,7 @@ export default React.memo(function VasuTemplateEditor() {
                                     )
                                   }
                                   disabled={questionIndex === 0}
+                                  aria-label={i18n.vasuTemplates.moveUp}
                                 />
                                 <IconButton
                                   icon={faArrowDown}
@@ -688,6 +692,7 @@ export default React.memo(function VasuTemplateEditor() {
                                     questionIndex ===
                                     section.questions.length - 1
                                   }
+                                  aria-label={i18n.vasuTemplates.moveDown}
                                 />
                                 <IconButton
                                   icon={faTrash}
@@ -695,6 +700,7 @@ export default React.memo(function VasuTemplateEditor() {
                                   onClick={() =>
                                     removeQuestion(sectionIndex, questionIndex)
                                   }
+                                  aria-label={i18n.common.remove}
                                 />
                               </FixedSpaceRow>
                             )}

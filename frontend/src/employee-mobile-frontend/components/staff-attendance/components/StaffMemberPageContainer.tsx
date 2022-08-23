@@ -6,6 +6,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-mobile-frontend/state/i18n'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
@@ -32,7 +33,9 @@ const Shadow = styled.div`
 export function StaffMemberPageContainer({
   children
 }: React.PropsWithChildren<unknown>) {
+  const { i18n } = useTranslation()
   const navigate = useNavigate()
+
   return (
     <TallContentAreaNoOverflow
       opaque
@@ -44,6 +47,7 @@ export function StaffMemberPageContainer({
         onClick={() => navigate(-1)}
         icon={faArrowLeft}
         data-qa="back-btn"
+        aria-label={i18n.common.close}
       />
       <Shadow>{children}</Shadow>
     </TallContentAreaNoOverflow>

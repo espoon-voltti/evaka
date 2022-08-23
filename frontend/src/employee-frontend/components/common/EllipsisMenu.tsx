@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-frontend/state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -30,6 +31,8 @@ export default React.memo(function EllipsisMenu({
   const [showMenu, setShowMenu] = useState(false)
   const closeMenu = () => setShowMenu(false)
 
+  const { i18n } = useTranslation()
+
   return (
     <Container>
       {items.length > 0 && (
@@ -42,6 +45,7 @@ export default React.memo(function EllipsisMenu({
               e.stopPropagation()
             }}
             data-qa={dataQa}
+            aria-label={showMenu ? i18n.common.close : i18n.common.open}
           />
           {showMenu && <MenuList items={items} closeMenu={closeMenu} />}
         </>

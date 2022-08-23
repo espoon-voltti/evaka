@@ -132,7 +132,7 @@ export default React.memo(function PreferredUnitBox({
           icon={faTimes}
           gray
           onClick={remove}
-          altText={`${unit.name}: ${t.applications.editor.unitPreference.units.preferences.remove}`}
+          aria-label={`${unit.name}: ${t.applications.editor.unitPreference.units.preferences.remove}`}
         />
       </MainColRight>
     </Wrapper>

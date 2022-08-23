@@ -193,7 +193,6 @@ interface InputProps extends BaseProps {
   autoComplete?: string
   placeholder?: string
   info?: InputInfo
-  clearable?: boolean
   align?: 'left' | 'right'
   icon?: IconProp
   inputMode?: HTMLAttributes<HTMLInputElement>['inputMode']
@@ -213,6 +212,11 @@ interface InputProps extends BaseProps {
   wrapperClassName?: string
 }
 
+interface ClearableInputProps extends OtherInputProps {
+  clearable: true
+  clearLabel: string
+}
+
 interface DateInputProps extends InputProps {
   type: 'date'
   min?: string
@@ -224,7 +228,10 @@ interface OtherInputProps extends InputProps {
   max?: number
 }
 
-export type TextInputProps = OtherInputProps | DateInputProps
+export type TextInputProps =
+  | OtherInputProps
+  | DateInputProps
+  | ClearableInputProps
 
 export default React.memo(function InputField({
   value,
@@ -237,7 +244,6 @@ export default React.memo(function InputField({
   placeholder,
   info,
   inputMode,
-  clearable = false,
   align,
   autoComplete,
   'data-qa': dataQa,
@@ -264,6 +270,8 @@ export default React.memo(function InputField({
     hideErrorsBeforeTouched && !touched && info?.status === 'warning'
   const infoText = hideError ? undefined : info?.text
   const infoStatus = hideError ? undefined : info?.status
+
+  const clearable = 'clearable' in rest && rest.clearable
 
   const showIcon = !!(clearable || icon || symbol)
 
@@ -312,7 +320,7 @@ export default React.memo(function InputField({
             <StyledIconButton
               icon={faTimes}
               onClick={() => onChange && onChange('')}
-              altText="clear"
+              aria-label={rest.clearLabel}
             />
           ) : icon ? (
             <FontAwesomeIcon icon={icon} />

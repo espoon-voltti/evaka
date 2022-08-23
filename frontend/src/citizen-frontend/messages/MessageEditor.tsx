@@ -73,6 +73,7 @@ export default React.memo(function MessageEditor({
               onClick={() => onClose()}
               white
               data-qa="close-message-editor-btn"
+              aria-label={i18n.common.close}
             />
           </TopBar>
           <FormArea>

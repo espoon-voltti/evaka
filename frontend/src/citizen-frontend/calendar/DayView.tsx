@@ -190,7 +190,7 @@ export default React.memo(function DayView({
                   icon={faChevronLeft}
                   onClick={navigateToPrevDate}
                   disabled={!previousDate}
-                  altText={i18n.calendar.previousDay}
+                  aria-label={i18n.calendar.previousDay}
                 />
                 <ModalHeader headingComponent={DayOfWeek}>
                   {date.format('EEEEEE d.M.yyyy', lang)}
@@ -199,7 +199,7 @@ export default React.memo(function DayView({
                   icon={faChevronRight}
                   onClick={navigateToNextDate}
                   disabled={!nextDate}
-                  altText={i18n.calendar.nextDay}
+                  aria-label={i18n.calendar.nextDay}
                 />
               </DayPicker>
               <Gap size="m" />
@@ -645,6 +645,8 @@ const EditReservation = React.memo(function EditReservation({
     [editorStateSetter, childId]
   )
 
+  const t = useTranslation()
+
   return (
     <FixedSpaceColumn>
       <FixedSpaceRow alignItems="center">
@@ -657,6 +659,7 @@ const EditReservation = React.memo(function EditReservation({
           <IconButton
             icon={faPlus}
             onClick={() => addSecondReservation(childId)}
+            aria-label={t.common.add}
           />
         )}
       </FixedSpaceRow>
@@ -670,6 +673,7 @@ const EditReservation = React.memo(function EditReservation({
           <IconButton
             icon={faTrash}
             onClick={() => removeSecondReservation(childId)}
+            aria-label={t.common.delete}
           />
         </FixedSpaceRow>
       )}

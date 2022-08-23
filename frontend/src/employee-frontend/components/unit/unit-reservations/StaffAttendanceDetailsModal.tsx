@@ -318,9 +318,17 @@ export default React.memo(function StaffAttendanceDetailsModal({
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
       <Content>
         <FixedSpaceRow alignItems="center">
-          <AsyncIconButton icon={faChevronLeft} onClick={onPreviousDate} />
+          <AsyncIconButton
+            icon={faChevronLeft}
+            onClick={onPreviousDate}
+            aria-label={i18n.unit.staffAttendance.previousDay}
+          />
           <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
-          <AsyncIconButton icon={faChevronRight} onClick={onNextDate} />
+          <AsyncIconButton
+            icon={faChevronRight}
+            onClick={onNextDate}
+            aria-label={i18n.unit.staffAttendance.nextDay}
+          />
         </FixedSpaceRow>
         <H2>
           {employee.firstName} {employee.lastName}
@@ -497,6 +505,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
                   <IconButton
                     icon={faTrash}
                     onClick={() => removeAttendance(index)}
+                    aria-label={i18n.common.remove}
                   />
                 </InputRow>
               </Fragment>

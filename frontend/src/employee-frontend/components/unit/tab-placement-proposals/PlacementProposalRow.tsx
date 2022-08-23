@@ -102,7 +102,7 @@ export default React.memo(function PlacementProposalRow({
               <IconButton
                 onClick={() => undefined}
                 icon={faFileAlt}
-                altText={i18n.personProfile.application.open}
+                aria-label={i18n.personProfile.application.open}
               />
             </a>
           </CenteredDiv>

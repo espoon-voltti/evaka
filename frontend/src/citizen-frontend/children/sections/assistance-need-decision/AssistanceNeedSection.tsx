@@ -105,7 +105,9 @@ export default React.memo(function AssistanceNeedSection({
                   <FixedSpaceRow justifyContent="center" alignItems="center">
                     <IconButton
                       icon={faFileAlt}
-                      altText={t.children.assistanceNeed.decisions.openDecision}
+                      aria-label={
+                        t.children.assistanceNeed.decisions.openDecision
+                      }
                       onClick={(ev) => {
                         ev.stopPropagation()
                         navigate(

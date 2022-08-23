@@ -20,6 +20,7 @@ const REMIND_INTERVAL = 5 * 60 * 1000
 interface ReloadNotificationTranslations {
   title: string
   buttonText: string
+  closeLabel: string
 }
 
 interface Props {
@@ -54,7 +55,12 @@ export default function ReloadNotification({ apiVersion, i18n }: Props) {
   return show ? (
     <OuterContainer>
       <ToastContainer>
-        <Toast icon={faInfo} iconColor={theme.colors.main.m1} onClose={close}>
+        <Toast
+          icon={faInfo}
+          iconColor={theme.colors.main.m1}
+          onClose={close}
+          closeLabel={i18n.closeLabel}
+        >
           <FixedSpaceColumn spacing="xs">
             <div>{i18n.title}</div>
             <div>

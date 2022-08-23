@@ -70,7 +70,7 @@ export default React.memo(function TopBar({
           <IconButton
             icon={faArrowLeft}
             onClick={onBack}
-            altText={i18n.common.back}
+            aria-label={i18n.common.back}
             data-qa="go-back"
           />
         </TopBarIconContainer>
@@ -86,7 +86,7 @@ export default React.memo(function TopBar({
             icon={faTimes}
             white
             onClick={onClose}
-            altText={i18n.common.close}
+            aria-label={i18n.common.close}
           />
         </TopBarIconContainer>
       ) : (

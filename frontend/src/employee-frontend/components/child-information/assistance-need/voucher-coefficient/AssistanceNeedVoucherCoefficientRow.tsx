@@ -123,6 +123,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
                   toggleUiMode('modify-assistance-need-voucher-coefficient')
                 }}
                 data-qa="assistance-need-voucher-coefficient-edit-btn"
+                aria-label={i18n.common.edit}
               />
             )}
             {permittedActions.includes('DELETE') && (
@@ -133,6 +134,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
                   toggleUiMode('delete-assistance-need-voucher-coefficient')
                 }}
                 data-qa="assistance-need-voucher-coefficient-delete-btn"
+                aria-label={i18n.common.remove}
               />
             )}
           </FixedSpaceRow>

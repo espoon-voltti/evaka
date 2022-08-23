@@ -49,6 +49,7 @@ export const fi = {
     messages: 'Viestit',
     back: 'Takaisin',
     close: 'Sulje',
+    open: 'Avaa',
     hours: 'Tuntia',
     remove: 'Poista',
     doNotRemove: 'Älä poista',

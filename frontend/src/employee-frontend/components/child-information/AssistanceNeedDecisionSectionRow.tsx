@@ -41,6 +41,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
                 }`
               )
             }
+            aria-label={i18n.common.open}
           />
         </FixedSpaceRow>
       </Td>
@@ -77,10 +78,15 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
                     }/edit`
                   )
                 }
+                aria-label={i18n.common.edit}
               />
             )}
             {permittedActions.includes('DELETE') && (
-              <IconButton icon={faTrash} onClick={onDelete} />
+              <IconButton
+                icon={faTrash}
+                onClick={onDelete}
+                aria-label={i18n.common.remove}
+              />
             )}
           </FixedSpaceRow>
         )}

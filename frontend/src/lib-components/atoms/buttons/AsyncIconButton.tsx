@@ -4,9 +4,11 @@
 
 import React, { useState } from 'react'
 
+import { OmitInUnion } from 'lib-common/types'
+
 import IconButton, { IconButtonProps } from './IconButton'
 
-export interface AsyncIconButtonProps extends IconButtonProps {
+export type AsyncIconButtonProps = OmitInUnion<IconButtonProps, 'onClick'> & {
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>
 }
 

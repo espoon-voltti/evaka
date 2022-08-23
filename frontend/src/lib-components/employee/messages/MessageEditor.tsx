@@ -128,6 +128,8 @@ export interface MessageEditorI18n {
   search: string
   noResults: string
   addAttachmentInfo: string
+  close: string
+  open: string
 }
 
 interface Props {
@@ -427,6 +429,7 @@ export default React.memo(function MessageEditor({
                   white
                   size="s"
                   data-qa="collapse-view-btn"
+                  aria-label={i18n.open}
                 />
               ) : (
                 <IconButton
@@ -435,6 +438,7 @@ export default React.memo(function MessageEditor({
                   white
                   size="s"
                   data-qa="expand-view-btn"
+                  aria-label={i18n.close}
                 />
               )}
               <IconButton
@@ -443,6 +447,7 @@ export default React.memo(function MessageEditor({
                 white
                 size="m"
                 data-qa="close-message-editor-btn"
+                aria-label={i18n.close}
               />
             </HeaderButtonContainer>
           </TopBar>
@@ -583,6 +588,7 @@ export default React.memo(function MessageEditor({
           icon={faTimes}
           onClick={onCloseHandler}
           data-qa="close-message-editor-btn"
+          aria-label={i18n.close}
         />
       </TopBarMobile>
       <ScrollableFormArea>

@@ -59,6 +59,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
               onClick={() => copyThresholds(feeThresholds)}
               disabled={editing}
               data-qa="copy"
+              aria-label={i18n.common.copy}
             />
             <IconButton
               icon={faPen}
@@ -75,6 +76,7 @@ export const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
               }}
               disabled={editing}
               data-qa="edit"
+              aria-label={i18n.common.edit}
             />
             <StatusLabel dateRange={feeThresholds.validDuring} />
           </FixedSpaceRow>

@@ -515,7 +515,7 @@ export default React.memo(function FileUpload({
                       icon={faTimes}
                       disabled={file.deleteInProgress}
                       onClick={() => deleteFile(file)}
-                      altText={`${i18n.upload.deleteFile} ${file.name}`}
+                      aria-label={`${i18n.upload.deleteFile} ${file.name}`}
                       data-qa={`file-delete-button-${file.name}`}
                     />
                   </FileHeader>

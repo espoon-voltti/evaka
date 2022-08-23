@@ -90,11 +90,13 @@ export default React.memo(function HolidayPeriodsPage() {
                         onClick={() =>
                           navigate(`/holiday-periods/${holiday.id}`)
                         }
+                        aria-label={i18n.common.edit}
                       />
                       <IconButton
                         icon={faTrash}
                         data-qa="btn-delete"
                         onClick={() => setPeriodToDelete(holiday.id)}
+                        aria-label={i18n.common.remove}
                       />
                     </FixedSpaceRow>
                   </Td>
@@ -133,11 +135,13 @@ export default React.memo(function HolidayPeriodsPage() {
                         onClick={() =>
                           navigate(`/holiday-periods/questionnaire/${row.id}`)
                         }
+                        aria-label={i18n.common.edit}
                       />
                       <IconButton
                         icon={faTrash}
                         data-qa="btn-delete"
                         onClick={() => setQuestionnaireToDelete(row.id)}
+                        aria-label={i18n.common.remove}
                       />
                     </FixedSpaceRow>
                   </Td>

@@ -408,6 +408,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
               }
             ])
           }
+          aria-label={i18n.common.addNew}
         />
       ) : (
         <div />
@@ -457,6 +458,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           <IconButton
             icon={faTrash}
             onClick={() => props.updateTimes([timeRange])}
+            aria-label={i18n.common.remove}
           />
         </>
       ) : null}

@@ -99,7 +99,13 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
               iconRight
               data-qa="group-selector-button"
             />
-            {onSearch && <IconButton onClick={onSearch} icon={faSearch} />}
+            {onSearch && (
+              <IconButton
+                onClick={onSearch}
+                icon={faSearch}
+                aria-label={i18n.common.search}
+              />
+            )}
           </GroupSelectorButtonRow>
         )}
         <GroupSelector

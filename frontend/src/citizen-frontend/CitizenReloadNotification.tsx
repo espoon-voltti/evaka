@@ -14,6 +14,12 @@ export default React.memo(function CitizenReloadNotification() {
   const { apiVersion } = useContext(AuthContext)
 
   return (
-    <ReloadNotification apiVersion={apiVersion} i18n={t.reloadNotification} />
+    <ReloadNotification
+      apiVersion={apiVersion}
+      i18n={{
+        ...t.reloadNotification,
+        closeLabel: t.common.close
+      }}
+    />
   )
 })

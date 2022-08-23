@@ -318,7 +318,9 @@ const en: Translations = {
         `A new daily service time has been updated to your early childhood education contract. Please make new reservations starting from ${dateFrom}.`,
       title: 'Make new reservations',
       ok: 'OK'
-    }
+    },
+    absentEnable: 'Mark as absent',
+    absentDisable: 'Mark as present'
   },
   messages: {
     inboxTitle: 'Inbox',

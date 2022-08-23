@@ -415,6 +415,11 @@ const ApplicationsList = React.memo(function Applications({
                 setEditedNoteText(application.serviceWorkerNote)
                 setEditedNote(application.id)
               }}
+              aria-label={
+                application.serviceWorkerNote
+                  ? i18n.common.edit
+                  : i18n.applications.list.addNote
+              }
             />
           </Tooltip>
         </Td>

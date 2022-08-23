@@ -316,7 +316,9 @@ export default {
         `Varhaiskasvatussopimukseenne on päivitetty uusi päivittäinen läsnäoloaika. Teethän uudet läsnäoloilmoitukset ${dateFrom} alkaen.`,
       title: 'Tee uudet läsnäoloilmoitukset',
       ok: 'Selvä!'
-    }
+    },
+    absentEnable: 'Merkitse poissaolevaksi',
+    absentDisable: 'Merkitse läsnä olevaksi'
   },
   messages: {
     inboxTitle: 'Viestit',

@@ -132,7 +132,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
                   icon={faArrowLeft}
                   data-qa="return-collapsible"
                   onClick={() => toggleOpen()}
-                  altText={t.common.return}
+                  aria-label={t.common.return}
                 />
                 <div
                   tabIndex={isFocusable ? 0 : undefined}

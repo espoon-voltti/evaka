@@ -228,7 +228,12 @@ export default React.memo(function NotesModal({
       <HeaderContainer>
         <Tabs>{tabs}</Tabs>
         <CloseContainer>
-          <IconButton icon={faTimes} onClick={onClose} data-qa="modal-close" />
+          <IconButton
+            icon={faTimes}
+            onClick={onClose}
+            data-qa="modal-close"
+            aria-label={i18n.common.closeModal}
+          />
         </CloseContainer>
       </HeaderContainer>
 

@@ -188,12 +188,14 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
               onClick={() => setEditMode(true)}
               icon={faPen}
               disabled={submitting}
+              aria-label={i18n.common.edit}
             />
             <IconButton
               data-qa="pedagogical-document-button-delete"
               onClick={() => onDelete(pedagogicalDocument)}
               icon={faTrash}
               disabled={submitting}
+              aria-label={i18n.common.remove}
             />
           </InlineButtons>
         )}

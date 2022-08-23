@@ -27,12 +27,15 @@ export const EditStateIndicator = React.memo(function EditStateIndicator({
   status: Result<void>
   stopEditing: () => void
 }) {
+  const { i18n } = useTranslation()
+
   return (
     <IconButton
       icon={faCheck}
       onClick={stopEditing}
       disabled={status.isLoading}
       data-qa="inline-editor-state-button"
+      aria-label={i18n.common.save}
     />
   )
 })

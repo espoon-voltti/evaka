@@ -176,7 +176,9 @@ export const fi = {
     nb: 'Huom',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     closeModal: 'Sulje ponnahdusikkuna',
-    close: 'Sulje'
+    close: 'Sulje',
+    open: 'Avaa',
+    copy: 'Kopioi'
   },
   header: {
     applications: 'Hakemukset',
@@ -1947,7 +1949,9 @@ export const fi = {
       },
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
-      inOtherUnit: 'Muussa yksikössä'
+      inOtherUnit: 'Muussa yksikössä',
+      nextWeek: 'Seuraava viikko',
+      previousWeek: 'Edellinen viikko'
     },
     staffAttendance: {
       startTime: 'tulo',
@@ -1973,7 +1977,10 @@ export const fi = {
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
       personCount: 'Henkilökuntaa paikalla',
-      personCountAbbr: 'hlö'
+      personCountAbbr: 'hlö',
+      unlinkOvernight: 'Erota yön yli menevä läsnäolo',
+      previousDay: 'Edellinen päivä',
+      nextDay: 'Seuraava päivä'
     },
     error: {
       placement: {
@@ -3466,7 +3473,9 @@ export const fi = {
         'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
       TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa',
       TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
-    }
+    },
+    moveUp: 'Siirrä ylemmäs',
+    moveDown: 'Siirrä alemmas'
   },
   settings: {
     title: 'Asetukset',

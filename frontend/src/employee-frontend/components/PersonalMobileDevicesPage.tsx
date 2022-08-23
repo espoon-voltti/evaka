@@ -91,6 +91,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
                               })
                             }
                             disabled={openModal !== undefined}
+                            aria-label={i18n.common.edit}
                           />
                           <IconButton
                             icon={faTrash}
@@ -98,6 +99,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
                               setOpenModal({ id, action: 'delete' })
                             }
                             disabled={openModal !== undefined}
+                            aria-label={i18n.common.remove}
                           />
                         </FixedSpaceRow>
                       </Td>

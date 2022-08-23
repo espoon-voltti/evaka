@@ -205,6 +205,7 @@ export function FreeTextSearch({
   background
 }: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
+  const { i18n } = useTranslation()
 
   return (
     <SearchInputContainer>
@@ -216,7 +217,12 @@ export function FreeTextSearch({
         data-qa="free-text-search-input"
         background={background}
       />
-      <CustomIconButton icon={faTimes} onClick={clear} size="m" />
+      <CustomIconButton
+        icon={faTimes}
+        onClick={clear}
+        size="m"
+        aria-label={i18n.common.clear}
+      />
     </SearchInputContainer>
   )
 }

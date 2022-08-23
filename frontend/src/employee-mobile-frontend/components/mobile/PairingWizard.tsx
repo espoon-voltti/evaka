@@ -127,6 +127,7 @@ export default React.memo(function ParingWizard() {
                   icon={faArrowRight}
                   onClick={sendRequest}
                   data-qa="submit-challenge-key-btn"
+                  aria-label={i18n.common.confirm}
                 />
               </Flex>
             </CenteredColumn>

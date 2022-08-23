@@ -178,6 +178,7 @@ export default React.memo(function Groups({
             size="L"
             gray
             data-qa="toggle-all-groups-collapsible"
+            aria-label={allGroupsAreOpen ? i18n.common.close : i18n.common.open}
           />
         </TitleContainer>
         <FixedSpaceRow spacing="L" alignItems="center">

@@ -316,7 +316,9 @@ const sv: Translations = {
         `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt. Vänligen gör nya bokningar från och med ${dateFrom}.`,
       title: 'Gör nya reservationer',
       ok: 'Klart!'
-    }
+    },
+    absentEnable: 'Markera som frånvarande',
+    absentDisable: 'Markera som närvarande'
   },
   messages: {
     inboxTitle: 'Inkorg',

@@ -194,6 +194,8 @@ function AclRow({
     [setEditing, onChangeGroups]
   )
 
+  const { i18n } = useTranslation()
+
   if (editing) {
     return (
       <AclRowEditor
@@ -208,10 +210,20 @@ function AclRow({
   const buttons = (
     <RowButtons>
       {isEditable && (
-        <IconButton icon={faPen} onClick={onClickEdit} data-qa="edit" />
+        <IconButton
+          icon={faPen}
+          onClick={onClickEdit}
+          data-qa="edit"
+          aria-label={i18n.common.edit}
+        />
       )}
       {isDeletable && (
-        <IconButton icon={faTrash} onClick={onClickDelete} data-qa="delete" />
+        <IconButton
+          icon={faTrash}
+          onClick={onClickDelete}
+          data-qa="delete"
+          aria-label={i18n.common.remove}
+        />
       )}
     </RowButtons>
   )
@@ -352,6 +364,8 @@ function DeviceRow({
   onClickEdit: () => void
   onClickDelete: () => void
 }) {
+  const { i18n } = useTranslation()
+
   return (
     <Tr data-qa="device-row">
       <Td data-qa="name">{row.name}</Td>
@@ -361,11 +375,13 @@ function DeviceRow({
             icon={faPen}
             onClick={onClickEdit}
             data-qa="edit-mobile-device"
+            aria-label={i18n.common.edit}
           />
           <IconButton
             icon={faTrash}
             onClick={onClickDelete}
             data-qa="delete-mobile-device"
+            aria-label={i18n.common.remove}
           />
         </FixedSpaceRowAlignRight>
       </Td>
