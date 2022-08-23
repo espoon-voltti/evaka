@@ -156,11 +156,12 @@ class AssistanceNeedDecisionService(
 
             val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(langWithDefault(lang))
             val messageContent = messageProvider.getAssistanceNeedDecisionContent(langWithDefault(lang))
+            val messageId = "${decision.id}_${guardian.id}"
 
             sfiClient.send(
                 SfiMessage(
-                    messageId = "${decision.id}_${guardian.id}",
-                    documentId = decision.id.toString(),
+                    messageId = messageId,
+                    documentId = messageId,
                     documentDisplayName = suomiFiDocumentFileName(decision.language),
                     documentKey = "",
                     documentBucket = "",
