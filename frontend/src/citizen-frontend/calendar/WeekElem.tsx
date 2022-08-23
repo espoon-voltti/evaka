@@ -5,6 +5,7 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
+import { headerHeightMobile } from 'citizen-frontend/header/const'
 import {
   DailyReservationData,
   ReservationChild
@@ -140,7 +141,7 @@ const DayElem = React.memo(function DayElem({
 
     if (top) {
       scrollToPos({
-        top: top - 32
+        top: top - headerHeightMobile - 32
       })
     }
   }, [])

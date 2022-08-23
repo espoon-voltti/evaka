@@ -105,6 +105,8 @@ const HeaderContainer = styled.header<{ showMenu: boolean }>`
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
   height: ${headerHeightMobile}px;
   width: 100%;
+  position: sticky;
+  top: 0;
 
   @media (min-width: ${desktopMin}) {
     grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;

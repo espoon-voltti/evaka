@@ -69,7 +69,7 @@ export default React.memo(function CalendarGridView({
 
     if (top) {
       scrollToPos({
-        top: top - headerHeightDesktop - 32
+        top: top - headerHeightDesktop * 2 - 32
       })
     }
   }, [])
@@ -416,7 +416,7 @@ const Day = React.memo(function Day({
 
 const StickyHeader = styled.div`
   position: sticky;
-  top: 0;
+  top: ${headerHeightDesktop}px;
   z-index: 2;
   width: 100%;
   background: ${(p) => p.theme.colors.grayscale.g0};
