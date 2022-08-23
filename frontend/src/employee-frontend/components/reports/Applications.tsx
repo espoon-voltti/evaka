@@ -15,8 +15,8 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import { getApplicationsReport, PeriodFilters } from '../../api/reports'
@@ -78,18 +78,24 @@ export default React.memo(function Applications() {
             {i18n.reports.applications.preferredStartingDate}
           </FilterLabel>
           <FlexRow>
-            <DatePickerDeprecated
+            <DatePicker
               date={filters.from}
-              onChange={(from) => setFilters({ ...filters, from })}
-              type="half-width"
+              onChange={(from) => from && setFilters({ ...filters, from })}
               data-qa="datepicker-from"
+              locale="fi"
+              errorTexts={i18n.validationErrors}
+              labels={i18n.common.datePicker}
+              aria-label={i18n.common.startDate}
             />
             <span>{' - '}</span>
-            <DatePickerDeprecated
+            <DatePicker
               date={filters.to}
-              onChange={(to) => setFilters({ ...filters, to })}
-              type="half-width"
+              onChange={(to) => to && setFilters({ ...filters, to })}
               data-qa="datepicker-to"
+              locale="fi"
+              errorTexts={i18n.validationErrors}
+              labels={i18n.common.datePicker}
+              aria-label={i18n.common.endDate}
             />
           </FlexRow>
         </FilterRow>

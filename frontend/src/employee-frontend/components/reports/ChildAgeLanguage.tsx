@@ -15,7 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { DateFilters, getChildAgeLanguageReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -70,10 +70,14 @@ export default React.memo(function ChildAgeLanguage() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.childAgeLanguage.title}</Title>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePickerDeprecated
+          <FilterLabel id="date">{i18n.reports.common.date}</FilterLabel>
+          <DatePicker
             date={filters.date}
-            onChange={(date) => setFilters({ date })}
+            onChange={(date) => date && setFilters({ date })}
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby="date"
           />
         </FilterRow>
 

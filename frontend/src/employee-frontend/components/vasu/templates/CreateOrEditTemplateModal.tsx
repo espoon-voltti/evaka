@@ -16,7 +16,7 @@ import { UUID } from 'lib-common/types'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employee'
@@ -158,13 +158,27 @@ export default React.memo(function CreateOrEditTemplateModal({
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
-          <Label>{t.templateModal.validStart}</Label>
-          <DatePickerDeprecated date={startDate} onChange={setStartDate} />
+          <Label id="template-valid-start">{t.templateModal.validStart}</Label>
+          <DatePicker
+            date={startDate}
+            onChange={(date) => date && setStartDate(date)}
+            labels={i18n.common.datePicker}
+            errorTexts={i18n.validationErrors}
+            locale="fi"
+            aria-labelledby="template-valid-start"
+          />
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
-          <Label>{t.templateModal.validEnd}</Label>
-          <DatePickerDeprecated date={endDate} onChange={setEndDate} />
+          <Label id="template-valid-end">{t.templateModal.validEnd}</Label>
+          <DatePicker
+            date={endDate}
+            onChange={(date) => date && setEndDate(date)}
+            labels={i18n.common.datePicker}
+            errorTexts={i18n.validationErrors}
+            locale="fi"
+            aria-labelledby="template-valid-end"
+          />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>

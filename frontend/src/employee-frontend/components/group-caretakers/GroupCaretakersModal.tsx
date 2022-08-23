@@ -9,11 +9,8 @@ import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
-import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
 
@@ -129,20 +126,31 @@ function GroupCaretakersModal({
       rejectLabel={i18n.common.cancel}
     >
       <section>
-        <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePickerDeprecated
+        <div className="bold" id="start-date">
+          {i18n.common.form.startDate}
+        </div>
+        <DatePicker
           date={form.startDate}
-          onChange={(startDate) => assignForm({ startDate })}
-          type="full-width"
+          onChange={(startDate) => startDate && assignForm({ startDate })}
+          fullWidth
+          locale="fi"
+          errorTexts={i18n.validationErrors}
+          labels={i18n.common.datePicker}
+          aria-labelledby="start-date"
         />
       </section>
       <section>
-        <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePickerClearableDeprecated
+        <div className="bold" id="end-date">
+          {i18n.common.form.endDate}
+        </div>
+        <DatePicker
           date={form.endDate}
           onChange={(endDate) => assignForm({ endDate })}
-          onCleared={() => assignForm({ endDate: null })}
-          type="full-width"
+          fullWidth
+          locale="fi"
+          errorTexts={i18n.validationErrors}
+          labels={i18n.common.datePicker}
+          aria-labelledby="end-date"
         />
       </section>
       <section>

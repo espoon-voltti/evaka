@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { OverlayProvider } from '@react-aria/overlays'
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
@@ -63,12 +64,14 @@ export default function App() {
                   <HolidayPeriodsContextProvider>
                     <ChildrenContextProvider>
                       <ApplicationsContextProvider>
-                        <Content />
-                        <GlobalDialog />
-                        <LoginErrorModal
-                          translations={i18n.login.failedModal}
-                        />
-                        <div id="modal-container" />
+                        <OverlayProvider>
+                          <Content />
+                          <GlobalDialog />
+                          <LoginErrorModal
+                            translations={i18n.login.failedModal}
+                          />
+                          <div id="modal-container" />
+                        </OverlayProvider>
                       </ApplicationsContextProvider>
                     </ChildrenContextProvider>
                   </HolidayPeriodsContextProvider>

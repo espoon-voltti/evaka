@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DatePicker, Page, Radio, TextInput } from '../../utils/page'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+
+import { DatePicker, DateRangePicker, Page, TextInput } from '../../utils/page'
 
 export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
@@ -34,28 +37,34 @@ export class HolidayPeriodsPage {
   }
 
   #periodInputs = {
-    start: new DatePicker(this.page.findByDataQa('input-start')),
-    end: new DatePicker(this.page.findByDataQa('input-end')),
+    range: new DateRangePicker(this.page.findByDataQa('input-range')),
     reservationDeadline: new DatePicker(
       this.page.findByDataQa('input-reservation-deadline')
     )
   }
 
   async fillHolidayPeriodForm(params: {
-    start?: string
-    end?: string
-    reservationDeadline?: string
+    start?: LocalDate
+    end?: LocalDate
+    reservationDeadline?: LocalDate
   }) {
-    for (const [key, val] of Object.entries(params)) {
-      if (val !== undefined) {
-        await this.#periodInputs[key as keyof typeof params].fill(val)
-      }
+    if (params.start) {
+      await this.#periodInputs.range.fillStart(params.start)
+    }
+
+    if (params.end) {
+      await this.#periodInputs.range.fillEnd(params.end)
+    }
+
+    if (params.reservationDeadline) {
+      await this.#periodInputs.reservationDeadline.fill(
+        params.reservationDeadline
+      )
     }
   }
 
   #questionnaireInputs = {
-    activeStart: new DatePicker(this.page.findByDataQa('input-start')),
-    activeEnd: new DatePicker(this.page.findByDataQa('input-end')),
+    activeRange: new DateRangePicker(this.page.findByDataQa('range')),
     title: new TextInput(this.page.findByDataQa('input-title-fi')),
     description: new TextInput(this.page.findByDataQa('input-description-fi')),
     descriptionSv: new TextInput(
@@ -89,20 +98,15 @@ export class HolidayPeriodsPage {
     descriptionLink?: string
     descriptionLinkSv?: string
     descriptionLinkEn?: string
-    activeStart?: string
-    activeEnd?: string
+    activeRange?: FiniteDateRange
     fixedPeriodOptions?: string
     fixedPeriodOptionLabel?: string
   }) {
     for (const [key, val] of Object.entries(params)) {
       if (val !== undefined) {
-        if (key === 'period') {
-          await new Radio(this.page.findByDataQa(`period-${val}`)).click()
-        } else {
-          await this.#questionnaireInputs[
-            key as keyof Omit<typeof params, 'period'>
-          ].fill(val)
-        }
+        await this.#questionnaireInputs[
+          key as keyof Omit<typeof params, 'period'>
+        ].fill(val as string & FiniteDateRange)
       }
     }
   }

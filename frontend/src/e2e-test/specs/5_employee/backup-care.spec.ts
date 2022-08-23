@@ -66,7 +66,7 @@ describe('Employee - Backup care', () => {
 
   test('backup care child can be placed into a group and removed from it', async () => {
     await groupsPage.selectPeriod('1 year')
-    await groupsPage.setFilterStartDate('01.01.2023')
+    await groupsPage.setFilterStartDate(LocalDate.of(2023, 1, 1))
 
     // open the group placement modal and submit it with default values
     await groupsPage.missingPlacementsSection.createGroupPlacementForChild(0)

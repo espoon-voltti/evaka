@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -38,8 +39,8 @@ describe('Child Income', () => {
   it('Create a new max fee accepted income', async () => {
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('1.1.2020')
-    await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.fillIncomeStartDate(LocalDate.of(2020, 1, 1))
+    await incomesSection.fillIncomeEndDate(LocalDate.of(2020, 1, 31))
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
@@ -49,8 +50,8 @@ describe('Child Income', () => {
   it('Create a new income with main income', async () => {
     await incomesSection.openNewIncomeForm()
 
-    await incomesSection.fillIncomeStartDate('1.1.2020')
-    await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.fillIncomeStartDate(LocalDate.of(2020, 1, 1))
+    await incomesSection.fillIncomeEndDate(LocalDate.of(2020, 1, 31))
     await incomesSection.chooseIncomeEffect('INCOME')
 
     await incomesSection.fillIncome('MAIN_INCOME', '5000')

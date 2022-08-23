@@ -8,8 +8,7 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -40,17 +39,6 @@ const DateRowItem = styled.span`
   width: ${(props: DateRowItemProps) => props.width};
   font-weight: ${(props: DateRowItemProps) =>
     props.strong ? fontWeights.semibold : fontWeights.normal};
-
-  .react-datepicker-wrapper > div > div > input {
-    width: 150px;
-  }
-`
-
-const DateRowSpacer = styled.span`
-  margin-left: 15px;
-  margin-right: 15px;
-  margin-top: auto;
-  margin-bottom: auto;
 `
 
 const OverlapError = styled.span`
@@ -72,19 +60,15 @@ const OverlapError = styled.span`
 interface Props {
   placementDraft: PlacementDraft
   placement: DaycarePlacementPlan
-  updateStart: (date: LocalDate) => void
-  updateEnd: (date: LocalDate) => void
-  updatePreschoolStart: (date: LocalDate) => void
-  updatePreschoolEnd: (date: LocalDate) => void
+  updatePeriod: (date: FiniteDateRange) => void
+  updatePreschoolPeriod: (date: FiniteDateRange) => void
 }
 
 export default React.memo(function PlacementDraftSection({
   placementDraft,
   placement,
-  updateStart,
-  updateEnd,
-  updatePreschoolStart,
-  updatePreschoolEnd
+  updatePeriod,
+  updatePreschoolPeriod
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -130,21 +114,17 @@ export default React.memo(function PlacementDraftSection({
         <DateRowItem strong={true}>{i18n.placementDraft.date}</DateRowItem>
       </DateRow>
       <DateRow>
-        <DateRowItem width="225px">
+        <DateRowItem width="225px" id={`label-${placementDraft.type}`}>
           {dateRowLabel(placementDraft.type)}
         </DateRowItem>
         <DateRowItem>
-          <DatePickerDeprecated
-            date={placement.period.start}
-            type="full-width"
-            onChange={updateStart}
-            minDate={LocalDate.todayInSystemTz()}
-          />
-          <DateRowSpacer>-</DateRowSpacer>
-          <DatePickerDeprecated
-            date={placement.period.end}
-            type="full-width"
-            onChange={updateEnd}
+          <DateRangePicker
+            default={placement.period}
+            onChange={(period) => period && updatePeriod(period)}
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby={`label-${placementDraft.type}`}
           />
         </DateRowItem>
         <DateRowItem>
@@ -158,20 +138,17 @@ export default React.memo(function PlacementDraftSection({
       </DateRow>
       {placement.preschoolDaycarePeriod && (
         <DateRow>
-          <DateRowItem width="225px">
+          <DateRowItem width="225px" id="preschool-placement-draft">
             {i18n.placementDraft.preschoolDaycare}
           </DateRowItem>
           <DateRowItem>
-            <DatePickerDeprecated
-              date={placement.preschoolDaycarePeriod.start}
-              type="full-width"
-              onChange={updatePreschoolStart}
-            />
-            <DateRowSpacer>-</DateRowSpacer>
-            <DatePickerDeprecated
-              date={placement.preschoolDaycarePeriod.end}
-              type="full-width"
-              onChange={updatePreschoolEnd}
+            <DateRangePicker
+              default={placement.period}
+              onChange={(period) => period && updatePreschoolPeriod(period)}
+              locale="fi"
+              errorTexts={i18n.validationErrors}
+              labels={i18n.common.datePicker}
+              aria-labelledby="preschool-placement-draft"
             />
           </DateRowItem>
           {hasOverlap(

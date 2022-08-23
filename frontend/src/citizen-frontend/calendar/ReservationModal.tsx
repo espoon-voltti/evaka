@@ -16,10 +16,11 @@ import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
 import {
   Repetition,
-  ReservationFormDataForValidation,
+  ReservationFormData,
   validateForm
 } from 'lib-common/reservations'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -66,10 +67,9 @@ export default React.memo(function ReservationModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
-  const [formData, setFormData] = useState<ReservationFormDataForValidation>({
+  const [formData, setFormData] = useState<ReservationFormData>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: firstReservableDate,
-    endDate: null,
+    range: null,
     repetition: 'DAILY',
     dailyTimes: [
       {
@@ -86,15 +86,12 @@ export default React.memo(function ReservationModal({
     irregularTimes: {}
   })
 
-  const updateForm = useCallback(
-    (updated: Partial<ReservationFormDataForValidation>) => {
-      setFormData((prev) => ({
-        ...prev,
-        ...updated
-      }))
-    },
-    []
-  )
+  const updateForm = useCallback((updated: Partial<ReservationFormData>) => {
+    setFormData((prev) => ({
+      ...prev,
+      ...updated
+    }))
+  }, [])
 
   const [showAllErrors, setShowAllErrors] = useState(false)
   const validationResult = useMemo(
@@ -118,21 +115,13 @@ export default React.memo(function ReservationModal({
     [reservableDays]
   )
 
-  const selectedRange = useMemo(() => {
-    if (!formData.startDate || !formData.endDate) {
-      return
-    }
-
-    return new FiniteDateRange(formData.startDate, formData.endDate)
-  }, [formData.startDate, formData.endDate])
-
   const childrenInShiftCare = useMemo(
     () => availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit),
     [availableChildren]
   )
 
   const includedDays = useMemo(() => {
-    if (!selectedRange) return []
+    if (!formData.range) return []
 
     const combinedOperationDays = availableChildren.reduce<number[]>(
       (totalOperationDays, child) => [
@@ -144,11 +133,13 @@ export default React.memo(function ReservationModal({
     return [1, 2, 3, 4, 5, 6, 7].filter(
       (day) =>
         combinedOperationDays.includes(day) &&
-        [...selectedRange.dates()].some(
+        [...(formData.range?.dates() ?? [])].some(
           (date) => date.getIsoDayOfWeek() === day
         )
     )
-  }, [availableChildren, selectedRange])
+  }, [availableChildren, formData.range])
+
+  const dateRangeAriaId = useUniqueId('date-range-aria')
 
   return (
     <ModalAccessibilityWrapper>
@@ -239,14 +230,14 @@ export default React.memo(function ReservationModal({
                   inlineChildren
                   closeLabel={i18n.common.close}
                 >
-                  <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
+                  <Label id={dateRangeAriaId}>
+                    {i18n.calendar.reservationModal.dateRangeLabel}
+                  </Label>
                 </ExpandingInfo>
                 <DateRangePicker
-                  start={formData.startDate}
-                  end={formData.endDate}
-                  onChange={(startDate, endDate) =>
-                    updateForm({ startDate, endDate })
-                  }
+                  onChange={(range) => {
+                    updateForm({ range })
+                  }}
                   locale={lang}
                   errorTexts={i18n.validationErrors}
                   isInvalidDate={isInvalidDate}
@@ -256,19 +247,27 @@ export default React.memo(function ReservationModal({
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
-                  startInfo={errorToInputInfo(
-                    validationResult.errors?.startDate,
+                  info={errorToInputInfo(
+                    validationResult.errors?.range,
                     i18n.validationErrors
                   )}
-                  endInfo={errorToInputInfo(
-                    validationResult.errors?.endDate,
-                    i18n.validationErrors
-                  )}
+                  aria-labelledby={dateRangeAriaId}
+                  labels={i18n.common.datePicker}
+                  default={
+                    formData.range ?? {
+                      start:
+                        minDate && minDate.isBefore(firstReservableDate)
+                          ? minDate
+                          : firstReservableDate
+                    }
+                  }
+                  data-qa="date-range"
+                  openAbove
                 />
 
                 <Gap size="m" />
 
-                {selectedRange ? (
+                {formData.range ? (
                   <RepetitionTimeInputGrid
                     formData={formData}
                     childrenInShiftCare={childrenInShiftCare}
@@ -277,7 +276,7 @@ export default React.memo(function ReservationModal({
                     showAllErrors={showAllErrors}
                     existingReservations={existingReservations}
                     validationResult={validationResult}
-                    selectedRange={selectedRange}
+                    selectedRange={formData.range}
                     repetition={formData.repetition}
                   />
                 ) : (
@@ -316,7 +315,7 @@ export default React.memo(function ReservationModal({
         </ModalBackground>
         <ModalCloseButton
           onClick={onClose}
-          altText={i18n.common.closeModal}
+          aria-label={i18n.common.closeModal}
           icon={faTimes}
         />
       </PlainModal>

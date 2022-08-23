@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -11,7 +12,8 @@ import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
-  DatePickerDeprecated,
+  DatePicker,
+  DateRangePicker,
   Element,
   FileInput,
   Modal,
@@ -151,7 +153,7 @@ class DailyServiceTimeSectionBaseForm extends Section {
 }
 
 class DailyServiceTimeSectionCreationForm extends DailyServiceTimeSectionBaseForm {
-  readonly validityPeriodStartInput = new TextInput(
+  readonly validityPeriodStartInput = new DatePicker(
     this.findByDataQa('daily-service-times-validity-period-start')
   )
 
@@ -383,15 +385,19 @@ export class BackupCaresSection extends Section {
   )
 
   #dates = this.findAll('[data-qa="dates"] > *')
-  #startDate = new DatePickerDeprecated(this.#dates.nth(0))
-  #endDate = new DatePickerDeprecated(this.#dates.nth(1))
+  #startDate = new DatePicker(this.#dates.nth(0))
+  #endDate = new DatePicker(this.#dates.nth(1))
 
   // #backupCareForm = this.find('[data-qa="backup-care-form"]')
   #submit = this.find('[data-qa="submit-backup-care-form"]')
 
   #backupCares = this.find('[data-qa="backup-cares"]')
 
-  async createBackupCare(daycare: Daycare, startDate: string, endDate: string) {
+  async createBackupCare(
+    daycare: Daycare,
+    startDate: LocalDate,
+    endDate: LocalDate
+  ) {
     await this.#createBackupCareButton.click()
     await this.#backupCareSelectUnit.fillAndSelectFirst(daycare.name)
 
@@ -588,8 +594,8 @@ export class PlacementsSection extends Section {
     endDate
   }: {
     unitName: string
-    startDate: string
-    endDate: string
+    startDate: LocalDate
+    endDate: LocalDate
   }) {
     await this.find('[data-qa="create-new-placement-button"]').click()
 
@@ -597,12 +603,12 @@ export class PlacementsSection extends Section {
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
 
-    const start = new DatePickerDeprecated(
+    const start = new DatePicker(
       modal.find('[data-qa="create-placement-start-date"]')
     )
     await start.fill(startDate)
 
-    const end = new DatePickerDeprecated(
+    const end = new DatePicker(
       modal.find('[data-qa="create-placement-end-date"]')
     )
     await end.fill(endDate)
@@ -724,18 +730,15 @@ export class AssistanceNeedSection extends Section {
   }
 
   assistanceNeedVoucherCoefficientForm(container: Element) {
-    const validityPeriod = container.findByDataQa(
-      'input-assistance-need-voucher-coefficient-validity-period'
-    )
-
     return {
       coefficientInput: new TextInput(
         container.findByDataQa('input-assistance-need-voucher-coefficient')
       ),
-      validityPeriod: {
-        startInput: new TextInput(validityPeriod.findByDataQa('start-date')),
-        endInput: new TextInput(validityPeriod.findByDataQa('end-date'))
-      },
+      validityPeriod: new DateRangePicker(
+        container.findByDataQa(
+          'input-assistance-need-voucher-coefficient-validity-period'
+        )
+      ),
       saveBtn: container.findByDataQa(
         'assistance-need-voucher-coefficient-save'
       )

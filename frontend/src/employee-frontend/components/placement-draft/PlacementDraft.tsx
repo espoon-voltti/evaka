@@ -177,46 +177,17 @@ export default React.memo(function PlacementDraft() {
     }
   }, [formatTitleName, i18n.titles.placementDraft, placementDraft, setTitle])
 
-  function fixNullLengthPeriods(
-    periodType: 'period' | 'preschoolDaycarePeriod',
-    dateType: 'start' | 'end',
-    date: LocalDate
-  ) {
-    if (placementDraft.isSuccess) {
-      const period = placementDraft.value[periodType]
-      if (!period) return period
-      if (dateType === 'start') {
-        if (period.end && period.end.isBefore(date)) {
-          const nextDay = date.addDays(1)
-          return new FiniteDateRange(date, nextDay)
-        } else {
-          return new FiniteDateRange(date, period.end)
-        }
-      } else if (period.start && date.isBefore(period.start)) {
-        const previousDay = date.subDays(1)
-        return new FiniteDateRange(previousDay, date)
-      } else {
-        return new FiniteDateRange(period.start, date)
-      }
-    }
-    return null
-  }
-
-  const updatePlacementDate =
-    (
-      periodType: 'period' | 'preschoolDaycarePeriod',
-      dateType: 'start' | 'end'
-    ) =>
-    (date: LocalDate) => {
-      const fixedPeriod = fixNullLengthPeriods(periodType, dateType, date)
+  const updatePlacementRange =
+    (periodType: 'period' | 'preschoolDaycarePeriod') =>
+    (range: FiniteDateRange) => {
       setPlacement({
         ...placement,
-        [periodType]: fixedPeriod
+        [periodType]: range
       })
       if (placementDraft.isSuccess) {
         const updatedPlacementDraft = placementDraft.map((draft) => ({
           ...draft,
-          [periodType]: fixedPeriod
+          [periodType]: range
         }))
         setPlacementDraft(updatedPlacementDraft)
         calculateOverLaps(updatedPlacementDraft, setPlacementDraft)
@@ -298,15 +269,9 @@ export default React.memo(function PlacementDraft() {
               <PlacementDraftRow
                 placementDraft={placementDraft}
                 placement={placement}
-                updateStart={updatePlacementDate('period', 'start')}
-                updateEnd={updatePlacementDate('period', 'end')}
-                updatePreschoolStart={updatePlacementDate(
-                  'preschoolDaycarePeriod',
-                  'start'
-                )}
-                updatePreschoolEnd={updatePlacementDate(
-                  'preschoolDaycarePeriod',
-                  'end'
+                updatePeriod={updatePlacementRange('period')}
+                updatePreschoolPeriod={updatePlacementRange(
+                  'preschoolDaycarePeriod'
                 )}
               />
               <Gap size="L" />

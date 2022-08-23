@@ -33,12 +33,14 @@ const FieldWithInfo = React.memo(function FieldWithInfo({
   info,
   label,
   children,
-  spacing
+  spacing,
+  labelId
 }: {
   info: string
   label: string
   spacing?: string
   children: React.ReactNode
+  labelId?: string
 }) {
   const { i18n } = useTranslation()
 
@@ -49,7 +51,7 @@ const FieldWithInfo = React.memo(function FieldWithInfo({
         ariaLabel={i18n.common.openExpandingInfo}
         closeLabel={i18n.common.close}
       >
-        <Label>{label}</Label>
+        <Label id={labelId}>{label}</Label>
       </ExpandingInfo>
       {children}
     </FixedSpaceColumn>
@@ -426,7 +428,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <H2>{t.collaborationWithGuardians}</H2>
 
       <FixedSpaceColumn spacing="zero">
-        <Label>{t.guardiansHeardOn}</Label>
+        <Label id="guardians-heard-on">{t.guardiansHeardOn}</Label>
         <DatePicker
           locale={lang}
           date={formState.guardiansHeardOn}
@@ -437,6 +439,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
           hideErrorsBeforeTouched={!fieldInfos.guardiansHeardOn}
           info={fieldInfos.guardiansHeardOn}
           data-qa="guardians-heard-on"
+          labels={i18n.common.datePicker}
+          aria-labelledby="guardians-heard-on"
         />
       </FixedSpaceColumn>
 
@@ -525,6 +529,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
             : `${t.startDateIndefiniteInfo} ${t.startDateInfo}`
         }
         label={t.startDate}
+        labelId="start-date"
         spacing="zero"
       >
         <DatePicker
@@ -545,12 +550,14 @@ export default React.memo(function AssistanceNeedDecisionForm({
           info={fieldInfos.startDate}
           maxDate={formState.validityPeriod.end ?? undefined}
           required
+          labels={i18n.common.datePicker}
+          aria-labelledby="start-date"
         />
       </FieldWithInfo>
 
       {formState.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') && (
         <FixedSpaceColumn spacing="zero">
-          <Label>{t.endDateServices}</Label>
+          <Label id="end-date">{t.endDateServices}</Label>
           <DatePicker
             locale={lang}
             date={formState.validityPeriod.end}
@@ -563,6 +570,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
             hideErrorsBeforeTouched={!fieldInfos.endDate}
             info={fieldInfos.endDate}
             minDate={formState.validityPeriod.start}
+            labels={i18n.common.datePicker}
+            aria-labelledby="end-date"
           />
         </FixedSpaceColumn>
       )}

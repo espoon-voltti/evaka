@@ -142,7 +142,7 @@ describe('Citizen daycare applications', () => {
     )
 
     await editorPage.fillData(minimalDaycareForm.form)
-    await editorPage.setPreferredStartDate(mockedDate.format())
+    await editorPage.setPreferredStartDate(mockedDate)
     await editorPage.assertPreferredStartDateWarningIsShown(true)
   })
 
@@ -153,10 +153,10 @@ describe('Citizen daycare applications', () => {
       'DAYCARE'
     )
 
-    await editorPage.setPreferredStartDate(mockedDate.addYears(2).format())
+    await editorPage.setPreferredStartDate(mockedDate.addYears(2))
     await editorPage.assertPreferredStartDateInfo('Valitse aikaisempi päivä')
 
-    await editorPage.setPreferredStartDate(mockedDate.addMonths(4).format())
+    await editorPage.setPreferredStartDate(mockedDate.addMonths(4))
     await editorPage.assertPreferredStartDateInfo(undefined)
   })
 
@@ -171,7 +171,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend()
 
     await applicationsPage.editApplication(applicationId)
-    await editorPage.setPreferredStartDate(mockedDate.subDays(1).format())
+    await editorPage.setPreferredStartDate(mockedDate.subDays(1))
     await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
   })
 

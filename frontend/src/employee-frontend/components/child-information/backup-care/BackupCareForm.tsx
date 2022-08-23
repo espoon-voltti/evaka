@@ -22,7 +22,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { fontWeights } from 'lib-components/typography'
 
 import {
@@ -194,14 +194,24 @@ export default function BackupCareForm({
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.dateRange}</FormLabel>
           <div data-qa="dates">
-            <DatePickerDeprecated
+            <DatePicker
               date={formState.startDate}
-              onChange={(startDate) => updateFormState({ startDate })}
+              onChange={(startDate) =>
+                startDate && updateFormState({ startDate })
+              }
+              labels={i18n.common.datePicker}
+              errorTexts={i18n.validationErrors}
+              locale="fi"
+              aria-label={i18n.common.startDate}
             />
             {' - '}
-            <DatePickerDeprecated
+            <DatePicker
               date={formState.endDate}
-              onChange={(endDate) => updateFormState({ endDate })}
+              onChange={(endDate) => endDate && updateFormState({ endDate })}
+              labels={i18n.common.datePicker}
+              errorTexts={i18n.validationErrors}
+              locale="fi"
+              aria-label={i18n.common.endDate}
             />
           </div>
         </FormField>

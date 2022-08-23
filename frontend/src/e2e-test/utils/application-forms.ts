@@ -4,7 +4,7 @@
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
 import { PersonDetail } from '../dev-api/types'
@@ -50,7 +50,7 @@ export type FormInput = Partial<{
 }>
 
 export const minimalDaycareForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
@@ -58,7 +58,7 @@ export const minimalDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021',
+      preferredStartDate: LocalDate.of(2021, 8, 16),
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -126,7 +126,7 @@ export const minimalDaycareForm: {
 }
 
 export const fullDaycareForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
@@ -134,7 +134,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021',
+      preferredStartDate: LocalDate.of(2021, 8, 16),
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -156,7 +156,7 @@ export const fullDaycareForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2021',
+      childMoveDate: LocalDate.of(2021, 10, 11),
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',
@@ -273,12 +273,12 @@ export const fullDaycareForm: {
 }
 
 export const minimalClubForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021'
+      preferredStartDate: LocalDate.of(2021, 8, 16)
     },
     unitPreference: {
       preferredUnits: [
@@ -333,12 +333,12 @@ export const minimalClubForm: {
 }
 
 export const fullClubForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021',
+      preferredStartDate: LocalDate.of(2021, 8, 16),
       wasOnClubCare: true,
       wasOnDaycare: true,
       assistanceNeeded: true,
@@ -357,7 +357,7 @@ export const fullClubForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2021',
+      childMoveDate: LocalDate.of(2021, 10, 11),
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',
@@ -425,12 +425,12 @@ export const fullClubForm: {
 }
 
 export const minimalPreschoolForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021'
+      preferredStartDate: LocalDate.of(2021, 8, 16)
     },
     unitPreference: {
       preferredUnits: [
@@ -487,7 +487,7 @@ export const minimalPreschoolForm: {
 }
 
 export const fullPreschoolForm: {
-  form: JsonOf<FormInput>
+  form: FormInput
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
@@ -495,7 +495,7 @@ export const fullPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '16.08.2021',
+      preferredStartDate: LocalDate.of(2021, 8, 16),
       connectedDaycare: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -517,7 +517,7 @@ export const fullPreschoolForm: {
     },
     contactInfo: {
       childFutureAddressExists: true,
-      childMoveDate: '11.10.2021',
+      childMoveDate: LocalDate.of(2021, 10, 11),
       childFutureStreet: 'Katu 1',
       childFuturePostalCode: '00200',
       childFuturePostOffice: 'Espoo',

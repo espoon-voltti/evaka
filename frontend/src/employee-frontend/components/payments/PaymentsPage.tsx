@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -107,21 +107,28 @@ const Modal = React.memo(function Modal({
       data-qa="send-payments-modal"
     >
       <ModalContent>
-        <Label>{i18n.payments.sendModal.paymentDate}</Label>
+        <Label id="payment-date">{i18n.payments.sendModal.paymentDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={paymentDate}
-            onChange={setPaymentDate}
-            type="full-width"
+            onChange={(date) => date && setPaymentDate(date)}
+            fullWidth
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby="payment-date"
           />
         </div>
         <Gap size="s" />
-        <Label>{i18n.payments.sendModal.dueDate}</Label>
+        <Label id="due-date">{i18n.payments.sendModal.dueDate}</Label>
         <div>
-          <DatePickerDeprecated
+          <DatePicker
             date={dueDate}
-            onChange={setDueDate}
-            type="full-width"
+            onChange={(date) => date && setDueDate(date)}
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby="due-date"
           />
         </div>
       </ModalContent>

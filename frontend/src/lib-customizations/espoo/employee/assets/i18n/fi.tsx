@@ -176,9 +176,16 @@ export const fi = {
     nb: 'Huom',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     closeModal: 'Sulje ponnahdusikkuna',
+    datePicker: {
+      previousMonthLabel: 'Edellinen kuukausi',
+      nextMonthLabel: 'Seuraava kuukausi',
+      calendarLabel: 'Kalenteri'
+    },
     close: 'Sulje',
     open: 'Avaa',
-    copy: 'Kopioi'
+    copy: 'Kopioi',
+    startDate: 'Aloituspäivä',
+    endDate: 'Lopetuspäivä'
   },
   header: {
     applications: 'Hakemukset',
@@ -3155,8 +3162,8 @@ export const fi = {
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
-      openingDate: 'Alkaen pp.kk.vvvv',
-      closingDate: 'Päättyen pp.kk.vvvv',
+      openingDate: 'Alkaen',
+      closingDate: 'Päättyen',
       area: 'Valitse alue',
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
@@ -3549,7 +3556,8 @@ export const fi = {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
+    unselectableDate: 'Päivä ei ole sallittu',
+    inconsistentRange: 'Alkamispäivän tulee olla ennen lopetuspäivää'
   },
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',

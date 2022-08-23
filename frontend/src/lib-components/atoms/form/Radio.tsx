@@ -115,6 +115,7 @@ type RadioProps = BaseProps & {
   disabled?: boolean
   small?: boolean
   id?: string
+  interactiveLabel?: boolean
 } & ({ label: string } | { label: ReactNode; ariaLabel: string })
 
 export default React.memo(function Radio({
@@ -126,6 +127,7 @@ export default React.memo(function Radio({
   'data-qa': dataQa,
   small,
   id,
+  interactiveLabel,
   ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -134,9 +136,13 @@ export default React.memo(function Radio({
 
   return (
     <Wrapper
-      onClick={() => {
-        inputRef.current?.focus()
-      }}
+      onClick={
+        interactiveLabel
+          ? undefined
+          : () => {
+              inputRef.current?.focus()
+            }
+      }
       className={classNames(className, { disabled })}
       data-qa={dataQa}
     >
@@ -161,7 +167,12 @@ export default React.memo(function Radio({
         </IconWrapper>
       </Circle>
       <LabelContainer small={small}>
-        <label htmlFor={id ?? ariaId}>{props.label}</label>
+        <label
+          htmlFor={id ?? ariaId}
+          style={{ pointerEvents: interactiveLabel ? 'none' : undefined }}
+        >
+          {props.label}
+        </label>
         <ExpandingInfoButtonSlot />
       </LabelContainer>
     </Wrapper>

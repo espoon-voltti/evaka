@@ -2,56 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { DayModifiers } from 'react-day-picker'
+import { useDatePicker } from '@react-aria/datepicker'
+import { useDatePickerState } from '@react-stately/datepicker'
+import classNames from 'classnames'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
+import {
+  scrollIntoViewSoftKeyboard,
+  scrollRefIntoView
+} from 'lib-common/utils/scrolling'
+import Popover from 'lib-components/atoms/Popover'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faCalendarAlt } from 'lib-icons'
 
 import { InputInfo } from '../../atoms/form/InputField'
 import { defaultMargins } from '../../white-space'
 
-import DatePickerDay from './DatePickerDay'
-import DatePickerInput from './DatePickerInput'
-
-const inputWidth = 120
-const DatePickerWrapper = styled.div`
-  position: relative;
-  display: inline-block;
-  width: ${inputWidth}px;
-`
-const minMargin = 16
-const overflow = 70
-
-const DayPickerPositioner = styled.div<{ openAbove?: boolean }>`
-  position: absolute;
-  ${({ openAbove }) =>
-    openAbove ? 'bottom' : 'top'}: calc(2.5rem + ${minMargin}px);
-  left: -${overflow}px;
-  right: -${overflow}px;
-  z-index: 99999;
-  justify-content: center;
-  align-items: center;
-  display: inline-block;
-`
-
-const DayPickerDiv = styled.div`
-  background-color: ${(p) => p.theme.colors.grayscale.g0};
-  padding: ${defaultMargins.s} 0;
-  border-radius: 2px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
-  display: flex;
-  justify-content: center;
-
-  p:not(:last-child) {
-    margin-bottom: 8px;
-  }
-`
+import Calendar, { CalendarAriaProps } from './Calendar'
+import DateField from './DateField'
 
 interface BaseDatePickerProps {
   date: LocalDate | null
   onChange: (date: LocalDate | null) => void
-  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onFocus?: (e: React.FocusEvent<Element>) => void
   onBlur?: () => void
   locale: 'fi' | 'sv' | 'en'
   info?: InputInfo
@@ -61,7 +36,6 @@ interface BaseDatePickerProps {
   id?: string
   required?: boolean
   initialMonth?: LocalDate
-  openAbove?: boolean
   errorTexts: {
     validDate: string
   }
@@ -78,6 +52,10 @@ interface BaseDatePickerProps {
 
   minDate?: never
   maxDate?: never
+
+  labels: CalendarAriaProps
+
+  fullWidth?: boolean
 }
 
 type WithoutMinMaxBaseProps = Omit<BaseDatePickerProps, 'minDate' | 'maxDate'>
@@ -107,219 +85,215 @@ interface MinMaxDatePickerProps extends WithoutMinMaxBaseProps {
   }
 }
 
-export type DatePickerProps =
+type DatePickerAriaLabelProps =
+  | {
+      'aria-labelledby': string
+    }
+  | {
+      /** aria-labelledby is preferred */
+      'aria-label': string
+    }
+
+export type DatePickerProps = (
   | BaseDatePickerProps
   | MinDatePickerProps
   | MaxDatePickerProps
   | MinMaxDatePickerProps
+) &
+  DatePickerAriaLabelProps
 
-const nativeDatePickerAgentMatchers = [/Android/i]
+const DatePickerContainer = styled.div<{ fullWidth?: boolean }>`
+  position: relative;
+  width: ${(p) => (p.fullWidth ? '100%' : 'fit-content')};
+`
 
-const checkDateInputSupport = () => {
-  if (!nativeDatePickerAgentMatchers.some((m) => m.test(navigator.userAgent))) {
-    return false
+const DateInput = styled.div`
+  margin: 0;
+  border: none;
+  border-top: 2px solid transparent;
+  border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g70};
+  border-radius: 0;
+  outline: none;
+  text-align: left;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  font-size: 1rem;
+  color: ${(p) => p.theme.colors.grayscale.g100};
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  justify-content: space-between;
+
+  &.focus,
+  &.success,
+  &.warning {
+    border-bottom-width: 2px;
+    margin-bottom: -1px;
   }
 
-  const input = document.createElement('input')
-  input.setAttribute('type', 'date')
-
-  const testDate = LocalDate.of(2020, 2, 11)
-  input.setAttribute('value', testDate.formatIso())
-
-  return (
-    !!input.valueAsDate &&
-    LocalDate.fromSystemTzDate(input.valueAsDate).isEqual(testDate)
-  )
-}
-
-export const nativeDatePickerEnabled = checkDateInputSupport()
-
-export default React.memo(function DatePicker({
-  date,
-  onChange,
-  onFocus = () => undefined,
-  onBlur = () => undefined,
-  locale,
-  info,
-  hideErrorsBeforeTouched,
-  disabled,
-  isInvalidDate,
-  id,
-  required,
-  initialMonth,
-  openAbove,
-  maxDate,
-  minDate,
-  errorTexts,
-  ...props
-}: DatePickerProps) {
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
-  const [showErrors, setShowErrors] = useState(!hideErrorsBeforeTouched)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const pickerRef = useRef<HTMLDivElement>(null)
-
-  const [internalDate, setInternalDate] = useState<LocalDate | null>(date)
-  const [parentDate, setParentDate] = useState<LocalDate | null>(date)
-  const [internalError, setInternalError] = useState<InputInfo>()
-
-  useEffect(() => {
-    setParentDate(date)
-    setInternalDate(date)
-  }, [date])
-
-  useEffect(() => {
-    setInternalError(undefined)
-
-    if (parentDate?.formatIso() !== internalDate?.formatIso()) {
-      if (internalDate === null) {
-        onChange(null)
-      } else if (minDate && internalDate.isBefore(minDate)) {
-        setInternalError({ text: errorTexts.dateTooEarly, status: 'warning' })
-      } else if (maxDate && internalDate.isAfter(maxDate)) {
-        setInternalError({ text: errorTexts.dateTooLate, status: 'warning' })
-      } else {
-        const validationError = isInvalidDate?.(internalDate)
-        if (validationError) {
-          setInternalError({ text: validationError, status: 'warning' })
-        } else {
-          onChange(internalDate)
-        }
-      }
-    }
-  }, [
-    internalDate,
-    isInvalidDate,
-    onChange,
-    errorTexts,
-    minDate,
-    maxDate,
-    parentDate
-  ])
-
-  useEffect(() => {
-    if (!hideErrorsBeforeTouched) {
-      setShowErrors(true)
-    }
-  }, [hideErrorsBeforeTouched])
-
-  function hideDatePicker() {
-    setShowDatePicker(false)
-    setShowErrors(true)
+  &.focus {
+    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    border-radius: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
-  function handleUserKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Esc' || e.key === 'Escape') {
-      hideDatePicker()
+  &.success {
+    border-bottom-color: ${(p) => p.theme.colors.status.success};
+
+    &.focus {
+      border-color: ${(p) => p.theme.colors.status.success};
     }
   }
 
-  function handleDayClick(day: Date, modifiers?: DayModifiers) {
-    if (modifiers?.disabled) {
+  &.warning {
+    border-bottom-color: ${(p) => p.theme.colors.status.warning};
+
+    &.focus {
+      border-color: ${(p) => p.theme.colors.status.warning};
+    }
+  }
+`
+
+const InputFieldUnderRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  font-size: 1rem;
+  line-height: 1rem;
+  margin-top: ${defaultMargins.xxs};
+
+  color: ${(p) => p.theme.colors.grayscale.g70};
+
+  &.success {
+    color: ${(p) => p.theme.colors.accents.a1greenDark};
+  }
+
+  &.warning {
+    color: ${(p) => p.theme.colors.accents.a2orangeDark};
+  }
+`
+
+export default React.memo(function DatePicker(props: DatePickerProps) {
+  const [error, setError] = useState<string>()
+
+  const state = useDatePickerState({
+    onChange: (v) =>
+      props.onChange(LocalDate.tryCreate(v.year, v.month, v.day) ?? null),
+    // missing nullable type
+    value: props.date?.asCalendarDate(),
+    placeholderValue: props.initialMonth?.asCalendarDate()
+  })
+  const ref = React.useRef<HTMLDivElement>(null)
+  const { groupProps, fieldProps, buttonProps, dialogProps, calendarProps } =
+    useDatePicker(
+      {
+        minValue: props.minDate?.asCalendarDate(),
+        maxValue: props.maxDate?.asCalendarDate(),
+        isDateUnavailable:
+          props.isInvalidDate &&
+          ((date) => {
+            const localDate = LocalDate.tryCreate(
+              date.year,
+              date.month,
+              date.day
+            )
+            return localDate ? !!props.isInvalidDate?.(localDate) : false
+          }),
+        isDisabled: props.disabled,
+        'aria-labelledby':
+          'aria-labelledby' in props ? props['aria-labelledby'] : undefined,
+        'aria-label': 'aria-label' in props ? props['aria-label'] : undefined
+      },
+      state,
+      ref
+    )
+
+  useEffect(() => {
+    setError(undefined)
+    if (!state.value) {
       return
     }
-    hideDatePicker()
-    setInternalDate(LocalDate.fromSystemTzDate(day))
-  }
 
-  useLayoutEffect(() => {
-    if (showDatePicker) {
-      const realignPicker = () => {
-        if (wrapperRef.current) {
-          const distanceFromLeftEdge = wrapperRef.current.offsetLeft
-          const distanceFromRightEdge =
-            window.innerWidth - wrapperRef.current.offsetLeft - inputWidth
-
-          const leftOffset =
-            overflow - Math.min(overflow, distanceFromLeftEdge - minMargin)
-          const rightOffset =
-            overflow - Math.min(overflow, distanceFromRightEdge - minMargin)
-
-          if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
-            const left = -overflow + leftOffset - rightOffset
-            pickerRef.current.style['left'] = `${left}px`
-            const right = -overflow - leftOffset + rightOffset
-            pickerRef.current.style['right'] = `${right}px`
-          }
-        }
-      }
-      realignPicker()
-      addEventListener('resize', realignPicker, { passive: true })
-      return () => removeEventListener('resize', realignPicker)
+    if (
+      props.minDate &&
+      state.value.compare(props.minDate.asCalendarDate()) < 0
+    ) {
+      setError(props.errorTexts.dateTooEarly)
+      return
     }
 
-    return
-  }, [showDatePicker])
-
-  useEffect(() => {
-    function handleEvent(event: { target: EventTarget | null }) {
-      if (event.target instanceof Element) {
-        if (wrapperRef.current?.contains(event.target)) {
-          return
-        }
-      }
-
-      hideDatePicker()
+    if (
+      props.maxDate &&
+      state.value.compare(props.maxDate.asCalendarDate()) > 0
+    ) {
+      setError(props.errorTexts.dateTooLate)
+      return
     }
+  }, [state.value, props.minDate, props.maxDate, props.errorTexts])
 
-    if (showDatePicker) {
-      addEventListener('focusin', handleEvent)
-      addEventListener('pointerup', handleEvent)
-
-      return () => {
-        removeEventListener('focusin', handleEvent)
-        removeEventListener('pointerup', handleEvent)
-      }
-    }
-
-    return () => undefined
-  }, [showDatePicker])
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   return (
-    <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
-      <DatePickerInput
-        date={internalDate}
-        setDate={(date) => {
-          if (date !== null) {
-            hideDatePicker()
-          }
-          setInternalDate(date)
-        }}
-        disabled={disabled}
-        onFocus={(ev) => {
-          setShowDatePicker(true)
-          onFocus(ev)
-        }}
-        onBlur={() => {
-          onBlur()
-        }}
-        info={showErrors ? internalError ?? info : undefined}
-        data-qa={props['data-qa']}
-        id={id}
-        required={required}
-        locale={locale}
-        useBrowserPicker={nativeDatePickerEnabled}
-        minDate={minDate}
-        maxDate={maxDate}
-        errorTexts={errorTexts}
-        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-        datePickerVisible={showDatePicker}
-      />
-      {!nativeDatePickerEnabled && showDatePicker ? (
-        <DayPickerPositioner ref={pickerRef} openAbove={openAbove}>
-          <DayPickerDiv>
-            <DatePickerDay
-              locale={locale}
-              inputValue={internalDate}
-              handleDayClick={handleDayClick}
-              minDate={minDate}
-              maxDate={maxDate}
-              isInvalidDate={isInvalidDate && ((date) => !!isInvalidDate(date))}
-              initialMonth={initialMonth}
-            />
-          </DayPickerDiv>
-        </DayPickerPositioner>
-      ) : null}
-    </DatePickerWrapper>
+    <DatePickerContainer fullWidth={props.fullWidth}>
+      <DateInput
+        {...groupProps}
+        ref={ref}
+        className={classNames({ warning: error })}
+      >
+        <DateField
+          {...fieldProps}
+          data-qa={props['data-qa']}
+          locale={props.locale}
+          onFocus={(ev) => {
+            props.onFocus?.(ev)
+            fieldProps.onFocus?.(ev)
+
+            if (ref.current) {
+              scrollIntoViewSoftKeyboard(ref.current, 'center')
+            }
+          }}
+        />
+        <IconButton
+          icon={faCalendarAlt}
+          aria-label={props.labels.calendarLabel}
+          {...buttonProps}
+          onPress={(ev) => {
+            buttonProps.onPress?.(ev)
+            setTimeout(() => {
+              if (popoverRef.current) {
+                const { top, bottom } =
+                  popoverRef.current.getBoundingClientRect()
+
+                if (top < 0 || bottom > window.innerHeight) {
+                  scrollRefIntoView(popoverRef, 1, {
+                    block: 'end'
+                  })
+                }
+              }
+            }, 1)
+          }}
+        />
+      </DateInput>
+      {(!!error || !!props.info) && (
+        <InputFieldUnderRow
+          className="warning"
+          data-qa={props['data-qa'] ? `${props['data-qa']}-info` : undefined}
+        >
+          {error || props.info?.text}
+        </InputFieldUnderRow>
+      )}
+      {state.isOpen && (
+        <Popover
+          {...dialogProps}
+          isOpen={state.isOpen}
+          popoverRef={popoverRef}
+          onClose={() => state.setOpen(false)}
+        >
+          <Calendar {...calendarProps} {...props.labels} />
+        </Popover>
+      )}
+    </DatePickerContainer>
   )
 })
 

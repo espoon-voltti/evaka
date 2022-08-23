@@ -33,8 +33,8 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faEnvelope } from 'lib-icons'
@@ -310,26 +310,34 @@ export default React.memo(function Decision() {
                   ),
                   value: (
                     <DateRangeContainer>
-                      <DatePickerDeprecated
+                      <DatePicker
                         date={decision.startDate}
-                        type="full-width"
+                        fullWidth
                         disabled={decision.type !== 'PREPARATORY_EDUCATION'}
                         onChange={(startDate) =>
-                          updateState(decision.type, { startDate })
+                          startDate && updateState(decision.type, { startDate })
                         }
                         minDate={minDate(decision.type)}
                         maxDate={maxDate(decision.type)}
+                        locale="fi"
+                        labels={i18n.common.datePicker}
+                        errorTexts={i18n.validationErrors}
+                        aria-label={i18n.common.startDate}
                       />
                       <DateRangeSpacer>-</DateRangeSpacer>
-                      <DatePickerDeprecated
+                      <DatePicker
                         date={decision.endDate}
                         disabled={decision.type !== 'PREPARATORY_EDUCATION'}
-                        type="full-width"
+                        fullWidth
                         onChange={(endDate) =>
-                          updateState(decision.type, { endDate })
+                          endDate && updateState(decision.type, { endDate })
                         }
                         minDate={minDate(decision.type)}
                         maxDate={maxDate(decision.type)}
+                        locale="fi"
+                        labels={i18n.common.datePicker}
+                        errorTexts={i18n.validationErrors}
+                        aria-label={i18n.common.startDate}
                       />
                     </DateRangeContainer>
                   )

@@ -10,7 +10,8 @@ import { UUID } from 'lib-common/types'
 import { waitUntilEqual } from '../../../utils'
 import {
   AsyncButton,
-  DatePickerDeprecated,
+  DatePicker,
+  DateRangePicker,
   Element,
   Modal,
   Page,
@@ -42,9 +43,9 @@ export class UnitAttendancesPage {
   }
 
   async setFilterStartDate(date: LocalDate) {
-    await new DatePickerDeprecated(
+    await new DatePicker(
       this.page.find('[data-qa="unit-filter-start-date"]')
-    ).fill(date.format())
+    ).fill(date)
     await this.waitUntilLoaded()
   }
 
@@ -344,19 +345,18 @@ export class UnitAttendancesPage {
 
 export class ReservationModal extends Modal {
   #repetitionSelect = new Select(this.find('[data-qa="repetition"]'))
-  #startDate = new TextInput(this.find('[data-qa="reservation-start-date"]'))
-  #endDate = new TextInput(this.find('[data-qa="reservation-end-date"]'))
+  #range = new DateRangePicker(this.find('[data-qa="reservation-range"]'))
 
   async selectRepetitionType(value: 'DAILY' | 'WEEKLY' | 'IRREGULAR') {
     await this.#repetitionSelect.selectOption(value)
   }
 
-  async setStartDate(date: string) {
-    await this.#startDate.fill(date)
+  async setStartDate(date: LocalDate) {
+    await this.#range.fillStart(date)
   }
 
-  async setEndDate(date: string) {
-    await this.#endDate.fill(date)
+  async setEndDate(date: LocalDate) {
+    await this.#range.fillEnd(date)
   }
 
   async setStartTime(time: string, index: number) {
@@ -383,7 +383,7 @@ export class ReservationModal extends Modal {
 
   async addReservation(endDate: LocalDate) {
     await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(endDate.format())
+    await this.setEndDate(endDate)
     await this.setStartTime('10:00', 0)
     await this.setEndTime('16:00', 0)
     await this.save()
@@ -391,7 +391,7 @@ export class ReservationModal extends Modal {
 
   async addOvernightReservation() {
     await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(LocalDate.todayInSystemTz().addDays(1).format())
+    await this.setEndDate(LocalDate.todayInSystemTz().addDays(1))
     await this.setStartTime('22:00', 0)
     await this.setEndTime('23:59', 0)
     await this.setStartTime('00:00', 1)

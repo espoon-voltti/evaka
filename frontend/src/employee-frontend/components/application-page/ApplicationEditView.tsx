@@ -32,8 +32,8 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -229,18 +229,23 @@ export default React.memo(function ApplicationEditView({
         icon={faFileAlt}
       >
         <ListGrid>
-          <Label>{i18n.application.serviceNeed.startDate}</Label>
-          <div data-qa="datepicker-start-date">
+          <Label id="start-date">
+            {i18n.application.serviceNeed.startDate}
+          </Label>
+          <div>
             <HorizontalContainer>
-              <DatePickerDeprecated
-                type="short"
-                date={preferredStartDate ?? undefined}
+              <DatePicker
+                date={preferredStartDate}
                 onChange={(value) => {
                   setApplication(
                     set('form.preferences.preferredStartDate', value)
                   )
                 }}
-                data-qa="datepicker-start-date"
+                data-qa="preferred-start-date"
+                errorTexts={i18n.validationErrors}
+                locale="fi"
+                labels={i18n.common.datePicker}
+                aria-labelledby="start-date"
               />
               {errors['form.preferences.preferredStartDate'] ? (
                 <>
@@ -703,15 +708,20 @@ export default React.memo(function ApplicationEditView({
                     i18n={i18n}
                     path="child"
                   />
-                  <Label>{i18n.application.person.movingDate}</Label>
-                  <DatePickerDeprecated
-                    type="short"
-                    date={child.futureAddress.movingDate ?? undefined}
+                  <Label id="child-moving-date">
+                    {i18n.application.person.movingDate}
+                  </Label>
+                  <DatePicker
+                    date={child.futureAddress.movingDate}
                     onChange={(value) => {
                       setApplication(
                         set('form.child.futureAddress.movingDate', value)
                       )
                     }}
+                    labels={i18n.common.datePicker}
+                    errorTexts={i18n.validationErrors}
+                    aria-labelledby="child-moving-date"
+                    locale="fi"
                   />
                 </>
               )}
@@ -789,15 +799,20 @@ export default React.memo(function ApplicationEditView({
                         i18n={i18n}
                         path="guardian"
                       />
-                      <Label>{i18n.application.person.movingDate}</Label>
-                      <DatePickerDeprecated
-                        type="short"
-                        date={guardian.futureAddress.movingDate ?? undefined}
+                      <Label id="person-moving-date">
+                        {i18n.application.person.movingDate}
+                      </Label>
+                      <DatePicker
+                        date={guardian.futureAddress.movingDate}
                         onChange={(value) => {
                           setApplication(
                             set('form.guardian.futureAddress.movingDate', value)
                           )
                         }}
+                        labels={i18n.common.datePicker}
+                        errorTexts={i18n.validationErrors}
+                        aria-labelledby="person-moving-date"
+                        locale="fi"
                       />
                     </>
                   )}
@@ -1142,9 +1157,13 @@ export default React.memo(function ApplicationEditView({
       <ApplicationStatusSection
         application={application}
         dueDateEditor={
-          <DatePickerDeprecated
-            date={application.dueDate || undefined}
+          <DatePicker
+            date={application.dueDate}
             onChange={(value) => setApplication(set('dueDate', value))}
+            labels={i18n.common.datePicker}
+            errorTexts={i18n.validationErrors}
+            aria-labelledby="application-due-date"
+            locale="fi"
           />
         }
       />

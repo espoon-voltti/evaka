@@ -49,6 +49,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Bold, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -350,21 +351,14 @@ export default React.memo(function VasuTemplateEditor() {
             <OptionContainer key={opt.key}>
               <Radio checked={false} label={opt.name} />
               {opt.dateRange && (
-                <div>
-                  <DatePicker
-                    locale="fi"
-                    date={null}
-                    onChange={() => void 0}
-                    errorTexts={i18n.validationErrors}
-                  />
-                  <span>-</span>
-                  <DatePicker
-                    locale="fi"
-                    date={null}
-                    onChange={() => void 0}
-                    errorTexts={i18n.validationErrors}
-                  />
-                </div>
+                <DateRangePicker
+                  errorTexts={i18n.validationErrors}
+                  onChange={() => void 0}
+                  locale="fi"
+                  labels={i18n.common.datePicker}
+                  aria-labelledby=""
+                  default={null}
+                />
               )}
             </OptionContainer>
           )
@@ -399,6 +393,8 @@ export default React.memo(function VasuTemplateEditor() {
                   locale="fi"
                   onChange={() => void 0}
                   hideErrorsBeforeTouched
+                  labels={i18n.common.datePicker}
+                  aria-labelledby=""
                 />
               )}
             </FixedSpaceRow>
@@ -465,6 +461,8 @@ export default React.memo(function VasuTemplateEditor() {
           onChange={() => undefined}
           locale={lang}
           errorTexts={i18n.validationErrors}
+          labels={i18n.common.datePicker}
+          aria-labelledby=""
         />
         {!!question.nameInEvents && (
           <QuestionDetails>

@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -158,6 +159,8 @@ const Modal = React.memo(function Modal({
     loadDecisions()
   }, [clear, loadDecisions])
 
+  const startDateAriaId = useUniqueId()
+
   return (
     <AsyncFormModal
       icon={faPlus}
@@ -171,15 +174,18 @@ const Modal = React.memo(function Modal({
       rejectLabel={i18n.common.cancel}
     >
       <FixedSpaceRow justifyContent="center">
-        <StyledLabel>{i18n.common.form.startDate}</StyledLabel>
+        <StyledLabel id={startDateAriaId}>
+          {i18n.common.form.startDate}
+        </StyledLabel>
         <DatePicker
           data-qa="retroactive-value-decisions-from-date"
           locale={lang}
           date={date}
           onChange={setDate}
           hideErrorsBeforeTouched
-          openAbove
           errorTexts={i18n.validationErrors}
+          labels={i18n.common.datePicker}
+          aria-labelledby={startDateAriaId}
         />
       </FixedSpaceRow>
     </AsyncFormModal>

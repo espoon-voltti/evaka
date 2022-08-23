@@ -9,7 +9,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faChild } from 'lib-icons'
 
@@ -171,25 +171,40 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
             )}
           </section>
           <section>
-            <div className="bold">{i18n.common.form.startDate}</div>
-            <DatePickerDeprecated
+            <div className="bold" id="start-date">
+              {i18n.common.form.startDate}
+            </div>
+            <DatePicker
               date={form.startDate}
-              onChange={(startDate) => assignFridgeChildForm({ startDate })}
+              onChange={(startDate) =>
+                startDate && assignFridgeChildForm({ startDate })
+              }
               minDate={form.child?.dateOfBirth}
               maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-              type="full-width"
+              fullWidth
               data-qa="fridge-child-start-date"
+              locale="fi"
+              errorTexts={i18n.validationErrors}
+              labels={i18n.common.datePicker}
+              aria-labelledby="start-date"
             />
           </section>
           <section>
-            <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerDeprecated
+            <div className="bold" id="end-date">
+              {i18n.common.form.endDate}
+            </div>
+            <DatePicker
               date={form.endDate}
-              onChange={(endDate) => assignFridgeChildForm({ endDate })}
+              onChange={(endDate) =>
+                endDate && assignFridgeChildForm({ endDate })
+              }
               minDate={form.child?.dateOfBirth}
               maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-              type="full-width"
-              data-qa="fridge-child-end-date"
+              locale="fi"
+              errorTexts={i18n.validationErrors}
+              labels={i18n.common.datePicker}
+              aria-labelledby="end-date"
+              fullWidth
             />
           </section>
           {validationErrors.map((error) => (

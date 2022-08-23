@@ -109,11 +109,8 @@ describe('Finance basics', () => {
       originalData.validDuring.start.addYears(2)
     )
     await originalThresholdsItem.copy()
-    await financeBasicsPage.feesSection.editor.validFromInput.fill(
-      newDateRange.start.format()
-    )
-    await financeBasicsPage.feesSection.editor.validToInput.fill(
-      newDateRange.end?.format() ?? ''
+    await financeBasicsPage.feesSection.editor.validDuringInput.fill(
+      newDateRange
     )
     await financeBasicsPage.feesSection.editor.save(true)
 

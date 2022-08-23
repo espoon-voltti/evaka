@@ -18,8 +18,8 @@ import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -78,8 +78,7 @@ function isUpdate(props: Props): props is UpdateProps {
 }
 
 interface Form {
-  start: LocalDate | null
-  end: LocalDate | null
+  range: FiniteDateRange | null
   coefficient: string
 }
 
@@ -118,13 +117,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
   const [form, setForm] = useState<Form>(
     isUpdate(props)
       ? {
-          start: props.coefficient.validityPeriod.start,
-          end: props.coefficient.validityPeriod.end,
+          range: props.coefficient.validityPeriod,
           coefficient: props.coefficient.coefficient.toString()
         }
       : {
-          start: LocalDate.todayInHelsinkiTz(),
-          end: null,
+          range: null,
           coefficient: ''
         }
   )
@@ -139,9 +136,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
   useEffect(() => {
     setWarning(undefined)
 
-    if (!form.start || !form.end) return
-
-    const validityPeriod = new FiniteDateRange(form.start, form.end)
+    if (!form.range) return
 
     const relevantExistingCoefficients = (
       isCreate(props)
@@ -150,11 +145,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
     ).map((c) => c.validityPeriod)
 
     const overlapWarning = [
-      hasFullOverlap(validityPeriod, relevantExistingCoefficients) &&
+      hasFullOverlap(form.range, relevantExistingCoefficients) &&
         t.form.errors.fullOverlap,
-      hasPreviousOverlap(validityPeriod, relevantExistingCoefficients) &&
+      hasPreviousOverlap(form.range, relevantExistingCoefficients) &&
         t.form.errors.previousOverlap,
-      hasUpcomingOverlap(validityPeriod, relevantExistingCoefficients) &&
+      hasUpcomingOverlap(form.range, relevantExistingCoefficients) &&
         t.form.errors.upcomingOverlap
     ].find((warning): warning is string => !!warning)
 
@@ -177,12 +172,12 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
   }, [form.coefficient, i18n, t])
 
   const isValid = useMemo(
-    () => !coefficientError && !!form.start && !!form.end,
-    [coefficientError, form.end, form.start]
+    () => !coefficientError && !!form.range,
+    [coefficientError, form.range]
   )
 
   const submitForm = useCallback(() => {
-    if (!isValid || !form.start || !form.end) {
+    if (!isValid || !form.range) {
       return Promise.resolve(
         Failure.of({
           message: 'Invalid form'
@@ -190,9 +185,8 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
       )
     }
 
-    const validityPeriod = new FiniteDateRange(form.start, form.end)
     const data = {
-      validityPeriod,
+      validityPeriod: form.range,
       coefficient: parseFloat(form.coefficient.replace(',', '.'))
     }
 
@@ -201,7 +195,9 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
     } else {
       return updateAssistanceNeedVoucherCoefficient(props.coefficient.id, data)
     }
-  }, [form.coefficient, form.end, form.start, isValid, props])
+  }, [form.coefficient, form.range, isValid, props])
+
+  const validityPeriodAriaId = useUniqueId('validity-period')
 
   return (
     <form onSubmit={submitForm}>
@@ -256,13 +252,14 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
             label: t.form.validityPeriod,
             value: (
               <DateRangePicker
-                start={form.start}
-                end={form.end}
+                default={form.range}
                 errorTexts={i18n.validationErrors}
-                onChange={(start, end) => updateFormState({ start, end })}
+                onChange={(range) => updateFormState({ range })}
                 locale={lang}
                 hideErrorsBeforeTouched
                 data-qa="input-assistance-need-voucher-coefficient-validity-period"
+                labels={i18n.common.datePicker}
+                aria-labelledby={validityPeriodAriaId}
               />
             )
           }

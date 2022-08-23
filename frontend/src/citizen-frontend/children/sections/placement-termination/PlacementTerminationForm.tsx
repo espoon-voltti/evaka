@@ -203,7 +203,9 @@ export default React.memo(function PlacementTerminationForm({
           closeLabel={t.common.close}
           inlineChildren
         >
-          <Label>{t.children.placementTermination.lastDayOfPresence}</Label>
+          <Label id="last-day-of-presence">
+            {t.children.placementTermination.lastDayOfPresence}
+          </Label>
         </ExpandingInfo>
         <DatePicker
           data-qa="termination-date"
@@ -224,8 +226,9 @@ export default React.memo(function PlacementTerminationForm({
           onChange={(terminationDate) =>
             setState((prev) => ({ ...prev, terminationDate }))
           }
-          openAbove
           errorTexts={t.validationErrors}
+          labels={t.common.datePicker}
+          aria-labelledby="last-day-of-presence"
         />
       </div>
 
