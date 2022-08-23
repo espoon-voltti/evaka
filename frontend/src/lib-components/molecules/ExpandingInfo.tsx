@@ -66,6 +66,7 @@ const InfoContainer = styled.div`
   flex-grow: 1;
   color: ${(p) => p.theme.colors.grayscale.g100};
   padding: 0 ${defaultMargins.s};
+  white-space: pre-wrap;
 `
 
 const RoundIconButton = styled.button<{ margin: SpacingSize }>`
@@ -161,6 +162,10 @@ export default React.memo(function ExpandingInfo({
   )
 
   const [hasSlot, setHasSlot] = useState(false)
+
+  if (!info) {
+    return <div>{children}</div>
+  }
 
   const content = hasSlot ? (
     children

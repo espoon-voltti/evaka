@@ -598,7 +598,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Tähän kohtaan voidaan kirjata monialaisen yhteistyön toteuttaminen, esimerkiksi opiskeluhuollon, lastenneuvolan, koulujen ja lastensuojelun kanssa. Tähän kirjataan monialaisten toimijoiden organisaatiot, nimet ja yhteystiedot."
+                        VasuLanguage.FI -> "Tähän kohtaan voidaan kirjata monialaisen yhteistyön toteuttaminen, esimerkiksi opiskeluhuollon, lastenneuvolan, koulujen ja lastensuojelun kanssa. Tähän kirjataan monialaisten toimijoiden organisaatiot, nimet ja yhteystiedot. Lisäksi kirjataan yhteisesti sovitut asiat ja mahdollinen vastuunjako."
                         VasuLanguage.SV -> ""
                     },
                     multiline = true,
@@ -610,13 +610,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI ->
-                            "Tähän kirjataan yhteisesti sovitut asiat. Mahdollisen tuen edellyttämän yhteistyön ja palvelujen näkökulmasta huomioidaan \n" +
-                                "• yhteistyö lapsen ja huoltajan kanssa \n" +
-                                "• lapsen tuen toteuttamisen vastuut \n" +
-                                "• erityisasiantuntijoiden palvelujen käyttö \n" +
-                                "• sosiaali- ja terveydenhuollon sekä muiden tarvittavien asiantuntijoiden antama ohjaus ja konsultaatio \n" +
-                                "• mahdollisten kuljetusten järjestelyt ja vastuut.\n"
+                        VasuLanguage.FI -> "Mahdollisen tuen edellyttämän yhteistyön ja palvelujen näkökulmasta huomioidaan\n\n• yhteistyö lapsen ja huoltajan kanssa\n• lapsen tuen toteuttamisen vastuut \n• erityisasiantuntijoiden palvelujen käyttö \n• sosiaali- ja terveydenhuollon sekä muiden tarvittavien asiantuntijoiden antama ohjaus ja konsultaatio\n• mahdollisten kuljetusten järjestelyt ja vastuut\n• perusopetuksen järjestämässä esiopetuksessa lapsen mahdollinen osallistuminen liittyvään varhaiskasvatukseen ja kuvaus yhteistyöstä toimijoiden kesken."
                         VasuLanguage.SV -> ""
                     },
                     multiline = true,
@@ -682,7 +676,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                 ),
                 VasuQuestion.TextQuestion(
                     name = "Lapsen vahvuudet, kiinnostuksen kohteet ja tarpeet sekä niiden huomioon ottaminen",
-                    info = "Tähän kuvataan lapsen keskeiset vahvuudet ja kiinnostuksen kohteet sekä tarpeet tavoitteiden asettamisen ja toiminnan suunnittelun pohjaksi.",
+                    info = "Tähän kuvataan lapsen keskeiset vahvuudet, kiinnostuksen kohteet, oppimisvalmiudet ja tarpeet tavoitteiden asettamisen ja toiminnan suunnittelun pohjaksi.",
                     multiline = true,
                     value = ""
                 ),
@@ -701,52 +695,50 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     notNumbered = true
                 ),
                 VasuQuestion.Paragraph(
-                    title = "Lapsen tuen tarve ja tuen toteuttaminen",
+                    title = "Lapsen tukeen liittyvät tarpeet, tuen järjestämiseen liittyvät asiat sekä tuen muodot (pedagogiset, rakenteelliset ja hoidolliset) esiopetuksessa ja liittyvässä varhaiskasvatuksessa",
                     paragraph = "Tuen järjestämisen lähtökohtana on lapsen kokonaisen päivän huomioiminen."
                 ),
                 VasuQuestion.TextQuestion(
-                    name = "Lapsen tukeen liittyvät tarpeet ja tuen järjestämiseen liittyvät asiat",
-                    info = "Tähän kohtaan kirjataan lapsen tukeen liittyvät tarpeet, jotka heijastuvat toiminnalle asetettaviin tavoitteisiin sekä toimenpiteisiin ja menetelmiin tavoitteiden saavuttamiseksi.\n" +
-                        "Lisäksi kirjataan esiopetukseen osallistumisen edellyttämät perusopetuslain mukaiset tulkitsemis- ja avustajapalvelut ja erityiset apuvälineet, joista on tehty päätös. \n" +
-                        "Kirjaa tähän myös se, miten huoltajat tukevat lasta sovituissa asioissa.",
+                    name = "Lapsen tukeen liittyvät tarpeet esiopetuksessa ja liittyvässä varhaiskasvatuksessa",
+                    info = "Tähän  kohtaan  kirjataan  lapsen  tukeen  liittyvät  tarpeet,  jotka  heijastuvat  toiminnalle  asetettaviin tavoitteisiin sekä toimenpiteisiin ja menetelmiin tavoitteiden saavuttamiseksi.\nKirjaa tähän myös se, miten huoltajat tukevat lasta sovituissa asioissa.",
                     multiline = true,
                     value = "",
                 ),
                 VasuQuestion.MultiSelectQuestion(
-                    name = "Esiopetusta koskeva tuen tarve ja pedagogiset asiakirjat",
-                    info = "Jos lapsella ilmenee vaikeuksia oppimisessaan, on hänellä oikeus saada osa-aikaista erityisopetusta muun esiopetuksen ohessa kaikilla tuen tasoilla. Osa-aikaisen erityisopetuksen tavoitteena on vahvistaa lapsen oppimisen edellytyksiä, ehkäistä kehityksen ja oppimisen vaikeuksia. Osa-aikaisen erityisopetuksen tarve arvioidaan ja suunnitellaan yhteistyössä esiopettajan ja varhaiskasvatuksen erityisopettajan kanssa. Osa-aikaista erityisopetusta annetaan joustavin järjestelyin samanaikaisopetuksena, pienryhmissä tai yksilöllisesti. Tavoitteet sisällytetään lapsen saamaan muuhun opetukseen. Vaikutuksia arvioidaan opettajien yhteistyönä\n" +
-                        "sekä lapsen että huoltajien kanssa. Huoltajille tiedotetaan yksikön toimintatavoista.\n" +
-                        "\n" +
-                        "Pedagoginen arvio\n" +
-                        "• Laaditaan tehostettua tukea varten, kun ilmenee, ettei yleinen tuki esiopetuksessa ole lapselle riittävää.\n" +
-                        "• Tehdään tehostettua tukea varten lapsen perusopetukseen siirtymistä valmisteltaessa.\n" +
-                        "• Laatimisesta vastaa esiopettaja.\n" +
-                        "\n" +
-                        "Pedagoginen selvitys\n" +
-                        "• Laaditaan erityistä tukea varten lapselle, jolle tehostettu tuki ei riitä.\n" +
-                        "• Laaditaan tarvittaessa esiopetusvuoden aikana lapsen perusopetukseen siirtymistä valmisteltaessa.\n" +
-                        "• Laatimisesta vastaa esiopettaja.\n" +
-                        "Ks. erilliset ohjeet pedagogisen arvion ja selvityksen lomakkeista.",
+                    name = "Tuen järjestämiseen liittyvät asiat esiopetuksessa",
+                    info = "Rastita tarvittavat kohdat.",
                     value = emptyList(),
                     options = listOf(
                         QuestionOption(
                             key = "partTimeSpecialNeedsEducation",
-                            name = "Lapsi saa osa-aikaista erityisopetusta."
+                            name = "Lapsi saa osa-aikaista erityisopetusta.",
+                            info = "Jos lapsella ilmenee vaikeuksia oppimisessaan, on hänellä oikeus saada osa-aikaista erityisopetusta muun esiopetuksen ohessa kaikilla tuen tasoilla. Osa-aikaisen erityisopetuksen tavoitteena on vahvistaa lapsen oppimisen edellytyksiä, ehkäistä kehityksen ja oppimisen vaikeuksia. Osa-aikaisen erityisopetuksen tarve arvioidaan ja suunnitellaan yhteistyössä esiopettajan ja varhaiskasvatuksen erityisopettajan kanssa. Osa-aikaista erityisopetusta annetaan joustavin järjestelyin samanaikaisopetuksena, pienryhmissä tai yksilöllisesti. Tavoitteet sisällytetään lapsen saamaan muuhun opetukseen. Vaikutuksia arvioidaan opettajien yhteistyönäsekä lapsen että huoltajien kanssa. Huoltajille tiedotetaan yksikön toimintatavoista."
                         ),
                         QuestionOption(
                             key = "pedagogicalEvaluationMade",
                             name = "Pedagoginen arvio on tehty tehostetun tuen käynnistämiseksi, pvm.",
                             date = true,
-                            subText = "Tätä oppimissuunnitelmaa käytetään tehostetun tuen toteuttamiseksi."
+                            info = "• Laaditaan tehostettua tukea varten, kun ilmenee, ettei yleinen tuki esiopetuksessa ole lapselle riittävää.\n• Tehdään tehostettua tukea varten lapsen perusopetukseen siirtymistä valmisteltaessa.\n• Laatimisesta vastaa esiopettaja."
+                        ),
+                        QuestionOption(
+                            key = "learningPlanUsedForAssistance",
+                            name = "Tätä oppimissuunnitelmaa käytetään tehostetun tuen toteuttamiseksi."
                         ),
                         QuestionOption(
                             key = "pedagogicalStatementMade",
-                            name = "Pedagoginen selvitys on tehty erityisen tuen tarpeen arvioimiseksi."
+                            name = "Pedagoginen selvitys on tehty erityisen tuen tarpeen arvioimiseksi.",
+                            info = "• Laaditaan erityistä tukea varten lapselle, jolle tehostettu tuki ei riitä.\n• Laaditaan tarvittaessa esiopetusvuoden aikana lapsen perusopetukseen siirtymistä valmisteltaessa.\n• Laatimisesta vastaa esiopettaja.\nKs. erilliset ohjeet pedagogisen arvion ja selvityksen lomakkeista."
                         )
                     ),
                     minSelections = 0,
                     maxSelections = null,
                     textValue = emptyMap()
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Lisätietoja tuen järjestämiseen liittyvistä asioista esiopetuksessa",
+                    info = "Lisäksi tähän kuvataan tarvittavat\n• pedagogiset ratkaisut: oppimisympäristöihin liittyvät ratkaisut sekä lapsen tukeen liittyvät ratkaisut (joustavat ryhmittelyt, samanaikaisopetus, opetusmenetelmät, työskentely- ja kommunikointitavat tms.)\n• lapselle tarjottava osa-aikainen erityisopetus\n• esiopetukseen osallistumisen edellyttämät perusopetuslain mukaiset tulkitsemis- ja avustajapalvelut, muut opetuspalvelut ja erityiset apuvälineet, joista on tehty päätös.",
+                    multiline = true,
+                    value = ""
                 ),
                 VasuQuestion.MultiField(
                     name = when (lang) {
@@ -790,8 +782,8 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     separateRows = true
                 ),
                 VasuQuestion.TextQuestion(
-                    name = "Tavoitteet henkilöstön pedagogiselle toiminnalle",
-                    info = "Tähän kirjataan keskeiset tavoitteet henkilöstön pedagogiselle toiminnalle. Tavoitteiden asettamisessa tulee hyödyntää lapsen vahvuuksia, kiinnostuksen kohteita ja tarpeita. Tässä osassa huomioidaan lapsen orastavat taidot ja se, miten niitä voidaan edistää pedagogisella toiminnalla. Henkilöstön toiminnalle asetetut tavoitteet voivat liittyä mm. lapsen oppimiseen, työskentely- ja vuorovaikutustaitoihin. Olennaista on kirjata tavoitteet lapsen kokonaiselle päivälle huomioiden mahdolliset lapsen tuen kannalta merkitykselliset asiat. Tässä huomioidaan myös laaja-alaisen osaamisen osa-alueita ja opetuksen yhteisiä tavoitteita. Tavoitteita asetettaessa otetaan huomioon lapsiryhmä ja ryhmän kokonaistilanne, tavoitteiden konkreettisuus ja arvioitavuus.",
+                    name = "Tavoitteet pedagogiselle toiminnalle",
+                    info = "Tähän kirjataan keskeiset tavoitteet henkilöstön pedagogiselle toiminnalle. Tavoitteiden asettamisessa tulee hyödyntää lapsen vahvuuksia, kiinnostuksen kohteita, oppimisvalmiuksia ja tarpeita. Tässä osassa huomioidaan lapsen orastavat taidot ja se, miten niitä voidaan edistää pedagogisella toiminnalla. Henkilöstön toiminnalle asetetut tavoitteet voivat liittyä mm. lapsen oppimiseen, työskentely- ja vuorovaikutustaitoihin. Olennaista on kirjata tavoitteet lapsen kokonaiselle päivälle huomioiden mahdolliset lapsen tuen kannalta merkitykselliset asiat. Tässä huomioidaan myös laaja-alaisen osaamisen osa-alueita ja opetuksen yhteisiä tavoitteita. Tavoitteita asetettaessa otetaan huomioon lapsiryhmä ja ryhmän kokonaistilanne, tavoitteiden konkreettisuus ja arvioitavuus.",
                     value = "",
                     multiline = true
                 ),
