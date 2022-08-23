@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
@@ -263,6 +264,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
 }
 
 fun Database.Read.searchValueDecisions(
+    evakaClock: EvakaClock,
     page: Int,
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
@@ -291,7 +293,7 @@ fun Database.Read.searchValueDecisions(
         "start_date" to startDate,
         "end_date" to endDate,
         "financeDecisionHandlerId" to financeDecisionHandlerId,
-        "firstPlacementStartDate" to LocalDate.now().withDayOfMonth(1)
+        "firstPlacementStartDate" to evakaClock.now().toLocalDate().withDayOfMonth(1)
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
@@ -301,13 +303,13 @@ fun Database.Read.searchValueDecisions(
     val noStartingPlacementsQuery =
         """
 NOT EXISTS (            
-    SELECT (fdc.fee_decision_id)
+    SELECT true
     FROM placement p
     JOIN person c ON p.child_id = c.id
-    JOIN fee_decision_child fdc ON c.id = fdc.child_id
+    JOIN voucher_value_decision vvd ON c.id = vvd.child_id
     LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
     WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
-        AND fdc.fee_decision_id = decision.id
+        AND vvd.id = decision.id
 )
         """.trimIndent()
 

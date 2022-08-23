@@ -74,7 +74,8 @@ class VoucherValueDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
-        @RequestBody body: SearchVoucherValueDecisionRequest
+        @RequestBody body: SearchVoucherValueDecisionRequest,
+        evakaClock: EvakaClock
     ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
@@ -84,6 +85,7 @@ class VoucherValueDecisionController(
             dbc
                 .read { tx ->
                     tx.searchValueDecisions(
+                        evakaClock,
                         body.page,
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,

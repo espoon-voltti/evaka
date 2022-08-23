@@ -363,6 +363,31 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `filter out starting placements`() {
+        val placementId = createPlacement(
+            now.toLocalDate().minusMonths(1),
+            now.toLocalDate().plusMonths(1)
+        )
+
+        sendAllValueDecisions()
+
+        searchValueDecisions("SENT", "", """["NO_STARTING_PLACEMENTS"]""").let { decisions ->
+            assertEquals(1, decisions.data.size)
+        }
+
+        db.transaction {
+            it.createUpdate("UPDATE placement SET start_date = :now WHERE id = :placementId")
+                .bind("placementId", placementId)
+                .bind("now", now.toLocalDate())
+                .execute()
+        }
+
+        searchValueDecisions("SENT", "", """["NO_STARTING_PLACEMENTS"]""").let { decisions ->
+            assertEquals(0, decisions.data.size)
+        }
+    }
+
+    @Test
     fun `PDF can be downloaded`() {
         createPlacement(startDate, endDate)
         val decisionIds = sendAllValueDecisions()
@@ -576,9 +601,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
     }
 
-    private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
+    private fun searchValueDecisions(status: String, searchTerms: String = "", distinctionsString: String = "[]"): Paged<VoucherValueDecisionSummary> {
         val (_, _, data) = http.post("/value-decisions/search")
-            .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms"}""")
+            .jsonBody("""{"page": 0, "pageSize": 100, "status": "$status", "searchTerms": "$searchTerms", "distinctions": $distinctionsString}""")
             .withMockedTime(now)
             .asUser(financeWorker)
             .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
