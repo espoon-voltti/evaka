@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.LocalTimeRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -40,6 +41,7 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter.ISO_DATE
@@ -161,7 +163,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -179,6 +181,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 it,
                 AttendanceReservationReportRow(
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
                     childCount = 1,
@@ -212,7 +222,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -230,6 +240,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 it,
                 AttendanceReservationReportRow(
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 0.88,
+                    staffCountRequired = 0.1
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
                     childCount = 1,
@@ -258,7 +276,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = startDate,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -267,7 +285,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = endDate,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -292,7 +310,23 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
                     HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 0)),
+                    childCountUnder3 = 0,
+                    childCountOver3 = 1,
+                    childCount = 1,
+                    capacityFactor = 1.0,
+                    staffCountRequired = 0.1
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 30)),
                     childCountUnder3 = 0,
                     childCountOver3 = 1,
                     childCount = 1,
@@ -329,7 +363,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -347,6 +381,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 it,
                 AttendanceReservationReportRow(
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 8.75,
+                    staffCountRequired = 1.3
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
                     childCount = 1,
@@ -381,7 +423,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(15, 48),
+                    endTime = LocalTime.of(8, 16),
                     createdBy = admin.evakaUserId
                 )
             )
@@ -404,10 +446,167 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childCount = 1,
                     capacityFactor = 1.75,
                     staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
                 )
             )
         }
 
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `end time is supported in first 30 minutes`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(15, 22),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(30)).map {
+            AttendanceReservationReportRow(
+                HelsinkiDateTime.of(
+                    LocalDate.of(2020, 5, 28),
+                    it,
+                ),
+                childCountUnder3 = 1,
+                childCountOver3 = 0,
+                childCount = 1,
+                capacityFactor = 1.75,
+                staffCountRequired = 0.3
+            )
+        }
+        val expected = createEmptyReport(date, date).also {
+            addExpectedRow(it, *(changedRows).toTypedArray())
+        }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `end time is supported in last 30 minutes`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(15, 48),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(30)).map {
+            AttendanceReservationReportRow(
+                HelsinkiDateTime.of(
+                    LocalDate.of(2020, 5, 28),
+                    it,
+                ),
+                childCountUnder3 = 1,
+                childCountOver3 = 0,
+                childCount = 1,
+                capacityFactor = 1.75,
+                staffCountRequired = 0.3
+            )
+        }
+        val expected = createEmptyReport(date, date).also {
+            addExpectedRow(it, *(changedRows).toTypedArray())
+        }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `times are inclusive`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(8, 30),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected = createEmptyReport(date, date).also {
+            addExpectedRow(
+                it,
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            )
+        }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -438,7 +637,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                             childId = testChild.id,
                             date = date,
                             startTime = LocalTime.of(8, 15),
-                            endTime = LocalTime.of(15, 48),
+                            endTime = LocalTime.of(8, 16),
                             createdBy = admin.evakaUserId
                         )
                     )
@@ -457,6 +656,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 it,
                 AttendanceReservationReportRow(
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 6,
+                    childCountOver3 = 2,
+                    childCount = 8,
+                    capacityFactor = 12.5,
+                    staffCountRequired = 1.8
+                ),
+                AttendanceReservationReportRow(
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 6,
                     childCountOver3 = 2,
                     childCount = 8,
