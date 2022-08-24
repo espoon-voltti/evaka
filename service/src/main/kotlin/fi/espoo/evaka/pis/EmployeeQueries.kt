@@ -75,6 +75,12 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     .mapTo<Employee>()
     .asSequence().first()
 
+fun Database.Transaction.updateExternalIdByEmployeeNumber(employeeNumber: String, externalId: ExternalId) =
+    createUpdate("UPDATE employee SET external_id = :externalId WHERE employee_number = :employeeNumber AND external_id != :externalId")
+        .bind("employeeNumber", employeeNumber)
+        .bind("externalId", externalId)
+        .updateNoneOrOne()
+
 fun Database.Transaction.loginEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """

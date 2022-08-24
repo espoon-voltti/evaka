@@ -241,6 +241,12 @@ class Database(private val jdbi: Jdbi) {
             if (rows == 0) throw NotFound(notFoundMsg)
             if (rows > 1) throw Error(foundMultipleMsg)
         }
+
+        fun updateNoneOrOne(foundMultipleMsg: String = "Found multiple"): Int {
+            val rows = this.execute()
+            if (rows > 1) throw Error(foundMultipleMsg)
+            return rows
+        }
     }
 
     class PreparedBatch internal constructor(override val raw: org.jdbi.v3.core.statement.PreparedBatch) : SqlStatement<PreparedBatch>() {
