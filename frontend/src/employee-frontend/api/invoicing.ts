@@ -28,6 +28,7 @@ import {
   SearchPaymentsRequest,
   SortDirection,
   VoucherValueDecisionDetailed,
+  VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionStatus,
   VoucherValueDecisionSummary
@@ -60,6 +61,7 @@ export interface VoucherValueDecisionSearchParams extends SearchParams {
   startDate?: LocalDate
   endDate?: LocalDate
   searchByStartDate: boolean
+  distinctions?: VoucherValueDecisionDistinctiveParams[]
 }
 
 export interface InvoiceSearchParams extends SearchParams {

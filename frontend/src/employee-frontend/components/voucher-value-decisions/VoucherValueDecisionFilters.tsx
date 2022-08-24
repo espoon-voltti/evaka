@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
-import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import {
+  VoucherValueDecisionDistinctiveParams,
+  VoucherValueDecisionStatus
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
@@ -19,7 +22,8 @@ import {
   ValueDecisionStatusFilter,
   UnitFilter,
   FinanceDecisionHandlerFilter,
-  ValueDecisionDateFilter
+  ValueDecisionDateFilter,
+  VoucherValueDecisionDistinctionsFilter
 } from '../common/Filters'
 
 export default React.memo(function VoucherValueDecisionFilters() {
@@ -132,6 +136,21 @@ export default React.memo(function VoucherValueDecisionFilters() {
     })
   }
 
+  const toggleDistinctiveParams =
+    (id: VoucherValueDecisionDistinctiveParams) => () => {
+      searchFilters.distinctiveDetails.includes(id)
+        ? setSearchFilters({
+            ...searchFilters,
+            distinctiveDetails: searchFilters.distinctiveDetails.filter(
+              (v) => v !== id
+            )
+          })
+        : setSearchFilters({
+            ...searchFilters,
+            distinctiveDetails: [...searchFilters.distinctiveDetails, id]
+          })
+    }
+
   return (
     <Filters
       searchPlaceholder={i18n.filters.freeTextPlaceholder}
@@ -168,7 +187,14 @@ export default React.memo(function VoucherValueDecisionFilters() {
           />
         </>
       }
-      column2={<></>}
+      column2={
+        <Fragment>
+          <VoucherValueDecisionDistinctionsFilter
+            toggled={searchFilters.distinctiveDetails}
+            toggle={toggleDistinctiveParams}
+          />
+        </Fragment>
+      }
       column3={
         <>
           <ValueDecisionStatusFilter

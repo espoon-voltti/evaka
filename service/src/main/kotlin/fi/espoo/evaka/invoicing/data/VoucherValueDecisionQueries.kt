@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
@@ -262,6 +264,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
 }
 
 fun Database.Read.searchValueDecisions(
+    evakaClock: EvakaClock,
     page: Int,
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
@@ -273,7 +276,8 @@ fun Database.Read.searchValueDecisions(
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    financeDecisionHandlerId: EmployeeId?
+    financeDecisionHandlerId: EmployeeId?,
+    distinctiveParams: List<VoucherValueDecisionDistinctiveParams>
 ): Paged<VoucherValueDecisionSummary> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -288,17 +292,34 @@ fun Database.Read.searchValueDecisions(
         "unit" to unit,
         "start_date" to startDate,
         "end_date" to endDate,
-        "financeDecisionHandlerId" to financeDecisionHandlerId
+        "financeDecisionHandlerId" to financeDecisionHandlerId,
+        "firstPlacementStartDate" to evakaClock.now().toLocalDate().withDayOfMonth(1)
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+
+    val noStartingPlacements = distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
+
+    val noStartingPlacementsQuery =
+        """
+NOT EXISTS (            
+    SELECT true
+    FROM placement p
+    JOIN person c ON p.child_id = c.id
+    JOIN voucher_value_decision vvd ON c.id = vvd.child_id
+    LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
+    WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
+        AND vvd.id = decision.id
+)
+        """.trimIndent()
 
     val conditions = listOfNotNull(
         if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
         if (unit != null) "decision.placement_unit_id = :unit" else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
-        if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null
+        if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null,
+        if (noStartingPlacements) noStartingPlacementsQuery else null
     )
     val sql =
         // language=sql

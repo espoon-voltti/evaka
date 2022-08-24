@@ -74,7 +74,8 @@ class VoucherValueDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
-        @RequestBody body: SearchVoucherValueDecisionRequest
+        @RequestBody body: SearchVoucherValueDecisionRequest,
+        evakaClock: EvakaClock
     ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
@@ -84,6 +85,7 @@ class VoucherValueDecisionController(
             dbc
                 .read { tx ->
                     tx.searchValueDecisions(
+                        evakaClock,
                         body.page,
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
@@ -95,7 +97,8 @@ class VoucherValueDecisionController(
                         body.startDate,
                         body.endDate,
                         body.searchByStartDate,
-                        body.financeDecisionHandlerId
+                        body.financeDecisionHandlerId,
+                        body.distinctions ?: emptyList()
                     )
                 }
         }
@@ -286,6 +289,10 @@ enum class VoucherValueDecisionSortParam {
     STATUS
 }
 
+enum class VoucherValueDecisionDistinctiveParams {
+    NO_STARTING_PLACEMENTS
+}
+
 data class SearchVoucherValueDecisionRequest(
     val page: Int,
     val pageSize: Int,
@@ -294,6 +301,7 @@ data class SearchVoucherValueDecisionRequest(
     val status: VoucherValueDecisionStatus,
     val area: List<String>?,
     val unit: DaycareId?,
+    val distinctions: List<VoucherValueDecisionDistinctiveParams>?,
     val searchTerms: String?,
     val financeDecisionHandlerId: EmployeeId?,
     val startDate: LocalDate?,

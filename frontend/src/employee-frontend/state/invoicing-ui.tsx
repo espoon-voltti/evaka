@@ -23,7 +23,8 @@ import {
   InvoiceDistinctiveParams,
   DistinctiveParams,
   PaymentDistinctiveParams,
-  PaymentStatus
+  PaymentStatus,
+  VoucherValueDecisionDistinctiveParams
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -59,6 +60,7 @@ interface ValueDecisionSearchFilters {
   area: string[]
   unit?: UUID
   status: VoucherValueDecisionStatus
+  distinctiveDetails: VoucherValueDecisionDistinctiveParams[]
   financeDecisionHandlerId?: UUID
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
@@ -168,6 +170,7 @@ const defaultState: UiState = {
   },
   valueDecisions: {
     searchFilters: {
+      distinctiveDetails: [],
       status: 'DRAFT',
       area: [],
       startDate: undefined,

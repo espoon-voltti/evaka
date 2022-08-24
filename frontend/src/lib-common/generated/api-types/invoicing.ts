@@ -675,6 +675,7 @@ export interface SearchPaymentsRequest {
 */
 export interface SearchVoucherValueDecisionRequest {
   area: string[] | null
+  distinctions: VoucherValueDecisionDistinctiveParams[] | null
   endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
   page: number
@@ -801,6 +802,12 @@ export interface VoucherValueDecisionDetailed {
   validTo: LocalDate | null
   voucherValue: number
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
+*/
+export type VoucherValueDecisionDistinctiveParams =
+  | 'NO_STARTING_PLACEMENTS'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
