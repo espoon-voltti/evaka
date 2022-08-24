@@ -318,9 +318,8 @@ fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collecti
     val sql =
         """
         SELECT child_id, date, category, absence_type
-        FROM absence
-        WHERE between_start_and_end(:range, date)
-        AND category = ANY(:categories)
+        FROM absences_in_range(null, :range)
+        WHERE category = ANY(:categories)
         """
 
     return createQuery(sql)

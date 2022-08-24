@@ -412,11 +412,10 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
-        FROM absence a
+        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, CASE WHEN eu.type IS NULL THEN 'SYSTEM' ELSE eu.type END AS modified_by_type, a.modified_at AS modified_at
+        FROM absences_in_range(null, :dateRange) a
         LEFT JOIN evaka_user eu ON eu.id = a.modified_by 
         WHERE child_id IN (SELECT child_id FROM ($placementsQuery) p)
-        AND between_start_and_end(:dateRange, date)
         """.trimIndent()
 
     return createQuery(sql)
@@ -431,9 +430,8 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: FiniteDateR
     val sql =
         """
         SELECT a.id, a.child_id, a.date, a.category, a.absence_type
-        FROM absence a
-        WHERE between_start_and_end(:range, date)
-        AND a.child_id = :childId
+        FROM absences_in_range(ARRAY[:childId], :range) a
+        ORDER BY a.date
         """.trimIndent()
 
     return createQuery(sql)
@@ -448,9 +446,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange):
     val sql =
         """
         SELECT a.id, a.child_id, a.date, a.category, a.absence_type
-        FROM absence a
-        WHERE between_start_and_end(:range, date)
-        AND a.child_id = :childId
+        FROM absences_in_range(ARRAY[:childId], :range) a
         """.trimIndent()
 
     return createQuery(sql)
