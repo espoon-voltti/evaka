@@ -276,7 +276,7 @@ class AttachmentsController(
 
         if (requestedFilename != attachment.name) throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
 
-        return documentClient.responseInline(filesBucket, "$attachmentId")
+        return documentClient.responseInline(filesBucket, "$attachmentId", attachment.name)
     }
 
     @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])
