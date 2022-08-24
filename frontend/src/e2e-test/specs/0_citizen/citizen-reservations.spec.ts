@@ -324,3 +324,58 @@ describe('Citizen calendar child visibility', () => {
     await dayView.assertNoActivePlacementsMsgVisible()
   })
 })
+
+describe('Citizen calendar visibility', () => {
+  let page: Page
+  const today = LocalDate.todayInSystemTz()
+  let child: PersonDetail
+  let daycareId: string
+
+  beforeEach(async () => {
+    await resetDatabase()
+    const fixtures = await initializeAreaAndPersonData()
+    child = fixtures.enduserChildFixtureJari
+    daycareId = fixtures.daycareFixture.id
+  })
+
+  test('Child is visible when placement starts within 2 weeks', async () => {
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        daycareId,
+        today.addDays(13).formatIso(),
+        today.addYears(1).formatIso()
+      )
+    ])
+
+    page = await Page.open({
+      mockedTime: today.toSystemTzDate()
+    })
+    await enduserLogin(page)
+
+    await page.find('[data-qa="nav-calendar"]').waitUntilVisible()
+  })
+
+  test('Child is not visible when placement starts later than 2 weeks', async () => {
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        daycareId,
+        today.addDays(15).formatIso(),
+        today.addYears(1).formatIso()
+      )
+    ])
+
+    page = await Page.open({
+      mockedTime: today.toSystemTzDate()
+    })
+
+    await enduserLogin(page)
+
+    // Ensure page has loaded
+    await page.find('[data-qa="nav-children"]').waitUntilVisible()
+    await page.find('[data-qa="nav-calendar"]').waitUntilHidden()
+  })
+})
