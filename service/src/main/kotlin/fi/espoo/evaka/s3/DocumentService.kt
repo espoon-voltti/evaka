@@ -45,25 +45,19 @@ class DocumentService(
         }
     }
 
-    private sealed class ContentDispositionType {
-        object Inline : ContentDispositionType()
-        data class Attachment(val fileName: String?) : ContentDispositionType()
+    enum class ContentDispositionType(val header: String) {
+        Inline("inline"),
+        Attachment("attachment")
     }
 
-    private fun getContentDispositionHeader(request: ContentDispositionType): String? {
-        return when (request) {
-            is ContentDispositionType.Inline -> null
-            is ContentDispositionType.Attachment ->
-                if (request.fileName != null) {
-                    ContentDisposition
-                        .builder("attachment")
-                        .filename(request.fileName)
-                        .build()
-                        .toString()
-                } else {
-                    "attachment"
-                }
-        }
+    private fun getContentDispositionHeader(type: ContentDispositionType, fileName: String?): String? {
+        return if (fileName != null) {
+            ContentDisposition
+                .builder(type.header)
+                .filename(fileName)
+                .build()
+                .toString()
+        } else type.header
     }
 
     private fun presignedGetUrl(bucketName: String, key: String, contentDispositionHeader: String?): URL {
@@ -87,9 +81,10 @@ class DocumentService(
     private fun response(
         bucketName: String,
         key: String,
-        contentDisposition: ContentDispositionType
+        contentDispositionType: ContentDispositionType,
+        fileName: String?
     ): ResponseEntity<Any> {
-        val contentDispositionHeader = getContentDispositionHeader(contentDisposition)
+        val contentDispositionHeader = getContentDispositionHeader(contentDispositionType, fileName)
         val presignedUrl = presignedGetUrl(bucketName, key, contentDispositionHeader)
 
         return if (proxyThroughNginx) {
@@ -102,10 +97,10 @@ class DocumentService(
     }
 
     fun responseAttachment(bucketName: String, key: String, fileName: String?) =
-        response(bucketName, key, ContentDispositionType.Attachment(fileName))
+        response(bucketName, key, ContentDispositionType.Attachment, fileName)
 
-    fun responseInline(bucketName: String, key: String) =
-        response(bucketName, key, ContentDispositionType.Inline)
+    fun responseInline(bucketName: String, key: String, fileName: String? = null) =
+        response(bucketName, key, ContentDispositionType.Inline, fileName)
 
     fun upload(bucketName: String, document: Document): DocumentLocation {
         val key = document.name

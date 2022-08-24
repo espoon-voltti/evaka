@@ -94,12 +94,12 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
     fun `responseInline works`() {
         documentClient.upload(bucketEnv.data, Document("test", byteArrayOf(0x12, 0x34, 0x56), "text/plain"))
 
-        val response = documentClient.responseInline(bucketEnv.data, "test")
+        val response = documentClient.responseInline(bucketEnv.data, "test", "overridden-filename.txt")
         val s3Url = responseEntityToS3URL(response)
         val (_, s3response, s3data) = http.get(s3Url).response()
 
         assertEquals("text/plain", s3response.headers["Content-Type"].first())
-        assertEquals(listOf(), s3response.headers["Content-Disposition"])
+        assertEquals(listOf("inline; filename=\"overridden-filename.txt\""), s3response.headers["Content-Disposition"])
         assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3data.get())
     }
 }
