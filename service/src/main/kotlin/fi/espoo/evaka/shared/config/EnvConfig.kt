@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.EmailEnv
@@ -67,6 +68,9 @@ class EnvConfig {
 
     @Bean
     fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
+
+    @Bean
+    fun citizenCalendarEnv(env: Environment): CitizenCalendarEnv? = CitizenCalendarEnv.fromEnvironment(env)
 
     @Bean
     fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? = when (evakaEnv.sfiEnabled) {

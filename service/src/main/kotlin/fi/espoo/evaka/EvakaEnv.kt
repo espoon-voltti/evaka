@@ -518,6 +518,18 @@ data class OphEnv(
     }
 }
 
+data class CitizenCalendarEnv(
+    val calendarOpenBeforePlacementDays: Int
+) {
+    companion object {
+        fun fromEnvironment(env: Environment): CitizenCalendarEnv {
+            return CitizenCalendarEnv(
+                calendarOpenBeforePlacementDays = env.lookup("evaka.citizen.calendar.calendar_open_before_placement_days") ?: 14
+            )
+        }
+    }
+}
+
 data class Sensitive<T>(val value: T) {
     override fun toString(): String = "**REDACTED**"
 }
