@@ -80,9 +80,9 @@ private fun Database.Read.getAttendanceReservationReport(
         FROM generate_series(:start, :end + interval '1 day' - interval '1 second', interval '30 minutes') dateTime
         CROSS JOIN daycare u
         LEFT JOIN reservations r ON dateTime BETWEEN
-          r.date + date_trunc('hour', r.start_time) + date_part('minute', r.start_time)::int / 30 * interval '30 minutes'
+          r.date + r.start_time - interval '30 minutes' + interval '1 second'
           AND
-          r.date + date_trunc('hour', r.end_time + interval '30 minutes' - interval '1 second') + date_part('minute', r.end_time + interval '30 minutes' - interval '1 second')::int / 30 * interval '30 minutes'
+          r.date + r.end_time + interval '30 minutes' - interval '1 second'
         WHERE u.id = :unitId AND extract(isodow FROM dateTime) = ANY(u.operation_days)
         GROUP BY dateTime
         ORDER BY dateTime
