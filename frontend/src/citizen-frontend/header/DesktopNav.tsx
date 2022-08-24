@@ -104,7 +104,6 @@ export default React.memo(function DesktopNav({
                   </Login>
                 </nav>
               )}
-              <Gap size="m" horizontal />
             </FixedSpaceRow>
           </Container>
         )
