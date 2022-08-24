@@ -35,6 +35,10 @@ const Content = styled.div`
   gap: ${defaultMargins.XL};
 `
 
+const EvakaLogoWrapper = styled.div`
+  margin: 0 ${defaultMargins.L};
+`
+
 export const Footer = React.memo(function Footer() {
   const { i18n } = useTranslation()
   return (
@@ -58,7 +62,9 @@ export const Footer = React.memo(function Footer() {
               {i18n.footer.linkLabel}
             </a>
           </Content>
-          <EvakaLogo color={colors.main.m1} />
+          <EvakaLogoWrapper>
+            <EvakaLogo color={colors.main.m1} />
+          </EvakaLogoWrapper>
         </FooterContainer>
       </Container>
     </footer>

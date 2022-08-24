@@ -42,12 +42,14 @@ const LogoLink = styled(Link)`
   display: none;
   @media screen and (min-width: ${desktopMin}) {
     display: block;
+    margin-left: ${defaultMargins.s};
+    margin-right: ${defaultMargins.L};
   }
 
   > svg {
     width: 100%;
     height: 100%;
-    max-width: 150px;
+    max-width: 120px;
   }
 `
 
