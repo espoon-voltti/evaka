@@ -99,8 +99,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
 const HeaderContainer = styled.header<{ showMenu: boolean }>`
   z-index: 25;
-  color: ${colors.grayscale.g0};
-  background-color: ${colors.main.m2};
+  color: ${colors.grayscale.g100};
+  background-color: transparent;
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
   height: ${headerHeightMobile}px;

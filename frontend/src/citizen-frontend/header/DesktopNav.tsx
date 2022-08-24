@@ -10,18 +10,19 @@ import styled, { useTheme } from 'styled-components'
 import { formatPreferredName } from 'lib-common/names'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
-  faChevronDown,
-  faChevronUp,
   faExclamation,
   faLockAlt,
   faSignIn,
   faSignOut,
-  faUser
+  faUser,
+  fasChevronDown,
+  fasChevronUp
 } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
@@ -90,17 +91,21 @@ export default React.memo(function DesktopNav({
                 </>
               ) : null}
             </Nav>
-            <LanguageMenu alignRight={hideLoginButton} />
-            {user ? (
-              <UserMenu user={user} />
-            ) : hideLoginButton ? null : (
-              <Login to="/login" data-qa="login-btn">
-                <Icon icon={faSignIn} />
-                <Gap size="xs" horizontal />
-                {t.header.login}
-              </Login>
-            )}
-            <Gap size="m" horizontal />
+            <FixedSpaceRow spacing="zero">
+              <LanguageMenu />
+              {user ? (
+                <UserMenu user={user} />
+              ) : hideLoginButton ? null : (
+                <nav>
+                  <Login to="/login" data-qa="login-btn">
+                    <Icon icon={faSignIn} />
+                    <Gap size="xs" horizontal />
+                    {t.header.login}
+                  </Login>
+                </nav>
+              )}
+              <Gap size="m" horizontal />
+            </FixedSpaceRow>
           </Container>
         )
       }}
@@ -125,15 +130,18 @@ const Container = styled.div`
   display: none;
 
   @media (min-width: ${desktopMin}) {
+    margin-top: 16px;
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
   }
 `
 
 const Nav = styled.nav`
   display: flex;
   flex-direction: row;
+  align-items: flex-start;
+  margin-left: ${defaultMargins.X3L};
 `
 
 const StyledNavLink = styled(NavLink)`
@@ -144,30 +152,34 @@ const StyledNavLink = styled(NavLink)`
   align-items: center;
   gap: ${defaultMargins.xs};
   font-family: Montserrat, sans-serif;
-  font-size: 0.9375rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: ${fontWeights.semibold};
+  font-size: 1.125rem;
+  line-height: 2rem;
   text-align: center;
-  padding: 0 ${defaultMargins.s};
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-bottom: 4px solid transparent;
 
   @media screen and (min-width: ${desktopSmall}) {
-    padding: 0 ${defaultMargins.m};
+    padding: ${defaultMargins.xs} ${defaultMargins.m};
   }
 
   &:hover {
-    font-weight: ${fontWeights.bold};
-  }
+    color: ${colors.main.m2Hover};
 
-  &:hover .circled-char,
-  &.active .circled-char {
-    border-width: 2px;
-    padding: 10px;
+    .circled-char {
+      border-color: ${colors.main.m2Hover};
+    }
   }
 
   &.active {
-    border-bottom-color: ${colors.grayscale.g0};
-    font-weight: ${fontWeights.bold};
+    color: ${colors.main.m2};
+    border-bottom-color: ${colors.main.m2};
+
+    .circled-char {
+      border-width: 2px;
+      border-color: ${colors.main.m2};
+      padding: 10px;
+    }
   }
 `
 
@@ -185,8 +197,10 @@ const Login = styled(Link)`
   align-items: center;
   color: inherit;
   text-decoration: none;
+  font-size: 1.125rem;
   font-weight: ${fontWeights.semibold};
-  padding: 0 ${defaultMargins.s};
+  line-height: 2rem;
+  padding: ${defaultMargins.xs} ${defaultMargins.m};
   border-bottom: 3px solid transparent;
 `
 
@@ -199,7 +213,7 @@ export const CircledChar = styled.div.attrs({
 })`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
-  border: 1px solid ${colors.grayscale.g0};
+  border: 1px solid ${colors.grayscale.g100};
   padding: 11px;
   display: flex;
   justify-content: center;
@@ -209,13 +223,7 @@ export const CircledChar = styled.div.attrs({
   letter-spacing: 0;
 `
 
-interface LanguageMenuProps {
-  alignRight: boolean
-}
-
-const LanguageMenu = React.memo(function LanguageMenu({
-  alignRight
-}: LanguageMenuProps) {
+const LanguageMenu = React.memo(function LanguageMenu() {
   const t = useTranslation()
   const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
@@ -225,13 +233,13 @@ const LanguageMenu = React.memo(function LanguageMenu({
   )
 
   return (
-    <nav ref={dropDownRef}>
+    <DropDownContainer ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa="button-select-language">
-        {lang.toUpperCase()}
-        <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
+        {t.header.lang[lang]}
+        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="select-lang" alignRight={alignRight}>
+        <DropDown data-qa="select-lang">
           {langs.map((l: Lang) => (
             <DropDownItem
               key={l}
@@ -243,13 +251,12 @@ const LanguageMenu = React.memo(function LanguageMenu({
               data-qa={`lang-${l}`}
               lang={l}
             >
-              <LanguageShort aria-hidden="true">{l}</LanguageShort>
               <span>{t.header.lang[l]}</span>
             </DropDownItem>
           ))}
         </DropDown>
       ) : null}
-    </nav>
+    </DropDownContainer>
   )
 })
 
@@ -268,7 +275,7 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
   )
 
   return (
-    <nav ref={dropDownRef}>
+    <DropDownContainer ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa="user-menu-title-desktop">
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
@@ -278,10 +285,10 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
         </AttentionIndicator>
         <Gap size="s" horizontal />
         {formatPreferredName(user)} {user.lastName}
-        <DropDownIcon icon={open ? faChevronUp : faChevronDown} />
+        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="user-menu" alignRight={false}>
+        <DropDown data-qa="user-menu">
           <DropDownItem
             selected={window.location.pathname.includes('/personal-details')}
             data-qa="user-menu-personal-details"
@@ -323,16 +330,21 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
           </DropDownItem>
         </DropDown>
       ) : null}
-    </nav>
+    </DropDownContainer>
   )
 })
+
+const DropDownContainer = styled.nav`
+  position: relative;
+`
 
 const DropDownButton = styled.button`
   color: inherit;
   background: transparent;
-  font-size: 1rem;
-  height: 100%;
-  padding: ${defaultMargins.s};
+  font-size: 1.125rem;
+  font-weight: ${fontWeights.semibold};
+  line-height: 2rem;
+  padding: ${defaultMargins.xs} ${defaultMargins.m};
   border: none;
   border-bottom: 3px solid transparent;
   cursor: pointer;
@@ -340,6 +352,10 @@ const DropDownButton = styled.button`
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  &:hover {
+    color: ${colors.main.m2Hover};
+  }
 `
 
 const DropDownIcon = styled(FontAwesomeIcon)`
@@ -348,19 +364,24 @@ const DropDownIcon = styled(FontAwesomeIcon)`
   margin-left: 8px;
 `
 
-const DropDown = styled.ul<{ alignRight: boolean }>`
+const DropDown = styled.ul`
   position: absolute;
   z-index: 30;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: ${defaultMargins.m};
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
   background: ${colors.grayscale.g0};
   box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
-  right: ${(p) => (p.alignRight ? '0' : 'unset')};
+  right: 0;
+  min-width: 240px;
 `
 
 const DropDownItem = styled.button<{ selected: boolean }>`
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   gap: ${defaultMargins.xs};
   align-items: center;
@@ -369,20 +390,18 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   cursor: pointer;
   font-family: Open Sans;
   color: ${({ selected }) =>
-    selected ? colors.main.m1 : colors.grayscale.g100};
-  font-size: 1em;
-  font-weight: ${({ selected }) =>
-    selected ? fontWeights.semibold : fontWeights.normal};
-  padding: 15px 50px 15px 10px;
-  width: 100%;
+    selected ? colors.main.m2 : colors.grayscale.g100};
+  font-size: 1.125rem;
+  font-weight: ${fontWeights.semibold};
+  line-height: 2rem;
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
+  border-bottom: 4px solid transparent;
+  border-bottom-color: ${({ selected }) =>
+    selected ? colors.main.m2 : 'transparent'};
 
   &:hover {
-    background: ${colors.main.m4};
+    color: ${colors.main.m2Hover};
   }
-`
-
-const LanguageShort = styled.span`
-  text-transform: uppercase;
 `
 
 const HeaderNavLink = React.memo(function HeaderNavLink({
