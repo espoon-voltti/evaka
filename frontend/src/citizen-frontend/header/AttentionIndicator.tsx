@@ -32,7 +32,7 @@ const Indicator = styled.div`
   position: absolute;
   height: 12px;
   width: 12px;
-  bottom: -2px;
+  bottom: 2px;
   right: -6px;
   border-radius: 6px;
   background: ${(p) => p.theme.colors.status.warning};

@@ -184,7 +184,7 @@ export default React.memo(function ApplicationCreation() {
               />
               <Button
                 text={t.common.cancel}
-                onClick={() => navigate('/applying/applications')}
+                onClick={() => navigate('/applications')}
               />
             </ButtonContainer>
           </ContentArea>

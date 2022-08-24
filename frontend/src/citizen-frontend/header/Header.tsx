@@ -82,7 +82,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
       <DesktopNav
         unreadMessagesCount={unreadMessagesCount ?? 0}
         unreadChildren={unreadChildrenCount}
-        unreadApplications={waitingConfirmationCount}
+        unreadDecisions={waitingConfirmationCount}
         hideLoginButton={hideLoginButton}
       />
       <MobileNav

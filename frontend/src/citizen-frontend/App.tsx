@@ -20,10 +20,10 @@ import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
 import RequireAuth from './RequireAuth'
 import ApplicationCreation from './applications/ApplicationCreation'
+import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { ApplicationsContextProvider } from './applications/state'
-import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
@@ -33,6 +33,7 @@ import AssistanceNeedDecisionPage from './children/sections/assistance-need-deci
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import { ChildrenContextProvider } from './children/state'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
+import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
@@ -119,12 +120,16 @@ const Content = React.memo(function Content() {
             element={<MapPage scrollToTop={scrollMainToTop} />}
           />
           <Route
-            path="/applying/*"
-            element={<ApplyingRouter scrollToTop={scrollMainToTop} />}
-          />
-          <Route
             path="/accessibility"
             element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
+          />
+          <Route
+            path="/applications"
+            element={
+              <RequireAuth>
+                <Applications />
+              </RequireAuth>
+            }
           />
           <Route
             path="/applications/new/:childId"
@@ -139,6 +144,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <ApplicationReadView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/applications/:applicationId/edit"
+            element={
+              <RequireAuth>
+                <ApplicationEditor />
               </RequireAuth>
             }
           />
@@ -191,14 +204,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            path="/applications/:applicationId/edit"
-            element={
-              <RequireAuth>
-                <ApplicationEditor />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/children/:childId/assistance-need-decision/:id"
             element={
               <RequireAuth>
@@ -219,6 +224,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <ChildrenPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/decisions"
+            element={
+              <RequireAuth>
+                <Decisions />
               </RequireAuth>
             }
           />
@@ -302,7 +315,7 @@ function HandleRedirection() {
   return hasAccessToCalendar ? (
     <Navigate replace to="/calendar" />
   ) : (
-    <Navigate replace to="/applying/map" />
+    <Navigate replace to="/map" />
   )
 }
 

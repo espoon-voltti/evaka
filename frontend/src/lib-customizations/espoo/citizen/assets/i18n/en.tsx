@@ -115,6 +115,7 @@ const en: Translations = {
       messages: 'Messages',
       calendar: 'Calendar',
       children: 'Children',
+      subNavigationMenu: 'Menu',
       messageCount: (n: number) =>
         n > 1 ? `${n} new messages` : `${n} new message`
     },
@@ -129,6 +130,7 @@ const en: Translations = {
     closeMenu: 'Close menu',
     goToHomepage: 'Go to homepage',
     notifications: 'notifications',
+    attention: 'Attention',
     requiresStrongAuth: 'requires strong authentication'
   },
   footer: {

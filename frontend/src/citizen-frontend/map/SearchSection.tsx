@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -42,7 +43,7 @@ interface Props {
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
   setSelectedUnit: (u: PublicUnit | null) => void
-  navigateBack?: () => void
+  navigateBack: string
 }
 
 export default React.memo(function SearchSection({
@@ -66,12 +67,14 @@ export default React.memo(function SearchSection({
 
   return (
     <Wrapper opaque>
-      {navigateBack && (
-        <InlineButton
-          text={t.common.return}
-          icon={faArrowLeft}
-          onClick={navigateBack}
-        />
+      {!!navigateBack && (
+        <Link to={navigateBack}>
+          <InlineButton
+            text={t.common.return}
+            icon={faArrowLeft}
+            onClick={() => undefined}
+          />
+        </Link>
       )}
       <Gap size="s" />
       <H1 noMargin>{t.map.title}</H1>

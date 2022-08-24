@@ -102,10 +102,13 @@ declare module 'Icons' {
   const faUserMinus: IconDefinition
   const faUserUnlock: IconDefinition
   const faUsers: IconDefinition
+  const farBars: IconDefinition
   const farFileAlt: IconDefinition
   const farGavel: IconDefinition
   const farMap: IconDefinition
+  const farSignOut: IconDefinition
   const farStickyNote: IconDefinition
+  const farXmark: IconDefinition
   const fasCaretUp: IconDefinition
   const fasCaretDown: IconDefinition
   const fasCaretLeft: IconDefinition

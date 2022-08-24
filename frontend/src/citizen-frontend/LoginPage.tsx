@@ -114,7 +114,7 @@ export default React.memo(function LoginPage() {
             </ul>
             <Gap size="s" />
             <LinkButton
-              href={getStrongLoginUriWithPath(nextPath ?? '/applying')}
+              href={getStrongLoginUriWithPath(nextPath ?? '/applications')}
               data-qa="strong-login"
             >
               {i18n.loginPage.applying.link}

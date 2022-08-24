@@ -4,11 +4,9 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import styled, { useTheme } from 'styled-components'
+import { Link, NavLink } from 'react-router-dom'
+import styled, { css } from 'styled-components'
 
-import { formatPreferredName } from 'lib-common/names'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -16,13 +14,13 @@ import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
-  faExclamation,
   faLockAlt,
   faSignIn,
-  faSignOut,
-  faUser,
   fasChevronDown,
-  fasChevronUp
+  fasChevronUp,
+  farBars,
+  farXmark,
+  farSignOut
 } from 'lib-icons'
 
 import { UnwrapResult } from '../async-rendering'
@@ -35,14 +33,14 @@ import { getLogoutUri } from './const'
 interface Props {
   unreadMessagesCount: number
   unreadChildren: number
-  unreadApplications: number
+  unreadDecisions: number
   hideLoginButton: boolean
 }
 
 export default React.memo(function DesktopNav({
   unreadMessagesCount,
   unreadChildren,
-  unreadApplications,
+  unreadDecisions,
   hideLoginButton
 }: Props) {
   const { user } = useContext(AuthContext)
@@ -82,19 +80,16 @@ export default React.memo(function DesktopNav({
                     notificationCount={unreadChildren}
                     lockElem={maybeLockElem}
                   />
-                  <HeaderNavLink
-                    to="/applying"
-                    data-qa="nav-applying"
-                    text={t.header.nav.applications}
-                    notificationCount={unreadApplications}
-                  />
                 </>
               ) : null}
             </Nav>
             <FixedSpaceRow spacing="zero">
               <LanguageMenu />
               {user ? (
-                <UserMenu user={user} />
+                <SubNavigationMenu
+                  user={user}
+                  unreadDecisions={unreadDecisions}
+                />
               ) : hideLoginButton ? null : (
                 <nav>
                   <Login to="/login" data-qa="login-btn">
@@ -240,7 +235,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
       {open ? (
         <DropDown data-qa="select-lang">
           {langs.map((l: Lang) => (
-            <DropDownItem
+            <DropDownButton
               key={l}
               selected={lang === l}
               onClick={() => {
@@ -251,7 +246,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
               lang={l}
             >
               <span>{t.header.lang[l]}</span>
-            </DropDownItem>
+            </DropDownButton>
           ))}
         </DropDown>
       ) : null}
@@ -259,10 +254,14 @@ const LanguageMenu = React.memo(function LanguageMenu() {
   )
 })
 
-const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
+const SubNavigationMenu = React.memo(function SubNavigationMenu({
+  user,
+  unreadDecisions
+}: {
+  user: User
+  unreadDecisions: number
+}) {
   const t = useTranslation()
-  const navigate = useNavigate()
-  const theme = useTheme()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
@@ -276,57 +275,75 @@ const UserMenu = React.memo(function UserMenu({ user }: { user: User }) {
   return (
     <DropDownContainer ref={dropDownRef}>
       <DropDownButton onClick={toggleOpen} data-qa="user-menu-title-desktop">
+        {t.header.nav.subNavigationMenu}
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
           data-qa="attention-indicator-desktop"
         >
-          <Icon icon={faUser} />
+          <DropDownIcon icon={open ? farXmark : farBars} />
         </AttentionIndicator>
-        <Gap size="s" horizontal />
-        {formatPreferredName(user)} {user.lastName}
-        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
         <DropDown data-qa="user-menu">
-          <DropDownItem
+          <DropDownLink
+            selected={window.location.pathname.includes('/applications')}
+            data-qa="user-menu-applications"
+            to="/applications"
+            onClick={() => setOpen(false)}
+          >
+            {t.header.nav.applications} {maybeLockElem}
+          </DropDownLink>
+          <DropDownLink
+            selected={window.location.pathname.includes('/decisions')}
+            data-qa="user-menu-decisions"
+            to="/decisions"
+            onClick={() => setOpen(false)}
+          >
+            {t.header.nav.decisions} {maybeLockElem}
+            {unreadDecisions ? (
+              <CircledChar
+                aria-label={`${unreadDecisions} ${t.header.notifications}`}
+                data-qa="user-menu-decisions-notification-count"
+              >
+                {unreadDecisions}
+              </CircledChar>
+            ) : null}
+          </DropDownLink>
+          <DropDownLink
+            selected={window.location.pathname.includes('/income')}
+            data-qa="user-menu-income"
+            to="/income"
+            onClick={() => setOpen(false)}
+          >
+            {t.header.nav.income} {maybeLockElem}
+          </DropDownLink>
+          <Separator />
+          <DropDownLink
             selected={window.location.pathname.includes('/personal-details')}
             data-qa="user-menu-personal-details"
-            onClick={() => {
-              setOpen(false)
-              navigate('/personal-details')
-            }}
+            to="/personal-details"
+            onClick={() => setOpen(false)}
           >
             {t.header.nav.personalDetails}
             {maybeLockElem}
             {showUserAttentionIndicator && (
-              <RoundIcon
-                content={faExclamation}
-                color={theme.colors.status.warning}
-                size="s"
-                data-qa="personal-details-attention-indicator-desktop"
-              />
+              <CircledChar
+                aria-label={t.header.attention}
+                data-qa="personal-details-notification"
+              >
+                !
+              </CircledChar>
             )}
-          </DropDownItem>
-          <DropDownItem
-            selected={window.location.pathname.includes('/income')}
-            data-qa="user-menu-income"
-            onClick={() => {
-              setOpen(false)
-              navigate('/income')
-            }}
-          >
-            {t.header.nav.income} {maybeLockElem}
-          </DropDownItem>
-          <DropDownItem
-            key="user-menu-logout"
+          </DropDownLink>
+          <DropDownLink
             selected={false}
-            onClick={() => {
-              location.href = getLogoutUri(user)
-            }}
+            key="user-menu-logout"
+            to={getLogoutUri(user)}
+            onClick={() => (location.href = getLogoutUri(user))}
           >
             {t.header.logout}
-            <FontAwesomeIcon icon={faSignOut} />
-          </DropDownItem>
+            <FontAwesomeIcon icon={farSignOut} />
+          </DropDownLink>
         </DropDown>
       ) : null}
     </DropDownContainer>
@@ -337,30 +354,9 @@ const DropDownContainer = styled.nav`
   position: relative;
 `
 
-const DropDownButton = styled.button`
-  color: inherit;
-  background: transparent;
-  font-size: 1.125rem;
-  font-weight: ${fontWeights.semibold};
-  line-height: 2rem;
-  padding: ${defaultMargins.xs} ${defaultMargins.m};
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  &:hover {
-    color: ${colors.main.m2Hover};
-  }
-`
-
 const DropDownIcon = styled(FontAwesomeIcon)`
   height: 1em !important;
   width: 0.625em !important;
-  margin-left: 8px;
 `
 
 const DropDown = styled.ul`
@@ -379,7 +375,7 @@ const DropDown = styled.ul`
   min-width: 240px;
 `
 
-const DropDownItem = styled.button<{ selected: boolean }>`
+const dropDownButtonStyles = (selected?: boolean) => css`
   display: inline-flex;
   flex-direction: row;
   gap: ${defaultMargins.xs};
@@ -388,19 +384,31 @@ const DropDownItem = styled.button<{ selected: boolean }>`
   background: transparent;
   cursor: pointer;
   font-family: Open Sans;
-  color: ${({ selected }) =>
-    selected ? colors.main.m2 : colors.grayscale.g100};
+  color: ${selected ? colors.main.m2 : colors.grayscale.g100};
   font-size: 1.125rem;
   font-weight: ${fontWeights.semibold};
   line-height: 2rem;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-bottom: 4px solid transparent;
-  border-bottom-color: ${({ selected }) =>
-    selected ? colors.main.m2 : 'transparent'};
+  border-bottom-color: ${selected ? colors.main.m2 : 'transparent'};
 
   &:hover {
     color: ${colors.main.m2Hover};
   }
+`
+
+const DropDownButton = styled.button<{ selected?: boolean }>`
+  ${({ selected }) => dropDownButtonStyles(selected)}
+`
+
+const DropDownLink = styled(Link)<{ selected?: boolean }>`
+  ${({ selected }) => dropDownButtonStyles(selected)}
+`
+
+const Separator = styled.div`
+  border-top: 1px solid ${colors.grayscale.g15};
+  margin: ${defaultMargins.s} -${defaultMargins.m};
+  width: calc(100% + ${defaultMargins.m} + ${defaultMargins.m});
 `
 
 const HeaderNavLink = React.memo(function HeaderNavLink({

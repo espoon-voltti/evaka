@@ -272,7 +272,7 @@ const Navigation = React.memo(function Navigation({
         lockElem={maybeLockElem}
       />
       <HeaderNavLink
-        to="/applying"
+        to="/applications"
         onClick={close}
         data-qa="nav-applications"
         text={t.header.nav.applications}

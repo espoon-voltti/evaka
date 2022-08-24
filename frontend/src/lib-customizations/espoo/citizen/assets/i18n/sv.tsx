@@ -113,6 +113,7 @@ const sv: Translations = {
       messages: 'Meddelanden',
       calendar: 'Kalender',
       children: 'Barn',
+      subNavigationMenu: 'Meny',
       messageCount: (n: number) =>
         n > 1 ? `${n} nya meddelanden` : `${n} nytt meddelande`
     },
@@ -127,6 +128,7 @@ const sv: Translations = {
     closeMenu: 'Stäng menyn',
     goToHomepage: 'Gå till hemsidan',
     notifications: 'meddelanden',
+    attention: 'Uppmärksamhet',
     requiresStrongAuth: 'kräver stark autentisering'
   },
   footer: {
