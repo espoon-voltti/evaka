@@ -153,8 +153,7 @@ export default React.memo(function Raw() {
                     { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
                     { label: 'Lapsen kapasiteetti', key: 'capacity' },
                     { label: 'Poissa maksullisesta', key: 'absencePaid' },
-                    { label: 'Poissa maksuttomasta', key: 'absenceFree' },
-                    { label: 'Henkilöstömitoitus', key: 'staffDimensioning' }
+                    { label: 'Poissa maksuttomasta', key: 'absenceFree' }
                   ]}
                   filename={`${
                     i18n.reports.raw.title
