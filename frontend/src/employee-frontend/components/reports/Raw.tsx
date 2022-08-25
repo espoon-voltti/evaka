@@ -163,7 +163,7 @@ export default React.memo(function Raw() {
             )}
           </>
         )}
-        <div hidden>
+        <div>
           <AsyncButton
             primary
             text="Lähetä patu-raportti"
