@@ -21,6 +21,7 @@ declare module 'Icons' {
   const faArrowUp: IconDefinition
   const faBars: IconDefinition
   const faBabyCarriage: IconDefinition
+  const faCalendar: IconDefinition
   const faCalendarAlt: IconDefinition
   const faCalendarPlus: IconDefinition
   const faCar: IconDefinition
@@ -31,7 +32,6 @@ declare module 'Icons' {
   const faChevronRight: IconDefinition
   const faChevronUp: IconDefinition
   const faChild: IconDefinition
-  const fasChild: IconDefinition
   const faCircleEllipsis: IconDefinition
   const faCircleExclamation: IconDefinition
   const faClock: IconDefinition
@@ -42,7 +42,6 @@ declare module 'Icons' {
   const faDatabase: IconDefinition
   const faDiagnoses: IconDefinition
   const faEnvelope: IconDefinition
-  const fasEnvelope: IconDefinition
   const faEuroSign: IconDefinition
   const faEllipsisVAlt: IconDefinition
   const faEye: IconDefinition
@@ -109,6 +108,7 @@ declare module 'Icons' {
   const farSignOut: IconDefinition
   const farStickyNote: IconDefinition
   const farXmark: IconDefinition
+  const fasCalendar: IconDefinition
   const fasCaretUp: IconDefinition
   const fasCaretDown: IconDefinition
   const fasCaretLeft: IconDefinition
@@ -116,7 +116,9 @@ declare module 'Icons' {
   const fasCheckCircle: IconDefinition
   const fasChevronDown: IconDefinition
   const fasChevronUp: IconDefinition
+  const fasChild: IconDefinition
   const fasCommentAltLines: IconDefinition
+  const fasEnvelope: IconDefinition
   const fasExclamationTriangle: IconDefinition
   const fasInfo: IconDefinition
   const fasMapMarkerAlt: IconDefinition

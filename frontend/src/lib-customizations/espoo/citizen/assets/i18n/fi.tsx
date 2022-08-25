@@ -121,6 +121,11 @@ export default {
       sv: 'På svenska',
       en: 'In English'
     },
+    langMobile: {
+      fi: 'Suomeksi',
+      sv: 'Svenska',
+      en: 'English'
+    },
     login: 'Kirjaudu sisään',
     logout: 'Kirjaudu ulos',
     openMenu: 'Avaa valikko',

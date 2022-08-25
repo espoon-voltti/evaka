@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext } from 'react'
+import sum from 'lodash/sum'
+import sumBy from 'lodash/sumBy'
+import React, { createContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
@@ -24,12 +26,12 @@ interface ChildrenContext {
   refreshUnreadAssistanceNeedDecisionCounts: () => void
   childConsents: Result<Record<UUID, CitizenChildConsent[]>>
   refreshChildConsents: () => void
-  childConsentNotifications: number
   refreshChildConsentNotifications: () => void
   unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
   unreadVasuDocumentsCount: Record<UUID, number> | undefined
   refreshUnreadPedagogicalDocumentsCount: () => void
   refreshUnreadVasuDocumentsCount: () => void
+  unreadChildNotifications: number
 }
 
 const defaultValue: ChildrenContext = {
@@ -37,12 +39,12 @@ const defaultValue: ChildrenContext = {
   refreshUnreadAssistanceNeedDecisionCounts: () => undefined,
   childConsents: Loading.of(),
   refreshChildConsents: () => undefined,
-  childConsentNotifications: 0,
   refreshChildConsentNotifications: () => undefined,
   unreadPedagogicalDocumentsCount: undefined,
   unreadVasuDocumentsCount: undefined,
   refreshUnreadPedagogicalDocumentsCount: () => undefined,
-  refreshUnreadVasuDocumentsCount: () => undefined
+  refreshUnreadVasuDocumentsCount: () => undefined,
+  unreadChildNotifications: 0
 }
 
 export const ChildrenContext = createContext(defaultValue)
@@ -103,6 +105,26 @@ export const ChildrenContextProvider = React.memo(
         [user]
       )
 
+    const unreadChildNotifications = useMemo(() => {
+      const unreadAssistanceNeedDecisionCount = sumBy(
+        unreadAssistanceNeedDecisionCounts.getOrElse([]),
+        ({ count }) => count
+      )
+      const unreadChildDocumentsCount =
+        sum(Object.values(unreadPedagogicalDocumentsCount.getOrElse({}))) +
+        sum(Object.values(unreadVasuDocumentsCount.getOrElse({})))
+      return (
+        unreadAssistanceNeedDecisionCount +
+        childConsentNotifications.getOrElse(0) +
+        unreadChildDocumentsCount
+      )
+    }, [
+      childConsentNotifications,
+      unreadAssistanceNeedDecisionCounts,
+      unreadPedagogicalDocumentsCount,
+      unreadVasuDocumentsCount
+    ])
+
     return (
       <ChildrenContext.Provider
         value={{
@@ -111,14 +133,14 @@ export const ChildrenContextProvider = React.memo(
           refreshUnreadAssistanceNeedDecisionCounts,
           childConsents,
           refreshChildConsents,
-          childConsentNotifications: childConsentNotifications.getOrElse(0),
           refreshChildConsentNotifications,
           unreadPedagogicalDocumentsCount:
             unreadPedagogicalDocumentsCount.getOrElse(undefined),
           unreadVasuDocumentsCount:
             unreadVasuDocumentsCount.getOrElse(undefined),
           refreshUnreadPedagogicalDocumentsCount,
-          refreshUnreadVasuDocumentsCount
+          refreshUnreadVasuDocumentsCount,
+          unreadChildNotifications
         }}
       >
         {children}

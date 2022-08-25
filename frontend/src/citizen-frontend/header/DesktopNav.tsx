@@ -278,6 +278,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
+          position="bottom"
           data-qa="attention-indicator-desktop"
         >
           <DropDownIcon icon={open ? farXmark : farBars} />
@@ -401,7 +402,7 @@ const DropDownButton = styled.button<{ selected?: boolean }>`
   ${({ selected }) => dropDownButtonStyles(selected)}
 `
 
-const DropDownLink = styled(Link)<{ selected?: boolean }>`
+export const DropDownLink = styled(Link)<{ selected?: boolean }>`
   ${({ selected }) => dropDownButtonStyles(selected)}
 `
 

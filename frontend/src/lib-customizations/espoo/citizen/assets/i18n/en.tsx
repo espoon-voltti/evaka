@@ -124,6 +124,11 @@ const en: Translations = {
       sv: 'På svenska',
       en: 'In English'
     },
+    langMobile: {
+      fi: 'Suomeksi',
+      sv: 'Svenska',
+      en: 'English'
+    },
     login: 'Log in',
     logout: 'Log out',
     openMenu: 'Open menu',

@@ -8,6 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
+import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
@@ -204,7 +205,7 @@ const ThreadListItems = styled.ul`
 
 const FloatingButton = styled(Button)`
   position: fixed;
-  bottom: ${defaultMargins.s};
+  bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   border-radius: 40px;
   z-index: 10;

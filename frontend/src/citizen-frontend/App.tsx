@@ -35,6 +35,7 @@ import { ChildrenContextProvider } from './children/state'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import Header from './header/Header'
+import MobileNav from './header/MobileNav'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
@@ -278,6 +279,7 @@ const Content = React.memo(function Content() {
           <Route path="*" element={<HandleRedirection />} />
         </Routes>
       </MainContainer>
+      <MobileNav />
     </FullPageContainer>
   )
 })

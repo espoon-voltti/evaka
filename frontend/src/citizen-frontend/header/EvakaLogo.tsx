@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
-import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
+import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 export default React.memo(function Logo() {
@@ -32,9 +32,9 @@ const Container = styled(Link)`
     height: 100%;
   }
 
-  @media (min-width: ${desktopMin}) and (max-width: calc(${desktopSmall} - 1px)) {
+  @media (max-width: calc(${desktopMin} - 1px)) {
     svg {
-      display: none;
+      max-width: 80px;
     }
   }
 `

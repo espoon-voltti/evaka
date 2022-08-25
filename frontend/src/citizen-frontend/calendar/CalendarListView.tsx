@@ -8,6 +8,7 @@ import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
+import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import {
   DailyReservationData,
   ReservationChild
@@ -111,7 +112,7 @@ export const asWeeklyData = (dailyData: DailyReservationData[]): WeeklyData[] =>
 
 const HoverButton = styled(Button)`
   position: fixed;
-  bottom: ${defaultMargins.s};
+  bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   border-radius: 40px;
 `

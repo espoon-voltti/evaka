@@ -7,6 +7,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
+import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
@@ -73,7 +74,7 @@ export default React.memo(function ActionPickerModal({
 
 const Container = styled.div`
   position: fixed;
-  bottom: calc(46px + ${defaultMargins.L});
+  bottom: calc(46px + ${defaultMargins.L} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   display: flex;
   flex-direction: column;
