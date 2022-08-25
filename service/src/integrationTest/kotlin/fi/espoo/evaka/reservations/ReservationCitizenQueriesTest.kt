@@ -309,7 +309,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // and 1st absence has been removed
         val absences = db.read { it.getAbsencesByChildByRange(testChild_1.id, FiniteDateRange(monday, wednesday)) }
-        assertEquals(listOf(tuesday, wednesday), absences.map { it.date }.sorted())
+        assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
         assertEquals(listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE), absences.map { it.absenceType })
     }
 

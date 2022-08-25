@@ -230,8 +230,8 @@ LEFT JOIN LATERAL (
 ) ca ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type, eu.type AS modified_by_type
-    FROM absences_in_range(ARRAY[g.child_id], daterange(t::date, t::date, '[]')) a
-    JOIN evaka_user eu ON eu.id = a.modified_by
+    FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
+    WHERE a.child_id = g.child_id AND a.date = t::date
     LIMIT 1
 ) a ON true
 LEFT JOIN LATERAL (
