@@ -340,13 +340,6 @@ export class UnitAttendancesPage {
   personCountSum(nth: number) {
     return this.page.findAllByDataQa('person-count-sum').nth(nth).innerText
   }
-
-  async assertAbsence(childId: UUID, date: LocalDate, type: string) {
-    await this.page
-      .findByDataQa(`absence-cell-${childId}-${date.formatIso()}`)
-      .find(`.absence-cell-right-${type}`)
-      .waitUntilVisible()
-  }
 }
 
 export class ReservationModal extends Modal {

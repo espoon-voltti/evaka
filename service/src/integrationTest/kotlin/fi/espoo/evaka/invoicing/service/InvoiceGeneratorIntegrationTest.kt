@@ -6,8 +6,6 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
@@ -40,7 +38,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
@@ -48,8 +45,6 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
@@ -67,7 +62,6 @@ import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -1473,41 +1467,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `absences derived from daily service times do not generate a discount on invoices`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-
-        initDataForAbsences(listOf(period), listOf(), testChild_1)
-        insertDailyServiceTimes(
-            testChild_1.id,
-            DailyServiceTimes.IrregularTimes(
-                monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                wednesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                thursday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                friday = null,
-                saturday = null,
-                sunday = null,
-                validityPeriod = period
-            )
-        )
-
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice)
-            assertEquals(1, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
-            }
-        }
-    }
-
-    @Test
     fun `planned absences for the whole month generate a discount`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
@@ -1534,111 +1493,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-14450, invoiceRow.unitPrice)
                 assertEquals(-14450, invoiceRow.price)
-            }
-        }
-    }
-
-    @Test
-    fun `planned absences along with absences derived from daily service times where all days are off generate a discount on invoices`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-
-        // Absent all weeks, Mon-Thu
-        val absenceDays = datesBetween(period.start, period.end).filter {
-            listOf(
-                DayOfWeek.MONDAY,
-                DayOfWeek.TUESDAY,
-                DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY
-            ).contains(it.dayOfWeek)
-        }
-            .map { it to AbsenceType.PLANNED_ABSENCE }
-
-        initDataForAbsences(listOf(period), absenceDays, testChild_1)
-
-        // Always absent on Fri-Sun
-        insertDailyServiceTimes(
-            testChild_1.id,
-            DailyServiceTimes.IrregularTimes(
-                monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                wednesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                thursday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                friday = null,
-                saturday = null,
-                sunday = null,
-                validityPeriod = period
-            )
-        )
-
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(14450, invoice.totalPrice)
-            assertEquals(2, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
-            }
-            invoice.rows.last().let { invoiceRow ->
-                assertEquals(invoiceRow.product, productProvider.fullMonthAbsence)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(-14450, invoiceRow.unitPrice)
-                assertEquals(-14450, invoiceRow.price)
-            }
-        }
-    }
-
-    @Test
-    fun `absences derived from daily service times are overridden by attendances`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-
-        initDataForAbsences(listOf(period), listOf(), testChild_1)
-        insertDailyServiceTimes(
-            testChild_1.id,
-            DailyServiceTimes.IrregularTimes(
-                monday = null,
-                tuesday = null,
-                wednesday = null,
-                thursday = null,
-                friday = null,
-                saturday = null,
-                sunday = null,
-                validityPeriod = period
-            )
-        )
-        db.transaction { tx ->
-            period.asFiniteDateRange()?.dates()?.filter { date ->
-                listOf(
-                    DayOfWeek.MONDAY,
-                    DayOfWeek.TUESDAY,
-                    DayOfWeek.THURSDAY
-                ).contains(date.dayOfWeek)
-            }?.forEach { date ->
-                tx.insertTestChildAttendance(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    arrived = HelsinkiDateTime.of(date, LocalTime.of(8, 0)),
-                    departed = HelsinkiDateTime.of(date, LocalTime.of(16, 0)),
-                )
-            }
-        }
-
-        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(28900, invoice.totalPrice)
-            assertEquals(1, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
             }
         }
     }
@@ -4964,12 +4818,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 },
                 EvakaUserId(testDecisionMaker_1.id.raw)
             )
-        }
-    }
-
-    private fun insertDailyServiceTimes(childId: ChildId, dst: DailyServiceTimes) {
-        db.transaction { tx ->
-            tx.createChildDailyServiceTimes(childId, dst)
         }
     }
 

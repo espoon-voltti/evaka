@@ -253,7 +253,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         ) ca ON true
         LEFT JOIN LATERAL (
             SELECT jsonb_agg(jsonb_build_object('category', a.category)) AS absences
-            FROM absences_in_range(ARRAY[pe.id], daterange(:date, :date, '[]')) a
+            FROM absence a WHERE a.child_id = pe.id AND a.date = :date
             GROUP BY a.child_id
         ) a ON true
         """.trimIndent()
