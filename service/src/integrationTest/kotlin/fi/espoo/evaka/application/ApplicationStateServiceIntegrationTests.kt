@@ -417,6 +417,72 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
+    fun `sendApplication - preschool placement already exists -- preschool+connected application is marked as additionalDaycareApplication`() {
+        db.transaction { tx ->
+            // given
+            val draft = tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
+            tx.insertTestPlacement(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = draft.childId,
+                    unitId = testDaycare2.id,
+                    startDate = draft.form.preferences.preferredStartDate!!,
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId, today)
+        }
+
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.SENT, application.status)
+            assertEquals(true, application.additionalDaycareApplication)
+        }
+    }
+
+    @Test
+    fun `sendApplication - preschool placement already exists -- preparatory+connected application is not marked as additionalDaycareApplication`() {
+        db.transaction { tx ->
+            // given
+            val draft = tx.insertApplication(
+                appliedType = PlacementType.PREPARATORY_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
+            tx.insertTestPlacement(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = draft.childId,
+                    unitId = testDaycare2.id,
+                    startDate = draft.form.preferences.preferredStartDate!!,
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId, today)
+        }
+
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.SENT, application.status)
+            assertEquals(false, application.additionalDaycareApplication)
+        }
+    }
+
+    @Test
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given

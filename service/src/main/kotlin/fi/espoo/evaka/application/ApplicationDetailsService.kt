@@ -15,6 +15,7 @@ fun Database.Read.applicationFlags(application: ApplicationDetails, today: Local
         childId = application.childId,
         formType = application.type,
         startDate = application.form.preferences.preferredStartDate ?: today,
+        preparatory = application.form.preferences.preparatory,
         connectedDaycare = application.form.preferences.serviceNeed != null
     )
 }
@@ -23,6 +24,7 @@ fun Database.Read.applicationFlags(
     childId: ChildId,
     formType: ApplicationType,
     startDate: LocalDate,
+    preparatory: Boolean,
     connectedDaycare: Boolean
 ): ApplicationFlags {
     return when (formType) {
@@ -52,10 +54,13 @@ fun Database.Read.applicationFlags(
                     ).contains(it.type)
                 }
 
+            // True if the application is for connected daycare only, i.e. there already is a placement for the same
+            // placement type *without* connected daycare
             val isAdditionalDaycareApplication = connectedDaycare &&
                 existingPlacements.isNotEmpty() &&
-                existingPlacements.none {
-                    it.type == PlacementType.PRESCHOOL_DAYCARE || it.type == PlacementType.PREPARATORY_DAYCARE
+                existingPlacements.all {
+                    !preparatory && it.type == PlacementType.PRESCHOOL ||
+                        preparatory && it.type == PlacementType.PREPARATORY
                 }
 
             val isTransferApplication = !isAdditionalDaycareApplication && existingPlacements.isNotEmpty()
