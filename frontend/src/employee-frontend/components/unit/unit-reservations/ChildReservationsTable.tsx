@@ -68,8 +68,7 @@ export default React.memo(function ChildReservationsTable(props: Props) {
     <Table>
       <AttendanceTableHeader
         operationalDays={operationalDays}
-        startTimeHeader={i18n.unit.attendanceReservations.startTime}
-        endTimeHeader={i18n.unit.attendanceReservations.endTime}
+        nameColumnLabel={i18n.unit.attendanceReservations.childName}
       />
       <Tbody>
         {allDayRows.flatMap(({ child, dailyData }) => {

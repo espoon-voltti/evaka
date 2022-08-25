@@ -281,8 +281,7 @@ export default React.memo(function StaffAttendanceTable({
       <Table data-qa="staff-attendances-table">
         <AttendanceTableHeader
           operationalDays={operationalDays}
-          startTimeHeader={i18n.unit.staffAttendance.startTime}
-          endTimeHeader={i18n.unit.staffAttendance.endTime}
+          nameColumnLabel={i18n.unit.staffAttendance.staffName}
         />
         <Tbody>
           {staffRows.map((row, index) => (

@@ -131,11 +131,18 @@ const StyledButton = styled.button<ButtonProps>`
 
 export type IconButtonProps = {
   icon: IconDefinition
-  'aria-label': string
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean
 } & ButtonProps &
-  BaseProps
+  BaseProps &
+  (
+    | {
+        'aria-label': string
+      }
+    | {
+        'aria-labelledby': string
+      }
+  )
 
 export default React.memo(function IconButton({
   disabled,

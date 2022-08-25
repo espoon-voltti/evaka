@@ -36,11 +36,11 @@ import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
 import {
-  ModalBackground,
-  ModalCloseButton,
-  ModalSection,
-  ModalButtons
-} from './ReservationModal'
+  CalendarModalBackground,
+  CalendarModalCloseButton,
+  CalendarModalSection,
+  CalendarModalButtons
+} from './CalendarModal'
 import { postAbsences } from './api'
 
 interface Props {
@@ -102,10 +102,10 @@ export default React.memo(function AbsenceModal({
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
-        <ModalBackground>
+        <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
-              <ModalSection>
+              <CalendarModalSection>
                 <Gap size="L" sizeOnMobile="zero" />
                 <ModalHeader
                   headingComponent={(props) => (
@@ -116,9 +116,9 @@ export default React.memo(function AbsenceModal({
                 >
                   {i18n.calendar.absenceModal.title}
                 </ModalHeader>
-              </ModalSection>
+              </CalendarModalSection>
               <Gap size="s" />
-              <ModalSection>
+              <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
                 <Gap size="xs" />
                 <FixedSpaceFlexWrap>
@@ -140,12 +140,12 @@ export default React.memo(function AbsenceModal({
                     />
                   ))}
                 </FixedSpaceFlexWrap>
-              </ModalSection>
+              </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
                 <HorizontalLine dashed hiddenOnMobile slim />
               </LineContainer>
-              <ModalSection>
+              <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.dateRange}</H2>
                 <DateRangePicker
                   start={form.startDate}
@@ -171,12 +171,12 @@ export default React.memo(function AbsenceModal({
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
-              </ModalSection>
+              </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
                 <HorizontalLine dashed hiddenOnMobile slim />
               </LineContainer>
-              <ModalSection>
+              <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.absenceType}</H2>
                 <FixedSpaceFlexWrap verticalSpacing="xs">
                   <ChoiceChip
@@ -217,9 +217,9 @@ export default React.memo(function AbsenceModal({
                 {showAllErrors && !form.absenceType ? (
                   <Warning>{i18n.validationErrors.requiredSelection}</Warning>
                 ) : null}
-              </ModalSection>
+              </CalendarModalSection>
             </div>
-            <ModalButtons>
+            <CalendarModalButtons>
               <Button
                 onClick={close}
                 data-qa="modal-cancelBtn"
@@ -243,10 +243,10 @@ export default React.memo(function AbsenceModal({
                 }}
                 data-qa="modal-okBtn"
               />
-            </ModalButtons>
+            </CalendarModalButtons>
           </BottomFooterContainer>
-        </ModalBackground>
-        <ModalCloseButton
+        </CalendarModalBackground>
+        <CalendarModalCloseButton
           onClick={close}
           aria-label={i18n.common.closeModal}
           icon={faTimes}

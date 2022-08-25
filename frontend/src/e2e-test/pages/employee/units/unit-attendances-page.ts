@@ -16,36 +16,19 @@ import {
   Page,
   Select,
   SelectionChip,
-  TextInput
+  TextInput,
+  TreeDropdown
 } from '../../../utils/page'
 
-export class UnitAttendancesPage {
+export class UnitCalendarPage {
   constructor(private readonly page: Page) {}
 
-  #reservationCell = (date: LocalDate, row: number) =>
-    this.page.findByDataQa(`reservation-${date.formatIso()}-${row}`)
-  #attendanceCell = (date: LocalDate, row: number) =>
-    this.page.findByDataQa(`attendance-${date.formatIso()}-${row}`)
-
-  #ellipsisMenu = (childId: UUID) =>
-    this.page.find(`[data-qa="ellipsis-menu-${childId}"]`)
-  #editInline = this.page.find('[data-qa="menu-item-edit-row"]')
-
-  occupancies = new UnitOccupanciesSection(
-    this.page.find('[data-qa="occupancies"]')
-  )
-
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
+  get attendancesSection() {
+    return new UnitAttendancesSection(this.page)
   }
 
-  async setFilterStartDate(date: LocalDate) {
-    await new DatePickerDeprecated(
-      this.page.find('[data-qa="unit-filter-start-date"]')
-    ).fill(date.format())
-    await this.waitUntilLoaded()
+  get calendarEventsSection() {
+    return new UnitCalendarEventsSection(this.page)
   }
 
   async selectMode(mode: 'week' | 'month') {
@@ -85,6 +68,102 @@ export class UnitAttendancesPage {
       await this.waitForWeekLoaded()
     }
     throw Error(`Unable to seek to date ${date.formatIso()}`)
+  }
+
+  private async waitForWeekLoaded() {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findByDataQa('staff-attendances-status')
+          .getAttribute('data-qa-value'),
+      'success'
+    )
+  }
+}
+
+export class UnitCalendarEventsSection {
+  constructor(private readonly page: Page) {}
+
+  async openEventCreationModal() {
+    await this.page.findByDataQa('create-new-event-btn').click()
+    return new EventCreationModal(this.page.findByDataQa('modal'))
+  }
+
+  getEventOfDay(date: LocalDate, idx: number) {
+    return this.page
+      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
+      .findAllByDataQa('event')
+      .nth(idx)
+  }
+
+  async assertNoEventsForDay(date: LocalDate) {
+    await this.page
+      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
+      .findAllByDataQa('event')
+      .assertCount(0)
+  }
+
+  get eventEditModal() {
+    return new EventEditModal(this.page.findByDataQa('modal'))
+  }
+
+  get eventDeleteModal() {
+    return new EventDeleteModal(
+      this.page.findByDataQa('deletion-modal').findByDataQa('modal')
+    )
+  }
+}
+
+export class EventCreationModal extends Modal {
+  readonly title = new TextInput(this.findByDataQa('title-input'))
+  readonly startDateInput = new TextInput(this.findByDataQa('start-date'))
+  readonly endDateInput = new TextInput(this.findByDataQa('end-date'))
+  readonly description = new TextInput(this.findByDataQa('description-input'))
+  readonly attendees = new TreeDropdown(this.findByDataQa('attendees'))
+}
+
+export class EventEditModal extends Modal {
+  readonly title = new TextInput(this.findByDataQa('title-input'))
+  readonly description = new TextInput(this.findByDataQa('description-input'))
+
+  async submit() {
+    await this.findByDataQa('save').click()
+  }
+
+  async delete() {
+    await this.findByDataQa('delete').click()
+  }
+}
+
+export class EventDeleteModal extends Modal {}
+
+export class UnitAttendancesSection {
+  constructor(private readonly page: Page) {}
+
+  #reservationCell = (date: LocalDate, row: number) =>
+    this.page.findByDataQa(`reservation-${date.formatIso()}-${row}`)
+  #attendanceCell = (date: LocalDate, row: number) =>
+    this.page.findByDataQa(`attendance-${date.formatIso()}-${row}`)
+
+  #ellipsisMenu = (childId: UUID) =>
+    this.page.find(`[data-qa="ellipsis-menu-${childId}"]`)
+  #editInline = this.page.find('[data-qa="menu-item-edit-row"]')
+
+  occupancies = new UnitOccupanciesSection(
+    this.page.find('[data-qa="occupancies"]')
+  )
+
+  async waitUntilLoaded() {
+    await this.page
+      .find('[data-qa="unit-attendances"][data-isloading="false"]')
+      .waitUntilVisible()
+  }
+
+  async setFilterStartDate(date: LocalDate) {
+    await new DatePickerDeprecated(
+      this.page.find('[data-qa="unit-filter-start-date"]')
+    ).fill(date.format())
+    await this.waitUntilLoaded()
   }
 
   async childRowCount(childId: UUID): Promise<number> {
@@ -321,16 +400,6 @@ export class UnitAttendancesPage {
     await this.nthEditor(nth, dayNth, rowIx)
       .findByDataQa('departure-lock')
       .waitUntilVisible()
-  }
-
-  private async waitForWeekLoaded() {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa('staff-attendances-status')
-          .getAttribute('data-qa-value'),
-      'success'
-    )
   }
 
   async assertFormWarning() {

@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -245,7 +246,8 @@ sealed interface Action {
             READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATION_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self());
+            READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -373,6 +375,12 @@ sealed interface Action {
     enum class BackupPickup(override vararg val defaultRules: ScopedActionRule<in BackupPickupId>) : ScopedAction<BackupPickupId> {
         UPDATE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup()),
         DELETE(HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup());
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+    enum class CalendarEvent(override vararg val defaultRules: ScopedActionRule<in CalendarEventId>) : ScopedAction<CalendarEventId> {
+        DELETE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()),
+        UPDATE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -532,7 +540,9 @@ sealed interface Action {
         MARK_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_EXTERNAL_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
-        MARK_EXTERNAL_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup());
+        MARK_EXTERNAL_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
+
+        CREATE_CALENDAR_EVENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -736,7 +746,10 @@ sealed interface Action {
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
 
         READ_TERMINATED_PLACEMENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
-        READ_MISSING_GROUP_PLACEMENTS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit());
+        READ_MISSING_GROUP_PLACEMENTS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()),
+
+        READ_CALENDAR_EVENTS(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()),
+        CREATE_CALENDAR_EVENT(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

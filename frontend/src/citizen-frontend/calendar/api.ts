@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import {
   AbsenceRequest,
@@ -89,5 +92,31 @@ export async function dismissDailyServiceTimeNotifications(
   return client
     .post('/citizen/daily-service-time-notifications/dismiss', notificationIds)
     .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getCalendarEvents(
+  start: LocalDate,
+  end: LocalDate
+): Promise<Result<CitizenCalendarEvent[]>> {
+  return client
+    .get<JsonOf<CitizenCalendarEvent[]>>('/citizen/calendar-events', {
+      params: { start: start.formatIso(), end: end.formatIso() }
+    })
+    .then((res) =>
+      Success.of(
+        res.data.map((event) => ({
+          ...event,
+          attendingChildren: mapValues(event.attendingChildren, (attending) =>
+            attending.map((a) => ({
+              ...a,
+              periods: a.periods.map((period) =>
+                FiniteDateRange.parseJson(period)
+              )
+            }))
+          )
+        }))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }

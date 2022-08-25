@@ -66,6 +66,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @BeforeAll
     protected fun beforeAll() {
         assert(httpPort > 0)
+        http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connectWithManualLifecycle()

@@ -160,6 +160,7 @@ data class ChildDailyData(
 data class ReservationChild(
     val id: ChildId,
     val firstName: String,
+    val lastName: String,
     val preferredName: String?,
     val imageId: ChildImageId?,
     val placementMinStart: LocalDate,
@@ -268,6 +269,7 @@ private fun Database.Read.getReservationChildren(guardianId: PersonId, range: Fi
 SELECT
     ch.id,
     ch.first_name,
+    ch.last_name,
     ch.preferred_name,
     ci.id AS image_id,
     p.placement_min_start,

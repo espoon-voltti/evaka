@@ -266,9 +266,11 @@ export default {
     reservation: 'Ilmoitettu aika',
     realized: 'Toteutunut aika',
     reservationsAndRealized: 'Läsnäoloaika',
+    events: 'Päivän tapahtumat',
     noActivePlacements:
       'Lapsesi ei ole varhaiskasvatuksessa tai esiopetuksessa tänä päivänä',
-    attendanceWarning: 'Läsnäoloaika ylittää varauksen',
+    attendanceWarning: 'Toteutunut läsnäoloaika ylittää ilmoitetun ajan.',
+    eventsCount: 'tapahtumaa',
     reservationModal: {
       title: 'Ilmoita läsnäolo',
       selectChildren: 'Lapset, joiden läsnäolo ilmoitetaan',

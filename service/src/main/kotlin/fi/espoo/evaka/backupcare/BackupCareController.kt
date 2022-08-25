@@ -5,6 +5,8 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.clearCalendarEventAttendees
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -58,7 +60,14 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
-            val id = db.connect { dbc -> dbc.transaction { it.createBackupCare(childId, body) } }
+            val id = db.connect { dbc ->
+                dbc.transaction { tx ->
+                    tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end).forEach { placement ->
+                        tx.clearCalendarEventAttendees(childId, placement.unitId, body.period)
+                    }
+                    tx.createBackupCare(childId, body)
+                }
+            }
             return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -75,7 +84,55 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, Action.BackupCare.UPDATE, backupCareId)
         try {
-            db.connect { dbc -> dbc.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) } }
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val existing = tx.getBackupCare(backupCareId)
+                    if (existing != null) {
+                        if (!existing.period.start.isEqual(body.period.start)) {
+                            if (existing.period.start.isBefore(body.period.start)) {
+                                // start was shrunk
+                                tx.clearCalendarEventAttendees(
+                                    existing.childId,
+                                    existing.unitId,
+                                    FiniteDateRange(existing.period.start, body.period.start.minusDays(1))
+                                )
+                            } else {
+                                // the backup care was extended; clear calendar event attendees for the main placement
+                                // for the extended period
+                                tx.getPlacementsForChildDuring(existing.childId, body.period.start, existing.period.start).forEach { placement ->
+                                    tx.clearCalendarEventAttendees(
+                                        existing.childId,
+                                        placement.unitId,
+                                        FiniteDateRange(body.period.start, existing.period.start)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (!existing.period.end.isEqual(body.period.end)) {
+                            if (existing.period.end.isAfter(body.period.end)) {
+                                // end was shrunk
+                                tx.clearCalendarEventAttendees(
+                                    existing.childId,
+                                    existing.unitId,
+                                    FiniteDateRange(body.period.end.plusDays(1), existing.period.end)
+                                )
+                            } else {
+                                // the backup care was extended; clear calendar event attendees for the main placement
+                                // for the extended period
+                                tx.getPlacementsForChildDuring(existing.childId, existing.period.end, body.period.end).forEach { placement ->
+                                    tx.clearCalendarEventAttendees(
+                                        existing.childId,
+                                        placement.unitId,
+                                        FiniteDateRange(existing.period.end, body.period.end)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    tx.updateBackupCare(backupCareId, body.period, body.groupId)
+                }
+            }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -89,7 +146,15 @@ class BackupCareController(private val accessControl: AccessControl) {
     ) {
         Audit.BackupCareDelete.log(targetId = backupCareId)
         accessControl.requirePermissionFor(user, Action.BackupCare.DELETE, backupCareId)
-        db.connect { dbc -> dbc.transaction { it.deleteBackupCare(backupCareId) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val backupCare = tx.getBackupCare(backupCareId)
+                if (backupCare != null) {
+                    tx.clearCalendarEventAttendees(backupCare.childId, backupCare.unitId, backupCare.period)
+                }
+                tx.deleteBackupCare(backupCareId)
+            }
+        }
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")

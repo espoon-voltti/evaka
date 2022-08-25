@@ -43,6 +43,7 @@ export { faCommentAlt as fasCommentAltLines } from '@fortawesome/free-solid-svg-
 export { faComments } from '@fortawesome/free-solid-svg-icons/faComments'
 export { faCopy } from '@fortawesome/free-solid-svg-icons/faCopy'
 export { faDatabase } from '@fortawesome/free-solid-svg-icons/faDatabase'
+export { faCircle as faDash } from '@fortawesome/free-regular-svg-icons'
 export { faDiagnoses } from '@fortawesome/free-solid-svg-icons/faDiagnoses'
 export { faDownLeftAndUpRightToCenter } from '@fortawesome/free-solid-svg-icons/faDownLeftAndUpRightToCenter'
 export { faEllipsisV as faEllipsisVAlt } from '@fortawesome/free-solid-svg-icons/faEllipsisV'

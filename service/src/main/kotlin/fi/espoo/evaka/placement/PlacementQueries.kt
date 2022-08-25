@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
 import org.jdbi.v3.core.mapper.Nested
@@ -188,7 +189,9 @@ data class CancelPlacementResult(
 )
 
 fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult {
-    getPlacement(id) ?: throw NotFound("Placement $id not found")
+    val placement = getPlacement(id) ?: throw NotFound("Placement $id not found")
+
+    clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(placement.startDate, placement.endDate))
 
     createUpdate("DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id")
         .bind("id", id)
@@ -222,6 +225,12 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
         .bind("id", placementId)
         .bind("date", date)
         .execute()
+
+    val placement = getPlacement(placementId)
+
+    if (placement != null) {
+        clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(date, LocalDate.MAX))
+    }
 }
 
 fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, date: LocalDate) {
@@ -246,6 +255,47 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
         .bind("id", placementId)
         .bind("date", date)
         .execute()
+
+    val placement = getPlacement(placementId)
+
+    if (placement != null) {
+        clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(LocalDate.MIN, date))
+    }
+}
+
+fun Database.Transaction.clearCalendarEventAttendees(childId: ChildId, unitId: DaycareId, range: FiniteDateRange?) {
+    createUpdate(
+        //language=SQL
+        """
+            DELETE FROM calendar_event_attendee cea
+            WHERE cea.child_id = :childId
+              AND cea.unit_id = :unitId
+              AND (
+                :startDate IS NULL OR
+                (SELECT lower(ce.period) FROM calendar_event ce WHERE ce.id = cea.calendar_event_id) >= :startDate
+              )
+              AND (
+                :endDate IS NULL OR
+                (SELECT upper(ce.period) FROM calendar_event ce WHERE ce.id = cea.calendar_event_id) < :endDate
+              )
+        """.trimIndent()
+    )
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("startDate", range?.start?.takeIf { !it.isEqual(LocalDate.MIN) })
+        .bind("endDate", range?.end?.takeIf { !it.isEqual(LocalDate.MAX) })
+        .execute()
+
+    // clear events that no longer have any attendees
+    createUpdate(
+        //language=SQL
+        """
+            DELETE FROM calendar_event ce
+            WHERE NOT EXISTS(
+                SELECT 1 FROM calendar_event_attendee cea WHERE cea.calendar_event_id = ce.id
+            )
+        """.trimIndent()
+    ).execute()
 }
 
 fun Database.Read.getDaycarePlacements(
@@ -559,6 +609,26 @@ fun Database.Read.getChildGroupPlacements(
         .toList()
 }
 
+fun Database.Read.getGroupPlacementChildren(
+    groupId: GroupId,
+    range: FiniteDateRange
+): List<ChildId> {
+    // language=SQL
+    val sql =
+        """
+        SELECT DISTINCT pl.child_id
+        FROM daycare_group_placement gp
+        JOIN placement pl ON pl.id = gp.daycare_placement_id
+        WHERE gp.daycare_group_id = :groupId AND daterange(gp.start_date, gp.end_date, '[]') && :range
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("groupId", groupId)
+        .bind("range", range)
+        .mapTo<ChildId>()
+        .toList()
+}
+
 fun Database.Transaction.createGroupPlacement(
     placementId: PlacementId,
     groupId: GroupId,
@@ -605,6 +675,15 @@ fun Database.Transaction.updateGroupPlacementEndDate(id: GroupPlacementId, endDa
 }
 
 fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
+    val dgPlacement = getDaycareGroupPlacement(id)
+    if (dgPlacement != null) {
+        val placement = getPlacement(dgPlacement.daycarePlacementId)
+
+        if (placement != null) {
+            clearCalendarEventAttendees(placement.childId, placement.unitId, null)
+        }
+    }
+
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 

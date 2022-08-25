@@ -61,11 +61,11 @@ export default React.memo(function GroupSelector({
         .map((gs) => {
           switch (item) {
             case 'no-group':
-              return i18n.unit.attendances.noGroup
+              return i18n.unit.calendar.noGroup
             case 'staff':
-              return i18n.unit.attendances.staff
+              return i18n.unit.calendar.staff
             case 'all':
-              return i18n.unit.attendances.all
+              return i18n.unit.calendar.all
             default:
               return gs.find(({ id }) => id === item)?.name ?? ''
           }
