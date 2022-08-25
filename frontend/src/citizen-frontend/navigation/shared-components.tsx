@@ -9,6 +9,21 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+export const CircledChar = styled.div.attrs({
+  className: 'circled-char'
+})`
+  width: ${defaultMargins.s};
+  height: ${defaultMargins.s};
+  border: 1px solid ${colors.grayscale.g100};
+  padding: 11px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 100%;
+  letter-spacing: 0;
+`
+
 const dropDownButtonStyles = css`
   display: inline-flex;
   flex-direction: row;
@@ -32,6 +47,10 @@ const dropDownButtonStyles = css`
   &.active {
     color: ${colors.main.m2};
     border-bottom-color: ${colors.main.m2};
+
+    ${CircledChar} {
+      border-color: ${colors.main.m2};
+    }
   }
 `
 
@@ -41,19 +60,4 @@ export const DropDownButton = styled.button`
 
 export const DropDownLink = styled(NavLink)`
   ${dropDownButtonStyles}
-`
-
-export const CircledChar = styled.div.attrs({
-  className: 'circled-char'
-})`
-  width: ${defaultMargins.s};
-  height: ${defaultMargins.s};
-  border: 1px solid ${colors.grayscale.g100};
-  padding: 11px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-radius: 100%;
-  letter-spacing: 0;
 `

@@ -15,12 +15,18 @@ export default class CitizenHeader {
 
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
-  #unreadChildrenCount = this.page.findAllByDataQa(
+  #unreadChildrenCount = this.page.findByDataQa(
     `nav-children-${this.type}-notification-count`
   )
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
+  }
+
+  async #toggleChildrenMenu() {
+    const childNav = this.page.findByDataQa(`nav-children-${this.type}`)
+    await childNav.findByDataQa('icon').waitUntilVisible()
+    return childNav.click()
   }
 
   async waitUntilLoggedIn() {
@@ -33,7 +39,6 @@ export default class CitizenHeader {
       | 'decisions'
       | 'income'
       | 'calendar'
-      | 'children'
       | 'messages'
       | 'personal-details'
   ) {
@@ -49,6 +54,11 @@ export default class CitizenHeader {
     } else {
       await this.page.findByDataQa(`nav-${tab}-${this.type}`).click()
     }
+  }
+
+  async openChildPage(childId: string) {
+    await this.#toggleChildrenMenu()
+    await this.page.findByDataQa(`children-menu-${childId}`).click()
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
@@ -92,11 +102,27 @@ export default class CitizenHeader {
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {
+    await this.#toggleChildrenMenu()
     expectedCount != 0
       ? await waitUntilEqual(
-          () => this.#unreadChildrenCount.first().textContent,
+          () => this.#unreadChildrenCount.textContent,
           expectedCount.toString()
         )
-      : await waitUntilFalse(() => this.#unreadChildrenCount.first().visible)
+      : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
+    await this.#toggleChildrenMenu()
+  }
+
+  async assertChildUnreadCount(childId: string, expectedCount: number) {
+    await this.#toggleChildrenMenu()
+    const notification = this.page.findByDataQa(
+      `children-menu-${childId}-notification-count`
+    )
+    expectedCount != 0
+      ? await waitUntilEqual(
+          () => notification.textContent,
+          expectedCount.toString()
+        )
+      : await notification.waitUntilHidden()
+    await this.#toggleChildrenMenu()
   }
 }

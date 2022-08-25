@@ -45,13 +45,28 @@ import { CircledChar, DropDownLink } from './shared-components'
 export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
-  const { unreadChildNotifications } = useContext(ChildrenContext)
+  const { children, totalUnreadChildNotifications } =
+    useContext(ChildrenContext)
   const { unreadMessagesCount } = useContext(MessageContext)
   const { waitingConfirmationCount: unreadDecisions } =
     useContext(ApplicationsContext)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const toggleMenu = useCallback(() => setMenuOpen((open) => !open), [])
-  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
+  const toggleSubMenu = useCallback(
+    () => setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu')),
+    []
+  )
+  const toggleChildrenMenu = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (children.getOrElse([]).length === 0) {
+        return
+      }
+
+      e.preventDefault()
+      setMenuOpen((open) => (open === 'children' ? undefined : 'children'))
+    },
+    [children]
+  )
+  const closeMenu = useCallback(() => setMenuOpen(undefined), [])
 
   if (!user.getOrElse(undefined)) {
     return null
@@ -89,11 +104,12 @@ export default React.memo(function MobileNav() {
                 text={t.header.nav.children}
                 icon={faChild}
                 activeIcon={fasChild}
-                showNotification={unreadChildNotifications > 0}
+                showNotification={totalUnreadChildNotifications > 0}
+                onClick={toggleChildrenMenu}
               />
               <StyledButton
-                className={classNames({ active: menuOpen })}
-                onClick={toggleMenu}
+                className={classNames({ active: menuOpen === 'submenu' })}
+                onClick={toggleSubMenu}
                 data-qa="sub-nav-menu-mobile"
               >
                 <AttentionIndicator
@@ -103,17 +119,21 @@ export default React.memo(function MobileNav() {
                   position="top"
                   data-qa="attention-indicator-sub-menu-mobile"
                 >
-                  <FontAwesomeIcon icon={menuOpen ? farXmark : faBars} />
+                  <FontAwesomeIcon
+                    icon={menuOpen === 'submenu' ? farXmark : faBars}
+                  />
                 </AttentionIndicator>
                 {t.header.nav.subNavigationMenu}
               </StyledButton>
             </BottomBar>
-            {menuOpen ? (
+            {menuOpen === 'submenu' ? (
               <Menu
                 user={user}
                 closeMenu={closeMenu}
                 unreadDecisions={unreadDecisions}
               />
+            ) : menuOpen === 'children' ? (
+              <ChildrenMenu user={user} closeMenu={closeMenu} />
             ) : null}
           </>
         ) : null
@@ -150,6 +170,7 @@ const BottomBarLink = React.memo(function BottomBarLink({
   icon,
   activeIcon,
   showNotification,
+  onClick,
   'data-qa': dataQa
 }: {
   to: string
@@ -157,12 +178,13 @@ const BottomBarLink = React.memo(function BottomBarLink({
   icon: IconDefinition
   activeIcon: IconDefinition
   showNotification: boolean
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
   'data-qa': string
 }) {
   const location = useLocation()
   const active = location.pathname.includes(to)
   return (
-    <StyledLink to={to} data-qa={dataQa}>
+    <StyledLink to={to} onClick={onClick} data-qa={dataQa}>
       <AttentionIndicator
         toggled={showNotification}
         position="top"
@@ -210,6 +232,44 @@ const StyledLink = styled(NavLink)`
 const StyledButton = styled.button`
   ${bottomNavClickableStyles}
 `
+
+const ChildrenMenu = React.memo(function ChildrenMenu({
+  user,
+  closeMenu
+}: {
+  user: User
+  closeMenu: () => void
+}) {
+  const t = useTranslation()
+  const { children, unreadChildNotifications } = useContext(ChildrenContext)
+  const lock = user.authLevel !== 'STRONG' && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
+  return (
+    <MenuContainer>
+      {children.getOrElse([]).map((child) => (
+        <DropDownLink
+          key={child.id}
+          data-qa={`children-menu-${child.id}`}
+          to={`/children/${child.id}`}
+          onClick={closeMenu}
+        >
+          {child.preferredName || child.firstName} {child.lastName} {lock}
+          {unreadChildNotifications[child.id] ? (
+            <CircledChar
+              aria-label={`${unreadChildNotifications[child.id]} ${
+                t.header.notifications
+              }`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadChildNotifications[child.id]}
+            </CircledChar>
+          ) : null}
+        </DropDownLink>
+      ))}
+    </MenuContainer>
+  )
+})
 
 const Menu = React.memo(function Menu({
   user,
@@ -310,6 +370,7 @@ const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  text-align: right;
 
   @media (min-width: ${desktopMin}) {
     display: none;

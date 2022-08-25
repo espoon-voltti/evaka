@@ -27,10 +27,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import {
-  CitizenChildPage,
-  CitizenChildrenPage
-} from '../../pages/citizen/citizen-children'
+import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
@@ -124,9 +121,7 @@ describe('Citizen child documents listing page', () => {
       }
     ])
     await page.reload()
-    await header.selectTab('children')
-    const childrenPage = new CitizenChildrenPage(page)
-    await childrenPage.openChildPage(child.firstName)
+    await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('vasu')
     await childPage.assertVasuRow(
@@ -150,9 +145,7 @@ describe('Citizen child documents listing page', () => {
     // first child (`child`) has a vasu already created in beforeEach
     await insertVasu(child2Id)
     await page.reload()
-    await header.selectTab('children')
-    const childrenPage = new CitizenChildrenPage(page)
-    await childrenPage.assertChildUnreadCount(child.id, 1)
-    await childrenPage.assertChildUnreadCount(child2Id, 1)
+    await header.assertChildUnreadCount(child.id, 1)
+    await header.assertChildUnreadCount(child2Id, 1)
   })
 })

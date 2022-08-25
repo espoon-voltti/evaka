@@ -7,37 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import { waitUntilEqual } from '../../utils'
 import { DatePicker, Page, Radio } from '../../utils/page'
 
-export class CitizenChildrenPage {
-  constructor(private readonly page: Page) {}
-
-  #childRows = this.page.findAllByDataQa('child')
-  #childName = this.page.findByDataQa('child-name')
-
-  async assertChildCount(count: number) {
-    await this.#childRows.assertCount(count)
-  }
-
-  async navigateToChild(nth: number) {
-    await this.#childRows.nth(nth).click()
-    await this.#childName.waitUntilVisible()
-  }
-
-  async openChildPage(childName: string) {
-    await this.#childRows.find(`h2:has-text("${childName}")`).click()
-    await this.page.find(`h1:has-text("${childName}")`).waitUntilVisible()
-  }
-
-  async assertChildUnreadCount(childId: string, count: number) {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .find(`[data-qa="child"][data-qa-value="${childId}"]`)
-          .findByDataQa('unread-count').innerText,
-      count.toString()
-    )
-  }
-}
-
 export class CitizenChildPage {
   constructor(private readonly page: Page) {}
   #placements = this.page.findAllByDataQa('placement')

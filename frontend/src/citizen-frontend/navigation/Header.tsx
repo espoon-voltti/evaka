@@ -32,8 +32,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const {
     refreshUnreadAssistanceNeedDecisionCounts,
     refreshUnreadPedagogicalDocumentsCount,
-    refreshUnreadVasuDocumentsCount,
-    unreadChildNotifications
+    refreshUnreadVasuDocumentsCount
   } = useContext(ChildrenContext)
 
   const { waitingConfirmationCount, refreshWaitingConfirmationCount } =
@@ -58,7 +57,6 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         <EvakaLogo />
         <DesktopNav
           unreadMessagesCount={unreadMessagesCount ?? 0}
-          unreadChildren={unreadChildNotifications}
           unreadDecisions={waitingConfirmationCount}
           hideLoginButton={hideLoginButton}
         />

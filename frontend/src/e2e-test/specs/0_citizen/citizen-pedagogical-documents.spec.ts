@@ -19,10 +19,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  CitizenChildPage,
-  CitizenChildrenPage
-} from '../../pages/citizen/citizen-children'
+import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import { Page } from '../../utils/page'
@@ -89,11 +86,7 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(1)
 
-      await header.selectTab('children')
-      const childrenPage = new CitizenChildrenPage(page)
-      await childrenPage.openChildPage(
-        fixtures.enduserChildFixtureJari.firstName
-      )
+      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 
@@ -111,11 +104,7 @@ describe('Citizen pedagogical documents', () => {
         })
         .save()
 
-      await header.selectTab('children')
-      const childrenPage = new CitizenChildrenPage(page)
-      await childrenPage.openChildPage(
-        fixtures.enduserChildFixtureJari.firstName
-      )
+      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 

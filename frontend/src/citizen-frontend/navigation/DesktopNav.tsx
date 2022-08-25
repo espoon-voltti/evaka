@@ -6,8 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
+import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -33,14 +34,12 @@ import { CircledChar, DropDownButton, DropDownLink } from './shared-components'
 
 interface Props {
   unreadMessagesCount: number
-  unreadChildren: number
   unreadDecisions: number
   hideLoginButton: boolean
 }
 
 export default React.memo(function DesktopNav({
   unreadMessagesCount,
-  unreadChildren,
   unreadDecisions,
   hideLoginButton
 }: Props) {
@@ -51,11 +50,6 @@ export default React.memo(function DesktopNav({
   if (user === undefined) {
     return null
   }
-
-  const isEnduser = user?.authLevel === 'STRONG'
-  const maybeLockElem = !isEnduser && (
-    <FontAwesomeIcon icon={faLockAlt} size="xs" />
-  )
 
   return (
     <Container data-qa="desktop-nav">
@@ -77,13 +71,7 @@ export default React.memo(function DesktopNav({
                 notificationCount={unreadMessagesCount}
               />
             )}
-            <HeaderNavLink
-              to="/children"
-              data-qa="nav-children-desktop"
-              text={t.header.nav.children}
-              notificationCount={unreadChildren}
-              lockElem={maybeLockElem}
-            />
+            <ChildrenMenu />
           </>
         ) : null}
       </Nav>
@@ -200,6 +188,73 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
+const ChildrenMenu = React.memo(function ChildrenMenu() {
+  const t = useTranslation()
+  const { children, unreadChildNotifications, totalUnreadChildNotifications } =
+    useContext(ChildrenContext)
+  const [open, setOpen] = useState(false)
+  const toggleOpen = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault()
+      setOpen((state) => !state)
+    },
+    [setOpen]
+  )
+  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+    setOpen(false)
+  )
+
+  if (children.getOrElse([]).length === 0) {
+    return (
+      <HeaderNavLink
+        to="/children"
+        data-qa="nav-children-desktop"
+        text={t.header.nav.children}
+        notificationCount={totalUnreadChildNotifications}
+      />
+    )
+  }
+
+  return (
+    <DropDownContainer ref={dropDownRef}>
+      <HeaderNavLink
+        to="/children"
+        text={t.header.nav.children}
+        notificationCount={totalUnreadChildNotifications}
+        onClick={toggleOpen}
+        icon={open ? fasChevronUp : fasChevronDown}
+        data-qa="nav-children-desktop"
+      />
+      {open ? (
+        <DropDown $align="left" data-qa="select-child">
+          {children.getOrElse([]).map((child) => (
+            <DropDownLink
+              key={child.id}
+              to={`/children/${child.id}`}
+              onClick={() => {
+                setOpen(false)
+              }}
+              data-qa={`children-menu-${child.id}`}
+            >
+              {child.preferredName || child.firstName} {child.lastName}
+              {unreadChildNotifications[child.id] ? (
+                <CircledChar
+                  aria-label={`${unreadChildNotifications[child.id]} ${
+                    t.header.notifications
+                  }`}
+                  data-qa={`children-menu-${child.id}-notification-count`}
+                >
+                  {unreadChildNotifications[child.id]}
+                </CircledChar>
+              ) : null}
+            </DropDownLink>
+          ))}
+        </DropDown>
+      ) : null}
+    </DropDownContainer>
+  )
+})
+
 const LanguageMenu = React.memo(function LanguageMenu() {
   const t = useTranslation()
   const [lang, setLang] = useLang()
@@ -216,7 +271,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
         <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="select-lang">
+        <DropDown $align="right" data-qa="select-lang">
           {langs.map((l: Lang) => (
             <DropDownButton
               key={l}
@@ -268,7 +323,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         </AttentionIndicator>
       </DropDownButton>
       {open ? (
-        <DropDown data-qa="user-menu">
+        <DropDown $align="right" data-qa="user-menu">
           <DropDownLink
             data-qa="sub-nav-menu-applications"
             to="/applications"
@@ -338,7 +393,7 @@ const DropDownIcon = styled(FontAwesomeIcon)`
   width: 0.625em !important;
 `
 
-const DropDown = styled.ul`
+const DropDown = styled.ul<{ $align: 'left' | 'right' }>`
   position: absolute;
   z-index: 30;
   list-style: none;
@@ -347,11 +402,23 @@ const DropDown = styled.ul`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: flex-end;
   background: ${colors.grayscale.g0};
   box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
-  right: 0;
   min-width: 240px;
+  max-width: 600px;
+  width: max-content;
+  ${({ $align }) =>
+    $align === 'left'
+      ? css`
+          left: 0;
+          align-items: flex-start;
+          text-align: left;
+        `
+      : css`
+          right: 0;
+          align-items: flex-end;
+          text-align: right;
+        `}
 `
 
 const Separator = styled.div`
@@ -364,14 +431,16 @@ const HeaderNavLink = React.memo(function HeaderNavLink({
   notificationCount,
   text,
   lockElem,
+  icon,
   ...props
 }: {
-  onClick?: () => void
   to: string
   notificationCount?: number
   text: string
   lockElem?: React.ReactNode
-  'data-qa'?: string
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
+  icon?: IconDefinition
+  'data-qa': string
 }) {
   const t = useTranslation()
 
@@ -392,11 +461,12 @@ const HeaderNavLink = React.memo(function HeaderNavLink({
       {!!notificationCount && (
         <CircledChar
           aria-label={`${notificationCount} ${t.header.notifications}`}
-          data-qa={props['data-qa'] && `${props['data-qa']}-notification-count`}
+          data-qa={`${props['data-qa']}-notification-count`}
         >
           {notificationCount}
         </CircledChar>
       )}
+      {icon && <DropDownIcon icon={icon} data-qa="icon" />}
     </StyledNavLink>
   )
 })

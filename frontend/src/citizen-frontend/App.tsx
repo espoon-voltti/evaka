@@ -28,7 +28,6 @@ import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
-import ChildrenPage from './children/ChildrenPage'
 import AssistanceNeedDecisionPage from './children/sections/assistance-need-decision/AssistanceNeedDecisionPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import { ChildrenContextProvider } from './children/state'
@@ -218,14 +217,6 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <ChildPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/children"
-            element={
-              <RequireAuth>
-                <ChildrenPage />
               </RequireAuth>
             }
           />

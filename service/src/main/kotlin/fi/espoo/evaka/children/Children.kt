@@ -19,6 +19,7 @@ data class Group(
 data class Child(
     val id: ChildId,
     val firstName: String,
+    val preferredName: String,
     val lastName: String,
     val imageId: ChildImageId?,
     @Nested("group")
