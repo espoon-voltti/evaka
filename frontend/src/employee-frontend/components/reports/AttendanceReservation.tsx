@@ -126,7 +126,10 @@ export default React.memo(function AttendanceReservation() {
         {report.isSuccess && (
           <>
             <ReportDownload
-              data={filteredRows}
+              data={filteredRows.map((row) => ({
+                ...row,
+                dateTime: row.dateTime.format()
+              }))}
               headers={[
                 {
                   label: i18n.reports.common.clock,
