@@ -50,24 +50,22 @@ class DocumentService(
         Attachment("attachment")
     }
 
-    private fun getContentDispositionHeader(type: ContentDispositionType, fileName: String?): String? {
-        return if (fileName != null) {
-            ContentDisposition
-                .builder(type.header)
-                .filename(fileName)
-                .build()
-                .toString()
-        } else type.header
+    private fun getContentDispositionHeader(type: ContentDispositionType, fileName: String?): String {
+        return ContentDisposition
+            .builder(type.header)
+            .apply {
+                if (fileName != null) {
+                    this.filename(fileName)
+                }
+            }
+            .build()
+            .toString()
     }
 
-    private fun presignedGetUrl(bucketName: String, key: String, contentDispositionHeader: String?): URL {
+    private fun presignedGetUrl(bucketName: String, key: String): URL {
         val request = GetObjectRequest.builder()
             .bucket(bucketName)
             .key(key)
-            .let {
-                if (contentDispositionHeader != null) it.responseContentDisposition(contentDispositionHeader)
-                else it
-            }
             .build()
 
         val getObjectPresignRequest = GetObjectPresignRequest.builder()
@@ -85,21 +83,27 @@ class DocumentService(
         fileName: String?
     ): ResponseEntity<Any> {
         val contentDispositionHeader = getContentDispositionHeader(contentDispositionType, fileName)
-        val presignedUrl = presignedGetUrl(bucketName, key, contentDispositionHeader)
+        val presignedUrl = presignedGetUrl(bucketName, key)
 
         return if (proxyThroughNginx) {
             val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
-            ResponseEntity.ok().header("X-Accel-Redirect", url).body("")
+            ResponseEntity.ok()
+                .header("X-Accel-Redirect", url)
+                .header("Content-Disposition", contentDispositionHeader)
+                .body("")
         } else {
             // nginx is not available in development => redirect to the presigned S3 url
-            ResponseEntity.status(HttpStatus.FOUND).header("Location", presignedUrl.toString()).body("")
+            ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", presignedUrl.toString())
+                .header("Content-Disposition", contentDispositionHeader)
+                .body("")
         }
     }
 
     fun responseAttachment(bucketName: String, key: String, fileName: String?) =
         response(bucketName, key, ContentDispositionType.Attachment, fileName)
 
-    fun responseInline(bucketName: String, key: String, fileName: String? = null) =
+    fun responseInline(bucketName: String, key: String, fileName: String?) =
         response(bucketName, key, ContentDispositionType.Inline, fileName)
 
     fun upload(bucketName: String, document: Document): DocumentLocation {

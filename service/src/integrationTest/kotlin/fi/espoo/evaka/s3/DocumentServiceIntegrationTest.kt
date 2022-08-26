@@ -73,8 +73,8 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
         val (_, s3response, s3data) = http.get(s3Url).response()
 
         assertEquals("text/csv", s3response.headers["Content-Type"].first())
-        assertEquals("attachment", s3response.headers["Content-Disposition"].first())
         assertContentEquals(byteArrayOf(0x22, 0x11, 0x33), s3data.get())
+        assertEquals(listOf("attachment"), response.headers["Content-Disposition"])
     }
 
     @Test
@@ -86,8 +86,8 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
         val (_, s3response, s3data) = http.get(s3Url).response()
 
         assertEquals("application/pdf", s3response.headers["Content-Type"].first())
-        assertEquals("attachment; filename=\"overridden-filename.pdf\"", s3response.headers["Content-Disposition"].first())
         assertContentEquals(byteArrayOf(0x33, 0x11, 0x22), s3data.get())
+        assertEquals(listOf("attachment; filename=\"overridden-filename.pdf\""), response.headers["Content-Disposition"])
     }
 
     @Test
@@ -99,7 +99,7 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
         val (_, s3response, s3data) = http.get(s3Url).response()
 
         assertEquals("text/plain", s3response.headers["Content-Type"].first())
-        assertEquals(listOf("inline; filename=\"overridden-filename.txt\""), s3response.headers["Content-Disposition"])
         assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3data.get())
+        assertEquals(listOf("inline; filename=\"overridden-filename.txt\""), response.headers["Content-Disposition"])
     }
 }
