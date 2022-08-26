@@ -81,6 +81,6 @@ class ChildImageController(
         accessControl.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
-        return documentClient.responseInline(bucket, key)
+        return documentClient.responseInline(bucket, key, null)
     }
 }
