@@ -236,8 +236,7 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
         ) res ON true
         LEFT JOIN LATERAL (
             SELECT absence_type
-            FROM absence
-            WHERE absence.date = t::date AND absence.child_id = p.id
+            FROM child_absences_on_date(p.id, t::date)
             LIMIT 1
         ) ab ON true
         WHERE rp.unit_id = :unitId OR rp.placement_unit_id = :unitId
