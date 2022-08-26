@@ -5,7 +5,6 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { css } from 'styled-components'
 
-import { headerHeightMobile } from 'citizen-frontend/header/const'
 import {
   DailyReservationData,
   ReservationChild
@@ -19,6 +18,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useLang, useTranslation } from '../localization'
+import { headerHeightMobile } from '../navigation/const'
 
 import { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'

@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -29,6 +29,7 @@ import { Lang, langs, useLang, useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'
+import { CircledChar, DropDownButton, DropDownLink } from './shared-components'
 
 interface Props {
   unreadMessagesCount: number
@@ -202,21 +203,6 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
-export const CircledChar = styled.div.attrs({
-  className: 'circled-char'
-})`
-  width: ${defaultMargins.s};
-  height: ${defaultMargins.s};
-  border: 1px solid ${colors.grayscale.g100};
-  padding: 11px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-radius: 100%;
-  letter-spacing: 0;
-`
-
 const LanguageMenu = React.memo(function LanguageMenu() {
   const t = useTranslation()
   const [lang, setLang] = useLang()
@@ -374,36 +360,6 @@ const DropDown = styled.ul`
   box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
   right: 0;
   min-width: 240px;
-`
-
-const dropDownButtonStyles = (selected?: boolean) => css`
-  display: inline-flex;
-  flex-direction: row;
-  gap: ${defaultMargins.xs};
-  align-items: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: Open Sans;
-  color: ${selected ? colors.main.m2 : colors.grayscale.g100};
-  font-size: 1.125rem;
-  font-weight: ${fontWeights.semibold};
-  line-height: 2rem;
-  padding: ${defaultMargins.xs} ${defaultMargins.s};
-  border-bottom: 4px solid transparent;
-  border-bottom-color: ${selected ? colors.main.m2 : 'transparent'};
-
-  &:hover {
-    color: ${colors.main.m2Hover};
-  }
-`
-
-const DropDownButton = styled.button<{ selected?: boolean }>`
-  ${({ selected }) => dropDownButtonStyles(selected)}
-`
-
-export const DropDownLink = styled(Link)<{ selected?: boolean }>`
-  ${({ selected }) => dropDownButtonStyles(selected)}
 `
 
 const Separator = styled.div`

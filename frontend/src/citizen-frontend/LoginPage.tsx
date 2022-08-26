@@ -26,8 +26,8 @@ import { farMap } from 'lib-icons'
 
 import Footer from './Footer'
 import { useUser } from './auth/state'
-import { getStrongLoginUriWithPath, getWeakLoginUri } from './header/const'
 import { useTranslation } from './localization'
+import { getStrongLoginUriWithPath, getWeakLoginUri } from './navigation/const'
 
 const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};

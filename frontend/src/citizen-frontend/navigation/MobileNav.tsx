@@ -34,12 +34,12 @@ import { langs, useLang, useTranslation } from '../localization'
 import { MessageContext } from '../messages/state'
 
 import AttentionIndicator from './AttentionIndicator'
-import { CircledChar, DropDownLink } from './DesktopNav'
 import {
   getLogoutUri,
   headerHeightMobile,
   mobileBottomNavHeight
 } from './const'
+import { CircledChar, DropDownLink } from './shared-components'
 
 export default React.memo(function MobileNav() {
   const t = useTranslation()

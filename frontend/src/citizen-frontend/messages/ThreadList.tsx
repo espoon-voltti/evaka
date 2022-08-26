@@ -7,8 +7,6 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
-import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
@@ -22,7 +20,9 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
 
+import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+import { mobileBottomNavHeight } from '../navigation/const'
 
 import ThreadListItem from './ThreadListItem'
 import { MessageContext } from './state'

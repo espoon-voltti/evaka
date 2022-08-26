@@ -19,8 +19,8 @@ import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useUser } from '../auth/state'
-import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
+import { headerHeightDesktop } from '../navigation/const'
 import useTitle from '../useTitle'
 
 import MapBox from './MapBox'

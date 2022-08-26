@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 import { createSearchParams, Navigate, useLocation } from 'react-router-dom'
 
 import { AuthContext } from './auth/state'
-import { getStrongLoginUri } from './header/const'
+import { getStrongLoginUri } from './navigation/const'
 
 interface Props {
   strength?: 'STRONG' | 'WEAK' | undefined

@@ -8,7 +8,6 @@ import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import {
   DailyReservationData,
   ReservationChild
@@ -20,6 +19,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
+import { mobileBottomNavHeight } from '../navigation/const'
 
 import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { getChildImages } from './RoundChildImages'

@@ -25,9 +25,9 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import { headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
+import { headerHeightDesktop } from '../navigation/const'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { CalendarNotificationsSlot } from './CalendarNotifications'

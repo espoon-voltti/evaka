@@ -7,7 +7,6 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
-import { mobileBottomNavHeight } from 'citizen-frontend/header/const'
 import LocalDate from 'lib-common/local-date'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
@@ -16,6 +15,7 @@ import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
+import { mobileBottomNavHeight } from '../navigation/const'
 
 import ReportHolidayLabel from './ReportHolidayLabel'
 
