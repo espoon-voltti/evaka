@@ -275,7 +275,7 @@ const Content = React.memo(function Content() {
               </RequireAuth>
             }
           />
-          <Route index element={<HandleRedirection />} />
+          <Route path="*" element={<HandleRedirection />} />
         </Routes>
       </MainContainer>
     </FullPageContainer>
