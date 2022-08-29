@@ -23,7 +23,6 @@ import {
   farSignOut
 } from 'lib-icons'
 
-import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 
@@ -44,67 +43,64 @@ export default React.memo(function DesktopNav({
   unreadDecisions,
   hideLoginButton
 }: Props) {
-  const { user } = useContext(AuthContext)
-
   const t = useTranslation()
+  const { user: userResult } = useContext(AuthContext)
+  const user = userResult.getOrElse(undefined)
+
+  if (user === undefined) {
+    return null
+  }
+
+  const isEnduser = user?.authLevel === 'STRONG'
+  const maybeLockElem = !isEnduser && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
+
   return (
-    <UnwrapResult result={user} loading={() => null}>
-      {(user) => {
-        const isEnduser = user?.authLevel === 'STRONG'
-        const maybeLockElem = !isEnduser && (
-          <FontAwesomeIcon icon={faLockAlt} size="xs" />
-        )
-        return (
-          <Container data-qa="desktop-nav">
-            <Nav>
-              {user ? (
-                <>
-                  {user.accessibleFeatures.reservations && (
-                    <HeaderNavLink
-                      to="/calendar"
-                      data-qa="nav-calendar-desktop"
-                      text={t.header.nav.calendar}
-                    />
-                  )}
-                  {user.accessibleFeatures.messages && (
-                    <HeaderNavLink
-                      to="/messages"
-                      data-qa="nav-messages-desktop"
-                      text={t.header.nav.messages}
-                      notificationCount={unreadMessagesCount}
-                    />
-                  )}
-                  <HeaderNavLink
-                    to="/children"
-                    data-qa="nav-children-desktop"
-                    text={t.header.nav.children}
-                    notificationCount={unreadChildren}
-                    lockElem={maybeLockElem}
-                  />
-                </>
-              ) : null}
-            </Nav>
-            <FixedSpaceRow spacing="zero">
-              <LanguageMenu />
-              {user ? (
-                <SubNavigationMenu
-                  user={user}
-                  unreadDecisions={unreadDecisions}
-                />
-              ) : hideLoginButton ? null : (
-                <nav>
-                  <Login to="/login" data-qa="login-btn">
-                    <Icon icon={faSignIn} />
-                    <Gap size="xs" horizontal />
-                    {t.header.login}
-                  </Login>
-                </nav>
-              )}
-            </FixedSpaceRow>
-          </Container>
-        )
-      }}
-    </UnwrapResult>
+    <Container data-qa="desktop-nav">
+      <Nav>
+        {user ? (
+          <>
+            {user.accessibleFeatures.reservations && (
+              <HeaderNavLink
+                to="/calendar"
+                data-qa="nav-calendar-desktop"
+                text={t.header.nav.calendar}
+              />
+            )}
+            {user.accessibleFeatures.messages && (
+              <HeaderNavLink
+                to="/messages"
+                data-qa="nav-messages-desktop"
+                text={t.header.nav.messages}
+                notificationCount={unreadMessagesCount}
+              />
+            )}
+            <HeaderNavLink
+              to="/children"
+              data-qa="nav-children-desktop"
+              text={t.header.nav.children}
+              notificationCount={unreadChildren}
+              lockElem={maybeLockElem}
+            />
+          </>
+        ) : null}
+      </Nav>
+      <FixedSpaceRow spacing="zero">
+        <LanguageMenu />
+        {user ? (
+          <SubNavigationMenu user={user} unreadDecisions={unreadDecisions} />
+        ) : hideLoginButton ? null : (
+          <nav>
+            <Login to="/login" data-qa="login-btn">
+              <Icon icon={faSignIn} />
+              <Gap size="xs" horizontal />
+              {t.header.login}
+            </Login>
+          </nav>
+        )}
+      </FixedSpaceRow>
+    </Container>
   )
 })
 
