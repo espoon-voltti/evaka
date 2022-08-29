@@ -19,6 +19,7 @@ import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
+import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
@@ -333,6 +334,9 @@ export default React.memo(function CalendarPageWrapper() {
         <CalendarPage />
       </Main>
       <Footer />
+      <DesktopOnly>
+        <Gap size="X4L" />
+      </DesktopOnly>
     </>
   )
 })

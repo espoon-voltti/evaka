@@ -19,7 +19,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
-import { mobileBottomNavHeight } from '../navigation/const'
+import { headerHeightMobile, mobileBottomNavHeight } from '../navigation/const'
 
 import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { getChildImages } from './RoundChildImages'
@@ -123,7 +123,7 @@ const Icon = styled(FontAwesomeIcon)`
 
 const NotificationSlotContainer = styled.div`
   position: sticky;
-  top: 0;
+  top: ${headerHeightMobile}px;
   width: 100%;
   z-index: 20;
 `
