@@ -499,6 +499,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
+    @Test
     fun `Decision PDF generation is successful`() {
         val pdf = assistanceNeedDecisionService.generatePdf(
             AssistanceNeedDecision(
