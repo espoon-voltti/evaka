@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -91,7 +92,7 @@ export default React.memo(function MobileNav() {
                 showNotification={unreadChildNotifications > 0}
               />
               <StyledButton
-                $isActive={menuOpen}
+                className={classNames({ active: menuOpen })}
                 onClick={toggleMenu}
                 data-qa="sub-nav-menu-mobile"
               >
@@ -161,7 +162,7 @@ const BottomBarLink = React.memo(function BottomBarLink({
   const location = useLocation()
   const active = location.pathname.includes(to)
   return (
-    <StyledLink to={to} $isActive={active} data-qa={dataQa}>
+    <StyledLink to={to} data-qa={dataQa}>
       <AttentionIndicator
         toggled={showNotification}
         position="top"
@@ -174,14 +175,14 @@ const BottomBarLink = React.memo(function BottomBarLink({
   )
 })
 
-const bottomNavClickableStyles = (isActive: boolean) => css`
+const bottomNavClickableStyles = css`
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   font-weight: ${fontWeights.semibold};
   font-size: 0.875rem;
-  color: ${isActive ? colors.main.m2 : colors.grayscale.g100};
+  color: ${colors.grayscale.g100};
   background: transparent;
   border: none;
   padding: 0;
@@ -190,16 +191,24 @@ const bottomNavClickableStyles = (isActive: boolean) => css`
   svg {
     height: 22px;
     width: 22px;
-    color: ${isActive ? colors.main.m2 : colors.grayscale.g100};
+    color: ${colors.grayscale.g100};
+  }
+
+  &.active {
+    color: ${colors.main.m2};
+
+    svg {
+      color: ${colors.main.m2};
+    }
   }
 `
 
-const StyledLink = styled(Link)<{ $isActive: boolean }>`
-  ${({ $isActive }) => bottomNavClickableStyles($isActive)}
+const StyledLink = styled(NavLink)`
+  ${bottomNavClickableStyles}
 `
 
-const StyledButton = styled.button<{ $isActive: boolean }>`
-  ${({ $isActive }) => bottomNavClickableStyles($isActive)}
+const StyledButton = styled.button`
+  ${bottomNavClickableStyles}
 `
 
 const Menu = React.memo(function Menu({
@@ -230,7 +239,6 @@ const Menu = React.memo(function Menu({
       </FixedSpaceRow>
       <Separator />
       <DropDownLink
-        selected={window.location.pathname.includes('/applications')}
         data-qa="sub-nav-menu-applications"
         to="/applications"
         onClick={closeMenu}
@@ -238,7 +246,6 @@ const Menu = React.memo(function Menu({
         {t.header.nav.applications} {lock}
       </DropDownLink>
       <DropDownLink
-        selected={window.location.pathname.includes('/decisions')}
         data-qa="sub-nav-menu-decisions"
         to="/decisions"
         onClick={closeMenu}
@@ -254,7 +261,6 @@ const Menu = React.memo(function Menu({
         ) : null}
       </DropDownLink>
       <DropDownLink
-        selected={window.location.pathname.includes('/income')}
         data-qa="sub-nav-menu-income"
         to="/income"
         onClick={closeMenu}
@@ -263,7 +269,6 @@ const Menu = React.memo(function Menu({
       </DropDownLink>
       <Separator />
       <DropDownLink
-        selected={window.location.pathname.includes('/personal-details')}
         data-qa="sub-nav-menu-personal-details"
         to="/personal-details"
         onClick={closeMenu}
@@ -280,7 +285,6 @@ const Menu = React.memo(function Menu({
         )}
       </DropDownLink>
       <DropDownLink
-        selected={false}
         key="sub-nav-menu-logout"
         to={getLogoutUri(user)}
         onClick={() => (location.href = getLogoutUri(user))}

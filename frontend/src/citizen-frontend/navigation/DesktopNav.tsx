@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import React, { useCallback, useContext, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import styled from 'styled-components'
@@ -219,7 +220,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
           {langs.map((l: Lang) => (
             <DropDownButton
               key={l}
-              selected={lang === l}
+              className={classNames({ active: lang === l })}
               onClick={() => {
                 setLang(l)
                 setOpen(false)
@@ -269,7 +270,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
       {open ? (
         <DropDown data-qa="user-menu">
           <DropDownLink
-            selected={window.location.pathname.includes('/applications')}
             data-qa="sub-nav-menu-applications"
             to="/applications"
             onClick={() => setOpen(false)}
@@ -277,7 +277,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             {t.header.nav.applications} {maybeLockElem}
           </DropDownLink>
           <DropDownLink
-            selected={window.location.pathname.includes('/decisions')}
             data-qa="sub-nav-menu-decisions"
             to="/decisions"
             onClick={() => setOpen(false)}
@@ -293,7 +292,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             ) : null}
           </DropDownLink>
           <DropDownLink
-            selected={window.location.pathname.includes('/income')}
             data-qa="sub-nav-menu-income"
             to="/income"
             onClick={() => setOpen(false)}
@@ -302,7 +300,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           </DropDownLink>
           <Separator />
           <DropDownLink
-            selected={window.location.pathname.includes('/personal-details')}
             data-qa="sub-nav-menu-personal-details"
             to="/personal-details"
             onClick={() => setOpen(false)}
@@ -319,7 +316,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             )}
           </DropDownLink>
           <DropDownLink
-            selected={false}
             key="sub-nav-menu-logout"
             to={getLogoutUri(user)}
             onClick={() => (location.href = getLogoutUri(user))}

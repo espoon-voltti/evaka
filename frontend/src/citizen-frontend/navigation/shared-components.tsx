@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-const dropDownButtonStyles = (selected?: boolean) => css`
+const dropDownButtonStyles = css`
   display: inline-flex;
   flex-direction: row;
   gap: ${defaultMargins.xs};
@@ -18,25 +18,29 @@ const dropDownButtonStyles = (selected?: boolean) => css`
   background: transparent;
   cursor: pointer;
   font-family: Open Sans;
-  color: ${selected ? colors.main.m2 : colors.grayscale.g100};
+  color: ${colors.grayscale.g100};
   font-size: 1.125rem;
   font-weight: ${fontWeights.semibold};
   line-height: 2rem;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-bottom: 4px solid transparent;
-  border-bottom-color: ${selected ? colors.main.m2 : 'transparent'};
 
   &:hover {
     color: ${colors.main.m2Hover};
   }
+
+  &.active {
+    color: ${colors.main.m2};
+    border-bottom-color: ${colors.main.m2};
+  }
 `
 
-export const DropDownButton = styled.button<{ selected?: boolean }>`
-  ${({ selected }) => dropDownButtonStyles(selected)}
+export const DropDownButton = styled.button`
+  ${dropDownButtonStyles}
 `
 
-export const DropDownLink = styled(Link)<{ selected?: boolean }>`
-  ${({ selected }) => dropDownButtonStyles(selected)}
+export const DropDownLink = styled(NavLink)`
+  ${dropDownButtonStyles}
 `
 
 export const CircledChar = styled.div.attrs({
