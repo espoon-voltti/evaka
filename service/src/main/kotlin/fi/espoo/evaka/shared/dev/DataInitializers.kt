@@ -285,38 +285,26 @@ fun Database.Transaction.insertTestPartnership(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
 ): PartnershipId {
-    createUpdate(
-        """
-            INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-            VALUES (:id, :index, :personId, :startDate, :endDate)
-            """
-    )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "index" to 1,
-                "personId" to adult1,
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
+    insertFridgePartner(
+        DevFridgePartner(
+            partnershipId = id,
+            indx = 1,
+            otherIndx = 2,
+            personId = adult1,
+            startDate = startDate,
+            endDate = endDate
         )
-        .execute()
-    createUpdate(
-        """
-            INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-            VALUES (:id, :index, :personId, :startDate, :endDate)
-            """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "index" to 2,
-                "personId" to adult2,
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
+    insertFridgePartner(
+        DevFridgePartner(
+            partnershipId = id,
+            indx = 2,
+            otherIndx = 1,
+            personId = adult2,
+            startDate = startDate,
+            endDate = endDate
         )
-        .execute()
+    )
     return id
 }
 
@@ -1156,16 +1144,17 @@ RETURNING id
 data class DevFridgePartner(
     val partnershipId: PartnershipId,
     val indx: Int,
+    val otherIndx: Int,
     val personId: PersonId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate? = null
 )
 
 fun Database.Transaction.insertFridgePartner(pickup: DevFridgePartner) = insertTestDataRow(
     pickup,
     """
-INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
+INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date)
+VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate)
 RETURNING partnership_id
 """
 ).let(::PartnershipId)

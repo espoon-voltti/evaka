@@ -100,6 +100,7 @@ describe('Mobile PIN login', () => {
       {
         partnershipId: parentshipId,
         indx: 1,
+        otherIndx: 2,
         personId: fixtures.enduserGuardianFixture.id,
         startDate: LocalDate.todayInSystemTz(),
         endDate: LocalDate.todayInSystemTz()
@@ -107,6 +108,7 @@ describe('Mobile PIN login', () => {
       {
         partnershipId: parentshipId,
         indx: 2,
+        otherIndx: 1,
         personId: fixtures.enduserChildJariOtherGuardianFixture.id,
         startDate: LocalDate.todayInSystemTz(),
         endDate: LocalDate.todayInSystemTz()

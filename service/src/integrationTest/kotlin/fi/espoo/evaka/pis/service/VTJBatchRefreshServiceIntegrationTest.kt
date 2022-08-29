@@ -6,10 +6,13 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertFridgePartner
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -120,24 +123,30 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         // language=sql
         val sql =
             """
-            INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-            VALUES (:partnershipId, :index, :personId, :startDate, NULL)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date)
+            VALUES (:partnershipId, :index, :otherIndex, :personId, :startDate, NULL)
             """.trimIndent()
-        val partnershipId = UUID.randomUUID()
+        val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.createUpdate(sql)
-                .bind("partnershipId", partnershipId)
-                .bind("index", 1)
-                .bind("personId", testAdult_1.id)
-                .bind("startDate", LocalDate.of(2000, 1, 1))
-                .execute()
-
-            tx.createUpdate(sql)
-                .bind("partnershipId", partnershipId)
-                .bind("index", 2)
-                .bind("personId", testAdult_2.id)
-                .bind("startDate", LocalDate.of(2000, 1, 1))
-                .execute()
+            val startDate = LocalDate.of(2000, 1, 1)
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 1,
+                    otherIndx = 2,
+                    personId = testAdult_1.id,
+                    startDate = startDate
+                )
+            )
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 2,
+                    otherIndx = 1,
+                    personId = testAdult_2.id,
+                    startDate = startDate
+                )
+            )
         }
 
         val dto1 = getDto(testAdult_1)
@@ -160,28 +169,30 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `children from ex-partners are not added`() {
         // language=sql
-        val sql =
-            """
-            INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
-            VALUES (:partnershipId, :index, :personId, :startDate, :endDate)
-            """.trimIndent()
-        val partnershipId = UUID.randomUUID()
+        val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.createUpdate(sql)
-                .bind("partnershipId", partnershipId)
-                .bind("index", 1)
-                .bind("personId", testAdult_1.id)
-                .bind("startDate", LocalDate.of(2000, 1, 1))
-                .bind("endDate", LocalDate.of(2010, 1, 1))
-                .execute()
-
-            tx.createUpdate(sql)
-                .bind("partnershipId", partnershipId)
-                .bind("index", 2)
-                .bind("personId", testAdult_2.id)
-                .bind("startDate", LocalDate.of(2000, 1, 1))
-                .bind("endDate", LocalDate.of(2010, 1, 1))
-                .execute()
+            val startDate = LocalDate.of(2000, 1, 1)
+            val endDate = LocalDate.of(2010, 1, 1)
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 1,
+                    otherIndx = 2,
+                    personId = testAdult_1.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 2,
+                    otherIndx = 1,
+                    personId = testAdult_2.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
         }
 
         val dto1 = getDto(testAdult_1)

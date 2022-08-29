@@ -406,6 +406,7 @@ export interface FridgeChild {
 export interface FridgePartner {
   partnershipId: string
   indx: number
+  otherIndx: number
   personId: string
   startDate: LocalDate
   endDate: LocalDate
