@@ -383,7 +383,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
     }
 
     @Test
