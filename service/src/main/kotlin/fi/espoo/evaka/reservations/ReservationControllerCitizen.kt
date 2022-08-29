@@ -230,8 +230,8 @@ LEFT JOIN LATERAL (
 ) ca ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type, eu.type AS modified_by_type
-    FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
-    WHERE a.child_id = g.child_id AND a.date = t::date
+    FROM child_absences_on_date(g.child_id, t::date) a
+    JOIN evaka_user eu ON eu.id = a.modified_by
     LIMIT 1
 ) a ON true
 LEFT JOIN LATERAL (

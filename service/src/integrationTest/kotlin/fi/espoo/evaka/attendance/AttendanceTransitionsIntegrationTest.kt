@@ -296,7 +296,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
         assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
     }
 
     @Test
@@ -361,7 +361,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertContentEquals(listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
     }
 
     @Test
