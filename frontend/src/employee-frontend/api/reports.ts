@@ -542,6 +542,7 @@ export async function getAssistanceNeedDecisionUnreadCount(): Promise<
 
 export interface AttendanceReservationReportFilters {
   range: FiniteDateRange
+  groupIds: UUID[]
 }
 
 export async function getAssistanceReservationReport(
@@ -554,7 +555,8 @@ export async function getAssistanceReservationReport(
       {
         params: {
           start: filters.range.start.formatIso(),
-          end: filters.range.end.formatIso()
+          end: filters.range.end.formatIso(),
+          groupIds: filters.groupIds.join(',')
         }
       }
     )
