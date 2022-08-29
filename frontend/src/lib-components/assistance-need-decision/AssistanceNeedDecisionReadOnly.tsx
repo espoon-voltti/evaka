@@ -76,6 +76,8 @@ export interface AssistanceNeedDecisionTexts {
   lawReference: string
   appealInstructionsTitle: string
   appealInstructions: JSX.Element
+  legalInstructions: string
+  legalInstructionsText: string
   jurisdiction: string
   jurisdictionText: string
 }
@@ -347,6 +349,9 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
               data-qa="motivation-for-decision"
             />
           </div>
+
+          <H2>{t.legalInstructions}</H2>
+          <P noMargin>{t.legalInstructionsText}</P>
 
           <H2>{t.jurisdiction}</H2>
           <P noMargin>{t.jurisdictionText}</P>

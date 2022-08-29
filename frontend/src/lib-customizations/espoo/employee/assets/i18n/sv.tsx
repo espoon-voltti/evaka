@@ -79,6 +79,8 @@ export const sv = {
       selectedUnit: 'Enheten där stödet ges',
       unitMayChange: 'Enheten och stödformer kan ändras under semestertider',
       motivationForDecision: 'Motivering av beslut',
+      legalInstructions: 'Tillämpade bestämmelser',
+      legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap',
       jurisdiction: 'Befogenhet',
       jurisdictionText:
         'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',

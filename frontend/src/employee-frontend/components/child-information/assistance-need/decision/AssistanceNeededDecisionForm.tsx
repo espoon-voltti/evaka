@@ -606,6 +606,9 @@ export default React.memo(function AssistanceNeedDecisionForm({
         />
       </FixedSpaceColumn>
 
+      <H2>{t.legalInstructions}</H2>
+      <P noMargin>{t.legalInstructionsText}</P>
+
       <H2>{t.jurisdiction}</H2>
       <P noMargin>{t.jurisdictionText}</P>
 
