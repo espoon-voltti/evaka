@@ -62,21 +62,21 @@ export default React.memo(function DesktopNav({
                   {user.accessibleFeatures.reservations && (
                     <HeaderNavLink
                       to="/calendar"
-                      data-qa="nav-calendar"
+                      data-qa="nav-calendar-desktop"
                       text={t.header.nav.calendar}
                     />
                   )}
                   {user.accessibleFeatures.messages && (
                     <HeaderNavLink
                       to="/messages"
-                      data-qa="nav-messages"
+                      data-qa="nav-messages-desktop"
                       text={t.header.nav.messages}
                       notificationCount={unreadMessagesCount}
                     />
                   )}
                   <HeaderNavLink
                     to="/children"
-                    data-qa="nav-children"
+                    data-qa="nav-children-desktop"
                     text={t.header.nav.children}
                     notificationCount={unreadChildren}
                     lockElem={maybeLockElem}
@@ -260,12 +260,12 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
 
   return (
     <DropDownContainer ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa="user-menu-title-desktop">
+      <DropDownButton onClick={toggleOpen} data-qa="sub-nav-menu-desktop">
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
           position="bottom"
-          data-qa="attention-indicator-desktop"
+          data-qa="attention-indicator-sub-menu-desktop"
         >
           <DropDownIcon icon={open ? farXmark : farBars} />
         </AttentionIndicator>
@@ -274,7 +274,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         <DropDown data-qa="user-menu">
           <DropDownLink
             selected={window.location.pathname.includes('/applications')}
-            data-qa="user-menu-applications"
+            data-qa="sub-nav-menu-applications"
             to="/applications"
             onClick={() => setOpen(false)}
           >
@@ -282,7 +282,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           </DropDownLink>
           <DropDownLink
             selected={window.location.pathname.includes('/decisions')}
-            data-qa="user-menu-decisions"
+            data-qa="sub-nav-menu-decisions"
             to="/decisions"
             onClick={() => setOpen(false)}
           >
@@ -290,7 +290,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             {unreadDecisions ? (
               <CircledChar
                 aria-label={`${unreadDecisions} ${t.header.notifications}`}
-                data-qa="user-menu-decisions-notification-count"
+                data-qa="sub-nav-menu-decisions-notification-count"
               >
                 {unreadDecisions}
               </CircledChar>
@@ -298,7 +298,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           </DropDownLink>
           <DropDownLink
             selected={window.location.pathname.includes('/income')}
-            data-qa="user-menu-income"
+            data-qa="sub-nav-menu-income"
             to="/income"
             onClick={() => setOpen(false)}
           >
@@ -307,7 +307,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           <Separator />
           <DropDownLink
             selected={window.location.pathname.includes('/personal-details')}
-            data-qa="user-menu-personal-details"
+            data-qa="sub-nav-menu-personal-details"
             to="/personal-details"
             onClick={() => setOpen(false)}
           >
@@ -324,7 +324,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           </DropDownLink>
           <DropDownLink
             selected={false}
-            key="user-menu-logout"
+            key="sub-nav-menu-logout"
             to={getLogoutUri(user)}
             onClick={() => (location.href = getLogoutUri(user))}
           >

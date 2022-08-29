@@ -354,7 +354,7 @@ describe('Citizen calendar visibility', () => {
     })
     await enduserLogin(page)
 
-    await page.find('[data-qa="nav-calendar"]').waitUntilVisible()
+    await page.find('[data-qa="nav-calendar-desktop"]').waitUntilVisible()
   })
 
   test('Child is not visible when placement starts later than 2 weeks', async () => {
@@ -375,7 +375,7 @@ describe('Citizen calendar visibility', () => {
     await enduserLogin(page)
 
     // Ensure page has loaded
-    await page.find('[data-qa="nav-children"]').waitUntilVisible()
-    await page.find('[data-qa="nav-calendar"]').waitUntilHidden()
+    await page.find('[data-qa="nav-children-desktop"]').waitUntilVisible()
+    await page.find('[data-qa="nav-calendar-desktop"]').waitUntilHidden()
   })
 })

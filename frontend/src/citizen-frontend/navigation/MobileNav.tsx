@@ -65,7 +65,7 @@ export default React.memo(function MobileNav() {
               {user.accessibleFeatures.reservations && (
                 <BottomBarLink
                   to="/calendar"
-                  data-qa="nav-calendar"
+                  data-qa="nav-calendar-mobile"
                   text={t.header.nav.calendar}
                   icon={faCalendar}
                   activeIcon={fasCalendar}
@@ -75,7 +75,7 @@ export default React.memo(function MobileNav() {
               {user.accessibleFeatures.messages && (
                 <BottomBarLink
                   to="/messages"
-                  data-qa="nav-messages"
+                  data-qa="nav-messages-mobile"
                   text={t.header.nav.messages}
                   icon={faEnvelope}
                   activeIcon={fasEnvelope}
@@ -84,14 +84,26 @@ export default React.memo(function MobileNav() {
               )}
               <BottomBarLink
                 to="/children"
-                data-qa="nav-children"
+                data-qa="nav-children-mobile"
                 text={t.header.nav.children}
                 icon={faChild}
                 activeIcon={fasChild}
                 showNotification={unreadChildNotifications > 0}
               />
-              <StyledButton $isActive={menuOpen} onClick={toggleMenu}>
-                <FontAwesomeIcon icon={menuOpen ? farXmark : faBars} />
+              <StyledButton
+                $isActive={menuOpen}
+                onClick={toggleMenu}
+                data-qa="sub-nav-menu-mobile"
+              >
+                <AttentionIndicator
+                  toggled={
+                    showUserAttentionIndicator(user) || unreadDecisions > 0
+                  }
+                  position="top"
+                  data-qa="attention-indicator-sub-menu-mobile"
+                >
+                  <FontAwesomeIcon icon={menuOpen ? farXmark : faBars} />
+                </AttentionIndicator>
                 {t.header.nav.subNavigationMenu}
               </StyledButton>
             </BottomBar>
@@ -108,6 +120,8 @@ export default React.memo(function MobileNav() {
     </UnwrapResult>
   )
 })
+
+const showUserAttentionIndicator = (user: User) => !user.email
 
 const BottomBar = styled.nav`
   z-index: 25;
@@ -142,13 +156,17 @@ const BottomBarLink = React.memo(function BottomBarLink({
   icon: IconDefinition
   activeIcon: IconDefinition
   showNotification: boolean
-  'data-qa'?: string
+  'data-qa': string
 }) {
   const location = useLocation()
   const active = location.pathname.includes(to)
   return (
     <StyledLink to={to} $isActive={active} data-qa={dataQa}>
-      <AttentionIndicator toggled={showNotification} position="top">
+      <AttentionIndicator
+        toggled={showNotification}
+        position="top"
+        data-qa={`attention-indicator-${dataQa}`}
+      >
         <FontAwesomeIcon icon={active ? activeIcon : icon} />
       </AttentionIndicator>
       {text}
@@ -195,7 +213,6 @@ const Menu = React.memo(function Menu({
 }) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
-  const showUserAttentionIndicator = !user.email
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
@@ -214,7 +231,7 @@ const Menu = React.memo(function Menu({
       <Separator />
       <DropDownLink
         selected={window.location.pathname.includes('/applications')}
-        data-qa="user-menu-applications"
+        data-qa="sub-nav-menu-applications"
         to="/applications"
         onClick={closeMenu}
       >
@@ -222,7 +239,7 @@ const Menu = React.memo(function Menu({
       </DropDownLink>
       <DropDownLink
         selected={window.location.pathname.includes('/decisions')}
-        data-qa="user-menu-decisions"
+        data-qa="sub-nav-menu-decisions"
         to="/decisions"
         onClick={closeMenu}
       >
@@ -230,7 +247,7 @@ const Menu = React.memo(function Menu({
         {unreadDecisions ? (
           <CircledChar
             aria-label={`${unreadDecisions} ${t.header.notifications}`}
-            data-qa="user-menu-decisions-notification-count"
+            data-qa="sub-nav-menu-decisions-notification-count"
           >
             {unreadDecisions}
           </CircledChar>
@@ -238,7 +255,7 @@ const Menu = React.memo(function Menu({
       </DropDownLink>
       <DropDownLink
         selected={window.location.pathname.includes('/income')}
-        data-qa="user-menu-income"
+        data-qa="sub-nav-menu-income"
         to="/income"
         onClick={closeMenu}
       >
@@ -247,13 +264,13 @@ const Menu = React.memo(function Menu({
       <Separator />
       <DropDownLink
         selected={window.location.pathname.includes('/personal-details')}
-        data-qa="user-menu-personal-details"
+        data-qa="sub-nav-menu-personal-details"
         to="/personal-details"
         onClick={closeMenu}
       >
         {t.header.nav.personalDetails}
         {lock}
-        {showUserAttentionIndicator && (
+        {showUserAttentionIndicator(user) && (
           <CircledChar
             aria-label={t.header.attention}
             data-qa="personal-details-notification"
@@ -264,7 +281,7 @@ const Menu = React.memo(function Menu({
       </DropDownLink>
       <DropDownLink
         selected={false}
-        key="user-menu-logout"
+        key="sub-nav-menu-logout"
         to={getLogoutUri(user)}
         onClick={() => (location.href = getLogoutUri(user))}
       >

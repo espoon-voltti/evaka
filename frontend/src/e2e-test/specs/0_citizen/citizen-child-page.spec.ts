@@ -178,6 +178,7 @@ describe('Citizen children page', () => {
         true
       )
       await insertApplications([application])
+      await page.reload()
 
       await header.selectTab('applications')
       await new CitizenApplicationsPage(page).assertApplicationExists(
