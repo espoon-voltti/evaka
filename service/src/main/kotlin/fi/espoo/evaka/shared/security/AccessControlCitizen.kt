@@ -4,17 +4,20 @@
 
 package fi.espoo.evaka.shared.security
 
+import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Service
 
 @Service
-class AccessControlCitizen {
+class AccessControlCitizen(
+    val citizenCalendarEnv: CitizenCalendarEnv
+) {
     fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Citizen): CitizenFeatures {
         return CitizenFeatures(
             messages = tx.citizenHasAccessToMessaging(user.id),
-            reservations = tx.citizenHasAccessToReservations(user.id),
+            reservations = tx.citizenHasAccessToReservations(user.id, citizenCalendarEnv.calendarOpenBeforePlacementDays),
             childDocumentation = tx.citizenHasAccessToChildDocumentation(user.id)
         )
     }
@@ -65,18 +68,22 @@ SELECT EXISTS (
         return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToReservations(personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToReservations(personId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (
     SELECT 1
     FROM guardian g
-    JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    JOIN placement pl ON g.child_id = pl.child_id AND Daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> current_date
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
-        return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
+        return createQuery(sql)
+            .bind("personId", personId)
+            .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
+            .mapTo<Boolean>()
+            .first()
     }
 
     private fun Database.Read.citizenHasAccessToChildDocumentation(personId: PersonId): Boolean {
