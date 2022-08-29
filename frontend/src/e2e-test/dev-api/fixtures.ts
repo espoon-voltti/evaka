@@ -48,6 +48,7 @@ import {
   DevDailyServiceTimeNotification,
   DevIncome,
   DevPayment,
+  DevRealtimeStaffAttendance,
   DevStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
@@ -96,7 +97,8 @@ import {
   upsertOccupancyCoefficient,
   insertDailyServiceTime,
   insertDailyServiceTimeNotification,
-  insertChildConsent
+  insertChildConsent,
+  insertStaffRealtimeAttendance
 } from './index'
 
 export const careAreaFixture: CareArea = {
@@ -1650,6 +1652,18 @@ export class Fixture {
       sentBy: null
     })
   }
+
+  static realtimeStaffAttendance(): RealtimeStaffAttendanceBuilder {
+    return new RealtimeStaffAttendanceBuilder({
+      id: uuidv4(),
+      employeeId: 'not set',
+      groupId: 'not set',
+      arrived: HelsinkiDateTime.now(),
+      departed: null,
+      occupancyCoefficient: 0,
+      type: 'PRESENT'
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2147,5 +2161,16 @@ export class PaymentBuilder extends FixtureBuilder<DevPayment> {
 
   copy() {
     return new PaymentBuilder({ ...this.data })
+  }
+}
+
+export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevRealtimeStaffAttendance> {
+  async save() {
+    await insertStaffRealtimeAttendance(this.data)
+    return this
+  }
+
+  copy() {
+    return new RealtimeStaffAttendanceBuilder({ ...this.data })
   }
 }

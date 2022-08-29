@@ -25,6 +25,7 @@ import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.decision.UnitInfo
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
+import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
@@ -834,6 +835,18 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         }
     }
 
+    @PostMapping("/mobile/personal-devices")
+    fun postPersonalMobileDevice(
+        db: Database,
+        @RequestBody body: DevPersonalMobileDevice
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                it.insertTestPersonalMobileDevice(body)
+            }
+        }
+    }
+
     @PostMapping("/holiday-period/{id}")
     fun createHolidayPeriod(
         db: Database,
@@ -1205,8 +1218,8 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction {
                 it.createUpdate(
                     """
-                    INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient)
-                    VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient)
+                    INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
+                    VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
                     """.trimIndent()
                 )
                     .bindKotlin(body)
@@ -1647,6 +1660,13 @@ data class DevMobileDevice(
     val longTermToken: UUID? = null
 )
 
+data class DevPersonalMobileDevice(
+    val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
+    val employeeId: EmployeeId,
+    val name: String = "Laite",
+    val longTermToken: UUID? = null
+)
+
 data class DaycareAclInsert(
     val externalId: ExternalId,
     val role: UserRole?
@@ -1719,7 +1739,8 @@ data class DevStaffAttendance(
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val occupancyCoefficient: BigDecimal
+    val occupancyCoefficient: BigDecimal,
+    val type: StaffAttendanceType
 )
 
 data class DevDailyServiceTime(

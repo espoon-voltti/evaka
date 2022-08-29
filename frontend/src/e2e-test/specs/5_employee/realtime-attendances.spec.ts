@@ -120,7 +120,8 @@ beforeEach(async () => {
     groupId: groupId,
     arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
     departed: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(15, 0)),
-    occupancyCoefficient: 7.0
+    occupancyCoefficient: 7.0,
+    type: 'PRESENT'
   })
 
   page = await Page.open({
@@ -145,7 +146,9 @@ describe('Realtime staff attendances', () => {
       employeeId: staff[1].id,
       groupId: groupId,
       arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-      occupancyCoefficient: 7.0
+      departed: null,
+      occupancyCoefficient: 7.0,
+      type: 'PRESENT'
     })
 
     calendarPage = await openAttendancesPage()
@@ -195,7 +198,9 @@ describe('Realtime staff attendances', () => {
         employeeId: staff[1].id,
         groupId: groupId,
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        occupancyCoefficient: 7.0
+        departed: null,
+        occupancyCoefficient: 7.0,
+        type: 'PRESENT'
       })
 
       calendarPage = await openAttendancesPage()
@@ -235,7 +240,8 @@ describe('Realtime staff attendances', () => {
         groupId: groupId,
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
         departed: mockedToday.toHelsinkiDateTime(LocalTime.of(16, 0)),
-        occupancyCoefficient: 7.0
+        occupancyCoefficient: 7.0,
+        type: 'PRESENT'
       })
 
       calendarPage = await openAttendancesPage()
@@ -347,7 +353,8 @@ describe('Realtime staff attendances', () => {
         groupId: groupId,
         arrived: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
         departed: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
-        occupancyCoefficient: 2.0
+        occupancyCoefficient: 2.0,
+        type: 'PRESENT'
       })
       await insertStaffRealtimeAttendance({
         id: uuidv4(),
@@ -357,7 +364,8 @@ describe('Realtime staff attendances', () => {
         departed: mockedToday
           .addDays(1)
           .toHelsinkiDateTime(LocalTime.of(10, 0)),
-        occupancyCoefficient: 2.0
+        occupancyCoefficient: 2.0,
+        type: 'PRESENT'
       })
 
       calendarPage = await openAttendancesPage()
@@ -420,7 +428,9 @@ describe('Realtime staff attendances', () => {
         employeeId: staff[1].id,
         groupId: groupId,
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        occupancyCoefficient: 7.0
+        departed: null,
+        occupancyCoefficient: 7.0,
+        type: 'PRESENT'
       })
 
       calendarPage = await openAttendancesPage()
@@ -546,7 +556,9 @@ describe('Realtime staff attendances', () => {
         employeeId: staff[1].id,
         groupId: groupId,
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-        occupancyCoefficient: 7.0
+        departed: null,
+        occupancyCoefficient: 7.0,
+        type: 'PRESENT'
       })
 
       calendarPage = await openAttendancesPage()

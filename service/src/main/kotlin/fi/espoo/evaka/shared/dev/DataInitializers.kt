@@ -215,6 +215,15 @@ RETURNING id
     """
 ).let(::MobileDeviceId)
 
+fun Database.Transaction.insertTestPersonalMobileDevice(device: DevPersonalMobileDevice) = insertTestDataRow(
+    device,
+    """
+INSERT INTO mobile_device (id, employee_id, name, long_term_token)
+VALUES (:id, :employeeId, :name, :longTermToken)
+RETURNING id
+    """
+).let(::MobileDeviceId)
+
 fun Database.Transaction.insertTestPerson(person: DevPerson) = insertTestDataRow(
     person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null),
     """

@@ -294,13 +294,13 @@ WITH present_children AS (
 
         SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, 0 AS count_other, TRUE AS realtime
         FROM staff_attendance_realtime sa
-        WHERE sa.departed IS NULL
+        WHERE sa.departed IS NULL AND sa.occupancy_coefficient > 0
 
         UNION ALL
 
         SELECT sa.group_id, sa.occupancy_coefficient as capacity, 1 AS count, 0 AS count_other, TRUE AS realtime
         FROM staff_attendance_external sa
-        WHERE sa.departed IS NULL
+        WHERE sa.departed IS NULL AND sa.occupancy_coefficient > 0
     ) sa ON sa.group_id = g.id AND realtime = ('REALTIME_STAFF_ATTENDANCE' = ANY(daycare.enabled_pilot_features))
     WHERE g.daycare_id = ANY(:unitIds) AND daterange(g.start_date, g.end_date, '[]') @> :date
     GROUP BY g.daycare_id
