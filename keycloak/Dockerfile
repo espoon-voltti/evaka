@@ -44,7 +44,7 @@ CMD ["--server-config=standalone.xml", "-b", "0.0.0.0"]
 
 USER root
 
-ARG CACHE_BUST=2022-07-26
+ARG CACHE_BUST=2022-08-30
 
 RUN microdnf upgrade -y \
  && microdnf install -y jq \
