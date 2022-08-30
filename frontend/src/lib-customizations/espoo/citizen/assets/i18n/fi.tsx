@@ -1193,9 +1193,12 @@ export default {
     title: 'Päätökset',
     summary: (
       <P width="800px">
-        Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja
-        kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa{' '}
-        <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö
+        Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen ja
+        kerhoon liittyvät päätökset.
+        <br />
+        <br />
+        Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
+        <strong>sinun tulee vastata kahden viikon sisällä</strong>, hyväksytkö
         vai hylkäätkö lapselle tarjotun paikan.
       </P>
     ),
@@ -1215,7 +1218,7 @@ export default {
       childName: 'Lapsen nimi',
       unit: 'Toimipaikka',
       period: 'Ajalle',
-      sentDate: 'Päätös saapunut',
+      sentDate: 'Päätös tehty',
       resolved: 'Vahvistettu',
       statusLabel: 'Tila',
       summary:
@@ -1264,6 +1267,187 @@ export default {
         submitFailure: 'Päätökseen vastaaminen ei onnistunut'
       },
       returnToPreviousPage: 'Palaa'
+    },
+    assistanceDecisions: {
+      title: 'Tuen päätös',
+      assistanceLevel: 'Tuen taso',
+      validityPeriod: 'Voimassa',
+      unit: 'Yksikkö',
+      decisionMade: 'Päätös tehty',
+      level: {
+        ASSISTANCE_ENDS: 'Erityinen/tehostettu tuki päättyy',
+        ASSISTANCE_SERVICES_FOR_TIME:
+          'Tukipalvelut päätöksen voimassaolon aikana',
+        ENHANCED_ASSISTANCE: 'Tehostettu tuki',
+        SPECIAL_ASSISTANCE: 'Erityinen tuki'
+      },
+      statusLabel: 'Tila',
+      openDecision: 'Näytä päätös',
+      decision: {
+        pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
+        neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
+        pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
+        structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
+        structuralMotivationOptions: {
+          smallerGroup: 'Ryhmäkoon pienennys',
+          specialGroup: 'Erityisryhmä',
+          smallGroup: 'Pienryhmä',
+          groupAssistant: 'Ryhmäkohtainen avustaja',
+          childAssistant: 'Lapsikohtainen avustaja',
+          additionalStaff: 'Henkilöresurssin lisäys'
+        },
+        careMotivation: 'Hoidolliset tuen muodot ja perustelut',
+        serviceOptions: {
+          consultationSpecialEd:
+            'Varhaiskasvatuksen erityisopettajan antama konsultaatio',
+          partTimeSpecialEd:
+            'Varhaiskasvatuksen erityisopettajan osa-aikainen opetus',
+          fullTimeSpecialEd:
+            'Varhaiskasvatuksen erityisopettajan kokoaikainen opetus',
+          interpretationAndAssistanceServices:
+            'Tulkitsemis- ja avustamispalvelut',
+          specialAides: 'Apuvälineet'
+        },
+        services: 'Tukipalvelut ja perustelut',
+        collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
+        guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
+        guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
+        viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
+        decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
+        futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
+        assistanceLevel: {
+          assistanceEnds: 'Erityinen/tehostettu tuki päättyy',
+          assistanceServicesForTime:
+            'Tukipalvelut päätöksen voimassaolon aikana',
+          enhancedAssistance: 'Tehostettu tuki',
+          specialAssistance: 'Erityinen tuki'
+        },
+        startDate: 'Päätös voimassa alkaen',
+        endDate: 'Päätös voimassa saakka',
+        endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
+        selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
+        unitMayChange:
+          'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
+        motivationForDecision: 'Perustelut lapsen tuen tasolle',
+        legalInstructions: 'Sovelletut oikeusohjeet',
+        legalInstructionsText: 'Varhaiskasvatuslaki, 3 a luku',
+        jurisdiction: 'Toimivalta',
+        jurisdictionText:
+          'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
+        personsResponsible: 'Vastuuhenkilöt',
+        preparator: 'Päätöksen valmistelija',
+        decisionMaker: 'Päätöksen tekijä',
+        disclaimer:
+          'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
+        decisionNumber: 'Päätösnumero',
+        statuses: {
+          DRAFT: 'Luonnos',
+          NEEDS_WORK: 'Korjattava',
+          ACCEPTED: 'Hyväksytty',
+          REJECTED: 'Hylätty'
+        },
+        confidential: 'Salassa pidettävä',
+        lawReference: 'Varhaiskasvatuslaki 40 §',
+        appealInstructionsTitle: 'Oikaisuvaatimusohje',
+        appealInstructions: (
+          <>
+            <H3>Oikaisuvaatimusoikeus</H3>
+            <P>
+              Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
+              jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
+              vaikuttaa (asianosainen).
+            </P>
+            <H3>Oikaisuvaatimusaika</H3>
+            <P>
+              Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
+              tiedoksisaannista.
+            </P>
+            <H3>Tiedoksisaanti</H3>
+            <P>
+              Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+              näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
+              saantitodistukseen tai tiedoksiantotodistukseen merkittynä
+              päivänä. Käytettäessä tavallista sähköistä tiedoksiantoa
+              asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
+              näytetä kolmantena päivänä viestin lähettämisestä.
+              Tiedoksisaantipäivää ei lueta määräaikaan. Jos määräajan viimeinen
+              päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä, joulu- tai
+              juhannusaatto tai arkilauantai, saa tehtävän toimittaa
+              ensimmäisenä arkipäivänä sen jälkeen.
+            </P>
+            <H3>Oikaisuviranomainen</H3>
+            <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
+            <P>
+              Etelä-Suomen aluehallintovirasto
+              <br />
+              Käyntiosoite: Ratapihantie 9, 00521 Helsinki
+              <br />
+              Virastoaika: ma-pe 8.00–16.15
+              <br />
+              Postiosoite: PL 1, 13035 AVI
+              <br />
+              Sähköposti: kirjaamo.etela@avi.fi
+              <br />
+              Fax: 0295 016 661
+              <br />
+              Puhelin: 0295 016 000
+            </P>
+            <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
+            <P>
+              Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen asiakirja
+              täyttää vaatimuksen kirjallisesta muodosta.
+            </P>
+            <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
+            <ul>
+              <li>
+                Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
+                puhelinnumero ja muut asian hoitamiseksi tarvittavat
+                yhteystiedot
+              </li>
+              <li>päätös, johon haetaan oikaisua</li>
+              <li>
+                miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
+                vaaditaan tehtäväksi
+              </li>
+              <li>vaatimuksen perusteet</li>
+            </ul>
+            <P>
+              Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
+              viestinä, yhteystietona pyydetään ilmoittamaan myös
+              sähköpostiosoite.
+            </P>
+            <P>
+              Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen laillinen
+              edustajansa tai asiamiehensä tai jos oikaisuvaatimuksen laatijana
+              on joku muu henkilö, oikaisuvaatimuksessa on ilmoitettava myös
+              tämän nimi ja kotikunta.
+            </P>
+            <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
+            <ul>
+              <li>
+                päätös, johon haetaan oikaisua, alkuperäisenä tai jäljennöksenä
+              </li>
+              <li>
+                todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu
+                selvitys oikaisuvaatimusajan alkamisen ajankohdasta
+              </li>
+              <li>
+                asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
+                oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
+                toimitettu viranomaiselle.
+              </li>
+            </ul>
+            <H3>Oikaisuvaatimuksen toimittaminen</H3>
+            <P>
+              Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan
+              kuluessa oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän
+              tulee olla perillä oikaisuvaatimusajan viimeisenä päivänä ennen
+              viraston aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen
+              postitse tai sähköisesti tapahtuu lähettäjän omalla vastuulla.
+            </P>
+          </>
+        )
+      }
     }
   },
   applicationsList: {
@@ -1843,6 +2027,7 @@ export default {
     pageDescription:
       'Tällä sivulla näet lastesi varhaiskasvatukseen tai esiopetukseen liittyvät yleiset tiedot.',
     noChildren: 'Ei lapsia',
+    unreadCount: 'lukematonta',
     childPicture: 'Lapsen kuva',
     placementTermination: {
       title: 'Paikan irtisanominen',
@@ -1861,187 +2046,6 @@ export default {
       confirmDescription: (date: string) =>
         `Haluatko varmasti irtisanoa paikan niin, että lapsen viimeinen läsnäolopäivä on ${date}?\nPaikan irtisanomista ei voi peruuttaa.`,
       terminate: 'Irtisano paikka'
-    },
-    assistanceNeed: {
-      title: 'Tuen tarve',
-      unreadCount: 'lukematonta',
-      decisions: {
-        title: 'Päätökset tuesta varhaiskasvatuksessa',
-        form: 'Lomake',
-        assistanceLevel: 'Tuen taso',
-        validityPeriod: 'Voimassa',
-        unit: 'Yksikkö',
-        decisionMade: 'Päätös tehty',
-        status: 'Tila',
-        openDecision: 'Avaa päätös',
-        decision: {
-          pageTitle: 'Päätös tuesta varhaiskasvatuksessa',
-          neededTypesOfAssistance: 'Lapsen tarvitsemat tuen muodot',
-          pedagogicalMotivation: 'Pedagogiset tuen muodot ja perustelut',
-          structuralMotivation: 'Rakenteelliset tuen muodot ja perustelut',
-          structuralMotivationOptions: {
-            smallerGroup: 'Ryhmäkoon pienennys',
-            specialGroup: 'Erityisryhmä',
-            smallGroup: 'Pienryhmä',
-            groupAssistant: 'Ryhmäkohtainen avustaja',
-            childAssistant: 'Lapsikohtainen avustaja',
-            additionalStaff: 'Henkilöresurssin lisäys'
-          },
-          careMotivation: 'Hoidolliset tuen muodot ja perustelut',
-          serviceOptions: {
-            consultationSpecialEd:
-              'Varhaiskasvatuksen erityisopettajan antama konsultaatio',
-            partTimeSpecialEd:
-              'Varhaiskasvatuksen erityisopettajan osa-aikainen opetus',
-            fullTimeSpecialEd:
-              'Varhaiskasvatuksen erityisopettajan kokoaikainen opetus',
-            interpretationAndAssistanceServices:
-              'Tulkitsemis- ja avustamispalvelut',
-            specialAides: 'Apuvälineet'
-          },
-          services: 'Tukipalvelut ja perustelut',
-          collaborationWithGuardians: 'Huoltajien kanssa tehty yhteistyö',
-          guardiansHeardOn: 'Huoltajien kuulemisen päivämäärä',
-          guardiansHeard: 'Huoltajat, joita on kuultu, ja kuulemistapa',
-          viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
-          decisionAndValidity: 'Päätettävä tuen taso ja voimassaolo',
-          futureLevelOfAssistance: 'Lapsen tuen taso jatkossa',
-          assistanceLevel: {
-            assistanceEnds: 'Erityinen/tehostettu tuki päättyy',
-            assistanceServicesForTime:
-              'Tukipalvelut päätöksen voimassaolon aikana',
-            enhancedAssistance: 'Tehostettu tuki',
-            specialAssistance: 'Erityinen tuki'
-          },
-          startDate: 'Päätös voimassa alkaen',
-          endDate: 'Päätös voimassa saakka',
-          endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
-          selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
-          unitMayChange:
-            'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
-          motivationForDecision: 'Perustelut lapsen tuen tasolle',
-          legalInstructions: 'Sovelletut oikeusohjeet',
-          legalInstructionsText: 'Varhaiskasvatuslaki, 3 a luku',
-          jurisdiction: 'Toimivalta',
-          jurisdictionText:
-            'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
-          personsResponsible: 'Vastuuhenkilöt',
-          preparator: 'Päätöksen valmistelija',
-          decisionMaker: 'Päätöksen tekijä',
-          disclaimer:
-            'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
-          decisionNumber: 'Päätösnumero',
-          statuses: {
-            DRAFT: 'Luonnos',
-            NEEDS_WORK: 'Korjattava',
-            ACCEPTED: 'Hyväksytty',
-            REJECTED: 'Hylätty'
-          },
-          confidential: 'Salassa pidettävä',
-          lawReference: 'Varhaiskasvatuslaki 40 §',
-          appealInstructionsTitle: 'Oikaisuvaatimusohje',
-          appealInstructions: (
-            <>
-              <H3>Oikaisuvaatimusoikeus</H3>
-              <P>
-                Oikaisuvaatimuksen saa tehdä se, johon päätös on kohdistettu tai
-                jonka oikeuteen, velvollisuuteen tai etuun päätös välittömästi
-                vaikuttaa (asianosainen).
-              </P>
-              <H3>Oikaisuvaatimusaika</H3>
-              <P>
-                Oikaisuvaatimus on tehtävä 30 päivän kuluessa päätöksen
-                tiedoksisaannista.
-              </P>
-              <H3>Tiedoksisaanti</H3>
-              <P>
-                Asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-                näytetä, seitsemän päivän kuluttua kirjeen lähettämisestä tai
-                saantitodistukseen tai tiedoksiantotodistukseen merkittynä
-                päivänä. Käytettäessä tavallista sähköistä tiedoksiantoa
-                asianosaisen katsotaan saaneen päätöksestä tiedon, jollei muuta
-                näytetä kolmantena päivänä viestin lähettämisestä.
-                Tiedoksisaantipäivää ei lueta määräaikaan. Jos määräajan
-                viimeinen päivä on pyhäpäivä, itsenäisyyspäivä, vapunpäivä,
-                joulu- tai juhannusaatto tai arkilauantai, saa tehtävän
-                toimittaa ensimmäisenä arkipäivänä sen jälkeen.
-              </P>
-              <H3>Oikaisuviranomainen</H3>
-              <P>Oikaisu tehdään Etelä-Suomen aluehallintovirastolle.</P>
-              <P>
-                Etelä-Suomen aluehallintovirasto
-                <br />
-                Käyntiosoite: Ratapihantie 9, 00521 Helsinki
-                <br />
-                Virastoaika: ma-pe 8.00–16.15
-                <br />
-                Postiosoite: PL 1, 13035 AVI
-                <br />
-                Sähköposti: kirjaamo.etela@avi.fi
-                <br />
-                Fax: 0295 016 661
-                <br />
-                Puhelin: 0295 016 000
-              </P>
-              <H3>Oikaisuvaatimuksen muoto ja sisältö</H3>
-              <P>
-                Oikaisuvaatimus on tehtävä kirjallisesti. Myös sähköinen
-                asiakirja täyttää vaatimuksen kirjallisesta muodosta.
-              </P>
-              <P noMargin>Oikaisuvaatimuksessa on ilmoitettava</P>
-              <ul>
-                <li>
-                  Oikaisuvaatimuksen tekijän nimi, kotikunta, postiosoite,
-                  puhelinnumero ja muut asian hoitamiseksi tarvittavat
-                  yhteystiedot
-                </li>
-                <li>päätös, johon haetaan oikaisua</li>
-                <li>
-                  miltä osin päätökseen haetaan oikaisua ja mitä oikaisua siihen
-                  vaaditaan tehtäväksi
-                </li>
-                <li>vaatimuksen perusteet</li>
-              </ul>
-              <P>
-                Jos oikaisuvaatimuspäätös voidaan antaa tiedoksi sähköisenä
-                viestinä, yhteystietona pyydetään ilmoittamaan myös
-                sähköpostiosoite.
-              </P>
-              <P>
-                Jos oikaisuvaatimuksen tekijän puhevaltaa käyttää hänen
-                laillinen edustajansa tai asiamiehensä tai jos
-                oikaisuvaatimuksen laatijana on joku muu henkilö,
-                oikaisuvaatimuksessa on ilmoitettava myös tämän nimi ja
-                kotikunta.
-              </P>
-              <P noMargin>Oikaisuvaatimukseen on liitettävä</P>
-              <ul>
-                <li>
-                  päätös, johon haetaan oikaisua, alkuperäisenä tai
-                  jäljennöksenä
-                </li>
-                <li>
-                  todistus siitä, minä päivänä päätös on annettu tiedoksi, tai
-                  muu selvitys oikaisuvaatimusajan alkamisen ajankohdasta
-                </li>
-                <li>
-                  asiakirjat, joihin oikaisuvaatimuksen tekijä vetoaa
-                  oikaisuvaatimuksensa tueksi, jollei niitä ole jo aikaisemmin
-                  toimitettu viranomaiselle.
-                </li>
-              </ul>
-              <H3>Oikaisuvaatimuksen toimittaminen</H3>
-              <P>
-                Oikaisuvaatimuskirjelmä on toimitettava oikaisuvaatimusajan
-                kuluessa oikaisuvaatimusviranomaiselle. Oikaisuvaatimuskirjelmän
-                tulee olla perillä oikaisuvaatimusajan viimeisenä päivänä ennen
-                viraston aukiolon päättymistä. Oikaisuvaatimuksen lähettäminen
-                postitse tai sähköisesti tapahtuu lähettäjän omalla vastuulla.
-              </P>
-            </>
-          )
-        }
-      }
     },
     consent: {
       title: 'Luvat',

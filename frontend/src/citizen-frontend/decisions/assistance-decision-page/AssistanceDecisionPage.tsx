@@ -21,7 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
-import { ChildrenContext } from '../../state'
+import { ChildrenContext } from '../../children/state'
 
 import {
   getAssistanceNeedDecision,
@@ -29,7 +29,7 @@ import {
 } from './api'
 
 export default React.memo(function AssistanceNeedDecisionPage() {
-  const { id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
+  const { id } = useNonNullableParams<{ id: UUID }>()
 
   const [assistanceNeedDecision] = useApiState(
     () => getAssistanceNeedDecision(id),
@@ -105,7 +105,7 @@ const DecisionContent = React.memo(function DecisionContent({
   return (
     <AssistanceNeedDecisionReadOnly
       decision={decision}
-      texts={i18n.children.assistanceNeed.decisions.decision}
+      texts={i18n.decisions.assistanceDecisions.decision}
     />
   )
 })

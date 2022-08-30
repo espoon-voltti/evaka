@@ -1250,9 +1250,12 @@ const en: Translations = {
     summary: (
       <P width="800px">
         This page displays the received decisions regarding child&lsquo;s early
-        childhood education, pre-primary education and club applications. Upon
-        receiving a new decision, you are required to respond in two weeks,
-        whether you accept or reject it.
+        childhood education, pre-primary education and clubs.
+        <br />
+        <br />
+        Upon receiving a new decision concerning a new placement applied for a
+        child, you are required to respond in two weeks, whether you accept or
+        reject it.
       </P>
     ),
     unconfirmedDecisions: (n: number) =>
@@ -1274,7 +1277,7 @@ const en: Translations = {
       childName: "Child's name",
       unit: 'Unit',
       period: 'Time period',
-      sentDate: 'Decision sent',
+      sentDate: 'Decision made',
       resolved: 'Decision confirmed',
       statusLabel: 'Status',
       summary:
@@ -1323,6 +1326,39 @@ const en: Translations = {
         submitFailure: 'Error in submitting the response'
       },
       returnToPreviousPage: 'Return'
+    },
+    assistanceDecisions: {
+      title: 'Support decision',
+      assistanceLevel: 'Level of support',
+      validityPeriod: 'Valid',
+      unit: 'Unit',
+      decisionMade: 'Decision made',
+      level: {
+        ASSISTANCE_ENDS: 'Special/enhanced assistance ends',
+        ASSISTANCE_SERVICES_FOR_TIME:
+          'Assistance services during validity of decision',
+        ENHANCED_ASSISTANCE: 'Enhanced assistance',
+        SPECIAL_ASSISTANCE: 'Special assistance'
+      },
+      statusLabel: 'Status',
+      openDecision: 'Show decision',
+      // the actual decision cannot be in English
+      decision: {
+        ...fi.decisions.assistanceDecisions.decision,
+        statuses: {
+          DRAFT: 'Draft',
+          NEEDS_WORK: 'Needs work',
+          ACCEPTED: 'Accepted',
+          REJECTED: 'Rejected'
+        },
+        assistanceLevel: {
+          assistanceEnds: 'Special/enhanced assistance ends',
+          assistanceServicesForTime:
+            'Assistance services during validity of decision',
+          enhancedAssistance: 'Enhanced assistance',
+          specialAssistance: 'Special assistance'
+        }
+      }
     }
   },
   applicationsList: {
@@ -1914,6 +1950,7 @@ const en: Translations = {
     pageDescription:
       "General information related to your children's early childhood education or pre-primary education is displayed on this page.",
     noChildren: 'No children',
+    unreadCount: 'unread',
     childPicture: 'Picture of the child',
     placementTermination: {
       title: 'Terminating early childhood education agreement',
@@ -1935,37 +1972,6 @@ const en: Translations = {
       confirmDescription: (date: string) =>
         `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
       terminate: 'Terminate the agreement'
-    },
-    assistanceNeed: {
-      title: 'Support need',
-      unreadCount: 'unread',
-      decisions: {
-        title: 'Support decisions',
-        form: 'Form',
-        assistanceLevel: 'Level of support',
-        validityPeriod: 'Valid',
-        unit: 'Unit',
-        decisionMade: 'Decision made',
-        status: 'Status',
-        openDecision: 'Open decision',
-        // the actual decision cannot be in English
-        decision: {
-          ...fi.children.assistanceNeed.decisions.decision,
-          statuses: {
-            DRAFT: 'Draft',
-            NEEDS_WORK: 'Needs work',
-            ACCEPTED: 'Accepted',
-            REJECTED: 'Rejected'
-          },
-          assistanceLevel: {
-            assistanceEnds: 'Special/enhanced assistance ends',
-            assistanceServicesForTime:
-              'Assistance services during validity of decision',
-            enhancedAssistance: 'Enhanced assistance',
-            specialAssistance: 'Special assistance'
-          }
-        }
-      }
     },
     consent: {
       title: 'Releases',

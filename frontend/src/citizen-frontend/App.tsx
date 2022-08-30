@@ -27,9 +27,9 @@ import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
-import AssistanceNeedDecisionPage from './children/sections/assistance-need-decision/AssistanceNeedDecisionPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import { ChildrenContextProvider } from './children/state'
+import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
@@ -202,14 +202,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            path="/children/:childId/assistance-need-decision/:id"
-            element={
-              <RequireAuth>
-                <AssistanceNeedDecisionPage />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/children/:childId"
             element={
               <RequireAuth>
@@ -230,6 +222,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <DecisionResponseList />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/decisions/assistance/:id"
+            element={
+              <RequireAuth>
+                <AssistanceDecisionPage />
               </RequireAuth>
             }
           />

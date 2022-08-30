@@ -360,14 +360,18 @@ data class CreateApplicationBody(
 
 data class ApplicationDecisions(
     val applicationId: ApplicationId,
+    val childId: ChildId,
     val childName: String,
     val decisions: List<DecisionSummary>
 )
 
 data class DecisionSummary(
-    val decisionId: DecisionId,
+    val id: DecisionId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,
     val resolved: LocalDate?
-)
+) {
+    // TODO: remove after 16.9.2022
+    val decisionId = id
+}

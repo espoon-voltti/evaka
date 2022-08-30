@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sumBy from 'lodash/sumBy'
 import React, { useContext, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
@@ -30,6 +31,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   }, [refreshUnreadMessagesCount, user])
 
   const {
+    unreadAssistanceNeedDecisionCounts,
     refreshUnreadAssistanceNeedDecisionCounts,
     refreshUnreadPedagogicalDocumentsCount,
     refreshUnreadVasuDocumentsCount
@@ -57,7 +59,10 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         <EvakaLogo />
         <DesktopNav
           unreadMessagesCount={unreadMessagesCount ?? 0}
-          unreadDecisions={waitingConfirmationCount}
+          unreadDecisions={
+            waitingConfirmationCount +
+            sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count)
+          }
           hideLoginButton={hideLoginButton}
         />
       </HeaderContainer>

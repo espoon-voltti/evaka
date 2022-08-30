@@ -18,7 +18,6 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
 import ChildHeader from './ChildHeader'
-import AssistanceNeedSection from './sections/assistance-need-decision/AssistanceNeedSection'
 import ChildConsentsSection from './sections/consents/ChildConsentsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
@@ -58,8 +57,6 @@ export default React.memo(function ChildPage() {
               )}
               <Gap size="s" />
               <ChildConsentsSection childId={childId} />
-              <Gap size="s" />
-              <AssistanceNeedSection childId={childId} />
               <Gap size="s" />
               <PlacementTerminationSection childId={childId} />
             </>

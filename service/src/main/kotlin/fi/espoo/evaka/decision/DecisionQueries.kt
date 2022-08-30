@@ -107,6 +107,7 @@ fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: 
 
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
+    val childId: ChildId,
     val childName: String,
     val id: DecisionId,
     val type: DecisionType,
@@ -119,7 +120,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
     // language=sql
     val sql =
         """
-        SELECT d.application_id, p.first_name || ' ' || p.last_name child_name,  d.id, d.type, d.status, d.sent_date, d.resolved::date
+        SELECT d.application_id, p.id child_id, p.first_name || ' ' || p.last_name child_name,  d.id, d.type, d.status, d.sent_date, d.resolved::date
         FROM decision d
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
@@ -135,6 +136,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         .map { (applicationId, decisions) ->
             ApplicationDecisions(
                 applicationId,
+                decisions.first().childId,
                 decisions.first().childName,
                 decisions.map { DecisionSummary(it.id, it.type, it.status, it.sentDate, it.resolved) }
             )

@@ -317,15 +317,35 @@ fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
     //language=sql
     val sql =
         """
-        SELECT ad.id, validity_period, status, decision_made, assistance_levels,
+        SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
             selected_unit selected_unit_id, unit.name selected_unit_name,
             (:guardianId = ANY(unread_guardian_ids)) AS is_unread
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED')
+        WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
         """.trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
+        .bind("guardianId", guardianId)
+        .mapTo<AssistanceNeedDecisionCitizenListItem>()
+        .list()
+}
+
+fun Database.Read.getAssistanceNeedDecisionsForCitizen(
+    guardianId: PersonId
+): List<AssistanceNeedDecisionCitizenListItem> {
+    //language=sql
+    val sql =
+        """
+        SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
+            selected_unit AS selected_unit_id, unit.name AS selected_unit_name,
+            (:guardianId = ANY(unread_guardian_ids)) AS is_unread
+        FROM guardian g
+        JOIN assistance_need_decision ad ON ad.child_id = g.child_id
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE g.guardian_id = :guardianId AND status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
+        """.trimIndent()
+    return createQuery(sql)
         .bind("guardianId", guardianId)
         .mapTo<AssistanceNeedDecisionCitizenListItem>()
         .list()

@@ -1206,9 +1206,12 @@ const sv: Translations = {
     summary: (
       <P width="800px">
         Till denna sida kommer beslut gällande barnets ansökan till
-        småbarnspedagogik och förskola. Du ska omedelbart eller senast två
-        veckor från mottagandet av ett beslut ta emot eller annullera platsen /
-        platserna.
+        småbarnspedagogik, förskola och klubbverksamhet.
+        <br />
+        <br />
+        Om beslutet rör en ansökan till en för barnet ny plats, bör du ta emot
+        eller annullera platsen / platserna inom två veckor från mottagandet av
+        beslutet.
       </P>
     ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
@@ -1275,6 +1278,189 @@ const sv: Translations = {
         submitFailure: 'Misslyckades att skicka svar'
       },
       returnToPreviousPage: 'Tillbaka'
+    },
+    assistanceDecisions: {
+      title: 'Beslut om stöd',
+      assistanceLevel: 'Nivå av stöd',
+      validityPeriod: 'Giltig',
+      unit: 'Enhet',
+      decisionMade: 'Beslutet fattat',
+      level: {
+        ASSISTANCE_ENDS: 'Särskilda/intensifierade stödet avslutas',
+        ASSISTANCE_SERVICES_FOR_TIME:
+          'Stödtjänster under beslutets giltighetstid',
+        ENHANCED_ASSISTANCE: 'Intensifierat stöd',
+        SPECIAL_ASSISTANCE: 'Särskilt stöd'
+      },
+      statusLabel: 'Tillstånd',
+      openDecision: 'Visa beslut',
+      decision: {
+        pageTitle: 'Beslut om stöd',
+        neededTypesOfAssistance: 'Stödformer utgående från barnets behov',
+        pedagogicalMotivation: 'Pedagogiska stödformer och motivering',
+        structuralMotivation: 'Strukturella stödformer och motivering',
+        structuralMotivationOptions: {
+          smallerGroup: 'Minskad gruppstorlek',
+          specialGroup: 'Specialgrupp',
+          smallGroup: 'Smågrupp',
+          groupAssistant: 'Assistent för gruppen',
+          childAssistant: 'Assistent för barnet',
+          additionalStaff: 'Ökad personalresurs i gruppen'
+        },
+        careMotivation: 'Vårdinriktade stödformer och motivering',
+        serviceOptions: {
+          consultationSpecialEd:
+            'Konsultation med speciallärare inom småbarnspedagogik',
+          partTimeSpecialEd:
+            'Undervisning på deltid av speciallärare inom småbarnspedagogik',
+          fullTimeSpecialEd:
+            'Undervisning på heltid av speciallärare inom småbarnspedagogik',
+          interpretationAndAssistanceServices:
+            'Tolknings-och assistenttjänster',
+          specialAides: 'Hjälpmedel'
+        },
+        services: 'Stödtjänster och motivering',
+        collaborationWithGuardians: 'Samarbete med vårdnadshavare',
+        guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
+        guardiansHeard:
+          'Vårdnadshavare som hörts och förfaringssätt vid hörande',
+        viewOfTheGuardians: 'Vårdnadshavarnas syn på det rekommenderade stödet',
+        decisionAndValidity:
+          'Beslut om stödnivån och när beslutet träder i kraft',
+        futureLevelOfAssistance: 'Barnets stödnivå framöver',
+        assistanceLevel: {
+          assistanceEnds: 'Särskilda/intensifierade stödet avslutas',
+          assistanceServicesForTime:
+            'Stödtjänster under beslutets giltighetstid',
+          enhancedAssistance: 'Intensifierat stöd',
+          specialAssistance: 'Särskilt stöd'
+        },
+        startDate: 'Beslutet angående är i kraft',
+        endDate: 'Beslutet i kraft till',
+        endDateServices: 'Beslutet angående stödtjänster i kraft till',
+        selectedUnit: 'Enheten där stödet ges',
+        unitMayChange: 'Enheten och stödformer kan ändras under semestertider',
+        motivationForDecision: 'Motivering av beslut',
+        legalInstructions: 'Tillämpade bestämmelser',
+        legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap 15 §',
+        jurisdiction: 'Befogenhet',
+        jurisdictionText:
+          'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',
+        personsResponsible: 'Ansvarspersoner',
+        preparator: 'Beredare av beslutet',
+        decisionMaker: 'Beslutsfattare',
+        disclaimer:
+          'Ett beslut som fattats i enlighet med lagen om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.',
+        decisionNumber: 'Beslutsnummer',
+        statuses: {
+          DRAFT: 'Utkast',
+          NEEDS_WORK: 'Bör korrigeras',
+          ACCEPTED: 'Godkänt',
+          REJECTED: 'Avvisat'
+        },
+        confidential: 'Konfidentiellt',
+        lawReference: 'Lagen om småbarnspedagogik 40 §',
+        appealInstructionsTitle: 'Anvisningar för begäran om omprövning',
+        appealInstructions: (
+          <>
+            <P>
+              En part som är missnöjd med beslutet kan göra en skriftlig begäran
+              om omprövning.
+            </P>
+            <H3>Rätt att begära omprövning</H3>
+            <P>
+              En begäran om omprövning får göras av den som beslutet avser,
+              eller vars rätt, skyldigheter eller fördel direkt påverkas av
+              beslutet.
+            </P>
+            <H3>Myndighet hos vilken omprövningen begärs</H3>
+            <P>
+              Begäran om omprövning görs hos Regionförvaltningsverket i Västra
+              och Inre Finland (huvudkontoret i Vasa).
+            </P>
+            <P>
+              Regionförvaltningsverket i Västra och Inre Finlands huvudkontor
+              <br />
+              Besöksadress: Bangårdsvägen 9, 00520 Helsingfors
+              <br />
+              Öppet: mån–fre kl. 8.00–16.15
+              <br />
+              Postadress: PB 5, 13035 AVI
+              <br />
+              E-post: registratur.vastra@rfv.fi
+              <br />
+              Fax 06-317 4817
+              <br />
+              Telefonväxel 0295 018 450
+            </P>
+            <H3>Tidsfrist för begäran om omprövning</H3>
+            <P>
+              En begäran om omprövning ska lämnas in inom 30 dagar efter
+              delgivningen av beslutet.
+            </P>
+            <H3>Delgivning av beslut</H3>
+            <P>
+              Om inte något annat visas, anses en part ha fått del av beslutet
+              sju dagar från det att det postades, tre dagar efter att det
+              skickades elektroniskt, enligt tiden som anges i
+              mottagningsbeviset eller enligt tidpunkten som anges i
+              delgivningsbeviset. Delgivningsdagen räknas inte med i beräkningen
+              av tidsfristen. Om den utsatta dagen för begäran om omprövning är
+              en helgdag, självständighetsdag, första maj, julafton,
+              midsommarafton eller lördag, är det möjligt att göra begäran om
+              omprövning ännu under följande vardag.
+            </P>
+            <H3>Begäran om omprövning</H3>
+            <P noMargin>
+              Begäran om omprövning ska innehålla följande uppgifter:
+            </P>
+            <ul>
+              <li>
+                Namnet på den som begär omprövning och personens hemkommun,
+                postadress och telefonnummer
+              </li>
+              <li>Vilket beslut som omprövas</li>
+              <li>
+                Vilka delar av beslutet som ska omprövas och vilken ändring som
+                söks
+              </li>
+              <li>På vilka grunder omprövningen begärs</li>
+            </ul>
+            <P noMargin>
+              Till begäran om omprövning bifogas följande handlingar:
+            </P>
+            <ul>
+              <li>
+                beslutet som begäran om omprövning gäller, som original eller
+                kopia
+              </li>
+              <li>
+                en redogörelse för när den som begär omprövning har tagit del av
+                beslutet, eller annan redogörelse för när tidsfristen för
+                begäran om omprövning har börjat
+              </li>
+              <li>
+                handlingar som begäran om omprövning stöder sig på, ifall dessa
+                inte tidigare skickats till myndigheten.
+              </li>
+            </ul>
+            <P>
+              Ett ombud ska bifoga en skriftlig fullmakt till begäran om
+              omprövning, så som det föreskrivs i § 32 i lagen om rättegång i
+              förvaltningsärenden (808/2019).
+            </P>
+            <H3>Att sända begäran om omprövning</H3>
+            <P>
+              En skriftlig begäran om omprövning ska inom tidsfristen sändas
+              till myndigheten hos vilken omprövningen begärs. En begäran om
+              omprövning måste finnas hos myndigheten senast den sista dagen för
+              sökande av ändring, före öppethållningstidens slut.
+              Omprövningsbegäran sänds per post eller elektroniskt på
+              avsändarens ansvar.
+            </P>
+          </>
+        )
+      }
     }
   },
   applicationsList: {
@@ -1871,6 +2057,7 @@ const sv: Translations = {
     pageDescription:
       'På denna sida ser du dina allmänna uppgifter som förknippas med dina barns småbarnspedagogik eller förskoleundervisning.',
     noChildren: 'Inga barn',
+    unreadCount: 'olästa',
     childPicture: 'Bild på barnet',
     placementTermination: {
       title: 'Uppsägning av plats',
@@ -1889,189 +2076,6 @@ const sv: Translations = {
       confirmDescription: (date: string) =>
         `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
       terminate: 'Säg upp platsen'
-    },
-    assistanceNeed: {
-      title: 'Barnets behov av stöd',
-      unreadCount: 'olästa',
-      decisions: {
-        title: 'Beslut om stöd',
-        form: 'Blankett',
-        assistanceLevel: 'Nivå av stöd',
-        validityPeriod: 'Giltig',
-        unit: 'Enhet',
-        decisionMade: 'Beslutet fattat',
-        status: 'Tillstånd',
-        openDecision: 'Öppet beslut',
-        decision: {
-          pageTitle: 'Beslut om stöd',
-          neededTypesOfAssistance: 'Stödformer utgående från barnets behov',
-          pedagogicalMotivation: 'Pedagogiska stödformer och motivering',
-          structuralMotivation: 'Strukturella stödformer och motivering',
-          structuralMotivationOptions: {
-            smallerGroup: 'Minskad gruppstorlek',
-            specialGroup: 'Specialgrupp',
-            smallGroup: 'Smågrupp',
-            groupAssistant: 'Assistent för gruppen',
-            childAssistant: 'Assistent för barnet',
-            additionalStaff: 'Ökad personalresurs i gruppen'
-          },
-          careMotivation: 'Vårdinriktade stödformer och motivering',
-          serviceOptions: {
-            consultationSpecialEd:
-              'Konsultation med speciallärare inom småbarnspedagogik',
-            partTimeSpecialEd:
-              'Undervisning på deltid av speciallärare inom småbarnspedagogik',
-            fullTimeSpecialEd:
-              'Undervisning på heltid av speciallärare inom småbarnspedagogik',
-            interpretationAndAssistanceServices:
-              'Tolknings-och assistenttjänster',
-            specialAides: 'Hjälpmedel'
-          },
-          services: 'Stödtjänster och motivering',
-          collaborationWithGuardians: 'Samarbete med vårdnadshavare',
-          guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
-          guardiansHeard:
-            'Vårdnadshavare som hörts och förfaringssätt vid hörande',
-          viewOfTheGuardians:
-            'Vårdnadshavarnas syn på det rekommenderade stödet',
-          decisionAndValidity:
-            'Beslut om stödnivån och när beslutet träder i kraft',
-          futureLevelOfAssistance: 'Barnets stödnivå framöver',
-          assistanceLevel: {
-            assistanceEnds: 'Särskilda/intensifierade stödet avslutas',
-            assistanceServicesForTime:
-              'Stödtjänster under beslutets giltighetstid',
-            enhancedAssistance: 'Intensifierat stöd',
-            specialAssistance: 'Särskilt stöd'
-          },
-          startDate: 'Beslutet angående är i kraft',
-          endDate: 'Beslutet i kraft till',
-          endDateServices: 'Beslutet angående stödtjänster i kraft till',
-          selectedUnit: 'Enheten där stödet ges',
-          unitMayChange:
-            'Enheten och stödformer kan ändras under semestertider',
-          motivationForDecision: 'Motivering av beslut',
-          legalInstructions: 'Tillämpade bestämmelser',
-          legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap 15 §',
-          jurisdiction: 'Befogenhet',
-          jurisdictionText:
-            'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',
-          personsResponsible: 'Ansvarspersoner',
-          preparator: 'Beredare av beslutet',
-          decisionMaker: 'Beslutsfattare',
-          disclaimer:
-            'Ett beslut som fattats i enlighet med lagen om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.',
-          decisionNumber: 'Beslutsnummer',
-          statuses: {
-            DRAFT: 'Utkast',
-            NEEDS_WORK: 'Bör korrigeras',
-            ACCEPTED: 'Godkänt',
-            REJECTED: 'Avvisat'
-          },
-          confidential: 'Konfidentiellt',
-          lawReference: 'Lagen om småbarnspedagogik 40 §',
-          appealInstructionsTitle: 'Anvisningar för begäran om omprövning',
-          appealInstructions: (
-            <>
-              <P>
-                En part som är missnöjd med beslutet kan göra en skriftlig
-                begäran om omprövning.
-              </P>
-              <H3>Rätt att begära omprövning</H3>
-              <P>
-                En begäran om omprövning får göras av den som beslutet avser,
-                eller vars rätt, skyldigheter eller fördel direkt påverkas av
-                beslutet.
-              </P>
-              <H3>Myndighet hos vilken omprövningen begärs</H3>
-              <P>
-                Begäran om omprövning görs hos Regionförvaltningsverket i Västra
-                och Inre Finland (huvudkontoret i Vasa).
-              </P>
-              <P>
-                Regionförvaltningsverket i Västra och Inre Finlands huvudkontor
-                <br />
-                Besöksadress: Bangårdsvägen 9, 00520 Helsingfors
-                <br />
-                Öppet: mån–fre kl. 8.00–16.15
-                <br />
-                Postadress: PB 5, 13035 AVI
-                <br />
-                E-post: registratur.vastra@rfv.fi
-                <br />
-                Fax 06-317 4817
-                <br />
-                Telefonväxel 0295 018 450
-              </P>
-              <H3>Tidsfrist för begäran om omprövning</H3>
-              <P>
-                En begäran om omprövning ska lämnas in inom 30 dagar efter
-                delgivningen av beslutet.
-              </P>
-              <H3>Delgivning av beslut</H3>
-              <P>
-                Om inte något annat visas, anses en part ha fått del av beslutet
-                sju dagar från det att det postades, tre dagar efter att det
-                skickades elektroniskt, enligt tiden som anges i
-                mottagningsbeviset eller enligt tidpunkten som anges i
-                delgivningsbeviset. Delgivningsdagen räknas inte med i
-                beräkningen av tidsfristen. Om den utsatta dagen för begäran om
-                omprövning är en helgdag, självständighetsdag, första maj,
-                julafton, midsommarafton eller lördag, är det möjligt att göra
-                begäran om omprövning ännu under följande vardag.
-              </P>
-              <H3>Begäran om omprövning</H3>
-              <P noMargin>
-                Begäran om omprövning ska innehålla följande uppgifter:
-              </P>
-              <ul>
-                <li>
-                  Namnet på den som begär omprövning och personens hemkommun,
-                  postadress och telefonnummer
-                </li>
-                <li>Vilket beslut som omprövas</li>
-                <li>
-                  Vilka delar av beslutet som ska omprövas och vilken ändring
-                  som söks
-                </li>
-                <li>På vilka grunder omprövningen begärs</li>
-              </ul>
-              <P noMargin>
-                Till begäran om omprövning bifogas följande handlingar:
-              </P>
-              <ul>
-                <li>
-                  beslutet som begäran om omprövning gäller, som original eller
-                  kopia
-                </li>
-                <li>
-                  en redogörelse för när den som begär omprövning har tagit del
-                  av beslutet, eller annan redogörelse för när tidsfristen för
-                  begäran om omprövning har börjat
-                </li>
-                <li>
-                  handlingar som begäran om omprövning stöder sig på, ifall
-                  dessa inte tidigare skickats till myndigheten.
-                </li>
-              </ul>
-              <P>
-                Ett ombud ska bifoga en skriftlig fullmakt till begäran om
-                omprövning, så som det föreskrivs i § 32 i lagen om rättegång i
-                förvaltningsärenden (808/2019).
-              </P>
-              <H3>Att sända begäran om omprövning</H3>
-              <P>
-                En skriftlig begäran om omprövning ska inom tidsfristen sändas
-                till myndigheten hos vilken omprövningen begärs. En begäran om
-                omprövning måste finnas hos myndigheten senast den sista dagen
-                för sökande av ändring, före öppethållningstidens slut.
-                Omprövningsbegäran sänds per post eller elektroniskt på
-                avsändarens ansvar.
-              </P>
-            </>
-          )
-        }
-      }
     },
     consent: {
       title: 'Samtycken',
