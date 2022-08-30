@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
 import {
@@ -76,6 +76,31 @@ export default React.memo(function ChildDay({
   const dailyData = useMemo(
     () => dataForAllDays[day.date.formatIso()],
     [dataForAllDays, day.date]
+  )
+
+  const attendanceStartsOnPrevDay = useMemo(() => {
+    const prevDay = dataForAllDays[day.date.subDays(1).formatIso()]
+    return (
+      dailyData?.attendance?.startTime === '00:00' &&
+      (prevDay === undefined || prevDay?.attendance?.endTime === '23:59')
+    )
+  }, [dailyData, dataForAllDays, day.date])
+
+  const attendanceEndsOnNextDay = useMemo(() => {
+    const nextDay = dataForAllDays[day.date.addDays(1).formatIso()]
+    return (
+      dailyData?.attendance?.endTime === '23:59' &&
+      (nextDay === undefined || nextDay.attendance?.startTime === '00:00')
+    )
+  }, [dailyData, dataForAllDays, day.date])
+
+  const renderTime = useCallback(
+    (time: string | null | undefined, sameDay: boolean) => {
+      if (!sameDay) return '→'
+      if (time && time !== '') return time
+      return '–'
+    },
+    []
   )
 
   if (!dailyData) return null
@@ -180,7 +205,10 @@ export default React.memo(function ChildDay({
                 dailyData.attendance?.startTime
               )}
             >
-              {dailyData.attendance?.startTime ?? '–'}
+              {renderTime(
+                dailyData.attendance?.startTime,
+                !attendanceStartsOnPrevDay
+              )}
             </AttendanceTime>
             <AttendanceTime
               data-qa="attendance-end"
@@ -189,7 +217,10 @@ export default React.memo(function ChildDay({
                 expectedTimeForThisDay?.end
               )}
             >
-              {dailyData.attendance?.endTime ?? '–'}
+              {renderTime(
+                dailyData.attendance?.endTime,
+                !attendanceEndsOnNextDay
+              )}
             </AttendanceTime>
           </>
         )}
