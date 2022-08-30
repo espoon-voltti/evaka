@@ -23,6 +23,7 @@ export interface ChildCapacityPoint {
 export interface ChildOccupancyAttendance {
   arrived: HelsinkiDateTime
   capacity: number
+  childId: UUID
   departed: HelsinkiDateTime | null
 }
 

@@ -28,6 +28,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -51,14 +52,16 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .withAge(2, 10)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
-                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(7, 45)).departing(LocalTime.of(16, 30)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(7, 45)).departing(LocalTime.of(16, 30))
+                        .save()
                 }
                 .addChild()
                 .withAge(2, 11)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
                     addAssistanceNeed().createdBy(EvakaUserId(testDecisionMaker_1.id.raw)).withFactor(2.0).save()
-                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).departing(LocalTime.of(16, 30)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).departing(LocalTime.of(16, 30))
+                        .save()
                 }
                 .addChild()
                 .withAge(3)
@@ -181,17 +184,72 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?: error("data point missing")
     }
 
-    private fun getRealtimeOccupancy(): RealtimeOccupancy {
-        val timeRange = HelsinkiDateTimeRange(
+    private fun getRealtimeOccupancy(
+        timeRange: HelsinkiDateTimeRange = HelsinkiDateTimeRange(
             HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
             HelsinkiDateTime.of(date, LocalTime.of(23, 59))
         )
+    ): RealtimeOccupancy {
         return db.read { tx ->
             RealtimeOccupancy(
                 childAttendances = tx.getChildOccupancyAttendances(testDaycare.id, timeRange),
                 staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange)
             )
         }
+    }
+
+    @Test
+    fun testGraphDataShowsNoGapsForOvernightAttendances() {
+        val tomorrow = date.plusDays(1)
+        db.transaction { tx ->
+            FixtureBuilder(tx, date)
+                .addChild()
+                .withAge(2, 10)
+                .saveAnd {
+                    addPlacement().toUnit(testDaycare.id).fromDay(date).toDay(date.plusMonths(2)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(20, 45))
+                        .departing(LocalTime.of(23, 59)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(tomorrow, LocalTime.of(0, 0))
+                        .departing(tomorrow, LocalTime.of(8, 15)).save()
+                }
+                .addChild()
+                .withAge(4, 3)
+                .saveAnd {
+                    addPlacement().toUnit(testDaycare.id).fromDay(date).toDay(date.plusMonths(2)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(21, 5))
+                        .departing(LocalTime.of(23, 59)).save()
+                    addAttendance().inUnit(testDaycare.id).arriving(tomorrow, LocalTime.of(0, 0))
+                        .departing(tomorrow, LocalTime.of(8, 50)).save()
+                }
+                .addEmployee()
+                .withScopedRole(UserRole.STAFF, testDaycare.id)
+                .withGroupAccess(testDaycare.id, groupId)
+                .saveAnd {
+                    addRealtimeAttendance().inGroup(groupId).arriving(LocalTime.of(19, 45))
+                        .departing(tomorrow, LocalTime.of(9, 0)).withCoefficient(occupancyCoefficientSeven)
+                        .withType(StaffAttendanceType.PRESENT).save()
+                }
+        }
+
+        val result = getRealtimeOccupancy(
+            HelsinkiDateTimeRange(
+                HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
+                HelsinkiDateTime.of(tomorrow, LocalTime.of(23, 59))
+            )
+        )
+        val occupancies = result.occupancySeries
+
+        assertContentEquals(
+            listOf(
+                OccupancyPoint(HelsinkiDateTime.Companion.of(date, LocalTime.of(19, 45)), 0.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.Companion.of(date, LocalTime.of(20, 45)), 1.75, 7.0),
+                OccupancyPoint(HelsinkiDateTime.Companion.of(date, LocalTime.of(21, 5)), 2.75, 7.0),
+                OccupancyPoint(HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(8, 15)), 1.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(8, 50)), 0.0, 7.0),
+                OccupancyPoint(HelsinkiDateTime.Companion.of(tomorrow, LocalTime.of(9, 0)), 0.0, 0.0)
+            ),
+            occupancies
+        )
     }
 }
 
