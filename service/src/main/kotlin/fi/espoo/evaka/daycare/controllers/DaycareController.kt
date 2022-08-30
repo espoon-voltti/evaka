@@ -60,7 +60,7 @@ class DaycareController(
     fun getDaycares(db: Database, user: AuthenticatedUser): List<Daycare> {
         Audit.UnitSearch.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_UNITS)
-        return db.connect { dbc -> dbc.read { it.getDaycares(acl.getAuthorizedDaycares(user)) } }
+        return db.connect { dbc -> dbc.read { it.getDaycares(acl.getAuthorizedUnits(user)) } }
     }
 
     @GetMapping("/features")

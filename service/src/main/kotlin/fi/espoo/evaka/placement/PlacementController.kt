@@ -71,7 +71,7 @@ class PlacementController(
             else -> throw BadRequest("daycareId or childId is required")
         }
 
-        val auth = acl.getAuthorizedDaycares(user)
+        val auth = acl.getAuthorizedUnits(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 
         return db.connect { dbc ->
@@ -152,7 +152,7 @@ class PlacementController(
         Audit.PlacementUpdate.log(targetId = placementId)
         accessControl.requirePermissionFor(user, Action.Placement.UPDATE, placementId)
 
-        val aclAuth = acl.getAuthorizedDaycares(user)
+        val aclAuth = acl.getAuthorizedUnits(user)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth, useFiveYearsOldDaycare)

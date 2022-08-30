@@ -28,9 +28,6 @@ sealed class AclAuthorization {
 }
 
 class AccessControlList(private val jdbi: Jdbi) {
-    fun getAuthorizedDaycares(user: AuthenticatedUser): AclAuthorization =
-        getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
-
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization = getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
     fun getAuthorizedUnits(user: AuthenticatedUser, roles: Set<UserRole>): AclAuthorization =
