@@ -65,6 +65,9 @@ class SystemController(private val personService: PersonService, private val acc
     ): EmployeeUser {
         return db.connect { dbc ->
             dbc.transaction {
+                if (request.employeeNumber != null) {
+                    it.updateExternalIdByEmployeeNumber(request.employeeNumber, request.externalId)
+                }
                 val inserted = it.loginEmployee(request.toNewEmployee())
                 val roles = it.getEmployeeRoles(inserted.id)
                 val employee = EmployeeUser(

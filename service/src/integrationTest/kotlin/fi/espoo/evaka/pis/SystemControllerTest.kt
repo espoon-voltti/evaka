@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -112,6 +113,50 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
+    }
+
+    @Test
+    fun `external id is updated when employee number already exists`() {
+        val employeeId = EmployeeId(UUID.randomUUID())
+        val employeeNumber = "666666"
+
+        val externalId1 = ExternalId.of("evaka", "1")
+        val input1 = SystemController.EmployeeLoginRequest(
+            externalId = externalId1, employeeNumber = employeeNumber,
+            firstName = "Teppo", lastName = "Testaaja", email = null
+        )
+        val (_, res1, result1) = http.post("/system/employee-login")
+            .asUser(AuthenticatedUser.SystemInternalUser)
+            .jsonBody(jsonMapper.writeValueAsString(input1))
+            .responseObject<EmployeeUser>()
+        assertTrue(res1.isSuccessful)
+        val expected1 = EmployeeUser(
+            id = employeeId,
+            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
+        )
+        assertEquals(expected1, result1.get().copy(id = employeeId))
+        assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result1.get().id) })
+        assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId1) })
+
+        val externalId2 = ExternalId.of("evaka", "2")
+        val input2 = SystemController.EmployeeLoginRequest(
+            externalId = externalId2, employeeNumber = employeeNumber,
+            firstName = "Teppo", lastName = "Testaaja", email = null
+        )
+        val (_, res, result) = http.post("/system/employee-login")
+            .asUser(AuthenticatedUser.SystemInternalUser)
+            .jsonBody(jsonMapper.writeValueAsString(input2))
+            .responseObject<EmployeeUser>()
+        assertTrue(res.isSuccessful)
+        val expected = EmployeeUser(
+            id = employeeId,
+            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
+        )
+        assertEquals(expected, result.get().copy(id = employeeId))
+        assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result.get().id) })
+        assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId2) })
+
+        assertNull(db.read { tx -> tx.getEmployeeByExternalId(externalId1) })
     }
 
     @Test
