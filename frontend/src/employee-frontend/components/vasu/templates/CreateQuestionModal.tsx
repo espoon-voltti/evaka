@@ -250,6 +250,7 @@ export default React.memo(function CreateQuestionModal({
                       ...options.slice(i + 1)
                     ])
                   }}
+                  aria-label={i18n.common.remove}
                 />
                 {type === 'RADIO_GROUP' && (
                   <div>
@@ -266,6 +267,7 @@ export default React.memo(function CreateQuestionModal({
                           ...options.slice(i + 1)
                         ])
                       }}
+                      aria-label={i18n.common.datePicker.calendarLabel}
                     />
                     <TopRightOverlayedIcon
                       icon={opt.dateRange ? faCheckCircle : faTimesCircle}
@@ -341,6 +343,7 @@ export default React.memo(function CreateQuestionModal({
                       e.preventDefault()
                       setKeys([...keys.slice(0, i), ...keys.slice(i + 1)])
                     }}
+                    aria-label={i18n.common.remove}
                   />
                 </FixedSpaceRow>
               </ExpandingInfo>

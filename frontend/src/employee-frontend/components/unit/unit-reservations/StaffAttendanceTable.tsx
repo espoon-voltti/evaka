@@ -435,6 +435,8 @@ const OvernightAwareTimeRangeEditor = React.memo(
     }
     departureLocked: boolean
   }) {
+    const { i18n } = useTranslation()
+
     return (
       <TimeEditor data-qa="time-range-editor">
         {departureLocked ? (
@@ -452,6 +454,7 @@ const OvernightAwareTimeRangeEditor = React.memo(
           <IconButton
             icon={faClock}
             onClick={() => splitOvernight('arrival')}
+            aria-label={i18n.unit.staffAttendance.unlinkOvernight}
           />
         )}
         {!departureDate || departureDate.isEqual(date) ? (
@@ -465,6 +468,7 @@ const OvernightAwareTimeRangeEditor = React.memo(
           <IconButton
             icon={faClock}
             onClick={() => splitOvernight('departure')}
+            aria-label={i18n.unit.staffAttendance.unlinkOvernight}
           />
         )}
       </TimeEditor>
@@ -1227,6 +1231,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                       icon={faCircleEllipsis}
                       onClick={() => openDetails({ employeeId, date })}
                       data-qa={`open-details-${employeeId}-${date.formatIso()}`}
+                      aria-label={i18n.common.open}
                     />
                   </DetailsToggle>
                 )}
@@ -1267,6 +1272,8 @@ export const SaveRowButton = React.memo(function SaveRowButton({
   save: () => void
   'data-qa'?: string
 }) {
+  const { i18n } = useTranslation()
+
   if (loading) {
     return <SpinnerSegment size="m" margin="zero" data-qa={dataQa} />
   }
@@ -1277,6 +1284,7 @@ export const SaveRowButton = React.memo(function SaveRowButton({
       onClick={save}
       disabled={loading}
       data-qa="inline-editor-state-button"
+      aria-label={i18n.common.save}
     />
   )
 })
@@ -1295,6 +1303,7 @@ export const FormErrorWarning = React.memo(function FormErrorWarning({
         color={colors.status.warning}
         onClick={onIgnore}
         data-qa="form-error-warning"
+        aria-label={i18n.unit.staffAttendance.formErrorWarning}
       />
     </Tooltip>
   )

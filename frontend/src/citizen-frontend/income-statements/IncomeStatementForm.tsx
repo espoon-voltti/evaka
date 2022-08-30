@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { otherIncome } from 'lib-common/api-types/incomeStatement'
+import DateRange from 'lib-common/date-range'
 import {
   required,
   validate,
@@ -31,10 +32,12 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
-  FixedSpaceRow
+  FixedSpaceRow,
+  ResponseFixedSpaceFlex
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import OpenDateRangePicker from 'lib-components/molecules/date-picker/OpenDateRangePicker'
 import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -333,14 +336,14 @@ const IncomeTypeSelection = React.memo(
               <Gap size="s" />
             </>
           )}
-          <FixedSpaceRow spacing="XL">
+          <ResponseFixedSpaceFlex spacing="XL" mobileSpacing="m">
             <div>
-              <Label htmlFor="start-date">
+              <Label id="income-type-start-date">
                 {t.income.incomeType.startDate} *
               </Label>
               <Gap size="xs" />
               <DatePicker
-                id="start-date"
+                aria-labelledby="income-type-start-date"
                 date={formData.startDate}
                 onChange={useFieldDispatch(onChange, 'startDate')}
                 info={startDateInputInfo}
@@ -352,22 +355,27 @@ const IncomeTypeSelection = React.memo(
                     : t.validationErrors.unselectableDate
                 }
                 errorTexts={t.validationErrors}
+                labels={t.common.datePicker}
+                data-qa="income-type-start-date"
               />
             </div>
             <div>
-              <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
+              <Label id="income-type-end-date">
+                {t.income.incomeType.endDate}
+              </Label>
               <Gap size="xs" />
               <DatePicker
-                id="end-date"
+                aria-labelledby="income-type-end-date"
                 date={formData.endDate}
                 onChange={useFieldDispatch(onChange, 'endDate')}
                 minDate={formData.startDate ?? undefined}
                 hideErrorsBeforeTouched
                 locale={lang}
                 errorTexts={t.validationErrors}
+                labels={t.common.datePicker}
               />
             </div>
-          </FixedSpaceRow>
+          </ResponseFixedSpaceFlex>
           <Gap size="L" />
           <H3 noMargin>{t.income.incomeType.title}</H3>
           <Gap size="s" />
@@ -551,7 +559,7 @@ const EntrepreneurIncomeSelection = React.memo(
             onChange={useFieldSetter(onChange, 'fullTime', false)}
           />
           <Gap size="L" />
-          <Label htmlFor="entrepreneur-start-date">
+          <Label id="entrepreneur-start-date">
             {t.income.entrepreneurIncome.startOfEntrepreneurship} *
           </Label>
           <Gap size="s" />
@@ -570,6 +578,8 @@ const EntrepreneurIncomeSelection = React.memo(
             )}
             hideErrorsBeforeTouched={!showFormErrors}
             errorTexts={t.validationErrors}
+            labels={t.common.datePicker}
+            aria-labelledby="entrepreneur-start-date"
           />
           <Gap size="L" />
           <LabelWithError
@@ -784,42 +794,43 @@ const SelfEmployedIncomeSelection = React.memo(
                 />
               </FixedSpaceColumn>
               <FixedSpaceColumn>
-                <Label htmlFor="income-start-date">
+                <Label id="income-start-date">
                   {t.income.selfEmployed.timeRange}
                 </Label>
-                <FixedSpaceRow>
-                  <DatePicker
-                    id="income-start-date"
-                    date={formData.incomeStartDate}
-                    onFocus={useFieldSetter(onChange, 'estimation', true)}
-                    onChange={useFieldDispatch(onChange, 'incomeStartDate')}
-                    locale={lang}
-                    hideErrorsBeforeTouched={!showFormErrors}
-                    info={useMemo(
-                      () =>
-                        errorToInputInfo(
-                          validateIf(
-                            formData.estimation,
-                            formData.incomeStartDate,
-                            required
-                          ),
-                          t.validationErrors
+                <OpenDateRangePicker
+                  aria-labelledby="income-date-range"
+                  dateRange={
+                    formData.incomeStartDate &&
+                    new DateRange(
+                      formData.incomeStartDate,
+                      formData.incomeEndDate
+                    )
+                  }
+                  onFocus={useFieldSetter(onChange, 'estimation', true)}
+                  onChange={(range) => {
+                    onChange((prev) => ({
+                      ...prev,
+                      incomeStartDate: range?.start ?? null,
+                      incomeEndDate: range?.end ?? null
+                    }))
+                  }}
+                  locale={lang}
+                  hideErrorsBeforeTouched={!showFormErrors}
+                  info={useMemo(
+                    () =>
+                      errorToInputInfo(
+                        validateIf(
+                          formData.estimation,
+                          formData.incomeStartDate,
+                          required
                         ),
-                      [formData.estimation, formData.incomeStartDate, t]
-                    )}
-                    errorTexts={t.validationErrors}
-                  />
-                  <span>{' - '}</span>
-                  <DatePicker
-                    date={formData.incomeEndDate}
-                    onFocus={useFieldSetter(onChange, 'estimation', true)}
-                    onChange={useFieldDispatch(onChange, 'incomeEndDate')}
-                    locale={lang}
-                    minDate={formData.incomeStartDate ?? undefined}
-                    hideErrorsBeforeTouched={!showFormErrors}
-                    errorTexts={t.validationErrors}
-                  />
-                </FixedSpaceRow>
+                        t.validationErrors
+                      ),
+                    [formData.estimation, formData.incomeStartDate, t]
+                  )}
+                  errorTexts={t.validationErrors}
+                  labels={t.common.datePicker}
+                />
               </FixedSpaceColumn>
             </FixedSpaceFlexWrap>
           </Indent>

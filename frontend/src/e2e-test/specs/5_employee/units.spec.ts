@@ -99,8 +99,8 @@ describe('Employee - Units', () => {
 
     await group.edit({
       name: 'Uusi nimi',
-      startDate: '01.01.2020',
-      endDate: '31.12.2022'
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2022, 12, 31)
     })
 
     await group.assertGroupName('Uusi nimi')

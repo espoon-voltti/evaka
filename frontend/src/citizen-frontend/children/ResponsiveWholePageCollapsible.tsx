@@ -37,6 +37,45 @@ const BreakingH2 = styled(H2)`
   hyphens: auto;
 `
 
+const MobileFocusTrap = React.memo(function MobileFocusTrap({
+  children,
+  mobileHeaderId,
+  open
+}: {
+  children: React.ReactNode
+  mobileHeaderId: string
+  open: boolean
+}) {
+  const [width, setWidth] = useState(window.innerWidth)
+
+  useEffect(() => {
+    const onResize = () => {
+      setWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', onResize)
+
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  }, [])
+
+  if (width > 600) {
+    return <>{children}</>
+  }
+
+  return (
+    <FocusTrap
+      active={open}
+      focusTrapOptions={{
+        initialFocus: `#${mobileHeaderId}`
+      }}
+    >
+      {children}
+    </FocusTrap>
+  )
+})
+
 export default React.memo(function ResponsiveWholePageCollapsible({
   open,
   toggleOpen,
@@ -57,23 +96,6 @@ export default React.memo(function ResponsiveWholePageCollapsible({
       : countIndicator.count > 0
 
   const t = useTranslation()
-
-  const [width, setWidth] = useState(window.innerWidth)
-
-  useEffect(() => {
-    const onResize = () => {
-      setWidth(window.innerWidth)
-    }
-
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      window.removeEventListener('resize', onResize)
-    }
-  }, [])
-
-  // 600 = tabletMin
-  const MobileFocusTrap = width < 600 ? FocusTrap : React.Fragment
 
   const [isFocusable, setIsFocusable] = useState(true)
   const mobileHeaderId = useUniqueId('mobile-header')
@@ -118,12 +140,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
           </div>
         </FixedSpaceRow>
       </TitleContainer>
-      <MobileFocusTrap
-        active={open}
-        focusTrapOptions={{
-          initialFocus: `#${mobileHeaderId}`
-        }}
-      >
+      <MobileFocusTrap open={open} mobileHeaderId={mobileHeaderId}>
         <ResponsiveCollapsibleContainer open={open}>
           <MobileOnly>
             <ResponsiveCollapsibleTitle>
@@ -132,7 +149,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
                   icon={faArrowLeft}
                   data-qa="return-collapsible"
                   onClick={() => toggleOpen()}
-                  altText={t.common.return}
+                  aria-label={t.common.return}
                 />
                 <div
                   tabIndex={isFocusable ? 0 : undefined}

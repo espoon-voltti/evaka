@@ -194,6 +194,7 @@ function InvoiceRowSectionRow({
                   <IconButton
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     onClick={addNote}
+                    aria-label={i18n.common.addNew}
                   />
                 ) : (
                   <FontAwesomeIcon
@@ -210,6 +211,7 @@ function InvoiceRowSectionRow({
                 icon={faTrash}
                 onClick={remove}
                 data-qa="delete-invoice-row-button"
+                aria-label={i18n.common.remove}
               />
             </IconButtonWrapper>
           ) : null}

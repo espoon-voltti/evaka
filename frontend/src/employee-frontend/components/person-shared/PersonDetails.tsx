@@ -20,11 +20,11 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
   InfoButton,
   ExpandingInfoBox
 } from 'lib-components/molecules/ExpandingInfo'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faPen, faSync } from 'lib-icons'
 
 import {
@@ -263,14 +263,21 @@ export default React.memo(function PersonDetails({
           },
           {
             label: i18n.common.form.birthday,
+            labelId: 'person-birthday',
             dataQa: 'person-birthday',
             value: powerEditing ? (
-              <DatePickerDeprecated
-                type="full-width"
+              <DatePicker
+                fullWidth
                 date={form.dateOfBirth}
-                onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
+                onChange={(dateOfBirth) =>
+                  dateOfBirth && updateForm({ dateOfBirth })
+                }
                 maxDate={LocalDate.todayInSystemTz()}
                 data-qa="input-birthday"
+                labels={i18n.common.datePicker}
+                errorTexts={i18n.validationErrors}
+                locale="fi"
+                aria-labelledby="person-birthday"
               />
             ) : (
               person.dateOfBirth.format()

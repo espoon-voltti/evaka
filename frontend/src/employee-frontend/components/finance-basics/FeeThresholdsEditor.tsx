@@ -6,11 +6,11 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -20,7 +20,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import OpenDateRangePicker from 'lib-components/molecules/date-picker/OpenDateRangePicker'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -87,39 +87,28 @@ export default React.memo(function FeeThresholdsEditor({
         } as const)
       : undefined
 
+  const validDuringAriaId = useUniqueId()
+
   return (
     <>
       <div className="separator large" />
       <RowWithMargin alignItems="center" spacing="xs">
-        <H3>{i18n.financeBasics.fees.validDuring}</H3>
-        <DatePicker
+        <H3 id={validDuringAriaId}>{i18n.financeBasics.fees.validDuring}</H3>
+        <OpenDateRangePicker
           locale="fi"
-          date={editorState.validFrom}
-          onChange={(validFrom) =>
+          dateRange={editorState.validDuring}
+          onChange={(validDuring) => {
             setEditorState((previousState) => ({
               ...previousState,
-              validFrom
+              validDuring: validDuring ?? null
             }))
-          }
-          info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
+          }}
+          info={validationErrorInfo('validDuring') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
-          data-qa="valid-from"
+          data-qa="valid-during"
           errorTexts={i18n.validationErrors}
-        />
-        <span>-</span>
-        <DatePicker
-          locale="fi"
-          date={editorState.validTo}
-          onChange={(validTo) =>
-            setEditorState((previousState) => ({
-              ...previousState,
-              validTo
-            }))
-          }
-          info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
-          hideErrorsBeforeTouched
-          data-qa="valid-to"
-          errorTexts={i18n.validationErrors}
+          labels={i18n.common.datePicker}
+          aria-labelledby={validDuringAriaId}
         />
       </RowWithMargin>
       {'errors' in validationResult && validationResult.errors.dateOverlap ? (
@@ -552,37 +541,26 @@ function validateForm(
     }
   })
 
-  if (form.validFrom === null) {
-    validationErrors.validFrom = i18n.validationError.dateRange
-  }
-
-  if (
-    form.validFrom !== null &&
-    form.validTo !== null &&
-    form.validTo.isBefore(form.validFrom)
-  ) {
-    validationErrors.validFrom = i18n.validationError.invertedDateRange
-    validationErrors.validTo = i18n.validationError.invertedDateRange
+  if (!form.validDuring) {
+    validationErrors.validDuring = i18n.validationError.dateRange
   }
 
   const dateOverlap =
     existingThresholds
       .map((ts) =>
         ts.filter((t) => {
-          if (form.validFrom === null) {
+          if (!form.validDuring) {
             return false
           }
 
-          const dateRange = new DateRange(form.validFrom, form.validTo)
-
           if (t.thresholds.validDuring.end === null) {
             return (
-              t.thresholds.validDuring.overlapsWith(dateRange) &&
-              !t.thresholds.validDuring.start.isBefore(form.validFrom)
+              t.thresholds.validDuring.overlapsWith(form.validDuring) &&
+              !t.thresholds.validDuring.start.isBefore(form.validDuring.start)
             )
           }
 
-          return t.thresholds.validDuring.overlapsWith(dateRange)
+          return t.thresholds.validDuring.overlapsWith(form.validDuring)
         })
       )
       .getOrElse([]).length > 0
@@ -628,7 +606,7 @@ function parseMultiplier(dec: string): number {
 
 function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
   return {
-    validDuring: new DateRange(throwIfNull(form.validFrom), form.validTo),
+    validDuring: throwIfNull(form.validDuring),
     maxFee: parseCentsOrThrow(form.maxFee),
     minFee: parseCentsOrThrow(form.minFee),
     minIncomeThreshold2: parseCentsOrThrow(form.minIncomeThreshold2),

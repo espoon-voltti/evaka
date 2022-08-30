@@ -148,6 +148,8 @@ export const CalendarNotificationsSlot = React.memo(
       CalendarNotificationsContext
     )
 
+    const i18n = useTranslation()
+
     if (isEmpty(notifications)) {
       return null
     }
@@ -168,6 +170,7 @@ export const CalendarNotificationsSlot = React.memo(
                   removeNotification(id)
                 }
               }}
+              closeLabel={i18n.common.close}
             >
               {children}
             </Toast>

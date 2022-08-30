@@ -64,6 +64,7 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             }
             icon={fasUserMinus}
             onClick={() => props.updateTimes(emptyTimeRange)}
+            aria-label={i18n.calendar.absentDisable}
           />
         </div>
       </>
@@ -145,6 +146,7 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             }
             icon={faUserMinus}
             onClick={() => props.updateTimes('absent')}
+            aria-label={i18n.calendar.absentEnable}
           />
         )}
         {!extraTimeRange && props.allowExtraTimeRange ? (
@@ -159,6 +161,7 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
                 }
               ])
             }
+            aria-label={i18n.common.add}
           />
         ) : (
           <div />
@@ -222,6 +225,7 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             <IconButton
               icon={faTrash}
               onClick={() => props.updateTimes([timeRange])}
+              aria-label={i18n.common.delete}
             />
           </div>
         </>

@@ -12,7 +12,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { acceptDecision, rejectDecision } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
@@ -48,14 +48,18 @@ export default React.memo(function DecisionResponse({
           checked={accept}
           label={i18n.application.decisions.response.accept}
           onChange={() => setAccept(true)}
+          id="decision-radio-accept"
         />
-        <DatePickerDeprecated
+        <DatePicker
           data-qa="decision-start-date-picker"
-          type="short"
           date={acceptDate}
-          onChange={setAcceptDate}
+          onChange={(date) => date && setAcceptDate(date)}
           minDate={decision.startDate.subMonths(1)}
           maxDate={decision.startDate.addWeeks(2)}
+          labels={i18n.common.datePicker}
+          errorTexts={i18n.validationErrors}
+          aria-labelledby="decision-radio-accept"
+          locale="fi"
         />
       </FixedSpaceRow>
       <Radio

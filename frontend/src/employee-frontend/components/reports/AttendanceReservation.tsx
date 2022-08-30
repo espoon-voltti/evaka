@@ -7,11 +7,13 @@ import styled, { DefaultTheme, useTheme } from 'styled-components'
 
 import { getDaycares } from 'employee-frontend/api/unit'
 import { Loading } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -41,9 +43,12 @@ export default React.memo(function AttendanceReservation() {
   const [filters, setFilters] = useState<AttendanceReservationReportFilters>(
     () => {
       const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)
+
       return {
-        start: defaultDate.startOfWeek(),
-        end: defaultDate.endOfWeek()
+        range: new FiniteDateRange(
+          defaultDate.startOfWeek(),
+          defaultDate.endOfWeek()
+        )
       }
     }
   )
@@ -81,6 +86,8 @@ export default React.memo(function AttendanceReservation() {
 
   const tableBody = getTableBody(theme, rowsByTime)
 
+  const periodAriaId = useUniqueId()
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -88,19 +95,22 @@ export default React.memo(function AttendanceReservation() {
         <Title size={1}>{i18n.reports.attendanceReservation.title}</Title>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.period}</FilterLabel>
+          <FilterLabel id={periodAriaId}>
+            {i18n.reports.common.period}
+          </FilterLabel>
           <FlexRow>
             <DateRangePicker
-              start={filters.start}
-              end={filters.end}
-              onChange={(start, end) => {
-                if (start !== null && end !== null) {
-                  setFilters({ ...filters, start, end })
+              default={filters.range}
+              onChange={(range) => {
+                if (range) {
+                  setFilters({ ...filters, range })
                 }
               }}
               locale={lang}
               errorTexts={i18n.validationErrors}
               required={true}
+              labels={i18n.common.datePicker}
+              aria-labelledby={periodAriaId}
             />
           </FlexRow>
         </FilterRow>
@@ -158,7 +168,7 @@ export default React.memo(function AttendanceReservation() {
               ]}
               filename={`${i18n.reports.attendanceReservation.title} ${
                 filteredUnits.find((unit) => unit.id === unitId)?.name ?? ''
-              } ${filters.start.formatIso()}-${filters.end.formatIso()}.csv`}
+              } ${filters.range.start.formatIso()}-${filters.range.end.formatIso()}.csv`}
             />
             <TableScrollable data-qa="report-attendance-reservation-table">
               <Thead sticky>

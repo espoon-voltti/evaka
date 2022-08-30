@@ -5,6 +5,7 @@
 import React, { ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-frontend/state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -36,6 +37,8 @@ function ToolbarAccordion({
   'data-qa': dataQa,
   open = false
 }: Props) {
+  const { i18n } = useTranslation()
+
   return (
     <section data-qa={dataQa} data-status={open ? 'open' : 'closed'}>
       <AccordionCollapseWrapper>
@@ -57,6 +60,7 @@ function ToolbarAccordion({
               icon={open ? faChevronUp : faChevronDown}
               onClick={onToggle}
               data-qa="collapsible-trigger"
+              aria-label={open ? i18n.common.close : i18n.common.open}
             />
           </Toolbar>
         </TitleRow>

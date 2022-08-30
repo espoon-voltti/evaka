@@ -6,13 +6,7 @@ import LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import {
-  Combobox,
-  DatePickerDeprecated,
-  Page,
-  Select,
-  TextInput
-} from '../../utils/page'
+import { Combobox, DatePicker, Page, Select, TextInput } from '../../utils/page'
 
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
@@ -82,14 +76,12 @@ export class ApplicationsReport {
   }
 
   async selectDateRangePickerDates(from: LocalDate, to: LocalDate) {
-    const fromInput = new DatePickerDeprecated(
+    const fromInput = new DatePicker(
       this.page.find('[data-qa="datepicker-from"]')
     )
-    const toInput = new DatePickerDeprecated(
-      this.page.find('[data-qa="datepicker-to"]')
-    )
-    await fromInput.fill(from.format())
-    await toInput.fill(to.format())
+    const toInput = new DatePicker(this.page.find('[data-qa="datepicker-to"]'))
+    await fromInput.fill(from)
+    await toInput.fill(to)
   }
 }
 

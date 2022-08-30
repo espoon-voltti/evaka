@@ -96,6 +96,11 @@ const sv: Translations = {
       ]
     },
     closeModal: 'Stäng popup',
+    datePicker: {
+      previousMonthLabel: 'Förra månaden',
+      nextMonthLabel: 'Nästa månaden',
+      calendarLabel: 'Kalender'
+    },
     close: 'Stäng'
   },
   header: {
@@ -316,7 +321,9 @@ const sv: Translations = {
         `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt. Vänligen gör nya bokningar från och med ${dateFrom}.`,
       title: 'Gör nya reservationer',
       ok: 'Klart!'
-    }
+    },
+    absentEnable: 'Markera som frånvarande',
+    absentDisable: 'Markera som närvarande'
   },
   messages: {
     inboxTitle: 'Inkorg',
@@ -1817,7 +1824,8 @@ const sv: Translations = {
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum'
+    unselectableDate: 'Ogiltigt datum',
+    inconsistentRange: 'Startdatumet måste vara före slutdatumet'
   },
   login: {
     failedModal: {

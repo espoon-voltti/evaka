@@ -541,8 +541,7 @@ export async function getAssistanceNeedDecisionUnreadCount(): Promise<
 }
 
 export interface AttendanceReservationReportFilters {
-  start: LocalDate
-  end: LocalDate
+  range: FiniteDateRange
 }
 
 export async function getAssistanceReservationReport(
@@ -554,8 +553,8 @@ export async function getAssistanceReservationReport(
       `/reports/attendance-reservation/${unitId}`,
       {
         params: {
-          start: filters.start.formatIso(),
-          end: filters.end.formatIso()
+          start: filters.range.start.formatIso(),
+          end: filters.range.end.formatIso()
         }
       }
     )

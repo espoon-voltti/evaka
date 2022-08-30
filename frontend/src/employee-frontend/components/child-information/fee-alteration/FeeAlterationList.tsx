@@ -78,10 +78,12 @@ export default React.memo(function FeeAlterationList({
                 <IconButton
                   icon={faPen}
                   onClick={() => toggleEditing(feeAlteration.id)}
+                  aria-label={i18n.common.edit}
                 />
                 <IconButton
                   icon={faTrash}
                   onClick={() => toggleDeleteModal(feeAlteration)}
+                  aria-label={i18n.common.remove}
                 />
               </FixedSpaceRow>
             </FixedSpaceRow>

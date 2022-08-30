@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -29,6 +29,9 @@ type CommonProps = {
 
 type Props = CommonProps & (NullableEnd | NonNullableEnd)
 
+/**
+ * @deprecated use DateRangePicker instead
+ */
 export default function DateRangeInput(props: Props) {
   const onChange = (start: LocalDate, end: LocalDate | undefined) => {
     if ('nullableEndDate' in props && props.nullableEndDate) {
@@ -142,20 +145,26 @@ function BaseDateRangeInput({
 
   return (
     <Container>
-      <DatePickerDeprecated
+      <DatePicker
         date={start}
-        onChange={setStartValue}
+        onChange={(date) => date && setStartValue(date)}
         data-qa="date-range-input-start-date"
-        type="short"
+        labels={i18n.common.datePicker}
+        errorTexts={i18n.validationErrors}
+        locale="fi"
+        aria-label={i18n.common.startDate}
       />
       <Gap size="xs" horizontal />
       -
       <Gap size="xs" horizontal />
-      <DatePickerDeprecated
-        date={end}
-        onChange={setEndValue}
+      <DatePicker
+        date={end ?? null}
+        onChange={(date) => setEndValue(date ?? undefined)}
         data-qa="date-range-input-end-date"
-        type="short"
+        labels={i18n.common.datePicker}
+        errorTexts={i18n.validationErrors}
+        locale="fi"
+        aria-label={i18n.common.startDate}
       />
     </Container>
   )

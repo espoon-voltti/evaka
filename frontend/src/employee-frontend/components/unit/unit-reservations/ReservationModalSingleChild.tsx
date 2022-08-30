@@ -15,14 +15,13 @@ import {
   TimeRanges,
   validateForm
 } from 'lib-common/reservations'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import DatePicker, {
-  DatePickerSpacer
-} from 'lib-components/molecules/date-picker/DatePicker'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -65,8 +64,10 @@ export default React.memo(function ReservationModalSingleChild({
 
   const [formData, setFormData] = useState<EmployeeReservationFormData>({
     selectedChildren: [child.id],
-    startDate: LocalDate.todayInSystemTz(),
-    endDate: null,
+    range: new FiniteDateRange(
+      LocalDate.todayInSystemTz(),
+      LocalDate.todayInSystemTz()
+    ),
     repetition: 'DAILY',
     dailyTimes: [
       {
@@ -99,23 +100,18 @@ export default React.memo(function ReservationModalSingleChild({
   const shiftCareRange = useMemo(() => {
     if (formData.repetition !== 'IRREGULAR') return
 
-    const parsedStartDate = formData.startDate
-    const parsedEndDate = formData.endDate
-
-    if (
-      !parsedStartDate ||
-      !parsedEndDate ||
-      parsedEndDate.isBefore(parsedStartDate)
-    ) {
+    if (!formData.range) {
       return
     }
 
-    return [...new FiniteDateRange(parsedStartDate, parsedEndDate).dates()]
-  }, [formData.repetition, formData.startDate, formData.endDate])
+    return [...formData.range.dates()]
+  }, [formData.repetition, formData.range])
 
   const includedDays = useMemo(() => {
     return [1, 2, 3, 4, 5, 6, 7].filter((day) => operationalDays.includes(day))
   }, [operationalDays])
+
+  const dateRangeAriaId = useUniqueId()
 
   return (
     <AsyncFormModal
@@ -159,51 +155,30 @@ export default React.memo(function ReservationModalSingleChild({
       />
 
       <H2>{i18n.unit.attendanceReservations.reservationModal.dateRange}</H2>
-      <Label>
+      <Label id={dateRangeAriaId}>
         {i18n.unit.attendanceReservations.reservationModal.dateRangeLabel}
       </Label>
-      <FixedSpaceRow>
-        <DatePicker
-          date={formData.startDate}
-          data-qa="reservation-start-date"
-          onChange={(date) => updateForm({ startDate: date })}
-          locale={lang}
-          isInvalidDate={(date) =>
-            reservableDates.includes(date)
-              ? null
-              : i18n.validationErrors.unselectableDate
-          }
-          minDate={reservableDates.start}
-          maxDate={reservableDates.end}
-          info={errorToInputInfo(
-            validationResult.errors?.startDate,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!showAllErrors}
-          errorTexts={i18n.validationErrors}
-        />
-        <DatePickerSpacer />
-        <DatePicker
-          date={formData.endDate}
-          data-qa="reservation-end-date"
-          onChange={(date) => updateForm({ endDate: date })}
-          locale={lang}
-          isInvalidDate={(date) =>
-            reservableDates.includes(date)
-              ? null
-              : i18n.validationErrors.unselectableDate
-          }
-          minDate={reservableDates.start}
-          maxDate={reservableDates.end}
-          info={errorToInputInfo(
-            validationResult.errors?.endDate,
-            i18n.validationErrors
-          )}
-          hideErrorsBeforeTouched={!showAllErrors}
-          initialMonth={LocalDate.todayInSystemTz()}
-          errorTexts={i18n.validationErrors}
-        />
-      </FixedSpaceRow>
+      <DateRangePicker
+        default={formData.range}
+        data-qa="reservation-range"
+        onChange={(range) => updateForm({ range })}
+        locale={lang}
+        isInvalidDate={(date) =>
+          reservableDates.includes(date)
+            ? null
+            : i18n.validationErrors.unselectableDate
+        }
+        minDate={reservableDates.start}
+        maxDate={reservableDates.end}
+        info={errorToInputInfo(
+          validationResult.errors?.range,
+          i18n.validationErrors
+        )}
+        hideErrorsBeforeTouched={!showAllErrors}
+        errorTexts={i18n.validationErrors}
+        labels={i18n.common.datePicker}
+        aria-labelledby={dateRangeAriaId}
+      />
       <Gap size="m" />
 
       <TimeInputGrid>
@@ -408,6 +383,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
               }
             ])
           }
+          aria-label={i18n.common.addNew}
         />
       ) : (
         <div />
@@ -457,6 +433,7 @@ const TimeInputs = React.memo(function TimeInputs(props: {
           <IconButton
             icon={faTrash}
             onClick={() => props.updateTimes([timeRange])}
+            aria-label={i18n.common.remove}
           />
         </>
       ) : null}

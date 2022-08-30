@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { QuestionOption } from 'lib-common/api-types/vasu'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Radio from 'lib-components/atoms/form/Radio'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Bold } from 'lib-components/typography'
-import { fasExclamationTriangle } from 'lib-icons'
 
 import QuestionInfo from '../QuestionInfo'
 
@@ -20,15 +20,6 @@ import type { RadioGroupSelectedValue } from './RadioGroupQuestion'
 export const OptionContainer = styled.div`
   display: flex;
   gap: 8px;
-`
-
-const Warning = styled.span`
-  color: ${(p) => p.theme.colors.accents.a2orangeDark};
-`
-
-const WarningIcon = styled(FontAwesomeIcon)`
-  margin-left: 8px;
-  margin-right: 8px;
 `
 
 interface Props {
@@ -48,42 +39,23 @@ export default React.memo(function RadioGroupQuestionOption({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const { colors } = useTheme()
-
-  const selectedStartDate =
-    (isSelected && selectedValue?.range?.start) || undefined
-  const selectedEndDate = (isSelected && selectedValue?.range?.end) || undefined
-
-  const [startDate, setStartDate] = useState(selectedStartDate ?? null)
-  const [endDate, setEndDate] = useState(selectedEndDate ?? null)
-
-  const rangeIsLinear =
-    startDate && endDate && startDate.isEqualOrBefore(endDate)
+  const [range, setRange] = useState(selectedValue?.range ?? undefined)
 
   useEffect(() => {
-    if (isSelected && startDate && endDate && rangeIsLinear) {
+    if (isSelected && range) {
       const rangeHasChanged =
-        !selectedValue?.range?.start.isEqual(startDate) ||
-        !selectedValue?.range?.end.isEqual(endDate)
+        !selectedValue?.range?.start.isEqual(range.start) ||
+        !selectedValue?.range?.end.isEqual(range.end)
       if (rangeHasChanged) {
         onChange({
-          range: {
-            start: startDate,
-            end: endDate
-          },
+          range,
           key: option.key
         })
       }
     }
-  }, [
-    startDate,
-    endDate,
-    onChange,
-    option,
-    selectedValue,
-    isSelected,
-    rangeIsLinear
-  ])
+  }, [range, onChange, option, selectedValue, isSelected])
+
+  const ariaId = useUniqueId()
 
   if (option.isIntervention) {
     return (
@@ -104,39 +76,26 @@ export default React.memo(function RadioGroupQuestionOption({
             : onChange({ key: option.key, range: null })
         }
         data-qa={`radio-group-date-question-option-${option.key}`}
+        id={ariaId}
       />
 
       {option.dateRange && (
-        <div>
-          <DatePicker
-            locale="fi"
-            date={isSelected ? startDate : null}
-            onChange={setStartDate}
-            maxDate={endDate ?? undefined}
-            data-qa={`radio-group-date-question-option-${option.key}-range-start`}
-            errorTexts={i18n.validationErrors}
-            hideErrorsBeforeTouched
-          />
-          <span>-</span>
-          <DatePicker
-            locale="fi"
-            date={isSelected ? endDate : null}
-            onChange={setEndDate}
-            minDate={startDate ?? undefined}
-            data-qa={`radio-group-date-question-option-${option.key}-range-end`}
-            errorTexts={i18n.validationErrors}
-            hideErrorsBeforeTouched
-          />
-          {rangeIsLinear === false && (
-            <Warning>
-              <WarningIcon
-                icon={fasExclamationTriangle}
-                color={colors.status.warning}
-              />
-              {i18n.validationErrors.dateRangeNotLinear}
-            </Warning>
-          )}
-        </div>
+        <DateRangePicker
+          locale="fi"
+          default={
+            isSelected && range
+              ? new FiniteDateRange(range.start, range.end)
+              : null
+          }
+          onChange={(range) =>
+            setRange(range ? { start: range.start, end: range.end } : undefined)
+          }
+          data-qa={`radio-group-date-question-option-${option.key}-range`}
+          errorTexts={i18n.validationErrors}
+          hideErrorsBeforeTouched
+          labels={i18n.common.datePicker}
+          aria-labelledby={ariaId}
+        />
       )}
     </OptionContainer>
   )

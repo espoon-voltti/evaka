@@ -35,6 +35,7 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         data-qa="period-picker-previous-month"
         icon={faChevronLeft}
         gray
+        aria-label={i18n.common.datePicker.previousMonthLabel}
       />
       <Gap horizontal size="L" />
       <PeriodTitle primary centered data-qa="period-picker-month">
@@ -46,6 +47,7 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         data-qa="period-picker-next-month"
         icon={faChevronRight}
         gray
+        aria-label={i18n.common.datePicker.nextMonthLabel}
       />
     </Container>
   )

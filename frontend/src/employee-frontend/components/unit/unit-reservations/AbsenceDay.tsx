@@ -28,7 +28,13 @@ export default React.memo(function AbsenceDay({ type, onDelete }: Props) {
         size="m"
       />
       <span>{i18n.absences.absenceTypesShort[type]}</span>
-      {onDelete && <IconButton icon={faTimes} onClick={onDelete} />}
+      {onDelete && (
+        <IconButton
+          icon={faTimes}
+          onClick={onDelete}
+          aria-label={i18n.common.remove}
+        />
+      )}
     </FixedSpaceRow>
   )
 })

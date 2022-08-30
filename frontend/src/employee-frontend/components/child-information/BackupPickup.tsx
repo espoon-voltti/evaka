@@ -225,11 +225,13 @@ function BackupPickup({ id }: BackupPickupProps) {
                             icon={faPen}
                             onClick={() => openEditBackupPickupModal(row)}
                             data-qa="edit-backup-pickup"
+                            aria-label={i18n.common.edit}
                           />
                           <IconButton
                             icon={faTrash}
                             onClick={() => openRemoveBackupPickupModal(row)}
                             data-qa="delete-backup-pickup"
+                            aria-label={i18n.common.remove}
                           />
                         </FixedSpaceRowAlignRight>
                       </Td>

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { I18nProvider } from '@react-aria/i18n'
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
 import {
@@ -19,6 +20,14 @@ const defaultState = {
   setLang: () => undefined
 }
 
+const navigatorLocale: string[] | undefined =
+  window.navigator.language?.split('-')
+
+const withNavigatorRegion = (language: string, fallback: string) =>
+  `${language}-${
+    navigatorLocale[0] === language ? navigatorLocale[1] || fallback : fallback
+  }`
+
 export const I18nContext = createContext<I18nState>(defaultState)
 
 export const I18nContextProvider = React.memo(function I18nContextProvider({
@@ -30,7 +39,21 @@ export const I18nContextProvider = React.memo(function I18nContextProvider({
 
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang])
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+  return (
+    <I18nContext.Provider value={value}>
+      <I18nProvider
+        locale={
+          {
+            fi: withNavigatorRegion('fi', 'FI'),
+            sv: withNavigatorRegion('sv', 'FI'),
+            en: withNavigatorRegion('en', 'GB')
+          }[lang]
+        }
+      >
+        {children}
+      </I18nProvider>
+    </I18nContext.Provider>
+  )
 })
 
 export const useTranslation = (): { i18n: Translations; lang: Lang } => {

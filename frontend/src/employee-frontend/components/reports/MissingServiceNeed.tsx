@@ -15,10 +15,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import {
-  DatePickerClearableDeprecated,
-  DatePickerDeprecated
-} from 'lib-components/molecules/DatePickerDeprecated'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import {
   getMissingServiceNeedReport,
@@ -78,18 +75,29 @@ export default React.memo(function MissingServiceNeed() {
         <Title size={1}>{i18n.reports.missingServiceNeed.title}</Title>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePickerDeprecated
+          <FilterLabel id="start-date">
+            {i18n.reports.common.startDate}
+          </FilterLabel>
+          <DatePicker
             date={filters.startDate}
-            onChange={(startDate) => setFilters({ ...filters, startDate })}
+            onChange={(startDate) =>
+              startDate && setFilters({ ...filters, startDate })
+            }
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby="start-date"
           />
         </FilterRow>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerClearableDeprecated
+          <FilterLabel id="end-date">{i18n.reports.common.endDate}</FilterLabel>
+          <DatePicker
             date={filters.endDate}
             onChange={(endDate) => setFilters({ ...filters, endDate })}
-            onCleared={() => setFilters({ ...filters, endDate: null })}
+            locale="fi"
+            errorTexts={i18n.validationErrors}
+            labels={i18n.common.datePicker}
+            aria-labelledby="end-date"
           />
         </FilterRow>
 

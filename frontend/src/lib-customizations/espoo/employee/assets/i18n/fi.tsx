@@ -176,7 +176,16 @@ export const fi = {
     nb: 'Huom',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     closeModal: 'Sulje ponnahdusikkuna',
-    close: 'Sulje'
+    datePicker: {
+      previousMonthLabel: 'Edellinen kuukausi',
+      nextMonthLabel: 'Seuraava kuukausi',
+      calendarLabel: 'Kalenteri'
+    },
+    close: 'Sulje',
+    open: 'Avaa',
+    copy: 'Kopioi',
+    startDate: 'Aloituspäivä',
+    endDate: 'Lopetuspäivä'
   },
   header: {
     applications: 'Hakemukset',
@@ -1947,7 +1956,9 @@ export const fi = {
       },
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
-      inOtherUnit: 'Muussa yksikössä'
+      inOtherUnit: 'Muussa yksikössä',
+      nextWeek: 'Seuraava viikko',
+      previousWeek: 'Edellinen viikko'
     },
     staffAttendance: {
       startTime: 'tulo',
@@ -1973,7 +1984,10 @@ export const fi = {
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
       personCount: 'Henkilökuntaa paikalla',
-      personCountAbbr: 'hlö'
+      personCountAbbr: 'hlö',
+      unlinkOvernight: 'Erota yön yli menevä läsnäolo',
+      previousDay: 'Edellinen päivä',
+      nextDay: 'Seuraava päivä'
     },
     error: {
       placement: {
@@ -3148,8 +3162,8 @@ export const fi = {
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
-      openingDate: 'Alkaen pp.kk.vvvv',
-      closingDate: 'Päättyen pp.kk.vvvv',
+      openingDate: 'Alkaen',
+      closingDate: 'Päättyen',
       area: 'Valitse alue',
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
@@ -3466,7 +3480,9 @@ export const fi = {
         'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
       TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa',
       TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
-    }
+    },
+    moveUp: 'Siirrä ylemmäs',
+    moveDown: 'Siirrä alemmas'
   },
   settings: {
     title: 'Asetukset',
@@ -3540,7 +3556,8 @@ export const fi = {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
+    unselectableDate: 'Päivä ei ole sallittu',
+    inconsistentRange: 'Alkamispäivän tulee olla ennen lopetuspäivää'
   },
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',

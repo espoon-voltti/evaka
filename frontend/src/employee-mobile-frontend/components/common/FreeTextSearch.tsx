@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-mobile-frontend/state/i18n'
 import { Child as AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { defaultMargins } from 'lib-components/white-space'
@@ -84,6 +85,7 @@ export default function FreeTextSearch({
   searchResults
 }: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
+  const { i18n } = useTranslation()
 
   return (
     <SearchInputContainer>
@@ -97,7 +99,12 @@ export default function FreeTextSearch({
         showClose={searchResults.length > 1}
       />
       {searchResults.length > 1 && (
-        <CustomIconButton icon={faTimes} onClick={clear} size="m" />
+        <CustomIconButton
+          icon={faTimes}
+          onClick={clear}
+          size="m"
+          aria-label={i18n.common.clear}
+        />
       )}
     </SearchInputContainer>
   )

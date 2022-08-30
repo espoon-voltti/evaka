@@ -71,6 +71,7 @@ export default React.memo(function DailyServiceTimesRow({
                   ev.stopPropagation()
                   onEdit(true)
                 }}
+                aria-label={i18n.common.edit}
               />
             )}
             {permittedActions.includes('DELETE') && (
@@ -81,6 +82,7 @@ export default React.memo(function DailyServiceTimesRow({
                   ev.stopPropagation()
                   onDelete()
                 }}
+                aria-label={i18n.common.remove}
               />
             )}
           </FixedSpaceRow>
@@ -109,6 +111,7 @@ export default React.memo(function DailyServiceTimesRow({
               icon={isOpen ? faChevronUp : faChevronDown}
               onClick={toggleOpen}
               data-qa="daily-service-times-row-opener"
+              aria-label={isOpen ? i18n.common.close : i18n.common.open}
             />
           </FixedSpaceRow>
         </Td>

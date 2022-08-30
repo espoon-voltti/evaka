@@ -13,7 +13,7 @@ import {
   Checkable,
   Checkbox,
   Combobox,
-  DatePickerDeprecated,
+  DatePicker,
   Page,
   Radio,
   Select,
@@ -142,10 +142,10 @@ export class ValueDecisionsPage {
   #valueDecisionDetailsPage = this.page.find(
     '[data-qa="voucher-value-decision-page"]'
   )
-  readonly #fromDateInput = new DatePickerDeprecated(
+  readonly #fromDateInput = new DatePicker(
     this.page.find('[data-qa="value-decisions-start-date"]')
   )
-  readonly #toDateInput = new DatePickerDeprecated(
+  readonly #toDateInput = new DatePicker(
     this.page.find('[data-qa="value-decisions-end-date"]')
   )
   readonly #dateCheckbox = new Checkbox(
@@ -182,8 +182,8 @@ export class ValueDecisionsPage {
   }
 
   async setDates(from: LocalDate, to: LocalDate) {
-    await this.#toDateInput.fill(to.format())
-    await this.#fromDateInput.fill(from.format())
+    await this.#toDateInput.fill(to)
+    await this.#fromDateInput.fill(from)
   }
 
   async startDateWithinRange() {

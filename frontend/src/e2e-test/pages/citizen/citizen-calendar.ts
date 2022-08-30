@@ -7,7 +7,14 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
-import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  DateRangePicker,
+  Element,
+  Page,
+  Select,
+  TextInput
+} from '../../utils/page'
 
 interface BaseReservation {
   childIds: UUID[]
@@ -183,8 +190,7 @@ export default class CitizenCalendarPage {
 class ReservationsModal {
   constructor(private readonly page: Page) {}
 
-  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  #rangeInput = new DateRangePicker(this.page.find('[data-qa="date-range"]'))
   #repetitionSelect = new Select(this.page.find('[data-qa="repetition"]'))
   #dailyStartTimeInput = new TextInput(
     this.page.find('[data-qa="daily-start-time-0"]')
@@ -223,8 +229,7 @@ class ReservationsModal {
       }
     }
 
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#rangeInput.fill(dateRange)
     await this.#dailyStartTimeInput.fill(startTime)
     await this.#dailyEndTimeInput.fill(endTime)
 
@@ -245,8 +250,7 @@ class ReservationsModal {
     dateRange: FiniteDateRange,
     weeklyTimes: ({ startTime: string; endTime: string } | { absence: true })[]
   ) {
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#rangeInput.fill(dateRange)
     await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
     await weeklyTimes.reduce(async (promise, weeklyTime, index) => {
       await promise
@@ -269,8 +273,7 @@ class AbsencesModal {
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
 
-  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  #rangeInput = new DateRangePicker(this.page.find('[data-qa="date-range"]'))
   #absenceChip = (type: string) =>
     new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
@@ -283,8 +286,7 @@ class AbsencesModal {
   ) {
     await this.deselectChildren(3)
     await this.#childCheckbox(child.id).click()
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#rangeInput.fill(dateRange)
     await this.#absenceChip(absenceType).click()
 
     await this.#modalSendButton.click()
@@ -301,11 +303,17 @@ class AbsencesModal {
   }
 
   async assertStartDate(text: string) {
-    await waitUntilEqual(() => this.#startDateInput.inputValue, text)
+    await waitUntilEqual(
+      async () => (await this.#rangeInput.getStart()).format(),
+      text
+    )
   }
 
   async assertEndDate(text: string) {
-    await waitUntilEqual(() => this.#endDateInput.inputValue, text)
+    await waitUntilEqual(
+      async () => (await this.#rangeInput.getEnd()).format(),
+      text
+    )
   }
 }
 

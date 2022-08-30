@@ -4,15 +4,18 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useButton } from '@react-aria/button'
+import { AriaButtonProps } from '@react-types/button'
 import classNames from 'classnames'
+import omit from 'lodash/omit'
 import React from 'react'
 import styled from 'styled-components'
 
 import { BaseProps } from '../../utils'
 import { IconSize } from '../icon-size'
 
-interface ButtonProps {
-  size: IconSize | undefined
+export interface ButtonProps {
+  size?: IconSize | undefined
   gray?: boolean
   white?: boolean
   color?: string
@@ -86,9 +89,10 @@ const StyledButton = styled.button<ButtonProps>`
   cursor: pointer;
   padding: 0;
   margin: -6px;
+  -webkit-tap-highlight-color: transparent;
 
   &:focus {
-    border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    box-shadow: 0 0 0 2px ${(p) => p.theme.colors.main.m2Focus};
   }
 
   .icon-wrapper {
@@ -118,7 +122,8 @@ const StyledButton = styled.button<ButtonProps>`
         : p.theme.colors.main.m2Active};
   }
 
-  &.disabled {
+  &.disabled,
+  &:disabled {
     cursor: not-allowed;
 
     .icon-wrapper {
@@ -127,43 +132,39 @@ const StyledButton = styled.button<ButtonProps>`
   }
 `
 
-export interface IconButtonProps extends BaseProps {
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
-  icon: IconDefinition
-  altText?: string
-  disabled?: boolean
-  size?: IconSize
-  gray?: boolean
-  white?: boolean
-  'data-qa'?: string
-}
+export type IconButtonProps = AriaButtonProps<'button'> & {
+  children?: React.ReactNode
+} & ButtonProps &
+  React.ButtonHTMLAttributes<HTMLButtonElement> &
+  BaseProps & {
+    icon: IconDefinition
+  } & (
+    | {
+        'aria-label': string
+      }
+    | {
+        'aria-hidden': string | true
+      }
+  )
 
 export default React.memo(function IconButton({
-  className,
-  'data-qa': dataQa,
-  icon,
-  altText,
-  onClick,
   disabled,
-  size,
-  gray,
-  white,
+  icon,
   color,
   ...props
 }: IconButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const ref = React.useRef<HTMLButtonElement>(null)
+  const { buttonProps } = useButton(props, ref)
+
   return (
     <StyledButton
       type="button"
-      className={classNames(className, { disabled })}
-      data-qa={dataQa}
-      onClick={onClick}
       disabled={disabled}
-      aria-label={altText}
-      size={size}
-      gray={gray}
-      white={white}
+      {...omit(props, ['onPress'])}
+      {...buttonProps}
+      className={classNames(props.className, { disabled })}
+      ref={ref}
       color={color}
-      {...props}
     >
       <div className="icon-wrapper">
         <FontAwesomeIcon icon={icon} />

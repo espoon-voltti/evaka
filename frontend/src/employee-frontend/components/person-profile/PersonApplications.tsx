@@ -100,7 +100,7 @@ export default React.memo(function PersonApplications({ id, open }: Props) {
                         <IconButton
                           onClick={() => undefined}
                           icon={faFileAlt}
-                          altText={i18n.personProfile.application.open}
+                          aria-label={i18n.personProfile.application.open}
                         />
                       </Link>
                     </Td>

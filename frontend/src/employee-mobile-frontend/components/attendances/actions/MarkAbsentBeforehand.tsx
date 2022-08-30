@@ -251,6 +251,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                                     setUiMode('confirmDelete')
                                   }}
                                   data-qa="delete-absence-period"
+                                  aria-label={i18n.common.remove}
                                 />
                               </AbsenceRow>
                             )
@@ -268,6 +269,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                                     setUiMode('confirmDelete')
                                   }}
                                   data-qa="delete-absence-period"
+                                  aria-label={i18n.common.remove}
                                 />
                               </AbsenceRow>
                             )

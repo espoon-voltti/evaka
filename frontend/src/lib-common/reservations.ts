@@ -16,8 +16,7 @@ export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
 
 export interface ReservationFormData {
   selectedChildren: UUID[]
-  startDate: LocalDate | null
-  endDate: LocalDate | null
+  range: FiniteDateRange | null
   repetition: Repetition
   dailyTimes: TimeRanges | 'day-off'
   weeklyTimes: Array<TimeRanges | 'absent' | 'day-off' | undefined>
@@ -51,14 +50,9 @@ export type ValidationResult =
   | { errors: ReservationErrors }
   | { errors: undefined; requestPayload: DailyReservationRequest[] }
 
-export type ReservationFormDataForValidation = Omit<
-  ReservationFormData,
-  'endDate' | 'startDate'
-> & { endDate: LocalDate | null; startDate: LocalDate | null }
-
 export function validateForm(
   reservableDays: FiniteDateRange[],
-  { startDate, endDate, ...formData }: ReservationFormDataForValidation
+  { range, ...formData }: ReservationFormData
 ): ValidationResult {
   const errors: ReservationErrors = {}
 
@@ -66,18 +60,10 @@ export function validateForm(
     errors['selectedChildren'] = 'required'
   }
 
-  if (startDate === null) {
-    errors['startDate'] = 'required'
-  } else if (!reservableDays.some((r) => r.includes(startDate))) {
-    errors['startDate'] = 'validDate'
-  }
-
-  if (endDate === null) {
-    errors['endDate'] = 'required'
-  } else if (!reservableDays.some((r) => r.includes(endDate))) {
-    errors['endDate'] = 'validDate'
-  } else if (startDate && endDate.isBefore(startDate)) {
-    errors['endDate'] = 'dateTooEarly'
+  if (!range) {
+    errors.range = 'required'
+  } else if (!reservableDays.some((r) => r.includes(range.start))) {
+    errors.range = 'validDate'
   }
 
   if (formData.repetition === 'DAILY') {
@@ -111,8 +97,7 @@ export function validateForm(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const dateRange = new FiniteDateRange(startDate!, endDate!)
-  const dates = [...dateRange.dates()]
+  const dates = [...range!.dates()]
 
   return {
     errors: undefined,
@@ -140,7 +125,7 @@ export function validateForm(
             return Object.entries(formData.irregularTimes)
               .filter(([isoDate]) => {
                 const date = LocalDate.tryParseIso(isoDate)
-                return date && dateRange.includes(date)
+                return date && range?.includes(date)
               })
               .map(([isoDate, times]) => ({
                 childId,

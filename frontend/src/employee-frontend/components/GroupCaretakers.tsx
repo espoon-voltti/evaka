@@ -138,10 +138,12 @@ export default React.memo(function GroupCaretakers() {
                               setModalOpen(true)
                             }}
                             icon={faPen}
+                            aria-label={i18n.common.edit}
                           />
                           <IconButton
                             onClick={() => setRowToDelete(row)}
                             icon={faTrash}
+                            aria-label={i18n.common.remove}
                           />
                         </FixedSpaceRow>
                       </div>

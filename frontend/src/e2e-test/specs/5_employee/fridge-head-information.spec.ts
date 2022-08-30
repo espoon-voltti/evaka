@@ -97,7 +97,7 @@ describe('Employee - Head of family details', () => {
 
     await children.addChild(
       fixtures.personFixtureChildZeroYearOld.firstName,
-      '01.01.2020'
+      LocalDate.parseIso(fixtures.personFixtureChildZeroYearOld.dateOfBirth)
     )
 
     await children.verifyChildAge(0)
@@ -114,14 +114,14 @@ describe('Employee - Head of family details', () => {
   test('Retroactive fee decisions can start before the minimum fee decision date', async () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const children = await guardianInformation.openCollapsible('children')
-    await children.addChild(child.firstName, '01.01.2020')
+    await children.addChild(child.firstName, LocalDate.of(2020, 1, 1))
 
     await childInformation.navigateToChild(child.id)
     const placements = await childInformation.openCollapsible('placements')
     await placements.createNewPlacement({
       unitName: fixtures.daycareFixture.name,
-      startDate: '01.01.2020',
-      endDate: '31.07.2020'
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 7, 31)
     })
     await runPendingAsyncJobs()
 
@@ -135,7 +135,7 @@ describe('Employee - Head of family details', () => {
       status: 'Luonnos'
     })
 
-    await feeDecisions.createRetroactiveFeeDecisions('01.01.2020')
+    await feeDecisions.createRetroactiveFeeDecisions(LocalDate.of(2020, 1, 1))
     await feeDecisions.assertFeeDecision(0, {
       startDate: '01.01.2020',
       endDate: '31.07.2020',
@@ -148,7 +148,10 @@ describe('Employee - Head of family details', () => {
     const partnersSection = await guardianInformation.openCollapsible(
       'partners'
     )
-    await partnersSection.addPartner(fridgePartner.firstName, '01.01.2020')
+    await partnersSection.addPartner(
+      fridgePartner.firstName,
+      LocalDate.of(2020, 1, 1)
+    )
 
     const familyOverview = await guardianInformation.openCollapsible(
       'familyOverview'

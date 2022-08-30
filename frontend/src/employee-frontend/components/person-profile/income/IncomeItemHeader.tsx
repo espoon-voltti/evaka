@@ -5,6 +5,7 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-frontend/state/i18n'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -56,6 +57,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
   startEditing,
   startDeleting
 }: Props) {
+  const { i18n } = useTranslation()
   const elRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           }}
           disabled={!editable}
           data-qa="edit-income-item"
+          aria-label={i18n.common.edit}
         />
         <Button
           icon={faTrash}
@@ -88,12 +91,14 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           }}
           disabled={!editable}
           data-qa="delete-income-item"
+          aria-label={i18n.common.remove}
         />
         <ToggleButton
           icon={isOpen ? faChevronUp : faChevronDown}
           onClick={toggle}
           disabled={!toggleable}
           data-qa="toggle-income-item"
+          aria-label={isOpen ? i18n.common.close : i18n.common.open}
         />
       </Row>
     </Container>

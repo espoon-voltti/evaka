@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../utils'
-import { Page, Radio, TextInput } from '../../utils/page'
+import { DatePicker, Page, Radio } from '../../utils/page'
 
 export class CitizenChildrenPage {
   constructor(private readonly page: Page) {}
@@ -85,9 +85,9 @@ export class CitizenChildPage {
   }
 
   async fillTerminationDate(date: LocalDate, nth = 0) {
-    await new TextInput(
+    await new DatePicker(
       this.page.findAllByDataQa('termination-date').nth(nth)
-    ).fill(date.format())
+    ).fill(date)
   }
 
   async submitTermination(nth = 0) {

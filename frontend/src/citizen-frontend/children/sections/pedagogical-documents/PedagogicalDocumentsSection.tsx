@@ -191,7 +191,7 @@ const ItemDescription = React.memo(function ItemDescription({
               icon={expanded ? faChevronUp : faChevronDown}
               aria-expanded={expanded}
               aria-controls={ariaId}
-              altText={
+              aria-label={
                 expanded
                   ? t.children.pedagogicalDocuments.collapseReadMore
                   : t.children.pedagogicalDocuments.readMore
@@ -278,14 +278,14 @@ const Pagination = React.memo(function Pagination({
     <FixedSpaceRow alignItems="center" justifyContent="flex-end">
       <IconButton
         icon={faChevronLeft}
-        altText={t.children.pedagogicalDocuments.previousPage}
+        aria-label={t.children.pedagogicalDocuments.previousPage}
         disabled={page === 0}
         onClick={() => setPage(page - 1)}
       />
       <div>{t.children.pedagogicalDocuments.pageCount(page + 1, total)}</div>
       <IconButton
         icon={faChevronRight}
-        altText={t.children.pedagogicalDocuments.nextPage}
+        aria-label={t.children.pedagogicalDocuments.nextPage}
         disabled={page + 1 >= total}
         onClick={() => setPage(page + 1)}
       />

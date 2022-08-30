@@ -24,6 +24,7 @@ export interface Props {
   offsetTopDesktop?: string
   children?: React.ReactNode
   dataQa?: string
+  closeLabel: string
 }
 
 export default React.memo(function Toast({
@@ -32,7 +33,8 @@ export default React.memo(function Toast({
   onClick,
   onClose,
   children,
-  dataQa
+  dataQa,
+  closeLabel
 }: Props) {
   return (
     <ToastRoot role="dialog" showPointer={!!onClick} data-qa={dataQa}>
@@ -45,7 +47,11 @@ export default React.memo(function Toast({
         />
         <ToastContent onClick={onClick}>{children}</ToastContent>
         {onClose && (
-          <CloseButton icon={faTimes} onClick={onClose} altText="Close" />
+          <CloseButton
+            icon={faTimes}
+            onClick={onClose}
+            aria-label={closeLabel}
+          />
         )}
       </FixedSpaceRow>
     </ToastRoot>

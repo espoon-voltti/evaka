@@ -202,6 +202,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                   onClick={props.onStartEdit}
                   size="s"
                   data-qa="edit-note"
+                  aria-label={i18n.common.edit}
                 />
               )}
               {props.deletable && (
@@ -210,6 +211,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                   onClick={() => setConfirmingDelete(true)}
                   size="s"
                   data-qa="delete-note"
+                  aria-label={i18n.common.remove}
                 />
               )}
             </FixedSpaceRow>

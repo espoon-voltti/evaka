@@ -84,6 +84,7 @@ export default React.memo(function VasuTemplatesPage() {
                         <IconButton
                           icon={faPen}
                           onClick={() => setTemplateToEdit(template)}
+                          aria-label={i18n.common.edit}
                         />
                         <IconButton
                           icon={faTrash}
@@ -93,6 +94,7 @@ export default React.memo(function VasuTemplatesPage() {
                               loadTemplates()
                             )
                           }}
+                          aria-label={i18n.common.remove}
                         />
                       </FixedSpaceRow>
                     </Td>

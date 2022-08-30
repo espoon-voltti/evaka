@@ -98,6 +98,11 @@ const en: Translations = {
       ]
     },
     closeModal: 'Close popup',
+    datePicker: {
+      previousMonthLabel: 'Previous month',
+      nextMonthLabel: 'Next month',
+      calendarLabel: 'Calendar'
+    },
     close: 'Close'
   },
   header: {
@@ -318,7 +323,9 @@ const en: Translations = {
         `A new daily service time has been updated to your early childhood education contract. Please make new reservations starting from ${dateFrom}.`,
       title: 'Make new reservations',
       ok: 'OK'
-    }
+    },
+    absentEnable: 'Mark as absent',
+    absentDisable: 'Mark as present'
   },
   messages: {
     inboxTitle: 'Inbox',
@@ -1861,7 +1868,8 @@ const en: Translations = {
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
-    unselectableDate: 'Invalid date'
+    unselectableDate: 'Invalid date',
+    inconsistentRange: 'Start date must be before end date'
   },
   login: {
     failedModal: {

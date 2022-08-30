@@ -374,6 +374,7 @@ export default React.memo(function Group({
             size="L"
             gray
             data-qa="collapsible-trigger"
+            aria-label={open ? i18n.common.close : i18n.common.open}
           />
           {!open ? (
             <>

@@ -113,6 +113,7 @@ export default React.memo(function AttendanceChildPage() {
           onClick={() => navigate(-1)}
           icon={faArrowLeft}
           data-qa="back-btn"
+          aria-label={i18n.common.back}
         />
         {renderResult(childInfoResult, ({ child, group, hasGroupNote }) =>
           child ? (

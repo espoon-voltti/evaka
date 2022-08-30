@@ -5,6 +5,7 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { useTranslation } from 'employee-mobile-frontend/state/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -65,6 +66,8 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
   const [menuOpen, setMenuOpen] = useState(false)
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
+  const { i18n } = useTranslation()
+
   return (
     <UserContainer data-qa="top-bar-user">
       {renderResult(user, (u) =>
@@ -76,6 +79,7 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
                 white
                 onClick={toggleMenu}
                 data-qa="close-user-menu-btn"
+                aria-label={i18n.common.close}
               />
               <UserMenu
                 name={userNames.name}

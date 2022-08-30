@@ -159,18 +159,18 @@ export default React.memo(function FamilyContacts({
                             value={row.phone ?? ''}
                             onChange={(value) => {
                               setDirty(true)
-                              setResult((prev) => {
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.phone = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
+                              setResult((prev) =>
+                                prev.map((data) =>
+                                  data.map((oldRow) =>
+                                    oldRow.id === row.id
+                                      ? {
+                                          ...oldRow,
+                                          phone: value
+                                        }
+                                      : oldRow
+                                  )
+                                )
+                              )
                             }}
                           />
                         </span>

@@ -66,10 +66,6 @@ button.inline {
   z-index: unset;
 }
 
-.react-datepicker-popper {
-  z-index: 200;
-}
-
 .separator {
   border-bottom: 1px dashed #c4c4c4;
   margin: 20px 0;

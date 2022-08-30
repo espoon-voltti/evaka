@@ -5,6 +5,7 @@
 import { addDays, subDays } from 'date-fns'
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -278,18 +279,15 @@ describe('Child assistance need decisions for employees', () => {
 describe('Child assistance need voucher coefficients for employees', () => {
   async function createVoucherCoefficient(
     coefficient: string,
-    validityPeriodStart: string,
-    validityPeriodEnd: string
+    validityPeriod: FiniteDateRange
   ) {
     await assistanceNeeds.createAssistanceNeedVoucherCoefficientBtn.click()
     const form = assistanceNeeds.assistanceNeedVoucherCoefficientForm(
       assistanceNeeds.createAssistanceNeedVoucherCoefficientForm
     )
     await form.coefficientInput.type(coefficient)
-    await form.validityPeriod.startInput.clear()
-    await form.validityPeriod.startInput.type(validityPeriodStart)
-    await form.validityPeriod.endInput.clear()
-    await form.validityPeriod.endInput.type(validityPeriodEnd)
+    await form.validityPeriod.clear()
+    await form.validityPeriod.fill(validityPeriod)
     await form.saveBtn.click()
   }
 
@@ -301,7 +299,10 @@ describe('Child assistance need voucher coefficients for employees', () => {
       ).data
     )
 
-    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
+    await createVoucherCoefficient(
+      '4,3',
+      new FiniteDateRange(LocalDate.of(2021, 2, 4), LocalDate.of(2021, 9, 1))
+    )
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -322,8 +323,14 @@ describe('Child assistance need voucher coefficients for employees', () => {
       ).data
     )
 
-    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
-    await createVoucherCoefficient('1,2', '16.06.2021', '05.10.2021')
+    await createVoucherCoefficient(
+      '4,3',
+      new FiniteDateRange(LocalDate.of(2021, 2, 4), LocalDate.of(2021, 9, 1))
+    )
+    await createVoucherCoefficient(
+      '1,2',
+      new FiniteDateRange(LocalDate.of(2021, 6, 16), LocalDate.of(2021, 10, 5))
+    )
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -354,7 +361,10 @@ describe('Child assistance need voucher coefficients for employees', () => {
       ).data
     )
 
-    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
+    await createVoucherCoefficient(
+      '4,3',
+      new FiniteDateRange(LocalDate.of(2021, 2, 4), LocalDate.of(2021, 9, 1))
+    )
 
     await assistanceNeeds
       .assistanceNeedVoucherCoefficientActions(0)
@@ -364,10 +374,10 @@ describe('Child assistance need voucher coefficients for employees', () => {
     )
     await form.coefficientInput.clear()
     await form.coefficientInput.type('9,8')
-    await form.validityPeriod.startInput.clear()
-    await form.validityPeriod.startInput.type('10.02.2021')
-    await form.validityPeriod.endInput.clear()
-    await form.validityPeriod.endInput.type('21.11.2021')
+    await form.validityPeriod.clear()
+    await form.validityPeriod.fill(
+      new FiniteDateRange(LocalDate.of(2021, 2, 10), LocalDate.of(2021, 11, 21))
+    )
     await form.saveBtn.click()
 
     await waitUntilEqual(
@@ -389,8 +399,17 @@ describe('Child assistance need voucher coefficients for employees', () => {
       ).data
     )
 
-    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
-    await createVoucherCoefficient('1,9', '29.11.2021', '30.12.2021')
+    await createVoucherCoefficient(
+      '4,3',
+      new FiniteDateRange(LocalDate.of(2021, 2, 4), LocalDate.of(2021, 9, 1))
+    )
+    await createVoucherCoefficient(
+      '1,9',
+      new FiniteDateRange(
+        LocalDate.of(2021, 11, 29),
+        LocalDate.of(2021, 12, 30)
+      )
+    )
 
     await waitUntilEqual(
       async () => await assistanceNeeds.assistanceNeedVoucherCoefficients(0),
@@ -410,10 +429,10 @@ describe('Child assistance need voucher coefficients for employees', () => {
     )
     await form.coefficientInput.clear()
     await form.coefficientInput.type('9,8')
-    await form.validityPeriod.startInput.clear()
-    await form.validityPeriod.startInput.type('20.08.2021')
-    await form.validityPeriod.endInput.clear()
-    await form.validityPeriod.endInput.type('24.11.2021')
+    await form.validityPeriod.clear()
+    await form.validityPeriod.fill(
+      new FiniteDateRange(LocalDate.of(2021, 8, 20), LocalDate.of(2021, 11, 24))
+    )
     await form.saveBtn.click()
 
     await waitUntilEqual(
@@ -445,7 +464,10 @@ describe('Child assistance need voucher coefficients for employees', () => {
       ).data
     )
 
-    await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
+    await createVoucherCoefficient(
+      '4,3',
+      new FiniteDateRange(LocalDate.of(2021, 2, 4), LocalDate.of(2021, 9, 1))
+    )
 
     await assistanceNeeds
       .assistanceNeedVoucherCoefficientActions(0)

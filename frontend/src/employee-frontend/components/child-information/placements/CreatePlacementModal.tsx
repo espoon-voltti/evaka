@@ -14,8 +14,8 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
 import { placementTypes } from 'lib-customizations/employee'
@@ -162,24 +162,38 @@ function CreatePlacementModal({ childId, reload }: Props) {
         </section>
 
         <section>
-          <div className="bold">{i18n.common.form.startDate}</div>
+          <div className="bold" id="start-date">
+            {i18n.common.form.startDate}
+          </div>
 
-          <DatePickerDeprecated
+          <DatePicker
             date={form.startDate}
-            onChange={(startDate) => setForm({ ...form, startDate })}
+            onChange={(startDate) =>
+              startDate && setForm({ ...form, startDate })
+            }
             data-qa="create-placement-start-date"
-            type="full-width"
+            fullWidth
+            labels={i18n.common.datePicker}
+            errorTexts={i18n.validationErrors}
+            locale="fi"
+            aria-labelledby="start-date"
           />
         </section>
 
         <section>
-          <div className="bold">{i18n.common.form.endDate}</div>
+          <div className="bold" id="end-date">
+            {i18n.common.form.endDate}
+          </div>
 
-          <DatePickerDeprecated
+          <DatePicker
             date={form.endDate}
-            onChange={(endDate) => setForm({ ...form, endDate })}
+            onChange={(endDate) => endDate && setForm({ ...form, endDate })}
             data-qa="create-placement-end-date"
-            type="full-width"
+            fullWidth
+            labels={i18n.common.datePicker}
+            errorTexts={i18n.validationErrors}
+            locale="fi"
+            aria-labelledby="end-date"
           />
         </section>
 

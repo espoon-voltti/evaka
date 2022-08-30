@@ -16,7 +16,7 @@ export default React.memo(function MobileReloadNotification() {
   return (
     <ReloadNotification
       apiVersion={apiVersion}
-      i18n={i18n.reloadNotification}
+      i18n={{ ...i18n.reloadNotification, closeLabel: i18n.common.close }}
     />
   )
 })

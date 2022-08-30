@@ -134,12 +134,12 @@ export default React.memo(function PreferredStartSubSection({
             closeLabel={t.common.close}
             inlineChildren
           >
-            <Label htmlFor={labelId}>
+            <Label id={labelId}>
               {t.applications.editor.serviceNeed.startDate.label[type]} *
             </Label>
           </ExpandingInfo>
         ) : (
-          <Label htmlFor={labelId}>
+          <Label id={labelId}>
             {t.applications.editor.serviceNeed.startDate.label[type]} *
           </Label>
         )}
@@ -169,9 +169,10 @@ export default React.memo(function PreferredStartSubSection({
           minDate={minDate}
           maxDate={maxDate}
           data-qa="preferredStartDate-input"
-          id={labelId}
           required={true}
           errorTexts={t.validationErrors}
+          labels={t.common.datePicker}
+          aria-labelledby={labelId}
         />
 
         {showDaycare4MonthWarning() ? (
