@@ -1429,9 +1429,10 @@ const sv: Translations = {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            Om dina inkomster överskrider inkomstgränsen enligt
-            familjestorleken, godkänn den högsta avgiften för småbarnspedagogik.
-            I detta fall behöver du inte alls reda ut dina inkomster.
+            Om dina inkomster överskrider inkomstgränsen för den högsta avgiften
+            enligt familjestorleken, godkänn den högsta avgiften för
+            småbarnspedagogik. I detta fall behöver du inte alls reda ut dina
+            inkomster.
           </li>
           <li>
             Om din familj inkluderar en annan vuxen måste de också skicka in en
