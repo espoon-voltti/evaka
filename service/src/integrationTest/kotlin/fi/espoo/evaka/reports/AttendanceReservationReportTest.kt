@@ -430,9 +430,21 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `backup care is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
+            val groupId = tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    daycareId = testDaycare2.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = date,
+                    endDate = date
+                ),
+                groupId = groupId,
                 startDate = date,
                 endDate = date
             )

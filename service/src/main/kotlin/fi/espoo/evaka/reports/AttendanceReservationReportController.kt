@@ -52,7 +52,7 @@ private fun Database.Read.getAttendanceReservationReport(
     val sql = """
         WITH reservations AS (
           SELECT
-            coalesce(bc.group_id, dgp.daycare_group_id) AS group_id,
+            CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
             ar.date,
             ar.start_time,
             ar.end_time,
