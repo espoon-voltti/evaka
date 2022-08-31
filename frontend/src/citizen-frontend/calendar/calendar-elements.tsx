@@ -123,6 +123,8 @@ const NoReservationNote = styled.span`
 `
 
 const GroupedElementText = styled.div`
+  word-break: break-word;
+
   &.missing-reservation {
     color: ${(p) => p.theme.colors.accents.a2orangeDark};
   }
