@@ -1414,9 +1414,9 @@ export default {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            Jos tulosi ylittävät perhekoon mukaisen tulorajan, hyväksy korkein
-            varhaiskasvatusmaksu. Tällöin sinun ei tarvitse selvittää tulojasi
-            lainkaan.
+            Jos tulosi ylittävät perhekoon mukaisen korkeimman maksun tulorajan,
+            hyväksy korkein varhaiskasvatusmaksu. Tällöin sinun ei tarvitse
+            selvittää tulojasi lainkaan.
           </li>
           <li>
             Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava

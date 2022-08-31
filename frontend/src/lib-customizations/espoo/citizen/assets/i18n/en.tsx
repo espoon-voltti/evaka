@@ -1476,9 +1476,10 @@ const en: Translations = {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            If your income exceeds the income threshold according to family
-            size, accept the highest early childhood education fee. In this
-            case, you do not need to submit an income statement.
+            If your income exceeds the highest payment income threshold
+            according to family size, accept the highest early childhood
+            education fee. In this case, you do not need to submit an income
+            statement.
           </li>
           <li>
             If there&apos;s another adult in your family, they must also submit
