@@ -125,6 +125,9 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
+        fun createQuery(fragment: QueryFragment): Query = Query(handle.createQuery(fragment.sql)).apply {
+            addBindings(fragment.bindings.asSequence().map { it.toPair() })
+        }
 
         fun setLockTimeout(duration: Duration) = handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
         fun setStatementTimeout(duration: Duration) = handle.execute("SET LOCAL statement_timeout = '${duration.toMillis()}ms'")
@@ -195,6 +198,18 @@ class Database(private val jdbi: Jdbi) {
 
         fun <T> registerColumnMapper(type: QualifiedType<T>, mapper: ColumnMapper<T>): This {
             raw.registerColumnMapper(type, mapper)
+            return self()
+        }
+
+        fun addBinding(name: String, binding: Binding<*>): This {
+            raw.bindByType(name, binding.value, binding.type)
+            return self()
+        }
+
+        fun addBindings(bindings: Sequence<Pair<String, Binding<*>>>): This {
+            for ((name, binding) in bindings) {
+                raw.bindByType(name, binding.value, binding.type)
+            }
             return self()
         }
 
@@ -280,4 +295,22 @@ internal data class TransactionHooks(val afterCommit: LinkedHashSet<() -> Unit> 
 
 internal data class ThreadId(val id: Long = Thread.currentThread().id) {
     fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
+}
+
+data class Binding<T>(val value: T, val type: QualifiedType<T>) {
+    companion object {
+        inline fun <reified T> of(value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()) =
+            Binding(value, createQualifiedType(*qualifiers))
+    }
+}
+
+data class QueryFragment(
+    @Language("sql")
+    val sql: String,
+    val bindings: Map<String, Binding<out Any?>> = emptyMap()
+) {
+    inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): QueryFragment =
+        bind(name, Binding.of(value, qualifiers))
+
+    fun <T> bind(name: String, binding: Binding<T>): QueryFragment = copy(bindings = bindings + (name to binding))
 }

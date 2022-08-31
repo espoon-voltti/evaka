@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -43,7 +44,7 @@ import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias GetUnitRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
+private typealias GetUnitRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
 data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) : ActionRuleParams<HasUnitRole> {
     init {
@@ -53,7 +54,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private data class Query<T : Id<*>>(val getUnitRoles: GetUnitRoles<T>) :
+    private data class Query<T : Id<*>>(val getUnitRoles: GetUnitRoles) :
         DatabaseActionRule.Query<T, HasUnitRole> {
         override fun execute(
             tx: Database.Read,
@@ -61,7 +62,20 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
             now: HelsinkiDateTime,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getUnitRoles(tx, user, now, targets)
+            is AuthenticatedUser.Employee -> getUnitRoles(user, now).let { subquery ->
+                tx.createQuery(
+                    QueryFragment(
+                        """
+                    SELECT id, role, unit_features
+                    FROM (${subquery.sql}) fragment
+                    WHERE id = ANY(:ids)
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                )
+                    .bind("ids", targets.map { it.raw })
+                    .mapTo<IdRoleFeatures>()
+            }
                 .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
                     acc[target]?.plusAssign(result)
                     acc
@@ -110,8 +124,8 @@ WHERE employee_id = :userId
 
     fun inPlacementPlanUnitOfApplication() = DatabaseActionRule(
         this,
-        Query<ApplicationId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<ApplicationId> { user, _ ->
+            QueryFragment(
                 """
 SELECT av.id, role, daycare.enabled_pilot_features AS unit_features
 FROM application_view av
@@ -119,79 +133,66 @@ JOIN placement_plan pp ON pp.application_id = av.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
-AND av.id = ANY(:ids)
                 """.trimIndent()
-            )
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
+            ).bind("userId", user.id)
         }
     )
 
     fun inPlacementUnitOfChildOfAssistanceAction() = DatabaseActionRule(
         this,
-        Query<AssistanceActionId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<AssistanceActionId> { user, now, ->
+            QueryFragment(
                 """
 SELECT aa.id, role, daycare.enabled_pilot_features AS unit_features
 FROM assistance_action aa
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND aa.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfAssistanceNeed() = DatabaseActionRule(
         this,
-        Query<AssistanceNeedId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<AssistanceNeedId> { user, now ->
+            QueryFragment(
                 """
 SELECT an.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need an
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND an.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfAssistanceNeedDecision() = DatabaseActionRule(
         this,
-        Query<AssistanceNeedDecisionId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<AssistanceNeedDecisionId> { user, now ->
+            QueryFragment(
                 """
 SELECT ad.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND ad.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement() = DatabaseActionRule(
         this,
-        Query<AssistanceNeedVoucherCoefficientId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<AssistanceNeedVoucherCoefficientId> { user, now ->
+            QueryFragment(
                 """
 SELECT avc.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need_voucher_coefficient avc
@@ -203,158 +204,134 @@ WHERE employee_id = :userId AND EXISTS(
     WHERE p.child_id = acl.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
-AND avc.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfBackupCare() = DatabaseActionRule(
         this,
-        Query<BackupCareId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<BackupCareId> { user, now ->
+            QueryFragment(
                 """
 SELECT bc.id, role, enabled_pilot_features AS unit_features
 FROM backup_care bc
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND bc.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfBackupPickup() = DatabaseActionRule(
         this,
-        Query<BackupPickupId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<BackupPickupId> { user, now ->
+            QueryFragment(
                 """
 SELECT bp.id, role, enabled_pilot_features AS unit_features
 FROM backup_pickup bp
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND bp.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<ChildId> { user, now ->
+            QueryFragment(
                 """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_daycare_acl(:today) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND child_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<ChildDailyNoteId> { user, now ->
+            QueryFragment(
                 """
 SELECT cdn.id, role, enabled_pilot_features AS unit_features
 FROM child_daily_note cdn
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<ChildStickyNoteId> { user, now ->
+            QueryFragment(
                 """
 SELECT csn.id, role, enabled_pilot_features AS unit_features
 FROM child_sticky_note csn
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<ChildImageId> { user, now ->
+            QueryFragment(
                 """
 SELECT img.id, role, enabled_pilot_features AS unit_features
 FROM child_images img
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND img.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfDecision() = DatabaseActionRule(
         this,
-        Query<DecisionId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<DecisionId> { user, _ ->
+            QueryFragment(
                 """
 SELECT decision.id, role, daycare.enabled_pilot_features AS unit_features
 FROM decision
 JOIN daycare_acl acl ON decision.unit_id = acl.daycare_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND decision.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfParentship() = DatabaseActionRule(
         this,
-        Query<ParentshipId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<ParentshipId> { user, _ ->
+            QueryFragment(
 
                 """
 SELECT fridge_child.id, role, enabled_pilot_features AS unit_features
@@ -362,19 +339,16 @@ FROM fridge_child
 JOIN person_acl_view acl ON fridge_child.head_of_child = acl.person_id OR fridge_child.child_id = acl.person_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND fridge_child.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfPartnership() = DatabaseActionRule(
         this,
-        Query<PartnershipId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<PartnershipId> { user, _ ->
+            QueryFragment(
 
                 """
 SELECT fridge_partner.partnership_id AS id, role, enabled_pilot_features AS unit_features
@@ -382,39 +356,33 @@ FROM fridge_partner
 JOIN person_acl_view acl ON fridge_partner.person_id = acl.person_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND partnership_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfPedagogicalDocument() = DatabaseActionRule(
         this,
-        Query<PedagogicalDocumentId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<PedagogicalDocumentId> { user, now ->
+            QueryFragment(
                 """
 SELECT pd.id, role, enabled_pilot_features AS unit_features
 FROM pedagogical_document pd
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND pd.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<AttachmentId> { user, now ->
+            QueryFragment(
                 """
 SELECT attachment.id, role, enabled_pilot_features AS unit_features
 FROM attachment
@@ -422,57 +390,48 @@ JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfPerson() = DatabaseActionRule(
         this,
-        Query<PersonId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<PersonId> { user, _ ->
+            QueryFragment(
                 """
 SELECT person_id AS id, role, enabled_pilot_features AS unit_features
 FROM person_acl_view acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND person_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfPlacement() = DatabaseActionRule(
         this,
-        Query<PlacementId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<PlacementId> { user, _ ->
+            QueryFragment(
                 """
 SELECT placement.id, role, enabled_pilot_features AS unit_features
 FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND placement.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfServiceNeed() = DatabaseActionRule(
         this,
-        Query<ServiceNeedId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<ServiceNeedId> { user, _ ->
+            QueryFragment(
                 """
 SELECT service_need.id, role, enabled_pilot_features AS unit_features
 FROM service_need
@@ -480,118 +439,100 @@ JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND service_need.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfVasuDocument() = DatabaseActionRule(
         this,
-        Query<VasuDocumentId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<VasuDocumentId> { user, now ->
+            QueryFragment(
                 """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND curriculum_document.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfDailyServiceTime() = DatabaseActionRule(
         this,
-        Query<DailyServiceTimesId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<DailyServiceTimesId> { user, now ->
+            QueryFragment(
                 """
 SELECT dst.id, role, enabled_pilot_features AS unit_features
 FROM daily_service_time dst
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND dst.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildOfFutureDailyServiceTime() = DatabaseActionRule(
         this,
-        Query<DailyServiceTimesId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<DailyServiceTimesId> { user, now ->
+            QueryFragment(
                 """
 SELECT dst.id, role, enabled_pilot_features AS unit_features
 FROM daily_service_time dst
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-  AND dst.id = ANY(:ids)
   AND lower(dst.validity_period) > current_date
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPreferredUnitOfApplication() = DatabaseActionRule(
         this,
-        Query<ApplicationId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<ApplicationId> { user, _ ->
+            QueryFragment(
                 """
 SELECT av.id, role, enabled_pilot_features AS unit_features
 FROM application_view av
 JOIN daycare_acl acl ON acl.daycare_id = ANY (av.preferredunits)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND av.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfGroup() = DatabaseActionRule(
         this,
-        Query<GroupId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<GroupId> { user, _ ->
+            QueryFragment(
                 """
 SELECT g.id, role, enabled_pilot_features AS unit_features
 FROM daycare_group g
 JOIN daycare_acl acl USING (daycare_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND g.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfGroupNote() = DatabaseActionRule(
         this,
-        Query<GroupNoteId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<GroupNoteId> { user, _ ->
+            QueryFragment(
                 """
 SELECT gn.id, role, enabled_pilot_features AS unit_features
 FROM group_note gn
@@ -599,19 +540,16 @@ JOIN daycare_group g ON gn.group_id = g.id
 JOIN daycare_acl acl USING (daycare_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND gn.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfGroupPlacement() = DatabaseActionRule(
         this,
-        Query<GroupPlacementId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<GroupPlacementId> { user, _ ->
+            QueryFragment(
                 """
 SELECT daycare_group_placement.id, role, enabled_pilot_features AS unit_features
 FROM placement
@@ -619,75 +557,63 @@ JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND daycare_group_placement.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfMobileDevice() = DatabaseActionRule(
         this,
-        Query<MobileDeviceId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<MobileDeviceId> { user, _ ->
+            QueryFragment(
                 """
 SELECT d.id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
 JOIN mobile_device d ON acl.daycare_id = d.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE acl.employee_id = :userId
-AND d.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfPairing() = DatabaseActionRule(
         this,
-        Query<PairingId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<PairingId> { user, _ ->
+            QueryFragment(
                 """
 SELECT p.id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
 JOIN pairing p ON acl.daycare_id = p.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE acl.employee_id = :userId
-AND p.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnit() = DatabaseActionRule(
         this,
-        Query<DaycareId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<DaycareId> { user, _ ->
+            QueryFragment(
                 """
 SELECT daycare_id AS id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND daycare_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfApplicationAttachment() = DatabaseActionRule(
         this,
-        Query<AttachmentId> { tx, user, _, ids ->
-            tx.createQuery(
+        Query<AttachmentId> { user, _ ->
+            QueryFragment(
                 """
 SELECT attachment.id, role, enabled_pilot_features AS unit_features
 FROM attachment
@@ -696,19 +622,16 @@ JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
 JOIN daycare_acl ON daycare.id = daycare_acl.daycare_id
 WHERE employee_id = :userId
 AND attachment.type = 'EXTENDED_CARE'
-AND attachment.id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inPlacementUnitOfChildWithServiceVoucherPlacement() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, user, now, ids ->
-            tx.createQuery(
+        Query<ChildId> { user, now ->
+            QueryFragment(
                 """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_daycare_acl(:today) acl
@@ -719,19 +642,16 @@ WHERE employee_id = :userId AND EXISTS(
     WHERE p.child_id = acl.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
-AND child_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 
     fun inUnitOfCalendarEvent() = DatabaseActionRule(
         this,
-        Query<CalendarEventId> { tx, user, now, ids ->
+        Query<CalendarEventId> { user, now ->
             tx.createQuery(
                 """
 SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features
@@ -739,13 +659,10 @@ FROM calendar_event_attendee cea
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND cea.calendar_event_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
                 .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
         }
     )
 }
