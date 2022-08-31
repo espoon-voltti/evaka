@@ -109,7 +109,12 @@ class DaycareController(
                     DaycareResponse(
                         daycare,
                         groups.map {
-                            DaycareGroupResponse(id = it.id, name = it.name, permittedActions = permittedActions[it.id]!!)
+                            DaycareGroupResponse(
+                                id = it.id,
+                                name = it.name,
+                                endDate = it.endDate,
+                                permittedActions = permittedActions[it.id]!!
+                            )
                         },
                         accessControl.getPermittedActions(tx, user, daycareId)
                     )
@@ -329,7 +334,12 @@ class DaycareController(
         val caretakers: List<CaretakerAmount>
     )
 
-    data class DaycareGroupResponse(val id: GroupId, val name: String, val permittedActions: Set<Action.Group>)
+    data class DaycareGroupResponse(
+        val id: GroupId,
+        val name: String,
+        val endDate: LocalDate?,
+        val permittedActions: Set<Action.Group>
+    )
 
     data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
 

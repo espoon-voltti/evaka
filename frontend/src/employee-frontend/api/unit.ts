@@ -79,6 +79,7 @@ export async function getDaycares(): Promise<Result<Unit[]>> {
 export interface DaycareGroupSummary {
   id: UUID
   name: string
+  endDate: LocalDate | null
   permittedActions: Set<Action.Group>
 }
 
@@ -94,9 +95,10 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .then(({ data }) =>
       Success.of({
         daycare: convertUnitJson(data.daycare),
-        groups: data.groups.map(({ id, name, permittedActions }) => ({
+        groups: data.groups.map(({ id, name, endDate, permittedActions }) => ({
           id,
           name,
+          endDate: LocalDate.parseNullableIso(endDate),
           permittedActions: new Set(permittedActions)
         })),
         permittedActions: new Set(data.permittedActions)

@@ -67,7 +67,7 @@ data class DaycareFields(
     }
 }
 
-data class DaycareGroupSummary(val id: GroupId, val name: String)
+data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
 private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL
@@ -326,7 +326,7 @@ fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? = createQue
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> = createQuery(
     """
-SELECT id, name
+SELECT id, name, end_date
 FROM daycare_group
 WHERE daycare_id = :daycareId
     """
