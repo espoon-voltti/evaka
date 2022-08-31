@@ -27,6 +27,7 @@ import {
   fasEnvelope
 } from 'lib-icons'
 
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { ApplicationsContext } from '../applications/state'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
@@ -279,28 +280,30 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <MenuContainer>
-      {children.getOrElse([]).map((child) => (
-        <DropDownLink
-          key={child.id}
-          data-qa={`children-menu-${child.id}`}
-          to={`/children/${child.id}`}
-          onClick={closeMenu}
-        >
-          {child.preferredName || child.firstName} {child.lastName} {lock}
-          {unreadChildNotifications[child.id] ? (
-            <CircledChar
-              aria-label={`${unreadChildNotifications[child.id]} ${
-                t.header.notifications
-              }`}
-              data-qa="sub-nav-menu-decisions-notification-count"
-            >
-              {unreadChildNotifications[child.id]}
-            </CircledChar>
-          ) : null}
-        </DropDownLink>
-      ))}
-    </MenuContainer>
+    <ModalAccessibilityWrapper>
+      <MenuContainer>
+        {children.getOrElse([]).map((child) => (
+          <DropDownLink
+            key={child.id}
+            data-qa={`children-menu-${child.id}`}
+            to={`/children/${child.id}`}
+            onClick={closeMenu}
+          >
+            {child.preferredName || child.firstName} {child.lastName} {lock}
+            {unreadChildNotifications[child.id] ? (
+              <CircledChar
+                aria-label={`${unreadChildNotifications[child.id]} ${
+                  t.header.notifications
+                }`}
+                data-qa="sub-nav-menu-decisions-notification-count"
+              >
+                {unreadChildNotifications[child.id]}
+              </CircledChar>
+            ) : null}
+          </DropDownLink>
+        ))}
+      </MenuContainer>
+    </ModalAccessibilityWrapper>
   )
 })
 
@@ -319,73 +322,75 @@ const Menu = React.memo(function Menu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <MenuContainer>
-      <FixedSpaceRow spacing="xs" justifyContent="flex-end">
-        {langs.map((l) => (
-          <SelectionChip
-            key={l}
-            text={t.header.langMobile[l]}
-            selected={lang === l}
-            onChange={() => setLang(l)}
-          />
-        ))}
-      </FixedSpaceRow>
-      <Separator />
-      <DropDownLink
-        data-qa="sub-nav-menu-applications"
-        to="/applications"
-        onClick={closeMenu}
-      >
-        {t.header.nav.applications} {lock}
-      </DropDownLink>
-      <DropDownLink
-        data-qa="sub-nav-menu-decisions"
-        to="/decisions"
-        onClick={closeMenu}
-      >
-        {t.header.nav.decisions} {lock}
-        {unreadDecisions ? (
-          <CircledChar
-            aria-label={`${unreadDecisions} ${t.header.notifications}`}
-            data-qa="sub-nav-menu-decisions-notification-count"
-          >
-            {unreadDecisions}
-          </CircledChar>
-        ) : null}
-      </DropDownLink>
-      <DropDownLink
-        data-qa="sub-nav-menu-income"
-        to="/income"
-        onClick={closeMenu}
-      >
-        {t.header.nav.income} {lock}
-      </DropDownLink>
-      <Separator />
-      <DropDownLink
-        data-qa="sub-nav-menu-personal-details"
-        to="/personal-details"
-        onClick={closeMenu}
-      >
-        {t.header.nav.personalDetails}
-        {lock}
-        {showUserAttentionIndicator(user) && (
-          <CircledChar
-            aria-label={t.header.attention}
-            data-qa="personal-details-notification"
-          >
-            !
-          </CircledChar>
-        )}
-      </DropDownLink>
-      <DropDownLink
-        key="sub-nav-menu-logout"
-        to={getLogoutUri(user)}
-        onClick={() => (location.href = getLogoutUri(user))}
-      >
-        {t.header.logout}
-        <FontAwesomeIcon icon={farSignOut} />
-      </DropDownLink>
-    </MenuContainer>
+    <ModalAccessibilityWrapper>
+      <MenuContainer>
+        <FixedSpaceRow spacing="xs" justifyContent="flex-end">
+          {langs.map((l) => (
+            <SelectionChip
+              key={l}
+              text={t.header.langMobile[l]}
+              selected={lang === l}
+              onChange={() => setLang(l)}
+            />
+          ))}
+        </FixedSpaceRow>
+        <Separator />
+        <DropDownLink
+          data-qa="sub-nav-menu-applications"
+          to="/applications"
+          onClick={closeMenu}
+        >
+          {t.header.nav.applications} {lock}
+        </DropDownLink>
+        <DropDownLink
+          data-qa="sub-nav-menu-decisions"
+          to="/decisions"
+          onClick={closeMenu}
+        >
+          {t.header.nav.decisions} {lock}
+          {unreadDecisions ? (
+            <CircledChar
+              aria-label={`${unreadDecisions} ${t.header.notifications}`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadDecisions}
+            </CircledChar>
+          ) : null}
+        </DropDownLink>
+        <DropDownLink
+          data-qa="sub-nav-menu-income"
+          to="/income"
+          onClick={closeMenu}
+        >
+          {t.header.nav.income} {lock}
+        </DropDownLink>
+        <Separator />
+        <DropDownLink
+          data-qa="sub-nav-menu-personal-details"
+          to="/personal-details"
+          onClick={closeMenu}
+        >
+          {t.header.nav.personalDetails}
+          {lock}
+          {showUserAttentionIndicator(user) && (
+            <CircledChar
+              aria-label={t.header.attention}
+              data-qa="personal-details-notification"
+            >
+              !
+            </CircledChar>
+          )}
+        </DropDownLink>
+        <DropDownLink
+          key="sub-nav-menu-logout"
+          to={getLogoutUri(user)}
+          onClick={() => (location.href = getLogoutUri(user))}
+        >
+          {t.header.logout}
+          <FontAwesomeIcon icon={farSignOut} />
+        </DropDownLink>
+      </MenuContainer>
+    </ModalAccessibilityWrapper>
   )
 })
 
