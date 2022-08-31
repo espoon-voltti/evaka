@@ -84,6 +84,8 @@ export interface AttendanceReservationReportRow {
   childCountOver3: number
   childCountUnder3: number
   dateTime: HelsinkiDateTime
+  groupId: UUID | null
+  groupName: string | null
   staffCountRequired: number
 }
 

@@ -2765,6 +2765,7 @@ export const fi = {
       title: 'Päiväkohtaiset lapsen tulo- ja lähtöajat',
       description:
         'Raportti lasten varauksista ja henkilökunnan määrän tarpeesta',
+      ungrouped: 'Ryhmää odottavat lapset',
       capacityFactor: 'Lask',
       staffCountRequired: 'Hlökunta'
     },

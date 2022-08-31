@@ -7,14 +7,18 @@ package fi.espoo.evaka.reports
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.LocalTimeRange
+import fi.espoo.evaka.children.Group
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -180,6 +184,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -188,6 +194,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -239,6 +247,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -247,6 +257,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.1
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -302,6 +314,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -310,6 +324,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -318,6 +334,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 0)),
                     childCountUnder3 = 0,
                     childCountOver3 = 1,
@@ -326,6 +344,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.1
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 30)),
                     childCountUnder3 = 0,
                     childCountOver3 = 1,
@@ -380,6 +400,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -388,6 +410,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 1.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -406,9 +430,21 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `backup care is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
+            val groupId = tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    daycareId = testDaycare2.id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = date,
+                    endDate = date
+                ),
+                groupId = groupId,
                 startDate = date,
                 endDate = date
             )
@@ -440,6 +476,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -448,6 +486,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -492,6 +532,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
         val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(30)).map {
             AttendanceReservationReportRow(
+                groupId = null,
+                groupName = null,
                 HelsinkiDateTime.of(
                     LocalDate.of(2020, 5, 28),
                     it,
@@ -540,6 +582,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
         val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(30)).map {
             AttendanceReservationReportRow(
+                groupId = null,
+                groupName = null,
                 HelsinkiDateTime.of(
                     LocalDate.of(2020, 5, 28),
                     it,
@@ -590,6 +634,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -598,6 +644,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 0.3
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 1,
                     childCountOver3 = 0,
@@ -655,6 +703,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             addExpectedRow(
                 it,
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
                     childCountUnder3 = 6,
                     childCountOver3 = 2,
@@ -663,6 +713,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     staffCountRequired = 1.8
                 ),
                 AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
                     HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
                     childCountUnder3 = 6,
                     childCountOver3 = 2,
@@ -676,20 +728,314 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
+
+    @Test
+    fun `group ids filter works`() {
+        val date = LocalDate.of(2020, 5, 28)
+        val group1 = db.transaction { tx ->
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    daycareId = testDaycare.id,
+                    name = "Testiläiset 1"
+                )
+            ).let { Group(it, "Testiläiset 1") }
+        }
+        val group2 = db.transaction { tx ->
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    daycareId = testDaycare.id,
+                    name = "Testiläiset 2"
+                )
+            ).let { Group(it, "Testiläiset 2") }
+        }
+        db.transaction { tx ->
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                ),
+                groupId = group1.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = tx.insertTestPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                ),
+                groupId = group1.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_2.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = tx.insertTestPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                ),
+                groupId = group2.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_3.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+            tx.insertTestPlacement(
+                childId = testChild_4.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_4.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf(
+                "start" to date.format(ISO_DATE),
+                "end" to date.format(ISO_DATE),
+                "groupIds" to "${group1.id},${group2.id}"
+            )
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected = createEmptyReport(date, date, listOf(group1, group2)).also {
+            addExpectedRow(
+                it,
+                AttendanceReservationReportRow(
+                    groupId = group1.id,
+                    groupName = group1.name,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 1,
+                    childCount = 2,
+                    capacityFactor = 2.75,
+                    staffCountRequired = 0.4
+                ),
+                AttendanceReservationReportRow(
+                    groupId = group1.id,
+                    groupName = group1.name,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 1,
+                    childCount = 2,
+                    capacityFactor = 2.75,
+                    staffCountRequired = 0.4
+                ),
+                AttendanceReservationReportRow(
+                    groupId = group2.id,
+                    groupName = group2.name,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    groupId = group2.id,
+                    groupName = group2.name,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            )
+        }
+
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyInAnyOrderElementsOf(expected.values)
+    }
+
+    @Test
+    fun `group placement without group ids filter works`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            val placementId = tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            val groupId = tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    daycareId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected = createEmptyReport(date, date).also {
+            addExpectedRow(
+                it,
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            )
+        }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
+
+    @Test
+    fun `empty group ids works`() {
+        val date = LocalDate.of(2020, 5, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = date,
+                endDate = date
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 15),
+                    endTime = LocalTime.of(8, 16),
+                    createdBy = admin.evakaUserId
+                )
+            )
+        }
+
+        val (_, res, result) = http.get(
+            "/reports/attendance-reservation/${testDaycare.id}",
+            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE), "groupIds" to "")
+        )
+            .asUser(admin)
+            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected = createEmptyReport(date, date).also {
+            addExpectedRow(
+                it,
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                ),
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            )
+        }
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get()).containsExactlyElementsOf(expected.values)
+    }
 }
+
+data class RowKey(val group: Group?, val dateTime: HelsinkiDateTime)
 
 private fun createEmptyReport(
     start: LocalDate,
     end: LocalDate,
+    groups: List<Group> = emptyList(),
     operationDays: Set<DayOfWeek> = setOf(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
-): MutableMap<HelsinkiDateTime, AttendanceReservationReportRow> {
+): MutableMap<RowKey, AttendanceReservationReportRow> {
     val startDateTime = HelsinkiDateTime.of(start, LocalTime.MIN)
     val endDateTime = HelsinkiDateTime.of(end, LocalTime.MAX)
-    val times = mutableMapOf<HelsinkiDateTime, AttendanceReservationReportRow>()
+    val times = mutableMapOf<RowKey, AttendanceReservationReportRow>()
     var time = startDateTime
     while (time < endDateTime) {
         if (operationDays.contains(time.dayOfWeek)) {
-            times[time] = AttendanceReservationReportRow(time, 0, 0, 0, 0.0, 0.0)
+            if (groups.isEmpty())
+                times[RowKey(null, time)] = AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0)
+            else
+                groups.forEach { group ->
+                    times[RowKey(group, time)] =
+                        AttendanceReservationReportRow(group.id, group.name, time, 0, 0, 0, 0.0, 0.0)
+                }
         }
         time = time.plusMinutes(30)
     }
@@ -697,8 +1043,8 @@ private fun createEmptyReport(
 }
 
 private fun addExpectedRow(
-    map: MutableMap<HelsinkiDateTime, AttendanceReservationReportRow>,
+    map: MutableMap<RowKey, AttendanceReservationReportRow>,
     vararg rows: AttendanceReservationReportRow
 ) {
-    rows.forEach { row -> map[row.dateTime] = row }
+    rows.forEach { row -> map[RowKey(row.groupId?.let { Group(it, row.groupName!!) }, row.dateTime)] = row }
 }
