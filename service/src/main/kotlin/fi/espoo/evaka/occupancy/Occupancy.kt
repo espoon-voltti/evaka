@@ -5,6 +5,7 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
@@ -98,13 +99,14 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     aclAuth: AclAuthorization,
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
+    unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null,
     speculatedPlacements: List<Placement> = listOf()
 ): List<DailyOccupancyValues<UnitKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitId) { row ->
+    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
         Caretakers(
             UnitKey(
                 areaId = row.mapColumn("area_id"),
@@ -135,12 +137,13 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     aclAuth: AclAuthorization,
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
+    unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitId) { row ->
+    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
         Caretakers(
             UnitGroupKey(
                 areaId = row.mapColumn("area_id"),
@@ -213,6 +216,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     aclAuth: AclAuthorization,
     areaId: AreaId?,
     providerType: ProviderType?,
+    unitTypes: Set<CareType>?,
     unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
@@ -271,12 +275,14 @@ AND (:areaId::uuid IS NULL OR u.care_area_id = :areaId)
 AND (:unitId::uuid IS NULL OR u.id = :unitId)
 AND (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
 AND (:providerType::unit_provider_type IS NULL OR u.provider_type = :providerType::unit_provider_type)
+AND (:unitTypes::care_types[] IS NULL OR u.type && :unitTypes::care_types[])
 GROUP BY $groupBy, t
 """
 
     return createQuery(query)
         .bind("areaId", areaId)
         .bind("providerType", providerType)
+        .bind("unitTypes", unitTypes?.ifEmpty { null })
         .bind("unitId", unitId)
         .bind("unitIds", aclAuth.ids)
         .bind("start", period.start)

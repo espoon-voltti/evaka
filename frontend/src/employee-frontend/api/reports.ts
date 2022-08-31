@@ -4,7 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ApplicationsReportRow,
@@ -266,6 +266,7 @@ export interface OccupancyReportFilters {
   careAreaId?: UUID | null // null = unselected, undefined = select all
   type: OccupancyReportType
   providerType?: ProviderType
+  unitTypes: CareType[]
 }
 
 export type OccupancyReportRow =
@@ -281,7 +282,8 @@ export async function getOccupanciesReport(
       {
         params: {
           ...filters,
-          type: filters.type.split('_')[1]
+          type: filters.type.split('_')[1],
+          unitTypes: filters.unitTypes.join(',')
         }
       }
     )
