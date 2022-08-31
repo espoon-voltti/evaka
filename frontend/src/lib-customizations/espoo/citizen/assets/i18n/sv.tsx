@@ -1910,7 +1910,7 @@ const sv: Translations = {
             smallGroup: 'Smågrupp',
             groupAssistant: 'Assistent för gruppen',
             childAssistant: 'Assistent för barnet',
-            additionalStaff: 'Ökade personalresurser'
+            additionalStaff: 'Ökad personalresurs i gruppen'
           },
           careMotivation: 'Vårdinriktade stödformer och motivering',
           serviceOptions: {
@@ -1941,15 +1941,18 @@ const sv: Translations = {
             enhancedAssistance: 'Intensifierat stöd',
             specialAssistance: 'Särskilt stöd'
           },
-          startDate: 'Beslutet träder i kraft',
+          startDate: 'Beslutet angående är i kraft',
           endDate: 'Beslutet i kraft till',
           endDateServices: 'Beslutet angående stödtjänster i kraft till',
           selectedUnit: 'Enheten där stödet ges',
-          unitMayChange: 'Enheten kan ändras under semestertider',
+          unitMayChange:
+            'Enheten och stödformer kan ändras under semestertider',
           motivationForDecision: 'Motivering av beslut',
+          legalInstructions: 'Tillämpade bestämmelser',
+          legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap',
           jurisdiction: 'Befogenhet',
           jurisdictionText:
-            'Delegationsbeslut om beslutanderätten för tjänsteinnehavarna av personalen vid den finskspråkiga småbarnspedagogiken och tillväxt- och lärandegrenen A del 3 § 3 pkt',
+            'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',
           personsResponsible: 'Ansvarspersoner',
           preparator: 'Beredare av beslutet',
           decisionMaker: 'Beslutsfattare',
@@ -1985,7 +1988,7 @@ const sv: Translations = {
               <P>
                 Regionförvaltningsverket i Västra och Inre Finlands huvudkontor
                 <br />
-                Besöksadress: Wolffskavägen 35, Vasa
+                Besöksadress: Bangårdsvägen 9, 00520 Helsingfors
                 <br />
                 Öppet: mån–fre kl. 8.00–16.15
                 <br />

@@ -30,13 +30,13 @@ export const sv = {
         smallGroup: 'Smågrupp',
         groupAssistant: 'Assistent för gruppen',
         childAssistant: 'Assistent för barnet',
-        additionalStaff: 'Ökade personalresurser'
+        additionalStaff: 'Ökad personalresurs i gruppen'
       },
       structuralMotivationPlaceholder:
         'Beskrivning och motivering av de valda strukturella stödformerna',
       careMotivation: 'Vårdinriktade stödformer och motivering',
       careMotivationInfo:
-        'Anteckna de vårdformer som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, träning och relaterade hjälpmedel. Förklara varför barnet får dessa former av stöd.',
+        'Anteckna de vårdformer som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, rörelse och hjälpmedel som relaterar till dessa. Förklara varför barnet får dessa former av stöd.',
       serviceOptions: {
         consultationSpecialEd:
           'Konsultation med speciallärare inom småbarnspedagogik',
@@ -55,7 +55,7 @@ export const sv = {
       guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
       guardiansHeard: 'Vårdnadshavare som hörts och förfaringssätt vid hörande',
       guardiansHeardInfo:
-        'Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här hur och när han eller hon har kallats för att höras och hur och när barnets plan för småbarnspedagogiken har kommunicerats till vårdnadshavaren. Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt att företräda sig själv åt en annan förmyndare.',
+        'Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här hur och när hen har kallats för att höras och hur och när barnets plan för småbarnspedagogiken getts kännedom (till vårdnadshavaren). Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt att företräda sig själv åt en annan förmyndare.',
       viewOfTheGuardians: 'Vårdnadshavarnas syn på det rekommenderade stödet',
       viewOfTheGuardiansInfo:
         'Anteckna vårdnadshavarnas syn på det stöd som erbjuds barnet.',
@@ -70,17 +70,20 @@ export const sv = {
         enhancedAssistance: 'Intensifierat stöd',
         specialAssistance: 'Särskilt stöd'
       },
-      startDate: 'Beslutet träder i kraft',
+      startDate: 'Beslutet angående är i kraft',
+      startDateIndefiniteInfo: 'Beslutet gäller från angivet startdatum.',
       startDateInfo:
-        'Beslutet gäller från angivet startdatum. Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
+        'Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
       endDate: 'Beslutet i kraft till',
       endDateServices: 'Beslutet angående stödtjänster i kraft till',
       selectedUnit: 'Enheten där stödet ges',
-      unitMayChange: 'Enheten kan ändras under semestertider',
+      unitMayChange: 'Enheten och stödformer kan ändras under semestertider',
       motivationForDecision: 'Motivering av beslut',
+      legalInstructions: 'Tillämpade bestämmelser',
+      legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap',
       jurisdiction: 'Befogenhet',
       jurisdictionText:
-        'Delegationsbeslut om beslutanderätten för tjänsteinnehavarna av personalen vid den finskspråkiga småbarnspedagogiken och tillväxt- och lärandegrenen A del 3 § 3 pkt',
+        'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',
       personsResponsible: 'Ansvarspersoner',
       preparator: 'Beredare av beslutet',
       decisionMaker: 'Beslutsfattare',
@@ -121,7 +124,7 @@ export const sv = {
           <P>
             Regionförvaltningsverket i Västra och Inre Finlands huvudkontor
             <br />
-            Besöksadress: Wolffskavägen 35, Vasa
+            Besöksadress: Bangårdsvägen 9, 00520 Helsingfors
             <br />
             Öppet: mån–fre kl. 8.00–16.15
             <br />

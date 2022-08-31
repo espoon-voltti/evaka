@@ -1917,6 +1917,8 @@ export default {
           unitMayChange:
             'Loma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.',
           motivationForDecision: 'Perustelut lapsen tuen tasolle',
+          legalInstructions: 'Sovelletut oikeusohjeet',
+          legalInstructionsText: 'Varhaiskasvatuslaki, 3 a luku',
           jurisdiction: 'Toimivalta',
           jurisdictionText:
             'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 3 kohta',
