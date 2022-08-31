@@ -313,6 +313,7 @@ export default React.memo(function Occupancies() {
     month: new Date().getMonth() + 1,
     careAreaId: null,
     type: 'UNIT_CONFIRMED',
+    providerType: unitProviderTypes.find((type) => type === 'MUNICIPAL'),
     unitTypes: ['CENTRE']
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
