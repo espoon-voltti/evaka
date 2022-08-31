@@ -24,13 +24,11 @@ export default class CitizenHeader {
   }
 
   async #toggleChildrenMenu() {
-    const childNav = this.page.findByDataQa(`nav-children-${this.type}`)
-    await childNav.findByDataQa('icon').waitUntilVisible()
-    return childNav.click()
+    return this.page.findByDataQa(`nav-children-${this.type}`).click()
   }
 
   async waitUntilLoggedIn() {
-    await this.page.findByDataQa(`nav-children-${this.type}`).waitUntilVisible()
+    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).waitUntilVisible()
   }
 
   async selectTab(
@@ -85,7 +83,6 @@ export default class CitizenHeader {
   async assertChildrenTabHasText(text: string) {
     await this.page
       .findByDataQa('nav-children-desktop')
-      .findByDataQa('nav-text')
       .findText(text)
       .waitUntilVisible()
   }

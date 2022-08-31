@@ -45,8 +45,6 @@ import { CircledChar, DropDownLink } from './shared-components'
 export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
-  const { children, totalUnreadChildNotifications } =
-    useContext(ChildrenContext)
   const { unreadMessagesCount } = useContext(MessageContext)
   const { waitingConfirmationCount: unreadDecisions } =
     useContext(ApplicationsContext)
@@ -56,15 +54,8 @@ export default React.memo(function MobileNav() {
     []
   )
   const toggleChildrenMenu = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (children.getOrElse([]).length === 0) {
-        return
-      }
-
-      e.preventDefault()
-      setMenuOpen((open) => (open === 'children' ? undefined : 'children'))
-    },
-    [children]
+    () => setMenuOpen((open) => (open === 'children' ? undefined : 'children')),
+    []
   )
   const closeMenu = useCallback(() => setMenuOpen(undefined), [])
 
@@ -98,14 +89,9 @@ export default React.memo(function MobileNav() {
                   showNotification={(unreadMessagesCount ?? 0) > 0}
                 />
               )}
-              <BottomBarLink
-                to="/children"
-                data-qa="nav-children-mobile"
-                text={t.header.nav.children}
-                icon={faChild}
-                activeIcon={fasChild}
-                showNotification={totalUnreadChildNotifications > 0}
-                onClick={toggleChildrenMenu}
+              <ChildrenLink
+                menuOpen={menuOpen === 'children'}
+                toggleChildrenMenu={toggleChildrenMenu}
               />
               <StyledButton
                 className={classNames({ active: menuOpen === 'submenu' })}
@@ -232,6 +218,53 @@ const StyledLink = styled(NavLink)`
 const StyledButton = styled.button`
   ${bottomNavClickableStyles}
 `
+
+const ChildrenLink = React.memo(function ChildrenLink({
+  menuOpen,
+  toggleChildrenMenu
+}: {
+  menuOpen: boolean
+  toggleChildrenMenu: () => void
+}) {
+  const t = useTranslation()
+  const { children, totalUnreadChildNotifications } =
+    useContext(ChildrenContext)
+
+  if (children.getOrElse([]).length === 0) {
+    return null
+  }
+
+  if (children.getOrElse([]).length === 1) {
+    const childId = children.getOrElse([])[0].id
+    return (
+      <BottomBarLink
+        to={`/children/${childId}`}
+        data-qa="nav-children-mobile"
+        text={t.header.nav.children}
+        icon={faChild}
+        activeIcon={fasChild}
+        showNotification={totalUnreadChildNotifications > 0}
+      />
+    )
+  }
+
+  return (
+    <StyledButton
+      className={classNames({ active: menuOpen })}
+      onClick={toggleChildrenMenu}
+      data-qa="nav-children-mobile"
+    >
+      <AttentionIndicator
+        toggled={totalUnreadChildNotifications > 0}
+        position="top"
+        data-qa="attention-indicator-children-mobile"
+      >
+        <FontAwesomeIcon icon={menuOpen ? fasChild : faChild} />
+      </AttentionIndicator>
+      {t.header.nav.children}
+    </StyledButton>
+  )
+})
 
 const ChildrenMenu = React.memo(function ChildrenMenu({
   user,

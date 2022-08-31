@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
@@ -71,7 +71,7 @@ export default React.memo(function DesktopNav({
                 notificationCount={unreadMessagesCount}
               />
             )}
-            <ChildrenMenu />
+            <ChildrenMenu user={user} />
           </>
         ) : null}
       </Nav>
@@ -188,43 +188,71 @@ const Icon = styled(FontAwesomeIcon)`
   font-size: 1.25rem;
 `
 
-const ChildrenMenu = React.memo(function ChildrenMenu() {
+const ChildrenMenu = React.memo(function ChildrenMenu({
+  user
+}: {
+  user: User
+}) {
   const t = useTranslation()
   const { children, unreadChildNotifications, totalUnreadChildNotifications } =
     useContext(ChildrenContext)
   const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      e.preventDefault()
-      setOpen((state) => !state)
-    },
-    [setOpen]
-  )
+  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
 
+  const lockElem = useMemo(
+    () =>
+      user.authLevel !== 'STRONG' && (
+        <FontAwesomeIcon icon={faLockAlt} size="xs" />
+      ),
+    [user]
+  )
+
   if (children.getOrElse([]).length === 0) {
+    return null
+  }
+
+  if (children.getOrElse([]).length === 1) {
+    const childId = children.getOrElse([])[0].id
     return (
       <HeaderNavLink
-        to="/children"
+        to={`/children/${childId}`}
         data-qa="nav-children-desktop"
         text={t.header.nav.children}
         notificationCount={totalUnreadChildNotifications}
+        lockElem={lockElem}
       />
     )
   }
 
   return (
     <DropDownContainer ref={dropDownRef}>
-      <HeaderNavLink
-        to="/children"
-        text={t.header.nav.children}
-        notificationCount={totalUnreadChildNotifications}
+      <DropDownButton
         onClick={toggleOpen}
-        icon={open ? fasChevronUp : fasChevronDown}
+        aria-label={`${t.header.nav.children}${
+          lockElem ? `, ${t.header.requiresStrongAuth}` : ''
+        }${
+          totalUnreadChildNotifications && totalUnreadChildNotifications > 0
+            ? `, ${totalUnreadChildNotifications} ${t.header.notifications}`
+            : ''
+        }`}
         data-qa="nav-children-desktop"
-      />
+        role="menuitem"
+      >
+        {t.header.nav.children}
+        {lockElem}
+        {totalUnreadChildNotifications > 0 && (
+          <CircledChar
+            aria-label={`${totalUnreadChildNotifications} ${t.header.notifications}`}
+            data-qa="nav-children-desktop-notification-count"
+          >
+            {totalUnreadChildNotifications}
+          </CircledChar>
+        )}
+        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
+      </DropDownButton>
       {open ? (
         <DropDown $align="left" data-qa="select-child">
           {children.getOrElse([]).map((child) => (
