@@ -10,7 +10,6 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -20,7 +19,6 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -28,7 +26,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -88,9 +85,10 @@ class AbsenceService {
         return tx.getAbsencesByChildByRange(childId, range)
     }
 
-    fun getFutureAbsencesByChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
-        val period = DateRange(evakaClock.today().plusDays(1), null)
-        return tx.getAbsencesByChildByRange(childId, period)
+    fun getMonthOfFutureAbsencesByChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
+        val start = evakaClock.today().plusDays(1)
+        val end = start.plusMonths(1)
+        return tx.getAbsencesByChildByRange(childId, FiniteDateRange(start, end))
     }
 }
 
@@ -227,7 +225,6 @@ data class AbsencePlacement(
 )
 
 data class Absence(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
@@ -235,7 +232,6 @@ data class Absence(
 )
 
 data class AbsenceWithModifierInfo(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
@@ -412,7 +408,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, coalesce(eu.type, 'SYSTEM') AS modified_by_type, a.modified_at AS modified_at
+        SELECT a.child_id, a.date, a.category, a.absence_type, coalesce(eu.type, 'SYSTEM') AS modified_by_type, a.modified_at AS modified_at
         FROM all_absences_in_range(:dateRange) a
         LEFT JOIN evaka_user eu ON eu.id = a.modified_by 
         WHERE child_id IN (SELECT child_id FROM ($placementsQuery) p)
@@ -429,22 +425,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: FiniteDateR
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
-        FROM child_absences_in_range(:childId, :range) a
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("range", range)
-        .mapTo<Absence>()
-        .list()
-}
-
-fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange): List<Absence> {
-    //language=SQL
-    val sql =
-        """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
+        SELECT a.child_id, a.date, a.category, a.absence_type
         FROM child_absences_in_range(:childId, :range) a
         """.trimIndent()
 
