@@ -23,5 +23,8 @@ data class Child(
     val lastName: String,
     val imageId: ChildImageId?,
     @Nested("group")
-    val group: Group?
+    val group: Group?,
+    val hasUpcomingPlacements: Boolean,
+    val hasPedagogicalDocuments: Boolean,
+    val hasCurriculums: Boolean
 )

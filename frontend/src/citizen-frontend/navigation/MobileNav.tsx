@@ -223,16 +223,16 @@ const ChildrenLink = React.memo(function ChildrenLink({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const { children, totalUnreadChildNotifications } =
+  const { childrenWithOwnPage, totalUnreadChildNotifications } =
     useContext(ChildrenContext)
   const active = location.pathname.startsWith('/children')
 
-  if (children.getOrElse([]).length === 0) {
+  if (childrenWithOwnPage.getOrElse([]).length === 0) {
     return null
   }
 
-  if (children.getOrElse([]).length === 1) {
-    const childId = children.getOrElse([])[0].id
+  if (childrenWithOwnPage.getOrElse([]).length === 1) {
+    const childId = childrenWithOwnPage.getOrElse([])[0].id
     return (
       <BottomBarLink
         to={`/children/${childId}`}
@@ -271,14 +271,15 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   closeMenu: () => void
 }) {
   const t = useTranslation()
-  const { children, unreadChildNotifications } = useContext(ChildrenContext)
+  const { childrenWithOwnPage, unreadChildNotifications } =
+    useContext(ChildrenContext)
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
     <ModalAccessibilityWrapper>
       <MenuContainer>
-        {children.getOrElse([]).map((child) => (
+        {childrenWithOwnPage.getOrElse([]).map((child) => (
           <DropDownLink
             key={child.id}
             data-qa={`children-menu-${child.id}`}

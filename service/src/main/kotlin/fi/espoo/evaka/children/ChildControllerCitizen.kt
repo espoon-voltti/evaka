@@ -5,33 +5,22 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
-data class ChildrenResponse(val children: List<Child>)
 
 @RestController
 @RequestMapping("/citizen/children")
 class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
-    fun getChildren(db: Database, user: AuthenticatedUser.Citizen): ChildrenResponse {
+    fun getChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<Child> {
         Audit.CitizenChildrenRead.log()
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILDREN, user.id)
-        return ChildrenResponse(db.connect { dbc -> dbc.read { it.getChildrenByGuardian(user.id) } })
-    }
-
-    @GetMapping("/{id}")
-    fun getChild(db: Database, user: AuthenticatedUser.Citizen, @PathVariable id: ChildId): Child {
-        Audit.CitizenChildRead.log(id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ, id)
-        return db.connect { dbc -> dbc.read { it.getChild(id) } } ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getChildrenByGuardian(user.id, clock.today()) } }
     }
 }

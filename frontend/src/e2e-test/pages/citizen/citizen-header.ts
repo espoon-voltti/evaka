@@ -15,20 +15,18 @@ export default class CitizenHeader {
 
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
+  #childrenNav = this.page.findByDataQa(`nav-children-${this.type}`)
   #unreadChildrenCount = this.page.findByDataQa(
     `nav-children-${this.type}-notification-count`
   )
+  #subNavMenu = this.page.findByDataQa(`sub-nav-menu-${this.type}`)
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
   }
 
   async #toggleChildrenMenu() {
-    return this.page.findByDataQa(`nav-children-${this.type}`).click()
-  }
-
-  async waitUntilLoggedIn() {
-    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).waitUntilVisible()
+    return this.#childrenNav.click()
   }
 
   async selectTab(
@@ -47,7 +45,7 @@ export default class CitizenHeader {
       'personal-details'
     ].includes(tab)
     if (isContainedInSubnav) {
-      await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
+      await this.#subNavMenu.click()
       await this.page.findByDataQa(`sub-nav-menu-${tab}`).click()
     } else {
       await this.page.findByDataQa(`nav-${tab}-${this.type}`).click()
@@ -55,8 +53,13 @@ export default class CitizenHeader {
   }
 
   async openChildPage(childId: string) {
-    await this.#toggleChildrenMenu()
-    await this.page.findByDataQa(`children-menu-${childId}`).click()
+    await this.#childrenNav.waitUntilVisible()
+    if (await this.#childrenNav.findByDataQa('drop-down-icon').visible) {
+      await this.#toggleChildrenMenu()
+      await this.page.findByDataQa(`children-menu-${childId}`).click()
+    } else {
+      await this.#childrenNav.click()
+    }
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
@@ -80,9 +83,9 @@ export default class CitizenHeader {
     await this.page.find(`html[lang=${lang}]`).waitUntilVisible()
   }
 
-  async assertChildrenTabHasText(text: string) {
+  async assertSubNavMenuHasText(text: string) {
     await this.page
-      .findByDataQa('nav-children-desktop')
+      .findByDataQa(`sub-nav-menu-${this.type}`)
       .findText(text)
       .waitUntilVisible()
   }
@@ -91,35 +94,39 @@ export default class CitizenHeader {
     await this.page
       .findByDataQa(`attention-indicator-sub-menu-${this.type}`)
       .waitUntilVisible()
-    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
+    await this.#subNavMenu.click()
     await this.page
       .findByDataQa('personal-details-notification')
       .waitUntilVisible()
-    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
+    await this.#subNavMenu.click()
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {
-    await this.#toggleChildrenMenu()
+    await this.#childrenNav.waitUntilVisible()
     expectedCount != 0
       ? await waitUntilEqual(
           () => this.#unreadChildrenCount.textContent,
           expectedCount.toString()
         )
       : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
-    await this.#toggleChildrenMenu()
   }
 
   async assertChildUnreadCount(childId: string, expectedCount: number) {
-    await this.#toggleChildrenMenu()
-    const notification = this.page.findByDataQa(
-      `children-menu-${childId}-notification-count`
-    )
-    expectedCount != 0
-      ? await waitUntilEqual(
-          () => notification.textContent,
-          expectedCount.toString()
-        )
-      : await notification.waitUntilHidden()
-    await this.#toggleChildrenMenu()
+    await this.#childrenNav.waitUntilVisible()
+    if (await this.#childrenNav.findByDataQa('drop-down-icon').visible) {
+      await this.#toggleChildrenMenu()
+      const notification = this.page.findByDataQa(
+        `children-menu-${childId}-notification-count`
+      )
+      expectedCount != 0
+        ? await waitUntilEqual(
+            () => notification.textContent,
+            expectedCount.toString()
+          )
+        : await notification.waitUntilHidden()
+      await this.#toggleChildrenMenu()
+    } else {
+      await this.assertUnreadChildrenCount(expectedCount)
+    }
   }
 }

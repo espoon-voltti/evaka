@@ -14,6 +14,9 @@ import { UUID } from '../../types'
 export interface Child {
   firstName: string
   group: Group | null
+  hasCurriculums: boolean
+  hasPedagogicalDocuments: boolean
+  hasUpcomingPlacements: boolean
   id: UUID
   imageId: UUID | null
   lastName: string
@@ -39,13 +42,6 @@ export const childConsentTypes = [
 ] as const
 
 export type ChildConsentType = typeof childConsentTypes[number]
-
-/**
-* Generated from fi.espoo.evaka.children.ChildrenResponse
-*/
-export interface ChildrenResponse {
-  children: Child[]
-}
 
 /**
 * Generated from fi.espoo.evaka.children.consent.CitizenChildConsent

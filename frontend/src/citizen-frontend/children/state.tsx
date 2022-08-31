@@ -26,6 +26,7 @@ import { getUnreadVasuDocumentsCount } from './sections/vasu-and-leops/api'
 
 interface ChildrenContext {
   children: Result<Child[]>
+  childrenWithOwnPage: Result<Child[]>
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
   refreshUnreadAssistanceNeedDecisionCounts: () => void
   childConsents: Result<Record<UUID, CitizenChildConsent[]>>
@@ -41,6 +42,7 @@ interface ChildrenContext {
 
 const defaultValue: ChildrenContext = {
   children: Loading.of(),
+  childrenWithOwnPage: Loading.of(),
   unreadAssistanceNeedDecisionCounts: [],
   refreshUnreadAssistanceNeedDecisionCounts: () => undefined,
   childConsents: Loading.of(),
@@ -67,6 +69,19 @@ export const ChildrenContextProvider = React.memo(
     const [childrenResponse] = useApiState(
       () => (!user ? Promise.resolve(Success.of([])) : getChildren()),
       [user]
+    )
+
+    const childrenWithOwnPage = useMemo(
+      () =>
+        childrenResponse.map((children) =>
+          children.filter(
+            (child) =>
+              child.hasUpcomingPlacements ||
+              child.hasPedagogicalDocuments ||
+              child.hasCurriculums
+          )
+        ),
+      [childrenResponse]
     )
 
     const [
@@ -149,6 +164,7 @@ export const ChildrenContextProvider = React.memo(
       <ChildrenContext.Provider
         value={{
           children: childrenResponse,
+          childrenWithOwnPage,
           unreadAssistanceNeedDecisionCounts:
             unreadAssistanceNeedDecisionCounts.getOrElse([]),
           refreshUnreadAssistanceNeedDecisionCounts,
