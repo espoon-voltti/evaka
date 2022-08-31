@@ -13,7 +13,6 @@ describe('absences date range', () => {
   describe('grouping works with', () => {
     it('a single date', () => {
       const absence: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
@@ -25,14 +24,12 @@ describe('absences date range', () => {
 
     it('two dates', () => {
       const absence: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
@@ -44,14 +41,12 @@ describe('absences date range', () => {
 
     it('two ranges', () => {
       const absence: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
@@ -59,14 +54,12 @@ describe('absences date range', () => {
       }
 
       const absence3: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence4: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(8),
         absenceType: 'SICKLEAVE',
@@ -79,14 +72,12 @@ describe('absences date range', () => {
 
     it('a range and a single date', () => {
       const absence: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
@@ -94,7 +85,6 @@ describe('absences date range', () => {
       }
 
       const absence3: Absence = {
-        id: uniqueId(),
         childId: uniqueId(),
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',

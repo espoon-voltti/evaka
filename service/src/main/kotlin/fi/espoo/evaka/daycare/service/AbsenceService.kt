@@ -227,7 +227,6 @@ data class AbsencePlacement(
 )
 
 data class Absence(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
@@ -235,7 +234,6 @@ data class Absence(
 )
 
 data class AbsenceWithModifierInfo(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
@@ -412,7 +410,7 @@ fun Database.Read.getAbsencesByRange(groupId: GroupId, range: FiniteDateRange): 
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type, coalesce(eu.type, 'SYSTEM') AS modified_by_type, a.modified_at AS modified_at
+        SELECT a.child_id, a.date, a.category, a.absence_type, coalesce(eu.type, 'SYSTEM') AS modified_by_type, a.modified_at AS modified_at
         FROM all_absences_in_range(:dateRange) a
         LEFT JOIN evaka_user eu ON eu.id = a.modified_by 
         WHERE child_id IN (SELECT child_id FROM ($placementsQuery) p)
@@ -429,7 +427,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: FiniteDateR
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
+        SELECT a.child_id, a.date, a.category, a.absence_type
         FROM child_absences_in_range(:childId, :range) a
         """.trimIndent()
 
@@ -444,7 +442,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange):
     //language=SQL
     val sql =
         """
-        SELECT a.id, a.child_id, a.date, a.category, a.absence_type
+        SELECT a.child_id, a.date, a.category, a.absence_type
         FROM child_absences_in_range(:childId, :range) a
         """.trimIndent()
 

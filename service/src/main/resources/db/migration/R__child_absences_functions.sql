@@ -1,7 +1,12 @@
--- Defined in the past
+DROP FUNCTION IF EXISTS child_absences_on_date(uuid, date);
+DROP FUNCTION IF EXISTS child_absences_in_range(uuid, daterange);
+DROP FUNCTION IF EXISTS all_absences_in_range(daterange);
+DROP FUNCTION IF EXISTS irregular_absence_filter(daily_service_time, date);
+
+-- Was defined in the past
 DROP FUNCTION IF EXISTS absences_in_range(uuid[], daterange);
 
-CREATE OR REPLACE FUNCTION irregular_absence_filter(dst daily_service_time, theDate date) RETURNS boolean
+CREATE FUNCTION irregular_absence_filter(dst daily_service_time, theDate date) RETURNS boolean
     LANGUAGE SQL
     STABLE
 AS
@@ -24,10 +29,9 @@ COMMENT ON FUNCTION irregular_absence_filter IS
     'For internal use only';
 
 
-CREATE OR REPLACE FUNCTION all_absences_in_range(period daterange)
+CREATE FUNCTION all_absences_in_range(period daterange)
     RETURNS TABLE
             (
-                id               uuid,
                 child_id         uuid,
                 date             date,
                 absence_type     absence_type,
@@ -40,12 +44,17 @@ CREATE OR REPLACE FUNCTION all_absences_in_range(period daterange)
     STABLE
 AS
 $$
-SELECT *
+SELECT a.child_id,
+       a.date,
+       a.absence_type,
+       a.modified_at,
+       a.modified_by,
+       a.category,
+       a.questionnaire_id
 FROM absence a
 WHERE between_start_and_end(period, a.date)
-UNION
-SELECT dst.id                             as id,
-       dst.child_id                       as child_id,
+UNION ALL
+SELECT dst.child_id                       as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
        dst.updated                        as modified_at,
@@ -64,10 +73,9 @@ COMMENT ON FUNCTION all_absences_in_range(period daterange) IS
     'period must have non-null start and end dates';
 
 
-CREATE OR REPLACE FUNCTION child_absences_in_range(childId uuid, period daterange)
+CREATE FUNCTION child_absences_in_range(childId uuid, period daterange)
     RETURNS TABLE
             (
-                id               uuid,
                 child_id         uuid,
                 date             date,
                 absence_type     absence_type,
@@ -80,13 +88,18 @@ CREATE OR REPLACE FUNCTION child_absences_in_range(childId uuid, period daterang
     STABLE
 AS
 $$
-SELECT *
+SELECT a.child_id,
+       a.date,
+       a.absence_type,
+       a.modified_at,
+       a.modified_by,
+       a.category,
+       a.questionnaire_id
 FROM absence a
 WHERE between_start_and_end(period, a.date)
   AND a.child_id = childId
-UNION
-SELECT dst.id                             as id,
-       childId                            as child_id,
+UNION ALL
+SELECT childId                            as child_id,
        d::date                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
        dst.updated                        as modified_at,
@@ -107,10 +120,9 @@ COMMENT ON FUNCTION child_absences_in_range(childId uuid, period daterange) IS
     'period must have non-null start and end dates';
 
 
-CREATE OR REPLACE FUNCTION child_absences_on_date(childId uuid, theDate date)
+CREATE FUNCTION child_absences_on_date(childId uuid, theDate date)
     RETURNS TABLE
             (
-                id               uuid,
                 child_id         uuid,
                 date             date,
                 absence_type     absence_type,
@@ -123,13 +135,18 @@ CREATE OR REPLACE FUNCTION child_absences_on_date(childId uuid, theDate date)
     STABLE
 AS
 $$
-SELECT *
+SELECT a.child_id,
+       a.date,
+       a.absence_type,
+       a.modified_at,
+       a.modified_by,
+       a.category,
+       a.questionnaire_id
 FROM absence a
 WHERE a.date = theDate
   AND a.child_id = childId
-UNION
-SELECT dst.id                             as id,
-       dst.child_id                       as child_id,
+UNION ALL
+SELECT dst.child_id                       as child_id,
        theDate                            as date,
        'OTHER_ABSENCE'::absence_type      as absence_type,
        dst.updated                        as modified_at,

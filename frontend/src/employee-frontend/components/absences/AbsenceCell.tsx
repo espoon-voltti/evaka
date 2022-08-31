@@ -70,24 +70,13 @@ function getCellParts(
     const maybeAbsence = absences?.find(
       (absence) => absence.category === category
     )
-    if (maybeAbsence) {
-      const { id: absenceId, absenceType } = maybeAbsence
-      return {
-        id: absenceId,
-        childId,
-        date,
-        category,
-        absenceType,
-        position
-      }
-    } else {
-      return {
-        id: `${childId}-${date.formatIso()}-${category}`,
-        childId,
-        date,
-        category,
-        position
-      }
+    return {
+      id: `${childId}-${date.formatIso()}-${category}`,
+      childId,
+      date,
+      category,
+      absenceType: maybeAbsence?.absenceType,
+      position
     }
   })
 }
