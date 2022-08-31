@@ -75,13 +75,11 @@ export default React.memo(function AttendanceReservation() {
     .map<AttendanceReservationReportRow[]>((row) => row)
     .getOrElse<AttendanceReservationReportRow[]>([])
   const filteredUnits = units
-    .map((unit) => unit)
+    .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
-    .sort((a, b) => a.name.localeCompare(b.name, lang))
   const filteredGroups = groups
-    .map((group) => group)
+    .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
-    .sort((a, b) => a.name.localeCompare(b.name))
 
   const dates = filteredRows
     .map((row) => row.dateTime.toLocalDate().format(dateFormat, lang))
