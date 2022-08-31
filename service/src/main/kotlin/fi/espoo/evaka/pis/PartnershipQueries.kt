@@ -100,10 +100,10 @@ fun Database.Transaction.createPartnership(
     val sql =
         """
         WITH new_fridge_partner AS (
-            INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date, conflict)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict)
             VALUES
-                (:partnershipId, 1, :person1, :startDate, :endDate, :conflict),
-                (:partnershipId, 2, :person2, :startDate, :endDate, :conflict)
+                (:partnershipId, 1, 2, :person1, :startDate, :endDate, :conflict),
+                (:partnershipId, 2, 1, :person2, :startDate, :endDate, :conflict)
             RETURNING *
         )
         SELECT
