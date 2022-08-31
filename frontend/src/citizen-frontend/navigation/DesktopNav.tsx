@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import { ChildrenContext } from 'citizen-frontend/children/state'
@@ -194,6 +194,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   user: User
 }) {
   const t = useTranslation()
+  const location = useLocation()
   const { children, unreadChildNotifications, totalUnreadChildNotifications } =
     useContext(ChildrenContext)
   const [open, setOpen] = useState(false)
@@ -230,6 +231,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   return (
     <DropDownContainer ref={dropDownRef}>
       <DropDownButton
+        className={classNames({
+          active: location.pathname.startsWith('/children')
+        })}
         onClick={toggleOpen}
         aria-label={`${t.header.nav.children}${
           lockElem ? `, ${t.header.requiresStrongAuth}` : ''

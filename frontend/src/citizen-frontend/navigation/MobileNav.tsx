@@ -90,12 +90,8 @@ export default React.memo(function MobileNav() {
                   showNotification={(unreadMessagesCount ?? 0) > 0}
                 />
               )}
-              <ChildrenLink
-                menuOpen={menuOpen === 'children'}
-                toggleChildrenMenu={toggleChildrenMenu}
-              />
+              <ChildrenLink toggleChildrenMenu={toggleChildrenMenu} />
               <StyledButton
-                className={classNames({ active: menuOpen === 'submenu' })}
                 onClick={toggleSubMenu}
                 data-qa="sub-nav-menu-mobile"
               >
@@ -221,15 +217,15 @@ const StyledButton = styled.button`
 `
 
 const ChildrenLink = React.memo(function ChildrenLink({
-  menuOpen,
   toggleChildrenMenu
 }: {
-  menuOpen: boolean
   toggleChildrenMenu: () => void
 }) {
   const t = useTranslation()
+  const location = useLocation()
   const { children, totalUnreadChildNotifications } =
     useContext(ChildrenContext)
+  const active = location.pathname.startsWith('/children')
 
   if (children.getOrElse([]).length === 0) {
     return null
@@ -251,7 +247,7 @@ const ChildrenLink = React.memo(function ChildrenLink({
 
   return (
     <StyledButton
-      className={classNames({ active: menuOpen })}
+      className={classNames({ active })}
       onClick={toggleChildrenMenu}
       data-qa="nav-children-mobile"
     >
@@ -260,7 +256,7 @@ const ChildrenLink = React.memo(function ChildrenLink({
         position="top"
         data-qa="attention-indicator-children-mobile"
       >
-        <FontAwesomeIcon icon={menuOpen ? fasChild : faChild} />
+        <FontAwesomeIcon icon={active ? fasChild : faChild} />
       </AttentionIndicator>
       {t.header.nav.children}
     </StyledButton>

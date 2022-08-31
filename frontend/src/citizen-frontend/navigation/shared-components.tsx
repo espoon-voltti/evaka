@@ -42,13 +42,17 @@ const dropDownButtonStyles = css`
 
   &:hover {
     color: ${colors.main.m2Hover};
+
+    .circled-char {
+      border-color: ${colors.main.m2Hover};
+    }
   }
 
   &.active {
     color: ${colors.main.m2};
     border-bottom-color: ${colors.main.m2};
 
-    ${CircledChar} {
+    .circled-char {
       border-color: ${colors.main.m2};
     }
   }
