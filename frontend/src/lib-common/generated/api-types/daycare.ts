@@ -341,6 +341,7 @@ export interface DaycareGroup {
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.DaycareGroupResponse
 */
 export interface DaycareGroupResponse {
+  endDate: LocalDate | null
   id: UUID
   name: string
   permittedActions: Action.Group[]

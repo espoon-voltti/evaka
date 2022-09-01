@@ -17,6 +17,7 @@ import { combine, isLoading, Result } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import { Action } from 'lib-common/generated/action'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
@@ -126,8 +127,17 @@ function AclRowEditor({
 }) {
   const { i18n } = useTranslation()
   const options = useMemo(
-    () => sortBy(Object.values(unitGroups), ({ name }) => name),
-    [unitGroups]
+    () =>
+      sortBy(
+        Object.values(unitGroups).filter(
+          ({ id, endDate }) =>
+            endDate === null ||
+            endDate.isAfter(LocalDate.todayInHelsinkiTz()) ||
+            row.groupIds.includes(id)
+        ),
+        ({ name }) => name
+      ),
+    [row.groupIds, unitGroups]
   )
   const [groups, setGroups] = useState<DaycareGroupSummary[]>(
     options.filter(({ id }) => row.groupIds.includes(id))
