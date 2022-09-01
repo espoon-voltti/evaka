@@ -142,7 +142,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
                     }
                     remaining -= 1
                     config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
-                } while (job != null && remaining > 0)
+                } while (job != null && remaining > 0 && !executor.isTerminating)
             } finally {
                 activeWorkerCount.decrementAndGet()
             }
