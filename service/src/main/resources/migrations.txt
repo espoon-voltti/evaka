@@ -262,3 +262,4 @@ V261__invoice_correction_person_reference_on_delete_cascade.sql
 V262__child_consent_on_delete_cascade.sql
 V263__child_absences_function.sql
 V264__fridge_partner_self_foreign_key.sql
+V265__finance_decisions_partner_constraint.sql
