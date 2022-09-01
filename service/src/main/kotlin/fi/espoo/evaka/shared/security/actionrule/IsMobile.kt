@@ -26,6 +26,8 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
         MobileAuthLevel.DEFAULT -> !requirePinLogin
     }
 
+    private fun <T> rule(filter: FilterMobileByTarget<T>): DatabaseActionRule<T, IsMobile> =
+        DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
         override fun execute(
             tx: Database.Read,
@@ -58,136 +60,115 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
         }
     }
 
-    fun inPlacementUnitOfChild() = DatabaseActionRule(
-        this,
-        Query<ChildId> { tx, mobileId, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementUnitOfChild() = rule<ChildId> { tx, mobileId, now, ids ->
+        tx.createQuery(
+            """
 SELECT child_id
 FROM child_daycare_acl(:today)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
 WHERE mobile_device_id = :userId
 AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
-        this,
-        Query<ChildDailyNoteId> { tx, mobileId, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementUnitOfChildOfChildDailyNote() = rule<ChildDailyNoteId> { tx, mobileId, now, ids ->
+        tx.createQuery(
+            """
 SELECT cdn.id
 FROM child_daily_note cdn
 JOIN child_daycare_acl(:today) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
 WHERE mobile_device_id = :userId
 AND cdn.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
-        this,
-        Query<ChildStickyNoteId> { tx, mobileId, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementUnitOfChildOfChildStickyNote() = rule<ChildStickyNoteId> { tx, mobileId, now, ids ->
+        tx.createQuery(
+            """
 SELECT csn.id
 FROM child_sticky_note csn
 JOIN child_daycare_acl(:today) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
 WHERE mobile_device_id = :userId
 AND csn.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
-        this,
-        Query<ChildImageId> { tx, mobileId, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementUnitOfChildOfChildImage() = rule<ChildImageId> { tx, mobileId, now, ids ->
+        tx.createQuery(
+            """
 SELECT img.id
 FROM child_images img
 JOIN child_daycare_acl(:today) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
 WHERE mobile_device_id = :userId
 AND img.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inUnitOfGroup() = DatabaseActionRule(
-        this,
-        Query<GroupId> { tx, mobileId, _, ids ->
-            tx.createQuery(
-                """
+    fun inUnitOfGroup() = rule<GroupId> { tx, mobileId, _, ids ->
+        tx.createQuery(
+            """
 SELECT g.id
 FROM daycare_group g
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
 WHERE acl.mobile_device_id = :userId
 AND g.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inUnitOfGroupNote() = DatabaseActionRule(
-        this,
-        Query<GroupNoteId> { tx, mobileId, _, ids ->
-            tx.createQuery(
-                """
+    fun inUnitOfGroupNote() = rule<GroupNoteId> { tx, mobileId, _, ids ->
+        tx.createQuery(
+            """
 SELECT gn.id
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
 WHERE acl.mobile_device_id = :userId
 AND gn.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 
-    fun inUnit() = DatabaseActionRule(
-        this,
-        Query<DaycareId> { tx, mobileId, _, ids ->
-            tx.createQuery(
-                """
+    fun inUnit() = rule<DaycareId> { tx, mobileId, _, ids ->
+        tx.createQuery(
+            """
 SELECT daycare_id AS id
 FROM mobile_device_daycare_acl_view
 WHERE mobile_device_id = :userId
 AND daycare_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", mobileId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", mobileId)
+            .mapTo()
+    }
 }

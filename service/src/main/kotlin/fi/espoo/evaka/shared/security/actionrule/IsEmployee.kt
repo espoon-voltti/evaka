@@ -8,9 +8,7 @@ import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageDrafts
 import fi.espoo.evaka.messaging.filterPermittedMessageDrafts
 import fi.espoo.evaka.shared.ApplicationNoteId
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -21,13 +19,15 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
 object IsEmployee : ActionRuleParams<IsEmployee> {
-    private data class Query<I>(private val filter: FilterByEmployee<I>) : DatabaseActionRule.Query<I, IsEmployee> {
+    private fun <T> rule(filter: FilterByEmployee<T>): DatabaseActionRule<T, IsEmployee> =
+        DatabaseActionRule.Simple(this, Query(filter))
+    private data class Query<T>(private val filter: FilterByEmployee<T>) : DatabaseActionRule.Query<T, IsEmployee> {
         override fun execute(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
-            targets: Set<I>
-        ): Map<I, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
+            targets: Set<T>
+        ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
             is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred }
             else -> emptyMap()
         }
@@ -45,62 +45,50 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
         }
     }
 
-    fun ownerOfMobileDevice() = DatabaseActionRule(
-        this,
-        Query<MobileDeviceId> { tx, user, _, ids ->
-            tx.createQuery(
-                """
+    fun ownerOfMobileDevice() = rule<MobileDeviceId> { tx, user, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM mobile_device
 WHERE employee_id = :userId
 AND id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("userId", user.id)
+            .bind("ids", ids)
+            .mapTo()
+    }
 
-    fun ownerOfPairing() = DatabaseActionRule(
-        this,
-        Query<PairingId> { tx, user, _, ids ->
-            tx.createQuery(
-                """
+    fun ownerOfPairing() = rule<PairingId> { tx, user, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM pairing
 WHERE employee_id = :userId
 AND id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("userId", user.id)
+            .bind("ids", ids)
+            .mapTo()
+    }
 
-    fun authorOfApplicationNote() = DatabaseActionRule(
-        this,
-        Query<ApplicationNoteId> { tx, user, _, ids ->
-            tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+    fun authorOfApplicationNote() = rule<ApplicationNoteId> { tx, user, _, ids ->
+        tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
+            .bind("userId", user.id)
+            .bind("ids", ids)
+            .mapTo()
+    }
 
-    fun hasPermissionForMessageDraft() = DatabaseActionRule(
-        this,
-        Query<MessageDraftId> { tx, employee, _, ids -> tx.filterPermittedMessageDrafts(employee, ids) }
-    )
+    fun hasPermissionForMessageDraft() = rule { tx, employee, _, ids ->
+        tx.filterPermittedMessageDrafts(employee, ids)
+    }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, employee, _, ids -> tx.filterPermittedAttachmentsThroughMessageContent(employee, ids) }
-    )
+    fun hasPermissionForAttachmentThroughMessageContent() = rule { tx, employee, _, ids ->
+        tx.filterPermittedAttachmentsThroughMessageContent(employee, ids)
+    }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, employee, _, ids -> tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids) }
-    )
+    fun hasPermissionForAttachmentThroughMessageDraft() = rule { tx, employee, _, ids ->
+        tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids)
+    }
 }

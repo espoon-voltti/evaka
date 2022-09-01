@@ -61,7 +61,7 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  *
  * `(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>, params: P): Map<T, AccessControlDecision>`
  *
- * Instead of passing just one target, we pass a set, and the function returns a map so we can associate each target
+ * Instead of passing just one target, we pass a set and the function returns a map, so we can associate each target
  * with a separate result. If we do both the query/pure split *and* support multiple targets, we get this function:
  *
  * `(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, (params: P) -> AccessControlDecision>`
@@ -71,7 +71,9 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  * one expensive database query. This is much better than the original naive version which would do N*M expensive
  * database queries in this scenario.
  */
-data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>) : ScopedActionRule<T> {
+interface DatabaseActionRule<T, P : Any> : ScopedActionRule<T> {
+    val params: P
+    val query: Query<T, P>
     interface Query<T, P> {
         fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
         override fun hashCode(): Int
@@ -80,7 +82,9 @@ data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>)
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
+    data class Simple<T, P : Any>(override val params: P, override val query: Query<T, P>) : DatabaseActionRule<T, P>
 }
+
 /**
  * Like DatabaseActionRule, but is not tied to any targets.
  */

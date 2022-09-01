@@ -213,8 +213,8 @@ class AccessControl(
                 }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as DatabaseActionRule.Query<T, Any?>
-                    query.execute(tx, user, now, decisions.undecided)
+                    val deferreds = rule.query.execute(tx, user, now, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
+                    deferreds
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
                 is UnscopedDatabaseActionRule<*> -> {

@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.assistanceneed.decision.filterPermittedAssistanceNeedDecisionsForDecisionMaker
 import fi.espoo.evaka.assistanceneed.decision.filterSentAssistanceNeedDecisions
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -28,7 +27,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
     override fun isPermitted(user: AuthenticatedUser): Boolean =
         user is AuthenticatedUser.Employee && user.globalRoles.any { this.oneOf.contains(it) }
 
-    private data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
+    private fun <T> rule(filter: Filter<T>): DatabaseActionRule<T, HasGlobalRole> =
+        DatabaseActionRule.Simple(this, Query(filter))
+    data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
         override fun execute(
             tx: Database.Read,
             user: AuthenticatedUser,
@@ -47,54 +48,42 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
         }
     }
 
-    fun andAttachmentWasUploadedByAnyEmployee() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, _, _, ids ->
-            tx.createQuery(
-                """
+    fun andAttachmentWasUploadedByAnyEmployee() = rule<AttachmentId> { tx, _, _, ids ->
+        tx.createQuery(
+            """
 SELECT attachment.id
 FROM attachment
 JOIN evaka_user ON uploaded_by = evaka_user.id
 WHERE attachment.id = ANY(:ids)
 AND evaka_user.type = 'EMPLOYEE'
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .mapTo()
+    }
 
-    fun andIsDecisionMakerForAssistanceNeedDecision() = DatabaseActionRule(
-        this,
-        Query<AssistanceNeedDecisionId> { tx, employee, _, ids ->
-            tx.filterPermittedAssistanceNeedDecisionsForDecisionMaker(
-                employee,
-                ids
-            )
-        }
-    )
+    fun andIsDecisionMakerForAssistanceNeedDecision() = rule { tx, employee, _, ids ->
+        tx.filterPermittedAssistanceNeedDecisionsForDecisionMaker(
+            employee,
+            ids
+        )
+    }
 
-    fun andAssistanceNeedDecisionHasBeenSent() = DatabaseActionRule(
-        this,
-        Query<AssistanceNeedDecisionId> { tx, _, _, ids ->
-            tx.filterSentAssistanceNeedDecisions(ids)
-        }
-    )
+    fun andAssistanceNeedDecisionHasBeenSent() = rule { tx, _, _, ids ->
+        tx.filterSentAssistanceNeedDecisions(ids)
+    }
 
-    fun andChildHasServiceVoucherPlacement() = DatabaseActionRule(
-        this,
-        Query<ChildId> { tx, _, _, ids ->
-            tx.createQuery(
-                """
+    fun andChildHasServiceVoucherPlacement() = rule<ChildId> { tx, _, _, ids ->
+        tx.createQuery(
+            """
 SELECT p.child_id
 FROM placement p
 JOIN daycare pd ON pd.id = p.unit_id
 WHERE p.child_id = ANY(:ids)
   AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .mapTo()
+    }
 }

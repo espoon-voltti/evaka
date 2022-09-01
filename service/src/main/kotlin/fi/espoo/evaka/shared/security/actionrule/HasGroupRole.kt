@@ -27,6 +27,8 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
+    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles<T>): DatabaseActionRule<T, HasGroupRole> =
+        DatabaseActionRule.Simple(this, Query(getGroupRoles))
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun execute(
             tx: Database.Read,
@@ -52,42 +54,36 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             }
     }
 
-    fun inPlacementGroupOfChild() = DatabaseActionRule(
-        this,
-        Query<ChildId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementGroupOfChild() = rule<ChildId> { tx, user, now, ids ->
+        tx.createQuery(
+            """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_group_acl(:today) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", user.id)
+            .bind("ids", ids)
+            .mapTo()
+    }
 
-    fun inPlacementGroupOfChildOfVasuDocument() = DatabaseActionRule(
-        this,
-        Query<VasuDocumentId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { tx, user, now, ids ->
+        tx.createQuery(
+            """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
 JOIN employee_child_group_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
 AND curriculum_document.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", user.id)
+            .bind("ids", ids)
+            .mapTo()
+    }
 }

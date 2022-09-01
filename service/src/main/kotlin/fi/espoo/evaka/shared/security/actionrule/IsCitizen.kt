@@ -28,6 +28,8 @@ private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, n
 data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
+    private fun <T> rule(filter: FilterByCitizen<T>): DatabaseActionRule<T, IsCitizen> =
+        DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
         override fun execute(
             tx: Database.Read,
@@ -64,238 +66,198 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
         }
     }
 
-    fun uploaderOfAttachment() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, personId, _, ids ->
-            tx.createQuery(
-                """
+    fun uploaderOfAttachment() = rule<AttachmentId> { tx, personId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM attachment
 WHERE uploaded_by = :personId
 AND id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("personId", personId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("personId", personId)
+            .mapTo()
+    }
 
-    fun guardianOfChild() = DatabaseActionRule(
-        this,
-        Query<ChildId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChild() = rule<ChildId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT child_id
 FROM guardian
 WHERE guardian_id = :guardianId
 AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfChildImage() = DatabaseActionRule(
-        this,
-        Query<ChildImageId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfChildImage() = rule<ChildImageId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT img.id
 FROM child_images img
 JOIN person child ON img.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
 WHERE img.id = ANY(:ids)
 AND guardian_id = :guardianId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfIncomeStatement() = DatabaseActionRule(
-        this,
-        Query<IncomeStatementId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfIncomeStatement() = rule<IncomeStatementId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM income_statement i
 JOIN guardian g ON i.person_id = g.child_id
 WHERE i.id = ANY(:ids)
 AND g.guardian_id = :userId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfPedagogicalDocument() = DatabaseActionRule(
-        this,
-        Query<PedagogicalDocumentId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfPedagogicalDocument() = rule<PedagogicalDocumentId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT pd.id
 FROM pedagogical_document pd
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE pd.id = ANY(:ids)
 AND g.guardian_id = :guardianId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = rule<AttachmentId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT a.id
 FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE a.id = ANY(:ids)
 AND g.guardian_id = :guardianId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfVasu() = DatabaseActionRule(
-        this,
-        Query<VasuDocumentId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfVasu() = rule<VasuDocumentId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM curriculum_document cd
 JOIN guardian g ON cd.child_id = g.child_id
 WHERE cd.id = ANY(:ids)
 AND g.guardian_id = :userId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfPlacement() = DatabaseActionRule(
-        this,
-        Query<PlacementId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfPlacement() = rule<PlacementId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT placement.id
 FROM placement
 JOIN guardian ON placement.child_id = guardian.child_id
 WHERE placement.id = ANY(:ids)
 AND guardian_id = :guardianId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 
-    fun guardianOfChildOfAssistanceNeedDecision() = DatabaseActionRule(
-        this,
-        Query<AssistanceNeedDecisionId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfChildOfAssistanceNeedDecision() = rule<AssistanceNeedDecisionId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM assistance_need_decision ad
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_id = ad.child_id)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = DatabaseActionRule(
-        this,
-        Query<AttachmentId> { tx, personId, _, ids -> tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids) }
-    )
+    fun hasPermissionForAttachmentThroughMessageContent() = rule { tx, personId, _, ids ->
+        tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids)
+    }
 
-    fun ownerOfApplication() = DatabaseActionRule(
-        this,
-        Query<ApplicationId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun ownerOfApplication() = rule<ApplicationId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM application
 WHERE guardian_id = :userId
 AND id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun ownerOfApplicationOfSentDecision() = DatabaseActionRule(
-        this,
-        Query<DecisionId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun ownerOfApplicationOfSentDecision() = rule<DecisionId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT decision.id
 FROM decision
 JOIN application ON decision.application_id = application.id
 WHERE guardian_id = :userId
 AND decision.id = ANY(:ids)
 AND decision.sent_date IS NOT NULL
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun ownerOfIncomeStatement() = DatabaseActionRule(
-        this,
-        Query<IncomeStatementId> { tx, citizenId, _, ids ->
-            tx.createQuery(
-                """
+    fun ownerOfIncomeStatement() = rule<IncomeStatementId> { tx, citizenId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM income_statement
 WHERE person_id = :userId
 AND id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("userId", citizenId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("userId", citizenId)
+            .mapTo()
+    }
 
-    fun guardianOfDailyServiceTimeNotification() = DatabaseActionRule(
-        this,
-        Query<DailyServiceTimeNotificationId> { tx, guardianId, _, ids ->
-            tx.createQuery(
-                """
+    fun guardianOfDailyServiceTimeNotification() = rule<DailyServiceTimeNotificationId> { tx, guardianId, _, ids ->
+        tx.createQuery(
+            """
 SELECT id
 FROM daily_service_time_notification
 WHERE id = ANY(:ids)
 AND guardian_id = :guardianId
-                """.trimIndent()
-            )
-                .bind("ids", ids)
-                .bind("guardianId", guardianId)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .bind("guardianId", guardianId)
+            .mapTo()
+    }
 }
