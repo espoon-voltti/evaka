@@ -265,14 +265,15 @@ export class DatePicker extends Element {
   #year = new TextInput(this.findByDataQa('date-picker-segment-year'))
 
   async fill(date: LocalDate) {
-    await this.#day.click()
-    await this.#day.fill(date.getDate().toString())
+    // fill in reverse order, or react-aria datepicker behaves strangely
+    await this.#year.click()
+    await this.#year.fill(date.getYear().toString())
 
     await this.#month.click()
     await this.#month.fill(date.getMonth().toString())
 
-    await this.#year.click()
-    await this.#year.fill(date.getYear().toString())
+    await this.#day.click()
+    await this.#day.fill(date.getDate().toString())
   }
 
   async getDate() {
