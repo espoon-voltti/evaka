@@ -199,6 +199,31 @@ export class UnitAttendancesSection {
       .innerText
   }
 
+  getPlannedAttendanceStart(date: LocalDate, row: number): Promise<string> {
+    return this.#attendanceCell(date, row).findByDataQa(
+      'planned-attendance-start'
+    ).innerText
+  }
+
+  getPlannedAttendanceEnd(date: LocalDate, row: number): Promise<string> {
+    return this.#attendanceCell(date, row).findByDataQa(
+      'planned-attendance-end'
+    ).innerText
+  }
+
+  async assertPlannedAttendance(
+    date: LocalDate,
+    row: number,
+    startTime: string,
+    endTime: string
+  ) {
+    await waitUntilEqual(
+      () => this.getPlannedAttendanceStart(date, row),
+      startTime
+    )
+    await waitUntilEqual(() => this.getPlannedAttendanceEnd(date, row), endTime)
+  }
+
   async openInlineEditor(childId: UUID) {
     await this.#ellipsisMenu(childId).click()
     await this.#editInline.click()

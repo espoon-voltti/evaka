@@ -51,6 +51,7 @@ import {
   DevIncome,
   DevPayment,
   DevRealtimeStaffAttendance,
+  DevStaffAttendancePlan,
   DevStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
@@ -100,6 +101,8 @@ import {
   insertDailyServiceTime,
   insertDailyServiceTimeNotification,
   insertChildConsent,
+  insertStaffRealtimeAttendance,
+  insertStaffAttendancePlan
   insertCalendarEvent,
   insertCalendarEventAttendee,
   insertStaffRealtimeAttendance
@@ -1669,6 +1672,17 @@ export class Fixture {
     })
   }
 
+  static staffAttendancePlan(): StaffAttendancePlanBuilder {
+    return new StaffAttendancePlanBuilder({
+      id: uuidv4(),
+      employeeId: 'not set',
+      type: 'PRESENT',
+      startTime: HelsinkiDateTime.now(),
+      endTime: HelsinkiDateTime.now(),
+      description: null
+    })
+  }
+
   static calendarEvent(): CalendarEventBuilder {
     return new CalendarEventBuilder({
       id: uuidv4(),
@@ -2220,5 +2234,16 @@ export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevRealtimeSt
 
   copy() {
     return new RealtimeStaffAttendanceBuilder({ ...this.data })
+  }
+}
+
+export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendancePlan> {
+  async save() {
+    await insertStaffAttendancePlan(this.data)
+    return this
+  }
+
+  copy() {
+    return new StaffAttendancePlanBuilder({ ...this.data })
   }
 }

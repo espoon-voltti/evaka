@@ -908,7 +908,8 @@ data class DevStaffAttendancePlan(
     val employeeId: EmployeeId,
     val type: StaffAttendanceType,
     val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime
+    val endTime: HelsinkiDateTime,
+    val description: String?
 )
 fun Database.Transaction.insertTestStaffAttendancePlan(staffAttendancePlan: DevStaffAttendancePlan) {
     //language=sql

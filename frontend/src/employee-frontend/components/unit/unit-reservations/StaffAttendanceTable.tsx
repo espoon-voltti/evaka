@@ -1175,14 +1175,14 @@ const AttendanceRow = React.memo(function AttendanceRow({
               rowIndex={rowIndex}
               data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
             >
-              <DayCell>
+              <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
                 <PlannedAttendanceTimes data-qa="planned-attendance-day">
                   {plannedAttendancesForDate(date).length > 0 ? (
                     plannedAttendancesForDate(date).map(
                       (plannedAttendance, i) => (
                         <AttendanceCell key={i}>
                           <>
-                            <AttendanceTime data-qa="planned-arrival-time">
+                            <AttendanceTime data-qa="planned-attendance-start">
                               {renderTime(
                                 plannedAttendance.start
                                   .toLocalTime()
@@ -1192,7 +1192,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                                   .isEqual(date)
                               )}
                             </AttendanceTime>
-                            <AttendanceTime data-qa="planned-departure-time">
+                            <AttendanceTime data-qa="planned-attendance-end">
                               {renderTime(
                                 plannedAttendance.end
                                   .toLocalTime()
@@ -1406,6 +1406,7 @@ const PlannedAttendanceTimes = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  padding: 0px 15px 0px 0px;
 `
 
 const AttendanceCell = styled.div`

@@ -123,6 +123,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -1228,6 +1229,14 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             }
         }
 
+    @PostMapping("/staff-attendance-plan")
+    fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
+            db.connect { dbc ->
+                dbc.transaction {
+                    it.insertTestStaffAttendancePlan(body)
+                }
+            }
+
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTime) =
         db.connect { dbc ->
@@ -1753,7 +1762,6 @@ data class DevStaffAttendance(
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType
 )
-
 data class DevDailyServiceTime(
     val id: DailyServiceTimesId,
     val childId: ChildId,
