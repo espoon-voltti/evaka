@@ -179,6 +179,10 @@ server {
   limit_req         zone=req_zone_wl burst=50 nodelay;
   limit_req_status  429;
 
+  <% if ENV.key?("LIMIT_CONFIGURATION") && ENV["LIMIT_CONFIGURATION"] != "" %>
+  <%= ENV["LIMIT_CONFIGURATION"] %>
+  <% end %>
+
   ############################
   # Well-known & common routes
   ############################
