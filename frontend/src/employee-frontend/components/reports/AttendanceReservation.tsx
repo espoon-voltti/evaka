@@ -13,6 +13,7 @@ import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/r
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { formatDecimal } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Loader from 'lib-components/atoms/Loader'
@@ -36,6 +37,17 @@ import { FilterLabel, FilterRow, TableScrollable } from './common'
 
 const dateFormat = 'EEEEEE d.M.'
 const timeFormat = 'HH:mm'
+
+interface AttendanceReservationReportUiRow {
+  capacityFactor: string
+  childCount: number
+  childCountOver3: number
+  childCountUnder3: number
+  dateTime: HelsinkiDateTime
+  groupId: UUID | null
+  groupName: string | null
+  staffCountRequired: string
+}
 
 export default React.memo(function AttendanceReservation() {
   const { lang, i18n } = useTranslation()
@@ -72,8 +84,14 @@ export default React.memo(function AttendanceReservation() {
   )
 
   const filteredRows = report
-    .map<AttendanceReservationReportRow[]>((row) => row)
-    .getOrElse<AttendanceReservationReportRow[]>([])
+    .map<AttendanceReservationReportUiRow[]>((data) =>
+      data.map((row) => ({
+        ...row,
+        capacityFactor: formatDecimal(row.capacityFactor),
+        staffCountRequired: formatDecimal(row.staffCountRequired)
+      }))
+    )
+    .getOrElse<AttendanceReservationReportUiRow[]>([])
   const filteredUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
@@ -86,7 +104,7 @@ export default React.memo(function AttendanceReservation() {
     .filter((value, index, array) => array.indexOf(value) === index)
 
   const rowsByGroupAndTime = filteredRows.reduce<
-    Record<string, Map<string, AttendanceReservationReportRow[]>>
+    Record<string, Map<string, AttendanceReservationReportUiRow[]>>
   >((data, row) => {
     const groupKey = row.groupId ?? 'ungrouped'
     const map = data[groupKey] ?? new Map()
@@ -266,7 +284,7 @@ export default React.memo(function AttendanceReservation() {
 })
 
 const getTableBody = (
-  rowsByTime: Map<string, AttendanceReservationReportRow[]>
+  rowsByTime: Map<string, AttendanceReservationReportUiRow[]>
 ) => {
   const components: React.ReactNode[] = []
   rowsByTime.forEach((rows, time) => {
