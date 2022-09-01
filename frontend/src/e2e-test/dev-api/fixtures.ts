@@ -974,8 +974,8 @@ export function createDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2021-05-01',
-  endDate = '2022-08-31',
+  startDate = '2022-05-01',
+  endDate = '2023-08-31',
   type: PlacementType = 'DAYCARE'
 ): DaycarePlacement {
   return {
@@ -992,8 +992,8 @@ export function createPreschoolDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2021-05-01',
-  endDate = '2022-08-31'
+  startDate = '2022-05-01',
+  endDate = '2023-08-31'
 ): DaycarePlacement {
   return {
     id,
