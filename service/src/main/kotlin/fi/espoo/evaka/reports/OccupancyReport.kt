@@ -71,7 +71,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         @RequestParam type: OccupancyType,
         @RequestParam(required = false) careAreaId: AreaId?,
         @RequestParam(required = false) providerType: ProviderType?,
-        @RequestParam(required = false) types: Set<CareType>?,
+        @RequestParam(required = false) unitTypes: Set<CareType>?,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyGroupReportResultRow> {
@@ -86,7 +86,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                     evakaClock.today(),
                     careAreaId,
                     providerType,
-                    types,
+                    unitTypes,
                     FiniteDateRange(from, to),
                     type,
                     acl.getAuthorizedUnits(user)
