@@ -190,7 +190,9 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
 
     override fun close() {
         this.executor.shutdown()
-        this.executor.awaitTermination(10, TimeUnit.SECONDS)
+        if (!this.executor.awaitTermination(10, TimeUnit.SECONDS)) {
+            logger.error { "Some async jobs did not terminate in time during shutdown" }
+        }
         this.executor.shutdownNow()
     }
 }
