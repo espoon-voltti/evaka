@@ -120,12 +120,6 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `children from partner in same address are added`() {
-        // language=sql
-        val sql =
-            """
-            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date)
-            VALUES (:partnershipId, :index, :otherIndex, :personId, :startDate, NULL)
-            """.trimIndent()
         val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
@@ -168,7 +162,6 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `children from ex-partners are not added`() {
-        // language=sql
         val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
