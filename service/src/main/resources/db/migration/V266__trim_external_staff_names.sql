@@ -1,0 +1,1 @@
+UPDATE staff_attendance_external SET name = TRIM(BOTH FROM name)
