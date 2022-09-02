@@ -54,7 +54,7 @@ class RealtimeStaffAttendanceController(
                 val attendanceEmployeeToGroups = it.getGroupsForEmployees(attendancesByEmployee.keys)
                 val staffForAttendanceCalendar = it.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
                 val noAttendanceEmployeeToGroups = it.getGroupsForEmployees(staffForAttendanceCalendar.map { emp -> emp.id }.toSet())
-                val plannedAttendances = it.getPlannedStaffAttendanceForDays(attendancesByEmployee.keys + staffForAttendanceCalendar.map{ it.id }, range)
+                val plannedAttendances = it.getPlannedStaffAttendanceForDays(attendancesByEmployee.keys + staffForAttendanceCalendar.map { it.id }, range)
                 val staffWithAttendance = attendancesByEmployee.entries.map { (employeeId, data) ->
                     EmployeeAttendance(
                         employeeId = employeeId,
