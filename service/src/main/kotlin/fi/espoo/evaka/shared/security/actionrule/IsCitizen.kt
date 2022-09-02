@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.messaging.filterCitizenPermittedAttachmentsThroughMessageContent
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
@@ -194,8 +193,21 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_
             .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule { tx, personId, _, ids ->
-        tx.filterCitizenPermittedAttachmentsThroughMessageContent(personId, ids)
+    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { tx, personId, _, ids ->
+        tx.createQuery(
+            """
+SELECT att.id
+FROM attachment att
+JOIN message_content content ON att.message_content_id = content.id
+JOIN message msg ON content.id = msg.content_id
+JOIN message_recipients rec ON msg.id = rec.message_id
+JOIN message_account ma ON ma.id = msg.sender_id OR ma.id = rec.recipient_id
+WHERE att.id = ANY(:ids) AND ma.person_id = :personId
+            """.trimIndent()
+        )
+            .bind("personId", personId)
+            .bind("ids", ids)
+            .mapTo()
     }
 
     fun ownerOfApplication() = rule<ApplicationId> { tx, citizenId, _, ids ->

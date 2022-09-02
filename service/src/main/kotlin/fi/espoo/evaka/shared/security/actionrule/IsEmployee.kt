@@ -4,11 +4,10 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageContent
-import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageDrafts
-import fi.espoo.evaka.messaging.filterPermittedMessageDrafts
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -73,15 +72,51 @@ AND id = ANY(:ids)
             .mapTo()
     }
 
-    fun hasPermissionForMessageDraft() = rule { tx, employee, _, ids ->
-        tx.filterPermittedMessageDrafts(employee, ids)
+    fun hasPermissionForMessageDraft() = rule<MessageDraftId> { tx, user, _, ids ->
+        tx.createQuery(
+            """
+SELECT draft.id
+FROM message_draft draft
+JOIN message_account_access_view access ON access.account_id = draft.account_id
+WHERE
+    draft.id = ANY(:ids) AND
+    access.employee_id = :employeeId
+            """.trimIndent()
+        )
+            .bind("employeeId", user.id)
+            .bind("ids", ids)
+            .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule { tx, employee, _, ids ->
-        tx.filterPermittedAttachmentsThroughMessageContent(employee, ids)
+    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { tx, user, _, ids ->
+        tx.createQuery(
+            """
+SELECT att.id
+FROM attachment att
+JOIN message_content content ON att.message_content_id = content.id
+JOIN message msg ON content.id = msg.content_id
+JOIN message_recipients rec ON msg.id = rec.message_id
+JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
+WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
+            """.trimIndent()
+        )
+            .bind("employeeId", user.id)
+            .bind("ids", ids)
+            .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() = rule { tx, employee, _, ids ->
-        tx.filterPermittedAttachmentsThroughMessageDrafts(employee, ids)
+    fun hasPermissionForAttachmentThroughMessageDraft() = rule<AttachmentId> { tx, user, _, ids ->
+        tx.createQuery(
+            """
+SELECT att.id
+FROM attachment att
+JOIN message_draft draft ON att.message_draft_id = draft.id
+JOIN message_account_access_view access ON access.account_id = draft.account_id
+WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
+            """.trimIndent()
+        )
+            .bind("employeeId", user.id)
+            .bind("ids", ids)
+            .mapTo()
     }
 }
