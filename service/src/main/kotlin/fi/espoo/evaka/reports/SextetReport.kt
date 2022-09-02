@@ -85,7 +85,8 @@ FROM effective_placements ep
 JOIN daycare d ON d.id = ep.unit_id
 WHERE NOT EXISTS (
     SELECT 1
-    FROM child_absences_on_date(ep.child_id, ep.date::date)
+    FROM absence
+    WHERE child_id = ep.child_id AND date = ep.date
     HAVING count(category) >= cardinality(absence_categories(ep.placement_type))
 )
 AND ep.placement_type = :placementType

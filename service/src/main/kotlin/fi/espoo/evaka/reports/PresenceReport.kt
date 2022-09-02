@@ -63,7 +63,7 @@ fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<Presence
         LEFT JOIN daycare ON dg.daycare_id = daycare.id
         LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id
-        LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM child_absences_on_date(p.id, t::date) a) a ON true
+        LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM absence a WHERE p.id = a.child_id AND a.date = t::date) a ON true
         LEFT JOIN holiday h ON t = h.date
         WHERE dw = ANY(daycare.operation_days) AND
           (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND

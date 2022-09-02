@@ -110,6 +110,6 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getMonthOfFutureAbsencesByChild(it, evakaClock, childId) } }
+        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, evakaClock, childId) } }
     }
 }
