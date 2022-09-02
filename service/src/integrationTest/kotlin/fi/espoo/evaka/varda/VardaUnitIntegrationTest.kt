@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -44,6 +45,37 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         assertEquals(2, mockEndpoint.units.size)
         assertEquals(vardaClient.sourceSystem, mockEndpoint.units.values.elementAt(0).lahdejarjestelma)
         assertEquals("[FI]", mockEndpoint.units.values.elementAt(0).asiointikieli_koodi.toString())
+    }
+    @Test
+    fun `opening a closed unit`() {
+        val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
+        val closingDate = LocalDate.now()
+        db.transaction {
+            it.createUpdate(
+                "UPDATE DAYCARE set closing_date = current_date WHERE id = :daycareId".trimIndent()
+            )
+                .bind("daycareId", testDaycare.id)
+                .bind("closingDate", closingDate)
+                .execute()
+        }
+        updateUnits()
+        assertEquals(closingDate.toString(), mockEndpoint.units.values.first { it.nimi == testDaycare.name }.paattymis_pvm)
+
+        db.transaction {
+            it.createUpdate(
+                "UPDATE DAYCARE set closing_date = NULL WHERE id = :daycareId".trimIndent()
+            )
+                .bind("daycareId", testDaycare.id)
+                .execute()
+        }
+        val unit = db.read { getNewOrStaleUnits(it, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl, vardaClient.sourceSystem) }
+            .find { it.name == testDaycare.name }
+
+        // Because of too tight serialization annotation the unit closing date removal (setting as null) was dropped out
+        assert(jsonMapper.writeValueAsString(unit!!.toVardaUnitRequest()).contains(""""paattymis_pvm":null"""))
+
+        updateUnits()
+        assertEquals(null, mockEndpoint.units.values.first { it.nimi == testDaycare.name }.paattymis_pvm)
     }
 
     @Test
