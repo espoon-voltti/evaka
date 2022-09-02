@@ -68,7 +68,8 @@ interface DatabaseActionRule<T, P : Any> : ScopedActionRule<T> {
     val params: P
     val query: Query<T, P>
     interface Query<T, P> {
-        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
+        fun executeWithTargets(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
+        fun executeWithParams(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, params: P): AccessControlFilter<T>?
         override fun hashCode(): Int
         override fun equals(other: Any?): Boolean
     }
@@ -93,3 +94,8 @@ interface ActionRuleParams<This>
 
 internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
+
+sealed interface AccessControlFilter<in T> {
+    object PermitAll : AccessControlFilter<Any>
+    data class Some<T>(val filter: Set<T>) : AccessControlFilter<T>
+}

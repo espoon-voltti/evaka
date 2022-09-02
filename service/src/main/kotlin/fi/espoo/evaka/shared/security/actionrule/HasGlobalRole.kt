@@ -30,7 +30,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
     private fun <T> rule(filter: Filter<T>): DatabaseActionRule<T, HasGlobalRole> =
         DatabaseActionRule.Simple(this, Query(filter))
     data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -39,6 +39,13 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
             is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred(user.globalRoles) }
             else -> emptyMap()
         }
+
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: HasGlobalRole
+        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }
     private class Deferred(private val globalRoles: Set<UserRole>) : DatabaseActionRule.Deferred<HasGlobalRole> {
         override fun evaluate(params: HasGlobalRole): AccessControlDecision = if (globalRoles.any { params.oneOf.contains(it) }) {

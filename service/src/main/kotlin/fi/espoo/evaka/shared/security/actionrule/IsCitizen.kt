@@ -30,7 +30,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
     private fun <T> rule(filter: FilterByCitizen<T>): DatabaseActionRule<T, IsCitizen> =
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -39,6 +39,13 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
             is AuthenticatedUser.Citizen -> Pair(user.authLevel, user.id)
             else -> null
         }?.let { (authLevel, id) -> filter(tx, id, now, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: IsCitizen
+        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }
     private class Deferred(private val authLevel: CitizenAuthLevel) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =

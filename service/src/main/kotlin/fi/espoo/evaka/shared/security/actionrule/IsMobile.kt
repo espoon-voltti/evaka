@@ -29,7 +29,7 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
     private fun <T> rule(filter: FilterMobileByTarget<T>): DatabaseActionRule<T, IsMobile> =
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -43,6 +43,12 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
             ).associateWith { Deferred(user.authLevel) }
             else -> emptyMap()
         }
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: IsMobile
+        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }
     private data class Deferred(private val authLevel: MobileAuthLevel) : DatabaseActionRule.Deferred<IsMobile> {
         override fun evaluate(params: IsMobile): AccessControlDecision =

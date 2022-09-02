@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -43,6 +44,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
+import java.util.UUID
 
 private typealias GetUnitRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
@@ -58,7 +60,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
         DatabaseActionRule.Simple(this, Query(getUnitRoles))
 
     private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) : DatabaseActionRule.Query<T, HasUnitRole> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -84,6 +86,34 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
                 }
                 .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
+        }
+
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: HasUnitRole
+        ): AccessControlFilter<T>? = when (user) {
+            is AuthenticatedUser.Employee -> getUnitRoles(user, now).let { subquery ->
+                tx.createQuery(
+                    QueryFragment(
+                        """
+                    SELECT id
+                    FROM (${subquery.sql}) fragment
+                    WHERE role = ANY(:roles)
+                    AND unit_features @> :features
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                )
+                    .bind("roles", params.oneOf.toSet())
+                    .bind("features", params.unitFeatures.toSet())
+                    .mapTo<UUID>()
+                    .map { Id<DatabaseTable>(it) }
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
+            }
+            else -> null
         }
     }
 

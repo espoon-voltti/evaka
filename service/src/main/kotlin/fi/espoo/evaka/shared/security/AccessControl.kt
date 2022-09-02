@@ -6,13 +6,16 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
@@ -206,7 +209,7 @@ class AccessControl(
                 }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val deferreds = rule.query.execute(tx, user, now, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
+                    val deferreds = rule.query.executeWithTargets(tx, user, now, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
                     deferreds
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
@@ -219,6 +222,51 @@ class AccessControl(
             }
         }
         return decisions.finish()
+    }
+
+    fun requireAuthorizationFilter(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.Unit): AccessControlFilter<DaycareId> =
+        getAuthorizationFilter(tx, user, clock, action) ?: throw Forbidden()
+    fun getAuthorizationFilter(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        // WARN: don't enable this for other action types. This design can have severe performance issues!
+        action: Action.Unit
+    ): AccessControlFilter<DaycareId>? {
+        if (user.isAdmin) {
+            return AccessControlFilter.PermitAll
+        }
+        val now = clock.now()
+        var result: AccessControlFilter.Some<DaycareId>? = null
+        val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
+        while (rules.hasNext()) {
+            when (val rule = rules.next()) {
+                is StaticActionRule -> if (rule.isPermitted(user)) {
+                    return AccessControlFilter.PermitAll
+                }
+                is DatabaseActionRule<in DaycareId, *> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val ruleFilter = (rule as DatabaseActionRule<in DaycareId, Any>).query.executeWithParams(tx, user, now, rule.params)
+                    when (ruleFilter) {
+                        null -> {}
+                        AccessControlFilter.PermitAll -> return AccessControlFilter.PermitAll
+                        is AccessControlFilter.Some -> result = AccessControlFilter.Some(ruleFilter.filter + (result?.filter ?: emptySet()))
+                    }
+                }
+                is UnscopedDatabaseActionRule<*> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
+                    val deferred = query.execute(tx, user, now)
+                    when (val decision = deferred.evaluate(rule.params)) {
+                        is AccessControlDecision.Denied -> throw decision.toException()
+                        AccessControlDecision.None -> {}
+                        is AccessControlDecision.Permitted -> return AccessControlFilter.PermitAll
+                        AccessControlDecision.PermittedToAdmin -> return AccessControlFilter.PermitAll
+                    }
+                }
+            }
+        }
+        return result
     }
 
     inline fun <T, reified A> getPermittedActions(
@@ -265,7 +313,7 @@ class AccessControl(
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
             @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(tx, user, now, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
+            val deferred = ruleType.query.executeWithTargets(tx, user, now, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)

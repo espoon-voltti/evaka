@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.shared.auth
 
-enum class UserRole {
+import fi.espoo.evaka.shared.db.DatabaseEnum
+
+enum class UserRole : DatabaseEnum {
     END_USER,
     CITIZEN_WEAK,
 
@@ -39,6 +41,8 @@ enum class UserRole {
         EARLY_CHILDHOOD_EDUCATION_SECRETARY -> true
         else -> false
     }
+
+    override val sqlType: String = "user_role"
     companion object {
         @Suppress("DEPRECATION")
         val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY, MOBILE, GROUP_STAFF)

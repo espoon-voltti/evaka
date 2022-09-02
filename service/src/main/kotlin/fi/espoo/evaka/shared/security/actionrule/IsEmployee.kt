@@ -21,7 +21,7 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
     private fun <T> rule(filter: FilterByEmployee<T>): DatabaseActionRule<T, IsEmployee> =
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterByEmployee<T>) : DatabaseActionRule.Query<T, IsEmployee> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -30,6 +30,13 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
             is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred }
             else -> emptyMap()
         }
+
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: IsEmployee
+        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }
     private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)

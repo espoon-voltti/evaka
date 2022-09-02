@@ -30,7 +30,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
     private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles<T>): DatabaseActionRule<T, HasGroupRole> =
         DatabaseActionRule.Simple(this, Query(getGroupRoles))
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
-        override fun execute(
+        override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
@@ -44,6 +44,12 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
                 .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
         }
+        override fun executeWithParams(
+            tx: Database.Read,
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime,
+            params: HasGroupRole
+        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }
     private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision =
