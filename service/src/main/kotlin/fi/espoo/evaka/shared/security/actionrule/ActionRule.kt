@@ -32,13 +32,6 @@ sealed interface UnscopedActionRule
 sealed interface ScopedActionRule<T>
 
 /**
- * A rule that grants permission based on an `AuthenticatedUser` and a "target" T which is some data.
- */
-interface TargetActionRule<T> : ScopedActionRule<T> {
-    fun evaluate(user: AuthenticatedUser, target: T): AccessControlDecision
-}
-
-/**
  * A rule that grants permission based on an `AuthenticatedUser` and some data that can be fetched using a "target" T.
  *
  * For performance reasons, this rule is split into two parts: "Query" and "Deferred". Here's why:

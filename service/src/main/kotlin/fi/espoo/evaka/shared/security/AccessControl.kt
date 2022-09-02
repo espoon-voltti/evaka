@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.security.actionrule.TargetActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedDatabaseActionRule
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
@@ -27,7 +26,6 @@ class AccessControl(
     private val jdbi: Jdbi
 ) {
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
-        @Suppress("DEPRECATION")
         EmployeeFeatures(
             applications = user.hasOneOfRoles(
                 UserRole.ADMIN,
@@ -206,11 +204,6 @@ class AccessControl(
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     decisions.decideAll(AccessControlDecision.Permitted(rule))
                 }
-                is TargetActionRule<in T> -> {
-                    for (target in targets) {
-                        decisions.decide(target, rule.evaluate(user, target))
-                    }
-                }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val deferreds = rule.query.execute(tx, user, now, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
@@ -261,17 +254,6 @@ class AccessControl(
         }
 
         val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
-
-        for (action in allActions) {
-            val targetRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? TargetActionRule<in T> }
-            for (rule in targetRules) {
-                for (target in targets) {
-                    if (rule.evaluate(user, target).isPermitted()) {
-                        result[target]?.add(action)
-                    }
-                }
-            }
-        }
 
         val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
             .flatMap { action ->

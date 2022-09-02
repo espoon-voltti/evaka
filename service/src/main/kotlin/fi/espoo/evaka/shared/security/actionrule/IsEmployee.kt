@@ -36,14 +36,7 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
     }
 
-    fun self() = object : TargetActionRule<EmployeeId> {
-        override fun evaluate(user: AuthenticatedUser, target: EmployeeId): AccessControlDecision = when (user) {
-            is AuthenticatedUser.Employee -> if (user.id == target) {
-                AccessControlDecision.Permitted(this@IsEmployee)
-            } else AccessControlDecision.None
-            else -> AccessControlDecision.None
-        }
-    }
+    fun self() = rule<EmployeeId> { _, user, _, ids -> ids.filter { it == user.id } }
 
     fun ownerOfMobileDevice() = rule<MobileDeviceId> { tx, user, _, ids ->
         tx.createQuery(

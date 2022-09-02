@@ -57,13 +57,8 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
         }
     }
 
-    fun self() = object : TargetActionRule<PersonId> {
-        override fun evaluate(user: AuthenticatedUser, target: PersonId): AccessControlDecision = when (user) {
-            is AuthenticatedUser.Citizen -> if (user.id == target && isPermittedAuthLevel(user.authLevel)) {
-                AccessControlDecision.Permitted(this@IsCitizen)
-            } else AccessControlDecision.None
-            else -> AccessControlDecision.None
-        }
+    fun self() = rule<PersonId> { _, personId, _, ids ->
+        ids.filter { it == personId }
     }
 
     fun uploaderOfAttachment() = rule<AttachmentId> { tx, personId, _, ids ->
