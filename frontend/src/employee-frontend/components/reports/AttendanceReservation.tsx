@@ -343,13 +343,13 @@ const getTableBody = (
   return components
 }
 
-interface AttendanceReservationReportTdProps {
+export interface AttendanceReservationReportTdProps {
   borderEdge: Array<'top' | 'left' | 'right'>
   isToday: boolean
   isFuture: boolean
 }
 
-const AttendanceReservationReportTd = styled(
+export const AttendanceReservationReportTd = styled(
   Td
 )<AttendanceReservationReportTdProps>`
   text-align: center;

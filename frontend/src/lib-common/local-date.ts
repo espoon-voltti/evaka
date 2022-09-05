@@ -136,6 +136,15 @@ export default class LocalDate implements Ordered<LocalDate> {
   isAfter(other: LocalDate): boolean {
     return isAfter(this.toSystemTzDate(), other.toSystemTzDate())
   }
+  compareTo(other: LocalDate): number {
+    if (this.isBefore(other)) {
+      return -1
+    }
+    if (this.isAfter(other)) {
+      return 1
+    }
+    return 0
+  }
   isBetween(minInclusive: LocalDate, maxInclusive: LocalDate): boolean {
     return (
       this.isEqualOrAfter(minInclusive) && this.isEqualOrBefore(maxInclusive)

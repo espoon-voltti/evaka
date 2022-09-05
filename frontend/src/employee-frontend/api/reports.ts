@@ -10,6 +10,7 @@ import {
   ApplicationsReportRow,
   AssistanceNeedDecisionsReportRow,
   AssistanceNeedsAndActionsReport,
+  AttendanceReservationReportByChildRow,
   AttendanceReservationReportRow,
   ChildAgeLanguageReportRow,
   ChildrenInDifferentAddressReportRow,
@@ -37,6 +38,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { client } from './client'
@@ -567,6 +569,37 @@ export async function getAssistanceReservationReport(
         data.map((row) => ({
           ...row,
           dateTime: HelsinkiDateTime.parseIso(row.dateTime)
+        }))
+      )
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceReservationReportByChild(
+  unitId: string,
+  filters: AttendanceReservationReportFilters
+): Promise<Result<AttendanceReservationReportByChildRow[]>> {
+  return client
+    .get<JsonOf<AttendanceReservationReportByChildRow[]>>(
+      `/reports/attendance-reservation/${unitId}/by-child`,
+      {
+        params: {
+          start: filters.range.start.formatIso(),
+          end: filters.range.end.formatIso(),
+          groupIds: filters.groupIds.join(',')
+        }
+      }
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((row) => ({
+          ...row,
+          reservationDate: LocalDate.parseIso(row.reservationDate),
+          reservationStartTime: LocalTime.parse(
+            row.reservationStartTime,
+            'HH:mm'
+          ),
+          reservationEndTime: LocalTime.parse(row.reservationEndTime, 'HH:mm')
         }))
       )
     )

@@ -63,6 +63,15 @@ export default class LocalTime implements Ordered<LocalTime> {
   isAfter(other: LocalTime): boolean {
     return this.formatIso() > other.formatIso()
   }
+  compareTo(other: LocalTime): number {
+    if (this.isBefore(other)) {
+      return -1
+    }
+    if (this.isAfter(other)) {
+      return 1
+    }
+    return 0
+  }
 
   toString(): string {
     return this.formatIso()
