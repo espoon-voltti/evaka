@@ -119,8 +119,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevDaycare(
                     id = openingDaycare,
                     areaId = careArea1,
-                    openingDate = null,
-                    closingDate = today.minusWeeks(1),
+                    openingDate = today.plusWeeks(1),
+                    closingDate = null,
                     providerType = ProviderType.MUNICIPAL,
                     type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
@@ -132,8 +132,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevDaycare(
                     id = closedDaycare,
                     areaId = careArea1,
-                    openingDate = today.plusWeeks(1),
-                    closingDate = null,
+                    openingDate = null,
+                    closingDate = today.minusWeeks(1),
                     providerType = ProviderType.MUNICIPAL,
                     type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
