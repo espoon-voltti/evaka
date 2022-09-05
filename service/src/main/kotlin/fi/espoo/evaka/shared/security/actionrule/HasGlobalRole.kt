@@ -18,7 +18,7 @@ import java.util.EnumSet
 
 private typealias Filter<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
-data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, ActionRuleParams<HasGlobalRole> {
+data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
     init {
         oneOf.forEach { check(it.isGlobalRole()) { "Expected a global role, got $it" } }
     }

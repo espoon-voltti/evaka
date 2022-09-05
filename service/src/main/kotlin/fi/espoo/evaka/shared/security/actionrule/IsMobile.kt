@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 
 private typealias FilterMobileByTarget<T> = (tx: Database.Read, mobileId: MobileDeviceId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
 
-data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
+data class IsMobile(val requirePinLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
         MobileAuthLevel.PIN_LOGIN -> true
         MobileAuthLevel.DEFAULT -> !requirePinLogin

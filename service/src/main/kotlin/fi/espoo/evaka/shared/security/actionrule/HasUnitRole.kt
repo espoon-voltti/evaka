@@ -47,7 +47,7 @@ import java.util.UUID
 
 private typealias GetUnitRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
-data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) : ActionRuleParams<HasUnitRole> {
+data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }

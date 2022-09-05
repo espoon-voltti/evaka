@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 
 private typealias FilterByEmployee = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
-object IsEmployee : ActionRuleParams<IsEmployee> {
+object IsEmployee {
     private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule<T, IsEmployee> =
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Query<T, IsEmployee> {

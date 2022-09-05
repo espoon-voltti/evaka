@@ -92,8 +92,6 @@ data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P
     }
 }
 
-interface ActionRuleParams<This>
-
 internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
 
