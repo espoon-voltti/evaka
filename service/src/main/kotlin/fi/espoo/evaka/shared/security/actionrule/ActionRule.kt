@@ -64,34 +64,34 @@ sealed interface ScopedActionRule<T>
  * one expensive database query. This is much better than the original naive version which would do N*M expensive
  * database queries in this scenario.
  */
-interface DatabaseActionRule<T, P : Any> : ScopedActionRule<T> {
-    val params: P
-    val query: Query<T, P>
 
-    interface Query<T, P> {
-        fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
-        fun executeWithParams(ctx: QueryContext, params: P): AccessControlFilter<T>?
-        override fun hashCode(): Int
-        override fun equals(other: Any?): Boolean
-    }
+object DatabaseActionRule {
     data class QueryContext(val tx: Database.Read, val user: AuthenticatedUser, val now: HelsinkiDateTime)
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
-    data class Simple<T, P : Any>(override val params: P, override val query: Query<T, P>) : DatabaseActionRule<T, P>
-}
 
-/**
- * Like DatabaseActionRule, but is not tied to any targets.
- */
-data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
-    interface Query<P> {
-        fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<P>
-        override fun hashCode(): Int
-        override fun equals(other: Any?): Boolean
+    interface Scoped<T, P : Any> : ScopedActionRule<T> {
+        val params: P
+        val query: Query<T, P>
+
+        interface Query<T, P> {
+            fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
+            fun executeWithParams(ctx: QueryContext, params: P): AccessControlFilter<T>?
+            override fun hashCode(): Int
+            override fun equals(other: Any?): Boolean
+        }
+        data class Simple<T, P : Any>(override val params: P, override val query: Query<T, P>) : Scoped<T, P>
+    }
+
+    data class Unscoped<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
+        interface Query<P> {
+            fun execute(ctx: QueryContext): Deferred<P>
+            override fun hashCode(): Int
+            override fun equals(other: Any?): Boolean
+        }
     }
 }
-
 internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
 

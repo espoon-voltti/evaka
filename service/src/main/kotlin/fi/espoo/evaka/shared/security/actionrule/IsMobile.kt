@@ -26,9 +26,9 @@ data class IsMobile(val requirePinLogin: Boolean) {
         MobileAuthLevel.DEFAULT -> !requirePinLogin
     }
 
-    private fun <T> rule(filter: FilterMobileByTarget<T>): DatabaseActionRule<T, IsMobile> =
-        DatabaseActionRule.Simple(this, Query(filter))
-    private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Query<T, IsMobile> {
+    private fun <T> rule(filter: FilterMobileByTarget<T>): DatabaseActionRule.Scoped<T, IsMobile> =
+        DatabaseActionRule.Scoped.Simple(this, Query(filter))
+    private data class Query<T>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Scoped.Query<T, IsMobile> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>

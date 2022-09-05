@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.security.actionrule.UnscopedDatabaseActionRule
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
 
@@ -108,9 +107,9 @@ class AccessControl(
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     return AccessControlDecision.Permitted(rule)
                 }
-                is UnscopedDatabaseActionRule<*> -> {
+                is DatabaseActionRule.Unscoped<*> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
+                    val query = rule.query as DatabaseActionRule.Unscoped.Query<Any?>
                     val deferred = dbc.read { tx -> query.execute(DatabaseActionRule.QueryContext(tx, user, now)) }
                     val decision = deferred.evaluate(rule.params)
                     if (decision.isPermitted()) {
@@ -140,7 +139,7 @@ class AccessControl(
 
         val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
             .flatMap { action ->
-                actionRuleMapping.rulesOf(action).mapNotNull { it as? UnscopedDatabaseActionRule<*> }
+                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule.Unscoped<*> }
             }
             .distinct()
             .iterator()
@@ -154,7 +153,7 @@ class AccessControl(
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
-                    .mapNotNull { it as? UnscopedDatabaseActionRule<*> }
+                    .mapNotNull { it as? DatabaseActionRule.Unscoped<*> }
                     .filter { it == ruleType }
                 for (rule in compatibleRules) {
                     if (deferred.evaluate(rule.params).isPermitted()) {
@@ -209,15 +208,15 @@ class AccessControl(
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     decisions.decideAll(AccessControlDecision.Permitted(rule))
                 }
-                is DatabaseActionRule<in T, *> -> {
+                is DatabaseActionRule.Scoped<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val deferreds = rule.query.executeWithTargets(queryCtx, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
                     deferreds
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
-                is UnscopedDatabaseActionRule<*> -> {
+                is DatabaseActionRule.Unscoped<*> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
+                    val query = rule.query as DatabaseActionRule.Unscoped.Query<Any?>
                     val deferred = query.execute(queryCtx)
                     decisions.decideAll(deferred.evaluate(rule.params))
                 }
@@ -247,18 +246,18 @@ class AccessControl(
                 is StaticActionRule -> if (rule.isPermitted(user)) {
                     return AccessControlFilter.PermitAll
                 }
-                is DatabaseActionRule<in DaycareId, *> -> {
+                is DatabaseActionRule.Scoped<in DaycareId, *> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val ruleFilter = (rule as DatabaseActionRule<in DaycareId, Any>).query.executeWithParams(queryCtx, rule.params)
+                    val ruleFilter = (rule as DatabaseActionRule.Scoped<in DaycareId, Any>).query.executeWithParams(queryCtx, rule.params)
                     when (ruleFilter) {
                         null -> {}
                         AccessControlFilter.PermitAll -> return AccessControlFilter.PermitAll
                         is AccessControlFilter.Some -> result = AccessControlFilter.Some(ruleFilter.filter + (result?.filter ?: emptySet()))
                     }
                 }
-                is UnscopedDatabaseActionRule<*> -> {
+                is DatabaseActionRule.Unscoped<*> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
+                    val query = rule.query as DatabaseActionRule.Unscoped.Query<Any?>
                     val deferred = query.execute(queryCtx)
                     when (val decision = deferred.evaluate(rule.params)) {
                         is AccessControlDecision.Denied -> throw decision.toException()
@@ -308,7 +307,7 @@ class AccessControl(
 
         val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
             .flatMap { action ->
-                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
+                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule.Scoped<in T, *> }
             }
             .distinct()
             .iterator()
@@ -321,7 +320,7 @@ class AccessControl(
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
-                    .mapNotNull { it as? DatabaseActionRule<in T, *> }
+                    .mapNotNull { it as? DatabaseActionRule.Scoped<in T, *> }
                     .filter { it == ruleType }
                 for (rule in compatibleRules) {
                     for (target in targets) {

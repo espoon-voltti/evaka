@@ -20,9 +20,9 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByEmployee = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
 object IsEmployee {
-    private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule<T, IsEmployee> =
-        DatabaseActionRule.Simple(this, Query(filter))
-    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Query<T, IsEmployee> {
+    private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule.Scoped<T, IsEmployee> =
+        DatabaseActionRule.Scoped.Simple(this, Query(filter))
+    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Scoped.Query<T, IsEmployee> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -63,9 +63,9 @@ object IsEmployee {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
     }
 
-    fun self() = object : DatabaseActionRule<EmployeeId, IsEmployee> {
+    fun self() = object : DatabaseActionRule.Scoped<EmployeeId, IsEmployee> {
         override val params = IsEmployee
-        override val query = object : DatabaseActionRule.Query<EmployeeId, IsEmployee> {
+        override val query = object : DatabaseActionRule.Scoped.Query<EmployeeId, IsEmployee> {
             override fun executeWithTargets(
                 ctx: DatabaseActionRule.QueryContext,
                 targets: Set<EmployeeId>

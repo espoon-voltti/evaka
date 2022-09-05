@@ -27,9 +27,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
     override fun isPermitted(user: AuthenticatedUser): Boolean =
         user is AuthenticatedUser.Employee && user.globalRoles.any { this.oneOf.contains(it) }
 
-    private fun <T> rule(filter: Filter<T>): DatabaseActionRule<T, HasGlobalRole> =
-        DatabaseActionRule.Simple(this, Query(filter))
-    data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
+    private fun <T> rule(filter: Filter<T>): DatabaseActionRule.Scoped<T, HasGlobalRole> =
+        DatabaseActionRule.Scoped.Simple(this, Query(filter))
+    data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>

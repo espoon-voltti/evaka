@@ -27,9 +27,9 @@ private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, n
 data class IsCitizen(val allowWeakLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
-    private fun <T> rule(filter: FilterByCitizen<T>): DatabaseActionRule<T, IsCitizen> =
-        DatabaseActionRule.Simple(this, Query(filter))
-    private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
+    private fun <T> rule(filter: FilterByCitizen<T>): DatabaseActionRule.Scoped<T, IsCitizen> =
+        DatabaseActionRule.Scoped.Simple(this, Query(filter))
+    private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Scoped.Query<T, IsCitizen> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>

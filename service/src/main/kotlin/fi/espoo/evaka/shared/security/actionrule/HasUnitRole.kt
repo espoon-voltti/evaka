@@ -55,10 +55,10 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private fun <T : Id<*>> rule(getUnitRoles: GetUnitRoles): DatabaseActionRule<T, HasUnitRole> =
-        DatabaseActionRule.Simple(this, Query(getUnitRoles))
+    private fun <T : Id<*>> rule(getUnitRoles: GetUnitRoles): DatabaseActionRule.Scoped<T, HasUnitRole> =
+        DatabaseActionRule.Scoped.Simple(this, Query(getUnitRoles))
 
-    private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) : DatabaseActionRule.Query<T, HasUnitRole> {
+    private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) : DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -121,9 +121,9 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
             }
     }
 
-    fun inAnyUnit() = UnscopedDatabaseActionRule(
+    fun inAnyUnit() = DatabaseActionRule.Unscoped(
         this,
-        object : UnscopedDatabaseActionRule.Query<HasUnitRole> {
+        object : DatabaseActionRule.Unscoped.Query<HasUnitRole> {
             override fun execute(
                 ctx: DatabaseActionRule.QueryContext,
             ): DatabaseActionRule.Deferred<HasUnitRole> = Deferred(

@@ -29,9 +29,9 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule<T, HasGroupRole> =
-        DatabaseActionRule.Simple(this, Query(getGroupRoles))
-    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Query<T, HasGroupRole> {
+    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule.Scoped<T, HasGroupRole> =
+        DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
+    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
