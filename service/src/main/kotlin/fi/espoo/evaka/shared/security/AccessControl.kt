@@ -15,10 +15,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
+import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
 
@@ -91,78 +93,33 @@ class AccessControl(
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action).assert()
+        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.assert()
     }
     fun hasPermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action).isPermitted()
+        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.isPermitted()
     }
-    fun checkPermissionFor(dbc: Database.Connection, user: AuthenticatedUser, action: Action.UnscopedAction): AccessControlDecision {
+    fun checkPermissionFor(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction): AccessControlDecision {
         if (user.isAdmin) {
             return AccessControlDecision.PermittedToAdmin
         }
-        val now = HelsinkiDateTime.now()
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
-        for (rule in rules) {
-            when (rule) {
-                is StaticActionRule -> {
-                    val decision = rule.evaluate(user)
-                    if (decision != AccessControlDecision.None) {
-                        return decision
-                    }
-                }
-                is DatabaseActionRule.Unscoped<*> -> {
-                    val decision = dbc.read { tx ->
-                        rule.executeAndEvaluate(DatabaseActionRule.QueryContext(tx, user, now))
-                    }
-                    if (decision != AccessControlDecision.None) {
-                        return decision
-                    }
-                }
-            }
-        }
-        return AccessControlDecision.None
+        val evaluator = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
+
+        val decision = rules.map { evaluator.evaluate(it) }.find { it != AccessControlDecision.None }
+        return decision ?: AccessControlDecision.None
     }
 
-    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser): Set<Action.Global> {
+    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock): Set<Action.Global> {
         val allActions = EnumSet.allOf(Action.Global::class.java)
         if (user.isAdmin) {
             return EnumSet.allOf(Action.Global::class.java)
         }
-        val now = HelsinkiDateTime.now()
-        val undecidedActions = EnumSet.allOf(Action.Global::class.java)
+        val evaluator = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
         val permittedActions = EnumSet.noneOf(Action.Global::class.java)
         for (action in allActions) {
-            val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
-            if (staticRules.any { it.evaluate(user).isPermitted() }) {
+            val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
+            if (rules.any { evaluator.evaluate(it).isPermitted() }) {
                 permittedActions += action
-                undecidedActions -= action
-            }
-        }
-
-        val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
-            .flatMap { action ->
-                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule.Unscoped<*> }
-            }
-            .distinct()
-            .iterator()
-
-        val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
-        while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
-            val ruleType = databaseRuleTypes.next()
-
-            @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(queryCtx) as DatabaseActionRule.Deferred<Any?>
-
-            for (action in EnumSet.copyOf(undecidedActions)) {
-                val compatibleRules = actionRuleMapping.rulesOf(action)
-                    .mapNotNull { it as? DatabaseActionRule.Unscoped<*> }
-                    .filter { it == ruleType }
-                for (rule in compatibleRules) {
-                    if (deferred.evaluate(rule.params).isPermitted()) {
-                        permittedActions += action
-                        undecidedActions -= action
-                    }
-                }
             }
         }
         return permittedActions
@@ -352,6 +309,20 @@ class AccessControl(
             }
         }
         fun finish(): Map<T, AccessControlDecision> = result + undecided.associateWith { AccessControlDecision.None }
+    }
+
+    private class UnscopedEvaluator(private val queryCtx: DatabaseActionRule.QueryContext) {
+        private val cache: MutableMap<DatabaseActionRule.Unscoped.Query<Any?>, DatabaseActionRule.Deferred<Any?>> = mutableMapOf()
+
+        fun evaluate(rule: UnscopedActionRule): AccessControlDecision = when (rule) {
+            is StaticActionRule -> rule.evaluate(queryCtx.user)
+            is DatabaseActionRule.Unscoped<*> -> {
+                @Suppress("UNCHECKED_CAST")
+                val query = rule.query as DatabaseActionRule.Unscoped.Query<Any?>
+                val deferred = cache.getOrPut(query) { query.execute(queryCtx) }
+                deferred.evaluate(rule.params)
+            }
+        }
     }
 
     enum class PinError {
