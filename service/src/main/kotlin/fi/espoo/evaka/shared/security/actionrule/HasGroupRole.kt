@@ -5,19 +5,22 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
+import java.util.UUID
 
-private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
+private typealias GetGroupRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) : ActionRuleParams<HasGroupRole> {
     init {
@@ -27,16 +30,28 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles<T>): DatabaseActionRule<T, HasGroupRole> =
+    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule<T, HasGroupRole> =
         DatabaseActionRule.Simple(this, Query(getGroupRoles))
-    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
+    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, now, targets)
+            is AuthenticatedUser.Employee -> getGroupRoles(user, now).let { subquery ->
+                tx.createQuery(
+                    QueryFragment(
+                        """
+                    SELECT id, role, unit_features
+                    FROM (${subquery.sql}) fragment
+                    WHERE id = ANY(:ids)
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                ).bind("ids", targets.map { it.raw })
+                    .mapTo<IdRoleFeatures>()
+            }
                 .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
                     acc[target]?.plusAssign(result)
                     acc
@@ -49,7 +64,28 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
             params: HasGroupRole
-        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
+        ): AccessControlFilter<T>? = when (user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(user, now).let { subquery ->
+                tx.createQuery(
+                    QueryFragment(
+                        """
+                    SELECT id
+                    FROM (${subquery.sql}) fragment
+                    WHERE role = ANY(:roles)
+                    AND unit_features @> :features
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                )
+                    .bind("roles", params.oneOf.toSet())
+                    .bind("features", params.unitFeatures.toSet())
+                    .mapTo<UUID>()
+                    .map { Id<DatabaseTable>(it) }
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
+            }
+            else -> null
+        }
     }
     private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision =
@@ -60,36 +96,30 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             }
     }
 
-    fun inPlacementGroupOfChild() = rule<ChildId> { tx, user, now, ids ->
-        tx.createQuery(
+    fun inPlacementGroupOfChild() = rule<ChildId> { user, now ->
+        QueryFragment(
             """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_group_acl(:today) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND child_id = ANY(:ids)
             """.trimIndent()
         )
             .bind("today", now.toLocalDate())
             .bind("userId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { tx, user, now, ids ->
-        tx.createQuery(
+    fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
+        QueryFragment(
             """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
 JOIN employee_child_group_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND curriculum_document.id = ANY(:ids)
             """.trimIndent()
         )
             .bind("today", now.toLocalDate())
             .bind("userId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 }
