@@ -5,6 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DailyReservationData,
@@ -25,6 +26,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -154,6 +156,17 @@ export default React.memo(function ReservationModal({
         )
     )
   }, [availableChildren, selectedRange])
+
+  const [saveError, setSaveError] = useState<string | undefined>()
+  const showSaveError = useCallback(
+    (reason: Failure<void>) => {
+      reason.errorCode === 'NON_RESERVABLE_DAYS' &&
+        setSaveError(
+          i18n.calendar.reservationModal.saveErrors.NON_RESERVABLE_DAYS
+        )
+    },
+    [i18n, setSaveError]
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -290,6 +303,15 @@ export default React.memo(function ReservationModal({
                 )}
               </CalendarModalSection>
             </div>
+            <Gap size="m" />
+            {saveError !== undefined && (
+              <AlertBox
+                title={i18n.calendar.reservationModal.saveErrors.failure}
+                message={saveError}
+                wide
+                noMargin
+              />
+            )}
             <CalendarModalButtons>
               <Button
                 onClick={onClose}
@@ -311,6 +333,9 @@ export default React.memo(function ReservationModal({
                 onSuccess={() => {
                   onReload()
                   onClose()
+                }}
+                onFailure={(reason) => {
+                  showSaveError(reason)
                 }}
                 data-qa="modal-okBtn"
               />
