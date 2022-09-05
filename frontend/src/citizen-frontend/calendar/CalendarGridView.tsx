@@ -346,6 +346,7 @@ function dateType(year: number, month: number, date: LocalDate): DateType {
 export const CalendarEventCountContainer = styled.div`
   position: relative;
   font-size: 20px;
+  height: fit-content;
 `
 
 export const CalendarEventCount = styled.div`
