@@ -17,7 +17,7 @@ import org.jdbi.v3.core.mapper.Nested
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional information
  */
 interface StaticActionRule : ScopedActionRule<Any>, UnscopedActionRule {
-    fun isPermitted(user: AuthenticatedUser): Boolean
+    fun evaluate(user: AuthenticatedUser): AccessControlDecision
 }
 
 /**

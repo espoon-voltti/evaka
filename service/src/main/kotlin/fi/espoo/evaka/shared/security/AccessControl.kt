@@ -104,14 +104,17 @@ class AccessControl(
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
         for (rule in rules) {
             when (rule) {
-                is StaticActionRule -> if (rule.isPermitted(user)) {
-                    return AccessControlDecision.Permitted(rule)
+                is StaticActionRule -> {
+                    val decision = rule.evaluate(user)
+                    if (decision != AccessControlDecision.None) {
+                        return decision
+                    }
                 }
                 is DatabaseActionRule.Unscoped<*> -> {
                     val decision = dbc.read { tx ->
                         rule.executeAndEvaluate(DatabaseActionRule.QueryContext(tx, user, now))
                     }
-                    if (decision.isPermitted()) {
+                    if (decision != AccessControlDecision.None) {
                         return decision
                     }
                 }
@@ -130,7 +133,7 @@ class AccessControl(
         val permittedActions = EnumSet.noneOf(Action.Global::class.java)
         for (action in allActions) {
             val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
-            if (staticRules.any { it.isPermitted(user) }) {
+            if (staticRules.any { it.evaluate(user).isPermitted() }) {
                 permittedActions += action
                 undecidedActions -= action
             }
@@ -204,9 +207,7 @@ class AccessControl(
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
         while (rules.hasNext() && decisions.undecided.isNotEmpty()) {
             when (val rule = rules.next()) {
-                is StaticActionRule -> if (rule.isPermitted(user)) {
-                    decisions.decideAll(AccessControlDecision.Permitted(rule))
-                }
+                is StaticActionRule -> decisions.decideAll(rule.evaluate(user))
                 is DatabaseActionRule.Scoped<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
                     val deferreds = rule.query.executeWithTargets(queryCtx, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
@@ -242,7 +243,7 @@ class AccessControl(
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
         while (rules.hasNext()) {
             when (val rule = rules.next()) {
-                is StaticActionRule -> if (rule.isPermitted(user)) {
+                is StaticActionRule -> if (rule.evaluate(user).isPermitted()) {
                     return AccessControlFilter.PermitAll
                 }
                 is DatabaseActionRule.Scoped<in DaycareId, *> -> {
@@ -296,7 +297,7 @@ class AccessControl(
         val permittedActions = EnumSet.noneOf(actionClass)
         for (action in allActions) {
             val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
-            if (staticRules.any { it.isPermitted(user) }) {
+            if (staticRules.any { it.evaluate(user).isPermitted() }) {
                 permittedActions += action
                 undecidedActions -= action
             }

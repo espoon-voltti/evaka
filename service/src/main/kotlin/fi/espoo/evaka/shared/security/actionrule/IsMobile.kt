@@ -51,10 +51,10 @@ data class IsMobile(val requirePinLogin: Boolean) {
     }
 
     fun any() = object : StaticActionRule {
-        override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
-            is AuthenticatedUser.MobileDevice -> isPermittedAuthLevel(user.authLevel)
-            else -> false
-        }
+        override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
+            if (user is AuthenticatedUser.MobileDevice && isPermittedAuthLevel(user.authLevel)) {
+                AccessControlDecision.Permitted(this)
+            } else AccessControlDecision.None
     }
 
     fun inPlacementUnitOfChild() = rule<ChildId> { tx, mobileId, now, ids ->

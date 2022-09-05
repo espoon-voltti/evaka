@@ -53,10 +53,10 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
     }
 
     fun any() = object : StaticActionRule {
-        override fun isPermitted(user: AuthenticatedUser): Boolean = when (user) {
-            is AuthenticatedUser.Citizen -> isPermittedAuthLevel(user.authLevel)
-            else -> false
-        }
+        override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
+            if (user is AuthenticatedUser.Citizen && isPermittedAuthLevel(user.authLevel)) {
+                AccessControlDecision.Permitted(this)
+            } else AccessControlDecision.None
     }
 
     fun self() = rule<PersonId> { _, personId, _, ids ->
