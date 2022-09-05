@@ -256,17 +256,17 @@ private fun calculateSpeculatedMaxOccupancies(
     val longestPeriod = FiniteDateRange(from, from.plusMonths(longestLength).minusDays(1))
 
     val currentOccupancies = tx.calculateDailyUnitOccupancyValues(
-        now,
-        longestPeriod,
-        OccupancyType.PLANNED,
-        aclAuth,
+        today = now,
+        queryPeriod = longestPeriod,
+        type = OccupancyType.PLANNED,
+        aclAuth = aclAuth,
         unitId = unitId
     )
     val speculatedOccupancies = tx.calculateDailyUnitOccupancyValues(
-        now,
-        longestPeriod,
-        OccupancyType.PLANNED,
-        aclAuth,
+        today = now,
+        queryPeriod = longestPeriod,
+        type = OccupancyType.PLANNED,
+        aclAuth = aclAuth,
         unitId = unitId,
         speculatedPlacements = speculatedPlacements
     )

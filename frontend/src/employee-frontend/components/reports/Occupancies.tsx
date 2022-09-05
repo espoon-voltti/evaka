@@ -12,7 +12,10 @@ import styled, { css } from 'styled-components'
 
 import { Loading, Result, Success } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  careTypes,
+  DaycareCareArea
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Loader from 'lib-components/atoms/Loader'
@@ -20,6 +23,7 @@ import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
@@ -308,7 +312,9 @@ export default React.memo(function Occupancies() {
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
     careAreaId: null,
-    type: 'UNIT_CONFIRMED'
+    type: 'UNIT_CONFIRMED',
+    providerType: unitProviderTypes.find((type) => type === 'MUNICIPAL'),
+    unitTypes: ['CENTRE']
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
@@ -426,6 +432,26 @@ export default React.memo(function Occupancies() {
                 }
               }}
               getItemLabel={(item) => item.label}
+            />
+          </Wrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitType}</FilterLabel>
+          <Wrapper>
+            <MultiSelect
+              options={careTypes}
+              onChange={(selectedItems) =>
+                setFilters({
+                  ...filters,
+                  unitTypes: selectedItems.map((selectedItem) => selectedItem)
+                })
+              }
+              value={careTypes.filter((unitType) =>
+                filters.unitTypes.includes(unitType)
+              )}
+              getOptionId={(unitType) => unitType}
+              getOptionLabel={(unitType) => i18n.common.types[unitType]}
+              placeholder=""
             />
           </Wrapper>
         </FilterRow>

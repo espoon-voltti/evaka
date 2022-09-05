@@ -1129,6 +1129,52 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `calculateDailyUnitOccupancyValues should filter with unit type`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).fromDay(-1).toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(familyGroup1).save()
+                        }
+                }
+        }
+
+        db.read {
+            val calculateDailyUnitOccupancyValuesByUnitTypes: (Set<CareType>) -> List<DailyOccupancyValues<UnitKey>> =
+                { unitTypes ->
+                    it.calculateDailyUnitOccupancyValues(
+                        today,
+                        FiniteDateRange(today.minusDays(1), today),
+                        OccupancyType.CONFIRMED,
+                        AclAuthorization.All,
+                        unitTypes = unitTypes
+                    )
+                }
+
+            assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(emptySet()))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(daycareInArea1, familyUnitInArea2)
+            assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(setOf(CareType.CENTRE)))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(daycareInArea1)
+            assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(setOf(CareType.FAMILY)))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(familyUnitInArea2)
+            assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(setOf(CareType.CENTRE, CareType.FAMILY)))
+                .extracting<DaycareId> { value -> value.key.unitId }
+                .containsExactlyInAnyOrder(daycareInArea1, familyUnitInArea2)
+            assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(setOf(CareType.CLUB)))
+                .isEmpty()
+        }
+    }
+
+    @Test
     fun `calculateDailyGroupOccupancyValues should filter with provider type`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today)
@@ -1167,6 +1213,52 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .extracting<GroupId> { value -> value.key.groupId }
                 .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
             assertThat(calculateDailyGroupOccupancyValuesByProviderType(ProviderType.PRIVATE_SERVICE_VOUCHER))
+                .isEmpty()
+        }
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues should filter with unit type`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).fromDay(-1).toDay(0)
+                        .saveAnd {
+                            addGroupPlacement().toGroup(familyGroup1).save()
+                        }
+                }
+        }
+
+        db.read {
+            val calculateDailyGroupOccupancyValuesByUnitTypes: (Set<CareType>) -> List<DailyOccupancyValues<UnitGroupKey>> =
+                { unitTypes ->
+                    it.calculateDailyGroupOccupancyValues(
+                        today,
+                        FiniteDateRange(today.minusDays(1), today),
+                        OccupancyType.CONFIRMED,
+                        AclAuthorization.All,
+                        unitTypes = unitTypes
+                    )
+                }
+
+            assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(emptySet()))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2, familyGroup1, familyGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(setOf(CareType.CENTRE)))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(setOf(CareType.FAMILY)))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(setOf(CareType.CENTRE, CareType.FAMILY)))
+                .extracting<GroupId> { value -> value.key.groupId }
+                .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2, familyGroup1, familyGroup2)
+            assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(setOf(CareType.CLUB)))
                 .isEmpty()
         }
     }
