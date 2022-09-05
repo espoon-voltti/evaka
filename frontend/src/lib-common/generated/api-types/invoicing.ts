@@ -713,6 +713,7 @@ export type PaymentStatus =
 */
 export interface PaymentUnit {
   businessId: string | null
+  careType: CareType[]
   iban: string | null
   id: UUID
   name: string
