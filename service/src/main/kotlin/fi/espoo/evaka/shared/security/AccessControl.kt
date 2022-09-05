@@ -108,10 +108,9 @@ class AccessControl(
                     return AccessControlDecision.Permitted(rule)
                 }
                 is DatabaseActionRule.Unscoped<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as DatabaseActionRule.Unscoped.Query<Any?>
-                    val deferred = dbc.read { tx -> query.execute(DatabaseActionRule.QueryContext(tx, user, now)) }
-                    val decision = deferred.evaluate(rule.params)
+                    val decision = dbc.read { tx ->
+                        rule.executeAndEvaluate(DatabaseActionRule.QueryContext(tx, user, now))
+                    }
                     if (decision.isPermitted()) {
                         return decision
                     }
