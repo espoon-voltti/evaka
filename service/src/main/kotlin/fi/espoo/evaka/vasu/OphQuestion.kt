@@ -390,7 +390,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> ""
                     },
                     info = when (lang) {
-                        VasuLanguage.FI -> "Lapsen vasun laatimisessa voidaan hyödyntää muita mahdollisia suunnitelmia kuten esimerkiksi lapsen vasun liitteenä oleva lääkehoitosuunnitelma ja Hyve4-lomakkeet."
+                        VasuLanguage.FI -> "Lapsen vasun laatimisessa voidaan hyödyntää muita mahdollisia suunnitelmia, esimerkiksi lääkehoitosuunnitelmaa."
                         VasuLanguage.SV -> ""
                     },
                     multiline = true,
