@@ -228,6 +228,7 @@ data class VardaUnitRequest(
     val sahkopostiosoite: String?,
     val varhaiskasvatuspaikat: Int,
     val alkamis_pvm: String?,
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     val paattymis_pvm: String?,
     val kunta_koodi: String?,
     val lahdejarjestelma: String?,
