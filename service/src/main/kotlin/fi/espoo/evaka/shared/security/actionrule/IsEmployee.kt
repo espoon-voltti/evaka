@@ -6,28 +6,46 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByEmployee<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
+private typealias FilterByEmployee = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
 
 object IsEmployee : ActionRuleParams<IsEmployee> {
-    private fun <T> rule(filter: FilterByEmployee<T>): DatabaseActionRule<T, IsEmployee> =
+    private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule<T, IsEmployee> =
         DatabaseActionRule.Simple(this, Query(filter))
-    private data class Query<T>(private val filter: FilterByEmployee<T>) : DatabaseActionRule.Query<T, IsEmployee> {
+    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Query<T, IsEmployee> {
         override fun executeWithTargets(
             tx: Database.Read,
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
-            is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred }
+            is AuthenticatedUser.Employee -> filter(user, now).let { subquery ->
+                tx.createQuery(
+                    QueryFragment(
+                        """
+                    SELECT id
+                    FROM (${subquery.sql}) fragment
+                    WHERE id = ANY(:ids)
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                ).bind("ids", targets.map { it.raw })
+                    .mapTo<Id<DatabaseTable>>()
+                    .toSet()
+            }.let { matched ->
+                targets.filter { matched.contains(it) }.associateWith { Deferred }
+            }
             else -> emptyMap()
         }
 
@@ -36,67 +54,95 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
             user: AuthenticatedUser,
             now: HelsinkiDateTime,
             params: IsEmployee
-        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
+        ): AccessControlFilter<T>? = when (user) {
+            is AuthenticatedUser.Employee -> filter(user, now).let { subquery ->
+                tx.createQuery(subquery)
+                    .mapTo<Id<DatabaseTable>>()
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
+            }
+            else -> null
+        }
     }
     private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
     }
 
-    fun self() = rule<EmployeeId> { _, user, _, ids -> ids.filter { it == user.id } }
+    fun self() = object : DatabaseActionRule<EmployeeId, IsEmployee> {
+        override val params = IsEmployee
+        override val query = object : DatabaseActionRule.Query<EmployeeId, IsEmployee> {
+            override fun executeWithTargets(
+                tx: Database.Read,
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime,
+                targets: Set<EmployeeId>
+            ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
+                is AuthenticatedUser.Employee -> targets.filter { it == user.id }.associateWith { Deferred }
+                else -> emptyMap()
+            }
 
-    fun ownerOfMobileDevice() = rule<MobileDeviceId> { tx, user, _, ids ->
-        tx.createQuery(
+            override fun executeWithParams(
+                tx: Database.Read,
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime,
+                params: IsEmployee
+            ): AccessControlFilter<EmployeeId>? = when (user) {
+                is AuthenticatedUser.Employee -> AccessControlFilter.Some(setOf(user.id))
+                else -> null
+            }
+
+            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            override fun hashCode(): Int = this.javaClass.hashCode()
+        }
+    }
+
+    fun ownerOfMobileDevice() = rule<MobileDeviceId> { user, _ ->
+        QueryFragment(
             """
 SELECT id
 FROM mobile_device
 WHERE employee_id = :userId
-AND id = ANY(:ids)
             """.trimIndent()
         )
             .bind("userId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun ownerOfPairing() = rule<PairingId> { tx, user, _, ids ->
-        tx.createQuery(
+    fun ownerOfPairing() = rule<PairingId> { user, _ ->
+        QueryFragment(
             """
 SELECT id
 FROM pairing
 WHERE employee_id = :userId
-AND id = ANY(:ids)
             """.trimIndent()
         )
             .bind("userId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun authorOfApplicationNote() = rule<ApplicationNoteId> { tx, user, _, ids ->
-        tx.createQuery("SELECT id FROM application_note WHERE created_by = :userId AND id = ANY(:ids)")
+    fun authorOfApplicationNote() = rule<ApplicationNoteId> { user, _ ->
+        QueryFragment(
+            """
+SELECT id
+FROM application_note
+WHERE created_by = :userId
+            """.trimIndent()
+        )
             .bind("userId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun hasPermissionForMessageDraft() = rule<MessageDraftId> { tx, user, _, ids ->
-        tx.createQuery(
+    fun hasPermissionForMessageDraft() = rule<MessageDraftId> { user, _ ->
+        QueryFragment(
             """
 SELECT draft.id
 FROM message_draft draft
 JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE
-    draft.id = ANY(:ids) AND
-    access.employee_id = :employeeId
+WHERE access.employee_id = :employeeId
             """.trimIndent()
         )
             .bind("employeeId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { tx, user, _, ids ->
-        tx.createQuery(
+    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { user, _ ->
+        QueryFragment(
             """
 SELECT att.id
 FROM attachment att
@@ -104,26 +150,22 @@ JOIN message_content content ON att.message_content_id = content.id
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
-WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
+WHERE access.employee_id = :employeeId
             """.trimIndent()
         )
             .bind("employeeId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() = rule<AttachmentId> { tx, user, _, ids ->
-        tx.createQuery(
+    fun hasPermissionForAttachmentThroughMessageDraft() = rule<AttachmentId> { user, _ ->
+        QueryFragment(
             """
 SELECT att.id
 FROM attachment att
 JOIN message_draft draft ON att.message_draft_id = draft.id
 JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE att.id = ANY(:ids) AND access.employee_id = :employeeId
+WHERE access.employee_id = :employeeId
             """.trimIndent()
         )
             .bind("employeeId", user.id)
-            .bind("ids", ids)
-            .mapTo()
     }
 }
