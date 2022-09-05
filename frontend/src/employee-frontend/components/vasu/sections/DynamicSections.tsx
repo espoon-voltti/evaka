@@ -166,15 +166,20 @@ export function DynamicSections({
                       }
                       onChange={
                         setContent
-                          ? (selectedOption: RadioGroupSelectedValue) =>
+                          ? (selectedOption: RadioGroupSelectedValue | null) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 = clone.sections[sectionIndex]
                                   .questions[
                                   questionIndex
                                 ] as RadioGroupQuestion
-                                question1.value = selectedOption.key
-                                question1.dateRange = selectedOption.range
+                                if (selectedOption !== null) {
+                                  question1.value = selectedOption.key
+                                  question1.dateRange = selectedOption.range
+                                } else {
+                                  question1.value = null
+                                  question1.dateRange = null
+                                }
                                 return clone
                               })
                           : undefined

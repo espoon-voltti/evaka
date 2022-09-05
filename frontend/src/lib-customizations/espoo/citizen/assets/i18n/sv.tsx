@@ -1964,7 +1964,7 @@ const sv: Translations = {
           preparator: 'Beredare av beslutet',
           decisionMaker: 'Beslutsfattare',
           disclaimer:
-            'Ett beslut som fattats i enlighet med Lag om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.',
+            'Ett beslut som fattats i enlighet med lagen om småbarnspedagogik 15 § kan förverkligas även om någon sökt ändring av beslutet.',
           decisionNumber: 'Beslutsnummer',
           statuses: {
             DRAFT: 'Utkast',

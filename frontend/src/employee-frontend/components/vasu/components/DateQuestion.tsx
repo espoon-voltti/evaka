@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { DateQuestion } from 'lib-common/api-types/vasu'
@@ -30,9 +30,6 @@ export default React.memo(function DateQuestion({
   translations
 }: Props) {
   const { i18n, lang } = useTranslation()
-
-  const [date, setDate] = useState<LocalDate | null>(null)
-
   const ariaId = useUniqueId()
 
   return (
@@ -44,11 +41,8 @@ export default React.memo(function DateQuestion({
       </QuestionInfo>
       {onChange ? (
         <DatePicker
-          date={date}
-          onChange={(d) => {
-            onChange(d)
-            setDate(d)
-          }}
+          date={value}
+          onChange={onChange}
           locale={lang}
           data-qa="date-question-picker"
           errorTexts={i18n.validationErrors}

@@ -11,9 +11,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Radio from 'lib-components/atoms/form/Radio'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
-import { Bold } from 'lib-components/typography'
-
-import QuestionInfo from '../QuestionInfo'
 
 import type { RadioGroupSelectedValue } from './RadioGroupQuestion'
 
@@ -42,7 +39,7 @@ export default React.memo(function RadioGroupQuestionOption({
   const [range, setRange] = useState(selectedValue?.range ?? undefined)
 
   useEffect(() => {
-    if (isSelected && range) {
+    if (isSelected && option.dateRange && range) {
       const rangeHasChanged =
         !selectedValue?.range?.start.isEqual(range.start) ||
         !selectedValue?.range?.end.isEqual(range.end)
@@ -56,14 +53,6 @@ export default React.memo(function RadioGroupQuestionOption({
   }, [range, onChange, option, selectedValue, isSelected])
 
   const ariaId = useUniqueId()
-
-  if (option.isIntervention) {
-    return (
-      <QuestionInfo info={option.info ?? null}>
-        <Bold>{option.name}</Bold>
-      </QuestionInfo>
-    )
-  }
 
   return (
     <OptionContainer>

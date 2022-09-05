@@ -802,6 +802,7 @@ export const fi = {
       preparator: 'Päätöksen valmistelija',
       decisionMaker: 'Päätöksen tekijä',
       title: 'Titteli',
+      tel: 'Puhelinnumero',
       disclaimer:
         'Varhaiskasvatuslain 15 e §:n mukaan tämä päätös voidaan panna täytäntöön muutoksenhausta huolimatta.',
       decisionNumber: 'Päätösnumero',

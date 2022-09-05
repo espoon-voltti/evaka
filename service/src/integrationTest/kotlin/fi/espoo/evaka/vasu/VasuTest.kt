@@ -51,6 +51,13 @@ class VasuTest {
         }
     }
 
+    @Test
+    fun `matchesStructurally validates the new content`() {
+        assertFalse(
+            getSampleContent().matchesStructurally(getSampleContent(listOf("3")))
+        )
+    }
+
     private fun getSampleContent(value: List<String> = listOf()) = VasuContent(
         sections = getSampleSections(value)
     )
