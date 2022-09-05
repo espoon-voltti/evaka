@@ -5,7 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { desktopMin } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 import { cityLogo } from 'lib-customizations/citizen'
 
@@ -19,11 +18,6 @@ export default React.memo(function Logo() {
 
 const Container = styled.div`
   padding: ${defaultMargins.xs} 0;
-  margin-left: ${defaultMargins.xs};
-
-  @media (min-width: ${desktopMin}) {
-    margin-left: ${defaultMargins.L};
-  }
 `
 
 const Img = styled.img`

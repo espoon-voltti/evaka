@@ -17,6 +17,7 @@ export interface Child {
   id: UUID
   imageId: UUID | null
   lastName: string
+  preferredName: string
 }
 
 /**

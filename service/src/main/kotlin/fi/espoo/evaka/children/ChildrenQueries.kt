@@ -14,6 +14,7 @@ fun Database.Read.getChildrenByGuardian(id: PersonId): List<Child> =
 SELECT
     p.id,
     p.first_name,
+    p.preferred_name,
     p.last_name,
     img.id AS image_id,
     dg.id AS group_id,
@@ -39,6 +40,7 @@ fun Database.Read.getChild(id: PersonId): Child? =
 SELECT
     p.id,
     p.first_name,
+    p.preferred_name,
     p.last_name,
     img.id AS image_id,
     dg.id AS group_id,

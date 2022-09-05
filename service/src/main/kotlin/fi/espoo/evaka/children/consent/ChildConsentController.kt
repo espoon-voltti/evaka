@@ -110,14 +110,14 @@ class ChildConsentController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock
-    ): Int {
+    ): Map<ChildId, Int> {
         Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCitizenConsentedChildConsentTypes(user.id, evakaClock.today()).map { knownConsentTypes ->
-                    featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.value.contains(it) }.size
-                }.sum()
+                tx.getCitizenConsentedChildConsentTypes(user.id, evakaClock.today()).map { (child, knownConsentTypes) ->
+                    child to featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.contains(it) }.size
+                }.toMap()
             }
         }
     }

@@ -15,6 +15,7 @@ import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
+import { mobileBottomNavHeight } from '../navigation/const'
 
 import ReportHolidayLabel from './ReportHolidayLabel'
 
@@ -73,7 +74,7 @@ export default React.memo(function ActionPickerModal({
 
 const Container = styled.div`
   position: fixed;
-  bottom: calc(46px + ${defaultMargins.L});
+  bottom: calc(46px + ${defaultMargins.L} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   display: flex;
   flex-direction: column;

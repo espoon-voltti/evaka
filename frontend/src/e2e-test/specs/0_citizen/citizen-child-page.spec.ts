@@ -27,10 +27,7 @@ import {
 import { DaycarePlacement, EmployeeDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
-import {
-  CitizenChildPage,
-  CitizenChildrenPage
-} from '../../pages/citizen/citizen-children'
+import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -40,7 +37,6 @@ let fixtures: AreaAndPersonFixtures
 let page: Page
 let header: CitizenHeader
 let childPage: CitizenChildPage
-let childrenPage: CitizenChildrenPage
 let unreadGuardianIds: UUID[]
 
 const mockedDate = LocalDate.of(2022, 3, 1)
@@ -53,22 +49,17 @@ beforeEach(async () => {
   await enduserLogin(page)
   header = new CitizenHeader(page)
   childPage = new CitizenChildPage(page)
-  childrenPage = new CitizenChildrenPage(page)
   unreadGuardianIds = [fixtures.enduserGuardianFixture.id]
 })
 
 describe('Citizen children page', () => {
   describe('Child page', () => {
     test('Citizen can see its children and navigate to their page', async () => {
-      await header.selectTab('children')
-      await childrenPage.assertChildCount(3)
-      await childrenPage.navigateToChild(0)
+      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
       await childPage.assertChildNameIsShown(
         'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
       )
-      await childPage.goBack()
-
-      await childrenPage.navigateToChild(1)
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.assertChildNameIsShown('Kaarina Veera Nelli Karhula')
     })
   })
@@ -108,8 +99,7 @@ describe('Citizen children page', () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -130,8 +120,7 @@ describe('Citizen children page', () => {
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -150,8 +139,7 @@ describe('Citizen children page', () => {
         'DAYCARE',
         startDate
       )
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -178,14 +166,14 @@ describe('Citizen children page', () => {
         true
       )
       await insertApplications([application])
+      await page.reload()
 
       await header.selectTab('applications')
       await new CitizenApplicationsPage(page).assertApplicationExists(
         applicationFixtureId
       )
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
       const placementLabel = `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${endDate.format()}`
       await childPage.togglePlacement(placementLabel)
@@ -260,8 +248,7 @@ describe('Citizen children page', () => {
         daycareAfterPreschool: `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycareAfterPreschoolEnd.format()}`
       }
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -303,8 +290,7 @@ describe('Citizen children page', () => {
         daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
       }
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -366,8 +352,7 @@ describe('Citizen children page', () => {
         daycareAfterPreschool: `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycareAfterPreschoolEnd.format()}`
       }
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -419,8 +404,7 @@ describe('Citizen children page', () => {
         'PRESCHOOL_DAYCARE'
       )
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
       await childPage.assertTerminatedPlacementCount(0)
@@ -473,8 +457,7 @@ describe('Citizen children page', () => {
         })
         .save()
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
@@ -498,8 +481,7 @@ describe('Citizen children page', () => {
         })
         .save()
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
@@ -531,8 +513,7 @@ describe('Citizen children page', () => {
         })
         .save()
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('assistance-need-decisions')
 
       await waitUntilEqual(
@@ -578,17 +559,16 @@ describe('Citizen children page', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(3)
 
-      await header.selectTab('children')
-      await childrenPage.assertChildUnreadCount(
+      await header.assertChildUnreadCount(
         fixtures.enduserChildFixtureKaarina.id,
         2
       )
-      await childrenPage.assertChildUnreadCount(
+      await header.assertChildUnreadCount(
         fixtures.enduserChildFixturePorriHatterRestricted.id,
         1
       )
 
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.assertUnreadAssistanceNeedDecisions(2)
     })
     test('Unread indicator is shown in the table', async () => {
@@ -606,16 +586,14 @@ describe('Citizen children page', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(1)
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('assistance-need-decisions')
 
       await childPage.assertAssistanceNeedDecisionRowUnread(0)
       await childPage.assistanceNeedDecisionRowClick(0)
       await header.assertUnreadChildrenCount(0)
 
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('assistance-need-decisions')
       await childPage.assertNotAssistanceNeedDecisionRowUnread(0)
     })
@@ -651,16 +629,14 @@ describe('Citizen children page', () => {
     })
 
     test('can give consent once', async () => {
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.check()
       await childPage.saveConsent()
       await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
 
       await page.reload()
-      await header.selectTab('children')
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('consents')
       await childPage.evakaProfilePicYes.waitUntilChecked(true)
       await childPage.evakaProfilePicNo.waitUntilChecked(false)
@@ -672,17 +648,16 @@ describe('Citizen children page', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(3)
 
-      await header.selectTab('children')
-      await childrenPage.assertChildUnreadCount(
+      await header.assertChildUnreadCount(
         fixtures.enduserChildFixtureKaarina.id,
         1
       )
-      await childrenPage.assertChildUnreadCount(
+      await header.assertChildUnreadCount(
         fixtures.enduserChildFixturePorriHatterRestricted.id,
         1
       )
 
-      await childrenPage.openChildPage('Kaarina')
+      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.assertUnconsentedCount(1)
 
       await childPage.openCollapsible('consents')
@@ -721,8 +696,7 @@ describe('Citizen assistance need decision page', () => {
       })
       .save()
 
-    await header.selectTab('children')
-    await childrenPage.openChildPage('Kaarina')
+    await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
     await childPage.openCollapsible('assistance-need-decisions')
     await childPage.assistanceNeedDecisionRowClick(0)
 

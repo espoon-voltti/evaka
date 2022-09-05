@@ -4,7 +4,6 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result, Success } from 'lib-common/api'
@@ -20,8 +19,8 @@ import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useUser } from '../auth/state'
-import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
+import { headerHeightDesktop } from '../navigation/const'
 import useTitle from '../useTitle'
 
 import MapBox from './MapBox'
@@ -93,7 +92,6 @@ export interface Props {
 }
 
 export default React.memo(function MapView({ scrollToTop }: Props) {
-  const navigate = useNavigate()
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
   const user = useUser()
@@ -134,10 +132,7 @@ export default React.memo(function MapView({ scrollToTop }: Props) {
     [filteredUnits, selectedAddress, unitsWithDistances]
   )
 
-  const navigateBack = useMemo(
-    () => (user ? undefined : () => navigate('/login')),
-    [navigate, user]
-  )
+  const navigateBack = user ? '/applications' : '/login'
 
   return (
     <MapFullscreenContainer loggedIn={!!user}>
@@ -265,9 +260,7 @@ const PanelWrapper = styled.div`
 
 const FullScreen = styled.div<{ loggedIn: boolean }>`
   position: absolute;
-  top: calc(
-    ${headerHeightDesktop}px + ${({ loggedIn }) => (loggedIn ? '76px' : '0px')}
-  );
+  top: ${headerHeightDesktop}px;
   bottom: 0;
   left: 0;
   right: 0;

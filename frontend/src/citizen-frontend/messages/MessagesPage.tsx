@@ -17,8 +17,8 @@ import Container from 'lib-components/layout/Container'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { headerHeightDesktop } from '../header/const'
 import { useTranslation } from '../localization'
+import { headerHeightDesktop } from '../navigation/const'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'

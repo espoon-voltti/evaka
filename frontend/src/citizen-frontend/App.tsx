@@ -20,20 +20,19 @@ import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
 import RequireAuth from './RequireAuth'
 import ApplicationCreation from './applications/ApplicationCreation'
+import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import { ApplicationsContextProvider } from './applications/state'
-import ApplyingRouter from './applying/ApplyingRouter'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
-import ChildrenPage from './children/ChildrenPage'
 import AssistanceNeedDecisionPage from './children/sections/assistance-need-decision/AssistanceNeedDecisionPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import { ChildrenContextProvider } from './children/state'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
-import Header from './header/Header'
+import Decisions from './decisions/decisions-page/Decisions'
 import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
@@ -44,6 +43,8 @@ import { Localization, useTranslation } from './localization'
 import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import { MessageContextProvider } from './messages/state'
+import Header from './navigation/Header'
+import MobileNav from './navigation/MobileNav'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PersonalDetails from './personal-details/PersonalDetails'
@@ -88,6 +89,7 @@ export default function App() {
 const FullPageContainer = styled.div`
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 `
 
 const Content = React.memo(function Content() {
@@ -119,12 +121,16 @@ const Content = React.memo(function Content() {
             element={<MapPage scrollToTop={scrollMainToTop} />}
           />
           <Route
-            path="/applying/*"
-            element={<ApplyingRouter scrollToTop={scrollMainToTop} />}
-          />
-          <Route
             path="/accessibility"
             element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
+          />
+          <Route
+            path="/applications"
+            element={
+              <RequireAuth>
+                <Applications />
+              </RequireAuth>
+            }
           />
           <Route
             path="/applications/new/:childId"
@@ -139,6 +145,14 @@ const Content = React.memo(function Content() {
             element={
               <RequireAuth>
                 <ApplicationReadView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/applications/:applicationId/edit"
+            element={
+              <RequireAuth>
+                <ApplicationEditor />
               </RequireAuth>
             }
           />
@@ -191,14 +205,6 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            path="/applications/:applicationId/edit"
-            element={
-              <RequireAuth>
-                <ApplicationEditor />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/children/:childId/assistance-need-decision/:id"
             element={
               <RequireAuth>
@@ -215,10 +221,10 @@ const Content = React.memo(function Content() {
             }
           />
           <Route
-            path="/children"
+            path="/decisions"
             element={
               <RequireAuth>
-                <ChildrenPage />
+                <Decisions />
               </RequireAuth>
             }
           />
@@ -262,9 +268,10 @@ const Content = React.memo(function Content() {
               </RequireAuth>
             }
           />
-          <Route index element={<HandleRedirection />} />
+          <Route path="*" element={<HandleRedirection />} />
         </Routes>
       </MainContainer>
+      <MobileNav />
     </FullPageContainer>
   )
 })
@@ -302,7 +309,7 @@ function HandleRedirection() {
   return hasAccessToCalendar ? (
     <Navigate replace to="/calendar" />
   ) : (
-    <Navigate replace to="/applying/map" />
+    <Navigate replace to="/map" />
   )
 }
 

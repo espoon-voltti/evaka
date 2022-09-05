@@ -45,6 +45,7 @@ describe('Citizen applications list', () => {
       true
     )
     await insertApplications([application])
+    await page.reload()
 
     await header.selectTab('applications')
 
@@ -79,6 +80,7 @@ describe('Citizen applications list', () => {
       'send-decisions-without-proposal'
     ])
     await runPendingAsyncJobs()
+    await page.reload()
 
     await header.selectTab('applications')
     await applicationsPage.assertApplicationIsListed(
@@ -102,6 +104,7 @@ describe('Citizen applications list', () => {
       'CREATED'
     )
     await insertApplications([application])
+    await page.reload()
 
     await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)
@@ -120,6 +123,7 @@ describe('Citizen applications list', () => {
       'SENT'
     )
     await insertApplications([application])
+    await page.reload()
 
     await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)

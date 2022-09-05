@@ -8,14 +8,15 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
-import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
+import { desktopMin } from 'lib-components/breakpoints'
+import colors from 'lib-customizations/common'
 
 export default React.memo(function Logo() {
   const t = useTranslation()
 
   return (
     <Container to="/" aria-label={t.header.goToHomepage}>
-      <EvakaLogo />
+      <EvakaLogo color={colors.main.m2} />
     </Container>
   )
 })
@@ -26,14 +27,14 @@ const Container = styled(Link)`
   justify-content: center;
 
   svg {
-    max-width: 150px;
+    max-width: 120px;
     width: auto;
     height: 100%;
   }
 
-  @media (min-width: ${desktopMin}) and (max-width: calc(${desktopSmall} - 1px)) {
+  @media (max-width: calc(${desktopMin} - 1px)) {
     svg {
-      display: none;
+      max-width: 80px;
     }
   }
 `

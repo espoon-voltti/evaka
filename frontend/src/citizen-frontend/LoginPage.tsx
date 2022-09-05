@@ -26,8 +26,8 @@ import { farMap } from 'lib-icons'
 
 import Footer from './Footer'
 import { useUser } from './auth/state'
-import { getStrongLoginUriWithPath, getWeakLoginUri } from './header/const'
 import { useTranslation } from './localization'
+import { getStrongLoginUriWithPath, getWeakLoginUri } from './navigation/const'
 
 const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
@@ -114,7 +114,7 @@ export default React.memo(function LoginPage() {
             </ul>
             <Gap size="s" />
             <LinkButton
-              href={getStrongLoginUriWithPath(nextPath ?? '/applying')}
+              href={getStrongLoginUriWithPath(nextPath ?? '/applications')}
               data-qa="strong-login"
             >
               {i18n.loginPage.applying.link}

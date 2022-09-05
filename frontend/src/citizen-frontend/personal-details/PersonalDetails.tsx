@@ -35,8 +35,8 @@ import { faLockAlt, faPen, fasExclamationTriangle } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
-import { getStrongLoginUri } from '../header/const'
 import { Translations, useTranslation } from '../localization'
+import { getStrongLoginUri } from '../navigation/const'
 
 import { updatePersonalData } from './api'
 

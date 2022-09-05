@@ -159,7 +159,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faExclamation,
           resolve: {
             action: () => {
-              navigate('/applying/applications')
+              navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.draftPolicyInfo.ok
@@ -197,7 +197,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               icon: faCheck,
               resolve: {
                 action: () => {
-                  navigate('/applying/applications')
+                  navigate('/applications')
                   clearInfoMessage()
                 },
                 label: t.applications.editor.sentInfo.ok
@@ -205,7 +205,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               'data-qa': 'info-message-application-sent'
             })
 
-            navigate('/applying/applications')
+            navigate('/applications')
           }
         })
       }
@@ -231,7 +231,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           icon: faCheck,
           resolve: {
             action: () => {
-              navigate('/applying/applications')
+              navigate('/applications')
               clearInfoMessage()
             },
             label: t.applications.editor.updateInfo.ok
@@ -239,7 +239,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           'data-qa': 'info-message-application-sent'
         })
 
-        navigate('/applying/applications')
+        navigate('/applications')
       }
     })
   }

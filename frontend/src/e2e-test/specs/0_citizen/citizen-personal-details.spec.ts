@@ -34,7 +34,7 @@ beforeEach(async () => {
 describe('Citizen personal details', () => {
   test('Citizen sees indications of missing email and phone', async () => {
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-    await header.navigateToPersonalDetailsPage()
+    await header.selectTab('personal-details')
     await personalDetailsPage.checkMissingEmailWarningIsShown()
     await personalDetailsPage.checkMissingPhoneWarningIsShown()
   })
@@ -47,7 +47,7 @@ describe('Citizen personal details', () => {
       email: null
     }
 
-    await header.navigateToPersonalDetailsPage()
+    await header.selectTab('personal-details')
     await personalDetailsPage.editPersonalData(data, true)
     await personalDetailsPage.checkPersonalData(data)
     await personalDetailsPage.assertAlertIsNotShown()
@@ -61,7 +61,7 @@ describe('Citizen personal details', () => {
       email: 'a@b.com'
     }
 
-    await header.navigateToPersonalDetailsPage()
+    await header.selectTab('personal-details')
     await personalDetailsPage.editPersonalData(data, false)
     await personalDetailsPage.assertSaveIsDisabled()
   })
@@ -74,7 +74,7 @@ describe('Citizen personal details', () => {
       email: 'a@b.com'
     }
 
-    await header.navigateToPersonalDetailsPage()
+    await header.selectTab('personal-details')
     await personalDetailsPage.editPersonalData(data, true)
     await personalDetailsPage.checkPersonalData(data)
     await personalDetailsPage.assertAlertIsNotShown()

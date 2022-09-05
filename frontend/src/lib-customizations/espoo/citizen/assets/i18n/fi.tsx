@@ -112,6 +112,7 @@ export default {
       messages: 'Viestit',
       calendar: 'Kalenteri',
       children: 'Lapset',
+      subNavigationMenu: 'Valikko',
       messageCount: (n: number) =>
         n > 1 ? `${n} uutta viestiä` : `${n} uusi viesti`
     },
@@ -120,12 +121,18 @@ export default {
       sv: 'På svenska',
       en: 'In English'
     },
+    langMobile: {
+      fi: 'Suomeksi',
+      sv: 'Svenska',
+      en: 'English'
+    },
     login: 'Kirjaudu sisään',
     logout: 'Kirjaudu ulos',
     openMenu: 'Avaa valikko',
     closeMenu: 'Sulje valikko',
     goToHomepage: 'Siirry etusivulle',
     notifications: 'ilmoitusta',
+    attention: 'Huomio',
     requiresStrongAuth: 'vaatii vahvan tunnistautumisen'
   },
   footer: {

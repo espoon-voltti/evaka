@@ -19,6 +19,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
+import { headerHeightMobile, mobileBottomNavHeight } from '../navigation/const'
 
 import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { getChildImages } from './RoundChildImages'
@@ -111,7 +112,7 @@ export const asWeeklyData = (dailyData: DailyReservationData[]): WeeklyData[] =>
 
 const HoverButton = styled(Button)`
   position: fixed;
-  bottom: ${defaultMargins.s};
+  bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   border-radius: 40px;
 `
@@ -122,7 +123,7 @@ const Icon = styled(FontAwesomeIcon)`
 
 const NotificationSlotContainer = styled.div`
   position: sticky;
-  top: 0;
+  top: ${headerHeightMobile}px;
   width: 100%;
   z-index: 20;
 `

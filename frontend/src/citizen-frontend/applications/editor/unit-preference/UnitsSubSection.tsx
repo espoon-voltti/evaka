@@ -90,7 +90,7 @@ export default React.memo(function UnitsSubSection({
       {t.applications.editor.unitPreference.units.info[applicationType]}
 
       <ExternalLink
-        href="/applying/map"
+        href="/map"
         text={t.applications.editor.unitPreference.units.mapLink}
         newTab
       />

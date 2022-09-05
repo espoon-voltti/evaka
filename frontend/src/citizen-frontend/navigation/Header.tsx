@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import sum from 'lodash/sum'
-import sumBy from 'lodash/sumBy'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -19,11 +17,9 @@ import { MessageContext, MessagePageState } from '../messages/state'
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
 import EvakaLogo from './EvakaLogo'
-import MobileNav from './MobileNav'
 import { headerHeightDesktop, headerHeightMobile } from './const'
 
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
-  const [showMenu, setShowMenu] = useState(false)
   const user = useUser()
 
   const { unreadMessagesCount, refreshUnreadMessagesCount } =
@@ -34,11 +30,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   }, [refreshUnreadMessagesCount, user])
 
   const {
-    unreadAssistanceNeedDecisionCounts,
     refreshUnreadAssistanceNeedDecisionCounts,
-    childConsentNotifications,
-    unreadPedagogicalDocumentsCount,
-    unreadVasuDocumentsCount,
     refreshUnreadPedagogicalDocumentsCount,
     refreshUnreadVasuDocumentsCount
   } = useContext(ChildrenContext)
@@ -58,58 +50,52 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const location = useLocation()
   const hideLoginButton = location.pathname === '/login'
 
-  const unreadAssistanceNeedDecisionCount = useMemo(
-    () => sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count),
-    [unreadAssistanceNeedDecisionCounts]
-  )
-
-  const unreadChildDocumentsCount = useMemo(
-    () =>
-      sum(Object.values(unreadPedagogicalDocumentsCount ?? {})) +
-      sum(Object.values(unreadVasuDocumentsCount ?? {})),
-    [unreadPedagogicalDocumentsCount, unreadVasuDocumentsCount]
-  )
-
-  const unreadChildrenCount =
-    unreadAssistanceNeedDecisionCount +
-    childConsentNotifications +
-    unreadChildDocumentsCount
-
   return (
-    <HeaderContainer showMenu={showMenu} aria-hidden={props.ariaHidden}>
-      <CityLogo />
-      <EvakaLogo />
-      <DesktopNav
-        unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildren={unreadChildrenCount}
-        unreadApplications={waitingConfirmationCount}
-        hideLoginButton={hideLoginButton}
-      />
-      <MobileNav
-        showMenu={showMenu}
-        setShowMenu={setShowMenu}
-        unreadMessagesCount={unreadMessagesCount ?? 0}
-        unreadChildrenCount={unreadChildrenCount}
-        unreadApplications={waitingConfirmationCount}
-        hideLoginButton={hideLoginButton}
-      />
-    </HeaderContainer>
+    <>
+      <HeaderContainer aria-hidden={props.ariaHidden}>
+        <CityLogo />
+        <EvakaLogo />
+        <DesktopNav
+          unreadMessagesCount={unreadMessagesCount ?? 0}
+          unreadDecisions={waitingConfirmationCount}
+          hideLoginButton={hideLoginButton}
+        />
+      </HeaderContainer>
+    </>
   )
 })
 
-const HeaderContainer = styled.header<{ showMenu: boolean }>`
+const HeaderContainer = styled.header`
   z-index: 25;
-  color: ${colors.grayscale.g0};
-  background-color: ${colors.main.m2};
+  color: ${colors.grayscale.g100};
+  background-color: ${colors.grayscale.g0};
   display: grid;
   grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
   height: ${headerHeightMobile}px;
   width: 100%;
+  margin: 0 auto;
   position: sticky;
   top: 0;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
 
   @media (min-width: ${desktopMin}) {
+    position: static;
     grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;
     height: ${headerHeightDesktop}px;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  @media screen and (min-width: 1152px) and (max-width: 1215px) {
+    max-width: 1152px;
+    width: 1152px;
+  }
+  @media screen and (min-width: 1216px) {
+    max-width: 1152px;
+    width: 1152px;
+  }
+  @media screen and (min-width: 1408px) {
+    max-width: 1344px;
+    width: 1344px;
   }
 `

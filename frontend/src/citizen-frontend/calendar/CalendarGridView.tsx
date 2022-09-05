@@ -20,14 +20,14 @@ import LocalDate from 'lib-common/local-date'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { fontWeights, H1, H2 } from 'lib-components/typography'
+import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import { headerHeightDesktop } from '../header/const'
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
+import { headerHeightDesktop } from '../navigation/const'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
 import { CalendarNotificationsSlot } from './CalendarNotifications'
@@ -91,38 +91,34 @@ export default React.memo(function CalendarGridView({
   return (
     <>
       <StickyHeader ref={headerRef}>
-        <Container>
-          <PageHeaderRow>
-            <H1 noMargin>{i18n.calendar.title}</H1>
-            <ButtonContainer>
-              {questionnaireAvailable && (
-                <InlineButton
-                  onClick={onReportHolidaysClicked}
-                  text={<ReportHolidayLabel iconRight />}
-                  icon={faTreePalm}
-                  data-qa="open-holiday-modal"
-                />
-              )}
-              <InlineButton
-                onClick={onCreateAbsences}
-                text={i18n.calendar.newAbsence}
-                icon={faUserMinus}
-                data-qa="open-absences-modal"
-              />
-              <InlineButton
-                onClick={onCreateReservationClicked}
-                text={i18n.calendar.newReservationBtn}
-                icon={faCalendarPlus}
-                data-qa="open-reservations-modal"
-              />
-            </ButtonContainer>
-          </PageHeaderRow>
-        </Container>
-
         <NotificationSlotContainer>
           <CalendarNotificationsSlot />
         </NotificationSlotContainer>
       </StickyHeader>
+      <StickyBottomBar>
+        <ButtonContainer>
+          {questionnaireAvailable && (
+            <InlineButton
+              onClick={onReportHolidaysClicked}
+              text={<ReportHolidayLabel iconRight />}
+              icon={faTreePalm}
+              data-qa="open-holiday-modal"
+            />
+          )}
+          <InlineButton
+            onClick={onCreateAbsences}
+            text={i18n.calendar.newAbsence}
+            icon={faUserMinus}
+            data-qa="open-absences-modal"
+          />
+          <InlineButton
+            onClick={onCreateReservationClicked}
+            text={i18n.calendar.newReservationBtn}
+            icon={faCalendarPlus}
+            data-qa="open-reservations-modal"
+          />
+        </ButtonContainer>
+      </StickyBottomBar>
       <Container>
         {monthlyData.map(({ month, year, weeks }) => (
           <Month
@@ -147,7 +143,7 @@ export default React.memo(function CalendarGridView({
 
 const NotificationSlotContainer = styled.div`
   position: absolute;
-  top: calc(100% + ${defaultMargins.s});
+  top: 0;
   right: ${defaultMargins.s};
   z-index: 100;
   padding-left: 16px;
@@ -416,24 +412,26 @@ const Day = React.memo(function Day({
 
 const StickyHeader = styled.div`
   position: sticky;
-  top: ${headerHeightDesktop}px;
+  top: ${defaultMargins.s};
   z-index: 2;
   width: 100%;
+`
+
+const StickyBottomBar = styled.div`
+  position: fixed;
+  bottom: 0;
+  z-index: 2;
+  width: 100%;
+  height: 80px;
   background: ${(p) => p.theme.colors.grayscale.g0};
-  box-shadow: 0 4px 8px 2px #0000000a;
+  box-shadow: 0 -4px 8px 2px #0000000a;
 `
 
-const PageHeaderRow = styled(ContentArea).attrs({
-  opaque: false,
-  paddingVertical: defaultMargins.m
-})`
+const ButtonContainer = styled(Container)`
+  height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-`
-
-const ButtonContainer = styled.div`
-  display: flex;
   gap: ${defaultMargins.L};
 `
 

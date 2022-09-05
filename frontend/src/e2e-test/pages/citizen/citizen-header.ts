@@ -13,31 +13,22 @@ export default class CitizenHeader {
     private readonly type: 'desktop' | 'mobile' = 'desktop'
   ) {}
 
-  #menuButton = this.page.find('[data-qa="menu-button"]')
-  #loginButton = this.page.find(
-    `[data-qa="${this.type}-nav"] [data-qa="login-btn"]`
-  )
   #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
   #languageOptionList = this.page.find('[data-qa="select-lang"]')
-  #userMenu = this.page.find(`[data-qa="user-menu-title-${this.type}"]`)
-  #applyingTab = this.page.findByDataQa('nav-applying').findByDataQa('nav-text')
-  #unreadChildrenCount = this.page.findAllByDataQa(
-    'nav-children-notification-count'
+  #unreadChildrenCount = this.page.findByDataQa(
+    `nav-children-${this.type}-notification-count`
   )
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)
   }
 
-  async logIn() {
-    if (this.type === 'mobile') {
-      await this.#menuButton.click()
-    }
-    await this.#loginButton.click()
+  async #toggleChildrenMenu() {
+    return this.page.findByDataQa(`nav-children-${this.type}`).click()
   }
 
   async waitUntilLoggedIn() {
-    await this.#userMenu.waitUntilVisible()
+    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).waitUntilVisible()
   }
 
   async selectTab(
@@ -46,37 +37,26 @@ export default class CitizenHeader {
       | 'decisions'
       | 'income'
       | 'calendar'
-      | 'children'
-      | 'child-documents'
+      | 'messages'
+      | 'personal-details'
   ) {
-    const isContainedInApplyingSubheader = [
+    const isContainedInSubnav = [
       'applications',
-      'decisions'
+      'decisions',
+      'income',
+      'personal-details'
     ].includes(tab)
-    if (this.type === 'mobile') {
-      await this.#menuButton.click()
-    }
-    if (tab !== 'income') {
-      if (isContainedInApplyingSubheader) {
-        await this.page
-          .find(`[data-qa="${this.type}-nav"] [data-qa="nav-applying"]`)
-          .click()
-        await this.page
-          .find('[data-qa="applying-subnavigation"]')
-          .waitUntilVisible()
-        await this.page
-          .find(`[data-qa="applying-subnavigation"] [data-qa="${tab}-tab"]`)
-          .click()
-      } else {
-        await this.page
-          .find(`[data-qa="${this.type}-nav"] [data-qa="nav-${tab}"]`)
-          .click()
-      }
+    if (isContainedInSubnav) {
+      await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
+      await this.page.findByDataQa(`sub-nav-menu-${tab}`).click()
     } else {
-      await this.#userMenu.click()
-      await this.page.find('[data-qa="user-menu-income"]').waitUntilVisible()
-      await this.page.find(`[data-qa="user-menu-income"]`).click()
+      await this.page.findByDataQa(`nav-${tab}-${this.type}`).click()
     }
+  }
+
+  async openChildPage(childId: string) {
+    await this.#toggleChildrenMenu()
+    await this.page.findByDataQa(`children-menu-${childId}`).click()
   }
 
   async selectLanguage(lang: 'fi' | 'sv' | 'en') {
@@ -100,50 +80,46 @@ export default class CitizenHeader {
     await this.page.find(`html[lang=${lang}]`).waitUntilVisible()
   }
 
-  async assertApplyingTabHasText(text: string) {
-    await this.#applyingTab.findText(text).waitUntilVisible()
+  async assertChildrenTabHasText(text: string) {
+    await this.page
+      .findByDataQa('nav-children-desktop')
+      .findText(text)
+      .waitUntilVisible()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {
-    const attentionIndicator = this.page.find(
-      `[data-qa="attention-indicator-${this.type}"]`
-    )
-    const personalDetailsAttentionIndicator = this.page.find(
-      `[data-qa="personal-details-attention-indicator-${this.type}"]`
-    )
-
-    await attentionIndicator.waitUntilVisible()
-    if (this.type === 'mobile') {
-      await this.#menuButton.click()
-      await attentionIndicator.waitUntilVisible()
-    }
-
-    await this.#userMenu.click()
-    await personalDetailsAttentionIndicator.waitUntilVisible()
-  }
-
-  async navigateToPersonalDetailsPage() {
-    const personalDetailsLink = this.page.find(
-      '[data-qa="user-menu-personal-details"]'
-    )
-
-    if (this.type === 'mobile' && !(await this.#userMenu.visible)) {
-      await this.#menuButton.click()
-    }
-
-    if (!(await personalDetailsLink.visible)) {
-      await this.#userMenu.click()
-    }
-
-    await personalDetailsLink.click()
+    await this.page
+      .findByDataQa(`attention-indicator-sub-menu-${this.type}`)
+      .waitUntilVisible()
+    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
+    await this.page
+      .findByDataQa('personal-details-notification')
+      .waitUntilVisible()
+    await this.page.findByDataQa(`sub-nav-menu-${this.type}`).click()
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {
+    await this.#toggleChildrenMenu()
     expectedCount != 0
       ? await waitUntilEqual(
-          () => this.#unreadChildrenCount.first().textContent,
+          () => this.#unreadChildrenCount.textContent,
           expectedCount.toString()
         )
-      : await waitUntilFalse(() => this.#unreadChildrenCount.first().visible)
+      : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
+    await this.#toggleChildrenMenu()
+  }
+
+  async assertChildUnreadCount(childId: string, expectedCount: number) {
+    await this.#toggleChildrenMenu()
+    const notification = this.page.findByDataQa(
+      `children-menu-${childId}-notification-count`
+    )
+    expectedCount != 0
+      ? await waitUntilEqual(
+          () => notification.textContent,
+          expectedCount.toString()
+        )
+      : await notification.waitUntilHidden()
+    await this.#toggleChildrenMenu()
   }
 }

@@ -9,8 +9,8 @@ import { stickyElementZIndex } from 'lib-components/layout/z-helpers'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 
-import { headerHeightMobile } from '../header/const'
 import { useTranslation } from '../localization'
+import { headerHeightMobile } from '../navigation/const'
 
 import { mapViewBreakpoint, MobileMode } from './const'
 
