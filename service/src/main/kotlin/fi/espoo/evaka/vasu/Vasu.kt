@@ -188,9 +188,11 @@ data class VasuSection(
     fun matchesStructurally(section: VasuSection?): Boolean =
         section != null && section.name == this.name && section.questions.size == this.questions.size &&
             this.questions.withIndex()
-                .all { (index, question) ->
-                    question.equalsIgnoringValue(section.questions.getOrNull(index)) &&
-                        question.isValid(section)
+                .all { (index, currentQuestion) ->
+                    val newQuestion = section.questions[index]
+                    val equals = currentQuestion.equalsIgnoringValue(newQuestion)
+                    val isValid = newQuestion.isValid(section)
+                    equals && isValid
                 }
 
     fun redact() = this.copy(
@@ -327,6 +329,7 @@ sealed class VasuQuestion(
 
             if (this.maxSelections != null && this.value.size > this.maxSelections) return false
 
+            if (!this.value.all { v -> options.any { opt -> v == opt.key } }) return false
             return this.dateValue?.keys?.all { key -> options.find { it.key == key }?.date ?: false } ?: true
         }
     }
