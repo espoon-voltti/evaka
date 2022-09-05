@@ -106,6 +106,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -157,7 +158,6 @@ import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
@@ -200,6 +200,7 @@ class DevApi(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
+    private val featureConfig: FeatureConfig,
     bucketEnv: BucketEnv
 ) {
     private val filesBucket = bucketEnv.attachments
@@ -1065,7 +1066,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction { tx ->
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(body.childId, template)
+                tx.insertVasuDocument(body.childId, template, featureConfig.curriculumDocumentPermissionToShareRequired)
             }
         }
     }

@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
-fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
+fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate, permissionToShareRequired: Boolean): VasuDocumentId {
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
         .mapTo<VasuChild>(qualifiers = emptyArray())
@@ -45,14 +45,15 @@ fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemp
 
     val documentId = createQuery(
         """
-        INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
-        VALUES (:childId, :basics, :templateId, now())
+        INSERT INTO curriculum_document (child_id, basics, template_id, modified_at, permission_to_share_required)
+        VALUES (:childId, :basics, :templateId, now(), :permissionToShareRequired)
         RETURNING id
         """.trimIndent()
     )
         .bind("childId", childId)
         .bind("basics", basics)
         .bind("templateId", template.id)
+        .bind("permissionToShareRequired", permissionToShareRequired)
         .mapTo<VasuDocumentId>()
         .one()
 
@@ -77,6 +78,7 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
             cd.child_id,
             cd.modified_at,
             cd.basics,
+            cd.permission_to_share_required,
             ct.name AS template_name,
             ct.valid AS template_range,
             ct.type,
@@ -119,6 +121,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
             cd.child_id,
             cd.basics,
             cd.modified_at,
+            cd.permission_to_share_required,
             ct.name AS template_name,
             ct.valid AS template_range,
             ct.type,
@@ -210,6 +213,7 @@ data class SummaryResultRow(
     val publishedAt: HelsinkiDateTime? = null,
     @Json
     val basics: VasuBasics,
+    val permissionToShareRequired: Boolean,
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null,
@@ -228,6 +232,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
             e.event_type,
             vc.published_at,
             cd.basics,
+            cd.permission_to_share_required,
             ct.type
         FROM curriculum_document cd
         JOIN curriculum_template ct ON cd.template_id = ct.id
@@ -254,6 +259,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 name = documents[0].name,
                 modifiedAt = documents[0].modifiedAt,
                 publishedAt = documents[0].publishedAt,
+                permissionToShareRequired = documents[0].permissionToShareRequired,
                 guardiansThatHaveGivenPermissionToShare = documents[0].basics.guardians.filter { it.hasGivenPermissionToShare }.map { it.id },
                 events = documents.mapNotNull {
                     if (it.eventId != null && it.eventCreated != null && it.eventType != null) VasuDocumentEvent(

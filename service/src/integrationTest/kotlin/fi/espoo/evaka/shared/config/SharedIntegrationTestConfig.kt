@@ -198,4 +198,5 @@ val testFeatureConfig = FeatureConfig(
     maxContractDaySurplusThreshold = null,
     useContractDaysAsDailyFeeDivisor = true,
     enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
+    curriculumDocumentPermissionToShareRequired = true,
 )

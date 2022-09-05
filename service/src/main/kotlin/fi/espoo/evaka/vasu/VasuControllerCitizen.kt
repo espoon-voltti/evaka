@@ -7,6 +7,7 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getGuardianDependants
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/citizen/vasu")
 class VasuControllerCitizen(
+    private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl
 ) {
     data class ChildBasicInfo(
@@ -58,6 +60,7 @@ class VasuControllerCitizen(
                 children.associate { child ->
                     child.id to tx.getVasuDocumentSummaries(child.id)
                         .filter { it.publishedAt != null }
+                        .filter { doc -> doc.permissionToShareRequired }
                         .filterNot { doc -> doc.guardiansThatHaveGivenPermissionToShare.contains(PersonId(user.evakaUserId.raw)) }
                         .size
                 }
@@ -67,6 +70,7 @@ class VasuControllerCitizen(
 
     data class CitizenGetVasuDocumentResponse(
         val vasu: VasuDocument,
+        val permissionToShareRequired: Boolean,
         val guardianHasGivenPermissionToShare: Boolean
     )
 
@@ -84,6 +88,7 @@ class VasuControllerCitizen(
                 val doc = tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
                 CitizenGetVasuDocumentResponse(
                     vasu = doc.redact(),
+                    permissionToShareRequired = doc.permissionToShareRequired,
                     guardianHasGivenPermissionToShare = doc.basics.guardians.find { it.id.raw == user.rawId() }?.hasGivenPermissionToShare ?: false
                 )
             }

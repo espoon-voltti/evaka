@@ -54,6 +54,7 @@ export default React.memo(function VasuPage() {
     vasu,
     content,
     translations,
+    permissionToShareRequired,
     guardianHasGivenPermissionToShare,
     setGuardianHasGivenPermissionToShare
   } = useVasu(id)
@@ -96,7 +97,7 @@ export default React.memo(function VasuPage() {
           </>
         )}
       </VasuContainer>
-      {vasu && !guardianHasGivenPermissionToShare && (
+      {vasu && permissionToShareRequired && !guardianHasGivenPermissionToShare && (
         <StickyFooter>
           <Container>
             <ContentArea opaque paddingVertical="m" paddingHorizontal="L">

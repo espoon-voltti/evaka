@@ -31,6 +31,7 @@ export interface ChildLanguage {
 */
 export interface CitizenGetVasuDocumentResponse {
   guardianHasGivenPermissionToShare: boolean
+  permissionToShareRequired: boolean
   vasu: VasuDocument
 }
 
@@ -113,6 +114,7 @@ export interface VasuDocument {
   id: UUID
   language: VasuLanguage
   modifiedAt: HelsinkiDateTime
+  permissionToShareRequired: boolean
   templateName: string
   templateRange: FiniteDateRange
   type: CurriculumType
@@ -157,6 +159,7 @@ export interface VasuDocumentSummary {
   id: UUID
   modifiedAt: HelsinkiDateTime
   name: string
+  permissionToShareRequired: boolean
   publishedAt: HelsinkiDateTime | null
   type: CurriculumType
 }

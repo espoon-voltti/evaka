@@ -108,11 +108,13 @@ const VasuTable = React.memo(function VasuTable({
                 labels={i18n.children.vasu.states}
               />
             </StateTd>
-            <PermissionTd data-qa={`permission-to-share-needed-${vasu.id}`}>
-              {!vasu.guardiansThatHaveGivenPermissionToShare.some(
-                (guardianId) => guardianId === user?.id
-              ) && <PermissionToShare />}
-            </PermissionTd>
+            {vasu.permissionToShareRequired && (
+              <PermissionTd data-qa={`permission-to-share-needed-${vasu.id}`}>
+                {!vasu.guardiansThatHaveGivenPermissionToShare.some(
+                  (guardianId) => guardianId === user?.id
+                ) && <PermissionToShare />}
+              </PermissionTd>
+            )}
           </VasuTr>
         ))}
       </tbody>
@@ -216,13 +218,14 @@ export default React.memo(function VasuAndLeopsSection({
                   <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
                     {`${vasu.name}`}
                   </Link>
-                  {!vasu.guardiansThatHaveGivenPermissionToShare.some(
-                    (guardianId) => guardianId === user?.id
-                  ) && (
-                    <MobilePermissionToShareContainer>
-                      <PermissionToShare />
-                    </MobilePermissionToShareContainer>
-                  )}
+                  {vasu.permissionToShareRequired &&
+                    !vasu.guardiansThatHaveGivenPermissionToShare.some(
+                      (guardianId) => guardianId === user?.id
+                    ) && (
+                      <MobilePermissionToShareContainer>
+                        <PermissionToShare />
+                      </MobilePermissionToShareContainer>
+                    )}
                 </MobileRowContainer>
               ))}
             </MobileAndTablet>
