@@ -31,19 +31,15 @@ data class IsCitizen(val allowWeakLogin: Boolean) : ActionRuleParams<IsCitizen> 
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Query<T, IsCitizen> {
         override fun executeWithTargets(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (user) {
-            is AuthenticatedUser.Citizen -> Pair(user.authLevel, user.id)
+        ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (ctx.user) {
+            is AuthenticatedUser.Citizen -> Pair(ctx.user.authLevel, ctx.user.id)
             else -> null
-        }?.let { (authLevel, id) -> filter(tx, id, now, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+        }?.let { (authLevel, id) -> filter(ctx.tx, id, ctx.now, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
 
         override fun executeWithParams(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             params: IsCitizen
         ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }

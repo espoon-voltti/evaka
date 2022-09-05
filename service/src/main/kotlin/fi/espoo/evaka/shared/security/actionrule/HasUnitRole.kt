@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
@@ -61,13 +60,11 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
 
     private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) : DatabaseActionRule.Query<T, HasUnitRole> {
         override fun executeWithTargets(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getUnitRoles(user, now).let { subquery ->
-                tx.createQuery(
+        ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getUnitRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
                     QueryFragment(
                         """
                     SELECT id, role, unit_features
@@ -89,13 +86,11 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
         }
 
         override fun executeWithParams(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             params: HasUnitRole
-        ): AccessControlFilter<T>? = when (user) {
-            is AuthenticatedUser.Employee -> getUnitRoles(user, now).let { subquery ->
-                tx.createQuery(
+        ): AccessControlFilter<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getUnitRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
                     QueryFragment(
                         """
                     SELECT id
@@ -130,13 +125,11 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
         this,
         object : UnscopedDatabaseActionRule.Query<HasUnitRole> {
             override fun execute(
-                tx: Database.Read,
-                user: AuthenticatedUser,
-                now: HelsinkiDateTime
+                ctx: DatabaseActionRule.QueryContext,
             ): DatabaseActionRule.Deferred<HasUnitRole> = Deferred(
-                when (user) {
+                when (ctx.user) {
                     is AuthenticatedUser.Employee ->
-                        tx.createQuery(
+                        ctx.tx.createQuery(
                             """
 SELECT role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
@@ -144,7 +137,7 @@ JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
                             """.trimIndent()
                         )
-                            .bind("userId", user.id)
+                            .bind("userId", ctx.user.id)
                             .mapTo<RoleAndFeatures>()
                             .toSet()
                     else -> emptySet()

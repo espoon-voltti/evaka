@@ -31,19 +31,15 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule, Actio
         DatabaseActionRule.Simple(this, Query(filter))
     data class Query<T>(private val filter: Filter<T>) : DatabaseActionRule.Query<T, HasGlobalRole> {
         override fun executeWithTargets(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> = when (user) {
-            is AuthenticatedUser.Employee -> filter(tx, user, now, targets).associateWith { Deferred(user.globalRoles) }
+        ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> = when (ctx.user) {
+            is AuthenticatedUser.Employee -> filter(ctx.tx, ctx.user, ctx.now, targets).associateWith { Deferred(ctx.user.globalRoles) }
             else -> emptyMap()
         }
 
         override fun executeWithParams(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             params: HasGlobalRole
         ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
     }

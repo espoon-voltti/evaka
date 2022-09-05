@@ -67,12 +67,14 @@ sealed interface ScopedActionRule<T>
 interface DatabaseActionRule<T, P : Any> : ScopedActionRule<T> {
     val params: P
     val query: Query<T, P>
+
     interface Query<T, P> {
-        fun executeWithTargets(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
-        fun executeWithParams(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, params: P): AccessControlFilter<T>?
+        fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
+        fun executeWithParams(ctx: QueryContext, params: P): AccessControlFilter<T>?
         override fun hashCode(): Int
         override fun equals(other: Any?): Boolean
     }
+    data class QueryContext(val tx: Database.Read, val user: AuthenticatedUser, val now: HelsinkiDateTime)
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
@@ -84,7 +86,7 @@ interface DatabaseActionRule<T, P : Any> : ScopedActionRule<T> {
  */
 data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
     interface Query<P> {
-        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime): DatabaseActionRule.Deferred<P>
+        fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<P>
         override fun hashCode(): Int
         override fun equals(other: Any?): Boolean
     }

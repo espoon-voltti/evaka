@@ -111,7 +111,7 @@ class AccessControl(
                 is UnscopedDatabaseActionRule<*> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = dbc.read { tx -> query.execute(tx, user, now) }
+                    val deferred = dbc.read { tx -> query.execute(DatabaseActionRule.QueryContext(tx, user, now)) }
                     val decision = deferred.evaluate(rule.params)
                     if (decision.isPermitted()) {
                         return decision
@@ -145,11 +145,12 @@ class AccessControl(
             .distinct()
             .iterator()
 
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
 
             @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(tx, user, now) as DatabaseActionRule.Deferred<Any?>
+            val deferred = ruleType.query.execute(queryCtx) as DatabaseActionRule.Deferred<Any?>
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)
@@ -202,6 +203,7 @@ class AccessControl(
         val now = HelsinkiDateTime.now()
         val decisions = Decisions(targets.toSet())
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
         while (rules.hasNext() && decisions.undecided.isNotEmpty()) {
             when (val rule = rules.next()) {
                 is StaticActionRule -> if (rule.isPermitted(user)) {
@@ -209,14 +211,14 @@ class AccessControl(
                 }
                 is DatabaseActionRule<in T, *> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val deferreds = rule.query.executeWithTargets(tx, user, now, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
+                    val deferreds = rule.query.executeWithTargets(queryCtx, decisions.undecided) as Map<T, DatabaseActionRule.Deferred<Any?>>
                     deferreds
                         .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
                 }
                 is UnscopedDatabaseActionRule<*> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = query.execute(tx, user, now)
+                    val deferred = query.execute(queryCtx)
                     decisions.decideAll(deferred.evaluate(rule.params))
                 }
             }
@@ -237,6 +239,7 @@ class AccessControl(
             return AccessControlFilter.PermitAll
         }
         val now = clock.now()
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
         var result: AccessControlFilter.Some<DaycareId>? = null
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
         while (rules.hasNext()) {
@@ -246,7 +249,7 @@ class AccessControl(
                 }
                 is DatabaseActionRule<in DaycareId, *> -> {
                     @Suppress("UNCHECKED_CAST")
-                    val ruleFilter = (rule as DatabaseActionRule<in DaycareId, Any>).query.executeWithParams(tx, user, now, rule.params)
+                    val ruleFilter = (rule as DatabaseActionRule<in DaycareId, Any>).query.executeWithParams(queryCtx, rule.params)
                     when (ruleFilter) {
                         null -> {}
                         AccessControlFilter.PermitAll -> return AccessControlFilter.PermitAll
@@ -256,7 +259,7 @@ class AccessControl(
                 is UnscopedDatabaseActionRule<*> -> {
                     @Suppress("UNCHECKED_CAST")
                     val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = query.execute(tx, user, now)
+                    val deferred = query.execute(queryCtx)
                     when (val decision = deferred.evaluate(rule.params)) {
                         is AccessControlDecision.Denied -> throw decision.toException()
                         AccessControlDecision.None -> {}
@@ -310,10 +313,11 @@ class AccessControl(
             .distinct()
             .iterator()
 
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, now)
         while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
             val ruleType = databaseRuleTypes.next()
             @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.executeWithTargets(tx, user, now, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
+            val deferred = ruleType.query.executeWithTargets(queryCtx, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
 
             for (action in EnumSet.copyOf(undecidedActions)) {
                 val compatibleRules = actionRuleMapping.rulesOf(action)

@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
@@ -34,13 +33,11 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
         DatabaseActionRule.Simple(this, Query(getGroupRoles))
     private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Query<T, HasGroupRole> {
         override fun executeWithTargets(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(user, now).let { subquery ->
-                tx.createQuery(
+        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
                     QueryFragment(
                         """
                     SELECT id, role, unit_features
@@ -60,13 +57,11 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             else -> emptyMap()
         }
         override fun executeWithParams(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
-        ): AccessControlFilter<T>? = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(user, now).let { subquery ->
-                tx.createQuery(
+        ): AccessControlFilter<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
                     QueryFragment(
                         """
                     SELECT id

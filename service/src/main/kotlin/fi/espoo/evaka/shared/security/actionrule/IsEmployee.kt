@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
@@ -25,13 +24,11 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
         DatabaseActionRule.Simple(this, Query(filter))
     private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Query<T, IsEmployee> {
         override fun executeWithTargets(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
-            is AuthenticatedUser.Employee -> filter(user, now).let { subquery ->
-                tx.createQuery(
+        ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
+            is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
                     QueryFragment(
                         """
                     SELECT id
@@ -50,13 +47,11 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
         }
 
         override fun executeWithParams(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+            ctx: DatabaseActionRule.QueryContext,
             params: IsEmployee
-        ): AccessControlFilter<T>? = when (user) {
-            is AuthenticatedUser.Employee -> filter(user, now).let { subquery ->
-                tx.createQuery(subquery)
+        ): AccessControlFilter<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(subquery)
                     .mapTo<Id<DatabaseTable>>()
                     .toSet()
                     .let { ids -> AccessControlFilter.Some(ids) }
@@ -72,22 +67,18 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
         override val params = IsEmployee
         override val query = object : DatabaseActionRule.Query<EmployeeId, IsEmployee> {
             override fun executeWithTargets(
-                tx: Database.Read,
-                user: AuthenticatedUser,
-                now: HelsinkiDateTime,
+                ctx: DatabaseActionRule.QueryContext,
                 targets: Set<EmployeeId>
-            ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> = when (user) {
-                is AuthenticatedUser.Employee -> targets.filter { it == user.id }.associateWith { Deferred }
+            ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
+                is AuthenticatedUser.Employee -> targets.filter { it == ctx.user.id }.associateWith { Deferred }
                 else -> emptyMap()
             }
 
             override fun executeWithParams(
-                tx: Database.Read,
-                user: AuthenticatedUser,
-                now: HelsinkiDateTime,
+                ctx: DatabaseActionRule.QueryContext,
                 params: IsEmployee
-            ): AccessControlFilter<EmployeeId>? = when (user) {
-                is AuthenticatedUser.Employee -> AccessControlFilter.Some(setOf(user.id))
+            ): AccessControlFilter<EmployeeId>? = when (ctx.user) {
+                is AuthenticatedUser.Employee -> AccessControlFilter.Some(setOf(ctx.user.id))
                 else -> null
             }
 
