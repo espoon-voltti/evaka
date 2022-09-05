@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
+import { Bold, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
@@ -28,7 +28,7 @@ interface Props {
   questionNumber: string
   question: RadioGroupQuestion
   selectedValue: RadioGroupSelectedValue | null
-  onChange?: (selected: RadioGroupSelectedValue) => void
+  onChange?: (selected: RadioGroupSelectedValue | null) => void
   translations: VasuTranslations
 }
 
@@ -46,7 +46,9 @@ export function RadioGroupQuestion({
     ? ` ${selectedValue.range.start.format()}–${selectedValue.range.end.format()}`
     : ''
 
-  const [pendingSelected, setPendingSelected] = useState(selectedValue?.key)
+  const [pendingSelected, setPendingSelected] = useState(
+    selectedValue?.key ?? ''
+  )
 
   return (
     <div>
@@ -60,19 +62,35 @@ export function RadioGroupQuestion({
         <>
           <Gap size="m" />
           <FixedSpaceColumn>
-            {options.map((option) => (
-              <RadioGroupQuestionOption
-                key={option.key}
-                option={option}
-                onChange={(value) => {
-                  onChange(value)
-                  setPendingSelected(option.key)
-                }}
-                selectedValue={selectedValue}
-                isSelected={option.key === pendingSelected}
-                onSelected={() => setPendingSelected(option.key)}
-              />
-            ))}
+            <RadioGroupQuestionOption
+              option={{ key: '', name: translations.noRecord }}
+              onChange={() => {
+                onChange(null)
+                setPendingSelected('')
+              }}
+              selectedValue={selectedValue}
+              isSelected={pendingSelected === ''}
+              onSelected={() => setPendingSelected('')}
+            />
+            {options.map((option) =>
+              option.isIntervention ? (
+                <QuestionInfo key={option.key} info={option.info ?? null}>
+                  <Bold>{option.name}</Bold>
+                </QuestionInfo>
+              ) : (
+                <RadioGroupQuestionOption
+                  key={option.key}
+                  option={option}
+                  onChange={(value) => {
+                    onChange(value)
+                    setPendingSelected(option.key)
+                  }}
+                  selectedValue={selectedValue}
+                  isSelected={option.key === pendingSelected}
+                  onSelected={() => setPendingSelected(option.key)}
+                />
+              )
+            )}
           </FixedSpaceColumn>
         </>
       ) : (
