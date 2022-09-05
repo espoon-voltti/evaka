@@ -6,9 +6,9 @@ package fi.espoo.evaka.children
 
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
-fun Database.Read.getChildrenByGuardian(id: PersonId): List<Child> =
+fun Database.Read.getChildrenByGuardian(id: PersonId, today: LocalDate): List<Child> =
     this.createQuery(
         """
 SELECT
@@ -18,7 +18,10 @@ SELECT
     p.last_name,
     img.id AS image_id,
     dg.id AS group_id,
-    dg.name AS group_name
+    dg.name AS group_name,
+    EXISTS (SELECT 1 FROM placement pl WHERE p.id = pl.child_id AND :today <= pl.end_date) AS has_upcoming_placements,
+    EXISTS (SELECT 1 FROM pedagogical_document doc WHERE p.id = doc.child_id) has_pedagogical_documents,
+    EXISTS (SELECT 1 FROM curriculum_document doc WHERE p.id = doc.child_id) has_curriculums
 FROM guardian g
 INNER JOIN person p ON g.child_id = p.id
 LEFT JOIN child_images img ON p.id = img.child_id
@@ -29,32 +32,7 @@ WHERE g.guardian_id = :userId
 ORDER BY p.date_of_birth, p.last_name, p.first_name
         """.trimIndent()
     )
-        .bind("today", HelsinkiDateTime.now().toLocalDate())
+        .bind("today", today)
         .bind("userId", id)
         .mapTo<Child>()
         .list()
-
-fun Database.Read.getChild(id: PersonId): Child? =
-    this.createQuery(
-        """
-SELECT
-    p.id,
-    p.first_name,
-    p.preferred_name,
-    p.last_name,
-    img.id AS image_id,
-    dg.id AS group_id,
-    dg.name AS group_name
-FROM person p
-LEFT JOIN child_images img ON p.id = img.child_id
-LEFT JOIN placement pl ON pl.child_id = p.id AND daterange(pl.start_date, pl.end_date, '[]') @> :today::date
-LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
-LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-WHERE
-    p.id = :childId
-        """.trimIndent()
-    )
-        .bind("today", HelsinkiDateTime.now().toLocalDate())
-        .bind("childId", id)
-        .mapTo<Child>()
-        .firstOrNull()

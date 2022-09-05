@@ -195,8 +195,11 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const { children, unreadChildNotifications, totalUnreadChildNotifications } =
-    useContext(ChildrenContext)
+  const {
+    childrenWithOwnPage,
+    unreadChildNotifications,
+    totalUnreadChildNotifications
+  } = useContext(ChildrenContext)
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
@@ -211,12 +214,12 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     [user]
   )
 
-  if (children.getOrElse([]).length === 0) {
+  if (childrenWithOwnPage.getOrElse([]).length === 0) {
     return null
   }
 
-  if (children.getOrElse([]).length === 1) {
-    const childId = children.getOrElse([])[0].id
+  if (childrenWithOwnPage.getOrElse([]).length === 1) {
+    const childId = childrenWithOwnPage.getOrElse([])[0].id
     return (
       <HeaderNavLink
         to={`/children/${childId}`}
@@ -255,11 +258,14 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             {totalUnreadChildNotifications}
           </CircledChar>
         )}
-        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
+        <DropDownIcon
+          icon={open ? fasChevronUp : fasChevronDown}
+          data-qa="drop-down-icon"
+        />
       </DropDownButton>
       {open ? (
         <DropDown $align="left" data-qa="select-child">
-          {children.getOrElse([]).map((child) => (
+          {childrenWithOwnPage.getOrElse([]).map((child) => (
             <DropDownLink
               key={child.id}
               to={`/children/${child.id}`}

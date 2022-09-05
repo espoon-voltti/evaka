@@ -2,19 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
 
-import config from '../../config'
 import {
   insertApplications,
   insertDaycarePlacementFixtures,
   resetDatabase
 } from '../../dev-api'
 import {
-  addConsentsForChildren,
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -24,9 +20,8 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement, EmployeeDetail } from '../../dev-api/types'
+import { DaycarePlacement } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -37,7 +32,6 @@ let fixtures: AreaAndPersonFixtures
 let page: Page
 let header: CitizenHeader
 let childPage: CitizenChildPage
-let unreadGuardianIds: UUID[]
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
@@ -49,12 +43,26 @@ beforeEach(async () => {
   await enduserLogin(page)
   header = new CitizenHeader(page)
   childPage = new CitizenChildPage(page)
-  unreadGuardianIds = [fixtures.enduserGuardianFixture.id]
 })
 
 describe('Citizen children page', () => {
   describe('Child page', () => {
     test('Citizen can see its children and navigate to their page', async () => {
+      await insertDaycarePlacementFixtures(
+        [
+          fixtures.enduserChildFixtureJari,
+          fixtures.enduserChildFixtureKaarina
+        ].map((child) => ({
+          id: uuidv4(),
+          type: 'DAYCARE',
+          childId: child.id,
+          unitId: fixtures.daycareFixture.id,
+          startDate: mockedDate.subMonths(1).formatIso(),
+          endDate: mockedDate.formatIso()
+        }))
+      )
+      await page.reload()
+
       await header.openChildPage(fixtures.enduserChildFixtureJari.id)
       await childPage.assertChildNameIsShown(
         'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula'
@@ -98,6 +106,7 @@ describe('Citizen children page', () => {
     test('Simple daycare placement can be terminated', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
+      await page.reload()
 
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
@@ -120,6 +129,7 @@ describe('Citizen children page', () => {
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, fixtures.clubFixture.id, 'CLUB')
+      await page.reload()
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
@@ -139,6 +149,7 @@ describe('Citizen children page', () => {
         'DAYCARE',
         startDate
       )
+      await page.reload()
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
 
@@ -152,6 +163,7 @@ describe('Citizen children page', () => {
     test('Upcoming transfer application is deleted when placement is terminated', async () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
+      await page.reload()
 
       const application = applicationFixture(
         fixtures.enduserChildFixtureKaarina,
@@ -241,6 +253,7 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
+      await page.reload()
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
         daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`,
@@ -285,6 +298,7 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
+      await page.reload()
       const labels = {
         daycare1: `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1End.format()}`,
         daycare2: `Varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycare2end.format()}`
@@ -347,6 +361,7 @@ describe('Citizen children page', () => {
         }
       ]
       await insertDaycarePlacementFixtures(placements)
+      await page.reload()
       const labels = {
         preschool: `Esiopetus, Alkuräjähdyksen eskari, voimassa ${preschool2End.format()}`,
         daycareAfterPreschool: `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${daycareAfterPreschoolEnd.format()}`
@@ -403,6 +418,7 @@ describe('Citizen children page', () => {
         fixtures.preschoolFixture.id,
         'PRESCHOOL_DAYCARE'
       )
+      await page.reload()
 
       await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
       await childPage.openCollapsible('termination')
@@ -424,178 +440,6 @@ describe('Citizen children page', () => {
       ])
 
       await childPage.assertTerminatedPlacementCount(0) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
-    })
-  })
-
-  describe('Assistance need decisions table', () => {
-    beforeEach(async () => {
-      // child consent counts affect the unread count too
-      await addConsentsForChildren(
-        [
-          fixtures.enduserChildFixtureKaarina.id,
-          fixtures.enduserChildFixtureJari.id,
-          fixtures.enduserChildFixturePorriHatterRestricted.id
-        ],
-        fixtures.enduserGuardianFixture.id
-      )
-    })
-    test('Has an accepted decision', async () => {
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'ACCEPTED',
-          assistanceLevels: [
-            'ASSISTANCE_SERVICES_FOR_TIME',
-            'ENHANCED_ASSISTANCE'
-          ],
-          validityPeriod: new DateRange(
-            LocalDate.of(2020, 2, 5),
-            LocalDate.of(2021, 5, 11)
-          ),
-          decisionMade: LocalDate.of(2020, 1, 17)
-        })
-        .save()
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.openCollapsible('assistance-need-decisions')
-
-      await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
-        assistanceLevel:
-          'Tukipalvelut päätöksen voimassaolon aikana, Tehostettu tuki',
-        selectedUnit: fixtures.daycareFixture.name,
-        validityPeriod: '05.02.2020 – 11.05.2021',
-        decisionMade: '17.01.2020',
-        status: 'ACCEPTED'
-      })
-    })
-    test('Has a rejected decision', async () => {
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'REJECTED',
-          assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
-          decisionMade: LocalDate.of(2021, 1, 17)
-        })
-        .save()
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.openCollapsible('assistance-need-decisions')
-
-      await waitUntilEqual(() => childPage.getAssistanceNeedDecisionRow(0), {
-        assistanceLevel: 'Tehostettu tuki',
-        selectedUnit: fixtures.daycareFixture.name,
-        validityPeriod: '10.02.2022 –',
-        decisionMade: '17.01.2021',
-        status: 'REJECTED'
-      })
-    })
-    test('Does not have a needs work or draft decision', async () => {
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'NEEDS_WORK',
-          assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          decisionMade: LocalDate.of(2021, 1, 17)
-        })
-        .save()
-
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'DRAFT',
-          assistanceLevels: ['ENHANCED_ASSISTANCE'],
-          decisionMade: LocalDate.of(2021, 1, 17)
-        })
-        .save()
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.openCollapsible('assistance-need-decisions')
-
-      await waitUntilEqual(
-        () => childPage.getAssistanceNeedDecisionRowCount(),
-        0
-      )
-    })
-
-    test('Has the correct amount of unread children', async () => {
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'ACCEPTED',
-          assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          decisionMade: LocalDate.of(2020, 1, 17),
-          unreadGuardianIds
-        })
-        .save()
-
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'REJECTED',
-          assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          decisionMade: LocalDate.of(2018, 1, 17),
-          unreadGuardianIds
-        })
-        .save()
-
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixturePorriHatterRestricted.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'ACCEPTED',
-          assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          decisionMade: LocalDate.of(2020, 1, 17),
-          unreadGuardianIds
-        })
-        .save()
-
-      await page.reload()
-      await header.assertUnreadChildrenCount(3)
-
-      await header.assertChildUnreadCount(
-        fixtures.enduserChildFixtureKaarina.id,
-        2
-      )
-      await header.assertChildUnreadCount(
-        fixtures.enduserChildFixturePorriHatterRestricted.id,
-        1
-      )
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.assertUnreadAssistanceNeedDecisions(2)
-    })
-    test('Unread indicator is shown in the table', async () => {
-      await Fixture.preFilledAssistanceNeedDecision()
-        .withChild(fixtures.enduserChildFixtureKaarina.id)
-        .with({
-          selectedUnit: { id: fixtures.daycareFixture.id },
-          status: 'ACCEPTED',
-          assistanceLevels: ['SPECIAL_ASSISTANCE'],
-          decisionMade: LocalDate.of(2020, 1, 17),
-          unreadGuardianIds
-        })
-        .save()
-
-      await page.reload()
-      await header.assertUnreadChildrenCount(1)
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.openCollapsible('assistance-need-decisions')
-
-      await childPage.assertAssistanceNeedDecisionRowUnread(0)
-      await childPage.assistanceNeedDecisionRowClick(0)
-      await header.assertUnreadChildrenCount(0)
-
-      await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-      await childPage.openCollapsible('assistance-need-decisions')
-      await childPage.assertNotAssistanceNeedDecisionRowUnread(0)
     })
   })
 
@@ -666,107 +510,5 @@ describe('Citizen children page', () => {
 
       await header.assertUnreadChildrenCount(2)
     })
-  })
-})
-
-describe('Citizen assistance need decision page', () => {
-  let assistanceNeedDecisionPage: AssistanceNeedDecisionPage
-  let serviceWorker: EmployeeDetail
-
-  beforeEach(async () => {
-    serviceWorker = (await Fixture.employeeServiceWorker().save()).data
-
-    const decision = await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(fixtures.enduserChildFixtureKaarina.id)
-      .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
-        status: 'ACCEPTED',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
-        decisionMade: LocalDate.of(2021, 1, 17),
-        decisionMaker: {
-          employeeId: serviceWorker.id,
-          title: 'head teacher'
-        },
-        preparedBy1: {
-          employeeId: serviceWorker.id,
-          title: 'teacher',
-          phoneNumber: '010202020202'
-        }
-      })
-      .save()
-
-    await header.openChildPage(fixtures.enduserChildFixtureKaarina.id)
-    await childPage.openCollapsible('assistance-need-decisions')
-    await childPage.assistanceNeedDecisionRowClick(0)
-
-    await page.page.waitForURL(
-      `${config.enduserUrl}/children/${
-        fixtures.enduserChildFixtureKaarina.id
-      }/assistance-need-decision/${decision.data.id ?? ''}`
-    )
-
-    assistanceNeedDecisionPage = new AssistanceNeedDecisionPage(page)
-  })
-
-  test('Preview shows filled information', async () => {
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.pedagogicalMotivation,
-      'Pedagogical motivation text'
-    )
-    await assistanceNeedDecisionPage.assertStructuralMotivationOption(
-      'groupAssistant'
-    )
-    await assistanceNeedDecisionPage.assertStructuralMotivationOption(
-      'smallerGroup'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.structuralMotivationDescription,
-      'Structural motivation description text'
-    )
-    await assistanceNeedDecisionPage.assertServiceOption(
-      'interpretationAndAssistanceServices'
-    )
-    await assistanceNeedDecisionPage.assertServiceOption('partTimeSpecialEd')
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.careMotivation,
-      'Care motivation text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.guardiansHeardOn,
-      '05.04.2020'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.otherRepresentativeDetails,
-      'John Doe, 01020304050, via phone'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.viewOfGuardians,
-      'VOG text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.futureLevelOfAssistance,
-      'Tehostettu tuki'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.startDate,
-      '05.02.2020'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.selectedUnit,
-      `${fixtures.daycareFixture.name}\n${fixtures.daycareFixture.streetAddress}\n${fixtures.daycareFixture.postalCode} ${fixtures.daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.motivationForDecision,
-      'Motivation for decision text'
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.preparedBy1,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
-    )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.decisionMaker,
-      `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
-    )
   })
 })

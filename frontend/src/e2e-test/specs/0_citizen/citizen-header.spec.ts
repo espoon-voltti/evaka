@@ -22,18 +22,16 @@ beforeEach(async () => {
 
 describe('Citizen page', () => {
   test('UI language can be changed', async () => {
-    await header.waitUntilLoggedIn()
-
     await header.selectLanguage('fi')
-    await header.assertChildrenTabHasText('Lapset')
+    await header.assertSubNavMenuHasText('Valikko')
     await header.assertDOMLangAttrib('fi')
 
     await header.selectLanguage('sv')
-    await header.assertChildrenTabHasText('Barn')
+    await header.assertSubNavMenuHasText('Meny')
     await header.assertDOMLangAttrib('sv')
 
     await header.selectLanguage('en')
-    await header.assertChildrenTabHasText('Children')
+    await header.assertSubNavMenuHasText('Menu')
     await header.assertDOMLangAttrib('en')
   })
 })
