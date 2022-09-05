@@ -62,6 +62,12 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     val familyGroup1: GroupId = GroupId(UUID.randomUUID())
     val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
+    val openingDaycare: DaycareId = DaycareId(UUID.randomUUID())
+    val openingDaycareGroup: GroupId = GroupId(UUID.randomUUID())
+
+    val closedDaycare: DaycareId = DaycareId(UUID.randomUUID())
+    val closedDaycareGroup: GroupId = GroupId(UUID.randomUUID())
+
     val employeeId = EmployeeId(UUID.randomUUID())
     val employeeId2 = EmployeeId(UUID.randomUUID())
 
@@ -108,6 +114,32 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertTestDaycareGroup(DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2))
             it.insertTestCaretakers(groupId = familyGroup1, amount = 3.0)
             it.insertTestCaretakers(groupId = familyGroup2, amount = 3.0)
+
+            it.insertTestDaycare(
+                DevDaycare(
+                    id = openingDaycare,
+                    areaId = careArea1,
+                    openingDate = today.plusWeeks(1),
+                    closingDate = null,
+                    providerType = ProviderType.MUNICIPAL,
+                    type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
+                )
+            )
+            it.insertTestDaycareGroup(DevDaycareGroup(id = openingDaycareGroup, daycareId = openingDaycare))
+            it.insertTestCaretakers(groupId = openingDaycareGroup, amount = 3.0)
+
+            it.insertTestDaycare(
+                DevDaycare(
+                    id = closedDaycare,
+                    areaId = careArea1,
+                    openingDate = null,
+                    closingDate = today.minusWeeks(1),
+                    providerType = ProviderType.MUNICIPAL,
+                    type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
+                )
+            )
+            it.insertTestDaycareGroup(DevDaycareGroup(id = closedDaycareGroup, daycareId = closedDaycare))
+            it.insertTestCaretakers(groupId = closedDaycareGroup, amount = 3.0)
         }
     }
 

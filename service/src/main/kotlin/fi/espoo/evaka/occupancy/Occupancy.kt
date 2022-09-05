@@ -271,6 +271,7 @@ JOIN care_area a ON a.id = u.care_area_id
 $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
+AND daterange(u.opening_date, u.closing_date, '[]') && daterange(:start, :end, '[]')
 AND (:areaId::uuid IS NULL OR u.care_area_id = :areaId)
 AND (:unitId::uuid IS NULL OR u.id = :unitId)
 AND (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
