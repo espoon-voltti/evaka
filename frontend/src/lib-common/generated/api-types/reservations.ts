@@ -68,8 +68,7 @@ export interface ReservationChild {
   inShiftCareUnit: boolean
   lastName: string
   maxOperationalDays: number[]
-  placementMaxEnd: LocalDate
-  placementMinStart: LocalDate
+  placements: FiniteDateRange[]
   preferredName: string | null
 }
 
@@ -80,7 +79,7 @@ export interface ReservationsResponse {
   children: ReservationChild[]
   dailyData: DailyReservationData[]
   includesWeekends: boolean
-  reservableDays: FiniteDateRange[]
+  reservableDays: Record<string, FiniteDateRange[]>
 }
 
 /**

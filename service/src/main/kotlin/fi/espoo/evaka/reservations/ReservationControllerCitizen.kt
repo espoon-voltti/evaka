@@ -60,13 +60,18 @@ class ReservationControllerCitizen(
                 }
                 val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
-                val placementRange = FiniteDateRange(
-                    children.minOfOrNull { it.placementMinStart } ?: LocalDate.MIN,
-                    children.maxOfOrNull { it.placementMaxEnd } ?: LocalDate.MAX
-                )
-                val reservableDays =
+                val reservableDayRanges =
                     getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                        .flatMap { range -> listOfNotNull(range.intersection(placementRange)) }
+                val reservableDays = children.associate { child ->
+                    Pair(
+                        child.id,
+                        child.placements.flatMap { placement ->
+                            reservableDayRanges.flatMap { range ->
+                                listOfNotNull(range.intersection(placement))
+                            }
+                        }
+                    )
+                }
                 ReservationsResponse(
                     dailyData = reservations,
                     children = children,
@@ -136,7 +141,7 @@ class ReservationControllerCitizen(
 data class ReservationsResponse(
     val dailyData: List<DailyReservationData>,
     val children: List<ReservationChild>,
-    val reservableDays: List<FiniteDateRange>,
+    val reservableDays: Map<ChildId, List<FiniteDateRange>>,
     val includesWeekends: Boolean
 )
 
@@ -163,8 +168,7 @@ data class ReservationChild(
     val lastName: String,
     val preferredName: String?,
     val imageId: ChildImageId?,
-    val placementMinStart: LocalDate,
-    val placementMaxEnd: LocalDate,
+    val placements: List<FiniteDateRange>,
     val maxOperationalDays: Set<Int>,
     val inShiftCareUnit: Boolean
 )
@@ -272,34 +276,34 @@ SELECT
     ch.last_name,
     ch.preferred_name,
     ci.id AS image_id,
-    p.placement_min_start,
-    p.placement_max_end,
+    p.placements,
     p.max_operational_days,
     p.in_shift_care_unit
 FROM person ch
 JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
 LEFT JOIN child_images ci ON ci.child_id = ch.id
-LEFT JOIN LATERAL (
+LEFT JOIN (
     SELECT
-        min(p.start_date) AS placement_min_start,
-        max(p.end_date) AS placement_max_end,
+        p.child_id,
+        array_agg(DISTINCT daterange(p.start_date, p.end_date, '[]')) as placements,
         array_agg(DISTINCT p.operation_days) AS max_operational_days,
         bool_or(p.round_the_clock) AS in_shift_care_unit
     FROM (
-        SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock
-        FROM placement pl
-        JOIN daycare u ON pl.unit_id = u.id
-        WHERE pl.child_id = g.child_id AND daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+             SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, pl.child_id
+             FROM placement pl
+             JOIN daycare u ON pl.unit_id = u.id
+             WHERE daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
 
-        UNION ALL
+             UNION ALL
 
-        SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock AS shift_care
-        FROM backup_care bc
-        JOIN daycare u ON bc.unit_id = u.id
-        WHERE bc.child_id = g.child_id AND daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
+             SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, bc.child_id
+             FROM backup_care bc
+                      JOIN daycare u ON bc.unit_id = u.id
+             WHERE daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
     ) p
-) p ON true
-WHERE p.placement_min_start IS NOT NULL
+    GROUP BY p.child_id
+) p ON p.child_id = g.child_id
+WHERE p.placements IS NOT NULL
 ORDER BY ch.date_of_birth
         """.trimIndent()
     )

@@ -38,6 +38,7 @@ import DayView from './DayView'
 import ReservationModal from './ReservationModal'
 import { getCalendarEvents, getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
+import { getEarliestReservableDate } from './utils'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
@@ -113,14 +114,10 @@ const CalendarPage = React.memo(function CalendarPage() {
 
   const firstReservableDate: LocalDate = useMemo(() => {
     if (data.isSuccess) {
-      const earliestReservableDate =
-        data.value.reservableDays &&
-        data.value.reservableDays.length > 0 &&
-        data.value.reservableDays[0].start.isEqualOrAfter(
-          LocalDate.todayInSystemTz()
-        )
-          ? data.value.reservableDays[0].start
-          : LocalDate.todayInSystemTz()
+      const earliestReservableDate = getEarliestReservableDate(
+        data.value.children,
+        data.value.reservableDays
+      )
       // First reservable day that has no reservations
       const firstReservableEmptyDate = data.value.dailyData.find(
         (day) =>

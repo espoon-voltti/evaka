@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -49,12 +47,13 @@ import {
 } from './CalendarModal'
 import { postReservations } from './api'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
+import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
 interface Props {
   onClose: () => void
   onReload: () => void
   availableChildren: ReservationChild[]
-  reservableDays: FiniteDateRange[]
+  reservableDays: Record<string, FiniteDateRange[]>
   firstReservableDate: LocalDate
   existingReservations: DailyReservationData[]
 }
@@ -108,18 +107,20 @@ export default React.memo(function ReservationModal({
 
   const isInvalidDate = useCallback(
     (date: LocalDate) =>
-      reservableDays.some((r) => r.includes(date))
+      availableChildren.some((child) =>
+        reservableDays[child.id].some((r) => r.includes(date))
+      )
         ? null
         : i18n.validationErrors.unselectableDate,
-    [reservableDays, i18n]
+    [availableChildren, reservableDays, i18n]
   )
 
   const { minDate, maxDate } = useMemo(
     () => ({
-      minDate: minBy(reservableDays, (range) => range.start)?.start,
-      maxDate: maxBy(reservableDays, (range) => range.end)?.end
+      minDate: getEarliestReservableDate(availableChildren, reservableDays),
+      maxDate: getLatestReservableDate(availableChildren, reservableDays)
     }),
-    [reservableDays]
+    [availableChildren, reservableDays]
   )
 
   const selectedRange = useMemo(() => {
@@ -234,10 +235,8 @@ export default React.memo(function ReservationModal({
                   width="auto"
                   ariaLabel={i18n.common.openExpandingInfo}
                   info={
-                    reservableDays.length > 0
-                      ? i18n.calendar.reservationModal.dateRangeInfo(
-                          reservableDays[0].end
-                        )
+                    Object.keys(reservableDays).length > 0
+                      ? i18n.calendar.reservationModal.dateRangeInfo(maxDate)
                       : i18n.calendar.reservationModal.noReservableDays
                   }
                   inlineChildren

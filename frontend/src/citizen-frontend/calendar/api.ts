@@ -36,15 +36,14 @@ export async function getReservations(
         })),
         children: res.data.children.map((child) => ({
           ...child,
-          placementMinStart: LocalDate.parseIso(child.placementMinStart),
-          placementMaxEnd: LocalDate.parseIso(child.placementMaxEnd)
+          placements: child.placements.map((r) => FiniteDateRange.parseJson(r))
         })),
-        // TODO Array.isArray is only for backward compatibility – remove ternaries when this is in production
-        reservableDays: Array.isArray(res.data.reservableDays)
-          ? res.data.reservableDays.map((r) => FiniteDateRange.parseJson(r))
-          : res.data.reservableDays
-          ? [FiniteDateRange.parseJson(res.data.reservableDays)]
-          : []
+        reservableDays: Object.entries(res.data.reservableDays).reduce<
+          Record<string, FiniteDateRange[]>
+        >((acc, [childId, ranges]) => {
+          acc[childId] = ranges.map((r) => FiniteDateRange.parseJson(r))
+          return acc
+        }, {})
       })
     )
     .catch((e) => Failure.fromError(e))

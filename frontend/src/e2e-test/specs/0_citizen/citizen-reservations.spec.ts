@@ -285,18 +285,30 @@ describe('Citizen calendar child visibility', () => {
   let header: CitizenHeader
   let calendarPage: CitizenCalendarPage
   const today = LocalDate.of(2022, 1, 5)
+  const placement1start = today
+  const placement1end = today.addMonths(6)
+  const placement2start = today.addMonths(8)
+  const placement2end = today.addMonths(12)
 
   beforeEach(async () => {
     await resetDatabase()
     const fixtures = await initializeAreaAndPersonData()
     const child = fixtures.enduserChildFixtureJari
+
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
         uuidv4(),
         child.id,
         fixtures.daycareFixture.id,
-        today.formatIso(),
-        today.addYears(1).formatIso()
+        placement1start.formatIso(),
+        placement1end.formatIso()
+      ),
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        fixtures.daycareFixture.id,
+        placement2start.formatIso(),
+        placement2end.formatIso()
       )
     ])
 
@@ -310,10 +322,16 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('Child visible only while placement is active', async () => {
-    await calendarPage.assertChildCountOnDay(today.subDays(1), 0)
-    await calendarPage.assertChildCountOnDay(today, 1)
-    await calendarPage.assertChildCountOnDay(today.addYears(1), 1)
-    await calendarPage.assertChildCountOnDay(today.addYears(1).addDays(1), 0)
+    await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
+    await calendarPage.assertChildCountOnDay(placement1start, 1)
+    await calendarPage.assertChildCountOnDay(placement1end, 1)
+    await calendarPage.assertChildCountOnDay(placement1end.addDays(1), 0)
+
+    await calendarPage.assertChildCountOnDay(placement2start.subDays(1), 0)
+    await calendarPage.assertChildCountOnDay(placement2start, 1)
+    await calendarPage.assertChildCountOnDay(placement2start.addDays(1), 1)
+    await calendarPage.assertChildCountOnDay(placement2end, 1)
+    await calendarPage.assertChildCountOnDay(placement2end.addDays(1), 0)
   })
 
   test('Day popup contains message if no children placements on that date', async () => {

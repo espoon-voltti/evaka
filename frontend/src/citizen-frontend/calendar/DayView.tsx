@@ -57,6 +57,7 @@ import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
+import { isDayReservableForSomeone } from './utils'
 
 interface Props {
   date: LocalDate
@@ -88,10 +89,8 @@ function getChildrenWithReservations(
   if (!dailyData) return []
 
   return reservationsResponse.children
-    .filter(
-      (child) =>
-        child.placementMinStart.isEqualOrBefore(date) &&
-        child.placementMaxEnd.isEqualOrAfter(date)
+    .filter((child) =>
+      child.placements.some((pl) => date.isBetween(pl.start, pl.end))
     )
     .map((child) => {
       const childReservations = dailyData?.children.find(
@@ -508,7 +507,7 @@ const emptyReservation: TimeRangeWithErrors = {
 function useEditState(
   date: LocalDate,
   childrenWithReservations: ChildWithReservations[],
-  reservableDays: FiniteDateRange[],
+  reservableDays: Record<string, FiniteDateRange[]>,
   reloadData: () => void
 ) {
   const today = LocalDate.todayInSystemTz()
@@ -522,7 +521,7 @@ function useEditState(
   )
 
   const editable = useMemo(
-    () => anyChildReservable && reservableDays.some((r) => r.includes(date)),
+    () => anyChildReservable && isDayReservableForSomeone(date, reservableDays),
     [anyChildReservable, reservableDays, date]
   )
 
