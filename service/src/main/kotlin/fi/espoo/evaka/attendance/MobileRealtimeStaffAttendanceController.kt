@@ -276,8 +276,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val departureTime = now.withTime(departure.time).takeIf { it <= now }
             ?: throw BadRequest("Departure time cannot be in the future")
 
-        if (departureTime < ongoingAttendance.arrived) {
-            throw BadRequest("Departure time cannot be before arrival time")
+        if (departureTime <= ongoingAttendance.arrived) {
+            throw BadRequest("Departure time must be after arrival time")
         }
 
         fun createNewAttendance(arrived: HelsinkiDateTime, departed: HelsinkiDateTime?, type: StaffAttendanceType) =
