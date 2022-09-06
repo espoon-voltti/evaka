@@ -12,13 +12,12 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,7 +34,7 @@ import java.time.LocalTime
 @RestController
 @RequestMapping("/staff-attendances/realtime")
 class RealtimeStaffAttendanceController(
-    private val ac: AccessControl
+    private val accessControl: AccessControl
 ) {
     @GetMapping
     fun getAttendances(
@@ -46,8 +45,7 @@ class RealtimeStaffAttendanceController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
         Audit.StaffAttendanceRead.log(targetId = unitId)
-
-        ac.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {
@@ -107,6 +105,7 @@ class RealtimeStaffAttendanceController(
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType
     )
+
     data class UpsertExternalAttendance(
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
@@ -114,10 +113,15 @@ class RealtimeStaffAttendanceController(
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
+
     data class UpsertStaffAndExternalAttendanceRequest(
         val staffAttendances: List<UpsertStaffAttendance>,
         val externalAttendances: List<UpsertExternalAttendance>
-    )
+    ) {
+        fun isArrivedBeforeDeparted() =
+            staffAttendances.all { it.departed == null || it.arrived < it.departed } ||
+                externalAttendances.all { it.departed == null || it.arrived < it.departed }
+    }
 
     @PostMapping("/{unitId}/upsert")
     fun upsertStaffAttendances(
@@ -127,42 +131,41 @@ class RealtimeStaffAttendanceController(
         @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
-        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        if (!body.isArrivedBeforeDeparted()) {
+            throw BadRequest("Arrival time must be before departure time for all entries")
+        }
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                try {
-                    val occupancyCoefficients = body.staffAttendances.associate {
-                        Pair(
-                            it.employeeId,
-                            tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
-                        )
-                    }
-                    body.staffAttendances.forEach {
-                        tx.upsertStaffAttendance(
-                            it.attendanceId,
-                            it.employeeId,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficients[it.employeeId],
-                            it.type
-                        )
-                    }
+                val occupancyCoefficients = body.staffAttendances.associate {
+                    Pair(
+                        it.employeeId,
+                        tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
+                    )
+                }
+                body.staffAttendances.forEach {
+                    tx.upsertStaffAttendance(
+                        it.attendanceId,
+                        it.employeeId,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficients[it.employeeId],
+                        it.type
+                    )
+                }
 
-                    body.externalAttendances.forEach {
-                        tx.upsertExternalStaffAttendance(
-                            it.attendanceId,
-                            it.name,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficientSeven
-                        )
-                    }
-                } catch (e: JdbiException) {
-                    throw mapPSQLException(e)
+                body.externalAttendances.forEach {
+                    tx.upsertExternalStaffAttendance(
+                        it.attendanceId,
+                        it.name,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficientSeven
+                    )
                 }
             }
         }
@@ -175,6 +178,7 @@ class RealtimeStaffAttendanceController(
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType
     )
+
     @PostMapping("/{unitId}/{employeeId}/{date}")
     fun upsertDailyStaffAttendances(
         db: Database,
@@ -185,7 +189,8 @@ class RealtimeStaffAttendanceController(
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
-        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val occupancyCoefficients = body.map { it.groupId }.distinct().associateWith {
@@ -219,8 +224,7 @@ class RealtimeStaffAttendanceController(
         @PathVariable attendanceId: StaffAttendanceId
     ) {
         Audit.StaffAttendanceDelete.log(targetId = attendanceId)
-
-        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -237,8 +241,7 @@ class RealtimeStaffAttendanceController(
         @PathVariable attendanceId: StaffAttendanceExternalId
     ) {
         Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
-
-        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
