@@ -10,7 +10,9 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -18,30 +20,56 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByCitizen<T> = (tx: Database.Read, personId: PersonId, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<T>
+private typealias FilterByCitizen<T> = (personId: PersonId, now: HelsinkiDateTime) -> QueryFragment<T>
 
 data class IsCitizen(val allowWeakLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
-    private fun <T> rule(filter: FilterByCitizen<T>): DatabaseActionRule.Scoped<T, IsCitizen> =
+    private fun <T : Id<*>> rule(filter: FilterByCitizen<T>): DatabaseActionRule.Scoped<T, IsCitizen> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
-    private data class Query<T>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Scoped.Query<T, IsCitizen> {
+    private data class Query<T : Id<*>>(private val filter: FilterByCitizen<T>) : DatabaseActionRule.Scoped.Query<T, IsCitizen> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (ctx.user) {
-            is AuthenticatedUser.Citizen -> Pair(ctx.user.authLevel, ctx.user.id)
-            else -> null
-        }?.let { (authLevel, id) -> filter(ctx.tx, id, ctx.now, targets).associateWith { Deferred(authLevel) } } ?: emptyMap()
+            is AuthenticatedUser.Citizen -> filter(ctx.user.id, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
+                    QueryFragment<Any>(
+                        """
+                    SELECT id
+                    FROM (${subquery.sql}) fragment
+                    WHERE id = ANY(:ids)
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                )
+                    .bind("ids", targets.map { it.raw })
+                    .mapTo<Id<DatabaseTable>>()
+                    .toSet()
+            }.let { matched ->
+                targets.filter { matched.contains(it) }.associateWith { Deferred(ctx.user.authLevel) }
+            }
+            else -> emptyMap()
+        }
 
         override fun executeWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsCitizen
-        ): AccessControlFilter<T>? = TODO("unsupported for this rule type")
+        ): AccessControlFilter<T>? = when (ctx.user) {
+            is AuthenticatedUser.Citizen -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
+                filter(ctx.user.id, ctx.now).let { subquery ->
+                    ctx.tx.createQuery(subquery)
+                        .mapTo<Id<DatabaseTable>>()
+                        .toSet()
+                        .let { ids -> AccessControlFilter.Some(ids) }
+                }
+            } else null
+            else -> null
+        }
     }
     private class Deferred(private val authLevel: CitizenAuthLevel) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =
@@ -59,145 +87,139 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
             } else AccessControlDecision.None
     }
 
-    fun self() = rule<PersonId> { _, personId, _, ids ->
-        ids.filter { it == personId }
+    fun self() = object : DatabaseActionRule.Scoped<PersonId, IsCitizen> {
+        override val params = this@IsCitizen
+        override val query = object : DatabaseActionRule.Scoped.Query<PersonId, IsCitizen> {
+            override fun executeWithTargets(
+                ctx: DatabaseActionRule.QueryContext,
+                targets: Set<PersonId>
+            ): Map<PersonId, DatabaseActionRule.Deferred<IsCitizen>> = when (ctx.user) {
+                is AuthenticatedUser.Citizen -> targets.filter { it == ctx.user.id }.associateWith { Deferred(ctx.user.authLevel) }
+                else -> emptyMap()
+            }
+
+            override fun executeWithParams(
+                ctx: DatabaseActionRule.QueryContext,
+                params: IsCitizen
+            ): AccessControlFilter<PersonId>? = when (ctx.user) {
+                is AuthenticatedUser.Citizen -> AccessControlFilter.Some(setOf(ctx.user.id))
+                else -> null
+            }
+
+            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            override fun hashCode(): Int = this.javaClass.hashCode()
+        }
     }
 
-    fun uploaderOfAttachment() = rule<AttachmentId> { tx, personId, _, ids ->
-        tx.createQuery(
+    fun uploaderOfAttachment() = rule { personId, _ ->
+        QueryFragment<AttachmentId>(
             """
 SELECT id
 FROM attachment
 WHERE uploaded_by = :personId
-AND id = ANY(:ids)
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("personId", personId)
-            .mapTo()
     }
 
-    fun guardianOfChild() = rule<ChildId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChild() = rule { guardianId, _ ->
+        QueryFragment<ChildId>(
             """
-SELECT child_id
+SELECT child_id AS id
 FROM guardian
 WHERE guardian_id = :guardianId
-AND child_id = ANY(:ids)
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfChildImage() = rule<ChildImageId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfChildImage() = rule { guardianId, _ ->
+        QueryFragment<ChildImageId>(
             """
 SELECT img.id
 FROM child_images img
 JOIN person child ON img.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
-WHERE img.id = ANY(:ids)
-AND guardian_id = :guardianId
+WHERE guardian_id = :guardianId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfIncomeStatement() = rule<IncomeStatementId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfIncomeStatement() = rule { citizenId, _ ->
+        QueryFragment<IncomeStatementId>(
             """
 SELECT id
 FROM income_statement i
 JOIN guardian g ON i.person_id = g.child_id
-WHERE i.id = ANY(:ids)
-AND g.guardian_id = :userId
+WHERE g.guardian_id = :userId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfPedagogicalDocument() = rule<PedagogicalDocumentId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfPedagogicalDocument() = rule { guardianId, _ ->
+        QueryFragment<PedagogicalDocumentId>(
             """
 SELECT pd.id
 FROM pedagogical_document pd
 JOIN guardian g ON pd.child_id = g.child_id
-WHERE pd.id = ANY(:ids)
-AND g.guardian_id = :guardianId
+WHERE g.guardian_id = :guardianId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = rule<AttachmentId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfPedagogicalDocumentOfAttachment() = rule { guardianId, _ ->
+        QueryFragment<AttachmentId>(
             """
 SELECT a.id
 FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN guardian g ON pd.child_id = g.child_id
-WHERE a.id = ANY(:ids)
-AND g.guardian_id = :guardianId
+WHERE g.guardian_id = :guardianId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfVasu() = rule<VasuDocumentId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfVasu() = rule { citizenId, _ ->
+        QueryFragment<VasuDocumentId>(
             """
 SELECT id
 FROM curriculum_document cd
 JOIN guardian g ON cd.child_id = g.child_id
-WHERE cd.id = ANY(:ids)
-AND g.guardian_id = :userId
+WHERE g.guardian_id = :userId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfPlacement() = rule<PlacementId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfPlacement() = rule { guardianId, _ ->
+        QueryFragment<PlacementId>(
             """
 SELECT placement.id
 FROM placement
 JOIN guardian ON placement.child_id = guardian.child_id
-WHERE placement.id = ANY(:ids)
-AND guardian_id = :guardianId
+WHERE guardian_id = :guardianId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 
-    fun guardianOfChildOfAssistanceNeedDecision() = rule<AssistanceNeedDecisionId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun guardianOfChildOfAssistanceNeedDecision() = rule { citizenId, _ ->
+        QueryFragment<AssistanceNeedDecisionId>(
             """
 SELECT id
 FROM assistance_need_decision ad
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_id = ad.child_id)
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { tx, personId, _, ids ->
-        tx.createQuery(
+    fun hasPermissionForAttachmentThroughMessageContent() = rule { personId, _ ->
+        QueryFragment<AttachmentId>(
             """
 SELECT att.id
 FROM attachment att
@@ -205,69 +227,55 @@ JOIN message_content content ON att.message_content_id = content.id
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account ma ON ma.id = msg.sender_id OR ma.id = rec.recipient_id
-WHERE att.id = ANY(:ids) AND ma.person_id = :personId
+WHERE ma.person_id = :personId
             """.trimIndent()
         )
             .bind("personId", personId)
-            .bind("ids", ids)
-            .mapTo()
     }
 
-    fun ownerOfApplication() = rule<ApplicationId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun ownerOfApplication() = rule { citizenId, _ ->
+        QueryFragment<ApplicationId>(
             """
 SELECT id
 FROM application
 WHERE guardian_id = :userId
-AND id = ANY(:ids)
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun ownerOfApplicationOfSentDecision() = rule<DecisionId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun ownerOfApplicationOfSentDecision() = rule { citizenId, _ ->
+        QueryFragment<DecisionId>(
             """
 SELECT decision.id
 FROM decision
 JOIN application ON decision.application_id = application.id
 WHERE guardian_id = :userId
-AND decision.id = ANY(:ids)
 AND decision.sent_date IS NOT NULL
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun ownerOfIncomeStatement() = rule<IncomeStatementId> { tx, citizenId, _, ids ->
-        tx.createQuery(
+    fun ownerOfIncomeStatement() = rule { citizenId, _ ->
+        QueryFragment<IncomeStatementId>(
             """
 SELECT id
 FROM income_statement
 WHERE person_id = :userId
-AND id = ANY(:ids)
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("userId", citizenId)
-            .mapTo()
     }
 
-    fun guardianOfDailyServiceTimeNotification() = rule<DailyServiceTimeNotificationId> { tx, guardianId, _, ids ->
-        tx.createQuery(
+    fun guardianOfDailyServiceTimeNotification() = rule { guardianId, _ ->
+        QueryFragment<DailyServiceTimeNotificationId>(
             """
 SELECT id
 FROM daily_service_time_notification
-WHERE id = ANY(:ids)
-AND guardian_id = :guardianId
+WHERE guardian_id = :guardianId
             """.trimIndent()
         )
-            .bind("ids", ids)
             .bind("guardianId", guardianId)
-            .mapTo()
     }
 }
