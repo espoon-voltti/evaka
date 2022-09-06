@@ -85,7 +85,6 @@ object DatabaseActionRule {
     }
 
     data class Unscoped<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
-        fun executeAndEvaluate(ctx: QueryContext): AccessControlDecision = query.execute(ctx).evaluate(params)
         interface Query<P> {
             fun execute(ctx: QueryContext): Deferred<P>
             override fun hashCode(): Int
