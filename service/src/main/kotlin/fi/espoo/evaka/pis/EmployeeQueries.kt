@@ -30,7 +30,7 @@ data class NewEmployee(
 
 data class EmployeeUser(
     val id: EmployeeId,
-    val nickname: String?,
+    val nickname: String? = null,
     val firstName: String,
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
@@ -132,7 +132,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.exte
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) = createQuery(
     // language=SQL
     """
-SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+SELECT DISTINCT e.id, e.nickname, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (:id::uuid IS NULL OR e.id = :id)
@@ -250,6 +250,7 @@ SELECT
     id,
     created,
     updated,
+    nickname,
     first_name,
     last_name,
     email,

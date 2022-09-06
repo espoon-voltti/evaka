@@ -207,7 +207,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     val staff = createQuery(
         """
         SELECT
-            e.first_name,
+            COALESCE(e.nickname, e.first_name) AS first_name,
             e.last_name,
             e.id,
             char_length(COALESCE(pin.pin, '')) > 0 AS pin_set,
