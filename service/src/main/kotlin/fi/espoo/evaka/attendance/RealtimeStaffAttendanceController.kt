@@ -12,13 +12,12 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -118,7 +117,11 @@ class RealtimeStaffAttendanceController(
     data class UpsertStaffAndExternalAttendanceRequest(
         val staffAttendances: List<UpsertStaffAttendance>,
         val externalAttendances: List<UpsertExternalAttendance>
-    )
+    ) {
+        fun isArrivedBeforeDeparted() =
+            staffAttendances.all { it.departed == null || it.arrived < it.departed } ||
+                externalAttendances.all { it.departed == null || it.arrived < it.departed }
+    }
 
     @PostMapping("/{unitId}/upsert")
     fun upsertStaffAttendances(
@@ -130,39 +133,39 @@ class RealtimeStaffAttendanceController(
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
         accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
+        if (!body.isArrivedBeforeDeparted()) {
+            throw BadRequest("Arrival time must be before departure time for all entries")
+        }
+
         db.connect { dbc ->
             dbc.transaction { tx ->
-                try {
-                    val occupancyCoefficients = body.staffAttendances.associate {
-                        Pair(
-                            it.employeeId,
-                            tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
-                        )
-                    }
-                    body.staffAttendances.forEach {
-                        tx.upsertStaffAttendance(
-                            it.attendanceId,
-                            it.employeeId,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficients[it.employeeId],
-                            it.type
-                        )
-                    }
+                val occupancyCoefficients = body.staffAttendances.associate {
+                    Pair(
+                        it.employeeId,
+                        tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
+                    )
+                }
+                body.staffAttendances.forEach {
+                    tx.upsertStaffAttendance(
+                        it.attendanceId,
+                        it.employeeId,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficients[it.employeeId],
+                        it.type
+                    )
+                }
 
-                    body.externalAttendances.forEach {
-                        tx.upsertExternalStaffAttendance(
-                            it.attendanceId,
-                            it.name,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficientSeven
-                        )
-                    }
-                } catch (e: JdbiException) {
-                    throw mapPSQLException(e)
+                body.externalAttendances.forEach {
+                    tx.upsertExternalStaffAttendance(
+                        it.attendanceId,
+                        it.name,
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        occupancyCoefficientSeven
+                    )
                 }
             }
         }
