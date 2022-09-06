@@ -17,8 +17,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
-  FixedSpaceRow,
-  ResponseFixedSpaceFlex
+  FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -164,14 +163,14 @@ const ChildIncomeTimeRangeSelection = React.memo(
             <Gap size="s" />
           </>
         )}
-        <ResponseFixedSpaceFlex spacing="XL" mobileSpacing="m">
+        <FixedSpaceRow spacing="XL">
           <div>
-            <Label id="child-income-time-range-selection-start-date">
+            <Label htmlFor="start-date">
               {t.income.incomeType.startDate} *
             </Label>
             <Gap size="xs" />
             <DatePicker
-              aria-labelledby="child-income-time-range-selection-start-date"
+              id="start-date"
               date={formData.startDate}
               onChange={useFieldDispatch(onChange, 'startDate')}
               info={startDateInputInfo}
@@ -182,16 +181,13 @@ const ChildIncomeTimeRangeSelection = React.memo(
               }
               data-qa="start-date"
               errorTexts={t.validationErrors}
-              labels={t.common.datePicker}
             />
           </div>
           <div>
-            <Label id="child-income-time-range-selection-end-date">
-              {t.income.incomeType.endDate}
-            </Label>
+            <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
             <Gap size="xs" />
             <DatePicker
-              aria-labelledby="child-income-time-range-selection-end-date"
+              id="end-date"
               date={formData.endDate}
               onChange={useFieldDispatch(onChange, 'endDate')}
               minDate={formData.startDate ?? undefined}
@@ -199,10 +195,9 @@ const ChildIncomeTimeRangeSelection = React.memo(
               locale={lang}
               data-qa="end-date"
               errorTexts={t.validationErrors}
-              labels={t.common.datePicker}
             />
           </div>
-        </ResponseFixedSpaceFlex>
+        </FixedSpaceRow>
       </FixedSpaceColumn>
     )
   })

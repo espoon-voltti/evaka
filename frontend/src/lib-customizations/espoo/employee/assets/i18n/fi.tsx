@@ -183,9 +183,7 @@ export const fi = {
     },
     close: 'Sulje',
     open: 'Avaa',
-    copy: 'Kopioi',
-    startDate: 'Aloituspäivä',
-    endDate: 'Lopetuspäivä'
+    copy: 'Kopioi'
   },
   header: {
     applications: 'Hakemukset',
@@ -3166,8 +3164,8 @@ export const fi = {
     },
     placeholder: {
       name: 'Anna yksikölle nimi',
-      openingDate: 'Alkaen',
-      closingDate: 'Päättyen',
+      openingDate: 'Alkaen pp.kk.vvvv',
+      closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
       financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
@@ -3560,8 +3558,7 @@ export const fi = {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu',
-    inconsistentRange: 'Alkamispäivän tulee olla ennen lopetuspäivää'
+    unselectableDate: 'Päivä ei ole sallittu'
   },
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',

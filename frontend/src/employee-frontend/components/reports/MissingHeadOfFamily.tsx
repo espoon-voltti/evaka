@@ -15,7 +15,10 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import {
+  DatePickerClearableDeprecated,
+  DatePickerDeprecated
+} from 'lib-components/molecules/DatePickerDeprecated'
 
 import {
   getMissingHeadOfFamilyReport,
@@ -75,29 +78,18 @@ export default React.memo(function MissingHeadOfFamily() {
         <Title size={1}>{i18n.reports.missingHeadOfFamily.title}</Title>
 
         <FilterRow>
-          <FilterLabel id="start-date">
-            {i18n.reports.common.startDate}
-          </FilterLabel>
-          <DatePicker
+          <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
+          <DatePickerDeprecated
             date={filters.startDate}
-            onChange={(startDate) =>
-              startDate && setFilters({ ...filters, startDate })
-            }
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="start-date"
+            onChange={(startDate) => setFilters({ ...filters, startDate })}
           />
         </FilterRow>
         <FilterRow>
-          <FilterLabel id="end-date">{i18n.reports.common.endDate}</FilterLabel>
-          <DatePicker
+          <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
+          <DatePickerClearableDeprecated
             date={filters.endDate}
             onChange={(endDate) => setFilters({ ...filters, endDate })}
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="end-date"
+            onCleared={() => setFilters({ ...filters, endDate: null })}
           />
         </FilterRow>
 

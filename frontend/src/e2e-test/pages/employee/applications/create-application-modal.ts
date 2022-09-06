@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-
 import {
   Combobox,
-  DatePicker,
+  DatePickerDeprecated,
   Element,
   Page,
   Radio,
@@ -49,7 +47,7 @@ export default class CreateApplicationModal extends Element {
   #newNoSsnRadio = new Radio(this.find('[data-qa="radio-new-no-ssn"]'))
   #firstNameInput = new TextInput(this.find('[data-qa="input-first-name"]'))
   #lastNameInput = new TextInput(this.find('[data-qa="input-last-name"]'))
-  #dob = new DatePicker(this.find('[data-qa="datepicker-dob"]'))
+  #dob = new DatePickerDeprecated(this.find('[data-qa="datepicker-dob"]'))
   #streetAddress = new TextInput(this.find('[data-qa="input-street-address"]'))
   #postalCode = new TextInput(this.find('[data-qa="input-postal-code"]'))
   #postOffice = new TextInput(this.find('[data-qa="input-post-office"]'))
@@ -59,7 +57,7 @@ export default class CreateApplicationModal extends Element {
   async selectCreateNewPersonAsGuardian(
     firstName: string,
     lastName: string,
-    dob: LocalDate,
+    dob: string,
     streetAddress: string,
     postalCode: string,
     postOffice: string,

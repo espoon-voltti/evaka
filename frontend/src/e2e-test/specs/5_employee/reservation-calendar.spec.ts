@@ -160,8 +160,8 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.selectRepetitionType('IRREGULAR')
 
     const startDate = mockedToday
-    await reservationModal.setStartDate(startDate)
-    await reservationModal.setEndDate(startDate)
+    await reservationModal.setStartDate(startDate.format())
+    await reservationModal.setEndDate(startDate.format())
     await reservationModal.setStartTime('00:00', 0)
     await reservationModal.setEndTime('12:00', 0)
 
@@ -207,8 +207,8 @@ describe('Unit group calendar for shift care unit', () => {
       })
       .save()
 
-    await reservationModal.setStartDate(startDate)
-    await reservationModal.setEndDate(startDate)
+    await reservationModal.setStartDate(startDate.format())
+    await reservationModal.setEndDate(startDate.format())
     await reservationModal.setStartTime('00:00', 0)
     await reservationModal.setEndTime('12:00', 0)
 

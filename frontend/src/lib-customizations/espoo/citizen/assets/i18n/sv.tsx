@@ -96,11 +96,6 @@ const sv: Translations = {
       ]
     },
     closeModal: 'Stäng popup',
-    datePicker: {
-      previousMonthLabel: 'Förra månaden',
-      nextMonthLabel: 'Nästa månaden',
-      calendarLabel: 'Kalender'
-    },
     close: 'Stäng'
   },
   header: {
@@ -1832,8 +1827,7 @@ const sv: Translations = {
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum',
-    inconsistentRange: 'Startdatumet måste vara före slutdatumet'
+    unselectableDate: 'Ogiltigt datum'
   },
   login: {
     failedModal: {

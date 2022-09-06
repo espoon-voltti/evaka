@@ -80,8 +80,6 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
           errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched
           data-qa={`${dataQa}-date`}
-          labels={i18n.common.datePicker}
-          aria-label={i18n.common.date}
         />
         <TextArea
           value={textValue}

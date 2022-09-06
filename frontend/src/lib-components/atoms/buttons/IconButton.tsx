@@ -151,6 +151,7 @@ export default React.memo(function IconButton({
   disabled,
   icon,
   color,
+  isDisabled: _,
   ...props
 }: IconButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const ref = React.useRef<HTMLButtonElement>(null)

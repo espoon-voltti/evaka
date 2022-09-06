@@ -9,7 +9,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faExchange } from 'lib-icons'
 
@@ -141,21 +141,13 @@ export default React.memo(function GroupTransferModal({
           />
         </section>
         <section>
-          <div className="bold" id="start-date">
-            {i18n.common.form.startDate}
-          </div>
-          <DatePicker
+          <div className="bold">{i18n.common.form.startDate}</div>
+          <DatePickerDeprecated
             date={form.startDate}
-            onChange={(startDate) =>
-              startDate && assignFormValues({ startDate })
-            }
-            fullWidth
+            onChange={(startDate) => assignFormValues({ startDate })}
+            type="full-width"
             minDate={minDate}
             maxDate={maxDate}
-            labels={i18n.common.datePicker}
-            locale="fi"
-            aria-labelledby="start-date"
-            errorTexts={i18n.validationErrors}
           />
         </section>
         {form.errors.length > 0 && (

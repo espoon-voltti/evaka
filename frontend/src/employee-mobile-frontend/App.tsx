@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { OverlayProvider } from '@react-aria/overlays'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useEffect } from 'react'
 import {
@@ -60,32 +59,30 @@ export default function App() {
           )}
         >
           <UserContextProvider>
-            <OverlayProvider>
-              <MobileReloadNotification />
-              <Router basename="/employee/mobile">
-                <Routes>
-                  <Route path="/landing" element={<MobileLander />} />
-                  <Route path="/pairing" element={<PairingWizard />} />
-                  <Route
-                    path="/units"
-                    element={
-                      <RequireAuth>
-                        <UnitList />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/units/:unitId/*"
-                    element={
-                      <RequireAuth>
-                        <UnitRouter />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route index element={<Navigate replace to="/landing" />} />
-                </Routes>
-              </Router>
-            </OverlayProvider>
+            <MobileReloadNotification />
+            <Router basename="/employee/mobile">
+              <Routes>
+                <Route path="/landing" element={<MobileLander />} />
+                <Route path="/pairing" element={<PairingWizard />} />
+                <Route
+                  path="/units"
+                  element={
+                    <RequireAuth>
+                      <UnitList />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/units/:unitId/*"
+                  element={
+                    <RequireAuth>
+                      <UnitRouter />
+                    </RequireAuth>
+                  }
+                />
+                <Route index element={<Navigate replace to="/landing" />} />
+              </Routes>
+            </Router>
           </UserContextProvider>
         </ErrorBoundary>
       </ThemeProvider>

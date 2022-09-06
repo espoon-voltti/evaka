@@ -124,7 +124,7 @@ describe('Assistance Need Decisions - Edit page', () => {
       'Pedagogical motivation text'
     )
     await assistanceNeedDecisionEditPage.guardiansHeardOnInput.fill(
-      LocalDate.of(2020, 4, 20)
+      '20.04.2020'
     )
     await assistanceNeedDecisionEditPage.fillDecisionMaker(
       serviceWorker.lastName,

@@ -62,63 +62,57 @@ export function MultiSelectQuestion({
         <>
           <Gap size="m" />
           <FixedSpaceColumn>
-            {options.map((option) => {
-              const ariaId = `option-${questionNumber}-${option.key}`
-              return (
-                <ExpandingInfo
-                  key={option.key}
-                  info={option.info}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.close}
-                >
-                  <FixedSpaceRow>
-                    <Checkbox
-                      key={option.key}
-                      checked={selectedValues.includes(option.key)}
-                      label={option.name}
-                      onChange={(checked) => onChange(option, checked)}
-                      data-qa={`multi-select-question-option-${option.key}`}
-                      disabled={
-                        !!maxSelections &&
-                        selectedValues.length >= maxSelections &&
-                        !selectedValues.includes(option.key)
+            {options.map((option) => (
+              <ExpandingInfo
+                key={option.key}
+                info={option.info}
+                ariaLabel={i18n.common.openExpandingInfo}
+                closeLabel={i18n.common.close}
+              >
+                <FixedSpaceRow>
+                  <Checkbox
+                    key={option.key}
+                    checked={selectedValues.includes(option.key)}
+                    label={option.name}
+                    onChange={(checked) => onChange(option, checked)}
+                    data-qa={`multi-select-question-option-${option.key}`}
+                    disabled={
+                      !!maxSelections &&
+                      selectedValues.length >= maxSelections &&
+                      !selectedValues.includes(option.key)
+                    }
+                  />
+                  {option.date && (
+                    <DatePicker
+                      locale="fi"
+                      date={dateValue?.[option.key] ?? null}
+                      onChange={(date) =>
+                        onChange(
+                          option,
+                          textValue?.[option.key] ??
+                            selectedValues.includes(option.key),
+                          date
+                        )
                       }
-                      id={ariaId}
-                    />
-                    {option.date && (
-                      <DatePicker
-                        locale="fi"
-                        date={dateValue?.[option.key] ?? null}
-                        onChange={(date) =>
-                          onChange(
-                            option,
-                            textValue?.[option.key] ??
-                              selectedValues.includes(option.key),
-                            date
-                          )
-                        }
-                        data-qa={`multi-select-question-option-${option.key}-date`}
-                        errorTexts={i18n.validationErrors}
-                        hideErrorsBeforeTouched
-                        labels={i18n.common.datePicker}
-                        aria-labelledby={ariaId}
-                      />
-                    )}
-                  </FixedSpaceRow>
-                  {!!option.subText && (
-                    <SubText noMargin>{option.subText}</SubText>
-                  )}
-                  {option.textAnswer && textValue && (
-                    <InputField
-                      value={textValue[option.key] || ''}
-                      onChange={(text) => onChange(option, text)}
-                      placeholder={option.name}
-                      data-qa={`multi-select-question-option-text-input-${option.key}`}
+                      data-qa={`multi-select-question-option-${option.key}-date`}
+                      errorTexts={i18n.validationErrors}
+                      hideErrorsBeforeTouched
                     />
                   )}
-                </ExpandingInfo>
-              )
-            })}
+                </FixedSpaceRow>
+                {!!option.subText && (
+                  <SubText noMargin>{option.subText}</SubText>
+                )}
+                {option.textAnswer && textValue && (
+                  <InputField
+                    value={textValue[option.key] || ''}
+                    onChange={(text) => onChange(option, text)}
+                    placeholder={option.name}
+                    data-qa={`multi-select-question-option-text-input-${option.key}`}
+                  />
+                )}
+              </ExpandingInfo>
+            ))}
           </FixedSpaceColumn>
         </>
       ) : (

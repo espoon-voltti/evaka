@@ -5,7 +5,7 @@
 import React, { Fragment, ReactNode } from 'react'
 import styled, { css } from 'styled-components'
 
-import { Label } from 'lib-components/typography'
+import { LabelLike } from 'lib-components/typography'
 
 type Spacing = 'small' | 'large'
 type LabelWidth = '25%' | 'fit-content(40%)'
@@ -16,7 +16,6 @@ type Content = {
   valueWidth?: string
   dataQa?: string
   onlyValue?: boolean
-  labelId?: string
 }
 type Props = {
   spacing: Spacing
@@ -40,22 +39,19 @@ const LabelValueList = React.memo(function LabelValueList({
     >
       {contents
         .filter((content): content is Content => !!content)
-        .map(
-          ({ label, value, valueWidth, dataQa, onlyValue, labelId }, index) =>
-            onlyValue ? (
-              <OnlyValue index={index + 1} width={valueWidth} key={index}>
+        .map(({ label, value, valueWidth, dataQa, onlyValue }, index) =>
+          onlyValue ? (
+            <OnlyValue index={index + 1} width={valueWidth} key={index}>
+              {value}
+            </OnlyValue>
+          ) : (
+            <Fragment key={index}>
+              <GridLabel index={index + 1}>{label}</GridLabel>
+              <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
                 {value}
-              </OnlyValue>
-            ) : (
-              <Fragment key={index}>
-                <GridLabel index={index + 1} id={labelId}>
-                  {label}
-                </GridLabel>
-                <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
-                  {value}
-                </Value>
-              </Fragment>
-            )
+              </Value>
+            </Fragment>
+          )
         )}
     </GridContainer>
   )
@@ -78,7 +74,7 @@ const GridContainer = styled.div<{
   align-items: baseline;
 `
 
-const GridLabel = styled(Label)<{ index: number }>`
+const GridLabel = styled(LabelLike)<{ index: number }>`
   grid-column: 1;
   grid-row: ${({ index }) => index};
 `

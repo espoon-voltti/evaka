@@ -7,7 +7,6 @@ import React from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { DateQuestion } from 'lib-common/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label } from 'lib-components/typography'
@@ -30,12 +29,10 @@ export default React.memo(function DateQuestion({
   translations
 }: Props) {
   const { i18n, lang } = useTranslation()
-  const ariaId = useUniqueId()
-
   return (
     <FixedSpaceColumn spacing="xxs">
       <QuestionInfo info={info}>
-        <Label id={ariaId}>
+        <Label>
           {questionNumber} {name}
         </Label>
       </QuestionInfo>
@@ -46,8 +43,6 @@ export default React.memo(function DateQuestion({
           locale={lang}
           data-qa="date-question-picker"
           errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-labelledby={ariaId}
         />
       ) : (
         <ValueOrNoRecord text={value?.format()} translations={translations} />

@@ -102,7 +102,7 @@ describe('Application transitions', () => {
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.setDecisionStartDate(
       'DAYCARE',
-      fixture.form.preferences.preferredStartDate?.addWeeks(2)
+      fixture.form.preferences.preferredStartDate?.addWeeks(2).format() ?? ''
     )
 
     await applicationReadView.acceptDecision('DAYCARE')

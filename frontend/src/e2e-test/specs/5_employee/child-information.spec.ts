@@ -115,9 +115,9 @@ describe('Child Information - daily service times', () => {
     section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
-  const today = mockedDate
-  const in10Days = mockedDate.addDays(10)
-  const in40Days = mockedDate.addDays(40)
+  const today = mockedDate.format()
+  const in10Days = mockedDate.addDays(10).format()
+  const in40Days = mockedDate.addDays(40).format()
 
   test('can create regular daily service times', async () => {
     const form = await section.create()
@@ -129,7 +129,7 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in10Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
       'UPCOMING'
     )
   })
@@ -146,7 +146,7 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in40Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
       'UPCOMING'
     )
   })
@@ -160,7 +160,7 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in40Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
       'UPCOMING'
     )
   })
@@ -175,7 +175,7 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${today.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${today} –`,
       'ACTIVE'
     )
   })
@@ -197,12 +197,12 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in10Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
       'UPCOMING'
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today.format()} – ${mockedDate
+      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
         .addDays(9)
         .format()}`,
       'ACTIVE'
@@ -227,12 +227,12 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in40Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in40Days} –`,
       'UPCOMING'
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today.format()} – ${mockedDate
+      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
         .addDays(39)
         .format()}`,
       'ACTIVE'
@@ -258,7 +258,7 @@ describe('Child Information - daily service times', () => {
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${in10Days.format()} –`,
+      `Päivittäinen varhaiskasvatusaika ${in10Days} –`,
       'UPCOMING'
     )
 
@@ -298,8 +298,8 @@ describe('Child information - backup care', () => {
   test('backup care for a child can be added and removed', async () => {
     await section.createBackupCare(
       fixtures.daycareFixture,
-      LocalDate.of(2020, 2, 1),
-      LocalDate.of(2020, 2, 3)
+      '01.02.2020',
+      '03.02.2020'
     )
     await waitUntilEqual(
       () => section.getBackupCares(),

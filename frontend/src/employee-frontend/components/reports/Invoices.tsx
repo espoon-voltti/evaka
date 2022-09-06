@@ -17,7 +17,7 @@ import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -43,14 +43,10 @@ export default React.memo(function ReportInvoices() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.invoices.title}</Title>
         <FilterRow>
-          <FilterLabel id="date">{i18n.reports.common.date}</FilterLabel>
-          <DatePicker
+          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
+          <DatePickerDeprecated
             date={filters.date}
-            onChange={(date) => date && setFilters({ date })}
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="date"
+            onChange={(date) => setFilters({ date })}
           />
         </FilterRow>
         {report.isLoading && <Loader />}

@@ -2,16 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import {
-  Page,
-  TextInput,
-  Element,
-  Checkbox,
-  DatePicker
-} from '../../../utils/page'
+import { Page, TextInput, Element, Checkbox } from '../../../utils/page'
 
 import {
   AuthoringSection,
@@ -101,7 +93,7 @@ export class VasuEditPage extends VasuPageCommon {
       entryInput: (nth: number) =>
         new TextInput(question.findByDataQa(`follow-up-${nth}-input`)),
       entryDateInput: (nth: number) =>
-        new DatePicker(question.findByDataQa(`follow-up-${nth}-date`)),
+        new TextInput(question.findByDataQa(`follow-up-${nth}-date`)),
       meta: (nth: number) =>
         question.findByDataQa(`follow-up-${nth}-meta`).innerText
     }
@@ -129,13 +121,14 @@ export class VasuEditPage extends VasuPageCommon {
 
   async inputFollowupWithDateComment(
     comment: string,
-    date: LocalDate,
+    date: string,
     nth: number,
     entryNth: number
   ) {
     const dateInput = this.#followup(nth).entryDateInput(entryNth)
     await dateInput.clear()
-    await dateInput.fill(date)
+    await dateInput.type(date)
+    await waitUntilEqual(() => dateInput.inputValue, date)
     await this.inputFollowupComment(comment, nth, entryNth)
   }
 

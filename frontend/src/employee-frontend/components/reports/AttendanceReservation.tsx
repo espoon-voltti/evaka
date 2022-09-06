@@ -15,7 +15,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -56,7 +55,6 @@ export default React.memo(function AttendanceReservation() {
   const [filters, setFilters] = useState<AttendanceReservationReportFilters>(
     () => {
       const defaultDate = LocalDate.todayInSystemTz().addWeeks(1)
-
       return {
         range: new FiniteDateRange(
           defaultDate.startOfWeek(),
@@ -161,8 +159,6 @@ export default React.memo(function AttendanceReservation() {
     )
   })
 
-  const periodAriaId = useUniqueId()
-
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -170,22 +166,22 @@ export default React.memo(function AttendanceReservation() {
         <Title size={1}>{i18n.reports.attendanceReservation.title}</Title>
 
         <FilterRow>
-          <FilterLabel id={periodAriaId}>
-            {i18n.reports.common.period}
-          </FilterLabel>
+          <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <DateRangePicker
-              default={filters.range}
-              onChange={(range) => {
-                if (range) {
-                  setFilters({ ...filters, range })
+              start={filters.range.start}
+              end={filters.range.end}
+              onChange={(start, end) => {
+                if (start !== null && end !== null) {
+                  setFilters({
+                    ...filters,
+                    range: new FiniteDateRange(start, end)
+                  })
                 }
               }}
               locale={lang}
               errorTexts={i18n.validationErrors}
               required={true}
-              labels={i18n.common.datePicker}
-              aria-labelledby={periodAriaId}
             />
           </FlexRow>
         </FilterRow>

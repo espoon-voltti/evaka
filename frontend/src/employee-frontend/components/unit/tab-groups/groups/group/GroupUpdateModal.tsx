@@ -7,8 +7,11 @@ import React, { useState, useContext } from 'react'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faPen } from 'lib-icons'
@@ -66,36 +69,23 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
             data-qa="name-input"
           />
           <Gap size="s" />
-          <div className="bold" id="start-date">
-            {i18n.unit.groups.updateModal.startDate}
-          </div>
-          <DatePicker
+          <div className="bold">{i18n.unit.groups.updateModal.startDate}</div>
+          <DatePickerDeprecated
             date={data.startDate}
             onChange={(startDate) =>
-              startDate && setData((state) => ({ ...state, startDate }))
+              setData((state) => ({ ...state, startDate }))
             }
-            fullWidth
+            type="full-width"
             data-qa="start-date-input"
-            aria-labelledby="start-date"
-            labels={i18n.common.datePicker}
-            errorTexts={i18n.validationErrors}
-            locale="fi"
           />
           <Gap size="s" />
-          <div className="bold" id="end-date">
-            {i18n.unit.groups.updateModal.endDate}
-          </div>
-          <DatePicker
+          <div className="bold">{i18n.unit.groups.updateModal.endDate}</div>
+          <DatePickerClearableDeprecated
             date={data.endDate}
-            onChange={(endDate) =>
-              endDate && setData((state) => ({ ...state, endDate }))
-            }
-            fullWidth
+            onChange={(endDate) => setData((state) => ({ ...state, endDate }))}
+            onCleared={() => setData((state) => ({ ...state, endDate: null }))}
+            type="full-width"
             data-qa="end-date-input"
-            aria-labelledby="end-date"
-            labels={i18n.common.datePicker}
-            errorTexts={i18n.validationErrors}
-            locale="fi"
           />
         </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />

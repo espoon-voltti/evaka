@@ -5,7 +5,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { errorToInputInfo } from 'citizen-frontend/input-info-helper'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -16,7 +15,6 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -33,6 +31,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
+import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
@@ -52,13 +51,20 @@ interface Props {
 }
 
 function initialForm(
-  availableChildren: ReservationChild[],
-  initialDate: LocalDate = LocalDate.todayInSystemTz()
+  initialDate: LocalDate | undefined,
+  availableChildren: ReservationChild[]
 ): Form {
   const selectedChildren = availableChildren.map((child) => child.id)
-
+  if (initialDate) {
+    return {
+      startDate: initialDate,
+      endDate: initialDate,
+      selectedChildren
+    }
+  }
   return {
-    range: new FiniteDateRange(initialDate, initialDate),
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: null,
     selectedChildren
   }
 }
@@ -73,7 +79,7 @@ export default React.memo(function AbsenceModal({
   const [lang] = useLang()
 
   const [form, setForm] = useState<Form>(() =>
-    initialForm(availableChildren, initialDate)
+    initialForm(initialDate, availableChildren)
   )
 
   const updateForm = useCallback(
@@ -92,8 +98,6 @@ export default React.memo(function AbsenceModal({
         : false,
     [availableChildren]
   )
-
-  const dateRangeAriaId = useUniqueId('date-range')
 
   return (
     <ModalAccessibilityWrapper>
@@ -144,9 +148,10 @@ export default React.memo(function AbsenceModal({
               <ModalSection>
                 <H2>{i18n.calendar.absenceModal.dateRange}</H2>
                 <DateRangePicker
-                  default={form.range ?? null}
-                  onChange={(range) =>
-                    updateForm({ range: range ?? undefined })
+                  start={form.startDate}
+                  end={form.endDate}
+                  onChange={(startDate, endDate) =>
+                    updateForm({ startDate, endDate })
                   }
                   locale={lang}
                   errorTexts={i18n.validationErrors}
@@ -154,14 +159,15 @@ export default React.memo(function AbsenceModal({
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
-                  minDate={LocalDate.todayInSystemTz()}
-                  labels={i18n.common.datePicker}
-                  aria-labelledby={dateRangeAriaId}
-                  info={
+                  startInfo={
                     errors &&
-                    errorToInputInfo(errors.range, i18n.validationErrors)
+                    errorToInputInfo(errors.startDate, i18n.validationErrors)
                   }
-                  data-qa="date-range"
+                  endInfo={
+                    errors &&
+                    errorToInputInfo(errors.endDate, i18n.validationErrors)
+                  }
+                  minDate={LocalDate.todayInSystemTz()}
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
@@ -251,7 +257,8 @@ export default React.memo(function AbsenceModal({
 })
 
 interface Form {
-  range?: FiniteDateRange
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   selectedChildren: string[]
   absenceType?: AbsenceType
 }
@@ -260,7 +267,8 @@ const validateForm = (
   form: Form
 ): [AbsenceRequest] | [undefined, ErrorsOf<Form>] => {
   const errors: ErrorsOf<Form> = {
-    range: !form.range ? 'required' : undefined,
+    startDate: !form.startDate ? 'required' : undefined,
+    endDate: !form.endDate ? 'required' : undefined,
     absenceType: form.absenceType === undefined ? 'required' : undefined
   }
 
@@ -272,7 +280,7 @@ const validateForm = (
     {
       childIds: form.selectedChildren,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      dateRange: form.range!,
+      dateRange: new FiniteDateRange(form.startDate!, form.endDate!),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       absenceType: form.absenceType!
     }

@@ -12,13 +12,12 @@ import {
   HolidayPeriodBody
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -28,32 +27,35 @@ import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import { createHolidayPeriod, updateHolidayPeriod } from './api'
 
 interface FormState {
-  range: FiniteDateRange | null
+  start: LocalDate | null
+  end: LocalDate | null
   reservationDeadline: LocalDate | null
 }
 
 const formToHolidayPeriodBody = (
   s: FormState
 ): HolidayPeriodBody | undefined => {
-  if (!s.range) {
+  if (!s.start || !s.end) {
     return undefined
   }
 
   return {
-    period: s.range,
+    period: new FiniteDateRange(s.start, s.end),
     reservationDeadline: s.reservationDeadline
   }
 }
 
 const emptyFormState = (): FormState => ({
-  range: null,
+  start: null,
+  end: null,
   reservationDeadline: null
 })
 
 const toFormState = (p: HolidayPeriod | undefined): FormState =>
   p
     ? {
-        range: p.period,
+        start: p.period.start,
+        end: p.period.end,
         reservationDeadline: p.reservationDeadline
       }
     : emptyFormState()
@@ -77,18 +79,29 @@ export default React.memo(function HolidayPeriodForm({
     []
   )
 
-  const [errors, isValid] = useMemo(() => {
+  const [errors, isValid, parsedStart, parsedEnd] = useMemo(() => {
     const parsedDeadline = form.reservationDeadline
+    const parsedStart = form.start
+    const parsedEnd = form.end
 
     const errors: Record<keyof typeof form, ErrorKey | undefined> = {
       reservationDeadline:
-        parsedDeadline && form.range && parsedDeadline.isAfter(form.range.start)
+        parsedDeadline && parsedStart && parsedDeadline.isAfter(parsedStart)
           ? 'dateTooLate'
           : undefined,
-      range: !form.range ? 'required' : undefined
+      start: !parsedStart
+        ? 'validDate'
+        : parsedEnd && parsedStart.isAfter(parsedEnd)
+        ? 'dateTooLate'
+        : undefined,
+      end: !parsedEnd
+        ? 'validDate'
+        : parsedStart && parsedEnd.isBefore(parsedStart)
+        ? 'dateTooEarly'
+        : undefined
     }
     const isValid = Object.values(errors).every((err) => !err)
-    return [errors, isValid]
+    return [errors, isValid, parsedStart, parsedEnd]
   }, [form])
 
   const onSubmit = useCallback(() => {
@@ -104,33 +117,44 @@ export default React.memo(function HolidayPeriodForm({
 
   const hideErrorsBeforeTouched = !holidayPeriod
 
-  const reservationDeadlineAriaId = useUniqueId()
-  const holidayPeriodsAriaId = useUniqueId()
-
   return (
     <>
       <H1>{i18n.titles.holidayPeriod}</H1>
       <ListGrid>
-        <Label id={holidayPeriodsAriaId}>{i18n.holidayPeriods.period} *</Label>
-        <DateRangePicker
-          info={useMemo(
-            () => errorToInputInfo(errors.range, i18n.validationErrors),
-            [errors.range, i18n.validationErrors]
-          )}
-          default={form.range}
-          locale={lang}
-          required
-          onChange={(range) => update({ range })}
-          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
-          data-qa="input-range"
-          errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-labelledby={holidayPeriodsAriaId}
-        />
+        <Label>{i18n.holidayPeriods.period} *</Label>
+        <FixedSpaceRow alignItems="center">
+          <DatePicker
+            info={useMemo(
+              () => errorToInputInfo(errors.start, i18n.validationErrors),
+              [errors.start, i18n.validationErrors]
+            )}
+            date={form.start}
+            locale={lang}
+            required
+            maxDate={parsedEnd ?? undefined}
+            onChange={(start) => update({ start })}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="input-start"
+            errorTexts={i18n.validationErrors}
+          />
+          <span>-</span>
+          <DatePicker
+            info={useMemo(
+              () => errorToInputInfo(errors.end, i18n.validationErrors),
+              [errors.end, i18n.validationErrors]
+            )}
+            date={form.end}
+            locale={lang}
+            required
+            minDate={parsedStart ?? undefined}
+            onChange={(end) => update({ end })}
+            hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+            data-qa="input-end"
+            errorTexts={i18n.validationErrors}
+          />
+        </FixedSpaceRow>
 
-        <Label id={reservationDeadlineAriaId}>
-          {i18n.holidayPeriods.reservationDeadline}
-        </Label>
+        <Label>{i18n.holidayPeriods.reservationDeadline}</Label>
         <DatePicker
           locale={lang}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
@@ -142,13 +166,11 @@ export default React.memo(function HolidayPeriodForm({
               ),
             [errors.reservationDeadline, i18n.validationErrors]
           )}
-          maxDate={form.range?.start}
+          maxDate={parsedStart ?? undefined}
           date={form.reservationDeadline}
           onChange={(reservationDeadline) => update({ reservationDeadline })}
           data-qa="input-reservation-deadline"
           errorTexts={i18n.validationErrors}
-          aria-labelledby={reservationDeadlineAriaId}
-          labels={i18n.common.datePicker}
         />
       </ListGrid>
 

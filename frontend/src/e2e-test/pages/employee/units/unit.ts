@@ -4,7 +4,6 @@
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
@@ -13,7 +12,6 @@ import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import {
   Checkbox,
   Combobox,
-  DatePicker,
   Element,
   Modal,
   Page,
@@ -207,8 +205,14 @@ export class UnitEditor {
     this.page.find('[data-qa="qa-unit-manager-email-input-field"]')
   )
 
-  readonly #closingDateInput = new DatePicker(
-    this.page.find('[data-qa="closing-date-input"]')
+  readonly #closingDateInput = this.page.find(
+    '[data-qa="closing-date-input"] input'
+  )
+
+  readonly #reactDatePickerDays = this.page.findAll('.react-datepicker__day')
+
+  readonly #reactDatePickerCloseIcon = this.page.find(
+    '.react-datepicker__close-icon'
   )
 
   readonly #providerTypeRadio = (providerType: UnitProviderType) =>
@@ -246,12 +250,12 @@ export class UnitEditor {
     await this.#areaSelect.fillAndSelectFirst(name)
   }
 
-  async toggleCareType(type: CareType) {
+  async selectCareType(type: CareType) {
     await this.#careTypeCheckbox(type).check()
   }
 
   async toggleApplicationType(type: ApplicationType) {
-    await this.#applicationTypeCheckbox(type).check()
+    await this.#applicationTypeCheckbox(type).click()
   }
 
   async fillVisitingAddress(
@@ -286,12 +290,14 @@ export class UnitEditor {
     await this.page.find(`[data-qa="${dataQa}"]`).waitUntilHidden()
   }
 
-  async fillClosingDate(date: LocalDate) {
-    await this.#closingDateInput.fill(date)
+  async selectSomeClosingDate() {
+    await this.#closingDateInput.waitUntilVisible()
+    await this.#closingDateInput.click()
+    await this.#reactDatePickerDays.nth(15).click()
   }
 
   async clearClosingDate() {
-    await this.#closingDateInput.clear()
+    await this.#reactDatePickerCloseIcon.click()
   }
 
   async selectProviderType(providerType: UnitProviderType) {

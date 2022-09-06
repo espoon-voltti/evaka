@@ -9,7 +9,10 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import {
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faPen, faUser } from 'lib-icons'
 
@@ -181,32 +184,21 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
         )}
       </section>
       <section>
-        <div className="bold" id="start-date">
-          {i18n.common.form.startDate}
-        </div>
-        <DatePicker
+        <div className="bold">{i18n.common.form.startDate}</div>
+        <DatePickerDeprecated
           date={form.startDate}
-          onChange={(startDate) =>
-            startDate && assignFridgePartnerForm({ startDate })
-          }
-          fullWidth
+          onChange={(startDate) => assignFridgePartnerForm({ startDate })}
+          type="full-width"
           data-qa="fridge-partner-start-date"
-          locale="fi"
-          errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-labelledby="start-date"
         />
       </section>
       <section>
         <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePicker
+        <DatePickerClearableDeprecated
           date={form.endDate}
           onChange={(endDate) => assignFridgePartnerForm({ endDate })}
-          fullWidth
-          locale="fi"
-          errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-labelledby="start-date"
+          onCleared={() => assignFridgePartnerForm({ endDate: null })}
+          type="full-width"
         />
         {validationErrors.map((error) => (
           <div className="error" key={error}>

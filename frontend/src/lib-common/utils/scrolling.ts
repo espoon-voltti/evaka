@@ -4,7 +4,7 @@
 
 import { MutableRefObject } from 'react'
 
-import { isAutomatedTest, isIOS } from './helpers'
+import { isAutomatedTest } from './helpers'
 
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
   scrollWithTimeout(() => options, timeout)
@@ -35,31 +35,20 @@ export function scrollToRef(
 
 export function scrollRefIntoView(
   ref: MutableRefObject<HTMLElement | null>,
-  timeout = 0,
-  options?: ScrollIntoViewOptions
+  timeout = 0
 ) {
-  scrollIntoViewWithTimeout(() => ref.current ?? undefined, timeout, options)
+  scrollIntoViewWithTimeout(() => ref.current ?? undefined, timeout)
 }
 
 export function scrollIntoViewSoftKeyboard(
   target: Element,
   blockPosition: ScrollLogicalPosition = 'center'
 ) {
-  if (!('visualViewport' in window)) return
-
   const onResize = () => {
     target.scrollIntoView({
       block: blockPosition
     })
     window.visualViewport.removeEventListener('resize', onResize)
-  }
-
-  if (isIOS()) {
-    // On iOS, the resize event is triggered very late so
-    // the scrolling should happen instantly
-    target.scrollIntoView({
-      block: blockPosition
-    })
   }
 
   window.visualViewport.addEventListener('resize', onResize)
@@ -87,14 +76,13 @@ function scrollWithTimeout(
 
 function scrollIntoViewWithTimeout(
   getElement: () => HTMLElement | undefined,
-  timeout = 0,
-  options: ScrollIntoViewOptions = {}
+  timeout = 0
 ) {
   if (isAutomatedTest) return
 
   withTimeout(() => {
     const elem = getElement()
-    if (elem) elem.scrollIntoView({ behavior: 'smooth', ...options })
+    if (elem) elem.scrollIntoView({ behavior: 'smooth' })
   }, timeout)
 }
 

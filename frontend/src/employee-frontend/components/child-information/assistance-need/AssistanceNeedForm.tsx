@@ -15,9 +15,9 @@ import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import {
@@ -230,26 +230,14 @@ export default React.memo(function AssistanceNeedForm(props: Props) {
             value: (
               <>
                 <DivFitContent>
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.startDate}
-                    onChange={(startDate) =>
-                      startDate && updateFormState({ startDate })
-                    }
-                    labels={i18n.common.datePicker}
-                    errorTexts={i18n.validationErrors}
-                    locale="fi"
-                    aria-label={i18n.common.startDate}
+                    onChange={(startDate) => updateFormState({ startDate })}
                   />
                   {' - '}
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.endDate}
-                    onChange={(endDate) =>
-                      endDate && updateFormState({ endDate })
-                    }
-                    labels={i18n.common.datePicker}
-                    errorTexts={i18n.validationErrors}
-                    locale="fi"
-                    aria-label={i18n.common.endDate}
+                    onChange={(endDate) => updateFormState({ endDate })}
                   />
                 </DivFitContent>
 

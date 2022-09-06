@@ -126,7 +126,6 @@ interface CheckboxProps extends CommonProps {
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void
   disabled?: boolean
-  id?: string
 }
 
 export default React.memo(function Checkbox({
@@ -136,8 +135,7 @@ export default React.memo(function Checkbox({
   onChange,
   disabled,
   className,
-  'data-qa': dataQa,
-  id
+  'data-qa': dataQa
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -150,7 +148,7 @@ export default React.memo(function Checkbox({
           type="checkbox"
           checked={checked}
           data-qa={dataQa ? `${dataQa}-input` : undefined}
-          id={id ?? ariaId}
+          id={ariaId}
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
@@ -165,7 +163,7 @@ export default React.memo(function Checkbox({
       </Box>
       {!hiddenLabel && (
         <LabelContainer>
-          <label htmlFor={id ?? ariaId}>{label}</label>
+          <label htmlFor={ariaId}>{label}</label>
           <ExpandingInfoButtonSlot />
         </LabelContainer>
       )}

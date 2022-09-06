@@ -9,8 +9,8 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -120,31 +120,23 @@ const Modal = React.memo(function Modal({
       data-qa="send-invoices-dialog"
     >
       <ModalContent>
-        <Label id="invoice-date">{i18n.invoices.sendModal.invoiceDate}</Label>
+        <Label>{i18n.invoices.sendModal.invoiceDate}</Label>
         <div>
-          <DatePicker
+          <DatePickerDeprecated
             date={invoiceDate}
-            onChange={(date) => date && setInvoiceDate(date)}
-            fullWidth
+            onChange={setInvoiceDate}
+            type="full-width"
             data-qa="invoice-date-input"
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="invoice-date"
           />
         </div>
         <Gap size="s" />
-        <Label id="due-date">{i18n.invoices.sendModal.dueDate}</Label>
+        <Label>{i18n.invoices.sendModal.dueDate}</Label>
         <div>
-          <DatePicker
+          <DatePickerDeprecated
             date={dueDate}
-            onChange={(date) => date && setDueDate(date)}
-            fullWidth
+            onChange={setDueDate}
+            type="full-width"
             data-qa="invoice-due-date-input"
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="due-date"
           />
         </div>
         {!allInvoicesToggle && i18n.invoices.buttons.individualSendAlertText ? (

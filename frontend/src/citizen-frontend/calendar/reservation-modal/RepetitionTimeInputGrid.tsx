@@ -9,7 +9,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
 import {
   Repetition,
-  ReservationFormData,
+  ReservationFormDataForValidation,
   ValidationResult
 } from 'lib-common/reservations'
 import { defaultMargins } from 'lib-components/white-space'
@@ -19,10 +19,10 @@ import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid
 import WeeklyRepetitionTimeInputGrid from './WeeklyRepetitionTimeInputGrid'
 
 export interface RepetitionTimeInputGridProps {
-  formData: ReservationFormData
+  formData: ReservationFormDataForValidation
   childrenInShiftCare: boolean
   includedDays: number[]
-  updateForm: (updated: Partial<ReservationFormData>) => void
+  updateForm: (updated: Partial<ReservationFormDataForValidation>) => void
   showAllErrors: boolean
   existingReservations: DailyReservationData[]
   validationResult: ValidationResult

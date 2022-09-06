@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-
-import { Checkbox, DatePicker, Page, Radio, TextInput } from '../../utils/page'
+import { Checkbox, Page, Radio, TextInput } from '../../utils/page'
 
 export default class CitizenIncomePage {
   constructor(private readonly page: Page) {}
@@ -22,9 +20,9 @@ export default class CitizenIncomePage {
     await this.page.find(`[data-qa="${type}-checkbox"]`).click()
   }
 
-  #startDate = new DatePicker(this.page.findByDataQa('income-type-start-date'))
+  #startDate = new TextInput(this.page.find('#start-date'))
 
-  async setValidFromDate(date: LocalDate) {
+  async setValidFromDate(date: string) {
     await this.#startDate.fill(date)
   }
 
@@ -46,11 +44,11 @@ export default class CitizenIncomePage {
     await this.page.find(`[data-qa="entrepreneur-${value}-option"]`).click()
   }
 
-  #entrepreneurDate = new DatePicker(
+  #entrepreneurDate = new TextInput(
     this.page.find('[data-qa="entrepreneur-start-date"]')
   )
 
-  async setEntrepreneurStartDate(date: LocalDate) {
+  async setEntrepreneurStartDate(date: string) {
     await this.#entrepreneurDate.fill(date)
   }
 

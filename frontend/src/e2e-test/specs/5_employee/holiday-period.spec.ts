@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
@@ -34,9 +31,9 @@ describe('Holiday periods page', () => {
   test('Holiday periods can be created, updated and deleted', async () => {
     await holidayPeriodsPage.clickAddPeriodButton()
     await holidayPeriodsPage.fillHolidayPeriodForm({
-      start: LocalDate.of(2021, 12, 15),
-      end: LocalDate.of(2021, 12, 31),
-      reservationDeadline: LocalDate.of(2021, 12, 7)
+      start: '15.12.2021',
+      end: '31.12.2021',
+      reservationDeadline: '7.12.2021'
     })
     await holidayPeriodsPage.submit()
     await waitUntilEqual(
@@ -46,9 +43,9 @@ describe('Holiday periods page', () => {
 
     await holidayPeriodsPage.clickAddPeriodButton()
     await holidayPeriodsPage.fillHolidayPeriodForm({
-      start: LocalDate.of(2022, 2, 1),
-      end: LocalDate.of(2022, 2, 7),
-      reservationDeadline: LocalDate.of(2022, 1, 15)
+      start: '1.2.2022',
+      end: '7.2.2022',
+      reservationDeadline: '15.1.2022'
     })
     await holidayPeriodsPage.submit()
     await waitUntilEqual(
@@ -57,9 +54,7 @@ describe('Holiday periods page', () => {
     )
 
     await holidayPeriodsPage.editHolidayPeriod(0)
-    await holidayPeriodsPage.fillHolidayPeriodForm({
-      end: LocalDate.of(2022, 1, 6)
-    })
+    await holidayPeriodsPage.fillHolidayPeriodForm({ end: '6.1.2022' })
     await holidayPeriodsPage.submit()
     await waitUntilEqual(
       () => holidayPeriodsPage.visiblePeriods,
@@ -76,18 +71,16 @@ describe('Holiday periods page', () => {
   test('Holiday questionnaires can be created, updated and deleted', async () => {
     await holidayPeriodsPage.clickAddPeriodButton()
     await holidayPeriodsPage.fillHolidayPeriodForm({
-      start: LocalDate.of(2021, 12, 15),
-      end: LocalDate.of(2021, 12, 31),
-      reservationDeadline: LocalDate.of(2021, 12, 7)
+      start: '15.12.2021',
+      end: '31.12.2021',
+      reservationDeadline: '7.12.2021'
     })
     await holidayPeriodsPage.submit()
 
     await holidayPeriodsPage.clickAddQuestionnaireButton()
     await holidayPeriodsPage.fillQuestionnaireForm({
-      activeRange: new FiniteDateRange(
-        LocalDate.of(2022, 2, 15),
-        LocalDate.of(2022, 5, 3)
-      ),
+      activeStart: '15.2.2022',
+      activeEnd: '3.5.2022',
       title: '8 viikon maksuton jakso',
       description:
         'Pyydämme ilmoittamaan 3.5. mennessä lapsenne kesälomat. Jos lapsi on ennalta ilmoitetusti yhtenäisesti poissa 8 viikon ajan 31.5.–29.8. välillä, niin asiakasmaksu hyvitetään kesä- ja heinäkuulta.',

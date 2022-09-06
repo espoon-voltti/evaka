@@ -11,7 +11,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import { getPresenceReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
@@ -41,22 +41,16 @@ export default React.memo(function Presences() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.from}
-              onChange={(from) => from && setFilters({ ...filters, from })}
-              locale="fi"
-              labels={i18n.common.datePicker}
-              errorTexts={i18n.validationErrors}
-              aria-label={i18n.common.startDate}
+              onChange={(from) => setFilters({ ...filters, from })}
+              type="half-width"
             />
             <span>{' - '}</span>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.to}
-              onChange={(to) => to && setFilters({ ...filters, to })}
-              locale="fi"
-              labels={i18n.common.datePicker}
-              errorTexts={i18n.validationErrors}
-              aria-label={i18n.common.endDate}
+              onChange={(to) => setFilters({ ...filters, to })}
+              type="half-width"
             />
           </FlexRow>
         </FilterRow>
