@@ -94,7 +94,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
-        accessControl = AccessControl(DefaultActionRuleMapping(), acl, jdbi)
+        accessControl = AccessControl(DefaultActionRuleMapping(), jdbi)
     }
 
     @BeforeEach

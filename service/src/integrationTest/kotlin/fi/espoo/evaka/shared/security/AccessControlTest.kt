@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -29,7 +28,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     private fun prepareRules() {
         rules = TestActionRuleMapping()
-        accessControl = AccessControl(rules, AccessControlList(jdbi), jdbi)
+        accessControl = AccessControl(rules, jdbi)
     }
 
     class TestActionRuleMapping : ActionRuleMapping {

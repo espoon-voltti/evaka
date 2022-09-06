@@ -17,6 +17,6 @@ class SecurityConfig {
     fun accessControlList(jdbi: Jdbi): AccessControlList = AccessControlList(jdbi)
 
     @Bean
-    fun accessControl(actionRuleMapping: ActionRuleMapping, acl: AccessControlList, jdbi: Jdbi): AccessControl =
-        AccessControl(actionRuleMapping, acl, jdbi)
+    fun accessControl(actionRuleMapping: ActionRuleMapping, jdbi: Jdbi): AccessControl =
+        AccessControl(actionRuleMapping, jdbi)
 }
