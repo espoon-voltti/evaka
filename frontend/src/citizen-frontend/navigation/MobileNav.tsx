@@ -392,6 +392,7 @@ const Menu = React.memo(function Menu({
 })
 
 const MenuContainer = styled.div`
+  z-index: 24;
   position: fixed;
   overflow-y: scroll;
   top: ${headerHeightMobile}px;

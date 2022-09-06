@@ -145,7 +145,7 @@ const NotificationSlotContainer = styled.div`
   position: absolute;
   top: 0;
   right: ${defaultMargins.s};
-  z-index: 100;
+  z-index: 10;
   padding-left: 16px;
 `
 

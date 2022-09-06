@@ -125,7 +125,7 @@ const NotificationSlotContainer = styled.div`
   position: sticky;
   top: ${headerHeightMobile}px;
   width: 100%;
-  z-index: 20;
+  z-index: 10;
 `
 
 const NotificationSlotInnerContainer = styled.div`
