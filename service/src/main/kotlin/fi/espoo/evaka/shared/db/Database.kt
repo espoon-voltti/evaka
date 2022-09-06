@@ -125,7 +125,7 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
-        fun createQuery(fragment: QueryFragment): Query = Query(handle.createQuery(fragment.sql)).apply {
+        fun createQuery(fragment: QueryFragment<*>): Query = Query(handle.createQuery(fragment.sql)).apply {
             addBindings(fragment.bindings.asSequence().map { it.toPair() })
         }
 
@@ -304,13 +304,19 @@ data class Binding<T>(val value: T, val type: QualifiedType<T>) {
     }
 }
 
-data class QueryFragment(
+/**
+ * Some fragment of SQL, including bound parameter values.
+ *
+ * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter `Tag` can be used to
+ * assign some type to a query fragment for documentation purpose and to prevent mixing different types of query fragments.
+ */
+data class QueryFragment<@Suppress("unused") Tag>(
     @Language("sql")
     val sql: String,
     val bindings: Map<String, Binding<out Any?>> = emptyMap()
 ) {
-    inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): QueryFragment =
+    inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): QueryFragment<Tag> =
         bind(name, Binding.of(value, qualifiers))
 
-    fun <T> bind(name: String, binding: Binding<T>): QueryFragment = copy(bindings = bindings + (name to binding))
+    fun <T> bind(name: String, binding: Binding<T>): QueryFragment<Tag> = copy(bindings = bindings + (name to binding))
 }

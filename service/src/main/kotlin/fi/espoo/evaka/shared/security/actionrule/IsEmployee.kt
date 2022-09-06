@@ -17,19 +17,19 @@ import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByEmployee = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
+private typealias FilterByEmployee<T> = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<T>
 
 object IsEmployee {
-    private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule.Scoped<T, IsEmployee> =
+    private fun <T : Id<*>> rule(filter: FilterByEmployee<T>): DatabaseActionRule.Scoped<T, IsEmployee> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
-    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) : DatabaseActionRule.Scoped.Query<T, IsEmployee> {
+    private data class Query<T : Id<*>>(private val filter: FilterByEmployee<T>) : DatabaseActionRule.Scoped.Query<T, IsEmployee> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
             is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
                 ctx.tx.createQuery(
-                    QueryFragment(
+                    QueryFragment<Any>(
                         """
                     SELECT id
                     FROM (${subquery.sql}) fragment
@@ -87,8 +87,8 @@ object IsEmployee {
         }
     }
 
-    fun ownerOfMobileDevice() = rule<MobileDeviceId> { user, _ ->
-        QueryFragment(
+    fun ownerOfMobileDevice() = rule { user, _ ->
+        QueryFragment<MobileDeviceId>(
             """
 SELECT id
 FROM mobile_device
@@ -98,8 +98,8 @@ WHERE employee_id = :userId
             .bind("userId", user.id)
     }
 
-    fun ownerOfPairing() = rule<PairingId> { user, _ ->
-        QueryFragment(
+    fun ownerOfPairing() = rule { user, _ ->
+        QueryFragment<PairingId>(
             """
 SELECT id
 FROM pairing
@@ -109,8 +109,8 @@ WHERE employee_id = :userId
             .bind("userId", user.id)
     }
 
-    fun authorOfApplicationNote() = rule<ApplicationNoteId> { user, _ ->
-        QueryFragment(
+    fun authorOfApplicationNote() = rule { user, _ ->
+        QueryFragment<ApplicationNoteId>(
             """
 SELECT id
 FROM application_note
@@ -120,8 +120,8 @@ WHERE created_by = :userId
             .bind("userId", user.id)
     }
 
-    fun hasPermissionForMessageDraft() = rule<MessageDraftId> { user, _ ->
-        QueryFragment(
+    fun hasPermissionForMessageDraft() = rule { user, _ ->
+        QueryFragment<MessageDraftId>(
             """
 SELECT draft.id
 FROM message_draft draft
@@ -132,8 +132,8 @@ WHERE access.employee_id = :employeeId
             .bind("employeeId", user.id)
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { user, _ ->
-        QueryFragment(
+    fun hasPermissionForAttachmentThroughMessageContent() = rule { user, _ ->
+        QueryFragment<AttachmentId>(
             """
 SELECT att.id
 FROM attachment att
@@ -147,8 +147,8 @@ WHERE access.employee_id = :employeeId
             .bind("employeeId", user.id)
     }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() = rule<AttachmentId> { user, _ ->
-        QueryFragment(
+    fun hasPermissionForAttachmentThroughMessageDraft() = rule { user, _ ->
+        QueryFragment<AttachmentId>(
             """
 SELECT att.id
 FROM attachment att

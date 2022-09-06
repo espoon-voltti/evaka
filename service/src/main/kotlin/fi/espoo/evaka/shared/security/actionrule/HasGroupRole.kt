@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 import java.util.UUID
 
-private typealias GetGroupRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
+private typealias GetGroupRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<IdRoleFeatures>
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) {
     init {
@@ -38,7 +38,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
             is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
                 ctx.tx.createQuery(
-                    QueryFragment(
+                    QueryFragment<Any>(
                         """
                     SELECT id, role, unit_features
                     FROM (${subquery.sql}) fragment
@@ -62,7 +62,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
         ): AccessControlFilter<T>? = when (ctx.user) {
             is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
                 ctx.tx.createQuery(
-                    QueryFragment(
+                    QueryFragment<Any>(
                         """
                     SELECT id
                     FROM (${subquery.sql}) fragment
@@ -92,7 +92,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
     }
 
     fun inPlacementGroupOfChild() = rule<ChildId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_group_acl(:today) acl
@@ -105,7 +105,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document

@@ -45,7 +45,7 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 import java.util.UUID
 
-private typealias GetUnitRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment
+private typealias GetUnitRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<IdRoleFeatures>
 
 data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) {
     init {
@@ -65,7 +65,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
         ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (ctx.user) {
             is AuthenticatedUser.Employee -> getUnitRoles(ctx.user, ctx.now).let { subquery ->
                 ctx.tx.createQuery(
-                    QueryFragment(
+                    QueryFragment<Any>(
                         """
                     SELECT id, role, unit_features
                     FROM (${subquery.sql}) fragment
@@ -91,7 +91,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
         ): AccessControlFilter<T>? = when (ctx.user) {
             is AuthenticatedUser.Employee -> getUnitRoles(ctx.user, ctx.now).let { subquery ->
                 ctx.tx.createQuery(
-                    QueryFragment(
+                    QueryFragment<Any>(
                         """
                     SELECT id
                     FROM (${subquery.sql}) fragment
@@ -149,7 +149,7 @@ WHERE employee_id = :userId
     )
 
     fun inPlacementPlanUnitOfApplication() = rule<ApplicationId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT av.id, role, daycare.enabled_pilot_features AS unit_features
 FROM application_view av
@@ -162,7 +162,7 @@ WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_
     }
 
     fun inPlacementUnitOfChildOfAssistanceAction() = rule<AssistanceActionId> { user, now, ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT aa.id, role, daycare.enabled_pilot_features AS unit_features
 FROM assistance_action aa
@@ -176,7 +176,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfAssistanceNeed() = rule<AssistanceNeedId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT an.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need an
@@ -190,7 +190,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfAssistanceNeedDecision() = rule<AssistanceNeedDecisionId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT ad.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need_decision ad
@@ -204,7 +204,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement() = rule<AssistanceNeedVoucherCoefficientId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT avc.id, role, enabled_pilot_features AS unit_features
 FROM assistance_need_voucher_coefficient avc
@@ -223,7 +223,7 @@ WHERE employee_id = :userId AND EXISTS(
     }
 
     fun inPlacementUnitOfChildOfBackupCare() = rule<BackupCareId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT bc.id, role, enabled_pilot_features AS unit_features
 FROM backup_care bc
@@ -237,7 +237,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfBackupPickup() = rule<BackupPickupId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT bp.id, role, enabled_pilot_features AS unit_features
 FROM backup_pickup bp
@@ -251,7 +251,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChild() = rule<ChildId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_daycare_acl(:today) acl
@@ -264,7 +264,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfChildDailyNote() = rule<ChildDailyNoteId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT cdn.id, role, enabled_pilot_features AS unit_features
 FROM child_daily_note cdn
@@ -278,7 +278,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfChildStickyNote() = rule<ChildStickyNoteId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT csn.id, role, enabled_pilot_features AS unit_features
 FROM child_sticky_note csn
@@ -292,7 +292,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfChildImage() = rule<ChildImageId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT img.id, role, enabled_pilot_features AS unit_features
 FROM child_images img
@@ -306,7 +306,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfDecision() = rule<DecisionId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT decision.id, role, daycare.enabled_pilot_features AS unit_features
 FROM decision
@@ -319,7 +319,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfParentship() = rule<ParentshipId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
 
             """
 SELECT fridge_child.id, role, enabled_pilot_features AS unit_features
@@ -333,7 +333,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfPartnership() = rule<PartnershipId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
 
             """
 SELECT fridge_partner.partnership_id AS id, role, enabled_pilot_features AS unit_features
@@ -347,7 +347,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfPedagogicalDocument() = rule<PedagogicalDocumentId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT pd.id, role, enabled_pilot_features AS unit_features
 FROM pedagogical_document pd
@@ -361,7 +361,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() = rule<AttachmentId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT attachment.id, role, enabled_pilot_features AS unit_features
 FROM attachment
@@ -376,7 +376,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfPerson() = rule<PersonId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT person_id AS id, role, enabled_pilot_features AS unit_features
 FROM person_acl_view acl
@@ -388,7 +388,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfPlacement() = rule<PlacementId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT placement.id, role, enabled_pilot_features AS unit_features
 FROM placement
@@ -401,7 +401,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfServiceNeed() = rule<ServiceNeedId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT service_need.id, role, enabled_pilot_features AS unit_features
 FROM service_need
@@ -415,7 +415,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
@@ -429,7 +429,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfDailyServiceTime() = rule<DailyServiceTimesId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT dst.id, role, enabled_pilot_features AS unit_features
 FROM daily_service_time dst
@@ -443,7 +443,7 @@ WHERE employee_id = :userId
     }
 
     fun inPlacementUnitOfChildOfFutureDailyServiceTime() = rule<DailyServiceTimesId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT dst.id, role, enabled_pilot_features AS unit_features
 FROM daily_service_time dst
@@ -458,7 +458,7 @@ WHERE employee_id = :userId
     }
 
     fun inPreferredUnitOfApplication() = rule<ApplicationId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT av.id, role, enabled_pilot_features AS unit_features
 FROM application_view av
@@ -471,7 +471,7 @@ WHERE employee_id = :userId
     }
 
     fun inUnitOfGroup() = rule<GroupId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT g.id, role, enabled_pilot_features AS unit_features
 FROM daycare_group g
@@ -484,7 +484,7 @@ WHERE employee_id = :userId
     }
 
     fun inUnitOfGroupNote() = rule<GroupNoteId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT gn.id, role, enabled_pilot_features AS unit_features
 FROM group_note gn
@@ -498,7 +498,7 @@ WHERE employee_id = :userId
     }
 
     fun inUnitOfGroupPlacement() = rule<GroupPlacementId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT daycare_group_placement.id, role, enabled_pilot_features AS unit_features
 FROM placement
@@ -512,7 +512,7 @@ WHERE employee_id = :userId
     }
 
     fun inUnitOfMobileDevice() = rule<MobileDeviceId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT d.id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
@@ -525,7 +525,7 @@ WHERE acl.employee_id = :userId
     }
 
     fun inUnitOfPairing() = rule<PairingId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT p.id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
@@ -538,7 +538,7 @@ WHERE acl.employee_id = :userId
     }
 
     fun inUnit() = rule<DaycareId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT daycare_id AS id, role, enabled_pilot_features AS unit_features
 FROM daycare_acl acl
@@ -550,7 +550,7 @@ WHERE employee_id = :userId
     }
 
     fun inUnitOfApplicationAttachment() = rule<AttachmentId> { user, _ ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT attachment.id, role, enabled_pilot_features AS unit_features
 FROM attachment
@@ -565,7 +565,7 @@ AND attachment.type = 'EXTENDED_CARE'
     }
 
     fun inPlacementUnitOfChildWithServiceVoucherPlacement() = rule<ChildId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_daycare_acl(:today) acl
@@ -583,7 +583,7 @@ WHERE employee_id = :userId AND EXISTS(
     }
 
     fun inUnitOfCalendarEvent() = rule<CalendarEventId> { user, now ->
-        QueryFragment(
+        QueryFragment<IdRoleFeatures>(
             """
 SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features
 FROM calendar_event_attendee cea
