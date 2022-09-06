@@ -4,8 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
-import fi.espoo.evaka.assistanceneed.decision.filterPermittedAssistanceNeedDecisionsForDecisionMaker
-import fi.espoo.evaka.assistanceneed.decision.filterSentAssistanceNeedDecisions
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -68,14 +67,33 @@ AND evaka_user.type = 'EMPLOYEE'
     }
 
     fun andIsDecisionMakerForAssistanceNeedDecision() = rule { tx, employee, _, ids ->
-        tx.filterPermittedAssistanceNeedDecisionsForDecisionMaker(
-            employee,
-            ids
+        tx.createQuery(
+            """
+SELECT id
+FROM assistance_need_decision
+WHERE decision_maker_employee_id = :employeeId
+  AND id = ANY(:ids)
+  AND sent_for_decision IS NOT NULL
+            """.trimIndent()
         )
+            .bind("employeeId", employee.id)
+            .bind("ids", ids)
+            .mapTo<AssistanceNeedDecisionId>()
+            .toSet()
     }
 
     fun andAssistanceNeedDecisionHasBeenSent() = rule { tx, _, _, ids ->
-        tx.filterSentAssistanceNeedDecisions(ids)
+        tx.createQuery(
+            """
+SELECT id
+FROM assistance_need_decision
+WHERE id = ANY(:ids)
+  AND sent_for_decision IS NOT NULL
+            """.trimIndent()
+        )
+            .bind("ids", ids)
+            .mapTo<AssistanceNeedDecisionId>()
+            .toSet()
     }
 
     fun andChildHasServiceVoucherPlacement() = rule<ChildId> { tx, _, _, ids ->
