@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterMobileByTarget<T> = (mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QueryFragment<T>
+private typealias FilterByMobile<T> = (mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QueryFragment<T>
 
 data class IsMobile(val requirePinLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
@@ -28,9 +28,9 @@ data class IsMobile(val requirePinLogin: Boolean) {
         MobileAuthLevel.DEFAULT -> !requirePinLogin
     }
 
-    private fun <T : Id<*>> rule(filter: FilterMobileByTarget<T>): DatabaseActionRule.Scoped<T, IsMobile> =
+    private fun <T : Id<*>> rule(filter: FilterByMobile<T>): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
-    private data class Query<T : Id<*>>(private val filter: FilterMobileByTarget<T>) : DatabaseActionRule.Scoped.Query<T, IsMobile> {
+    private data class Query<T : Id<*>>(private val filter: FilterByMobile<T>) : DatabaseActionRule.Scoped.Query<T, IsMobile> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
