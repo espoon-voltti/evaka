@@ -35,7 +35,7 @@ import java.time.LocalTime
 @RestController
 @RequestMapping("/staff-attendances/realtime")
 class RealtimeStaffAttendanceController(
-    private val ac: AccessControl
+    private val accessControl: AccessControl
 ) {
     @GetMapping
     fun getAttendances(
@@ -46,8 +46,7 @@ class RealtimeStaffAttendanceController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
         Audit.StaffAttendanceRead.log(targetId = unitId)
-
-        ac.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {
@@ -107,6 +106,7 @@ class RealtimeStaffAttendanceController(
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType
     )
+
     data class UpsertExternalAttendance(
         val attendanceId: StaffAttendanceExternalId?,
         val name: String?,
@@ -114,6 +114,7 @@ class RealtimeStaffAttendanceController(
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?
     )
+
     data class UpsertStaffAndExternalAttendanceRequest(
         val staffAttendances: List<UpsertStaffAttendance>,
         val externalAttendances: List<UpsertExternalAttendance>
@@ -127,8 +128,7 @@ class RealtimeStaffAttendanceController(
         @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
-
-        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -175,6 +175,7 @@ class RealtimeStaffAttendanceController(
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType
     )
+
     @PostMapping("/{unitId}/{employeeId}/{date}")
     fun upsertDailyStaffAttendances(
         db: Database,
@@ -185,7 +186,8 @@ class RealtimeStaffAttendanceController(
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
-        ac.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val occupancyCoefficients = body.map { it.groupId }.distinct().associateWith {
@@ -219,8 +221,7 @@ class RealtimeStaffAttendanceController(
         @PathVariable attendanceId: StaffAttendanceId
     ) {
         Audit.StaffAttendanceDelete.log(targetId = attendanceId)
-
-        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -237,8 +238,7 @@ class RealtimeStaffAttendanceController(
         @PathVariable attendanceId: StaffAttendanceExternalId
     ) {
         Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
-
-        ac.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
