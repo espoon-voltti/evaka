@@ -75,6 +75,7 @@ class SystemController(private val personService: PersonService, private val acc
                 val roles = it.getEmployeeRoles(inserted.id)
                 val employee = EmployeeUser(
                     id = inserted.id,
+                    nickname = inserted.nickname,
                     firstName = inserted.firstName,
                     lastName = inserted.lastName,
                     globalRoles = roles.globalRoles,

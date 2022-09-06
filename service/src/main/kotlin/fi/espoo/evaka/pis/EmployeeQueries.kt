@@ -30,6 +30,7 @@ data class NewEmployee(
 
 data class EmployeeUser(
     val id: EmployeeId,
+    val nickname: String?,
     val firstName: String,
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
@@ -89,7 +90,7 @@ INSERT INTO employee (first_name, last_name, email, external_id, employee_number
 VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :now)
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = :now, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
-RETURNING id, first_name, last_name, email, external_id, created, updated, roles
+RETURNING id, nickname, first_name, last_name, email, external_id, created, updated, roles
     """.trimIndent()
 ).bindKotlin("employee", employee)
     .bind("now", clock.now())
@@ -120,7 +121,7 @@ WHERE id = :id
 private fun Database.Read.searchEmployees(id: EmployeeId? = null, externalId: ExternalId? = null) = createQuery(
     // language=SQL
     """
-SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
+SELECT e.id, nickname, first_name, last_name, email, external_id, e.created, e.updated, roles
 FROM employee e
 WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
     """.trimIndent()
