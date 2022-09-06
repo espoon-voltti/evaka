@@ -250,8 +250,8 @@ export class UnitEditor {
     await this.#areaSelect.fillAndSelectFirst(name)
   }
 
-  async toggleCareType(type: CareType) {
-    await this.#careTypeCheckbox(type).click()
+  async selectCareType(type: CareType) {
+    await this.#careTypeCheckbox(type).check()
   }
 
   async toggleApplicationType(type: ApplicationType) {

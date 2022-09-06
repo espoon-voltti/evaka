@@ -40,7 +40,7 @@ describe('Employee - unit details', () => {
 
     await unitEditorPage.fillUnitName('Uusi Kerho')
     await unitEditorPage.chooseArea('Superkeskus')
-    await unitEditorPage.toggleCareType('CLUB')
+    await unitEditorPage.selectCareType('CLUB')
     await unitEditorPage.toggleApplicationType('CLUB')
     await unitEditorPage.fillVisitingAddress('Kamreerintie 1', '02100', 'Espoo')
     await unitEditorPage.fillManagerData(
