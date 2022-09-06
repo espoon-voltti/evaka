@@ -88,7 +88,7 @@ describe('Employee - paper application', () => {
     await createApplicationModal.selectCreateNewPersonAsGuardian(
       'Testi',
       'Testinen',
-      LocalDate.of(1980, 11, 1),
+      '01.11.1980',
       'Katuosoite A1',
       '02200',
       'Espoo',
@@ -107,7 +107,9 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with minimal info and saves it', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(LocalDate.todayInSystemTz())
+    await applicationEditPage.fillStartDate(
+      LocalDate.todayInSystemTz().format()
+    )
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
@@ -121,7 +123,9 @@ describe('Employee - paper application', () => {
   test('Service worker fills paper application with second guardian contact info and agreement status', async () => {
     const applicationEditPage = await createApplicationModal.submit()
 
-    await applicationEditPage.fillStartDate(LocalDate.todayInSystemTz())
+    await applicationEditPage.fillStartDate(
+      LocalDate.todayInSystemTz().format()
+    )
     await applicationEditPage.fillTimes()
     await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(

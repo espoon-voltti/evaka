@@ -95,11 +95,6 @@ export default {
       ]
     },
     closeModal: 'Sulje ponnahdusikkuna',
-    datePicker: {
-      previousMonthLabel: 'Edellinen kuukausi',
-      nextMonthLabel: 'Seuraava kuukausi',
-      calendarLabel: 'Kalenteri'
-    },
     close: 'Close'
   },
   header: {
@@ -330,7 +325,7 @@ export default {
       ok: 'Selvä!'
     },
     absentEnable: 'Merkitse poissaolevaksi',
-    absentDisable: 'Merkitse läsnäolevaksi'
+    absentDisable: 'Merkitse läsnä olevaksi'
   },
   messages: {
     inboxTitle: 'Viestit',
@@ -1807,8 +1802,7 @@ export default {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu',
-    inconsistentRange: 'Alkamispäivän tulee olla ennen lopetuspäivää'
+    unselectableDate: 'Päivä ei ole sallittu'
   },
   login: {
     failedModal: {

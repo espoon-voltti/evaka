@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../utils'
-import { Page, Checkbox, TextInput, DatePicker } from '../../utils/page'
+import { Page, Checkbox, TextInput } from '../../utils/page'
 
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
@@ -19,7 +19,7 @@ export default class PersonSearchPage {
       this.page.find('[data-qa="first-name-input"]')
     ),
     lastNameInput: new TextInput(this.page.find('[data-qa="last-name-input"]')),
-    dateOfBirthInput: new DatePicker(
+    dateOfBirthInput: new TextInput(
       this.page.find('[data-qa="date-of-birth-input"]')
     ),
     streetAddressInput: new TextInput(
@@ -58,7 +58,9 @@ export default class PersonSearchPage {
     await this.#createPersonButton.click()
     await this.#createPersonModal.firstNameInput.type(personData.firstName)
     await this.#createPersonModal.lastNameInput.type(personData.lastName)
-    await this.#createPersonModal.dateOfBirthInput.fill(personData.dateOfBirth)
+    await this.#createPersonModal.dateOfBirthInput.type(
+      personData.dateOfBirth.format()
+    )
     await this.#createPersonModal.streetAddressInput.type(
       personData.streetAddress
     )

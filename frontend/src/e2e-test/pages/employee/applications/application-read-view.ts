@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DecisionType } from 'lib-common/generated/api-types/decision'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { DatePicker, Page, Radio } from '../../../utils/page'
+import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
 
 import ApplicationEditView from './application-edit-view'
 
@@ -81,16 +80,13 @@ export default class ApplicationReadView {
     )
   }
 
-  async setDecisionStartDate(type: DecisionType, startDate?: LocalDate) {
-    const datePicker = new DatePicker(
+  async setDecisionStartDate(type: DecisionType, startDate: string) {
+    const datePicker = new DatePickerDeprecated(
       this.page
         .find(`[data-qa="application-decision-${type}"]`)
         .find('[data-qa="decision-start-date-picker"]')
     )
-
-    if (startDate) {
-      await datePicker.fill(startDate)
-    }
+    await datePicker.fill(startDate)
   }
 
   async acceptDecision(type: DecisionType) {

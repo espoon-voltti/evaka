@@ -18,7 +18,6 @@ import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
 import { OmitInUnion, UUID } from 'lib-common/types'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -228,14 +227,10 @@ export const DailyServiceTimesCreationForm = React.memo(
       })
     }, [formData, noValidationErrors, childId])
 
-    const validFromAriaId = useUniqueId()
-
     return (
       <form>
         <div>
-          <Label id={validFromAriaId}>
-            {i18n.childInformation.dailyServiceTimes.validFrom}
-          </Label>
+          <Label>{i18n.childInformation.dailyServiceTimes.validFrom}</Label>
         </div>
         <div>
           <DatePicker
@@ -253,8 +248,6 @@ export const DailyServiceTimesCreationForm = React.memo(
             minDate={LocalDate.todayInHelsinkiTz()}
             hideErrorsBeforeTouched
             data-qa="daily-service-times-validity-period-start"
-            labels={i18n.common.datePicker}
-            aria-labelledby={validFromAriaId}
           />
         </div>
         <Gap size="m" />

@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { getAge } from 'lib-common/utils/local-date'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import InputField from 'lib-components/atoms/form/InputField'
 import ListGrid from 'lib-components/layout/ListGrid'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -67,8 +66,6 @@ export default React.memo(function CreatePersonModal({
 
   const isAdult = (dateOfBirth: LocalDate) => getAge(dateOfBirth) >= CHILD_AGE
 
-  const dateOfBirthAriaId = useUniqueId()
-
   return (
     <FormModal
       type="info"
@@ -96,9 +93,7 @@ export default React.memo(function CreatePersonModal({
             width="full"
             data-qa="last-name-input"
           />
-          <Label id={dateOfBirthAriaId}>
-            {i18n.personSearch.createNewPerson.form.dateOfBirth}*
-          </Label>
+          <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
           <DatePicker
             date={form.dateOfBirth}
             locale={lang}
@@ -113,8 +108,6 @@ export default React.memo(function CreatePersonModal({
             hideErrorsBeforeTouched
             data-qa="date-of-birth-input"
             errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby={dateOfBirthAriaId}
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>
           <AddressContainer>

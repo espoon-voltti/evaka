@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, TextInput, Combobox, DatePicker } from '../../../utils/page'
+import { Page, TextInput, Combobox } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
   constructor(private readonly page: Page) {}
@@ -15,7 +15,7 @@ export default class AssistanceNeedDecisionEditPage {
   pedagogicalMotivationInput = new TextInput(
     this.page.findByDataQa('pedagogical-motivation-field')
   )
-  guardiansHeardOnInput = new DatePicker(
+  guardiansHeardOnInput = new TextInput(
     this.page.findByDataQa('guardians-heard-on')
   )
 

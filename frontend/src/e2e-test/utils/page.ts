@@ -9,10 +9,6 @@ import {
   Page as PlaywrightPage
 } from 'playwright'
 
-import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
-import LocalDate from 'lib-common/local-date'
-
 import { EvakaBrowserContextOptions, newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
@@ -260,86 +256,20 @@ export class TextInput extends Element {
 }
 
 export class DatePicker extends Element {
-  #day = new TextInput(this.findByDataQa('date-picker-segment-day'))
-  #month = new TextInput(this.findByDataQa('date-picker-segment-month'))
-  #year = new TextInput(this.findByDataQa('date-picker-segment-year'))
+  #input = new TextInput(this)
 
-  async fill(date: LocalDate) {
-    // fill in reverse order, or react-aria datepicker behaves strangely
-    await this.#year.click()
-    await this.#year.fill(date.getYear().toString())
-
-    await this.#month.click()
-    await this.#month.fill(date.getMonth().toString())
-
-    await this.#day.click()
-    await this.#day.fill(date.getDate().toString())
-  }
-
-  async getDate() {
-    const day = parseInt(await this.#day.innerText)
-    const month = parseInt(await this.#month.innerText)
-    const year = parseInt(await this.#year.innerText)
-
-    return LocalDate.of(year, month, day)
-  }
-
-  async clear() {
-    await this.#year.click()
-
-    for (let i = 0; i < 2 + 2 + 4; i++) {
-      await this.#year.press('Backspace')
-    }
+  async fill(text: string) {
+    await this.#input.fill(text)
+    await this.#input.press('Enter')
   }
 }
 
-export class OpenDateRangePicker extends Element {
-  #start = new DatePicker(this.findByDataQa('start-date'))
-  #end = new DatePicker(this.findByDataQa('end-date'))
+export class DatePickerDeprecated extends Element {
+  #input = new TextInput(this.find('input'))
 
-  async fill(range: DateRange) {
-    await this.#start.fill(range.start)
-    if (range.end) {
-      await this.#end.fill(range.end)
-    }
-  }
-}
-
-export class DateRangePicker extends Element {
-  #start = new DatePicker(this.findByDataQa('start-date'))
-  #end = new DatePicker(this.findByDataQa('end-date'))
-
-  async fill(range: FiniteDateRange) {
-    await this.#start.fill(range.start)
-    await this.#end.fill(range.end)
-  }
-
-  async fillDateRange(range: DateRange) {
-    await this.#start.fill(range.start)
-    if (range.end) {
-      await this.#end.fill(range.end)
-    }
-  }
-
-  async fillStart(start: LocalDate) {
-    await this.#start.fill(start)
-  }
-
-  async fillEnd(end: LocalDate) {
-    await this.#end.fill(end)
-  }
-
-  getStart() {
-    return this.#start.getDate()
-  }
-
-  getEnd() {
-    return this.#end.getDate()
-  }
-
-  async clear() {
-    await this.#start.clear()
-    await this.#end.clear()
+  async fill(text: string) {
+    await this.#input.fill(text)
+    await this.#input.press('Enter')
   }
 }
 

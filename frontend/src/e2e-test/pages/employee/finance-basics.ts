@@ -5,12 +5,7 @@
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 
 import { waitUntilTrue } from '../../utils'
-import {
-  AsyncButton,
-  OpenDateRangePicker,
-  Page,
-  TextInput
-} from '../../utils/page'
+import { AsyncButton, Page, TextInput } from '../../utils/page'
 
 export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}
@@ -86,9 +81,8 @@ export default class FinanceBasicsPage {
       }
     },
     editor: {
-      validDuringInput: new OpenDateRangePicker(
-        this.page.find('[data-qa="valid-during"]')
-      ),
+      validFromInput: new TextInput(this.page.find('[data-qa="valid-from"]')),
+      validToInput: new TextInput(this.page.find('[data-qa="valid-to"]')),
       maxFeeInput: new TextInput(this.page.find('[data-qa="max-fee"]')),
       minFeeInput: new TextInput(this.page.find('[data-qa="min-fee"]')),
       minIncomeThreshold: (familySize: number) =>
@@ -128,8 +122,11 @@ export default class FinanceBasicsPage {
       ),
       saveButton: new AsyncButton(this.page.find('[data-qa="save"]')),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
-        await this.feesSection.editor.validDuringInput.fill(
-          feeThresholds.validDuring
+        await this.feesSection.editor.validFromInput.fill(
+          feeThresholds.validDuring.start.format()
+        )
+        await this.feesSection.editor.validToInput.fill(
+          feeThresholds.validDuring.end?.format() ?? ''
         )
         await this.feesSection.editor.maxFeeInput.fill(
           formatCents(feeThresholds.maxFee)

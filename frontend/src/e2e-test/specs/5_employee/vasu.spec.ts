@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -277,13 +276,9 @@ describe('Vasu document page', () => {
       await goals.actionsInput.type('Show flash cards')
       await goals.supportLevelOptions('during_range').click()
       await goals
-        .supportLevelOptionRange('during_range')
-        .fill(
-          new FiniteDateRange(
-            LocalDate.of(2020, 3, 2),
-            LocalDate.of(2021, 5, 11)
-          )
-        )
+        .supportLevelOptionRangeStart('during_range')
+        .fill('02.03.2020')
+      await goals.supportLevelOptionRangeEnd('during_range').fill('11.05.2021')
       await goals.otherInput.type(
         'Child snores heavily, waking all the other kids up'
       )
@@ -383,7 +378,7 @@ describe('Vasu document page', () => {
       const vasuEditPage = await editDocument()
       const discussion = vasuEditPage.discussionSection
 
-      await discussion.dateInput.fill(LocalDate.of(2021, 12, 1))
+      await discussion.dateInput.type('1.12.2021')
       await discussion.presentInput.type('Mom, dad, and teacher')
       await discussion.collaborationAndOpinionInput.type(
         'Everything is awesome'
@@ -445,13 +440,13 @@ describe('Vasu document page', () => {
         const vasuEditPage = await editDocument()
         await vasuEditPage.inputFollowupWithDateComment(
           'This is a followup',
-          LocalDate.of(2020, 4, 1),
+          '01.04.2020',
           0,
           0
         )
         await vasuEditPage.inputFollowupWithDateComment(
           'A second one',
-          LocalDate.of(2021, 10, 9),
+          '09.10.2021',
           0,
           1
         )
@@ -489,7 +484,7 @@ describe('Vasu document page', () => {
         await vasuEditPage.inputFollowupComment('This will be edited', 0, 0)
         await vasuEditPage.inputFollowupWithDateComment(
           'Edited with date too',
-          LocalDate.of(2021, 8, 1),
+          '01.08.2021',
           0,
           1
         )

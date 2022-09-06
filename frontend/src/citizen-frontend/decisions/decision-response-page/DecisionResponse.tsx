@@ -182,9 +182,6 @@ export default React.memo(function DecisionResponse({
                 checked={acceptChecked}
                 onChange={() => setAcceptChecked(true)}
                 name={`${decision.id}-accept`}
-                interactiveLabel={
-                  !['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decisionType)
-                }
                 label={
                   <FixedSpaceFlexWrap horizontalSpacing="xs">
                     <div>
@@ -195,7 +192,7 @@ export default React.memo(function DecisionResponse({
                     ) ? (
                       <div>{startDate}</div>
                     ) : (
-                      <DatePickerContainer>
+                      <DatePickerContainer onClick={(e) => e.stopPropagation()}>
                         <DatePicker
                           date={requestedStartDate}
                           onChange={(date) => setRequestedStartDate(date)}
@@ -214,8 +211,6 @@ export default React.memo(function DecisionResponse({
                               : undefined
                           }
                           errorTexts={t.validationErrors}
-                          labels={t.common.datePicker}
-                          aria-labelledby={`${decision.id}-accept`}
                         />
                       </DatePickerContainer>
                     )}

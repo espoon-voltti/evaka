@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
-import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import {
   Checkbox,
   Combobox,
-  DatePicker,
+  DatePickerDeprecated,
   FileInput,
   Page,
   Radio,
@@ -24,8 +23,8 @@ export default class ApplicationEditView {
   #saveButton = this.page.find('[data-qa="save-application"]')
   #urgentCheckbox = new Checkbox(this.page.find('[data-qa="checkbox-urgent"]'))
   #urgentAttachmentFileUpload = this.page.find('[data-qa="file-upload-urgent"]')
-  #preferredStartDate = new DatePicker(
-    this.page.find('[data-qa="preferred-start-date"]')
+  #preferredStartDate = new DatePickerDeprecated(
+    this.page.find('[data-qa="datepicker-start-date"]')
   )
   #startTime = new TextInput(this.page.find('[data-qa="start-time"]'))
   #endTime = new TextInput(this.page.find('[data-qa="end-time"]'))
@@ -48,7 +47,7 @@ export default class ApplicationEditView {
     return new ApplicationReadView(this.page)
   }
 
-  async fillStartDate(date: LocalDate) {
+  async fillStartDate(date: string) {
     await this.#preferredStartDate.fill(date)
   }
 

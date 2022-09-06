@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 import { useTranslation } from '../../state/i18n'
 import { UnitFilters } from '../../utils/UnitFilters'
@@ -41,15 +41,15 @@ export default React.memo(function UnitDataFilters({
     <FixedSpaceRow>
       <DatePickersContainer>
         {canEdit ? (
-          <DatePicker
+          <DatePickerDeprecated
             data-qa="unit-filter-start-date"
             date={startDate}
-            onChange={(date) => date && setFilters(filters.withStartDate(date))}
+            onChange={(date) => setFilters(filters.withStartDate(date))}
+            type="half-width"
             minDate={LocalDate.of(2000, 1, 1)}
-            labels={i18n.common.datePicker}
-            locale="fi"
-            aria-label={i18n.common.startDate}
-            errorTexts={i18n.validationErrors}
+            options={{
+              todayButton: i18n.common.today
+            }}
           />
         ) : (
           <div>{startDate.format()}</div>

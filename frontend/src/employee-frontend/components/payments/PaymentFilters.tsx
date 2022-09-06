@@ -13,7 +13,7 @@ import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -224,22 +224,16 @@ export function PaymentDateFilter({
     <>
       <Label>{i18n.filters.paymentDate}</Label>
       <FlexRow>
-        <DatePicker
+        <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
-          locale="fi"
-          errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(null)}
         />
         <Gap horizontal size="xs" />
-        <DatePicker
+        <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
-          locale="fi"
-          errorTexts={i18n.validationErrors}
-          labels={i18n.common.datePicker}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(null)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (

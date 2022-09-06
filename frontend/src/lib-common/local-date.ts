@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CalendarDate } from '@internationalized/date'
 import {
   addBusinessDays,
   addDays,
@@ -193,9 +192,6 @@ export default class LocalDate implements Ordered<LocalDate> {
   }
   toHelsinkiDateTime(time: LocalTime): HelsinkiDateTime {
     return HelsinkiDateTime.fromLocal(this, time)
-  }
-  asCalendarDate(): CalendarDate {
-    return new CalendarDate(this.year, this.month, this.date)
   }
 
   /**

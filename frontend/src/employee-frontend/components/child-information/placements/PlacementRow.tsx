@@ -14,7 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -74,6 +74,15 @@ const ActionRow = styled.div`
 
   > * {
     margin-left: 10px;
+  }
+`
+
+const CompactDatePicker = styled(DatePickerDeprecated)`
+  .input {
+    font-size: 1rem;
+    padding: 0;
+    height: unset;
+    min-height: unset;
   }
 `
 
@@ -211,24 +220,18 @@ export default React.memo(function PlacementRow({
         data-qa={`placement-${placement.id}`}
       >
         <DataRow>
-          <DataLabel id="placement-details-start-date">
-            {i18n.childInformation.placements.startDate}
-          </DataLabel>
+          <DataLabel>{i18n.childInformation.placements.startDate}</DataLabel>
           <DataValue data-qa="placement-details-start-date">
             {editing ? (
               <DatepickerContainer>
-                <DatePicker
+                <CompactDatePicker
                   date={form.startDate}
                   onChange={(startDate) => {
-                    if (!startDate) return
                     setForm({ ...form, startDate })
                     calculateOverlapWarnings(startDate, placement.endDate)
                   }}
+                  type="full-width"
                   data-qa="placement-start-date-input"
-                  labels={i18n.common.datePicker}
-                  errorTexts={i18n.validationErrors}
-                  locale="fi"
-                  aria-labelledby="placement-details-start-date"
                 />
                 {startDateWarning ? (
                   <WarningContainer>
@@ -245,24 +248,18 @@ export default React.memo(function PlacementRow({
           </DataValue>
         </DataRow>
         <DataRow>
-          <DataLabel id="placement-details-end-date">
-            {i18n.childInformation.placements.endDate}
-          </DataLabel>
+          <DataLabel>{i18n.childInformation.placements.endDate}</DataLabel>
           <DataValue data-qa="placement-details-end-date">
             {editing ? (
               <DatepickerContainer>
-                <DatePicker
+                <CompactDatePicker
                   date={form.endDate}
                   onChange={(endDate) => {
-                    if (!endDate) return
                     setForm({ ...form, endDate })
                     calculateOverlapWarnings(placement.startDate, endDate)
                   }}
+                  type="full-width"
                   data-qa="placement-end-date-input"
-                  labels={i18n.common.datePicker}
-                  errorTexts={i18n.validationErrors}
-                  locale="fi"
-                  aria-labelledby="placement-details-end-date"
                 />
                 {endDateWarning ? (
                   <WarningContainer>

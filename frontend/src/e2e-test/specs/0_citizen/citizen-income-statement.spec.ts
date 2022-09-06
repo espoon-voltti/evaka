@@ -25,13 +25,11 @@ beforeEach(async () => {
 })
 
 async function assertIncomeStatementCreated(
-  startDate = LocalDate.todayInSystemTz()
+  startDate = LocalDate.todayInSystemTz().format()
 ) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
   await waitUntilTrue(async () =>
-    (
-      await incomeStatementsPage.rows.elem().innerText
-    ).includes(startDate.format())
+    (await incomeStatementsPage.rows.elem().innerText).includes(startDate)
   )
 }
 
@@ -50,7 +48,7 @@ const assertRequiredAttachment = async (attachment: string, present = true) =>
 describe('Income statements', () => {
   describe('With the bare minimum selected', () => {
     test('Highest fee', async () => {
-      const startDate = LocalDate.of(2044, 12, 24)
+      const startDate = '24.12.2044'
 
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
@@ -84,7 +82,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addYears(-10)
+        LocalDate.todayInSystemTz().addYears(-10).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -121,7 +119,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('part-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addYears(-5).addWeeks(-7)
+        LocalDate.todayInSystemTz().addYears(-5).addWeeks(-7).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -157,7 +155,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addMonths(-3)
+        LocalDate.todayInSystemTz().addMonths(-3).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('no')
 
@@ -189,7 +187,7 @@ describe('Income statements', () => {
       )
       await incomeStatementsPage.selectEntrepreneurType('full-time')
       await incomeStatementsPage.setEntrepreneurStartDate(
-        LocalDate.todayInSystemTz().addMonths(-1).addDays(3)
+        LocalDate.todayInSystemTz().addMonths(-1).addDays(3).format()
       )
       await incomeStatementsPage.selectEntrepreneurSpouse('yes')
 

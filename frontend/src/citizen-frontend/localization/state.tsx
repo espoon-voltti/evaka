@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { I18nProvider } from '@react-aria/i18n'
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 
 import useLocalStorage from 'lib-common/utils/useLocalStorage'
@@ -50,14 +49,6 @@ const validateLang = (value: string | null): value is Lang => {
   return false
 }
 
-const navigatorLocale: string[] | undefined =
-  window.navigator.language?.split('-')
-
-const withNavigatorRegion = (language: string, fallback: string) =>
-  `${language}-${
-    navigatorLocale[0] === language ? navigatorLocale[1] || fallback : fallback
-  }`
-
 export const LocalizationContextProvider = React.memo(
   function LocalizationContextProvider({ children }) {
     const [lang, setLang] = useLocalStorage(
@@ -80,17 +71,7 @@ export const LocalizationContextProvider = React.memo(
 
     return (
       <LocalizationContext.Provider value={value}>
-        <I18nProvider
-          locale={
-            {
-              fi: withNavigatorRegion('fi', 'FI'),
-              sv: withNavigatorRegion('sv', 'FI'),
-              en: withNavigatorRegion('en', 'GB')
-            }[lang]
-          }
-        >
-          {children}
-        </I18nProvider>
+        {children}
       </LocalizationContext.Provider>
     )
   }

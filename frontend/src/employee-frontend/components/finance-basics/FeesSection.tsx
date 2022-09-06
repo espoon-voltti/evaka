@@ -5,7 +5,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -55,9 +54,8 @@ export default React.memo(function FeesSection() {
         editing: 'new',
         form: {
           ...copyForm(item),
-          validDuring: lastThresholdsEndDate
-            ? new DateRange(lastThresholdsEndDate, null)
-            : null
+          validFrom: lastThresholdsEndDate ?? null,
+          validTo: null
         }
       }),
     [setEditorState, lastThresholdsEndDate]
@@ -136,13 +134,13 @@ type EditorState =
 export type FormState = {
   [k in keyof Omit<FeeThresholds, 'validDuring'>]: string
 } & {
-  validDuring: DateRange | null
+  validFrom: LocalDate | null
+  validTo: LocalDate | null
 }
 
 const emptyForm = (latestEndDate?: LocalDate): FormState => ({
-  validDuring: latestEndDate
-    ? new DateRange(latestEndDate.addDays(1), null)
-    : null,
+  validFrom: latestEndDate?.addDays(1) ?? null,
+  validTo: null,
   maxFee: '',
   minFee: '',
   minIncomeThreshold2: '',
@@ -173,7 +171,8 @@ const formatMulti = (multi: number) =>
   (multi * 100).toString().replace('.', ',')
 
 const copyForm = (feeThresholds: FeeThresholds): FormState => ({
-  validDuring: feeThresholds.validDuring,
+  validFrom: feeThresholds.validDuring.start,
+  validTo: feeThresholds.validDuring.end,
   maxFee: formatCents(feeThresholds.maxFee) ?? '',
   minFee: formatCents(feeThresholds.minFee) ?? '',
   minIncomeThreshold2: formatCents(feeThresholds.minIncomeThreshold2) ?? '',

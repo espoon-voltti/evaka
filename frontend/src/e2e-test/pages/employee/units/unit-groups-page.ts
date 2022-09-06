@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
-  DatePicker,
+  DatePickerDeprecated,
   Element,
   Modal,
   Page,
@@ -37,8 +35,8 @@ export class UnitGroupsPage {
     await this.waitUntilLoaded()
   }
 
-  async setFilterStartDate(date: LocalDate) {
-    await new DatePicker(
+  async setFilterStartDate(date: string) {
+    await new DatePickerDeprecated(
       this.page.find('[data-qa="unit-filter-start-date"]')
     ).fill(date)
     await this.waitUntilLoaded()
@@ -267,21 +265,17 @@ export class GroupCollapsible extends Element {
 
   #updateButton = this.find('[data-qa="btn-update-group"]')
 
-  async edit(fields: {
-    name: string
-    startDate: LocalDate
-    endDate: LocalDate
-  }) {
+  async edit(fields: { name: string; startDate: string; endDate: string }) {
     await this.#updateButton.click()
 
     const modal = new Modal(this.find('[data-qa="group-update-modal"]'))
     await new TextInput(modal.find('[data-qa="name-input"]')).fill(fields.name)
-    await new DatePicker(modal.find('[data-qa="start-date-input"]')).fill(
-      fields.startDate
-    )
-    await new DatePicker(modal.find('[data-qa="end-date-input"]')).fill(
-      fields.endDate
-    )
+    await new DatePickerDeprecated(
+      modal.find('[data-qa="start-date-input"]')
+    ).fill(fields.startDate)
+    await new DatePickerDeprecated(
+      modal.find('[data-qa="end-date-input"]')
+    ).fill(fields.endDate)
     await modal.submit()
   }
 }

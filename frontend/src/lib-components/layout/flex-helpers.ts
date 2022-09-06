@@ -5,8 +5,6 @@
 import { Property } from 'csstype'
 import styled from 'styled-components'
 
-import { tabletMin } from 'lib-components/breakpoints'
-
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
@@ -48,22 +46,6 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     &:last-child {
       margin-right: 0;
     }
-  }
-`
-
-export const ResponseFixedSpaceFlex = styled.div<{
-  mobileDirection?: 'row' | 'column'
-  desktopDirection?: 'row' | 'column'
-  spacing: SpacingSize
-  mobileSpacing?: SpacingSize
-}>`
-  display: flex;
-  flex-direction: ${(p) => p.desktopDirection ?? 'row'};
-  gap: ${(p) => defaultMargins[p.spacing]};
-
-  @media (max-width: ${tabletMin}) {
-    flex-direction: ${(p) => p.mobileDirection ?? 'column'};
-    gap: ${(p) => defaultMargins[p.mobileSpacing ?? p.spacing]};
   }
 `
 

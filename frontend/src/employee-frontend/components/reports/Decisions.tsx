@@ -16,8 +16,8 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Gap } from 'lib-components/white-space'
 
 import { getDecisionsReport, PeriodFilters } from '../../api/reports'
@@ -74,28 +74,20 @@ export default React.memo(function Decisions() {
         <Title size={1}>{i18n.reports.decisions.title}</Title>
 
         <FilterRow>
-          <FilterLabel id="sent-date">
-            {i18n.reports.decisions.sentDate}
-          </FilterLabel>
+          <FilterLabel>{i18n.reports.decisions.sentDate}</FilterLabel>
           <FlexRow>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.from}
-              onChange={(from) => from && setFilters({ ...filters, from })}
+              onChange={(from) => setFilters({ ...filters, from })}
+              type="half-width"
               data-qa="datepicker-from"
-              locale="fi"
-              errorTexts={i18n.validationErrors}
-              labels={i18n.common.datePicker}
-              aria-labelledby="sent-date"
             />
             <span>{' - '}</span>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.to}
-              onChange={(to) => to && setFilters({ ...filters, to })}
+              onChange={(to) => setFilters({ ...filters, to })}
+              type="half-width"
               data-qa="datepicker-to"
-              locale="fi"
-              errorTexts={i18n.validationErrors}
-              labels={i18n.common.datePicker}
-              aria-labelledby="sent-date"
             />
           </FlexRow>
         </FilterRow>

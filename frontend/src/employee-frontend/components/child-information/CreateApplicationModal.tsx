@@ -13,7 +13,7 @@ import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
@@ -267,16 +267,12 @@ function CreateApplicationModal({
         </div>
 
         <div>
-          <Label id="sent-date">{i18nView.sentDate}</Label>
+          <Label>{i18nView.sentDate}</Label>
           <div>
-            <DatePicker
+            <DatePickerDeprecated
               date={sentDate}
-              onChange={(date) => date && setSentDate(date)}
-              fullWidth
-              labels={i18n.common.datePicker}
-              errorTexts={i18n.validationErrors}
-              locale="fi"
-              aria-labelledby="sent-date"
+              onChange={setSentDate}
+              type="full-width"
             />
           </div>
         </div>

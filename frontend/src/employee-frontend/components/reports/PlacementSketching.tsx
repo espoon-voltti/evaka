@@ -16,7 +16,7 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { faFileAlt } from 'lib-icons'
 
 import {
@@ -93,36 +93,26 @@ export default React.memo(function PlacementSketching() {
         <Title size={1}>{i18n.reports.placementSketching.title}</Title>
 
         <FilterRow>
-          <FilterLabel id="placement-start-date">
+          <FilterLabel>
             {i18n.reports.placementSketching.placementStartDate}
           </FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.placementStartDate}
             onChange={(placementStartDate) =>
-              placementStartDate &&
               setFilters({ ...filters, placementStartDate })
             }
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="placement-start-date"
           />
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel id="earliest-preferred-start-date">
+          <FilterLabel>
             {i18n.reports.placementSketching.earliestPreferredStartDate}
           </FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.earliestPreferredStartDate}
             onChange={(earliestPreferredStartDate) =>
-              earliestPreferredStartDate &&
               setFilters({ ...filters, earliestPreferredStartDate })
             }
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            labels={i18n.common.datePicker}
-            aria-labelledby="earliest-preferred-start-date"
           />
         </FilterRow>
 

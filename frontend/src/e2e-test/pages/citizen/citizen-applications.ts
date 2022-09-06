@@ -3,18 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import LocalDate from 'lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
 
 import { waitUntilEqual, waitUntilDefined, waitUntilTrue } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
-import {
-  Page,
-  Checkbox,
-  Radio,
-  TextInput,
-  FileInput,
-  DatePicker
-} from '../../utils/page'
+import { Page, Checkbox, Radio, TextInput, FileInput } from '../../utils/page'
 
 export default class CitizenApplicationsPage {
   constructor(private readonly page: Page) {}
@@ -145,7 +138,7 @@ class CitizenApplicationEditor {
   #preferredUnitsInput = new TextInput(
     this.page.find('[data-qa="preferredUnits-input"] input')
   )
-  #preferredStartDateInput = new DatePicker(
+  #preferredStartDateInput = new TextInput(
     this.page.find('[data-qa="preferredStartDate-input"]')
   )
   #preferredStartDateWarning = this.page.find(
@@ -218,11 +211,13 @@ class CitizenApplicationEditor {
     await element.type(value)
   }
 
-  async fillData(data: FormInput) {
+  async fillData(data: JsonOf<FormInput>) {
     await sections
       .map((section) => [section, data[section]])
       .filter(
-        (pair): pair is [Section, Partial<ApplicationFormData[Section]>] =>
+        (
+          pair
+        ): pair is [Section, Partial<JsonOf<ApplicationFormData>[Section]>] =>
           pair[1] !== undefined
       )
       .reduce(async (promise, [section, sectionData]) => {
@@ -284,10 +279,6 @@ class CitizenApplicationEditor {
             await this.fillInput(field, value)
           } else if (typeof value === 'boolean') {
             await this.setCheckbox(field, value)
-          } else if (value instanceof LocalDate) {
-            await new DatePicker(
-              this.page.find(`[data-qa="${field}-input"]`)
-            ).fill(value)
           }
         }
       }, Promise.resolve())
@@ -301,9 +292,10 @@ class CitizenApplicationEditor {
     )
   }
 
-  async setPreferredStartDate(date: LocalDate) {
+  async setPreferredStartDate(formattedDate: string) {
     await this.openSection('serviceNeed')
-    await this.#preferredStartDateInput.fill(date)
+    await this.#preferredStartDateInput.clear()
+    await this.#preferredStartDateInput.type(formattedDate)
     await this.page.keyboard.press('Tab')
   }
 

@@ -35,7 +35,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
@@ -439,24 +439,18 @@ export function FeeDecisionDateFilter({
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate ?? null}
-          onChange={(date) => setStartDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
           data-qa="fee-decisions-start-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate ?? null}
-          onChange={(date) => setEndDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
           data-qa="fee-decisions-start-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -545,24 +539,18 @@ export function ValueDecisionDateFilter({
     <>
       <Label>{i18n.filters.validityPeriod}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate ?? null}
-          onChange={(date) => setStartDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
           data-qa="value-decisions-start-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate ?? null}
-          onChange={(date) => setEndDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
           data-qa="value-decisions-end-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -685,24 +673,18 @@ export function InvoiceDateFilter({
     <>
       <Label>{i18n.filters.invoiceDate}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate ?? null}
-          onChange={(date) => setStartDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
           data-qa="invoices-start-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate ?? null}
-          onChange={(date) => setEndDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
           data-qa="invoices-end-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -989,24 +971,18 @@ export function ApplicationDateFilter({
       </FixedSpaceColumn>
       <Gap size="s" />
       <FlexRow>
-        <DatePicker
-          date={startDate ?? null}
-          onChange={(date) => setStartDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
           data-qa="applications-start-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(undefined)}
         />
         <span>-</span>
-        <DatePicker
-          date={endDate ?? null}
-          onChange={(date) => setEndDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
           data-qa="applications-end-date"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (
@@ -1312,24 +1288,18 @@ export function DateFilter({
     <>
       <Label>{title}</Label>
       <FlexRow>
-        <DatePicker
-          date={startDate ?? null}
-          onChange={(date) => setStartDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
           data-qa="start-date-filter-input"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.startDate}
+          onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePicker
-          date={endDate ?? null}
-          onChange={(date) => setEndDate(date ?? undefined)}
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
           data-qa="end-date-filter-input"
-          locale="fi"
-          labels={i18n.common.datePicker}
-          errorTexts={i18n.validationErrors}
-          aria-label={i18n.common.endDate}
+          onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
       {startDate && endDate && startDate.isAfter(endDate) ? (

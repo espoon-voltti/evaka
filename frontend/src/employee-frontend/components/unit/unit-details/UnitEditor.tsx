@@ -28,9 +28,11 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  DatePickerClearableDeprecated,
+  DatePickerDeprecated
+} from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import OpenDateRangePicker from 'lib-components/molecules/date-picker/OpenDateRangePicker'
 import { fontWeights, H1, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -676,36 +678,37 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
         <AlertBoxContainer>
-          <FixedSpaceRow alignItems="center">
+          <div>
             {props.editable ? (
-              <DatePicker
-                date={form.openingDate}
+              <DatePickerDeprecated
+                date={form.openingDate ?? undefined}
+                options={{
+                  placeholderText: i18n.unitEditor.placeholder.openingDate
+                }}
                 onChange={(openingDate) => updateForm({ openingDate })}
+                className="inline-block"
                 maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
-                labels={i18n.common.datePicker}
-                errorTexts={i18n.validationErrors}
-                locale="fi"
-                aria-label={i18n.unitEditor.placeholder.openingDate}
               />
             ) : (
               form.openingDate?.format()
             )}
-            <span>–</span>
+            {' - '}
             {props.editable ? (
-              <DatePicker
+              <DatePickerClearableDeprecated
                 date={form.closingDate}
+                options={{
+                  placeholderText: i18n.unitEditor.placeholder.closingDate
+                }}
+                onCleared={() => updateForm({ closingDate: null })}
                 onChange={(closingDate) => updateForm({ closingDate })}
+                className="inline-block"
                 minDate={form.openingDate ?? LocalDate.of(1960, 1, 1)}
                 data-qa="closing-date-input"
-                labels={i18n.common.datePicker}
-                errorTexts={i18n.validationErrors}
-                locale="fi"
-                aria-label={i18n.unitEditor.placeholder.closingDate}
               />
             ) : (
               form.closingDate?.format()
             )}
-          </FixedSpaceRow>
+          </div>
           {props.editable && !props.unit?.closingDate && form.closingDate && (
             <AlertBox
               message={
@@ -825,31 +828,64 @@ export default function UnitEditor(props: Props): JSX.Element {
                     <Gap size="xs" />
                     <IndentCheckboxLabel>
                       <FixedSpaceRow alignItems="center">
-                        <div id={`apply-period-${type}`}>
-                          {i18n.unitEditor.field.applyPeriod}
-                        </div>
+                        <div>{i18n.unitEditor.field.applyPeriod}</div>
                         <div>
                           {props.editable ? (
-                            <OpenDateRangePicker
-                              dateRange={period}
-                              onChange={(newRange) => {
-                                if (!newRange) {
+                            <DatePickerDeprecated
+                              date={
+                                period?.start ?? LocalDate.todayInSystemTz()
+                              }
+                              onChange={(startDate) => {
+                                if (
+                                  !period ||
+                                  (period.end !== null &&
+                                    period.end.isBefore(startDate))
+                                ) {
                                   return
                                 }
 
                                 updateForm({
-                                  [field]: newRange
+                                  [field]: {
+                                    start: startDate,
+                                    end: period?.end
+                                  }
                                 })
                               }}
-                              aria-labelledby={`apply-period-${type}`}
-                              labels={i18n.common.datePicker}
-                              errorTexts={i18n.validationErrors}
-                              locale="fi"
                             />
                           ) : (
-                            `${period.start.format()}–${
-                              period.end?.format() ?? ''
-                            }`
+                            period.start.format()
+                          )}
+                          {' - '}
+                          {props.editable ? (
+                            <DatePickerClearableDeprecated
+                              date={period?.end}
+                              onChange={(endDate) => {
+                                if (!period || endDate.isBefore(period.start)) {
+                                  return
+                                }
+
+                                updateForm({
+                                  [field]: {
+                                    start:
+                                      period?.start ??
+                                      LocalDate.todayInSystemTz(),
+                                    end: endDate
+                                  }
+                                })
+                              }}
+                              onCleared={() => {
+                                updateForm({
+                                  [field]: {
+                                    start:
+                                      period?.start ??
+                                      LocalDate.todayInSystemTz(),
+                                    end: null
+                                  }
+                                })
+                              }}
+                            />
+                          ) : (
+                            period.end?.format()
                           )}
                         </div>
                       </FixedSpaceRow>

@@ -9,7 +9,7 @@ import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
@@ -67,27 +67,13 @@ export default React.memo(function CopyTemplateModal({
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
-          <Label id="template-valid-start">{t.templateModal.validStart}</Label>
-          <DatePicker
-            date={startDate}
-            onChange={(date) => date && setStartDate(date)}
-            labels={i18n.common.datePicker}
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            aria-labelledby="template-valid-start"
-          />
+          <Label>{t.templateModal.validStart}</Label>
+          <DatePickerDeprecated date={startDate} onChange={setStartDate} />
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
-          <Label id="template-valid-end">{t.templateModal.validEnd}</Label>
-          <DatePicker
-            date={endDate}
-            onChange={(date) => date && setEndDate(date)}
-            labels={i18n.common.datePicker}
-            locale="fi"
-            errorTexts={i18n.validationErrors}
-            aria-labelledby="template-valid-end"
-          />
+          <Label>{t.templateModal.validEnd}</Label>
+          <DatePickerDeprecated date={endDate} onChange={setEndDate} />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>

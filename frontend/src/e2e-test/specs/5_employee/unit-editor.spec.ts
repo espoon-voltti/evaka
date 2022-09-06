@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
-
 import config from '../../config'
 import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -100,7 +98,7 @@ describe('Employee - unit editor validations and warnings', () => {
 
   test('Unit closing date warning is shown when needed', async () => {
     await unitEditorPage.assertWarningIsNotVisible('closing-date-warning')
-    await unitEditorPage.fillClosingDate(LocalDate.of(2020, 1, 2))
+    await unitEditorPage.selectSomeClosingDate()
     await unitEditorPage.assertWarningIsVisible('closing-date-warning')
     await unitEditorPage.clearClosingDate()
     await unitEditorPage.assertWarningIsNotVisible('closing-date-warning')

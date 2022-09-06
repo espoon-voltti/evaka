@@ -190,9 +190,7 @@ export default React.memo(function GuardianSubSection({
             </>
           )}
           <FixedSpaceColumn spacing="xs">
-            <Label id="contact-info-guardian-move-date">
-              {t.applications.editor.contactInfo.moveDate + ' *'}
-            </Label>
+            <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
               date={formData.guardianMoveDate}
               data-qa="guardianMoveDate-input"
@@ -204,8 +202,6 @@ export default React.memo(function GuardianSubSection({
               )}
               hideErrorsBeforeTouched={!verificationRequested}
               errorTexts={t.validationErrors}
-              labels={t.common.datePicker}
-              aria-labelledby="contact-info-guardian-move-date"
             />
           </FixedSpaceColumn>
           <Gap size="s" />

@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  TextInput,
-  Element,
-  DateRangePicker,
-  DatePicker,
-  Checkbox
-} from '../../../utils/page'
+import { TextInput, Element } from '../../../utils/page'
 
 class SimpleTextAreaSection extends Element {
   protected readonly textareas = this.findAll('[data-qa="text-question-input"]')
@@ -124,9 +118,13 @@ export class GoalsSection extends SimpleTextAreaSection {
 
   supportLevelOptions = (key: string) =>
     this.findByDataQa(`radio-group-date-question-option-${key}`)
-  supportLevelOptionRange = (key: string) =>
-    new DateRangePicker(
-      this.findByDataQa(`radio-group-date-question-option-${key}-range`)
+  supportLevelOptionRangeStart = (key: string) =>
+    new TextInput(
+      this.findByDataQa(`radio-group-date-question-option-${key}-range-start`)
+    )
+  supportLevelOptionRangeEnd = (key: string) =>
+    new TextInput(
+      this.findByDataQa(`radio-group-date-question-option-${key}-range-end`)
     )
 }
 
@@ -142,7 +140,7 @@ export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
 
 export class InfoSharedToSection extends Element {
   recipientsOptions = (key: string) =>
-    new Checkbox(this.find(`[data-qa="multi-select-question-option-${key}"]`))
+    this.find(`[data-qa="multi-select-question-option-${key}"]`)
   otherInput = new TextInput(this.find('[data-qa="text-question-input"]'))
 
   recipients = this.find(`[data-qa="value-or-no-record-8.1"]`)
@@ -150,7 +148,7 @@ export class InfoSharedToSection extends Element {
 }
 
 export class DiscussionSection extends SimpleTextAreaSection {
-  dateInput = new DatePicker(this.find('[data-qa="date-question-picker"]'))
+  dateInput = new TextInput(this.find('[data-qa="date-question-picker"]'))
   presentInput = new TextInput(this.textareas.nth(0))
   collaborationAndOpinionInput = new TextInput(this.textareas.nth(1))
 

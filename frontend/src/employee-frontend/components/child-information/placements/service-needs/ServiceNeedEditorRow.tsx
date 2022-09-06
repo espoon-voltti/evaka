@@ -14,7 +14,7 @@ import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faExclamation } from 'lib-icons'
 
@@ -117,30 +117,20 @@ function ServiceNeedEditorRow({
       <Tr>
         <StyledTd>
           <FixedSpaceRow spacing="xs" alignItems="center">
-            <DatePicker
-              date={form.startDate ?? null}
-              onChange={(date) =>
-                setForm({ ...form, startDate: date ?? undefined })
-              }
+            <DatePickerDeprecated
+              date={form.startDate}
+              onChange={(date) => setForm({ ...form, startDate: date })}
               minDate={placement.startDate}
               maxDate={placement.endDate}
-              labels={i18n.common.datePicker}
-              errorTexts={i18n.validationErrors}
-              locale="fi"
-              aria-label={i18n.common.startDate}
+              type="short"
             />
             <span>-</span>
-            <DatePicker
-              date={form.endDate ?? null}
-              onChange={(date) =>
-                setForm({ ...form, endDate: date ?? undefined })
-              }
+            <DatePickerDeprecated
+              date={form.endDate}
+              onChange={(date) => setForm({ ...form, endDate: date })}
               minDate={placement.startDate}
               maxDate={placement.endDate}
-              labels={i18n.common.datePicker}
-              errorTexts={i18n.validationErrors}
-              locale="fi"
-              aria-label={i18n.common.endDate}
+              type="short"
             />
           </FixedSpaceRow>
         </StyledTd>

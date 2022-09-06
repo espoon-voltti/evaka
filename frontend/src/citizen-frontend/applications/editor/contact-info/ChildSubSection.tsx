@@ -88,9 +88,7 @@ export default React.memo(function ChildSubSection({
         <>
           <Gap size="m" />
           <FixedSpaceColumn spacing="xs">
-            <Label id="child-sub-section-contact-info-move-date">
-              {t.applications.editor.contactInfo.moveDate + ' *'}
-            </Label>
+            <Label>{t.applications.editor.contactInfo.moveDate + ' *'}</Label>
             <DatePicker
               date={formData.childMoveDate}
               data-qa="childMoveDate-input"
@@ -106,8 +104,6 @@ export default React.memo(function ChildSubSection({
               info={errorToInputInfo(errors.childMoveDate, t.validationErrors)}
               hideErrorsBeforeTouched={!verificationRequested}
               errorTexts={t.validationErrors}
-              labels={t.common.datePicker}
-              aria-labelledby="child-sub-section-contact-info-move-date"
             />
           </FixedSpaceColumn>
           <Gap size="s" />

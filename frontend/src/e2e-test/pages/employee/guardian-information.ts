@@ -12,6 +12,7 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
+  DatePickerDeprecated,
   Element,
   FileInput,
   Modal,
@@ -134,7 +135,7 @@ class FamilyOverviewSection extends Section {
 class PartnersSection extends Section {
   #addPartnerButton = this.find('[data-qa="add-partner-button"]')
 
-  async addPartner(partnerName: string, startDate: LocalDate) {
+  async addPartner(partnerName: string, startDate: string) {
     await this.#addPartnerButton.click()
     const modal = new Modal(this.page.find('[data-qa="fridge-partner-modal"]'))
 
@@ -143,7 +144,7 @@ class PartnersSection extends Section {
     )
     await combobox.fillAndSelectFirst(partnerName)
 
-    const startDatePicker = new DatePicker(
+    const startDatePicker = new DatePickerDeprecated(
       modal.find('[data-qa="fridge-partner-start-date"]')
     )
     await startDatePicker.fill(startDate)
@@ -155,7 +156,7 @@ class PartnersSection extends Section {
 class ChildrenSection extends Section {
   #addChildButton = this.find('[data-qa="add-child-button"]')
 
-  async addChild(childName: string, startDate: LocalDate) {
+  async addChild(childName: string, startDate: string) {
     await this.#addChildButton.click()
     const modal = new Modal(this.page.find('[data-qa="fridge-child-modal"]'))
 
@@ -164,7 +165,7 @@ class ChildrenSection extends Section {
     )
     await combobox.fillAndSelectFirst(childName)
 
-    const startDatePicker = new DatePicker(
+    const startDatePicker = new DatePickerDeprecated(
       modal.find('[data-qa="fridge-child-start-date"]')
     )
     await startDatePicker.fill(startDate)
@@ -268,18 +269,18 @@ export class IncomeSection extends Section {
   }
 
   #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
-  #incomeStartDateInput = new DatePicker(
+  #incomeStartDateInput = new DatePickerDeprecated(
     this.#incomeDateRange.find('[data-qa="date-range-input-start-date"]')
   )
-  #incomeEndDateInput = new DatePicker(
+  #incomeEndDateInput = new DatePickerDeprecated(
     this.#incomeDateRange.find('[data-qa="date-range-input-end-date"]')
   )
 
-  async fillIncomeStartDate(value: LocalDate) {
+  async fillIncomeStartDate(value: string) {
     await this.#incomeStartDateInput.fill(value)
   }
 
-  async fillIncomeEndDate(value: LocalDate) {
+  async fillIncomeEndDate(value: string) {
     await this.#incomeEndDateInput.fill(value)
   }
 
@@ -418,7 +419,7 @@ class FeeDecisionsSection extends Section {
     )
   }
 
-  async createRetroactiveFeeDecisions(date: LocalDate) {
+  async createRetroactiveFeeDecisions(date: string) {
     await this.find(
       '[data-qa="create-retroactive-fee-decision-button"]'
     ).click()
@@ -472,9 +473,9 @@ class VoucherValueDecisionsSection extends Section {
 
   async createRetroactiveDecisions(from: LocalDate) {
     await this.#createRetroactiveDecisionsBtn.click()
-    await new DatePicker(
+    await new TextInput(
       this.findByDataQa('retroactive-value-decisions-from-date')
-    ).fill(from)
+    ).type(from.format())
     await this.findByDataQa('modal-okBtn').click()
   }
 }
