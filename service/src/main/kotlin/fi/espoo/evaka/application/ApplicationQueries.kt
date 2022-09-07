@@ -29,7 +29,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
 import org.jdbi.v3.core.result.RowView
@@ -925,7 +925,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
     }
 }
 
-fun Database.Transaction.cancelOutdatedSentTransferApplications(): List<ApplicationId> = createUpdate(
+fun Database.Transaction.cancelOutdatedSentTransferApplications(clock: EvakaClock): List<ApplicationId> = createUpdate(
     // only include applications that don't have decisions
     // placement type checks are doing in inverse so that the addition and accidental omission of new placement types
     // does not cause the cancellation of applications that shouldn't be cancelled
@@ -952,7 +952,7 @@ RETURNING id
 """
 )
     .bind("cancelled", ApplicationStatus.CANCELLED)
-    .bind("yesterday", HelsinkiDateTime.now().toLocalDate().minusDays(1))
+    .bind("yesterday", clock.today().minusDays(1))
     .bind(
         "notDaycarePlacements",
         arrayOf(

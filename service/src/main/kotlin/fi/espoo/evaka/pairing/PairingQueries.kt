@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.security.SecureRandom
@@ -17,7 +18,7 @@ import java.util.UUID
 const val maxAttempts = 100 // additional brute-force protection
 const val expiresInMinutes = 60L
 
-fun Database.Transaction.initPairing(unitId: DaycareId? = null, employeeId: EmployeeId? = null): Pairing {
+fun Database.Transaction.initPairing(clock: EvakaClock, unitId: DaycareId? = null, employeeId: EmployeeId? = null): Pairing {
     // language=sql
     val sql =
         """
@@ -29,13 +30,13 @@ fun Database.Transaction.initPairing(unitId: DaycareId? = null, employeeId: Empl
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("employeeId", employeeId)
-        .bind("expires", HelsinkiDateTime.now().plusMinutes(expiresInMinutes))
+        .bind("expires", clock.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
         .mapTo<Pairing>()
         .first()
 }
 
-fun Database.Transaction.challengePairing(challengeKey: String): Pairing {
+fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: String): Pairing {
     // language=sql
     val sql =
         """
@@ -47,7 +48,7 @@ fun Database.Transaction.challengePairing(challengeKey: String): Pairing {
     return createQuery(sql)
         .bind("challenge", challengeKey)
         .bind("response", generatePairingKey())
-        .bind("now", HelsinkiDateTime.now())
+        .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")

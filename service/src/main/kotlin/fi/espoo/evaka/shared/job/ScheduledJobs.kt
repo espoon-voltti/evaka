@@ -145,7 +145,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun cancelOutdatedTransferApplications(db: Database.Connection) {
         val canceledApplications = db.transaction {
-            val applicationIds = it.cancelOutdatedSentTransferApplications()
+            val applicationIds = it.cancelOutdatedSentTransferApplications(RealEvakaClock())
             applicationIds
         }
         logger.info {
