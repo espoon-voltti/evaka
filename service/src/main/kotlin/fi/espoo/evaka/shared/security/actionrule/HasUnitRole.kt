@@ -738,7 +738,8 @@ SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_featur
 FROM calendar_event_attendee cea
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
-WHERE cea.calendar_event_id = ANY(:ids)
+WHERE employee_id = :userId
+AND cea.calendar_event_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
