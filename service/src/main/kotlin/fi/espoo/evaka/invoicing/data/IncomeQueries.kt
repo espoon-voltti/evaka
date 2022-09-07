@@ -65,24 +65,23 @@ fun Database.Transaction.upsertIncome(mapper: JsonMapper, income: Income, update
     """
 
     val update = createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to income.id,
-                "person_id" to income.personId,
-                "effect" to income.effect.toString(),
-                "data" to PGobject().apply {
-                    type = "jsonb"
-                    value = mapper.writeValueAsString(income.data)
-                },
-                "is_entrepreneur" to income.isEntrepreneur,
-                "works_at_echa" to income.worksAtECHA,
-                "valid_from" to income.validFrom,
-                "valid_to" to income.validTo,
-                "notes" to income.notes,
-                "updated_by" to updatedBy,
-                "application_id" to income.applicationId
-            )
+        .bind("id", income.id)
+        .bind("person_id", income.personId)
+        .bind("effect", income.effect.toString())
+        .bind(
+            "data",
+            PGobject().apply {
+                type = "jsonb"
+                value = mapper.writeValueAsString(income.data)
+            }
         )
+        .bind("is_entrepreneur", income.isEntrepreneur)
+        .bind("works_at_echa", income.worksAtECHA)
+        .bind("valid_from", income.validFrom)
+        .bind("valid_to", income.validTo)
+        .bind("notes", income.notes)
+        .bind("updated_by", updatedBy)
+        .bind("application_id", income.applicationId)
 
     handlingExceptions { update.execute() }
 }

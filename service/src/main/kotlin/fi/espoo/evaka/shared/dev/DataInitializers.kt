@@ -254,15 +254,11 @@ fun Database.Transaction.insertTestParentship(
             VALUES (:id, :headOfChild, :childId, :startDate, :endDate)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "headOfChild" to headOfChild,
-                "childId" to childId,
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
-        )
+        .bind("id", id)
+        .bind("headOfChild", headOfChild)
+        .bind("childId", childId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
         .execute()
     return id
 }
@@ -327,20 +323,16 @@ fun Database.Transaction.insertTestApplication(
             VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "type" to type,
-                "sentDate" to sentDate,
-                "dueDate" to dueDate,
-                "status" to status,
-                "guardianId" to guardianId,
-                "childId" to childId,
-                "otherGuardianId" to otherGuardianId,
-                "hideFromGuardian" to hideFromGuardian,
-                "transferApplication" to transferApplication
-            )
-        )
+        .bind("id", id)
+        .bind("type", type)
+        .bind("sentDate", sentDate)
+        .bind("dueDate", dueDate)
+        .bind("status", status)
+        .bind("guardianId", guardianId)
+        .bind("childId", childId)
+        .bind("otherGuardianId", otherGuardianId)
+        .bind("hideFromGuardian", hideFromGuardian)
+        .bind("transferApplication", transferApplication)
         .execute()
     return id
 }
@@ -439,16 +431,12 @@ fun Database.Transaction.insertTestPlacement(
             VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "unitId" to unitId,
-                "type" to type.toString(),
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
-        )
+        .bind("id", id)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("type", type.toString())
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
         .execute()
     return id
 }
@@ -463,12 +451,8 @@ fun Database.Transaction.insertTestHoliday(
             VALUES (:date, :description)
             """
     )
-        .bindMap(
-            mapOf(
-                "date" to date,
-                "description" to description
-            )
-        )
+        .bind("date", date)
+        .bind("description", description)
         .execute()
 }
 
@@ -632,15 +616,11 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
                 VALUES (:id, :placementId, :groupId, :startDate, :endDate)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "placementId" to daycarePlacementId,
-                "groupId" to groupId,
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
-        )
+        .bind("id", id)
+        .bind("placementId", daycarePlacementId)
+        .bind("groupId", groupId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
         .execute()
     return id
 }
@@ -663,20 +643,16 @@ fun Database.Transaction.insertTestPlacementPlan(
             VALUES (:id, :unitId, :applicationId, :type::placement_type, :startDate, :endDate, :preschoolDaycareStartDate, :preschoolDaycareEndDate, :updated, :deleted)
             """
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "applicationId" to applicationId,
-                "unitId" to unitId,
-                "type" to type.toString(),
-                "startDate" to startDate,
-                "endDate" to endDate,
-                "preschoolDaycareStartDate" to preschoolDaycareStartDate,
-                "preschoolDaycareEndDate" to preschoolDaycareEndDate,
-                "updated" to updated,
-                "deleted" to deleted
-            )
-        )
+        .bind("id", id)
+        .bind("applicationId", applicationId)
+        .bind("unitId", unitId)
+        .bind("type", type.toString())
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .bind("preschoolDaycareStartDate", preschoolDaycareStartDate)
+        .bind("preschoolDaycareEndDate", preschoolDaycareEndDate)
+        .bind("updated", updated)
+        .bind("deleted", deleted)
         .execute()
     return id
 }
@@ -747,15 +723,11 @@ fun Database.Transaction.insertTestCaretakers(
             VALUES (:id, :groupId, :amount, :startDate, :endDate)
         """.trimIndent()
     )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "groupId" to groupId,
-                "amount" to amount,
-                "startDate" to startDate,
-                "endDate" to endDate
-            )
-        )
+        .bind("id", id)
+        .bind("groupId", groupId)
+        .bind("amount", amount)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
         .execute()
 }
 
@@ -892,14 +864,10 @@ fun Database.Transaction.insertTestStaffAttendance(
         VALUES (:id, :groupId, :date, :count)
         """.trimIndent()
     createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "groupId" to groupId,
-                "date" to date,
-                "count" to count
-            )
-        )
+        .bind("id", id)
+        .bind("groupId", groupId)
+        .bind("date", date)
+        .bind("count", count)
         .execute()
 }
 
@@ -938,16 +906,12 @@ fun Database.Transaction.insertTestAbsence(
         VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy)
         """.trimIndent()
     createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "date" to date,
-                "category" to category,
-                "absenceType" to absenceType,
-                "modifiedBy" to modifiedBy
-            )
-        )
+        .bind("id", id)
+        .bind("childId", childId)
+        .bind("date", date)
+        .bind("category", category)
+        .bind("absenceType", absenceType)
+        .bind("modifiedBy", modifiedBy)
         .execute()
 }
 
@@ -1005,16 +969,12 @@ fun Database.Transaction.insertTestBackUpCare(
         VALUES (:id, :childId, :unitId, :startDate, :endDate, :groupId)
         """.trimIndent()
     createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "unitId" to unitId,
-                "startDate" to startDate,
-                "endDate" to endDate,
-                "groupId" to groupId
-            )
-        )
+        .bind("id", id)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .bind("groupId", groupId)
         .execute()
 }
 
