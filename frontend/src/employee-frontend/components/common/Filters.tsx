@@ -858,23 +858,16 @@ const CustomDivWithMargin = styled(CustomDiv)`
   margin-top: ${defaultMargins.xs};
 `
 
-export function ApplicationStatusFilter({
-  toggled,
-  toggledAllStatuses,
-  toggle,
-  toggleAllStatuses
-}: ApplicationStatusFilterProps) {
-  const { i18n } = useTranslation()
+export const applicationSummaryStatuses: ApplicationSummaryStatusOptions[] = [
+  'SENT',
+  'WAITING_PLACEMENT',
+  'WAITING_DECISION',
+  'WAITING_UNIT_CONFIRMATION',
+  'ALL'
+]
 
-  const statuses: ApplicationSummaryStatusOptions[] = [
-    'SENT',
-    'WAITING_PLACEMENT',
-    'WAITING_DECISION',
-    'WAITING_UNIT_CONFIRMATION',
-    'ALL'
-  ]
-
-  const allStatuses: ApplicationSummaryStatusAllOptions[] = [
+export const applicationSummaryAllStatuses: ApplicationSummaryStatusAllOptions[] =
+  [
     'SENT',
     'WAITING_PLACEMENT',
     'WAITING_DECISION',
@@ -886,37 +879,47 @@ export function ApplicationStatusFilter({
     'CANCELLED'
   ]
 
+export function ApplicationStatusFilter({
+  toggled,
+  toggledAllStatuses,
+  toggle,
+  toggleAllStatuses
+}: ApplicationStatusFilterProps) {
+  const { i18n } = useTranslation()
+
   return (
     <>
       <Label>{i18n.application.state.title}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {statuses.map((id: ApplicationSummaryStatusOptions) => (
-          <Radio
-            key={id}
-            label={
-              <>
-                {i18n.application.statuses[id]}
-                {id === 'ALL' ? (
-                  <ApplicationOpenIcon
-                    icon={toggled === id ? faAngleUp : faAngleDown}
-                    size="lg"
-                    color={colors.grayscale.g70}
-                  />
-                ) : undefined}
-              </>
-            }
-            ariaLabel={i18n.application.statuses[id]}
-            checked={toggled === id}
-            onChange={toggle(id)}
-            data-qa={`application-status-filter-${id}`}
-            small
-          />
-        ))}
+        {applicationSummaryStatuses.map(
+          (id: ApplicationSummaryStatusOptions) => (
+            <Radio
+              key={id}
+              label={
+                <>
+                  {i18n.application.statuses[id]}
+                  {id === 'ALL' ? (
+                    <ApplicationOpenIcon
+                      icon={toggled === id ? faAngleUp : faAngleDown}
+                      size="lg"
+                      color={colors.grayscale.g70}
+                    />
+                  ) : undefined}
+                </>
+              }
+              ariaLabel={i18n.application.statuses[id]}
+              checked={toggled === id}
+              onChange={toggle(id)}
+              data-qa={`application-status-filter-${id}`}
+              small
+            />
+          )
+        )}
       </FixedSpaceColumn>
       {toggled === 'ALL' && (
         <CustomDivWithMargin spacing="xs">
-          {allStatuses.map((id) => (
+          {applicationSummaryAllStatuses.map((id) => (
             <Checkbox
               key={id}
               label={i18n.application.statuses[id]}
@@ -925,6 +928,14 @@ export function ApplicationStatusFilter({
               data-qa={`application-status-filter-all-${id}`}
             />
           ))}
+          <InlineButton
+            onClick={toggle('ALL')}
+            text={
+              toggledAllStatuses.length > 0
+                ? i18n.application.unselectAll
+                : i18n.application.selectAll
+            }
+          />
         </CustomDivWithMargin>
       )}
     </>
