@@ -428,6 +428,12 @@ export class BackupCaresSection extends Section {
   }
 }
 
+interface FamilyContactDetails {
+  email: string
+  phone: string
+  backupPhone: string
+}
+
 export class FamilyContactsSection extends Section {
   #row(name: string) {
     return this.find(`[data-qa="table-backup-pickup-row-${name}"]`)
@@ -444,6 +450,53 @@ export class FamilyContactsSection extends Section {
   )
   #modalOk = this.find('[data-qa="modal-okBtn"]')
 
+  async modifyFamilyContactDetails(id: string, data: FamilyContactDetails) {
+    const row = this.#familyContactRow(id)
+    await row.findByDataQa('family-contact-edit').click()
+
+    await new TextInput(row.findByDataQa('family-contact-email-input')).fill(
+      data.email
+    )
+    await new TextInput(row.findByDataQa('family-contact-phone-input')).fill(
+      data.phone
+    )
+    await new TextInput(
+      row.findByDataQa('family-contact-backup-phone-input')
+    ).fill(data.backupPhone)
+
+    await row.findByDataQa('family-contact-save').click()
+  }
+
+  async assertFamilyContactDetails(id: string, data: FamilyContactDetails) {
+    const row = this.#familyContactRow(id)
+    await row.waitUntilVisible()
+
+    if (data.email) {
+      await waitUntilEqual(
+        () => row.findByDataQa('family-contact-email').textContent,
+        data.email
+      )
+    } else {
+      await row.findByDataQa('family-contact-email').waitUntilHidden()
+    }
+    if (data.phone) {
+      await waitUntilEqual(
+        () => row.findByDataQa('family-contact-phone').textContent,
+        data.phone
+      )
+    } else {
+      await row.findByDataQa('family-contact-phone').waitUntilHidden()
+    }
+    if (data.backupPhone) {
+      await waitUntilEqual(
+        () => row.findByDataQa('family-contact-backup-phone').textContent,
+        `${data.backupPhone} (Varanro)`
+      )
+    } else {
+      await row.findByDataQa('family-contact-backup-phone').waitUntilHidden()
+    }
+  }
+
   async addBackupPickup(name: string, phone: string) {
     await this.#createBtn.click()
     await this.#nameInput.fill(name)
@@ -453,46 +506,6 @@ export class FamilyContactsSection extends Section {
 
   async assertBackupPickupExists(name: string) {
     await this.#row(name).waitUntilVisible()
-  }
-
-  async assertFamilyContactExists(id: string) {
-    await this.#familyContactRow(id).waitUntilVisible()
-  }
-
-  async assertFamilyContactPhone(id: string, phone: string) {
-    const row = this.#familyContactRow(id)
-    await waitUntilEqual(
-      () =>
-        new TextInput(row.find('[data-qa="family-contact-phone-input"]'))
-          .inputValue,
-      phone
-    )
-  }
-
-  async assertFamilyContactEmail(id: string, email: string) {
-    const row = this.#familyContactRow(id)
-    await waitUntilEqual(
-      () =>
-        new TextInput(row.find('[data-qa="family-contact-email-input"]'))
-          .inputValue,
-      email
-    )
-  }
-
-  async setFamilyContactPhone(id: string, phone: string) {
-    const row = this.#familyContactRow(id)
-    await new TextInput(
-      row.find('[data-qa="family-contact-phone-input"]')
-    ).fill(phone)
-    await row.find('[data-qa="family-contact-save"]').click()
-  }
-
-  async setFamilyContactEmail(id: string, email: string) {
-    const row = this.#familyContactRow(id)
-    await new TextInput(
-      row.find('[data-qa="family-contact-email-input"]')
-    ).fill(email)
-    await row.find('[data-qa="family-contact-save"]').click()
   }
 
   async assertBackupPickupDoesNotExist(name: string) {
@@ -824,7 +837,7 @@ const collapsibles = {
     section: BackupCaresSection
   },
   familyContacts: {
-    selector: '[data-qa="family-contacts-collapsible"]',
+    selector: '[data-qa="family-contacts-collapsible"][data-isloading="false"]',
     section: FamilyContactsSection
   },
   guardians: {

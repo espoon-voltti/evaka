@@ -342,38 +342,42 @@ describe('Child information - family contacts', () => {
     section = await childInformationPage.openCollapsible('familyContacts')
   })
 
-  test('phone can be edited', async () => {
+  test('email, phone and backup phone can be edited', async () => {
     const id = fixtures.familyWithTwoGuardians.guardian.id
-    await section.assertFamilyContactExists(id)
-    await section.assertFamilyContactPhone(id, '123456789')
-    await section.setFamilyContactPhone(id, '31459265')
-    await section.assertFamilyContactPhone(id, '31459265')
+    await section.modifyFamilyContactDetails(id, {
+      email: 'foo@example.com',
+      phone: '31459265',
+      backupPhone: '98765432'
+    })
+    await section.assertFamilyContactDetails(id, {
+      email: 'foo@example.com',
+      phone: '31459265',
+      backupPhone: '98765432'
+    })
   })
 
-  test('phone is editable after unset', async () => {
+  test('email, phone and backup phone can be edited after unsetting them', async () => {
     const id = fixtures.familyWithTwoGuardians.guardian.id
-    await section.assertFamilyContactExists(id)
-    await section.setFamilyContactPhone(id, '')
-    await section.assertFamilyContactPhone(id, '')
-    await section.setFamilyContactPhone(id, '31459265')
-    await section.assertFamilyContactPhone(id, '31459265')
-  })
-
-  test('email can be edited', async () => {
-    const id = fixtures.familyWithTwoGuardians.guardian.id
-    await section.assertFamilyContactExists(id)
-    await section.assertFamilyContactEmail(id, 'mikael.hogfors@evaka.test')
-    await section.setFamilyContactEmail(id, 'foo@example.com')
-    await section.assertFamilyContactEmail(id, 'foo@example.com')
-  })
-
-  test('email is editable after unset', async () => {
-    const id = fixtures.familyWithTwoGuardians.guardian.id
-    await section.assertFamilyContactExists(id)
-    await section.setFamilyContactEmail(id, '')
-    await section.assertFamilyContactEmail(id, '')
-    await section.setFamilyContactEmail(id, 'foo@example.com')
-    await section.assertFamilyContactEmail(id, 'foo@example.com')
+    await section.modifyFamilyContactDetails(id, {
+      email: '',
+      phone: '',
+      backupPhone: ''
+    })
+    await section.assertFamilyContactDetails(id, {
+      email: '',
+      phone: '',
+      backupPhone: ''
+    })
+    await section.modifyFamilyContactDetails(id, {
+      email: 'foo@example.com',
+      phone: '31459265',
+      backupPhone: '98765432'
+    })
+    await section.assertFamilyContactDetails(id, {
+      email: 'foo@example.com',
+      phone: '31459265',
+      backupPhone: '98765432'
+    })
   })
 })
 

@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import cloneDeep from 'lodash/cloneDeep'
+import isEqual from 'lodash/isEqual'
 import range from 'lodash/range'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -34,64 +34,20 @@ import { renderResult } from '../async-rendering'
 
 import BackupPickup from './BackupPickup'
 
-interface FamilyContactsProps {
+export interface Props {
   id: UUID
   startOpen: boolean
 }
 
-export default React.memo(function FamilyContacts({
-  id,
-  startOpen
-}: FamilyContactsProps) {
+export default React.memo(function FamilyContacts({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const [result, setResult] = useState<Result<FamilyContact[]>>(Loading.of())
-  const [dirty, setDirty] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [open, setOpen] = useState(startOpen)
   const { permittedActions } = useContext(ChildContext)
 
-  const loadContacts = useRestApi(getFamilyContacts, setResult)
-  useEffect(() => {
-    void loadContacts(id)
-  }, [id, loadContacts])
-
-  const contactPriorityOptions = result
-    .map((contacts) => {
-      const ordinals = contacts
-        .map((contact) => contact.priority)
-        .filter((priority) => priority !== null)
-      const minMax = Math.min(
-        Math.max(...ordinals) + 1,
-        contacts.filter(({ role }) => role !== 'LOCAL_SIBLING').length
-      )
-      return minMax > 1 ? range(1, minMax + 1) : [1]
-    })
-    .getOrElse([1])
-
-  function onCancel() {
-    void loadContacts(id)
-  }
-
-  function onSubmit(personId: UUID) {
-    setSubmitting(true)
-    result.map((data) => {
-      data
-        .filter((row) => row.id === personId)
-        .map((person) => {
-          void updateFamilyContactDetails({
-            childId: id,
-            contactPersonId: personId,
-            email: person.email ?? null,
-            phone: person.phone ?? null,
-            backupPhone: person.backupPhone ?? null
-          }).then(() => {
-            void loadContacts(id)
-          })
-        })
-    })
-    setDirty(false)
-    setSubmitting(false)
-  }
+  const [contacts, reloadContacts] = useApiState(
+    () => getFamilyContacts(id),
+    [id]
+  )
+  const [open, setOpen] = useState(startOpen)
 
   return (
     <CollapsibleContentArea
@@ -100,172 +56,267 @@ export default React.memo(function FamilyContacts({
       toggleOpen={() => setOpen(!open)}
       opaque
       paddingVertical="L"
+      data-isloading={isLoading(contacts)}
       data-qa="family-contacts-collapsible"
     >
-      {renderResult(result, (result) => (
-        <>
-          <Gap size="m" />
-          <H3 noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>{i18n.childInformation.familyContacts.name}</Th>
-                <Th>{i18n.childInformation.familyContacts.role}</Th>
-                <Th>{i18n.childInformation.familyContacts.contact}</Th>
-                <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
-                <Th>{i18n.childInformation.familyContacts.address}</Th>
-                <Th />
-              </Tr>
-            </Thead>
-            <Tbody>
-              {result.map((row) => (
-                <Tr
-                  data-qa={`table-family-contact-row-${row.id}`}
-                  key={`${row.role}:${row.lastName || ''}:${
-                    row.firstName || ''
-                  }`}
-                >
-                  <Td>{formatName(row.firstName, row.lastName, i18n, true)}</Td>
-                  <Td>
-                    {i18n.childInformation.familyContacts.roles[row.role]}
-                  </Td>
-                  <Td>
-                    {permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
-                      <FixedSpaceColumn spacing="xs">
-                        <span>
-                          <InputField
-                            data-qa="family-contact-email-input"
-                            value={row.email ?? ''}
-                            onChange={(value) => {
-                              setDirty(true)
-                              setResult((prev) => {
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.email = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />
-                        </span>
-                        <span>
-                          <InputField
-                            data-qa="family-contact-phone-input"
-                            value={row.phone ?? ''}
-                            onChange={(value) => {
-                              setDirty(true)
-                              setResult((prev) => {
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.phone = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />
-                        </span>
-                        <span>
-                          <InputField
-                            data-qa="family-contact-backup-phone-input"
-                            value={row.backupPhone ?? ''}
-                            onChange={(value) => {
-                              setResult((prev) => {
-                                setDirty(true)
-                                return prev.map((prevData) => {
-                                  const clone = cloneDeep(prevData)
-                                  clone.map((cloneRow) => {
-                                    if (cloneRow.id === row.id) {
-                                      cloneRow.backupPhone = value
-                                    }
-                                    return cloneRow
-                                  })
-                                  return clone
-                                })
-                              })
-                            }}
-                          />{' '}
-                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                        </span>
-                      </FixedSpaceColumn>
-                    ) : (
-                      <FixedSpaceColumn spacing="xs">
-                        {!!row.email && (
-                          <span data-qa="family-contact-email">
-                            {row.email}
-                          </span>
-                        )}
-                        {!!row.phone && (
-                          <span data-qa="family-contact-phone">
-                            {row.phone}
-                          </span>
-                        )}
-                        {!!row.backupPhone && (
-                          <span data-qa="family-contact-backup-phone">
-                            {row.backupPhone}{' '}
-                            {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                          </span>
-                        )}
-                      </FixedSpaceColumn>
-                    )}
-                  </Td>
-                  <Td>
-                    {row.role !== 'LOCAL_SIBLING' ? (
-                      permittedActions.has('UPDATE_FAMILY_CONTACT_PRIORITY') ? (
-                        <Select
-                          selectedItem={row.priority}
-                          items={contactPriorityOptions}
-                          onChange={(value) => {
-                            void updateFamilyContactPriority({
-                              childId: id,
-                              contactPersonId: row.id,
-                              priority: value ? Number(value) : null
-                            }).then(() => {
-                              void loadContacts(id)
-                            })
-                          }}
-                          placeholder="-"
-                        />
-                      ) : (
-                        row.priority
-                      )
-                    ) : null}
-                  </Td>
-                  <Td>{`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}</Td>
-                  <Td>
-                    <FixedSpaceRow justifyContent="flex-end" spacing="m">
-                      {dirty && (
-                        <InlineButton
-                          onClick={onCancel}
-                          text={i18n.common.cancel}
-                          disabled={submitting}
-                        />
-                      )}
-                      <InlineButton
-                        onClick={() => onSubmit(row.id)}
-                        text={i18n.common.save}
-                        disabled={submitting || !dirty}
-                        data-qa="family-contact-save"
-                      />
-                    </FixedSpaceRow>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </>
+      {renderResult(contacts, (contacts) => (
+        <FamilyContactTable
+          childId={id}
+          contacts={contacts}
+          reloadContacts={reloadContacts}
+        />
       ))}
       <Gap size="XL" />
       {permittedActions.has('READ_BACKUP_PICKUP') && <BackupPickup id={id} />}
     </CollapsibleContentArea>
+  )
+})
+
+const FamilyContactTable = React.memo(function FamilyContactForm({
+  childId,
+  contacts,
+  reloadContacts
+}: {
+  childId: string
+  contacts: FamilyContact[]
+  reloadContacts: () => void
+}) {
+  const { i18n } = useTranslation()
+
+  const contactPriorityOptions = useMemo(() => {
+    const ordinals = contacts
+      .map((contact) => contact.priority)
+      .filter((priority) => priority !== null)
+    const minMax = Math.min(
+      Math.max(...ordinals) + 1,
+      contacts.filter(({ role }) => role !== 'LOCAL_SIBLING').length
+    )
+    return minMax > 1 ? range(1, minMax + 1) : [1]
+  }, [contacts])
+
+  return (
+    <>
+      <Gap size="m" />
+      <H3 noMargin>{i18n.childInformation.familyContacts.contacts}</H3>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.childInformation.familyContacts.name}</Th>
+            <Th>{i18n.childInformation.familyContacts.role}</Th>
+            <Th>{i18n.childInformation.familyContacts.contact}</Th>
+            <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
+            <Th>{i18n.childInformation.familyContacts.address}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {contacts.map((contact) => (
+            <FamilyContactRow
+              key={contact.id}
+              childId={childId}
+              contact={contact}
+              reloadContacts={reloadContacts}
+              contactPriorityOptions={contactPriorityOptions}
+            />
+          ))}
+        </Tbody>
+      </Table>
+    </>
+  )
+})
+
+interface FamilyContactFields {
+  email: string
+  phone: string
+  backupPhone: string
+}
+
+const FamilyContactRow = React.memo(function FamilyContactRow({
+  childId,
+  contact,
+  reloadContacts,
+  contactPriorityOptions
+}: {
+  childId: UUID
+  contact: FamilyContact
+  reloadContacts: () => void
+  contactPriorityOptions: number[]
+}) {
+  const { i18n } = useTranslation()
+  const { permittedActions } = useContext(ChildContext)
+
+  const [editState, setEditState] = useState<'viewing' | 'editing' | 'saving'>(
+    'viewing'
+  )
+  const edit = useCallback(() => setEditState('editing'), [])
+  const cancel = useCallback(() => setEditState('viewing'), [])
+
+  const saveContact = useCallback(
+    async (formData: FamilyContactFields) => {
+      setEditState('saving')
+      await updateFamilyContactDetails({
+        childId,
+        contactPersonId: contact.id,
+        ...formData
+      })
+      reloadContacts()
+      setEditState('viewing')
+    },
+    [childId, contact.id, reloadContacts]
+  )
+
+  const setContactPriority = useCallback(
+    async (priority: number | null) => {
+      if (priority == null) return
+
+      await updateFamilyContactPriority({
+        childId,
+        contactPersonId: contact.id,
+        priority
+      })
+      reloadContacts()
+    },
+    [childId, contact.id, reloadContacts]
+  )
+
+  return (
+    <Tr
+      data-qa={`table-family-contact-row-${contact.id}`}
+      key={`${contact.role}:${contact.lastName || ''}:${
+        contact.firstName || ''
+      }`}
+    >
+      <Td>{formatName(contact.firstName, contact.lastName, i18n, true)}</Td>
+      <Td>{i18n.childInformation.familyContacts.roles[contact.role]}</Td>
+      <Td>
+        {editState === 'editing' || editState === 'saving' ? (
+          <EditContactFields
+            childId={childId}
+            contact={contact}
+            isSaving={editState === 'saving'}
+            onSave={saveContact}
+            onCancel={cancel}
+          />
+        ) : (
+          <FixedSpaceColumn spacing="xs">
+            {contact.email ? (
+              <span data-qa="family-contact-email">{contact.email}</span>
+            ) : null}
+            {contact.phone ? (
+              <span data-qa="family-contact-phone">{contact.phone}</span>
+            ) : null}
+            {contact.backupPhone ? (
+              <span data-qa="family-contact-backup-phone">
+                {contact.backupPhone}{' '}
+                {`(${i18n.childInformation.familyContacts.backupPhone})`}
+              </span>
+            ) : null}
+            {contact.role !== 'LOCAL_SIBLING' &&
+            permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
+              <InlineButton
+                onClick={edit}
+                text={i18n.common.edit}
+                data-qa="family-contact-edit"
+              />
+            ) : null}
+          </FixedSpaceColumn>
+        )}
+      </Td>
+      <Td>
+        {contact.role !== 'LOCAL_SIBLING' ? (
+          permittedActions.has('UPDATE_FAMILY_CONTACT_PRIORITY') ? (
+            <Select
+              selectedItem={contact.priority}
+              items={contactPriorityOptions}
+              onChange={setContactPriority}
+              placeholder="-"
+            />
+          ) : (
+            contact.priority
+          )
+        ) : null}
+      </Td>
+      <Td>{`${contact.streetAddress}, ${contact.postalCode} ${contact.postOffice}`}</Td>
+    </Tr>
+  )
+})
+
+const EditContactFields = React.memo(function EditFoo({
+  contact,
+  isSaving,
+  onSave,
+  onCancel
+}: {
+  childId: UUID
+  contact: FamilyContact
+  isSaving: boolean
+  onSave: (formData: FamilyContactFields) => void
+  onCancel: () => void
+}) {
+  const { i18n } = useTranslation()
+
+  const initialState = useMemo(
+    () => ({
+      email: contact.email ?? '',
+      phone: contact.phone ?? '',
+      backupPhone: contact.backupPhone ?? ''
+    }),
+    [contact.backupPhone, contact.email, contact.phone]
+  )
+  const [formData, setFormData] = useState(initialState)
+
+  const dirty = useMemo(
+    () => !isEqual(formData, initialState),
+    [formData, initialState]
+  )
+
+  const setEmail = (email: string) =>
+    setFormData((prev) => ({ ...prev, email }))
+  const setPhone = (phone: string) =>
+    setFormData((prev) => ({ ...prev, phone }))
+  const setBackupPhone = (backupPhone: string) =>
+    setFormData((prev) => ({ ...prev, backupPhone }))
+
+  return (
+    <FixedSpaceColumn spacing="xs">
+      <span>
+        <InputField
+          data-qa="family-contact-email-input"
+          placeholder={i18n.common.form.email}
+          value={formData.email}
+          onChange={setEmail}
+        />
+      </span>
+      <span>
+        <InputField
+          data-qa="family-contact-phone-input"
+          placeholder={i18n.common.form.phone}
+          value={formData.phone}
+          onChange={setPhone}
+        />
+      </span>
+      <span>
+        <InputField
+          data-qa="family-contact-backup-phone-input"
+          placeholder={i18n.childInformation.familyContacts.backupPhone}
+          value={formData.backupPhone}
+          onChange={setBackupPhone}
+        />{' '}
+        {`(${i18n.childInformation.familyContacts.backupPhone})`}
+      </span>
+      <FixedSpaceRow justifyContent="flex-end" spacing="m">
+        <InlineButton
+          onClick={onCancel}
+          text={i18n.common.cancel}
+          disabled={isSaving}
+        />
+        <InlineButton
+          onClick={() => onSave(formData)}
+          text={i18n.common.save}
+          disabled={isSaving || !dirty}
+          data-qa="family-contact-save"
+        />
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
   )
 })
