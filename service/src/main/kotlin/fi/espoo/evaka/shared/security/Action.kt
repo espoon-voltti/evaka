@@ -236,7 +236,7 @@ sealed interface Action {
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATIONS(IsCitizen(allowWeakLogin = false).self()),
-            READ_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
+            READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),

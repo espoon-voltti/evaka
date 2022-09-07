@@ -78,6 +78,7 @@ export default React.memo(function MobileNav() {
                   icon={faCalendar}
                   activeIcon={fasCalendar}
                   showNotification={false}
+                  onClick={closeMenu}
                 />
               )}
               {user.accessibleFeatures.messages && (
@@ -88,9 +89,13 @@ export default React.memo(function MobileNav() {
                   icon={faEnvelope}
                   activeIcon={fasEnvelope}
                   showNotification={(unreadMessagesCount ?? 0) > 0}
+                  onClick={closeMenu}
                 />
               )}
-              <ChildrenLink toggleChildrenMenu={toggleChildrenMenu} />
+              <ChildrenLink
+                toggleChildrenMenu={toggleChildrenMenu}
+                closeMenu={closeMenu}
+              />
               <StyledButton
                 onClick={toggleSubMenu}
                 data-qa="sub-nav-menu-mobile"
@@ -217,9 +222,11 @@ const StyledButton = styled.button`
 `
 
 const ChildrenLink = React.memo(function ChildrenLink({
-  toggleChildrenMenu
+  toggleChildrenMenu,
+  closeMenu
 }: {
   toggleChildrenMenu: () => void
+  closeMenu: () => void
 }) {
   const t = useTranslation()
   const location = useLocation()
@@ -241,6 +248,7 @@ const ChildrenLink = React.memo(function ChildrenLink({
         icon={faChild}
         activeIcon={fasChild}
         showNotification={totalUnreadChildNotifications > 0}
+        onClick={closeMenu}
       />
     )
   }
@@ -392,6 +400,7 @@ const Menu = React.memo(function Menu({
 })
 
 const MenuContainer = styled.div`
+  z-index: 24;
   position: fixed;
   overflow-y: scroll;
   top: ${headerHeightMobile}px;

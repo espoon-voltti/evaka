@@ -18,6 +18,7 @@ export default React.memo(function Logo() {
 
 const Container = styled.div`
   padding: ${defaultMargins.xs} 0;
+  width: 150px;
 `
 
 const Img = styled.img`
