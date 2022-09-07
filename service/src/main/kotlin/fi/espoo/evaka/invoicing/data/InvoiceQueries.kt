@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
@@ -214,14 +215,14 @@ fun Database.Read.paginatedSearch(
         InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
     }
 
-    val params = mapOf<String, Any>()
-        .let { ps -> ps + ("page" to page) }
-        .let { ps -> ps + ("pageSize" to pageSize) }
-        .let { ps -> if (areas.isNotEmpty()) ps + ("area" to areas.toTypedArray()) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + ("status" to statuses.map { it.toString() }.toTypedArray()) else ps }
-        .let { ps -> if (unit != null) ps + ("unit" to unit) else ps }
-        .let { ps -> ps + ("periodStart" to periodStart) }
-        .let { ps -> ps + ("periodEnd" to periodEnd) }
+    val params = listOf<Binding<Any>>()
+        .let { ps -> ps + (Binding.of("page", page)) }
+        .let { ps -> ps + (Binding.of("pageSize", pageSize)) }
+        .let { ps -> if (areas.isNotEmpty()) ps + (Binding.of("area", areas.toTypedArray())) else ps }
+        .let { ps -> if (statuses.isNotEmpty()) ps + (Binding.of("status", statuses.map { it.toString() }.toTypedArray())) else ps }
+        .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
+        .let { ps -> ps + (Binding.of("periodStart", periodStart)) }
+        .let { ps -> ps + (Binding.of("periodEnd", periodEnd)) }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "child"), searchTerms)
 
@@ -299,7 +300,8 @@ fun Database.Read.paginatedSearch(
         """.trimIndent()
 
     return createQuery(sql)
-        .bindMap(params + freeTextParams)
+        .addBindings(params)
+        .addBindings(freeTextParams)
         .mapToPaged(pageSize, toInvoiceSummary)
         .let { it.copy(data = flattenSummary(it.data)) }
 }
@@ -311,11 +313,11 @@ fun Database.Read.searchInvoices(
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
     sentAt: DateRange? = null
 ): List<InvoiceDetailed> {
-    val params = mapOf<String, Any>()
-        .let { ps -> if (areas.isNotEmpty()) ps + ("area" to areas.toTypedArray()) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + ("status" to statuses.map { it.toString() }.toTypedArray()) else ps }
-        .let { ps -> if (unit != null) ps + ("unit" to unit) else ps }
-        .let { ps -> if (sentAt != null) ps + mapOf("sentAtStart" to sentAt.start, "sentAtEnd" to sentAt.end) else ps }
+    val params = listOf<Binding<Any>>()
+        .let { ps -> if (areas.isNotEmpty()) ps + (Binding.of("area", areas.toTypedArray())) else ps }
+        .let { ps -> if (statuses.isNotEmpty()) ps + (Binding.of("status", statuses.map { it.toString() }.toTypedArray())) else ps }
+        .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
+        .let { ps -> if (sentAt != null) ps + listOf(Binding.of("sentAtStart", sentAt.start), Binding.of("sentAtEnd", sentAt.end)) else ps }
 
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
@@ -348,7 +350,7 @@ fun Database.Read.searchInvoices(
         """.trimIndent()
 
     return createQuery(sql)
-        .bindMap(params)
+        .addBindings(params)
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
 }

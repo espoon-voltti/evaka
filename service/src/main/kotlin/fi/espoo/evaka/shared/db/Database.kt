@@ -234,11 +234,6 @@ class Database(private val jdbi: Jdbi) {
             raw.bindKotlin(name, value)
             return self()
         }
-
-        fun bindMap(map: Map<String, *>): This {
-            raw.bindMap(map)
-            return self()
-        }
     }
 
     class Query internal constructor(override val raw: org.jdbi.v3.core.statement.Query) : SqlStatement<Query>(), ResultBearing {

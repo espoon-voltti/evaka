@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import fi.espoo.evaka.shared.utils.stripAccent
 import fi.espoo.evaka.shared.utils.stripNonAlphanumeric
 
-data class DBQuery(val query: String, val params: Map<String, String>)
+data class DBQuery(val query: String, val params: List<Binding<String>>)
 
 private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
@@ -36,10 +36,10 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
         .joinToString(" AND ")
 
     val allParams = (
-        ssnParams.mapIndexed { index, param -> ssnParamName(index) to param } +
-            dateParams.mapIndexed { index, param -> dateParamName(index) to param } +
-            (freeTextParamName to freeTextParamsToTsQuery(freeTextString)).takeIf { freeTextString.isNotBlank() }
-        ).filterNotNull().toMap()
+        ssnParams.mapIndexed { index, param -> Binding.of(ssnParamName(index), param) } +
+            dateParams.mapIndexed { index, param -> Binding.of(dateParamName(index), param) } +
+            (Binding.of(freeTextParamName, freeTextParamsToTsQuery(freeTextString))).takeIf { freeTextString.isNotBlank() }
+        ).filterNotNull()
 
     return DBQuery(wholeQuery, allParams)
 }
@@ -51,13 +51,13 @@ fun freeTextSearchQueryForColumns(tables: List<String>, columns: List<String>, s
     )
         .joinToString(" AND ")
     val params =
-        listOfNotNull((freeTextParamName to freeTextParamsToTsQuery(searchText)).takeIf { searchText.isNotBlank() }).toMap()
+        listOfNotNull((Binding.of(freeTextParamName, freeTextParamsToTsQuery(searchText))).takeIf { searchText.isNotBlank() })
     return DBQuery(query, params)
 }
 
-fun disjointNumberQuery(table: String, column: String, params: Collection<String>): Pair<String, Map<String, String>> {
+fun disjointNumberQuery(table: String, column: String, params: Collection<String>): Pair<String, List<Binding<String>>> {
     val numberParamName = { index: Int -> "${table}_${column}_$index" }
-    val numberParams = params.mapIndexed { index, param -> numberParamName(index) to param }.toMap()
+    val numberParams = params.mapIndexed { index, param -> Binding.of(numberParamName(index), param) }
     val numberParamQuery = params.mapIndexed { index, _ ->
         "$table.$column::text = :${numberParamName(index)}"
     }.joinToString(" OR ", "(", ")")

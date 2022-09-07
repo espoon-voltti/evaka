@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
@@ -284,16 +285,16 @@ fun Database.Read.searchValueDecisions(
         VoucherValueDecisionSortParam.STATUS -> "decision.status"
     }
 
-    val params = mapOf(
-        "page" to page,
-        "pageSize" to pageSize,
-        "status" to status.name,
-        "areas" to areas.toTypedArray(),
-        "unit" to unit,
-        "start_date" to startDate,
-        "end_date" to endDate,
-        "financeDecisionHandlerId" to financeDecisionHandlerId,
-        "firstPlacementStartDate" to evakaClock.now().toLocalDate().withDayOfMonth(1)
+    val params = listOf(
+        Binding.of("page", page),
+        Binding.of("pageSize", pageSize),
+        Binding.of("status", status.name),
+        Binding.of("areas", areas.toTypedArray()),
+        Binding.of("unit", unit),
+        Binding.of("start_date", startDate),
+        Binding.of("end_date", endDate),
+        Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
+        Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
@@ -362,7 +363,8 @@ ORDER BY $sortColumn $sortDirection, decision.id DESC
 LIMIT :pageSize OFFSET :pageSize * :page
 """
     return this.createQuery(sql)
-        .bindMap(params + freeTextParams)
+        .addBindings(params)
+        .addBindings(freeTextParams)
         .mapToPaged(pageSize)
 }
 
