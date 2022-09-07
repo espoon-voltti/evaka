@@ -79,7 +79,7 @@ class FeeDecisionService(
             throw BadRequest("Some fee decisions were not drafts")
         }
         val today = confirmDateTime.toLocalDate()
-        val approvedAt = confirmDateTime.toInstant()
+        val approvedAt = confirmDateTime
         val lastPossibleDecisionValidFromDate = today.plusDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance)
         val decisionsNotValidForConfirmation = decisions.filter {
             it.validFrom > lastPossibleDecisionValidFromDate

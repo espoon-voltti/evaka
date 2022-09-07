@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.result.RowView
 import org.postgresql.util.PGobject
-import java.time.Instant
 import java.time.LocalDate
 
 fun Database.Transaction.upsertIncome(mapper: JsonMapper, income: Income, updatedBy: EvakaUserId) {
@@ -203,8 +202,8 @@ fun toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rv: R
         validFrom = rv.mapColumn("valid_from"),
         validTo = rv.mapColumn("valid_to"),
         notes = rv.mapColumn("notes"),
-        updatedAt = rv.mapColumn<Instant>("updated_at"),
-        updatedBy = rv.mapColumn<String>("updated_by_name"),
+        updatedAt = rv.mapColumn("updated_at"),
+        updatedBy = rv.mapColumn("updated_by_name"),
         applicationId = rv.mapColumn("application_id"),
         attachments = rv.mapJsonColumn("attachments")
     )

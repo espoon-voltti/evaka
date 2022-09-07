@@ -26,9 +26,9 @@ import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -505,7 +505,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
 fun Database.Transaction.approveFeeDecisionDraftsForSending(
     ids: List<FeeDecisionId>,
     approvedBy: EmployeeId,
-    approvedAt: Instant,
+    approvedAt: HelsinkiDateTime,
     isRetroactive: Boolean = false,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {

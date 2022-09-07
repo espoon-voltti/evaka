@@ -11,10 +11,10 @@ import fi.espoo.evaka.attachment.IncomeAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.Instant
 import java.time.LocalDate
 
 @ExcludeCodeGen
@@ -29,7 +29,7 @@ data class Income(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val updatedAt: Instant? = null,
+    val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: String? = null,
     val applicationId: ApplicationId? = null,
     @Json

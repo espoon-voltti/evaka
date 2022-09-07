@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
@@ -30,7 +31,6 @@ import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
@@ -99,7 +99,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week with sent reminder less than week ago does not send a new one`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, Instant.now(), 1)
+        createPendingDecision(LocalDate.now().minusDays(8), null, HelsinkiDateTime.now(), 1)
         assertEquals(0, runPendingDecisionEmailAsyncJobs())
         assertEquals(0, MockEmailClient.emails.size)
     }
@@ -108,7 +108,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week with sent reminder older than one week sends a new email`() {
-        createPendingDecision(LocalDate.now().minusDays(16), null, Instant.now().minusSeconds(eightDaySeconds), 1)
+        createPendingDecision(LocalDate.now().minusDays(16), null, HelsinkiDateTime.now().minusSeconds(eightDaySeconds), 1)
         assertEquals(1, runPendingDecisionEmailAsyncJobs())
 
         val sentMails = MockEmailClient.emails
@@ -133,7 +133,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already two reminders should not send reminder`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC), 2)
+        createPendingDecision(LocalDate.now().minusDays(8), null, HelsinkiDateTime.from(LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)), 2)
         assertEquals(0, runPendingDecisionEmailAsyncJobs())
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -156,7 +156,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun createPendingDecision(sentDate: LocalDate, resolved: Instant?, pendingDecisionEmailSent: Instant?, pendingDecisionEmailsSentCount: Int, type: DecisionType = DecisionType.DAYCARE) {
+    private fun createPendingDecision(sentDate: LocalDate, resolved: HelsinkiDateTime?, pendingDecisionEmailSent: HelsinkiDateTime?, pendingDecisionEmailsSentCount: Int, type: DecisionType = DecisionType.DAYCARE) {
         db.transaction { tx ->
             tx.insertTestDecision(
                 TestDecision(
