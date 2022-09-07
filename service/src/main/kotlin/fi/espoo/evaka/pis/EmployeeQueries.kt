@@ -148,7 +148,7 @@ fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? = s
 
 private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
-SELECT id, first_name, last_name, email, employee.roles AS global_roles, (
+SELECT id, nickname, first_name, last_name, email, employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id
@@ -392,6 +392,12 @@ WHERE id = ANY(:ids)
         .toList()
         .map { it.id to it.name }
         .toMap()
+
+fun Database.Transaction.setEmployeeNickname(employeeId: EmployeeId, nickname: String?) =
+    createUpdate("UPDATE employee SET nickname = :nickname WHERE id = :employeeId")
+        .bind("employeeId", employeeId)
+        .bind("nickname", nickname)
+        .execute()
 
 fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?): List<Employee> {
     val globalRoles = roles.filter { it.isGlobalRole() }

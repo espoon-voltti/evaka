@@ -75,8 +75,7 @@ class SystemController(private val personService: PersonService, private val acc
                 val roles = it.getEmployeeRoles(inserted.id)
                 val employee = EmployeeUser(
                     id = inserted.id,
-                    nickname = inserted.nickname,
-                    firstName = inserted.firstName,
+                    firstName = inserted.nickname ?: inserted.firstName,
                     lastName = inserted.lastName,
                     globalRoles = roles.globalRoles,
                     allScopedRoles = roles.allScopedRoles
@@ -103,7 +102,7 @@ class SystemController(private val personService: PersonService, private val acc
                 tx.getEmployeeUser(id)?.let { employeeUser ->
                     EmployeeUserResponse(
                         id = employeeUser.id,
-                        firstName = employeeUser.firstName,
+                        firstName = employeeUser.nickname ?: employeeUser.firstName,
                         lastName = employeeUser.lastName,
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,

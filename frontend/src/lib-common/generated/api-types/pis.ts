@@ -70,6 +70,7 @@ export interface Employee {
   firstName: string
   id: UUID
   lastName: string
+  nickname: string | null
   updated: HelsinkiDateTime | null
 }
 
@@ -89,6 +90,7 @@ export interface EmployeeUser {
   globalRoles: UserRole[]
   id: UUID
   lastName: string
+  nickname: string | null
 }
 
 /**

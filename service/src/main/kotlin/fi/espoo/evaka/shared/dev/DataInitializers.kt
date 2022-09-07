@@ -200,8 +200,8 @@ fun Database.Transaction.createMobileDeviceToUnit(id: MobileDeviceId, unitId: Da
 fun Database.Transaction.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles, last_login)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
+INSERT INTO employee (id, nickname, first_name, last_name, email, external_id, roles, last_login)
+VALUES (:id, :nickname, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
 RETURNING id
 """
 ).let(::EmployeeId).also { upsertEmployeeUser(it) }
