@@ -204,12 +204,6 @@ describe('Calendar events', () => {
     await calendarPage.calendarEventsSection.eventEditModal.delete()
     await calendarPage.calendarEventsSection.eventDeleteModal.submit()
 
-    await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
-          .innerText,
-      'Osa ryhmästä: Edited event title'
-    )
     await calendarPage.calendarEventsSection.assertNoEventsForDay(startDate)
     await calendarPage.calendarEventsSection.assertNoEventsForDay(endDate)
   })
