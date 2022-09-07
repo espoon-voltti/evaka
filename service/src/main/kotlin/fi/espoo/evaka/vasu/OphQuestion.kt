@@ -893,6 +893,12 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     name = "Keskusteluun osallistuneet huoltajat",
                     multiline = true,
                     value = ""
+                ),
+                VasuQuestion.TextQuestion(
+                    name = "Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä/huoltajien kuuleminen hallintopäätöstä koskien",
+                    info = "Tähän kohtaan kirjataan huoltajien kuuleminen, mikäli tuesta tehdään hallintopäätös.",
+                    multiline = true,
+                    value = ""
                 )
             )
         ),

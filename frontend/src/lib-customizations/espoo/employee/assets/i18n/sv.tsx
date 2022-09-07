@@ -20,7 +20,7 @@ export const sv = {
       neededTypesOfAssistance: 'Stödformer utgående från barnets behov',
       pedagogicalMotivation: 'Pedagogiska stödformer och motivering',
       pedagogicalMotivationInfo:
-        'Anteckna en presentation av de former av pedagogiskt stöd barnet behöver, såsom lösningar relaterade till dagens struktur, dagsrytm och lärmiljö samt pedagogiska och specialpedagogiska lösningar. Förklara kort varför barnet får dessa former av stöd.',
+        'Beskriv de former av stöd barnet behöver, såsom lösningar relaterade till dagens struktur, dagsrytm och lärmiljö samt pedagogiska och specialpedagogiska lösningar. Förklara kort varför barnet får dessa former av stödåtgärder.',
       structuralMotivation: 'Strukturella stödformer och motivering',
       structuralMotivationInfo:
         'Välj de former av strukturellt stöd barnet behöver. Förklara varför barnet får dessa former av stöd.',
@@ -36,7 +36,7 @@ export const sv = {
         'Beskrivning och motivering av de valda strukturella stödformerna',
       careMotivation: 'Vårdinriktade stödformer och motivering',
       careMotivationInfo:
-        'Anteckna de vårdformer som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, rörelse och hjälpmedel som relaterar till dessa. Förklara varför barnet får dessa former av stöd.',
+        'Fyll i de stödet som barnet behöver, såsom metoder för att vårda, ta hand om och hjälpa barnet vid behandling av långvariga sjukdomar, medicinering, kost, rörelse och hjälpmedel som relaterar till dessa. Förklara varför barnet får dessa vårdinriktade stödformer.',
       serviceOptions: {
         consultationSpecialEd:
           'Konsultation med speciallärare inom småbarnspedagogik',
@@ -80,7 +80,7 @@ export const sv = {
       unitMayChange: 'Enheten och stödformer kan ändras under semestertider',
       motivationForDecision: 'Motivering av beslut',
       legalInstructions: 'Tillämpade bestämmelser',
-      legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap',
+      legalInstructionsText: 'Lag om småbarnspedagogik, 3 a kap 15 §',
       jurisdiction: 'Befogenhet',
       jurisdictionText:
         'Beslutanderätt i enlighet med lagstiftningen som gäller småbarnspedagogik och utbildning för tjänstemän inom Esbo stads resultatenhet svenska bildningstjänster och staben för sektorn Del A 7 § punkt 10 för beslut om särskilt stöd gäller Del A 3 § punkt 20 och Del A 3 § punkt 21',
