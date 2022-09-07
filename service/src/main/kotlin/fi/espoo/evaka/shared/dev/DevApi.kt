@@ -178,7 +178,6 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -1703,8 +1702,8 @@ data class PlacementPlan(
 data class DevApplicationWithForm(
     val id: ApplicationId,
     val type: ApplicationType,
-    val createdDate: OffsetDateTime?,
-    val modifiedDate: OffsetDateTime?,
+    val createdDate: HelsinkiDateTime?,
+    val modifiedDate: HelsinkiDateTime?,
     var sentDate: LocalDate?,
     var dueDate: LocalDate?,
     val status: ApplicationStatus,
@@ -1721,10 +1720,10 @@ data class DevApplicationWithForm(
 data class DevApplicationForm(
     val id: UUID? = UUID.randomUUID(),
     val applicationId: ApplicationId,
-    val createdDate: OffsetDateTime? = OffsetDateTime.now(),
+    val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val revision: Int,
     val document: DaycareFormV0,
-    val updated: OffsetDateTime? = OffsetDateTime.now()
+    val updated: HelsinkiDateTime? = HelsinkiDateTime.now()
 )
 
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)
