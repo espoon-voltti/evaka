@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class VasuController(
@@ -134,6 +134,7 @@ class VasuController(
     fun putDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
     ) {
@@ -175,7 +176,7 @@ class VasuController(
                                             storedEntry.edited
                                         else
                                             FollowupEntryEditDetails(
-                                                editedAt = LocalDate.now(),
+                                                editedAt = clock.today(),
                                                 editorId = EmployeeId(user.rawId()),
                                                 editorName = null
                                             ),

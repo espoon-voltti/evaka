@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 data class AssistanceNeedDecisionRequest(
     val decision: AssistanceNeedDecisionForm
@@ -130,6 +130,7 @@ class AssistanceNeedDecisionController(
     fun sendAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionSend.log(targetId = id)
@@ -155,7 +156,7 @@ class AssistanceNeedDecisionController(
                 tx.updateAssistanceNeedDecision(
                     id,
                     decision.copy(
-                        sentForDecision = LocalDate.now(),
+                        sentForDecision = clock.today(),
                         status = AssistanceNeedDecisionStatus.DRAFT
                     ).toForm(),
                     false
@@ -208,6 +209,7 @@ class AssistanceNeedDecisionController(
     fun decideAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
     ) {
@@ -241,7 +243,7 @@ class AssistanceNeedDecisionController(
                 tx.decideAssistanceNeedDecision(
                     id,
                     body.status,
-                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now(),
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else clock.today(),
                     if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
                     else tx.getChildGuardians(decision.child.id)
                 )

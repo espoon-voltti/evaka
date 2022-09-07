@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.Instant
@@ -261,6 +262,7 @@ fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
 }
 
 fun Database.Read.searchFeeDecisions(
+    clock: EvakaClock,
     page: Int,
     pageSize: Int,
     sortBy: FeeDecisionSortParam,
@@ -295,7 +297,7 @@ fun Database.Read.searchFeeDecisions(
         Binding.of("start_date", startDate),
         Binding.of("end_date", endDate),
         Binding.of("finance_decision_handler", financeDecisionHandlerId),
-        Binding.of("firstPlacementStartDate", LocalDate.now().withDayOfMonth(1)),
+        Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)

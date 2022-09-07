@@ -106,24 +106,24 @@ class AssistanceNeedDecisionService(
 
     fun runCreateAssistanceNeedDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.CreateAssistanceNeedDecisionPdf) {
         db.transaction { tx ->
-            this.createDecisionPdf(tx, msg.decisionId)
+            this.createDecisionPdf(tx, clock, msg.decisionId)
             logger.info { "Successfully created assistance need decision pdf (id: ${msg.decisionId})." }
         }
     }
 
     fun runSendSfiDecision(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendAssistanceNeedDecisionSfiMessage) {
         db.transaction { tx ->
-            this.createAndSendSfiDecisionPdf(tx, msg.decisionId)
+            this.createAndSendSfiDecisionPdf(tx, clock, msg.decisionId)
             logger.info { "Successfully created assistance need decision pdf for Suomi.fi (id: ${msg.decisionId})." }
         }
     }
 
-    fun createDecisionPdf(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
+    fun createDecisionPdf(tx: Database.Transaction, clock: EvakaClock, decisionId: AssistanceNeedDecisionId) {
         val decision = tx.getAssistanceNeedDecisionById(decisionId)
 
         check(!decision.hasDocument) { "Assistance need decision $decisionId has a document key already" }
 
-        val pdf = generatePdf(decision)
+        val pdf = generatePdf(clock.today(), decision)
         val key = documentClient.upload(
             bucket,
             Document("${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf", pdf, "application/pdf")
@@ -131,7 +131,7 @@ class AssistanceNeedDecisionService(
         tx.updateAssistanceNeedDocumentKey(decision.id, key)
     }
 
-    fun createAndSendSfiDecisionPdf(tx: Database.Transaction, decisionId: AssistanceNeedDecisionId) {
+    fun createAndSendSfiDecisionPdf(tx: Database.Transaction, clock: EvakaClock, decisionId: AssistanceNeedDecisionId) {
         val decision = tx.getAssistanceNeedDecisionById(decisionId)
 
         if (decision.child?.id == null) {
@@ -152,7 +152,7 @@ class AssistanceNeedDecisionService(
                 lang
             )
 
-            val pdf = generatePdf(decision, sendAddress, guardian)
+            val pdf = generatePdf(clock.today(), decision, sendAddress, guardian)
 
             val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(langWithDefault(lang))
             val messageContent = messageProvider.getAssistanceNeedDecisionContent(langWithDefault(lang))
@@ -187,6 +187,7 @@ class AssistanceNeedDecisionService(
     }
 
     fun generatePdf(
+        sentDate: LocalDate,
         decision: AssistanceNeedDecision,
         sendAddress: DecisionSendAddress? = null,
         guardian: PersonDTO? = null
@@ -197,7 +198,7 @@ class AssistanceNeedDecisionService(
                 Context().apply {
                     locale = Locale.Builder().setLanguage(decision.language.name.lowercase()).build()
                     setVariable("decision", decision)
-                    setVariable("sentDate", LocalDate.now())
+                    setVariable("sentDate", sentDate)
                     setVariable("sendAddress", sendAddress)
                     setVariable("guardian", guardian)
                     setVariable("hasAssistanceServices", decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))

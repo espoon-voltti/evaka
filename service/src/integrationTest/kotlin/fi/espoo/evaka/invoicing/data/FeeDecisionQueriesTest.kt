@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -230,6 +231,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {
         val result = db.read { tx ->
             tx.searchFeeDecisions(
+                clock = RealEvakaClock(),
                 searchTerms = searchTerms,
                 page = 0,
                 pageSize = 100,

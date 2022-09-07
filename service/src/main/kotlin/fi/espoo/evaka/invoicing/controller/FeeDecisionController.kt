@@ -77,6 +77,7 @@ class FeeDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest
     ): Paged<FeeDecisionSummary> {
         Audit.FeeDecisionSearch.log()
@@ -88,6 +89,7 @@ class FeeDecisionController(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.searchFeeDecisions(
+                    clock,
                     body.page,
                     body.pageSize,
                     body.sortBy ?: FeeDecisionSortParam.STATUS,
