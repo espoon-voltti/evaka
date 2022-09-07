@@ -89,7 +89,7 @@ interface Props {
     staffAttendanceIds: UUID[],
     externalStaffAttendanceIds: UUID[]
   ) => Promise<Result<void>[]>
-  reloadStaffAttendances: () => Promise<void>
+  reloadStaffAttendances: () => Promise<Result<unknown>>
   groups: Result<DaycareGroup[]>
   groupFilter: (id: UUID) => boolean
   selectedGroup: UUID | null
@@ -500,7 +500,7 @@ interface AttendanceRowProps extends BaseProps {
     staffAttendanceIds: UUID[],
     externalStaffAttendanceIds: UUID[]
   ) => Promise<Result<void>[]>
-  reloadStaffAttendances: () => Promise<void>
+  reloadStaffAttendances: () => Promise<Result<unknown>>
   openDetails?: (v: { employeeId: string; date: LocalDate }) => void
   groupFilter: (id: UUID) => boolean
   selectedGroup: UUID | null // for new attendances

@@ -147,6 +147,14 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
+        await Fixture.placement()
+          .with({
+            childId: enduserChildFixtureKaarina.id,
+            unitId: fixtures.daycareFixturePrivateVoucher.id,
+            startDate: LocalDate.todayInSystemTz().formatIso(),
+            endDate: LocalDate.todayInSystemTz().formatIso()
+          })
+          .save()
         await insertBackupCareFixtures([
           {
             id: uuidv4(),

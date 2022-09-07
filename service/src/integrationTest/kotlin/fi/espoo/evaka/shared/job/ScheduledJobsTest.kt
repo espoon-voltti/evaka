@@ -404,6 +404,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         createExpiredDailyNote(now)
 
         val validNoteId = db.transaction {
+            it.insertTestPlacement(
+                unitId = testDaycare.id,
+                childId = testChild_2.id,
+                startDate = LocalDate.now().minusDays(150),
+                endDate = LocalDate.now().plusDays(150)
+            )
             it.insertTestBackupCare(
                 DevBackupCare(
                     childId = testChild_2.id,

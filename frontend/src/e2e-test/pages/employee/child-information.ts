@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { Daycare } from '../../dev-api/types'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
@@ -386,20 +386,56 @@ export class BackupCaresSection extends Section {
   #startDate = new DatePickerDeprecated(this.#dates.nth(0))
   #endDate = new DatePickerDeprecated(this.#dates.nth(1))
 
-  // #backupCareForm = this.find('[data-qa="backup-care-form"]')
-  #submit = this.find('[data-qa="submit-backup-care-form"]')
-
   #backupCares = this.find('[data-qa="backup-cares"]')
 
-  async createBackupCare(daycare: Daycare, startDate: string, endDate: string) {
-    await this.#createBackupCareButton.click()
-    await this.#backupCareSelectUnit.fillAndSelectFirst(daycare.name)
+  #error = this.findByDataQa('form-error')
 
+  async #fillBackupCareFields(
+    daycareName: string | undefined,
+    startDate: LocalDate,
+    endDate: LocalDate
+  ) {
+    if (daycareName !== undefined) {
+      await this.#backupCareSelectUnit.fillAndSelectFirst(daycareName)
+    }
     await this.#startDate.fill(startDate)
     await this.#endDate.fill(endDate)
+  }
 
-    await this.#submit.click()
+  async createBackupCare(
+    daycareName: string,
+    startDate: LocalDate,
+    endDate: LocalDate
+  ) {
+    await this.fillNewBackupCareFields(daycareName, startDate, endDate)
+    await this.find('[data-qa="submit-backup-care-form"]').click()
     await this.#backupCares.waitUntilVisible()
+  }
+
+  async fillNewBackupCareFields(
+    daycareName: string,
+    startDate: LocalDate,
+    endDate: LocalDate
+  ) {
+    await this.#createBackupCareButton.click()
+    await this.#fillBackupCareFields(daycareName, startDate, endDate)
+  }
+
+  async fillExistingBackupCareRow(
+    rowIndex: number,
+    startDate: LocalDate,
+    endDate: LocalDate
+  ) {
+    await this.#backupCares
+      .findAllByDataQa('backup-care-row')
+      .nth(rowIndex)
+      .findByDataQa('btn-edit-backup-care')
+      .click()
+    await this.#fillBackupCareFields(undefined, startDate, endDate)
+  }
+
+  async assertError(expectedError: string) {
+    await waitUntilEqual(() => this.#error.innerText, expectedError)
   }
 
   async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
@@ -415,9 +451,7 @@ export class BackupCaresSection extends Section {
   }
 
   async deleteBackupCare(index: number) {
-    await this.#backupCares
-      .findAll('[data-qa="backup-care-row"]')
-      .nth(index)
+    await this.#backupCareRow(index)
       .find('[data-qa="btn-remove-backup-care"]')
       .click()
 
@@ -425,6 +459,10 @@ export class BackupCaresSection extends Section {
     await modal.waitUntilVisible()
     await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
     await modal.waitUntilHidden()
+  }
+
+  #backupCareRow(index: number) {
+    return this.#backupCares.findAllByDataQa('backup-care-row').nth(index)
   }
 }
 

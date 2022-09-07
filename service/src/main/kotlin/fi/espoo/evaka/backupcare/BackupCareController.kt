@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
 import fi.espoo.evaka.placement.clearCalendarEventAttendees
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.BackupCareId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -60,8 +62,12 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
-            val id = db.connect { dbc ->
+            val id = db.connect {
+                    dbc ->
                 dbc.transaction { tx ->
+                    if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
+                        throw BadRequest("The new backup care period is not contained within a placement")
+                    }
                     tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end).forEach { placement ->
                         tx.clearCalendarEventAttendees(childId, placement.unitId, body.period)
                     }
@@ -86,6 +92,10 @@ class BackupCareController(private val accessControl: AccessControl) {
         try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    if (!tx.childPlacementsHasConsecutiveRange(tx.getBackupCareChildId(backupCareId), body.period)) {
+                        throw BadRequest("The new backup care period is not contained within a placement")
+                    }
+
                     val existing = tx.getBackupCare(backupCareId)
                     if (existing != null) {
                         if (!existing.period.start.isEqual(body.period.start)) {

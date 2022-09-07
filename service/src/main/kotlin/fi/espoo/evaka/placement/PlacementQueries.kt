@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.backupcare.deleteOrMoveConflictingBackupCares
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -136,7 +137,28 @@ fun Database.Transaction.insertPlacement(
         .first()
 }
 
+data class PlacementChildAndRange(
+    val childId: ChildId,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val unitId: DaycareId
+)
+
+fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) = createQuery(
+    "SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = :id"
+)
+    .bind("id", placementId)
+    .mapTo<PlacementChildAndRange>()
+    .one()
+
 fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
+    val placement = getPlacementChildAndRange(placementId)
+    deleteOrMoveConflictingBackupCares(
+        placement.childId,
+        FiniteDateRange(placement.startDate, placement.endDate),
+        FiniteDateRange(date, placement.endDate)
+    )
+
     createUpdate(
         //language=SQL
         """
@@ -149,6 +171,13 @@ fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date
 }
 
 fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
+    val placement = getPlacementChildAndRange(placementId)
+    deleteOrMoveConflictingBackupCares(
+        placement.childId,
+        FiniteDateRange(placement.startDate, placement.endDate),
+        FiniteDateRange(placement.startDate, date)
+    )
+
     createUpdate(
         //language=SQL
         """
@@ -161,6 +190,13 @@ fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: 
 }
 
 fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId, startDate: LocalDate, endDate: LocalDate) {
+    val placement = getPlacementChildAndRange(placementId)
+    deleteOrMoveConflictingBackupCares(
+        placement.childId,
+        FiniteDateRange(placement.startDate, placement.endDate),
+        FiniteDateRange(startDate, endDate)
+    )
+
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
@@ -190,7 +226,6 @@ data class CancelPlacementResult(
 
 fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult {
     val placement = getPlacement(id) ?: throw NotFound("Placement $id not found")
-
     clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(placement.startDate, placement.endDate))
 
     createUpdate("DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id")
@@ -199,10 +234,17 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult
 
     deleteServiceNeedsFromPlacement(id)
 
-    return createQuery("DELETE FROM placement WHERE id = :id RETURNING child_id, unit_id, start_date, end_date")
+    deleteOrMoveConflictingBackupCares(
+        placement.childId,
+        FiniteDateRange(placement.startDate, placement.endDate),
+        null
+    )
+
+    createUpdate("DELETE FROM placement WHERE id = :id")
         .bind("id", id)
-        .mapTo<CancelPlacementResult>()
-        .first()
+        .execute()
+
+    return CancelPlacementResult(placement.childId, placement.unitId, placement.startDate, placement.endDate)
 }
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
@@ -745,6 +787,13 @@ fun Database.Transaction.terminatePlacementFrom(terminationRequestedDate: LocalD
     clearGroupPlacementsAfter(placementId, terminationDate)
     deleteServiceNeedsFromPlacementAfter(placementId, terminationDate)
 
+    val placement = getPlacementChildAndRange(placementId)
+    deleteOrMoveConflictingBackupCares(
+        placement.childId,
+        FiniteDateRange(placement.startDate, placement.endDate),
+        FiniteDateRange(placement.startDate, terminationDate)
+    )
+
     createUpdate(
         """
 UPDATE placement
@@ -760,3 +809,17 @@ WHERE id = :placementId
         .bind("placementId", placementId)
         .execute()
 }
+
+fun Database.Read.childPlacementsHasConsecutiveRange(childId: ChildId, range: FiniteDateRange): Boolean = createQuery(
+    // language=SQL
+    """
+    SELECT (
+        SELECT range_agg(daterange(start_date, end_date, '[]')) FROM placement
+        WHERE child_id = :childId
+    ) @> :range
+    """.trimIndent()
+)
+    .bind("childId", childId)
+    .bind("range", range)
+    .mapTo<Boolean>()
+    .one()

@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -605,6 +607,51 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals("${parent.lastName} ${parent.firstName}", childPlacements[0].placements[0].terminatedBy?.name)
 
         assertEquals(listOf(null), (childPlacements[1].placements + childPlacements[1].additionalPlacements).map { it.terminationRequestedDate })
+    }
+
+    @Test
+    fun `terminating placement affects backup care`() {
+        db.transaction { tx ->
+            tx.insertTestBackUpCare(child.id, daycare2Id, today.minusMonths(1), today.plusMonths(1))
+        }
+
+        val placementTerminationDate = today.plusDays(1)
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.DAYCARE,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = false,
+            )
+        )
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(child.id) }
+        assertEquals(1, backupCares.size)
+        assertEquals(placementTerminationDate, backupCares[0].period.end)
+    }
+
+    @Test
+    fun `terminating placement removes a future backup care`() {
+        db.transaction { tx ->
+            tx.insertTestBackUpCare(child.id, daycare2Id, today.plusDays(2), today.plusDays(12))
+        }
+
+        val placementTerminationDate = today.plusDays(1)
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.DAYCARE,
+                terminationDate = placementTerminationDate,
+                unitId = daycareId,
+                terminateDaycareOnly = false,
+            )
+        )
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(child.id) }
+        assertEquals(0, backupCares.size)
     }
 
     private fun terminatePlacements(

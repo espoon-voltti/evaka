@@ -12,10 +12,7 @@ import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import {
-  getChildBackupCares,
-  removeBackupCare
-} from '../../../api/child/backup-care'
+import { removeBackupCare } from '../../../api/child/backup-care'
 import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import Toolbar from '../../../components/common/Toolbar'
 import { ChildContext } from '../../../state'
@@ -58,7 +55,7 @@ export default function BackupCareRow({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-  const { setBackupCares } = useContext(ChildContext)
+  const { loadBackupCares } = useContext(ChildContext)
 
   return (
     <div>
@@ -75,9 +72,7 @@ export default function BackupCareRow({
             action: () =>
               removeBackupCare(backupCare.id)
                 .then(() => clearUiMode())
-                .then(() =>
-                  getChildBackupCares(childId).then((sn) => setBackupCares(sn))
-                ),
+                .then(() => loadBackupCares()),
             label: i18n.common.remove
           }}
         />

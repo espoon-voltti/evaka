@@ -34,14 +34,38 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   childFixture = fixtures.enduserChildFixtureKaarina
-  backupCareFixture = createBackupCareFixture(
-    childFixture.id,
-    fixtures.daycareFixture.id
-  )
+
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
     fixtures.daycareFixture.id
   ).save()
   await insertDaycareGroupFixtures([daycareGroupFixture])
+
+  const startDate = LocalDate.of(2023, 2, 1).subYears(1)
+  const endDate = LocalDate.of(2023, 2, 3).addYears(1)
+  const placement = await Fixture.placement()
+    .with({
+      childId: childFixture.id,
+      unitId: fixtures.daycareFixturePrivateVoucher.id,
+      startDate: startDate.formatIso(),
+      endDate: endDate.formatIso()
+    })
+    .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption()
+    .with({ validPlacementType: placement.data.type })
+    .save()
+  await Fixture.serviceNeed()
+    .with({
+      placementId: placement.data.id,
+      startDate: startDate.toSystemTzDate(),
+      endDate: endDate.toSystemTzDate(),
+      optionId: serviceNeedOption.data.id,
+      confirmedBy: unitSupervisor.data.id
+    })
+    .save()
+  backupCareFixture = createBackupCareFixture(
+    childFixture.id,
+    fixtures.daycareFixture.id
+  )
   await insertBackupCareFixtures([backupCareFixture])
 
   page = await Page.open()

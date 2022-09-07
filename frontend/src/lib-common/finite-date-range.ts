@@ -84,12 +84,12 @@ export default class FiniteDateRange {
   }
 
   leftAdjacentTo(other: FiniteDateRange | DateRange): boolean {
-    return this.end.addDays(1) == other.start
+    return this.end.addDays(1).isEqual(other.start)
   }
 
   rightAdjacentTo(other: FiniteDateRange | DateRange): boolean {
     if (other.end) {
-      return other.end.addDays(1) == this.start
+      return other.end.addDays(1).isEqual(this.start)
     } else {
       return false
     }

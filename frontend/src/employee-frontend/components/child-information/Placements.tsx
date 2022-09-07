@@ -32,8 +32,12 @@ interface Props {
 
 export default React.memo(function Placements({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { placements, loadPlacements, reloadPermittedActions } =
-    useContext<ChildState>(ChildContext)
+  const {
+    placements,
+    loadPlacements,
+    reloadPermittedActions,
+    loadBackupCares
+  } = useContext<ChildState>(ChildContext)
   const [serviceNeedOptions] = useApiState(getServiceNeedOptions, [])
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
@@ -91,6 +95,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
                     placement={p}
                     onRefreshNeeded={() => {
                       loadPlacements()
+                      void loadBackupCares()
                       reloadPermittedActions()
                     }}
                     checkOverlaps={checkOverlaps}

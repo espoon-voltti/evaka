@@ -128,6 +128,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction {
             it.insertTestDaycareGroup(group)
             it.createDaycareGroupMessageAccount(group.id)
+            it.insertTestPlacement(childId = childId, unitId = daycareId)
             it.insertTestBackupCare(
                 DevBackupCare(
                     childId = childId,
