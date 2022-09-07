@@ -134,12 +134,12 @@ export const Tr = styled.tr<TrProps>`
       : ''}
 `
 
-export const Thead = styled.thead<{ sticky?: boolean }>`
+export const Thead = styled.thead<{ sticky?: boolean | string }>`
   ${(p) =>
-    p.sticky
+    p.sticky !== undefined
       ? `
   position: sticky;
-  top: 0;
+  top: ${typeof p.sticky === 'boolean' ? 0 : p.sticky};
   z-index: 9;
   background-color: ${p.theme.colors.grayscale.g0};`
       : ''}

@@ -66,6 +66,7 @@ export interface ReservationChild {
   id: UUID
   imageId: UUID | null
   inShiftCareUnit: boolean
+  lastName: string
   maxOperationalDays: number[]
   placementMaxEnd: LocalDate
   placementMinStart: LocalDate

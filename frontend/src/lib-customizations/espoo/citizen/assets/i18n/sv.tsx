@@ -266,9 +266,11 @@ const sv: Translations = {
     reservation: 'Närvarande',
     realized: 'Förverkligad',
     reservationsAndRealized: 'Närvaroperiod',
+    events: 'Dagens händelser',
     noActivePlacements:
       'Ditt barn är inte i småbarnspedagogiken eller förskolan på denna dag.',
     attendanceWarning: 'Tiden överskrider den anmälda närvaron',
+    eventsCount: 'händelser',
     reservationModal: {
       title: 'Anmäl närvaro',
       selectChildren: 'Barn, vars närvaro anmäls',

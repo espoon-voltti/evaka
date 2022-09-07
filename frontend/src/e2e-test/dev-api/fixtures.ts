@@ -43,6 +43,8 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement,
   DecisionFixture,
+  DevCalendarEvent,
+  DevCalendarEventAttendee,
   DevChildConsent,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
@@ -98,6 +100,8 @@ import {
   insertDailyServiceTime,
   insertDailyServiceTimeNotification,
   insertChildConsent,
+  insertCalendarEvent,
+  insertCalendarEventAttendee,
   insertStaffRealtimeAttendance
 } from './index'
 
@@ -1664,6 +1668,28 @@ export class Fixture {
       type: 'PRESENT'
     })
   }
+
+  static calendarEvent(): CalendarEventBuilder {
+    return new CalendarEventBuilder({
+      id: uuidv4(),
+      title: '',
+      description: '',
+      period: new FiniteDateRange(
+        LocalDate.of(2020, 1, 1),
+        LocalDate.of(2020, 1, 1)
+      )
+    })
+  }
+
+  static calendarEventAttendee(): CalendarEventAttendeeBuilder {
+    return new CalendarEventAttendeeBuilder({
+      id: uuidv4(),
+      calendarEventId: '',
+      unitId: '',
+      groupId: null,
+      childId: null
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2161,6 +2187,28 @@ export class PaymentBuilder extends FixtureBuilder<DevPayment> {
 
   copy() {
     return new PaymentBuilder({ ...this.data })
+  }
+}
+
+export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
+  async save() {
+    await insertCalendarEvent(this.data)
+    return this
+  }
+
+  copy() {
+    return new CalendarEventBuilder({ ...this.data })
+  }
+}
+
+export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEventAttendee> {
+  async save() {
+    await insertCalendarEventAttendee(this.data)
+    return this
+  }
+
+  copy() {
+    return new CalendarEventAttendeeBuilder({ ...this.data })
   }
 }
 

@@ -40,6 +40,7 @@ declare module 'Icons' {
   const faCommentAlt: IconDefinition
   const faComments: IconDefinition
   const faDatabase: IconDefinition
+  const faDash: IconDefinition
   const faDiagnoses: IconDefinition
   const faEnvelope: IconDefinition
   const faEuroSign: IconDefinition

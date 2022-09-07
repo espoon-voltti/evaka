@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import sum from 'lodash/sum'
 import React, {
   MutableRefObject,
   useCallback,
@@ -9,9 +11,10 @@ import React, {
   useMemo,
   useRef
 } from 'react'
-import styled, { css } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
   DailyReservationData,
   ReservationChild
@@ -23,7 +26,7 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
+import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useHolidayPeriods } from '../holiday-periods/state'
 import { useLang, useTranslation } from '../localization'
@@ -46,6 +49,7 @@ export interface Props {
   selectDate: (date: LocalDate) => void
   includeWeekends: boolean
   dayIsReservable: (dailyData: DailyReservationData) => boolean
+  events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function CalendarGridView({
@@ -57,7 +61,8 @@ export default React.memo(function CalendarGridView({
   selectedDate,
   selectDate,
   includeWeekends,
-  dayIsReservable
+  dayIsReservable,
+  events
 }: Props) {
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
@@ -134,6 +139,7 @@ export default React.memo(function CalendarGridView({
             includeWeekends={includeWeekends}
             dayIsReservable={dayIsReservable}
             childImages={childImages}
+            events={events}
           />
         ))}
       </Container>
@@ -230,7 +236,8 @@ const Month = React.memo(function Month({
   selectedDate,
   includeWeekends,
   dayIsReservable,
-  childImages
+  childImages,
+  events
 }: {
   year: number
   month: number
@@ -243,6 +250,7 @@ const Month = React.memo(function Month({
   includeWeekends: boolean
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   childImages: ChildImageData[]
+  events: CitizenCalendarEvent[]
 }) {
   const i18n = useTranslation()
   return (
@@ -272,6 +280,7 @@ const Month = React.memo(function Month({
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
             childImages={childImages}
+            events={events}
           />
         ))}
       </Grid>
@@ -289,7 +298,8 @@ const Week = React.memo(function Week({
   selectedDate,
   selectDate,
   dayIsReservable,
-  childImages
+  childImages,
+  events
 }: {
   year: number
   month: number
@@ -301,6 +311,7 @@ const Week = React.memo(function Week({
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   childImages: ChildImageData[]
+  events: CitizenCalendarEvent[]
 }) {
   return (
     <>
@@ -317,6 +328,7 @@ const Week = React.memo(function Week({
           selectDate={selectDate}
           dayIsReservable={dayIsReservable}
           childImages={childImages}
+          events={events}
         />
       ))}
     </>
@@ -331,6 +343,30 @@ function dateType(year: number, month: number, date: LocalDate): DateType {
   return date.isBefore(today) ? 'past' : date.isToday() ? 'today' : 'future'
 }
 
+export const CalendarEventCountContainer = styled.div`
+  position: relative;
+  font-size: 20px;
+  height: fit-content;
+`
+
+export const CalendarEventCount = styled.div`
+  padding: 2px;
+  height: 20px;
+  min-width: 20px;
+  background-color: ${(p) => p.theme.colors.status.warning};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+  font-weight: ${fontWeights.bold};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  transform: translate(-60%, -60%);
+  font-size: 14px;
+  border-radius: 9999px;
+`
+
 const Day = React.memo(function Day({
   day,
   childData,
@@ -340,7 +376,8 @@ const Day = React.memo(function Day({
   selected,
   selectDate,
   dayIsReservable,
-  childImages
+  childImages,
+  events
 }: {
   day: DailyReservationData
   childData: ReservationChild[]
@@ -351,6 +388,7 @@ const Day = React.memo(function Day({
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   childImages: ChildImageData[]
+  events: CitizenCalendarEvent[]
 }) {
   const [lang] = useLang()
   const ref = useCallback(
@@ -375,6 +413,25 @@ const Day = React.memo(function Day({
     [day.date, selectDate]
   )
 
+  const eventCount = useMemo(
+    () =>
+      sum(
+        events.map(
+          ({ attendingChildren }) =>
+            Object.values(attendingChildren).filter((attending) =>
+              attending.some(({ periods }) =>
+                periods.some((period) => period.includes(day.date))
+              )
+            ).length
+        )
+      ),
+    [day.date, events]
+  )
+
+  const theme = useTheme()
+
+  const i18n = useTranslation()
+
   if (dateType === 'otherMonth') {
     return <InactiveCell />
   }
@@ -397,6 +454,16 @@ const Day = React.memo(function Day({
         >
           {day.date.format('d.M.')}
         </DayCellDate>
+        {eventCount > 0 && (
+          <CalendarEventCountContainer
+            aria-label={`${eventCount} ${i18n.calendar.eventsCount}`}
+          >
+            <FontAwesomeIcon color={theme.colors.main.m2} icon={faCalendar} />
+            <CalendarEventCount data-qa="event-count">
+              {eventCount}
+            </CalendarEventCount>
+          </CalendarEventCountContainer>
+        )}
       </DayCellHeader>
       <div data-qa="reservations">
         <Reservations
@@ -521,6 +588,7 @@ const DayCellHeader = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: ${defaultMargins.s};
+  width: 100%;
 `
 
 const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`

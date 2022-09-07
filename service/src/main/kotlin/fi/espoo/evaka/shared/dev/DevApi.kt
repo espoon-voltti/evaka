@@ -97,6 +97,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
@@ -1276,6 +1277,16 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     fun addPayment(db: Database, @RequestBody body: DevPayment) = db.connect { dbc ->
         dbc.transaction { it.insertDevPayment(body) }
     }
+
+    @PostMapping("/calendar-event")
+    fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) = db.connect { dbc ->
+        dbc.transaction { it.insertCalendarEvent(body) }
+    }
+
+    @PostMapping("/calendar-event-attendee")
+    fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) = db.connect { dbc ->
+        dbc.transaction { it.insertCalendarEventAttendee(body) }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1788,4 +1799,19 @@ data class DevPayment(
     val dueDate: LocalDate?,
     val sentAt: HelsinkiDateTime?,
     val sentBy: EmployeeId?
+)
+
+data class DevCalendarEvent(
+    val id: CalendarEventId,
+    val title: String,
+    val description: String,
+    val period: FiniteDateRange
+)
+
+data class DevCalendarEventAttendee(
+    val id: UUID,
+    val calendarEventId: CalendarEventId,
+    val unitId: DaycareId,
+    val groupId: GroupId?,
+    val childId: ChildId?
 )

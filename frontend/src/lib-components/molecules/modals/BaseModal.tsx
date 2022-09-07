@@ -11,7 +11,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import { H1, P } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap, SpacingSize } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
 import ModalBackground from './ModalBackground'
@@ -26,6 +26,8 @@ export interface ModalBaseProps {
   zIndex?: number
   children?: React.ReactNode | React.ReactNodeArray
   'data-qa'?: string
+  wide?: boolean
+  padding?: SpacingSize
 }
 
 export type ModalType = 'info' | 'success' | 'warning' | 'danger'
@@ -47,6 +49,8 @@ export default React.memo(function BaseModal(props: Props) {
           mobileFullScreen={props.mobileFullScreen}
           margin="auto"
           data-qa="modal"
+          wide={props.wide}
+          padding={props.padding}
         >
           <ModalTitle>
             {props.icon && (
@@ -125,23 +129,32 @@ export const ModalCloseButton = React.memo(function ModalCloseButton({
 const ModalContainer = styled.div<{
   mobileFullScreen?: boolean
   noPadding?: boolean
+  padding?: SpacingSize
   margin: string
+  wide?: boolean
 }>`
   position: relative;
-  width: min(500px, calc(100vw - 2 * ${defaultMargins.xxs}));
+  width: min(
+    ${(p) => (p.wide ? '720px' : '500px')},
+    calc(100vw - 2 * ${defaultMargins.xxs})
+  );
   max-height: calc(100vh - 2 * ${defaultMargins.s});
   background: ${(p) => p.theme.colors.grayscale.g0};
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
-  ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.XXL}`)};
-  ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.XXL}`)};
+  ${(p) =>
+    p.noPadding ? '' : `padding-left: ${defaultMargins[p.padding ?? 'XXL']}`};
+  ${(p) =>
+    p.noPadding ? '' : `padding-right: ${defaultMargins[p.padding ?? 'XXL']}`};
   margin: ${(p) => p.margin};
   overflow-y: auto;
 
   @media (max-width: ${tabletMin}) {
-    ${(p) => (p.noPadding ? '' : `padding-left: ${defaultMargins.s}`)};
-    ${(p) => (p.noPadding ? '' : `padding-right: ${defaultMargins.s}`)};
+    ${(p) =>
+      p.noPadding ? '' : `padding-left: ${defaultMargins[p.padding ?? 's']}`};
+    ${(p) =>
+      p.noPadding ? '' : `padding-right: ${defaultMargins[p.padding ?? 's']}`};
     margin-left: ${defaultMargins.s};
     margin-right: ${defaultMargins.s};
 
@@ -185,10 +198,10 @@ const ModalIcon = styled.div<{ type?: ModalType }>`
   margin: auto;
 `
 
-const ModalTitle = styled.div`
+const ModalTitle = styled.div<{ wide?: boolean }>`
   margin-bottom: ${defaultMargins.XXL};
   margin-top: ${defaultMargins.XXL};
-  text-align: center;
+  text-align: ${(p) => (p.wide ? 'left' : 'center')};
 
   @media (max-width: ${tabletMin}) {
     margin-bottom: ${defaultMargins.L};

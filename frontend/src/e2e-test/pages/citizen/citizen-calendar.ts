@@ -54,6 +54,13 @@ export default class CitizenCalendarPage {
       .waitUntilVisible()
   }
 
+  async assertEventCount(date: LocalDate, count: number) {
+    await waitUntilEqual(
+      () => this.#dayCell(date).findByDataQa('event-count').innerText,
+      count.toString()
+    )
+  }
+
   async openReservationsModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
@@ -317,12 +324,12 @@ class DayView extends Element {
   #editButton = this.findByDataQa('edit')
   #createAbsenceButton = this.findByDataQa('create-absence')
 
-  #reservationsOfChild(childId: UUID) {
-    return this.findByDataQa(`reservations-of-${childId}`)
+  #childSection(childId: UUID) {
+    return this.findByDataQa(`child-${childId}`)
   }
 
   async assertNoReservation(childId: UUID) {
-    await this.#reservationsOfChild(childId)
+    await this.#childSection(childId)
       .findByDataQa('no-reservations')
       .waitUntilVisible()
   }
@@ -330,16 +337,14 @@ class DayView extends Element {
   async assertReservations(childId: UUID, value: string) {
     await waitUntilEqual(
       () =>
-        this.#reservationsOfChild(childId).findByDataQa('reservations')
-          .textContent,
+        this.#childSection(childId).findByDataQa('reservations').textContent,
       value
     )
   }
 
   async assertAbsence(childId: UUID, value: string) {
     await waitUntilEqual(
-      () =>
-        this.#reservationsOfChild(childId).findByDataQa('absence').textContent,
+      () => this.#childSection(childId).findByDataQa('absence').textContent,
       value
     )
   }
@@ -361,13 +366,29 @@ class DayView extends Element {
   async close() {
     await this.findByDataQa('day-view-close-button').click()
   }
+
+  async assertEvent(
+    childId: UUID,
+    eventId: UUID,
+    { title, description }: { title: string; description: string }
+  ) {
+    const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    await waitUntilEqual(
+      () => event.findByDataQa('event-title').innerText,
+      title
+    )
+    await waitUntilEqual(
+      () => event.findByDataQa('event-description').innerText,
+      description
+    )
+  }
 }
 
 class DayViewEditor extends Element {
   #saveButton = this.findByDataQa('save')
 
-  #reservationsOfChild(childId: UUID) {
-    return this.findByDataQa(`reservations-of-${childId}`)
+  #childSection(childId: UUID) {
+    return this.findByDataQa(`child-${childId}`)
   }
 
   async fillReservationTimes(
@@ -375,7 +396,7 @@ class DayViewEditor extends Element {
     startTime: string,
     endTime: string
   ) {
-    const child = this.#reservationsOfChild(childId)
+    const child = this.#childSection(childId)
     await new TextInput(child.findByDataQa('first-reservation-start')).fill(
       startTime
     )

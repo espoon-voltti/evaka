@@ -74,7 +74,10 @@ export default class FiniteDateRange {
    */
   overlaps(other: FiniteDateRange | DateRange): boolean {
     if (other.end) {
-      return this.start <= other.end && other.start <= this.end
+      return (
+        this.start.isEqualOrBefore(other.end) &&
+        other.start.isEqualOrBefore(this.end)
+      )
     } else {
       return other.start <= this.end
     }

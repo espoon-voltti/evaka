@@ -183,6 +183,8 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
     if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId)
         throw BadRequest("Cannot transfer to a group in different unit")
 
+    val placement = getPlacement(groupPlacement.daycarePlacementId)
+
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
             throw BadRequest("Cannot transfer to another group before the original placement even starts")
@@ -194,6 +196,9 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
             }
 
             deleteGroupPlacement(groupPlacementId)
+            if (placement != null) {
+                clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(startDate, LocalDate.MAX))
+            }
         }
 
         startDate.isAfter(groupPlacement.startDate) -> {
@@ -202,6 +207,9 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
             }
 
             updateGroupPlacementEndDate(groupPlacementId, startDate.minusDays(1))
+            if (placement != null) {
+                clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(startDate, LocalDate.MAX))
+            }
         }
     }
 

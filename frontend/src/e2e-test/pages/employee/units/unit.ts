@@ -18,7 +18,7 @@ import {
   TextInput
 } from '../../../utils/page'
 
-import { UnitAttendancesPage } from './unit-attendances-page'
+import { UnitCalendarPage } from './unit-attendances-page'
 import { UnitGroupsPage } from './unit-groups-page'
 
 type UnitProviderType =
@@ -34,7 +34,7 @@ export class UnitPage {
 
   #unitInfoTab = this.page.find('[data-qa="unit-info-tab"]')
   #groupsTab = this.page.find('[data-qa="groups-tab"]')
-  #attendancesTab = this.page.find('[data-qa="attendances-tab"]')
+  #calendarTab = this.page.find('[data-qa="calendar-tab"]')
   #applicationProcessTab = this.page.find('[data-qa="application-process-tab"]')
 
   static async openUnit(page: Page, id: string): Promise<UnitPage> {
@@ -71,9 +71,9 @@ export class UnitPage {
     return section
   }
 
-  async openAttendancesPage(): Promise<UnitAttendancesPage> {
-    await this.#attendancesTab.click()
-    const section = new UnitAttendancesPage(this.page)
+  async openCalendarPage(): Promise<UnitCalendarPage> {
+    await this.#calendarTab.click()
+    const section = new UnitCalendarPage(this.page)
     return section
   }
 }

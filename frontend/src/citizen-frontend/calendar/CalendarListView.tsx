@@ -8,6 +8,7 @@ import last from 'lodash/last'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
   DailyReservationData,
   ReservationChild
@@ -32,6 +33,7 @@ export interface Props {
   selectDate: (date: LocalDate) => void
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
+  events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function CalendarListView({
@@ -40,7 +42,8 @@ export default React.memo(function CalendarListView({
   dayIsHolidayPeriod,
   onHoverButtonClick,
   selectDate,
-  dayIsReservable
+  dayIsReservable,
+  events
 }: Props) {
   const i18n = useTranslation()
   const weeklyData = useMemo(() => asWeeklyData(dailyData), [dailyData])
@@ -64,6 +67,7 @@ export default React.memo(function CalendarListView({
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}
             childImages={childImages}
+            events={events}
           />
         ))}
       </FixedSpaceColumn>

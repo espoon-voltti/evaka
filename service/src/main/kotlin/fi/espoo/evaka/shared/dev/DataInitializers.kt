@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -1280,3 +1281,21 @@ VALUES (:id, :unitId, :unitName, :unitBusinessId, :unitIban, :unitProviderId, :p
 RETURNING id
 """
 ).let(::PaymentId)
+
+fun Database.Transaction.insertCalendarEvent(calendarEvent: DevCalendarEvent) = insertTestDataRow(
+    calendarEvent,
+    """
+INSERT INTO calendar_event (id, title, description, period)
+VALUES (:id, :title, :description, :period)
+RETURNING id
+"""
+).let(::CalendarEventId)
+
+fun Database.Transaction.insertCalendarEventAttendee(attendee: DevCalendarEventAttendee) = insertTestDataRow(
+    attendee,
+    """
+INSERT INTO calendar_event_attendee (id, calendar_event_id, unit_id, group_id, child_id)
+VALUES (:id, :calendarEventId, :unitId, :groupId, :childId)
+RETURNING id
+"""
+)

@@ -24,9 +24,7 @@ import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
-import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -35,7 +33,7 @@ import {
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, Label, Light } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
@@ -43,6 +41,12 @@ import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
+import {
+  CalendarModalBackground,
+  CalendarModalButtons,
+  CalendarModalCloseButton,
+  CalendarModalSection
+} from './CalendarModal'
 import { postReservations } from './api'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 
@@ -153,10 +157,10 @@ export default React.memo(function ReservationModal({
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
-        <ModalBackground>
+        <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
-              <ModalSection>
+              <CalendarModalSection>
                 <Gap size="L" sizeOnMobile="zero" />
                 <ModalHeader
                   headingComponent={(props) => (
@@ -167,11 +171,11 @@ export default React.memo(function ReservationModal({
                 >
                   {i18n.calendar.reservationModal.title}
                 </ModalHeader>
-              </ModalSection>
+              </CalendarModalSection>
 
               <Gap size="zero" sizeOnMobile="s" />
 
-              <ModalSection>
+              <CalendarModalSection>
                 <H2>{i18n.calendar.reservationModal.selectChildren}</H2>
                 <Label>
                   {i18n.calendar.reservationModal.selectChildrenLabel}
@@ -203,11 +207,11 @@ export default React.memo(function ReservationModal({
                     />
                   ))}
                 </FixedSpaceFlexWrap>
-              </ModalSection>
+              </CalendarModalSection>
 
               <Gap size="xxs" sizeOnMobile="s" />
 
-              <ModalSection>
+              <CalendarModalSection>
                 <HorizontalLine slim dashed hiddenOnMobile />
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
@@ -285,9 +289,9 @@ export default React.memo(function ReservationModal({
                     {i18n.calendar.reservationModal.missingDateRange}
                   </MissingDateRange>
                 )}
-              </ModalSection>
+              </CalendarModalSection>
             </div>
-            <ModalButtons>
+            <CalendarModalButtons>
               <Button
                 onClick={onClose}
                 data-qa="modal-cancelBtn"
@@ -311,10 +315,10 @@ export default React.memo(function ReservationModal({
                 }}
                 data-qa="modal-okBtn"
               />
-            </ModalButtons>
+            </CalendarModalButtons>
           </BottomFooterContainer>
-        </ModalBackground>
-        <ModalCloseButton
+        </CalendarModalBackground>
+        <CalendarModalCloseButton
           onClick={onClose}
           aria-label={i18n.common.closeModal}
           icon={faTimes}
@@ -323,48 +327,6 @@ export default React.memo(function ReservationModal({
     </ModalAccessibilityWrapper>
   )
 })
-
-export const ModalCloseButton = styled(IconButton)`
-  position: absolute;
-  top: ${defaultMargins.s};
-  right: ${defaultMargins.s};
-  color: ${(p) => p.theme.colors.main.m2};
-`
-
-export const ModalButtons = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: ${defaultMargins.s};
-  padding: ${defaultMargins.L};
-
-  @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.s};
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    background-color: ${(p) => p.theme.colors.main.m4};
-  }
-`
-
-export const ModalSection = styled.section`
-  padding: 0 ${defaultMargins.L};
-
-  @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.m} ${defaultMargins.s};
-    background-color: ${(p) => p.theme.colors.grayscale.g0};
-
-    h2 {
-      margin-top: 0;
-    }
-  }
-`
-
-export const ModalBackground = styled.div`
-  height: 100%;
-
-  @media (max-width: ${tabletMin}) {
-    background-color: ${(p) => p.theme.colors.main.m4};
-  }
-`
 
 const MissingDateRange = styled(Light)`
   grid-column-start: 1;

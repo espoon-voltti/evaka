@@ -2,30 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { MutableRefObject, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { combine, Result } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { fontWeights, H3, Title } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { fontWeights, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faChevronLeft, faChevronRight } from 'lib-icons'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import {
   deleteExternalStaffAttendance,
@@ -36,6 +34,7 @@ import {
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
+import { WeekData, WeekSavingFns } from '../TabCalendar'
 
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
@@ -54,9 +53,6 @@ const AttendanceTime = styled(Time)`
   background: ${colors.grayscale.g4};
 `
 
-const formatWeekTitle = (dateRange: FiniteDateRange) =>
-  `${dateRange.start.format('dd.MM.')} - ${dateRange.end.format()}`
-
 interface Props {
   unitId: UUID
   groupId: UUID | 'no-group' | 'staff' | 'all'
@@ -66,63 +62,22 @@ interface Props {
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
   groups: Result<DaycareGroup[]>
+  week: WeekData
+  weekSavingFns: MutableRefObject<WeekSavingFns>
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
   unitId,
   groupId,
   selectedDate,
-  setSelectedDate,
   isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
   operationalDays,
-  groups
+  groups,
+  week,
+  weekSavingFns
 }: Props) {
   const { i18n } = useTranslation()
-
-  // Before changing the week, the current week's data should be saved
-  // because it is possible the user has started adding an overnight
-  // entry over the week boundary, so the partial data should be saved
-  // before navigating to the next week. The callbacks to save the data
-  // are stored here, and added in the row components.
-  const weekSavingFns = useRef<Map<string, () => Promise<void>>>(new Map())
-
-  const [week, setWeek] = useState({
-    dateRange: getWeekDateRange(selectedDate),
-    saved: true,
-    savingPromise: Promise.resolve()
-  })
-
-  useEffect(() => {
-    let cancelled = false
-
-    const dateRange = getWeekDateRange(selectedDate)
-    setWeek({
-      dateRange,
-      saved: false,
-      savingPromise: Promise.all(
-        Array.from(weekSavingFns.current.values()).map((fn) => fn())
-      ).then(() => {
-        if (!cancelled) {
-          setWeek((week) =>
-            // strict equality check: ensure the current week is the
-            // same one as when originally started, even when switching
-            // going x* -> y -> x the save at * should be ignored at the end
-            week.dateRange === dateRange
-              ? {
-                  ...week,
-                  saved: true
-                }
-              : week
-          )
-        }
-      })
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [selectedDate])
 
   const [childReservations, reloadChildReservations] = useApiState(
     () =>
@@ -196,6 +151,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   const combinedData = combine(childReservations, staffAttendances)
   const staffAttendancesStatus = useDataStatus(combinedData)
 
+  const [legendVisible, setLegendVisible] = useState(false)
+
   return renderResult(combinedData, ([childData, staffData]) => (
     <>
       <div
@@ -213,26 +170,6 @@ export default React.memo(function UnitAttendanceReservationsView({
         />
       )}
 
-      <WeekPicker data-qa-week-range={week.dateRange.toString()}>
-        <WeekPickerButton
-          icon={faChevronLeft}
-          onClick={() => setSelectedDate(selectedDate.subDays(7))}
-          size="s"
-          data-qa="previous-week"
-          aria-label={i18n.unit.attendanceReservations.previousWeek}
-        />
-        <WeekTitle primary centered>
-          {formatWeekTitle(week.dateRange)}
-        </WeekTitle>
-        <WeekPickerButton
-          icon={faChevronRight}
-          onClick={() => setSelectedDate(selectedDate.addDays(7))}
-          size="s"
-          data-qa="next-week"
-          aria-label={i18n.unit.attendanceReservations.nextWeek}
-        />
-      </WeekPicker>
-      <Gap size="s" />
       <FixedSpaceColumn spacing="L">
         {groupId === 'staff' ? (
           <StaffAttendanceTable
@@ -297,42 +234,29 @@ export default React.memo(function UnitAttendanceReservationsView({
       </FixedSpaceColumn>
 
       <div>
-        <HorizontalLine dashed slim />
-        <H3>{i18n.absences.legendTitle}</H3>
-        <FixedSpaceRow alignItems="flex-start" spacing="XL">
-          <LabelValueList
-            spacing="small"
-            horizontalSpacing="small"
-            labelWidth="fit-content(40%)"
-            contents={legendTimeLabels}
+        <Gap size="s" />
+        <FixedSpaceRow alignItems="center">
+          <Label id="legend-title-label">{i18n.absences.legendTitle}</Label>
+          <IconButton
+            icon={legendVisible ? faChevronUp : faChevronDown}
+            onClick={() => setLegendVisible(!legendVisible)}
+            aria-labelledby="legend-title-label"
           />
-          <FixedSpaceColumn spacing="xs">
-            <AbsenceLegend icons />
-          </FixedSpaceColumn>
         </FixedSpaceRow>
+        {legendVisible && (
+          <FixedSpaceRow alignItems="flex-start" spacing="XL">
+            <LabelValueList
+              spacing="small"
+              horizontalSpacing="small"
+              labelWidth="fit-content(40%)"
+              contents={legendTimeLabels}
+            />
+            <FixedSpaceColumn spacing="xs">
+              <AbsenceLegend icons />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+        )}
       </div>
     </>
   ))
 })
-
-const getWeekDateRange = (date: LocalDate) => {
-  const start = date.startOfWeek()
-  return new FiniteDateRange(start, start.addDays(6))
-}
-
-const WeekPicker = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-`
-
-const WeekPickerButton = styled(IconButton)`
-  margin: 0 ${defaultMargins.s};
-  color: ${colors.grayscale.g70};
-`
-
-const WeekTitle = styled(Title)`
-  min-width: 14ch;
-`

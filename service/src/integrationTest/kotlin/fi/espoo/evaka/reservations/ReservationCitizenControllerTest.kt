@@ -100,6 +100,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                 ReservationChild(
                     testChild_2.id,
                     testChild_2.firstName,
+                    testChild_2.lastName,
                     "",
                     null,
                     testDate,
@@ -110,6 +111,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                 ReservationChild(
                     testChild_1.id,
                     testChild_1.firstName,
+                    testChild_2.lastName,
                     "",
                     null,
                     testDate,

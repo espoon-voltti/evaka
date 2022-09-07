@@ -435,3 +435,33 @@ export class Modal extends Element {
     await this.#submitButton.click()
   }
 }
+
+export class TreeDropdown extends Element {
+  private async expanded(): Promise<boolean> {
+    return (
+      (await this.findByDataQa('tree-dropdown').getAttribute(
+        'data-qa-expanded'
+      )) === 'true'
+    )
+  }
+
+  async open(): Promise<void> {
+    if (!(await this.expanded())) {
+      await this.click()
+    }
+  }
+
+  async close(): Promise<void> {
+    if (await this.expanded()) {
+      await this.click()
+    }
+  }
+
+  option(key: string): Checkbox {
+    return new Checkbox(this.findByDataQa(`tree-checkbox-${key}`))
+  }
+
+  async expandOption(key: string): Promise<void> {
+    await this.findByDataQa(`tree-toggle-${key}`).click()
+  }
+}

@@ -11,12 +11,13 @@ import { TimeRange } from 'lib-common/generated/api-types/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
-import { fontWeights, H4 } from 'lib-components/typography'
+import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
+import { stickyTopBarHeight } from '../TabCalendar'
 
 import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
@@ -42,6 +43,9 @@ export const EditStateIndicator = React.memo(function EditStateIndicator({
 
 const CustomTh = styled(Th)<{ shrink?: boolean }>`
   vertical-align: bottom;
+  font-size: 16px;
+  text-transform: unset;
+
   ${(p) =>
     p.shrink &&
     css`
@@ -56,19 +60,14 @@ const DateTh = styled(CustomTh)<{ faded: boolean }>`
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
 `
 
-const DayHeader = styled.div`
-  display: flex;
-  justify-content: space-evenly;
-  gap: ${defaultMargins.xs};
-`
+const Date = styled(LabelLike)<{ highlight: boolean }>`
+  text-align: center;
+  text-transform: capitalize;
 
-const Date = styled(H4)<{ highlight: boolean }>`
-  margin: 0 0 ${defaultMargins.s};
   ${(p) =>
     p.highlight &&
     css`
-      color: ${colors.main.m2};
-      font-weight: ${fontWeights.semibold};
+      color: ${colors.main.m1};
     `}
 `
 
@@ -121,29 +120,25 @@ export const NameWrapper = styled.div`
 
 interface AttendanceTableHeaderProps {
   operationalDays: OperationalDay[]
-  startTimeHeader: string
-  endTimeHeader: string
+  nameColumnLabel: string
 }
 
 export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
   operationalDays,
-  startTimeHeader,
-  endTimeHeader
+  nameColumnLabel
 }: AttendanceTableHeaderProps) {
   const { lang } = useTranslation()
   return (
-    <Thead sticky>
+    <Thead sticky={`${stickyTopBarHeight}px`}>
       <Tr>
-        <CustomTh />
+        <CustomTh>
+          <LabelLike>{nameColumnLabel}</LabelLike>
+        </CustomTh>
         {operationalDays.map(({ date, isHoliday }) => (
           <DateTh shrink key={date.formatIso()} faded={isHoliday}>
-            <Date centered highlight={date.isToday()}>
-              {date.format('EEEEEE dd.MM.', lang)}
+            <Date highlight={date.isToday()}>
+              {date.format('EEEEEE d.M.', lang)}
             </Date>
-            <DayHeader>
-              <span>{startTimeHeader}</span>
-              <span>{endTimeHeader}</span>
-            </DayHeader>
           </DateTh>
         ))}
         <CustomTh shrink />

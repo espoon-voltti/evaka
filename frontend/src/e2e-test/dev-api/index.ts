@@ -49,6 +49,8 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
+  DevCalendarEvent,
+  DevCalendarEventAttendee,
   DevChildConsent,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
@@ -1098,6 +1100,31 @@ export async function revokeVasuSharingPermission(docId: UUID): Promise<void> {
 export async function insertPayment(body: DevPayment): Promise<void> {
   try {
     await devClient.post('/payments', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertCalendarEvent(
+  body: DevCalendarEvent
+): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>('/calendar-event', body)
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertCalendarEventAttendee(
+  body: DevCalendarEventAttendee
+): Promise<UUID> {
+  try {
+    const { data } = await devClient.post<UUID>(
+      '/calendar-event-attendee',
+      body
+    )
+    return data
   } catch (e) {
     throw new DevApiError(e)
   }

@@ -183,7 +183,15 @@ export const fi = {
     },
     close: 'Sulje',
     open: 'Avaa',
-    copy: 'Kopioi'
+    copy: 'Kopioi',
+    startDate: 'Aloituspäivä',
+    endDate: 'Lopetuspäivä',
+    treeDropdown: {
+      expandDropdown: 'Avaa',
+      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
+      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
+      placeholder: 'Valitse...'
+    }
   },
   header: {
     applications: 'Hakemukset',
@@ -1656,7 +1664,7 @@ export const fi = {
     tabs: {
       unitInfo: 'Yksikön tiedot',
       groups: 'Ryhmät',
-      attendances: 'Läsnäolot',
+      calendar: 'Kalenteri',
       applicationProcess: 'Hakuprosessi'
     },
     create: 'Luo uusi yksikkö',
@@ -1821,14 +1829,42 @@ export const fi = {
       endDate: 'Päättymispäivämäärä',
       groupName: 'Ryhmä'
     },
-    attendances: {
-      title: 'Varaukset ja läsnäolot',
+    calendar: {
+      title: 'Kalenteri',
       noGroup: 'Ei ryhmää',
       staff: 'Henkilökunta',
       all: 'Kaikki',
       modes: {
         week: 'Viikko',
         month: 'Kuukausi'
+      },
+      attendances: {
+        title: 'Varaukset ja läsnäolot'
+      },
+      nextWeek: 'Seuraava viikko',
+      previousWeek: 'Edellinen viikko',
+      events: {
+        title: 'Tapahtumat',
+        createEvent: 'Uusi tapahtuma',
+        edit: {
+          title: 'Tapahtuma',
+          saveChanges: 'Tallenna muutokset',
+          delete: 'Poista tapahtuma'
+        },
+        create: {
+          title: 'Lisää uusi tapahtuma',
+          text: 'Lisää tässä tapahtumat, jotka huoltajan on tärkeä muistaa: tapahtuma tulee näkyviin huoltajan eVaka-kalenteriin. Muista tapahtumista kannattaa tiedottaa huoltajaa viestitse.',
+          add: 'Lisää tapahtuma',
+          period: 'Ajankohta',
+          attendees: 'Tapahtuman osallistujat',
+          eventTitle: 'Tapahtuman otsikko',
+          eventTitlePlaceholder: 'Max. 30 merkkiä',
+          description: 'Tapahtuman kuvaus',
+          descriptionPlaceholder:
+            'Lyhyet ohjeet huoltajalle, esim. kellonaika, mitä pakata mukaan',
+          missingPlacementsWarning:
+            'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.'
+        }
       }
     },
     groups: {
@@ -1957,9 +1993,7 @@ export const fi = {
       },
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
-      inOtherUnit: 'Muussa yksikössä',
-      nextWeek: 'Seuraava viikko',
-      previousWeek: 'Edellinen viikko'
+      inOtherUnit: 'Muussa yksikössä'
     },
     staffAttendance: {
       startTime: 'tulo',
@@ -1972,6 +2006,7 @@ export const fi = {
       addNewAttendance: 'Lisää uusi kirjaus',
       saveChanges: 'Tallenna muutokset',
       noGroup: 'Ei ryhmää',
+      staffName: 'Työntekijän nimi',
       types: {
         PRESENT: 'Läsnä',
         OTHER_WORK: 'Työasia',
@@ -2801,6 +2836,7 @@ export const fi = {
           'Itse merkittyjä läsnäolo -varauksia',
         'backup_care.child_id': 'Vara- sijoituksia',
         'backup_pickup.child_id': 'Vara- hakijoita',
+        'calendar_event_attendee.child_id': 'Kalenteri- osallis- tujana',
         'child_attendance.child_id': 'Läsnäoloja',
         'child_consent.child_id': 'Lupia',
         'child_consent.given_by_guardian': 'Annettuja lupia',

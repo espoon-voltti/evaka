@@ -25,9 +25,9 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useQuery } from 'lib-common/utils/useQuery'
 import Spinner from 'lib-components/atoms/state/Spinner'
-import Container from 'lib-components/layout/Container'
+import Container, { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
-import { fontWeights } from 'lib-components/typography'
+import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import TabGroups from '../components/unit/TabGroups'
@@ -37,7 +37,7 @@ import { TitleContext, TitleState } from '../state/title'
 import { UnitContext, UnitContextProvider } from '../state/unit'
 
 import TabApplicationProcess from './unit/TabApplicationProcess'
-import TabAttendances from './unit/TabAttendances'
+import TabCalendar from './unit/TabCalendar'
 
 const defaultTab = (unit: UnitResponse) => {
   if (unit.permittedActions.has('READ_ATTENDANCES')) return 'attendances'
@@ -120,12 +120,13 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has('READ_ATTENDANCES')
+      (unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
+        unitInformation.value.permittedActions.has('READ_CALENDAR_EVENTS'))
         ? [
             {
-              id: 'attendances',
-              link: `/units/${id}/attendances`,
-              label: i18n.unit.tabs.attendances
+              id: 'calendar',
+              link: `/units/${id}/calendar`,
+              label: i18n.unit.tabs.calendar
             }
           ]
         : []),
@@ -180,6 +181,14 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 
   return (
     <>
+      <Container>
+        <ContentArea opaque>
+          <H1 noMargin>
+            {unitInformation.map(({ daycare }) => daycare.name).getOrElse('')}
+          </H1>
+        </ContentArea>
+      </Container>
+      <Gap size="s" />
       <Tabs tabs={tabs} />
       <Gap size="s" />
       <Container>
@@ -195,7 +204,16 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               />
             }
           />
-          <Route path="attendances" element={<TabAttendances />} />
+          <Route path="calendar" element={<TabCalendar />} />
+          <Route
+            path="calendar/events/:calendarEventId"
+            element={<TabCalendar />}
+          />
+          <Route
+            // redirect from old attendances page to the renamed calendar page
+            path="attendances"
+            element={<Navigate to="../calendar" replace />}
+          />
           <Route
             path="application-process"
             element={

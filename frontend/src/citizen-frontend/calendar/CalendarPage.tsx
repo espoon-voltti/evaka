@@ -6,7 +6,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
+import { combine, isLoading, Result } from 'lib-common/api'
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
   DailyReservationData,
   ReservationsResponse
@@ -35,13 +36,22 @@ import { CalendarNotificationsProvider } from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import ReservationModal from './ReservationModal'
-import { getReservations } from './api'
+import { getCalendarEvents, getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 
 async function getReservationsDefaultRange(): Promise<
   Result<ReservationsResponse>
 > {
   return await getReservations(
+    LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
+    LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+  )
+}
+
+async function getEventsDefaultRange(): Promise<
+  Result<CitizenCalendarEvent[]>
+> {
+  return await getCalendarEvents(
     LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
     LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
   )
@@ -57,6 +67,7 @@ const CalendarPage = React.memo(function CalendarPage() {
   } = useHolidayPeriods()
 
   const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
+  const [events] = useApiState(getEventsDefaultRange, [])
 
   const {
     modalState,
@@ -130,7 +141,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     <CalendarNotificationsProvider>
       <DailyServiceTimeNotifications />
 
-      {renderResult(data, (response) => (
+      {renderResult(combine(data, events), ([response, events]) => (
         <div data-qa="calendar-page" data-isloading={isLoading(data)}>
           <MobileAndTablet>
             <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
@@ -141,6 +152,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                 selectDate={openDayModal}
                 dayIsReservable={dayIsReservable}
                 dayIsHolidayPeriod={dayIsHolidayPeriod}
+                events={events}
               />
             </ContentArea>
           </MobileAndTablet>
@@ -157,6 +169,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               selectDate={openDayModal}
               includeWeekends={response.includesWeekends}
               dayIsReservable={dayIsReservable}
+              events={events}
             />
           </DesktopOnly>
           {modalState?.type === 'day' && (
@@ -167,6 +180,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               reloadData={loadDefaultRange}
               close={closeModal}
               openAbsenceModal={openAbsenceModal}
+              events={events}
             />
           )}
           {modalState?.type === 'pickAction' && (

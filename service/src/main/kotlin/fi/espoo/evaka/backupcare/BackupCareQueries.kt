@@ -71,6 +71,42 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
     .mapTo<UnitBackupCare>()
     .list()
 
+fun Database.Read.getBackupCareChildrenInGroup(
+    daycareId: DaycareId,
+    groupId: GroupId,
+    period: FiniteDateRange
+): List<ChildId> = createQuery(
+    """
+    SELECT child_id FROM backup_care
+    WHERE unit_id = :daycareId
+      AND group_id = :groupId
+      AND daterange(start_date, end_date, '[]') && :period
+    """.trimIndent()
+)
+    .bind("daycareId", daycareId)
+    .bind("groupId", groupId)
+    .bind("period", period)
+    .mapTo<ChildId>()
+    .list()
+
+data class BackupCareInfo(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val period: FiniteDateRange
+)
+
+fun Database.Read.getBackupCare(
+    id: BackupCareId
+): BackupCareInfo? = createQuery(
+    """
+    SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
+    WHERE id = :id
+    """.trimIndent()
+)
+    .bind("id", id)
+    .mapTo<BackupCareInfo>()
+    .firstOrNull()
+
 fun Database.Transaction.createBackupCare(childId: ChildId, backupCare: NewBackupCare): BackupCareId = createUpdate(
     // language=SQL
     """

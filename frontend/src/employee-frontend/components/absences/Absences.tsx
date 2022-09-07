@@ -34,7 +34,6 @@ import {
   getGroupAbsences,
   postGroupAbsences
 } from '../../api/absences'
-import PeriodPicker from '../../components/absences/PeriodPicker'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import {
@@ -52,7 +51,6 @@ import AbsenceTable from './AbsenceTable'
 interface Props {
   groupId: UUID
   selectedDate: LocalDate
-  setSelectedDate: (date: LocalDate) => void
   reservationEnabled: boolean
   staffAttendanceEnabled: boolean
 }
@@ -60,7 +58,6 @@ interface Props {
 export default React.memo(function Absences({
   groupId,
   selectedDate,
-  setSelectedDate,
   reservationEnabled,
   staffAttendanceEnabled
 }: Props) {
@@ -195,7 +192,6 @@ export default React.memo(function Absences({
       )}
       {renderResult(absences, (absences) => (
         <FixedSpaceColumn spacing="zero">
-          <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
           <AbsenceTable
             groupId={groupId}
             selectedCells={selectedCells}

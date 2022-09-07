@@ -2,9 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import sum from 'lodash/sum'
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
-import styled, { css } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
   DailyReservationData,
   ReservationChild
@@ -16,10 +19,15 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faCalendar } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
 
+import {
+  CalendarEventCount,
+  CalendarEventCountContainer
+} from './CalendarGridView'
 import { WeeklyData } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
 import { ChildImageData } from './RoundChildImages'
@@ -31,6 +39,7 @@ interface Props extends WeeklyData {
   dayIsReservable: (dailyData: DailyReservationData) => boolean
   dayIsHolidayPeriod: (date: LocalDate) => boolean
   childImages: ChildImageData[]
+  events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function WeekElem({
@@ -40,7 +49,8 @@ export default React.memo(function WeekElem({
   dayIsHolidayPeriod,
   selectDate,
   dayIsReservable,
-  childImages
+  childImages,
+  events
 }: Props) {
   const i18n = useTranslation()
   return (
@@ -64,6 +74,7 @@ export default React.memo(function WeekElem({
               isReservable={dayIsReservable(d)}
               isHolidayPeriod={dayIsHolidayPeriod(d.date)}
               childImages={childImages}
+              events={events}
             />
           </Fragment>
         ))}
@@ -102,6 +113,7 @@ interface DayProps {
   isReservable: boolean
   isHolidayPeriod: boolean
   childImages: ChildImageData[]
+  events: CitizenCalendarEvent[]
 }
 
 const DayElem = React.memo(function DayElem({
@@ -110,7 +122,8 @@ const DayElem = React.memo(function DayElem({
   selectDate,
   isReservable,
   isHolidayPeriod,
-  childImages
+  childImages,
+  events
 }: DayProps) {
   const [lang] = useLang()
   const ref = useRef<HTMLButtonElement>()
@@ -146,6 +159,26 @@ const DayElem = React.memo(function DayElem({
     }
   }, [])
 
+  const eventCount = useMemo(
+    () =>
+      sum(
+        events.map(
+          ({ attendingChildren }) =>
+            Object.values(attendingChildren).filter((attending) =>
+              attending.some(({ periods }) =>
+                periods.some((period) =>
+                  period.includes(dailyReservations.date)
+                )
+              )
+            ).length
+        )
+      ),
+    [dailyReservations.date, events]
+  )
+
+  const i18n = useTranslation()
+  const theme = useTheme()
+
   return (
     <Day
       ref={setRef}
@@ -175,6 +208,16 @@ const DayElem = React.memo(function DayElem({
           childImages={childImages}
         />
       </ReservationsContainer>
+      {eventCount > 0 && (
+        <CalendarEventCountContainer
+          aria-label={`${eventCount} ${i18n.calendar.eventsCount}`}
+        >
+          <FontAwesomeIcon color={theme.colors.main.m2} icon={faCalendar} />
+          <CalendarEventCount data-qa="event-count">
+            {eventCount}
+          </CalendarEventCount>
+        </CalendarEventCountContainer>
+      )}
       {dailyReservations.date.isBefore(LocalDate.todayInSystemTz()) && (
         <HistoryOverlay />
       )}

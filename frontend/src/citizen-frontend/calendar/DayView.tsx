@@ -7,6 +7,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  AttendingChild,
+  CitizenCalendarEvent
+} from 'lib-common/generated/api-types/calendarevent'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   OpenTimeRange,
@@ -21,7 +25,7 @@ import {
   validateTimeRange
 } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
-import StatusIcon from 'lib-components/atoms/StatusIcon'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -29,17 +33,19 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MobileOnly } from 'lib-components/layout/responsive-layout'
 import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { fontWeights, H1, H2, H3, LabelLike } from 'lib-components/typography'
+import { H1, H2, H3, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight, faPlus, faTrash } from 'lib-icons'
 
@@ -47,6 +53,7 @@ import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
+import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
 import { postReservations } from './api'
@@ -58,6 +65,7 @@ interface Props {
   reloadData: () => void
   close: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
+  events: CitizenCalendarEvent[]
 }
 
 interface ChildWithReservations {
@@ -129,7 +137,8 @@ export default React.memo(function DayView({
   selectDate,
   reloadData,
   close,
-  openAbsenceModal
+  openAbsenceModal,
+  events
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -182,37 +191,44 @@ export default React.memo(function DayView({
   return (
     <ModalAccessibilityWrapper>
       <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
-        <HighlightBorder highlight={date.isEqual(LocalDate.todayInSystemTz())}>
+        <CalendarModalBackground>
           <BottomFooterContainer>
-            <Content>
-              <DayPicker>
-                <IconButton
-                  icon={faChevronLeft}
-                  onClick={navigateToPrevDate}
-                  disabled={!previousDate}
-                  aria-label={i18n.calendar.previousDay}
+            <div>
+              <DayHeader highlight={date.isEqual(LocalDate.todayInSystemTz())}>
+                <ModalCloseButton
+                  close={navigate(close)}
+                  closeLabel={i18n.common.closeModal}
+                  data-qa="day-view-close-button"
                 />
-                <ModalHeader headingComponent={DayOfWeek}>
-                  {date.format('EEEEEE d.M.yyyy', lang)}
-                </ModalHeader>
-                <IconButton
-                  icon={faChevronRight}
-                  onClick={navigateToNextDate}
-                  disabled={!nextDate}
-                  aria-label={i18n.calendar.nextDay}
-                />
-              </DayPicker>
-              <Gap size="m" />
+                <CalendarModalSection>
+                  <DayPicker>
+                    <IconButton
+                      icon={faChevronLeft}
+                      onClick={navigateToPrevDate}
+                      disabled={!previousDate}
+                      aria-label={i18n.calendar.previousDay}
+                    />
+                    <ModalHeader headingComponent={DayOfWeek}>
+                      {date.format('EEEEEE d.M.yyyy', lang)}
+                    </ModalHeader>
+                    <IconButton
+                      icon={faChevronRight}
+                      onClick={navigateToNextDate}
+                      disabled={!nextDate}
+                      aria-label={i18n.calendar.nextDay}
+                    />
+                  </DayPicker>
+                </CalendarModalSection>
+              </DayHeader>
+
+              <Gap size="m" sizeOnMobile="s" />
+
               {childrenWithReservations.length === 0 ? (
-                <span data-qa="no-active-placements-msg">
+                <CalendarModalSection data-qa="no-active-placements-msg">
                   {i18n.calendar.noActivePlacements}
-                </span>
+                </CalendarModalSection>
               ) : (
                 <>
-                  <ReservationTitle>
-                    <H2 noMargin>{i18n.calendar.reservationsAndRealized}</H2>
-                  </ReservationTitle>
-                  <Gap size="s" />
                   {zip(childrenWithReservations, editorState).map(
                     ([childWithReservation, childState], childIndex) => {
                       if (!childWithReservation || !childState) return null
@@ -234,86 +250,185 @@ export default React.memo(function DayView({
                           attendances
                         )
 
+                      const childEvents = events
+                        .map((event) => ({
+                          ...event,
+                          currentAttending: event.attendingChildren?.[
+                            child.id
+                          ]?.find(({ periods }) =>
+                            periods.some((period) => period.includes(date))
+                          )
+                        }))
+                        .filter(
+                          (
+                            event
+                          ): event is CitizenCalendarEvent & {
+                            currentAttending: AttendingChild
+                          } => !!event.currentAttending
+                        )
+
                       return (
-                        <div
-                          key={child.id}
-                          data-qa={`reservations-of-${child.id}`}
-                        >
-                          {childIndex !== 0 ? <Separator /> : null}
-                          <FixedSpaceRow>
-                            <FixedSpaceColumn>
-                              <RoundChildImage
-                                imageId={child.imageId}
-                                initialLetter={
-                                  (child.preferredName ||
-                                    child.firstName ||
-                                    '?')[0]
-                                }
-                                colorIndex={childIndex}
-                                size={48}
-                              />
-                            </FixedSpaceColumn>
-                            <FixedSpaceColumn
-                              spacing="zero"
-                              justifyContent="center"
-                            >
-                              <ChildNameHeading noMargin data-qa="child-name">
-                                {formatPreferredName(child)}
-                              </ChildNameHeading>
-                            </FixedSpaceColumn>
-                          </FixedSpaceRow>
-                          <Gap size="s" />
-                          <Grid>
-                            <LabelLike>{i18n.calendar.reservation}</LabelLike>
-                            {editing &&
-                            (reservationEditable || reservations.length) ? (
-                              <EditReservation
-                                childId={child.id}
-                                canAddSecondReservation={
-                                  !reservations[1] && child.inShiftCareUnit
-                                }
-                                childState={childState}
-                                editorStateSetter={editorStateSetter}
-                                editorAbsenceSetter={editorAbsenceSetter}
-                                addSecondReservation={addSecondReservation}
-                                removeSecondReservation={
-                                  removeSecondReservation
-                                }
-                              />
-                            ) : absence ? (
-                              <Absence
-                                absence={absence}
-                                markedByEmployee={markedByEmployee}
-                              />
-                            ) : reservations.length === 0 && dayOff ? (
-                              <DayOff />
-                            ) : (
-                              <Reservations reservations={reservations} />
-                            )}
-                            <LabelLike>{i18n.calendar.realized}</LabelLike>
-                            <span>
-                              {attendances.length > 0
-                                ? attendances
-                                    .map(
-                                      ({ startTime, endTime }) =>
-                                        `${startTime} – ${endTime ?? ''}`
-                                    )
-                                    .join(', ')
-                                : '–'}
-                            </span>
+                        <React.Fragment key={child.id}>
+                          {childIndex !== 0 ? (
+                            <Gap size="zero" sizeOnMobile="s" />
+                          ) : null}
+                          <CalendarModalSection data-qa={`child-${child.id}`}>
+                            {childIndex !== 0 ? (
+                              <HorizontalLine dashed slim hiddenOnMobile />
+                            ) : null}
+                            <FixedSpaceRow>
+                              <FixedSpaceColumn>
+                                <RoundChildImage
+                                  imageId={child.imageId}
+                                  initialLetter={
+                                    (child.preferredName ||
+                                      child.firstName ||
+                                      '?')[0]
+                                  }
+                                  colorIndex={childIndex}
+                                  size={48}
+                                />
+                              </FixedSpaceColumn>
+                              <FixedSpaceColumn
+                                spacing="zero"
+                                justifyContent="center"
+                              >
+                                <H2 noMargin data-qa="child-name">
+                                  {`${formatPreferredName(child)} ${
+                                    child.lastName
+                                  }`}
+                                </H2>
+                              </FixedSpaceColumn>
+                            </FixedSpaceRow>
+
+                            <Gap size="s" />
+
+                            <ColoredH3 noMargin>
+                              {i18n.calendar.reservationsAndRealized}
+                            </ColoredH3>
+
+                            <Gap size="s" />
+
+                            <ReservationTable>
+                              <thead>
+                                <tr>
+                                  <th>
+                                    <LabelLike>
+                                      {i18n.calendar.reservation}
+                                    </LabelLike>
+                                  </th>
+                                  <th>
+                                    <LabelLike>
+                                      {i18n.calendar.realized}
+                                    </LabelLike>
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    {editing &&
+                                    (reservationEditable ||
+                                      reservations.length) ? (
+                                      <EditReservation
+                                        childId={child.id}
+                                        canAddSecondReservation={
+                                          !reservations[1] &&
+                                          child.inShiftCareUnit
+                                        }
+                                        childState={childState}
+                                        editorStateSetter={editorStateSetter}
+                                        editorAbsenceSetter={
+                                          editorAbsenceSetter
+                                        }
+                                        addSecondReservation={
+                                          addSecondReservation
+                                        }
+                                        removeSecondReservation={
+                                          removeSecondReservation
+                                        }
+                                      />
+                                    ) : absence ? (
+                                      <Absence
+                                        absence={absence}
+                                        markedByEmployee={markedByEmployee}
+                                      />
+                                    ) : reservations.length === 0 && dayOff ? (
+                                      <DayOff />
+                                    ) : (
+                                      <Reservations
+                                        reservations={reservations}
+                                      />
+                                    )}
+                                  </td>
+                                  <td>
+                                    {attendances.length > 0
+                                      ? attendances.map(
+                                          ({ startTime, endTime }) => (
+                                            <div
+                                              key={JSON.stringify([
+                                                startTime,
+                                                endTime
+                                              ])}
+                                            >
+                                              {startTime} – {endTime ?? ''}
+                                            </div>
+                                          )
+                                        )
+                                      : '–'}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </ReservationTable>
                             {showAttendanceWarning && (
-                              <Warning>
-                                {i18n.calendar.attendanceWarning}
-                                <StatusIcon status="warning" />
-                              </Warning>
+                              <AlertBox
+                                message={i18n.calendar.attendanceWarning}
+                                wide
+                              />
                             )}
-                          </Grid>
-                        </div>
+
+                            {childEvents.length > 0 && (
+                              <>
+                                <MobileOnly>
+                                  <HorizontalLine dashed slim />
+                                </MobileOnly>
+                                <Gap size="m" sizeOnMobile="zero" />
+                                <ColoredH3 noMargin>
+                                  {i18n.calendar.events}
+                                </ColoredH3>
+                                <Gap size="s" />
+                                <FixedSpaceColumn spacing="s">
+                                  {childEvents.map((event) => (
+                                    <FixedSpaceColumn
+                                      spacing="xxs"
+                                      key={event.id}
+                                      data-qa={`event-${event.id}`}
+                                    >
+                                      <LabelLike data-qa="event-title">
+                                        {event.title} /{' '}
+                                        {event.currentAttending.type === 'unit'
+                                          ? event.currentAttending.unitName
+                                          : event.currentAttending.type ===
+                                            'group'
+                                          ? event.currentAttending.groupName
+                                          : child.firstName}
+                                      </LabelLike>
+                                      <P noMargin data-qa="event-description">
+                                        {event.description}
+                                      </P>
+                                    </FixedSpaceColumn>
+                                  ))}
+                                </FixedSpaceColumn>
+                              </>
+                            )}
+                          </CalendarModalSection>
+                        </React.Fragment>
                       )
                     }
                   )}
                 </>
               )}
+
               {confirmationModal ? (
                 <InfoModal
                   title={i18n.common.saveConfirmation}
@@ -328,7 +443,10 @@ export default React.memo(function DayView({
                   }}
                 />
               ) : null}
-            </Content>
+
+              <Gap size="L" sizeOnMobile="s" />
+            </div>
+
             {childrenWithReservations.length > 0 && (
               <ButtonFooter>
                 {editable ? (
@@ -369,20 +487,11 @@ export default React.memo(function DayView({
               </ButtonFooter>
             )}
           </BottomFooterContainer>
-        </HighlightBorder>
-        <ModalCloseButton
-          close={navigate(close)}
-          closeLabel={i18n.common.closeModal}
-          data-qa="day-view-close-button"
-        />
+        </CalendarModalBackground>
       </PlainModal>
     </ModalAccessibilityWrapper>
   )
 })
-
-const ChildNameHeading = styled(H3)`
-  font-weight: ${fontWeights.medium};
-`
 
 type EditorState = {
   child: ReservationChild
@@ -796,9 +905,18 @@ export function addTimeRangeValidationErrors(
   }
 }
 
-const HighlightBorder = styled.div<{ highlight: boolean }>`
-  height: 100%;
-  position: relative;
+const DayHeader = styled.div<{ highlight: boolean }>`
+  position: sticky;
+  border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+  text-transform: capitalize;
+  padding: ${defaultMargins.m} 0;
+  top: 0;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+
+  @media (max-width: ${tabletMin}) {
+    padding: 0;
+    border-bottom: none;
+  }
 
   &::after {
     content: '';
@@ -812,12 +930,9 @@ const HighlightBorder = styled.div<{ highlight: boolean }>`
   }
 `
 
-const Content = styled.div`
-  background: ${(p) => p.theme.colors.grayscale.g0};
-  padding: ${defaultMargins.L};
-
+const ColoredH3 = styled(H3)`
   @media (max-width: ${tabletMin}) {
-    padding: ${defaultMargins.s};
+    color: ${(p) => p.theme.colors.main.m1};
   }
 `
 
@@ -833,38 +948,12 @@ const DayOfWeek = styled(H1)`
   text-align: center;
 `
 
-const ReservationTitle = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: center;
-`
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: max-content auto;
-  row-gap: ${defaultMargins.xs};
-  column-gap: ${defaultMargins.s};
-  max-width: 100%;
-`
-
 const Colspan2 = styled.div`
   grid-column: 1 / span 2;
 `
 
 const NoReservation = styled.span`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
-`
-
-const Separator = styled.div`
-  border-top: 2px dotted ${(p) => p.theme.colors.grayscale.g15};
-  margin: ${defaultMargins.s} 0;
-`
-
-const Warning = styled.div`
-  grid-column: 1 / 3;
-  color: ${({ theme }) => theme.colors.accents.a2orangeDark};
 `
 
 const ButtonFooter = styled.div`
@@ -894,5 +983,19 @@ const ButtonFooter = styled.div`
 const EmptyButtonFooterElement = styled.div`
   @media (max-width: ${tabletMin}) {
     display: none;
+  }
+`
+
+const ReservationTable = styled.table`
+  border-collapse: collapse;
+  width: 100%;
+
+  * {
+    text-align: left;
+  }
+
+  th,
+  td {
+    width: 50%;
   }
 `

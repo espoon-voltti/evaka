@@ -269,9 +269,12 @@ const en: Translations = {
     reservation: 'Registered attendance',
     realized: 'Realized',
     reservationsAndRealized: 'Period of attendance',
+    events: 'Events of the day',
     noActivePlacements:
       'Your children are not in early childhood education or pre-school on this day',
-    attendanceWarning: 'Attendance exceeds the registered time',
+    attendanceWarning:
+      'The realized attendance time exceeds the reported attendance time',
+    eventsCount: 'events',
     reservationModal: {
       title: 'Register attendance',
       selectChildren: 'Children whose attendance you wish to register',

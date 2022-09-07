@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -719,6 +720,25 @@ WHERE employee_id = :userId AND EXISTS(
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
 AND child_id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("today", now.toLocalDate())
+                .bind("userId", user.id)
+                .bind("ids", ids)
+                .mapTo()
+        }
+    )
+
+    fun inUnitOfCalendarEvent() = DatabaseActionRule(
+        this,
+        Query<CalendarEventId> { tx, user, now, ids ->
+            tx.createQuery(
+                """
+SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features
+FROM calendar_event_attendee cea
+JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE cea.calendar_event_id = ANY(:ids)
                 """.trimIndent()
             )
                 .bind("today", now.toLocalDate())
