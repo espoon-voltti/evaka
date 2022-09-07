@@ -11,8 +11,8 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,16 +24,21 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     @GetMapping("/reports/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock,
     ): List<AssistanceNeedDecisionsReportRow> {
         Audit.AssistanceNeedDecisionsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
-        val authorizedUnits = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getDecisionRows(user.evakaUserId, authorizedUnits)
+                val filter = accessControl.requireAuthorizationFilter(
+                    it,
+                    user,
+                    clock,
+                    Action.Unit.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                )
+                it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
             }
         }
     }
