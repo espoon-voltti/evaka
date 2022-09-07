@@ -9,12 +9,15 @@ import styled, { css } from 'styled-components'
 
 import {
   CheckboxQuestion,
+  DateQuestion,
   Followup,
   FollowupEntry,
+  MultiFieldListQuestion,
   MultiFieldQuestion,
   MultiSelectQuestion,
   RadioGroupQuestion,
-  TextQuestion
+  TextQuestion,
+  VasuQuestion
 } from 'lib-common/api-types/vasu'
 import {
   VasuContent,
@@ -62,6 +65,15 @@ interface Props {
   translations: VasuTranslations
   vasu: VasuMetadata
 }
+
+const findQuestion = <T extends VasuQuestion>(
+  content: Partial<VasuContent>,
+  sectionName: string,
+  questionName: string
+) =>
+  content.sections
+    ?.find((s) => s.name === sectionName)
+    ?.questions.find((q) => q.name === questionName) as T
 
 export function DynamicSections({
   sections,
@@ -125,8 +137,11 @@ export function DynamicSections({
                           ? (value: string) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[questionIndex] as TextQuestion
+                                const question1 = findQuestion<TextQuestion>(
+                                  clone,
+                                  section.name,
+                                  question.name
+                                )
                                 question1.value = value
                                 return clone
                               })
@@ -143,8 +158,12 @@ export function DynamicSections({
                           ? (checked: boolean) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[questionIndex] as CheckboxQuestion
+                                const question1 =
+                                  findQuestion<CheckboxQuestion>(
+                                    clone,
+                                    section.name,
+                                    question.name
+                                  )
                                 question1.value = checked
                                 return clone
                               })
@@ -169,10 +188,12 @@ export function DynamicSections({
                           ? (selectedOption: RadioGroupSelectedValue | null) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[
-                                  questionIndex
-                                ] as RadioGroupQuestion
+                                const question1 =
+                                  findQuestion<RadioGroupQuestion>(
+                                    clone,
+                                    section.name,
+                                    question.name
+                                  )
                                 if (selectedOption !== null) {
                                   question1.value = selectedOption.key
                                   question1.dateRange = selectedOption.range
@@ -191,10 +212,10 @@ export function DynamicSections({
                       question={question}
                       questionNumber={questionNumber}
                       selectedValues={
-                        (
-                          sections[sectionIndex].questions[
-                            questionIndex
-                          ] as MultiSelectQuestion
+                        findQuestion<MultiSelectQuestion>(
+                          { sections },
+                          section.name,
+                          question.name
                         ).value
                       }
                       onChange={
@@ -202,10 +223,12 @@ export function DynamicSections({
                           ? (option, value, date) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[
-                                  questionIndex
-                                ] as MultiSelectQuestion
+                                const question1 =
+                                  findQuestion<MultiSelectQuestion>(
+                                    clone,
+                                    section.name,
+                                    question.name
+                                  )
                                 if (typeof value == 'boolean') {
                                   if (
                                     value &&
@@ -255,10 +278,12 @@ export function DynamicSections({
                           ? (index, value) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[
-                                  questionIndex
-                                ] as MultiFieldQuestion
+                                const question1 =
+                                  findQuestion<MultiFieldQuestion>(
+                                    clone,
+                                    section.name,
+                                    question.name
+                                  )
                                 question1.value[index] = value
                                 return clone
                               })
@@ -275,12 +300,13 @@ export function DynamicSections({
                           ? (value) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                clone.sections[sectionIndex].questions[
-                                  questionIndex
-                                ] = {
-                                  ...question,
-                                  value
-                                }
+                                const question1 =
+                                  findQuestion<MultiFieldListQuestion>(
+                                    clone,
+                                    section.name,
+                                    question.name
+                                  )
+                                question1.value = value
                                 return clone
                               })
                           : undefined
@@ -296,12 +322,12 @@ export function DynamicSections({
                           ? (value) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                clone.sections[sectionIndex].questions[
-                                  questionIndex
-                                ] = {
-                                  ...question,
-                                  value
-                                }
+                                const question1 = findQuestion<DateQuestion>(
+                                  clone,
+                                  section.name,
+                                  question.name
+                                )
+                                question1.value = value
                                 return clone
                               })
                           : undefined
@@ -317,8 +343,11 @@ export function DynamicSections({
                           ? (value: FollowupEntry[]) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
-                                const question1 = clone.sections[sectionIndex]
-                                  .questions[questionIndex] as Followup
+                                const question1 = findQuestion<Followup>(
+                                  clone,
+                                  section.name,
+                                  question.name
+                                )
                                 question1.value = value
                                 return clone
                               })
