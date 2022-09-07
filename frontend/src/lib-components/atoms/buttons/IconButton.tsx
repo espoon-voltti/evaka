@@ -4,10 +4,7 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useButton } from '@react-aria/button'
-import { AriaButtonProps } from '@react-types/button'
 import classNames from 'classnames'
-import omit from 'lodash/omit'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -132,40 +129,25 @@ const StyledButton = styled.button<ButtonProps>`
   }
 `
 
-export type IconButtonProps = AriaButtonProps<'button'> & {
-  children?: React.ReactNode
+export type IconButtonProps = {
+  icon: IconDefinition
+  'aria-label': string
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  disabled?: boolean
 } & ButtonProps &
-  React.ButtonHTMLAttributes<HTMLButtonElement> &
-  BaseProps & {
-    icon: IconDefinition
-  } & (
-    | {
-        'aria-label': string
-      }
-    | {
-        'aria-hidden': string | true
-      }
-  )
+  BaseProps
 
 export default React.memo(function IconButton({
   disabled,
   icon,
-  color,
-  isDisabled: _,
   ...props
-}: IconButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const ref = React.useRef<HTMLButtonElement>(null)
-  const { buttonProps } = useButton(props, ref)
-
+}: IconButtonProps) {
   return (
     <StyledButton
       type="button"
       disabled={disabled}
-      {...omit(props, ['onPress'])}
-      {...buttonProps}
       className={classNames(props.className, { disabled })}
-      ref={ref}
-      color={color}
+      {...props}
     >
       <div className="icon-wrapper">
         <FontAwesomeIcon icon={icon} />
