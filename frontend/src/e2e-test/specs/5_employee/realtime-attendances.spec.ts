@@ -269,19 +269,22 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      calendarPage = await openAttendancesPage()
-      await calendarPage.selectGroup('staff')
-      await calendarPage.assertNoTimeInputsVisible()
+      attendancesSection = await openAttendancesSection()
+      await attendancesSection.selectGroup('staff')
+      await attendancesSection.assertNoTimeInputsVisible()
     })
     test('Plan is shown on week view and day modal', async () => {
-      await calendarPage.assertPlannedAttendance(
+      await attendancesSection.assertPlannedAttendance(
         plannedStartTime.toLocalDate(),
         1,
         '07:00',
         '15:00'
       )
 
-      const modal = await calendarPage.openDetails(groupStaff.id, mockedToday)
+      const modal = await attendancesSection.openDetails(
+        groupStaff.id,
+        mockedToday
+      )
       await waitUntilEqual(() => modal.summary(), {
         plan: '07:00 – 15:00',
         realized: '07:00 –',

@@ -1165,9 +1165,10 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 (departureDate &&
                   new DateRange(arrivalDate, departureDate).includes(date)) ||
                 arrivalDate.isEqual(date)
-            )
+            ),
+            plannedAttendancesForToday: plannedAttendancesForDate(date)
           }))
-          .map(({ date, attendances }) => (
+          .map(({ date, attendances, plannedAttendancesForToday }) => (
             <DayTd
               key={date.formatIso()}
               className={classNames({ 'is-today': date.isToday() })}
@@ -1177,35 +1178,31 @@ const AttendanceRow = React.memo(function AttendanceRow({
             >
               <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
                 <PlannedAttendanceTimes data-qa="planned-attendance-day">
-                  {plannedAttendancesForDate(date).length > 0 ? (
-                    plannedAttendancesForDate(date).map(
-                      (plannedAttendance, i) => (
-                        <AttendanceCell key={i}>
-                          <>
-                            <AttendanceTime data-qa="planned-attendance-start">
-                              {renderTime(
-                                plannedAttendance.start
-                                  .toLocalTime()
-                                  .format('HH:mm'),
-                                plannedAttendance.start
-                                  .toLocalDate()
-                                  .isEqual(date)
-                              )}
-                            </AttendanceTime>
-                            <AttendanceTime data-qa="planned-attendance-end">
-                              {renderTime(
-                                plannedAttendance.end
-                                  .toLocalTime()
-                                  .format('HH:mm'),
-                                plannedAttendance.end
-                                  .toLocalDate()
-                                  .isEqual(date)
-                              )}
-                            </AttendanceTime>
-                          </>
-                        </AttendanceCell>
-                      )
-                    )
+                  {plannedAttendancesForToday.length > 0 ? (
+                    plannedAttendancesForToday.map((plannedAttendance, i) => (
+                      <AttendanceCell key={i}>
+                        <>
+                          <AttendanceTime data-qa="planned-attendance-start">
+                            {renderTime(
+                              plannedAttendance.start
+                                .toLocalTime()
+                                .format('HH:mm'),
+                              plannedAttendance.start
+                                .toLocalDate()
+                                .isEqual(date)
+                            )}
+                          </AttendanceTime>
+                          <AttendanceTime data-qa="planned-attendance-end">
+                            {renderTime(
+                              plannedAttendance.end
+                                .toLocalTime()
+                                .format('HH:mm'),
+                              plannedAttendance.end.toLocalDate().isEqual(date)
+                            )}
+                          </AttendanceTime>
+                        </>
+                      </AttendanceCell>
+                    ))
                   ) : (
                     <AttendanceCell>
                       <>

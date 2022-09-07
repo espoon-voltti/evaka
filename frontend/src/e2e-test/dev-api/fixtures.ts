@@ -101,8 +101,7 @@ import {
   insertDailyServiceTime,
   insertDailyServiceTimeNotification,
   insertChildConsent,
-  insertStaffRealtimeAttendance,
-  insertStaffAttendancePlan
+  insertStaffAttendancePlan,
   insertCalendarEvent,
   insertCalendarEventAttendee,
   insertStaffRealtimeAttendance

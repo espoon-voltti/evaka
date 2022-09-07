@@ -606,3 +606,27 @@ export interface DevRealtimeStaffAttendance {
   occupancyCoefficient: number
   type: StaffAttendanceType
 }
+
+export interface DevCalendarEvent {
+  id: UUID
+  title: string
+  description: string
+  period: FiniteDateRange
+}
+
+export interface DevCalendarEventAttendee {
+  id: UUID
+  calendarEventId: UUID
+  unitId: UUID
+  groupId: UUID | null
+  childId: UUID | null
+}
+
+export interface DevStaffAttendancePlan {
+  id: UUID
+  employeeId: UUID
+  type: StaffAttendanceType
+  startTime: HelsinkiDateTime
+  endTime: HelsinkiDateTime
+  description: string | null
+}
