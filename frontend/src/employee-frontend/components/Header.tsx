@@ -177,7 +177,7 @@ const UserPopup = styled.div`
   width: 320px;
   right: 0;
   top: ${headerHeight};
-  z-index: 5;
+  z-index: 50;
   padding: 24px 16px;
   background: ${colors.grayscale.g0};
   box-shadow: 0 4px 4px rgba(15, 15, 15, 0.25);
