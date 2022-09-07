@@ -9,8 +9,10 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,15 +24,21 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     @GetMapping("/reports/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock,
     ): List<AssistanceNeedDecisionsReportRow> {
         Audit.AssistanceNeedDecisionsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
 
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getDecisionRows(user.evakaUserId)
+                val filter = accessControl.requireAuthorizationFilter(
+                    it,
+                    user,
+                    clock,
+                    Action.Unit.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                )
+                it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
             }
         }
     }
@@ -51,7 +59,10 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     }
 }
 
-private fun Database.Read.getDecisionRows(userId: EvakaUserId): List<AssistanceNeedDecisionsReportRow> {
+private fun Database.Read.getDecisionRows(
+    userId: EvakaUserId,
+    authorizedUnits: AclAuthorization,
+): List<AssistanceNeedDecisionsReportRow> {
     // language=sql
     val sql =
         """
@@ -63,9 +74,11 @@ private fun Database.Read.getDecisionRows(userId: EvakaUserId): List<AssistanceN
         JOIN daycare ON daycare.id = ad.selected_unit
         JOIN care_area ON care_area.id = daycare.care_area_id
         WHERE sent_for_decision IS NOT NULL
+          AND (:authorizedUnits::uuid[] IS NULL OR ad.selected_unit = ANY(:authorizedUnits))
         """.trimIndent()
     return createQuery(sql)
         .bind("employeeId", userId)
+        .bind("authorizedUnits", authorizedUnits.ids)
         .mapTo<AssistanceNeedDecisionsReportRow>()
         .toList()
 }
