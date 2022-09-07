@@ -104,12 +104,10 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
-    @Suppress("DEPRECATION")
     fun testGlobalRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val aclAuth = AclAuthorization.All
 
-        assertEquals(aclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
@@ -118,33 +116,28 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
-    @Suppress("DEPRECATION")
     fun testAclRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val negativeAclAuth = AclAuthorization.Subset(emptySet())
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
 
-        assertEquals(negativeAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
 
         db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
-        assertEquals(positiveAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
     }
 
     @Test
-    @Suppress("DEPRECATION")
     fun testMobileAclRoleAuthorization() {
         val user = AuthenticatedUser.MobileDevice(mobileId)
 
         val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
 
-        assertEquals(expectedAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(expectedAclAuth, acl.getAuthorizedUnits(user))
     }
 }

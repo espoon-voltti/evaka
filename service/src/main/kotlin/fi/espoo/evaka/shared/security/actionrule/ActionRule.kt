@@ -17,7 +17,7 @@ import org.jdbi.v3.core.mapper.Nested
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional information
  */
 interface StaticActionRule : ScopedActionRule<Any>, UnscopedActionRule {
-    fun isPermitted(user: AuthenticatedUser): Boolean
+    fun evaluate(user: AuthenticatedUser): AccessControlDecision
 }
 
 /**
@@ -30,13 +30,6 @@ sealed interface UnscopedActionRule
  * used to evaluate permissions by itself or as part of a database query.
  */
 sealed interface ScopedActionRule<T>
-
-/**
- * A rule that grants permission based on an `AuthenticatedUser` and a "target" T which is some data.
- */
-interface TargetActionRule<T> : ScopedActionRule<T> {
-    fun evaluate(user: AuthenticatedUser, target: T): AccessControlDecision
-}
 
 /**
  * A rule that grants permission based on an `AuthenticatedUser` and some data that can be fetched using a "target" T.
@@ -61,7 +54,7 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  *
  * `(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>, params: P): Map<T, AccessControlDecision>`
  *
- * Instead of passing just one target, we pass a set, and the function returns a map so we can associate each target
+ * Instead of passing just one target, we pass a set and the function returns a map, so we can associate each target
  * with a separate result. If we do both the query/pure split *and* support multiple targets, we get this function:
  *
  * `(tx: Database.Read, user: AuthenticatedUser, targets: Set<T>): Map<T, (params: P) -> AccessControlDecision>`
@@ -71,28 +64,38 @@ interface TargetActionRule<T> : ScopedActionRule<T> {
  * one expensive database query. This is much better than the original naive version which would do N*M expensive
  * database queries in this scenario.
  */
-data class DatabaseActionRule<T, P : Any>(val params: P, val query: Query<T, P>) : ScopedActionRule<T> {
-    interface Query<T, P> {
-        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime, targets: Set<T>): Map<T, Deferred<P>>
-        override fun hashCode(): Int
-        override fun equals(other: Any?): Boolean
-    }
+
+object DatabaseActionRule {
+    data class QueryContext(val tx: Database.Read, val user: AuthenticatedUser, val now: HelsinkiDateTime)
     interface Deferred<P> {
         fun evaluate(params: P): AccessControlDecision
     }
-}
-/**
- * Like DatabaseActionRule, but is not tied to any targets.
- */
-data class UnscopedDatabaseActionRule<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
-    interface Query<P> {
-        fun execute(tx: Database.Read, user: AuthenticatedUser, now: HelsinkiDateTime): DatabaseActionRule.Deferred<P>
-        override fun hashCode(): Int
-        override fun equals(other: Any?): Boolean
+
+    interface Scoped<T, P : Any> : ScopedActionRule<T> {
+        val params: P
+        val query: Query<T, P>
+
+        interface Query<T, P> {
+            fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
+            fun executeWithParams(ctx: QueryContext, params: P): AccessControlFilter<T>?
+            override fun hashCode(): Int
+            override fun equals(other: Any?): Boolean
+        }
+        data class Simple<T, P : Any>(override val params: P, override val query: Query<T, P>) : Scoped<T, P>
+    }
+
+    data class Unscoped<P : Any>(val params: P, val query: Query<P>) : ScopedActionRule<Any>, UnscopedActionRule {
+        interface Query<P> {
+            fun execute(ctx: QueryContext): Deferred<P>
+            override fun hashCode(): Int
+            override fun equals(other: Any?): Boolean
+        }
     }
 }
-
-interface ActionRuleParams<This>
-
 internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
+
+sealed interface AccessControlFilter<in T> {
+    object PermitAll : AccessControlFilter<Any>
+    data class Some<T>(val filter: Set<T>) : AccessControlFilter<T>
+}

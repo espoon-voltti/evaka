@@ -6,18 +6,21 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
-import fi.espoo.evaka.shared.security.actionrule.TargetActionRule
-import fi.espoo.evaka.shared.security.actionrule.UnscopedDatabaseActionRule
+import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import org.jdbi.v3.core.Jdbi
 import java.util.EnumSet
 
@@ -27,7 +30,6 @@ class AccessControl(
     private val jdbi: Jdbi
 ) {
     fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
-        @Suppress("DEPRECATION")
         EmployeeFeatures(
             applications = user.hasOneOfRoles(
                 UserRole.ADMIN,
@@ -91,75 +93,44 @@ class AccessControl(
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action).assert()
+        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.assert()
     }
     fun hasPermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action).isPermitted()
+        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.isPermitted()
     }
-    fun checkPermissionFor(dbc: Database.Connection, user: AuthenticatedUser, action: Action.UnscopedAction): AccessControlDecision {
+    fun checkPermissionFor(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction): AccessControlDecision {
         if (user.isAdmin) {
             return AccessControlDecision.PermittedToAdmin
         }
-        val now = HelsinkiDateTime.now()
-        val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
-        for (rule in rules) {
-            when (rule) {
-                is StaticActionRule -> if (rule.isPermitted(user)) {
-                    return AccessControlDecision.Permitted(rule)
-                }
-                is UnscopedDatabaseActionRule<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = dbc.read { tx -> query.execute(tx, user, now) }
-                    val decision = deferred.evaluate(rule.params)
-                    if (decision.isPermitted()) {
-                        return decision
-                    }
-                }
-            }
+
+        val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
+        fun evaluate(rule: UnscopedActionRule): AccessControlDecision = when (rule) {
+            is StaticActionRule -> rule.evaluate(user)
+            is DatabaseActionRule.Unscoped<*> -> queryCache.evaluate(rule)
         }
-        return AccessControlDecision.None
+
+        val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
+        val decision = rules.map { evaluate(it) }.find { it != AccessControlDecision.None }
+        return decision ?: AccessControlDecision.None
     }
 
-    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser): Set<Action.Global> {
+    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock): Set<Action.Global> {
         val allActions = EnumSet.allOf(Action.Global::class.java)
         if (user.isAdmin) {
             return EnumSet.allOf(Action.Global::class.java)
         }
-        val now = HelsinkiDateTime.now()
-        val undecidedActions = EnumSet.allOf(Action.Global::class.java)
+
         val permittedActions = EnumSet.noneOf(Action.Global::class.java)
-        for (action in allActions) {
-            val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
-            if (staticRules.any { it.isPermitted(user) }) {
-                permittedActions += action
-                undecidedActions -= action
-            }
+        val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
+        fun isPermitted(rule: UnscopedActionRule): Boolean = when (rule) {
+            is StaticActionRule -> rule.evaluate(user).isPermitted()
+            is DatabaseActionRule.Unscoped<*> -> queryCache.evaluate(rule).isPermitted()
         }
 
-        val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
-            .flatMap { action ->
-                actionRuleMapping.rulesOf(action).mapNotNull { it as? UnscopedDatabaseActionRule<*> }
-            }
-            .distinct()
-            .iterator()
-
-        while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
-            val ruleType = databaseRuleTypes.next()
-
-            @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(tx, user, now) as DatabaseActionRule.Deferred<Any?>
-
-            for (action in EnumSet.copyOf(undecidedActions)) {
-                val compatibleRules = actionRuleMapping.rulesOf(action)
-                    .mapNotNull { it as? UnscopedDatabaseActionRule<*> }
-                    .filter { it == ruleType }
-                for (rule in compatibleRules) {
-                    if (deferred.evaluate(rule.params).isPermitted()) {
-                        permittedActions += action
-                        undecidedActions -= action
-                    }
-                }
+        for (action in allActions) {
+            val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
+            if (rules.any { isPermitted(it) }) {
+                permittedActions += action
             }
         }
         return permittedActions
@@ -198,102 +169,67 @@ class AccessControl(
         if (user.isAdmin) {
             return targets.associateWith { AccessControlDecision.PermittedToAdmin }
         }
-        val now = HelsinkiDateTime.now()
-        val decisions = Decisions(targets.toSet())
+
+        val decided = mutableMapOf<T, AccessControlDecision>()
+        var undecided = targets.toSet()
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, HelsinkiDateTime.now())
+        val unscopedEvaluator = UnscopedEvaluator(queryCtx)
+        val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
+        fun decideAll(decision: AccessControlDecision) {
+            if (decision != AccessControlDecision.None) {
+                decided += undecided.associateWith { decision }
+                undecided = emptySet()
+            }
+        }
+
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
-        while (rules.hasNext() && decisions.undecided.isNotEmpty()) {
+        while (rules.hasNext() && undecided.isNotEmpty()) {
             when (val rule = rules.next()) {
-                is StaticActionRule -> if (rule.isPermitted(user)) {
-                    decisions.decideAll(AccessControlDecision.Permitted(rule))
-                }
-                is TargetActionRule<in T> -> {
-                    for (target in targets) {
-                        decisions.decide(target, rule.evaluate(user, target))
+                is StaticActionRule -> decideAll(rule.evaluate(user))
+                is DatabaseActionRule.Unscoped<*> -> decideAll(unscopedEvaluator.evaluate(rule))
+                is DatabaseActionRule.Scoped<in T, *> -> scopedEvaluator.evaluateWithTargets(rule, undecided).forEach { (target, decision) ->
+                    if (decision != AccessControlDecision.None) {
+                        decided[target] = decision
+                        undecided = undecided - target
                     }
-                }
-                is DatabaseActionRule<in T, *> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as DatabaseActionRule.Query<T, Any?>
-                    query.execute(tx, user, now, decisions.undecided)
-                        .forEach { (target, deferred) -> decisions.decide(target, deferred.evaluate(rule.params)) }
-                }
-                is UnscopedDatabaseActionRule<*> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val query = rule.query as UnscopedDatabaseActionRule.Query<Any?>
-                    val deferred = query.execute(tx, user, now)
-                    decisions.decideAll(deferred.evaluate(rule.params))
                 }
             }
         }
-        return decisions.finish()
+        return decided + undecided.associateWith { AccessControlDecision.None }
     }
 
-    inline fun <T, reified A> getPermittedActions(
+    fun requireAuthorizationFilter(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.Unit): AccessControlFilter<DaycareId> =
+        getAuthorizationFilter(tx, user, clock, action) ?: throw Forbidden()
+    fun getAuthorizationFilter(
         tx: Database.Read,
         user: AuthenticatedUser,
-        target: T
-    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, listOf(target)).values.first()
-    inline fun <T, reified A> getPermittedActions(
-        tx: Database.Read,
-        user: AuthenticatedUser,
-        targets: Iterable<T>
-    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, A::class.java, targets)
-
-    fun <T, A> getPermittedActions(
-        tx: Database.Read,
-        user: AuthenticatedUser,
-        actionClass: Class<A>,
-        targets: Iterable<T>
-    ): Map<T, Set<A>> where A : Action.ScopedAction<T>, A : Enum<A> {
-        val allActions: Set<A> = EnumSet.allOf(actionClass)
+        clock: EvakaClock,
+        // WARN: don't enable this for other action types. This design can have severe performance issues!
+        action: Action.Unit
+    ): AccessControlFilter<DaycareId>? {
         if (user.isAdmin) {
-            return targets.associateWith { allActions }
+            return AccessControlFilter.PermitAll
         }
-        val now = HelsinkiDateTime.now()
-        val undecidedActions = EnumSet.allOf(actionClass)
-        val permittedActions = EnumSet.noneOf(actionClass)
-        for (action in allActions) {
-            val staticRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? StaticActionRule }
-            if (staticRules.any { it.isPermitted(user) }) {
-                permittedActions += action
-                undecidedActions -= action
-            }
-        }
-
-        val result = targets.associateWith { EnumSet.copyOf(permittedActions) }
-
-        for (action in allActions) {
-            val targetRules = actionRuleMapping.rulesOf(action).mapNotNull { it as? TargetActionRule<in T> }
-            for (rule in targetRules) {
-                for (target in targets) {
-                    if (rule.evaluate(user, target).isPermitted()) {
-                        result[target]?.add(action)
-                    }
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
+        val unscopedEvaluator = UnscopedEvaluator(queryCtx)
+        val scopedEvaluator = ScopedEvaluator<DaycareId>(queryCtx)
+        var result: AccessControlFilter.Some<DaycareId>? = null
+        val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
+        for (rule in rules) {
+            when (rule) {
+                is StaticActionRule -> if (rule.evaluate(user).isPermitted()) {
+                    return AccessControlFilter.PermitAll
                 }
-            }
-        }
-
-        val databaseRuleTypes = EnumSet.copyOf(undecidedActions)
-            .flatMap { action ->
-                actionRuleMapping.rulesOf(action).mapNotNull { it as? DatabaseActionRule<in T, *> }
-            }
-            .distinct()
-            .iterator()
-
-        while (undecidedActions.isNotEmpty() && databaseRuleTypes.hasNext()) {
-            val ruleType = databaseRuleTypes.next()
-            @Suppress("UNCHECKED_CAST")
-            val deferred = ruleType.query.execute(tx, user, now, targets.toSet()) as Map<T, DatabaseActionRule.Deferred<Any?>>
-
-            for (action in EnumSet.copyOf(undecidedActions)) {
-                val compatibleRules = actionRuleMapping.rulesOf(action)
-                    .mapNotNull { it as? DatabaseActionRule<in T, *> }
-                    .filter { it == ruleType }
-                for (rule in compatibleRules) {
-                    for (target in targets) {
-                        if (deferred[target]?.evaluate(rule.params)?.isPermitted() == true) {
-                            result[target]?.add(action)
-                        }
+                is DatabaseActionRule.Unscoped<*> -> when (val decision = unscopedEvaluator.evaluate(rule)) {
+                    is AccessControlDecision.Denied -> throw decision.toException()
+                    AccessControlDecision.None -> {}
+                    is AccessControlDecision.Permitted -> return AccessControlFilter.PermitAll
+                    AccessControlDecision.PermittedToAdmin -> return AccessControlFilter.PermitAll
+                }
+                is DatabaseActionRule.Scoped<in DaycareId, *> -> scopedEvaluator.evaluateWithParams(rule)?.let { filter ->
+                    when (filter) {
+                        AccessControlFilter.PermitAll -> return AccessControlFilter.PermitAll
+                        is AccessControlFilter.Some -> result = AccessControlFilter.Some(filter.filter + (result?.filter ?: emptySet()))
                     }
                 }
             }
@@ -301,26 +237,83 @@ class AccessControl(
         return result
     }
 
-    private class Decisions<T>(targets: Iterable<T>) {
-        private val result = mutableMapOf<T, AccessControlDecision>()
-        var undecided: Set<T> = targets.toSet()
-            private set
+    inline fun <T, reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        target: T
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, RealEvakaClock(), A::class.java, setOf(target)).values.first()
+    inline fun <T, reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        targets: Iterable<T>
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, RealEvakaClock(), A::class.java, targets.toSet())
 
-        fun decideAll(decision: AccessControlDecision) {
-            if (decision != AccessControlDecision.None) {
-                result += undecided.associateWith { decision }
-                undecided = emptySet()
+    fun <T, A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        actionClass: Class<A>,
+        targets: Set<T>
+    ): Map<T, Set<A>> where A : Action.ScopedAction<T>, A : Enum<A> {
+        val allActions: Set<A> = EnumSet.allOf(actionClass)
+        if (user.isAdmin) {
+            return targets.associateWith { allActions }
+        }
+
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
+        val unscopedEvaluator = UnscopedEvaluator(queryCtx)
+        val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
+        val globalPermissions = EnumSet.noneOf(actionClass)
+        val individualPermissions = targets.associateWith { EnumSet.noneOf(actionClass) }
+        for (action in allActions) {
+            val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }.iterator()
+            for (rule in rules) {
+                when (rule) {
+                    is StaticActionRule -> if (rule.evaluate(user).isPermitted()) {
+                        globalPermissions.add(action)
+                        break
+                    }
+                    is DatabaseActionRule.Unscoped<*> -> if (unscopedEvaluator.evaluate(rule).isPermitted()) {
+                        globalPermissions.add(action)
+                        break
+                    }
+                    is DatabaseActionRule.Scoped<in T, *> -> scopedEvaluator.evaluateWithTargets(rule, targets).forEach { (target, decision) ->
+                        if (decision.isPermitted()) {
+                            individualPermissions[target]?.add(action)
+                        }
+                    }
+                }
             }
         }
-        fun decide(target: T, decision: AccessControlDecision) {
-            if (decision != AccessControlDecision.None) {
-                result[target] = decision
-                undecided = undecided - target
-            }
-        }
-        fun finish(): Map<T, AccessControlDecision> = result + undecided.associateWith { AccessControlDecision.None }
+        individualPermissions.values.forEach { it.addAll(globalPermissions) }
+        return individualPermissions
     }
 
+    private class UnscopedEvaluator(private val queryCtx: DatabaseActionRule.QueryContext) {
+        private val cache = mutableMapOf<DatabaseActionRule.Unscoped.Query<out Any?>, DatabaseActionRule.Deferred<out Any>>()
+
+        fun <P : Any> evaluate(rule: DatabaseActionRule.Unscoped<P>): AccessControlDecision {
+            @Suppress("UNCHECKED_CAST")
+            val deferred = cache.getOrPut(rule.query) { rule.query.execute(queryCtx) } as DatabaseActionRule.Deferred<P>
+            return deferred.evaluate(rule.params)
+        }
+    }
+    private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {
+        private val targetCache = mutableMapOf<DatabaseActionRule.Scoped.Query<in T, Any>, Map<in T, DatabaseActionRule.Deferred<Any>>>()
+        private val paramsCache = mutableMapOf<DatabaseActionRule.Scoped.Query<in T, Any>, AccessControlFilter<T>?>()
+
+        fun evaluateWithTargets(rule: DatabaseActionRule.Scoped<in T, *>, targets: Set<T>): Sequence<Pair<T, AccessControlDecision>> {
+            @Suppress("UNCHECKED_CAST")
+            val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
+            val deferreds = targetCache.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
+            return targets.asSequence().map { target -> target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None) }
+        }
+        fun evaluateWithParams(rule: DatabaseActionRule.Scoped<in T, *>): AccessControlFilter<T>? {
+            @Suppress("UNCHECKED_CAST")
+            val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
+            return paramsCache.getOrPut(query) { query.executeWithParams(queryCtx, rule.params) }
+        }
+    }
     enum class PinError {
         PIN_LOCKED,
         WRONG_PIN

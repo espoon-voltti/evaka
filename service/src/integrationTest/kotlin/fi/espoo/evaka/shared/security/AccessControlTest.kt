@@ -40,7 +40,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
             unscopedRules = unscopedRules + (action to ((unscopedRules[action] ?: emptyList()) + rule))
         }
 
-        fun <T> add(action: Action.ScopedAction<T>, rule: ScopedActionRule<T>) {
+        fun <T> add(action: Action.ScopedAction<T>, rule: ScopedActionRule<in T>) {
             scopedRules = scopedRules + (action to ((scopedRules[action] ?: emptyList()) + rule))
         }
 

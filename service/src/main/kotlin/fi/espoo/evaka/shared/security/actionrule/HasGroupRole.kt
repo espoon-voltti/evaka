@@ -5,21 +5,23 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFragment
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
+import java.util.UUID
 
-private typealias GetGroupRoles<T> = (tx: Database.Read, user: AuthenticatedUser.Employee, now: HelsinkiDateTime, targets: Set<T>) -> Iterable<IdRoleFeatures>
+private typealias GetGroupRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<IdRoleFeatures>
 
-data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) : ActionRuleParams<HasGroupRole> {
+data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
@@ -27,20 +29,57 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles<T>) : DatabaseActionRule.Query<T, HasGroupRole> {
-        override fun execute(
-            tx: Database.Read,
-            user: AuthenticatedUser,
-            now: HelsinkiDateTime,
+    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule.Scoped<T, HasGroupRole> =
+        DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
+    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
+        override fun executeWithTargets(
+            ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(tx, user, now, targets)
+        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
+                    QueryFragment<Any>(
+                        """
+                    SELECT id, role, unit_features
+                    FROM (${subquery.sql}) fragment
+                    WHERE id = ANY(:ids)
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                ).bind("ids", targets.map { it.raw })
+                    .mapTo<IdRoleFeatures>()
+            }
                 .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
                     acc[target]?.plusAssign(result)
                     acc
                 }
                 .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
+        }
+        override fun executeWithParams(
+            ctx: DatabaseActionRule.QueryContext,
+            params: HasGroupRole
+        ): AccessControlFilter<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
+                ctx.tx.createQuery(
+                    QueryFragment<Any>(
+                        """
+                    SELECT id
+                    FROM (${subquery.sql}) fragment
+                    WHERE role = ANY(:roles)
+                    AND unit_features @> :features
+                        """.trimIndent(),
+                        subquery.bindings
+                    )
+                )
+                    .bind("roles", params.oneOf.toSet())
+                    .bind("features", params.unitFeatures.toSet())
+                    .mapTo<UUID>()
+                    .map { Id<DatabaseTable>(it) }
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
+            }
+            else -> null
         }
     }
     private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
@@ -52,42 +91,30 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             }
     }
 
-    fun inPlacementGroupOfChild() = DatabaseActionRule(
-        this,
-        Query<ChildId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementGroupOfChild() = rule<ChildId> { user, now ->
+        QueryFragment<IdRoleFeatures>(
+            """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_group_acl(:today) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND child_id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", user.id)
+    }
 
-    fun inPlacementGroupOfChildOfVasuDocument() = DatabaseActionRule(
-        this,
-        Query<VasuDocumentId> { tx, user, now, ids ->
-            tx.createQuery(
-                """
+    fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
+        QueryFragment<IdRoleFeatures>(
+            """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
 JOIN employee_child_group_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-AND curriculum_document.id = ANY(:ids)
-                """.trimIndent()
-            )
-                .bind("today", now.toLocalDate())
-                .bind("userId", user.id)
-                .bind("ids", ids)
-                .mapTo()
-        }
-    )
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", user.id)
+    }
 }

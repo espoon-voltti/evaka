@@ -27,7 +27,9 @@ sealed interface AccessControlDecision {
      *
      * This is only used to customize the Forbidden exception message/errorCode
      */
-    data class Denied(val rule: Any, val message: String? = null, val errorCode: String? = null) : AccessControlDecision
+    data class Denied(val rule: Any, val message: String? = null, val errorCode: String? = null) : AccessControlDecision {
+        fun toException(): Forbidden = Forbidden(this.message ?: "Permission denied", this.errorCode)
+    }
 
     fun isPermitted(): Boolean = when (this) {
         is PermittedToAdmin -> true
@@ -39,6 +41,6 @@ sealed interface AccessControlDecision {
         is PermittedToAdmin -> {}
         is Permitted -> {}
         is None -> throw Forbidden()
-        is Denied -> throw Forbidden(this.message ?: "Permission denied", this.errorCode)
+        is Denied -> throw this.toException()
     }
 }

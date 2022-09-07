@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.EmployeeFeatures
@@ -89,6 +90,7 @@ class SystemController(private val personService: PersonService, private val acc
     fun employeeUser(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
         @PathVariable
         id: EmployeeId
     ): EmployeeUserResponse? {
@@ -103,7 +105,7 @@ class SystemController(private val personService: PersonService, private val acc
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
                         accessibleFeatures = accessControl.getPermittedFeatures(AuthenticatedUser.Employee(employeeUser)),
-                        permittedGlobalActions = accessControl.getPermittedGlobalActions(tx, AuthenticatedUser.Employee(employeeUser))
+                        permittedGlobalActions = accessControl.getPermittedGlobalActions(tx, AuthenticatedUser.Employee(employeeUser), clock)
                     )
                 }
             }

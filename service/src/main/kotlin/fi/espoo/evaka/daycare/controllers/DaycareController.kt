@@ -30,9 +30,10 @@ import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -53,14 +54,17 @@ import java.time.LocalDate
 @RequestMapping("/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
-    private val acl: AccessControlList,
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getDaycares(db: Database, user: AuthenticatedUser): List<Daycare> {
+    fun getDaycares(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Daycare> {
         Audit.UnitSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_UNITS)
-        return db.connect { dbc -> dbc.read { it.getDaycares(acl.getAuthorizedDaycares(user)) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val filter = accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
+                tx.getDaycares(AclAuthorization.from(filter))
+            }
+        }
     }
 
     @GetMapping("/features")
