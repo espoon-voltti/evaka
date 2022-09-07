@@ -288,8 +288,8 @@ fun Database.Read.searchFeeDecisions(
     val params = listOf(
         Binding.of("page", page),
         Binding.of("pageSize", pageSize),
-        Binding.of("status", statuses.map { it.toString() }.toTypedArray()),
-        Binding.of("area", areas.toTypedArray()),
+        Binding.of("status", statuses),
+        Binding.of("area", areas),
         Binding.of("unit", unit),
         Binding.of("espooPostOffice", "ESPOO"),
         Binding.of("start_date", startDate),

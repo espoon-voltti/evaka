@@ -215,14 +215,15 @@ fun Database.Read.paginatedSearch(
         InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
     }
 
-    val params = listOf<Binding<Any>>()
-        .let { ps -> ps + (Binding.of("page", page)) }
-        .let { ps -> ps + (Binding.of("pageSize", pageSize)) }
-        .let { ps -> if (areas.isNotEmpty()) ps + (Binding.of("area", areas.toTypedArray())) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + (Binding.of("status", statuses.map { it.toString() }.toTypedArray())) else ps }
-        .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
-        .let { ps -> ps + (Binding.of("periodStart", periodStart)) }
-        .let { ps -> ps + (Binding.of("periodEnd", periodEnd)) }
+    val params = listOf(
+        Binding.of("page", page),
+        Binding.of("pageSize", pageSize),
+        Binding.of("periodStart", periodStart),
+        Binding.of("periodEnd", periodEnd),
+    )
+        .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
+        .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
+        .let { ps -> if (unit != null) ps + Binding.of("unit", unit) else ps }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "child"), searchTerms)
 
@@ -313,9 +314,9 @@ fun Database.Read.searchInvoices(
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
     sentAt: DateRange? = null
 ): List<InvoiceDetailed> {
-    val params = listOf<Binding<Any>>()
-        .let { ps -> if (areas.isNotEmpty()) ps + (Binding.of("area", areas.toTypedArray())) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + (Binding.of("status", statuses.map { it.toString() }.toTypedArray())) else ps }
+    val params = listOf<Binding<*>>()
+        .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
+        .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
         .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
         .let { ps -> if (sentAt != null) ps + listOf(Binding.of("sentAtStart", sentAt.start), Binding.of("sentAtEnd", sentAt.end)) else ps }
 

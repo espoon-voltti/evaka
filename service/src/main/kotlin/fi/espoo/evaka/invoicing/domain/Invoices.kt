@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import java.time.DayOfWeek
@@ -45,11 +46,13 @@ data class Invoice(
         get() = invoiceRowTotal(rows)
 }
 
-enum class InvoiceStatus {
+enum class InvoiceStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
     SENT,
-    CANCELED
+    CANCELED;
+
+    override val sqlType: String = "invoice_status"
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

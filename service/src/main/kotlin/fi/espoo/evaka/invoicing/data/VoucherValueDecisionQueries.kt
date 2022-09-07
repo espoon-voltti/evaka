@@ -288,8 +288,8 @@ fun Database.Read.searchValueDecisions(
     val params = listOf(
         Binding.of("page", page),
         Binding.of("pageSize", pageSize),
-        Binding.of("status", status.name),
-        Binding.of("areas", areas.toTypedArray()),
+        Binding.of("status", status),
+        Binding.of("areas", areas),
         Binding.of("unit", unit),
         Binding.of("start_date", startDate),
         Binding.of("end_date", endDate),
