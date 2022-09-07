@@ -582,7 +582,7 @@ WHERE employee_id = :userId AND EXISTS(
             .bind("userId", user.id)
     }
 
-    fun inUnitOfCalendarEvent() = rule<CalendarEventId> { user, now ->
+    fun inUnitOfCalendarEvent() = rule<CalendarEventId> { user, _ ->
         QueryFragment<IdRoleFeatures>(
             """
 SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features
@@ -592,7 +592,6 @@ JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
             .bind("userId", user.id)
     }
 }
