@@ -59,6 +59,7 @@ import {
   DevIncome,
   DevPayment,
   DevRealtimeStaffAttendance,
+  DevStaffAttendancePlan,
   DevVardaReset,
   DevVardaServiceNeed,
   EmployeeDetail,
@@ -1084,6 +1085,16 @@ export async function insertStaffRealtimeAttendance(
 ): Promise<void> {
   try {
     await devClient.post('/realtime-staff-attendance', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertStaffAttendancePlan(
+  body: DevStaffAttendancePlan
+): Promise<void> {
+  try {
+    await devClient.post('/staff-attendance-plan', body)
   } catch (e) {
     throw new DevApiError(e)
   }

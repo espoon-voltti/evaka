@@ -621,3 +621,12 @@ export interface DevCalendarEventAttendee {
   groupId: UUID | null
   childId: UUID | null
 }
+
+export interface DevStaffAttendancePlan {
+  id: UUID
+  employeeId: UUID
+  type: StaffAttendanceType
+  startTime: HelsinkiDateTime
+  endTime: HelsinkiDateTime
+  description: string | null
+}

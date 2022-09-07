@@ -243,6 +243,55 @@ describe('Realtime staff attendances', () => {
       })
     })
   })
+  describe('Planned attendances', () => {
+    const plannedStartTime = mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+    const plannedEndTime = mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
+
+    beforeEach(async () => {
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          id: uuidv4(),
+          employeeId: staff[1].id,
+          groupId: groupId,
+          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          departed: null,
+          occupancyCoefficient: 7.0,
+          type: 'PRESENT'
+        })
+        .save()
+
+      await Fixture.staffAttendancePlan()
+        .with({
+          id: uuidv4(),
+          employeeId: staff[1].id,
+          startTime: plannedStartTime,
+          endTime: plannedEndTime
+        })
+        .save()
+
+      attendancesSection = await openAttendancesSection()
+      await attendancesSection.selectGroup('staff')
+      await attendancesSection.assertNoTimeInputsVisible()
+    })
+    test('Plan is shown on week view and day modal', async () => {
+      await attendancesSection.assertPlannedAttendance(
+        plannedStartTime.toLocalDate(),
+        1,
+        '07:00',
+        '15:00'
+      )
+
+      const modal = await attendancesSection.openDetails(
+        groupStaff.id,
+        mockedToday
+      )
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '07:00 – 15:00',
+        realized: '07:00 –',
+        hours: '5:00 (-3:00)'
+      })
+    })
+  })
   describe('Group selection: group', () => {
     beforeEach(async () => {
       await insertStaffRealtimeAttendance({

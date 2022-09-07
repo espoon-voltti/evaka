@@ -35,7 +35,8 @@ import {
   ExternalAttendance,
   UpsertStaffAttendance,
   StaffAttendanceResponse,
-  UpsertStaffAndExternalAttendanceRequest
+  UpsertStaffAndExternalAttendanceRequest,
+  PlannedStaffAttendance
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -307,6 +308,7 @@ export default React.memo(function StaffAttendanceTable({
               selectedGroup={selectedGroup}
               weekSavingFns={weekSavingFns}
               hasFutureAttendances={row.hasFutureAttendances}
+              plannedAttendances={row.plannedAttendances}
             />
           ))}
           {extraRowsGroupedByName.map((row, index) => (
@@ -504,6 +506,7 @@ interface AttendanceRowProps extends BaseProps {
   selectedGroup: UUID | null // for new attendances
   weekSavingFns: MutableRefObject<Map<string, () => void>>
   hasFutureAttendances: boolean
+  plannedAttendances?: PlannedStaffAttendance[]
 }
 
 interface FormAttendance {
@@ -564,7 +567,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
   groupFilter,
   selectedGroup,
   weekSavingFns,
-  hasFutureAttendances: _hasFutureAttendances
+  hasFutureAttendances: _hasFutureAttendances,
+  plannedAttendances
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
 
@@ -1110,6 +1114,20 @@ const AttendanceRow = React.memo(function AttendanceRow({
     setIgnoreFormError(false)
   }, [validatedForm])
 
+  const plannedAttendancesForDate = useCallback(
+    (date: LocalDate): PlannedStaffAttendance[] => {
+      const matchingPlannedAttendances =
+        plannedAttendances &&
+        plannedAttendances.filter(
+          (plannedAttendance) =>
+            plannedAttendance.start.toLocalDate().isEqual(date) ||
+            plannedAttendance.end.toLocalDate().isEqual(date)
+        )
+      return matchingPlannedAttendances || []
+    },
+    [plannedAttendances]
+  )
+
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
       <NameTd partialRow={false} rowIndex={rowIndex}>
@@ -1147,9 +1165,10 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 (departureDate &&
                   new DateRange(arrivalDate, departureDate).includes(date)) ||
                 arrivalDate.isEqual(date)
-            )
+            ),
+            plannedAttendancesForToday: plannedAttendancesForDate(date)
           }))
-          .map(({ date, attendances }) => (
+          .map(({ date, attendances, plannedAttendancesForToday }) => (
             <DayTd
               key={date.formatIso()}
               className={classNames({ 'is-today': date.isToday() })}
@@ -1157,7 +1176,46 @@ const AttendanceRow = React.memo(function AttendanceRow({
               rowIndex={rowIndex}
               data-qa={`day-cell-${employeeId ?? ''}-${date.formatIso()}`}
             >
-              <DayCell>
+              <DayCell data-qa={`attendance-${date.formatIso()}-${rowIndex}`}>
+                <PlannedAttendanceTimes data-qa="planned-attendance-day">
+                  {plannedAttendancesForToday.length > 0 ? (
+                    plannedAttendancesForToday.map((plannedAttendance, i) => (
+                      <AttendanceCell key={i}>
+                        <>
+                          <AttendanceTime data-qa="planned-attendance-start">
+                            {renderTime(
+                              plannedAttendance.start
+                                .toLocalTime()
+                                .format('HH:mm'),
+                              plannedAttendance.start
+                                .toLocalDate()
+                                .isEqual(date)
+                            )}
+                          </AttendanceTime>
+                          <AttendanceTime data-qa="planned-attendance-end">
+                            {renderTime(
+                              plannedAttendance.end
+                                .toLocalTime()
+                                .format('HH:mm'),
+                              plannedAttendance.end.toLocalDate().isEqual(date)
+                            )}
+                          </AttendanceTime>
+                        </>
+                      </AttendanceCell>
+                    ))
+                  ) : (
+                    <AttendanceCell>
+                      <>
+                        <AttendanceTime data-qa="planned-arrival-time">
+                          {renderTime('', true)}
+                        </AttendanceTime>
+                        <AttendanceTime data-qa="planned-departure-time">
+                          {renderTime('', true)}
+                        </AttendanceTime>
+                      </>
+                    </AttendanceCell>
+                  )}
+                </PlannedAttendanceTimes>
                 <AttendanceTimes data-qa="attendance-day">
                   {attendances.map((attendance, i) => (
                     <AttendanceCell key={i}>
@@ -1314,10 +1372,16 @@ const DetailsToggle = styled.div<{ showAlways: boolean }>`
   padding: ${defaultMargins.xxs};
   margin-left: -${defaultMargins.s};
   visibility: ${({ showAlways }) => (showAlways ? 'visible' : 'hidden')};
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 3px;
 `
 
 const DayCell = styled.div`
   display: flex;
+  flex-direction: column;
+  position: relative;
 
   &:hover {
     ${DetailsToggle} {
@@ -1330,6 +1394,16 @@ const AttendanceTimes = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  background-color: ${colors.grayscale.g4};
+  width: 100%;
+  padding: 0px 15px 0px 0px;
+`
+
+const PlannedAttendanceTimes = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 0px 15px 0px 0px;
 `
 
 const AttendanceCell = styled.div`

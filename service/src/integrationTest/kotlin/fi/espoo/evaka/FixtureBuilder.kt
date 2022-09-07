@@ -530,7 +530,8 @@ class FixtureBuilder(
                     employeeId = employeeFixture.employeeId,
                     type = this.type ?: StaffAttendanceType.PRESENT,
                     startTime = this.from ?: error("staff attendance plan start time must be set"),
-                    endTime = this.to ?: error("staff attendance plan end time must be set")
+                    endTime = this.to ?: error("staff attendance plan end time must be set"),
+                    description = null
                 )
             )
             return employeeFixture

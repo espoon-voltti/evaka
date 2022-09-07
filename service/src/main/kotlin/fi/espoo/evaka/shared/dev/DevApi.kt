@@ -1228,6 +1228,14 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             }
         }
 
+    @PostMapping("/staff-attendance-plan")
+    fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.insertTestStaffAttendancePlan(body)
+            }
+        }
+
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTime) =
         db.connect { dbc ->
@@ -1753,7 +1761,6 @@ data class DevStaffAttendance(
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType
 )
-
 data class DevDailyServiceTime(
     val id: DailyServiceTimesId,
     val childId: ChildId,
