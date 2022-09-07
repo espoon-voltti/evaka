@@ -353,6 +353,8 @@ export const fi = {
       CANCELLED: 'Poistettu käsittelystä',
       ALL: 'Kaikki'
     },
+    selectAll: 'Valitse kaikki',
+    unselectAll: 'Poista valinnat',
     transfer: 'Siirtohakemus',
     origins: {
       ELECTRONIC: 'Sähköinen hakemus',

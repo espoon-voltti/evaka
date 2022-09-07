@@ -32,7 +32,8 @@ import {
   ApplicationSummaryStatusAllOptions,
   MultiSelectUnitFilter,
   ApplicationDistinctions,
-  TransferApplicationsFilter
+  TransferApplicationsFilter,
+  applicationSummaryAllStatuses
 } from '../common/Filters'
 
 export default React.memo(function ApplicationFilters() {
@@ -96,17 +97,7 @@ export default React.memo(function ApplicationFilters() {
       setApplicationSearchFilters({
         ...applicationSearchFilters,
         status: newStatus,
-        allStatuses: [
-          'SENT',
-          'WAITING_PLACEMENT',
-          'WAITING_DECISION',
-          'WAITING_UNIT_CONFIRMATION',
-          'WAITING_MAILING',
-          'WAITING_CONFIRMATION',
-          'REJECTED',
-          'ACTIVE',
-          'CANCELLED'
-        ]
+        allStatuses: applicationSummaryAllStatuses
       })
     } else if (
       newStatus === 'ALL' &&
