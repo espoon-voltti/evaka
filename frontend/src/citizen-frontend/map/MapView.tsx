@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result, Success } from 'lib-common/api'
@@ -87,11 +87,7 @@ async function fetchUnitsWithDistances(
   }
 }
 
-export interface Props {
-  scrollToTop: () => void
-}
-
-export default React.memo(function MapView({ scrollToTop }: Props) {
+export default React.memo(function MapView() {
   const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
   const user = useUser()
@@ -105,10 +101,6 @@ export default React.memo(function MapView({ scrollToTop }: Props) {
   const [languages, setLanguages] = useState<Language[]>([])
   const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
-
-  // Scroll the main content area to top on first mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => scrollToTop(), [])
 
   const [allUnits] = useApiState(() => fetchUnits(careType), [careType])
 

@@ -8,14 +8,10 @@ import Main from 'lib-components/atoms/Main'
 
 import MapView from './MapView'
 
-interface Props {
-  scrollToTop: () => void
-}
-
-export default React.memo(function MapPage({ scrollToTop }: Props) {
+export default React.memo(function MapPage() {
   return (
     <Main>
-      <MapView scrollToTop={scrollToTop} />
+      <MapView />
     </Main>
   )
 })

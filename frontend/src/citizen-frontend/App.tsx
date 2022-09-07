@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { ReactNode, useCallback, useContext, useRef } from 'react'
+import React, { ReactNode, useCallback, useContext } from 'react'
 import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
 
-import { scrollElementToPos } from 'lib-common/utils/scrolling'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
@@ -18,6 +17,7 @@ import AccessibilityStatement from './AccessibilityStatement'
 import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
 import RequireAuth from './RequireAuth'
+import ScrollToTop from './ScrollToTop'
 import ApplicationCreation from './applications/ApplicationCreation'
 import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
@@ -94,38 +94,44 @@ const Content = React.memo(function Content() {
 
   const { modalOpen } = useContext(OverlayContext)
 
-  const mainRef = useRef<HTMLDivElement>(null)
-  const scrollMainToTop = useCallback(
-    () =>
-      scrollElementToPos(mainRef.current, {
-        top: 0,
-        left: 0,
-        behavior: 'auto'
-      }),
-    []
-  )
-
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <CitizenReloadNotification />
-      <MainContainer ariaHidden={modalOpen} ref={mainRef}>
+      <MainContainer ariaHidden={modalOpen}>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/login"
+            element={
+              <ScrollToTop>
+                <LoginPage />
+              </ScrollToTop>
+            }
+          />
           <Route
             path="/map"
-            element={<MapPage scrollToTop={scrollMainToTop} />}
+            element={
+              <ScrollToTop>
+                <MapPage />
+              </ScrollToTop>
+            }
           />
           <Route
             path="/accessibility"
-            element={<AccessibilityStatement scrollToTop={scrollMainToTop} />}
+            element={
+              <ScrollToTop>
+                <AccessibilityStatement />
+              </ScrollToTop>
+            }
           />
           <Route
             path="/applications"
             element={
               <RequireAuth>
-                <Applications />
+                <ScrollToTop>
+                  <Applications />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -133,7 +139,9 @@ const Content = React.memo(function Content() {
             path="/applications/new/:childId"
             element={
               <RequireAuth>
-                <ApplicationCreation />
+                <ScrollToTop>
+                  <ApplicationCreation />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -141,7 +149,9 @@ const Content = React.memo(function Content() {
             path="/applications/:applicationId"
             element={
               <RequireAuth>
-                <ApplicationReadView />
+                <ScrollToTop>
+                  <ApplicationReadView />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -149,7 +159,9 @@ const Content = React.memo(function Content() {
             path="/applications/:applicationId/edit"
             element={
               <RequireAuth>
-                <ApplicationEditor />
+                <ScrollToTop>
+                  <ApplicationEditor />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -157,7 +169,9 @@ const Content = React.memo(function Content() {
             path="/personal-details"
             element={
               <RequireAuth strength="WEAK">
-                <PersonalDetails />
+                <ScrollToTop>
+                  <PersonalDetails />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -165,7 +179,9 @@ const Content = React.memo(function Content() {
             path="/income"
             element={
               <RequireAuth>
-                <IncomeStatements />
+                <ScrollToTop>
+                  <IncomeStatements />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -173,7 +189,9 @@ const Content = React.memo(function Content() {
             path="/income/:incomeStatementId/edit"
             element={
               <RequireAuth>
-                <IncomeStatementEditor />
+                <ScrollToTop>
+                  <IncomeStatementEditor />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -181,7 +199,9 @@ const Content = React.memo(function Content() {
             path="/income/:incomeStatementId"
             element={
               <RequireAuth>
-                <IncomeStatementView />
+                <ScrollToTop>
+                  <IncomeStatementView />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -189,7 +209,9 @@ const Content = React.memo(function Content() {
             path="/child-income/:childId/:incomeStatementId/edit"
             element={
               <RequireAuth>
-                <ChildIncomeStatementEditor />
+                <ScrollToTop>
+                  <ChildIncomeStatementEditor />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -197,7 +219,9 @@ const Content = React.memo(function Content() {
             path="/child-income/:childId/:incomeStatementId"
             element={
               <RequireAuth>
-                <ChildIncomeStatementView />
+                <ScrollToTop>
+                  <ChildIncomeStatementView />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -205,7 +229,9 @@ const Content = React.memo(function Content() {
             path="/children/:childId"
             element={
               <RequireAuth>
-                <ChildPage />
+                <ScrollToTop>
+                  <ChildPage />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -213,7 +239,9 @@ const Content = React.memo(function Content() {
             path="/decisions"
             element={
               <RequireAuth>
-                <Decisions />
+                <ScrollToTop>
+                  <Decisions />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -221,7 +249,9 @@ const Content = React.memo(function Content() {
             path="/decisions/by-application/:applicationId"
             element={
               <RequireAuth>
-                <DecisionResponseList />
+                <ScrollToTop>
+                  <DecisionResponseList />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -229,7 +259,9 @@ const Content = React.memo(function Content() {
             path="/decisions/assistance/:id"
             element={
               <RequireAuth>
-                <AssistanceDecisionPage />
+                <ScrollToTop>
+                  <AssistanceDecisionPage />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -245,7 +277,9 @@ const Content = React.memo(function Content() {
             path="/messages"
             element={
               <RequireAuth strength="WEAK">
-                <MessagesPage />
+                <ScrollToTop>
+                  <MessagesPage />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -253,7 +287,9 @@ const Content = React.memo(function Content() {
             path="/calendar"
             element={
               <RequireAuth strength="WEAK">
-                <CalendarPage />
+                <ScrollToTop>
+                  <CalendarPage />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -261,7 +297,9 @@ const Content = React.memo(function Content() {
             path="/vasu/:id"
             element={
               <RequireAuth>
-                <VasuPage />
+                <ScrollToTop>
+                  <VasuPage />
+                </ScrollToTop>
               </RequireAuth>
             }
           />
@@ -273,27 +311,21 @@ const Content = React.memo(function Content() {
   )
 })
 
-// eslint-disable-next-line react/display-name
-const MainContainer = React.memo(
-  React.forwardRef(function MainContainer(
-    {
-      ariaHidden,
-      children
-    }: {
-      ariaHidden: boolean
-      children: ReactNode
-    },
-    ref: React.ForwardedRef<HTMLDivElement>
-  ) {
-    const { user } = useContext(AuthContext)
-    const render = useCallback(() => <>{children}</>, [children])
-    return (
-      <ScrollableMain aria-hidden={ariaHidden} ref={ref}>
-        <UnwrapResult result={user}>{render}</UnwrapResult>
-      </ScrollableMain>
-    )
-  })
-)
+const MainContainer = React.memo(function MainContainer({
+  ariaHidden,
+  children
+}: {
+  ariaHidden: boolean
+  children: ReactNode
+}) {
+  const { user } = useContext(AuthContext)
+  const render = useCallback(() => <>{children}</>, [children])
+  return (
+    <ScrollableMain aria-hidden={ariaHidden}>
+      <UnwrapResult result={user}>{render}</UnwrapResult>
+    </ScrollableMain>
+  )
+})
 
 function HandleRedirection() {
   const user = useUser()
