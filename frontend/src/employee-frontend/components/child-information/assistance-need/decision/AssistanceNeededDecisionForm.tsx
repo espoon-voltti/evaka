@@ -651,7 +651,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
                 }
               })
             }
-            phoneLabel={i18n.common.form.phone}
+            phoneLabel={t.tel}
             selectedPhone={formState.preparedBy2?.phoneNumber}
             hasPhoneField
             titleInfo={fieldInfos.preparator2Title}
