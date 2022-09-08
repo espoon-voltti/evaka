@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Service
 import java.math.BigDecimal

@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 
 data class DaycareFields(

@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 
 fun Database.Read.getOccupancyCoefficientForEmployee(employeeId: EmployeeId, groupId: GroupId): BigDecimal? =

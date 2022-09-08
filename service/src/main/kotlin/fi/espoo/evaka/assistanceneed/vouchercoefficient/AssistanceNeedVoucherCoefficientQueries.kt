@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.bindKotlin
 
 fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     childId: ChildId,

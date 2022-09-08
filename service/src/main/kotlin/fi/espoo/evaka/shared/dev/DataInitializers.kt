@@ -73,7 +73,6 @@ import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
