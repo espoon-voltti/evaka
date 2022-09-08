@@ -86,17 +86,17 @@ class ReservationControllerCitizen(
     fun postReservations(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
         Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays =
-                    getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                    getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
@@ -106,13 +106,13 @@ class ReservationControllerCitizen(
     fun postAbsences(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
 
-        if (body.dateRange.start.isBefore(evakaClock.today()))
+        if (body.dateRange.start.isBefore(clock.today()))
             throw BadRequest("Cannot mark absences for past days")
 
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))

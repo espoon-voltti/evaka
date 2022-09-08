@@ -112,18 +112,18 @@ class FeeDecisionController(
     fun confirmDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(
                     tx,
                     user,
                     feeDecisionIds,
-                    evakaClock.now(),
+                    clock.now(),
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
@@ -132,9 +132,9 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
+    fun setSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
     }
 

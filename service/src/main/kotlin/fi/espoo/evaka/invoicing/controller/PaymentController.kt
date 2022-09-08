@@ -57,7 +57,7 @@ class PaymentController(private val accessControl: AccessControl, private val pa
         @RequestBody body: SendPaymentsRequest,
     ) {
         Audit.PaymentsSend.log(targetId = body.paymentIds)
-        accessControl.requirePermissionFor(user, Action.Payment.SEND, body.paymentIds)
+        accessControl.requirePermissionFor(user, clock, Action.Payment.SEND, body.paymentIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 paymentService.sendPayments(tx, clock.now(), user, body.paymentIds, body.paymentDate, body.dueDate)

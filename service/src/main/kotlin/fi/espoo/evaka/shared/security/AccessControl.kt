@@ -93,10 +93,10 @@ class AccessControl(
     }
 
     fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T) =
-        requirePermissionFor(user, action, listOf(target))
-    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
+        requirePermissionFor(user, RealEvakaClock(), action, listOf(target))
+    fun <T> requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
         dbc.read { tx ->
-            checkPermissionFor(tx, user, RealEvakaClock(), action, targets).values.forEach { it.assert() }
+            checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }
         }
     }
 

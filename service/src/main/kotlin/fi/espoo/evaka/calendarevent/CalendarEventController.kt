@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -59,6 +60,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun createCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody body: CalendarEventForm
     ) {
         Audit.CalendarEventCreate.log(targetId = body.unitId)
@@ -68,7 +70,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                 accessControl.requirePermissionFor(user, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
 
                 if (body.tree != null) {
-                    accessControl.requirePermissionFor(user, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
+                    accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
 
                     val unitGroupIds = tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
 

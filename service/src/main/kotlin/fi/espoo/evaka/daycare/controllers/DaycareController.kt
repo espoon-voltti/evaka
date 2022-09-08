@@ -81,10 +81,11 @@ class DaycareController(
     fun postUnitFeatures(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody request: UpdateFeaturesRequest
     ) {
         Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
-        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_FEATURES, request.unitIds)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_FEATURES, request.unitIds)
 
         db.connect { dbc ->
             dbc.transaction {

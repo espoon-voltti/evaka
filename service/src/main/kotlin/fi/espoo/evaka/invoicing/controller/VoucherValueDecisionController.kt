@@ -132,11 +132,11 @@ class VoucherValueDecisionController(
     fun sendDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, decisionIds)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, decisionIds)
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -144,7 +144,7 @@ class VoucherValueDecisionController(
                     asyncJobRunner = asyncJobRunner,
                     user = user,
                     evakaEnv = evakaEnv,
-                    now = evakaClock.now(),
+                    now = clock.now(),
                     ids = decisionIds,
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
@@ -156,17 +156,17 @@ class VoucherValueDecisionController(
     fun markSent(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, ids)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
                     throw BadRequest("Voucher value decision cannot be marked sent")
-                tx.markVoucherValueDecisionsSent(ids, evakaClock.now())
+                tx.markVoucherValueDecisionsSent(ids, clock.now())
             }
         }
     }

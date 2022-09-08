@@ -50,12 +50,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun upsertAbsences(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.CREATE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.upsertAbsences(absences, user.evakaUserId) } }
     }
@@ -64,12 +65,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun deleteAbsences(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, Action.Group.DELETE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
+        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
     }

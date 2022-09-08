@@ -87,7 +87,7 @@ class PlacementControllerCitizen(
             }
             val terminatablePlacementGroup = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
                 .also { placements ->
-                    accessControl.requirePermissionFor(user, Action.Citizen.Placement.TERMINATE, placements.map { it.id })
+                    accessControl.requirePermissionFor(user, clock, Action.Citizen.Placement.TERMINATE, placements.map { it.id })
                 }
                 .let { mapToTerminatablePlacements(it, clock.today()) }
                 .find { it.unitId == body.unitId && it.type == body.type }
