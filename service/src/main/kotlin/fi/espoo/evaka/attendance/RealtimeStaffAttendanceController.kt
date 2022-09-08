@@ -12,12 +12,14 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -139,33 +141,37 @@ class RealtimeStaffAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val occupancyCoefficients = body.staffAttendances.associate {
-                    Pair(
-                        it.employeeId,
-                        tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
-                    )
-                }
-                body.staffAttendances.forEach {
-                    tx.upsertStaffAttendance(
-                        it.attendanceId,
-                        it.employeeId,
-                        it.groupId,
-                        it.arrived,
-                        it.departed,
-                        occupancyCoefficients[it.employeeId],
-                        it.type
-                    )
-                }
+                try {
+                    val occupancyCoefficients = body.staffAttendances.associate {
+                        Pair(
+                            it.employeeId,
+                            tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
+                        )
+                    }
+                    body.staffAttendances.forEach {
+                        tx.upsertStaffAttendance(
+                            it.attendanceId,
+                            it.employeeId,
+                            it.groupId,
+                            it.arrived,
+                            it.departed,
+                            occupancyCoefficients[it.employeeId],
+                            it.type
+                        )
+                    }
 
-                body.externalAttendances.forEach {
-                    tx.upsertExternalStaffAttendance(
-                        it.attendanceId,
-                        it.name,
-                        it.groupId,
-                        it.arrived,
-                        it.departed,
-                        occupancyCoefficientSeven
-                    )
+                    body.externalAttendances.forEach {
+                        tx.upsertExternalStaffAttendance(
+                            it.attendanceId,
+                            it.name,
+                            it.groupId,
+                            it.arrived,
+                            it.departed,
+                            occupancyCoefficientSeven
+                        )
+                    }
+                } catch (e: JdbiException) {
+                    throw mapPSQLException(e)
                 }
             }
         }
