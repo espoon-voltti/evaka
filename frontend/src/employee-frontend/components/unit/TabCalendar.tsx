@@ -209,6 +209,54 @@ export default React.memo(function TabCalendar() {
   return (
     <>
       <CollapsibleContentArea
+        title={<H3 noMargin>{i18n.unit.occupancies}</H3>}
+        open={occupanciesOpen}
+        toggleOpen={() => setOccupanciesOpen(!occupanciesOpen)}
+        opaque
+        data-qa="unit-attendances"
+        data-isloading={isLoading(unitData)}
+      >
+        <FixedSpaceRow alignItems="center">
+          <Label>{i18n.unit.filters.title}</Label>
+          <UnitDataFilters
+            canEdit={requireRole(
+              roles,
+              'ADMIN',
+              'SERVICE_WORKER',
+              'UNIT_SUPERVISOR',
+              'FINANCE_ADMIN'
+            )}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </FixedSpaceRow>
+        <Gap size="s" />
+        <DataList>
+          <div>
+            <label>{i18n.unit.info.caretakers.titleLabel}</label>
+            <span data-qa="unit-total-caretaker-count">
+              <Caretakers unitData={unitData} />
+            </span>
+          </div>
+        </DataList>
+        <Gap />
+        {renderResult(
+          combine(unitData, unitInformation),
+          ([unitData, unitInformation]) =>
+            unitData.unitOccupancies ? (
+              <Occupancy
+                filters={filters}
+                occupancies={unitData.unitOccupancies}
+                realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+                shiftCareUnit={unitInformation.daycare.roundTheClock}
+              />
+            ) : null
+        )}
+      </CollapsibleContentArea>
+
+      <Gap size="s" />
+
+      <CollapsibleContentArea
         open={calendarOpen}
         toggleOpen={() => setCalendarOpen(!calendarOpen)}
         title={<H3 noMargin>{i18n.unit.calendar.title}</H3>}
@@ -327,54 +375,6 @@ export default React.memo(function TabCalendar() {
               </CollapsibleContentArea>
             </>
           )}
-      </CollapsibleContentArea>
-
-      <Gap size="s" />
-
-      <CollapsibleContentArea
-        title={<H3 noMargin>{i18n.unit.occupancies}</H3>}
-        open={occupanciesOpen}
-        toggleOpen={() => setOccupanciesOpen(!occupanciesOpen)}
-        opaque
-        data-qa="unit-attendances"
-        data-isloading={isLoading(unitData)}
-      >
-        <FixedSpaceRow alignItems="center">
-          <Label>{i18n.unit.filters.title}</Label>
-          <UnitDataFilters
-            canEdit={requireRole(
-              roles,
-              'ADMIN',
-              'SERVICE_WORKER',
-              'UNIT_SUPERVISOR',
-              'FINANCE_ADMIN'
-            )}
-            filters={filters}
-            setFilters={setFilters}
-          />
-        </FixedSpaceRow>
-        <Gap size="s" />
-        <DataList>
-          <div>
-            <label>{i18n.unit.info.caretakers.titleLabel}</label>
-            <span data-qa="unit-total-caretaker-count">
-              <Caretakers unitData={unitData} />
-            </span>
-          </div>
-        </DataList>
-        <Gap />
-        {renderResult(
-          combine(unitData, unitInformation),
-          ([unitData, unitInformation]) =>
-            unitData.unitOccupancies ? (
-              <Occupancy
-                filters={filters}
-                occupancies={unitData.unitOccupancies}
-                realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-                shiftCareUnit={unitInformation.daycare.roundTheClock}
-              />
-            ) : null
-        )}
       </CollapsibleContentArea>
     </>
   )
