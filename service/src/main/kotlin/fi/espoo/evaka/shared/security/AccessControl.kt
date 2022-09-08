@@ -8,9 +8,7 @@ import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -26,80 +24,39 @@ import java.util.EnumSet
 
 class AccessControl(
     private val actionRuleMapping: ActionRuleMapping,
-    private val acl: AccessControlList,
     private val jdbi: Jdbi
 ) {
-    fun getPermittedFeatures(user: AuthenticatedUser.Employee): EmployeeFeatures =
-        EmployeeFeatures(
-            applications = user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.SERVICE_WORKER,
-                UserRole.SPECIAL_EDUCATION_TEACHER
-            ),
-            employees = user.hasOneOfRoles(UserRole.ADMIN),
-            financeBasics = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
-            finance = user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN),
-            holidayPeriods = user.hasOneOfRoles(UserRole.ADMIN),
-            messages = isMessagingEnabled(user),
-            personSearch = user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.SERVICE_WORKER,
-                UserRole.FINANCE_ADMIN,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.SPECIAL_EDUCATION_TEACHER,
-                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-            ),
-            reports = user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.DIRECTOR,
-                UserRole.REPORT_VIEWER,
-                UserRole.SERVICE_WORKER,
-                UserRole.FINANCE_ADMIN,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.SPECIAL_EDUCATION_TEACHER,
-                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-            ),
-            settings = user.isAdmin,
-            unitFeatures = user.hasOneOfRoles(UserRole.ADMIN),
-            units = user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.SERVICE_WORKER,
-                UserRole.FINANCE_ADMIN,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.STAFF,
-                UserRole.SPECIAL_EDUCATION_TEACHER,
-                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-            ),
-            createUnits = hasPermissionFor(user, Action.Global.CREATE_UNIT),
-            vasuTemplates = user.hasOneOfRoles(UserRole.ADMIN),
-            personalMobileDevice = user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR),
-
-            // Everyone else except FINANCE_ADMIN & EARLY_CHILDHOOD_EDUCATION_SECRETARY
-            pinCode = user.hasOneOfRoles(
-                UserRole.ADMIN,
-                UserRole.REPORT_VIEWER,
-                UserRole.DIRECTOR,
-                UserRole.SERVICE_WORKER,
-                UserRole.UNIT_SUPERVISOR,
-                UserRole.STAFF,
-                UserRole.SPECIAL_EDUCATION_TEACHER,
-            )
+    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Employee): EmployeeFeatures {
+        val clock = RealEvakaClock()
+        return EmployeeFeatures(
+            applications = checkPermissionFor(tx, user, clock, Action.Global.APPLICATIONS_PAGE).isPermitted(),
+            employees = checkPermissionFor(tx, user, clock, Action.Global.EMPLOYEES_PAGE).isPermitted(),
+            financeBasics = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_BASICS_PAGE).isPermitted(),
+            finance = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_PAGE).isPermitted(),
+            holidayPeriods = checkPermissionFor(tx, user, clock, Action.Global.HOLIDAY_PERIODS_PAGE).isPermitted(),
+            messages = checkPermissionFor(tx, user, clock, Action.Global.MESSAGES_PAGE, allowedToAdmin = false).isPermitted(),
+            personSearch = checkPermissionFor(tx, user, clock, Action.Global.PERSON_SEARCH_PAGE).isPermitted(),
+            reports = checkPermissionFor(tx, user, clock, Action.Global.REPORTS_PAGE).isPermitted(),
+            settings = checkPermissionFor(tx, user, clock, Action.Global.SETTINGS_PAGE).isPermitted(),
+            unitFeatures = checkPermissionFor(tx, user, clock, Action.Global.UNIT_FEATURES_PAGE).isPermitted(),
+            units = checkPermissionFor(tx, user, clock, Action.Global.UNITS_PAGE).isPermitted(),
+            createUnits = checkPermissionFor(tx, user, clock, Action.Global.CREATE_UNIT).isPermitted(),
+            vasuTemplates = checkPermissionFor(tx, user, clock, Action.Global.VASU_TEMPLATES_PAGE).isPermitted(),
+            personalMobileDevice = checkPermissionFor(tx, user, clock, Action.Global.PERSONAL_MOBILE_DEVICE_PAGE).isPermitted(),
+            pinCode = checkPermissionFor(tx, user, clock, Action.Global.PIN_CODE_PAGE).isPermitted(),
         )
-
-    private fun isMessagingEnabled(user: AuthenticatedUser.Employee): Boolean {
-        @Suppress("DEPRECATION")
-        return acl.getRolesForPilotFeature(user, PilotFeature.MESSAGING)
-            .intersect(setOf(UserRole.STAFF, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)).isNotEmpty()
     }
 
     fun requirePermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
         dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.assert()
     }
+
     fun hasPermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->
         dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.isPermitted()
     }
-    fun checkPermissionFor(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction): AccessControlDecision {
-        if (user.isAdmin) {
+
+    fun checkPermissionFor(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction, allowedToAdmin: Boolean = true): AccessControlDecision {
+        if (allowedToAdmin && user.isAdmin) {
             return AccessControlDecision.PermittedToAdmin
         }
 

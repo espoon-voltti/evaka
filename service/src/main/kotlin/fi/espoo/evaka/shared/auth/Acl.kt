@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import org.jdbi.v3.core.Jdbi
 
@@ -50,24 +49,6 @@ class AccessControlList(private val jdbi: Jdbi) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(Database(jdbi).connect { db -> db.read { it.selectAuthorizedDaycares(user, roles) } })
-        }
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForPilotFeature(user: AuthenticatedUser.Employee, feature: PilotFeature): Set<UserRole> =
-        user.globalRoles + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare d
-JOIN daycare_acl acl
-ON d.id = acl.daycare_id
-WHERE :pilotFeature = ANY(d.enabled_pilot_features)
-AND employee_id = :userId
-                    """.trimIndent()
-                ).bind("userId", user.id).bind("pilotFeature", feature).mapTo<UserRole>().toSet()
-            }
         }
 }
 

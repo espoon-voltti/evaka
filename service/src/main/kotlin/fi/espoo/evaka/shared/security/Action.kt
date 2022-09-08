@@ -74,6 +74,39 @@ sealed interface Action {
     }
 
     enum class Global(override vararg val defaultRules: UnscopedActionRule) : UnscopedAction {
+        APPLICATIONS_PAGE(
+            HasGlobalRole(SERVICE_WORKER),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+        ),
+        EMPLOYEES_PAGE,
+        FINANCE_BASICS_PAGE(HasGlobalRole(FINANCE_ADMIN)),
+        FINANCE_PAGE(HasGlobalRole(FINANCE_ADMIN)),
+        HOLIDAY_PERIODS_PAGE,
+        MESSAGES_PAGE(
+            HasUnitRole(STAFF, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .withUnitFeatures(PilotFeature.MESSAGING).inAnyUnit()
+        ),
+        PERSON_SEARCH_PAGE(
+            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+        ),
+        REPORTS_PAGE(
+            HasGlobalRole(DIRECTOR, REPORT_VIEWER, SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+        ),
+        SETTINGS_PAGE,
+        UNIT_FEATURES_PAGE,
+        UNITS_PAGE(
+            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+        ),
+        VASU_TEMPLATES_PAGE,
+        PERSONAL_MOBILE_DEVICE_PAGE(HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
+        PIN_CODE_PAGE(
+            HasGlobalRole(REPORT_VIEWER, DIRECTOR, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+        ),
+
         CREATE_VASU_TEMPLATE,
         READ_VASU_TEMPLATE(HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()),
 
