@@ -83,4 +83,7 @@ data class FeatureConfig(
      * type is enabled.
      */
     val enabledChildConsentTypes: Set<ChildConsentType>,
+
+    /** Controls whether permission to share is required for curriculum documents */
+    val curriculumDocumentPermissionToShareRequired: Boolean,
 )

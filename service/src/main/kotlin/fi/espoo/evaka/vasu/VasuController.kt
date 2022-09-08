@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,6 +37,7 @@ import java.time.LocalDate
 
 @RestController
 class VasuController(
+    private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl
 ) {
 

@@ -43,6 +43,7 @@ interface CitizenVasu {
   childLanguage: ChildLanguage | null
   status: CitizenVasuStatus
   translations: VasuTranslations
+  permissionToShareRequired: boolean
   guardianHasGivenPermissionToShare: boolean
   setGuardianHasGivenPermissionToShare: Dispatch<SetStateAction<boolean>>
 }
@@ -55,6 +56,8 @@ export function useVasu(id: string): CitizenVasu {
     hasDynamicFirstSection: false
   })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
+  const [permissionToShareRequired, setPermissionToShareRequired] =
+    useState<boolean>(false)
   const [
     guardianHasGivenPermissionToShare,
     setGuardianHasGivenPermissionToShare
@@ -67,10 +70,12 @@ export function useVasu(id: string): CitizenVasu {
         failure: () => setStatus({ state: 'loading-error' }),
         success: ({
           vasu: { content, ...meta },
+          permissionToShareRequired,
           guardianHasGivenPermissionToShare
         }) => {
           setVasu(meta)
           setContent(content)
+          setPermissionToShareRequired(permissionToShareRequired)
           setGuardianHasGivenPermissionToShare(
             guardianHasGivenPermissionToShare
           )
@@ -108,6 +113,7 @@ export function useVasu(id: string): CitizenVasu {
     childLanguage,
     status,
     translations,
+    permissionToShareRequired,
     guardianHasGivenPermissionToShare,
     setGuardianHasGivenPermissionToShare
   }

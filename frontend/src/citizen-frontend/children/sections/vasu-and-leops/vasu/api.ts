@@ -60,6 +60,7 @@ export async function getCitizenVasuDocument(
     .then((res) =>
       Success.of({
         vasu: mapVasuDocumentResponse(res.data.vasu),
+        permissionToShareRequired: res.data.permissionToShareRequired,
         guardianHasGivenPermissionToShare:
           res.data.guardianHasGivenPermissionToShare
       })
