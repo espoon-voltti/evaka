@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -96,30 +95,23 @@ class AccessControl(
     fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T) =
         requirePermissionFor(user, action, listOf(target))
     fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action, targets).values.forEach { it.assert() }
+        dbc.read { tx ->
+            checkPermissionFor(tx, user, RealEvakaClock(), action, targets).values.forEach { it.assert() }
+        }
     }
 
     fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T): Boolean =
         hasPermissionFor(user, action, listOf(target))
     fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
-        checkPermissionFor(dbc, user, action, targets).values.all { it.isPermitted() }
+        dbc.read { tx ->
+            checkPermissionFor(tx, user, RealEvakaClock(), action, targets).values.all { it.isPermitted() }
+        }
     }
 
     fun <T> checkPermissionFor(
-        dbc: Database.Connection,
-        user: AuthenticatedUser,
-        action: Action.ScopedAction<T>,
-        target: T
-    ): AccessControlDecision = checkPermissionFor(dbc, user, action, listOf(target)).values.first()
-    fun <T> checkPermissionFor(
-        dbc: Database.Connection,
-        user: AuthenticatedUser,
-        action: Action.ScopedAction<T>,
-        targets: Iterable<T>
-    ): Map<T, AccessControlDecision> = dbc.read { tx -> checkPermissionFor(tx, user, action, targets) }
-    fun <T> checkPermissionFor(
         tx: Database.Read,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
     ): Map<T, AccessControlDecision> {
@@ -129,7 +121,7 @@ class AccessControl(
 
         val decided = mutableMapOf<T, AccessControlDecision>()
         var undecided = targets.toSet()
-        val queryCtx = DatabaseActionRule.QueryContext(tx, user, HelsinkiDateTime.now())
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
         val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
         fun decideAll(decision: AccessControlDecision) {

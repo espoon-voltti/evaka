@@ -299,7 +299,7 @@ class ApplicationControllerV2(
                         .map { personDTO -> PersonJSON.from(personDTO) }
 
                 val attachments = tx.getApplicationAttachments(applicationId).let { allAttachments ->
-                    val permissions = accessControl.checkPermissionFor(tx, user, Action.Attachment.READ_APPLICATION_ATTACHMENT, allAttachments.map { it.id })
+                    val permissions = accessControl.checkPermissionFor(tx, user, clock, Action.Attachment.READ_APPLICATION_ATTACHMENT, allAttachments.map { it.id })
                     allAttachments.filter { attachment -> permissions[attachment.id]?.isPermitted() ?: false }
                 }
 

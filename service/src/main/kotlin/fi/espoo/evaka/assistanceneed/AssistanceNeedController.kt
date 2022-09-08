@@ -68,7 +68,7 @@ class AssistanceNeedController(
                         placement.startDate.isBefore(it.startDate) || placement.startDate == it.startDate
                     }
                 }
-                val decisions = accessControl.checkPermissionFor(dbc, user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, prePreschool.map { it.id })
+                val decisions = dbc.read { tx -> accessControl.checkPermissionFor(tx, user, clock, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, prePreschool.map { it.id }) }
                 allAssistanceNeeds.filter { decisions[it.id]?.isPermitted() ?: true }
             }
             val assistanceNeedIds = assistanceNeeds.map { it.id }
