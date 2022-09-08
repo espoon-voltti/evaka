@@ -48,20 +48,15 @@ fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
         """
 
     val update = createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "id" to feeAlteration.id,
-                "person_id" to feeAlteration.personId,
-                "type" to feeAlteration.type.toString(),
-                "amount" to feeAlteration.amount,
-                "is_absolute" to feeAlteration.isAbsolute,
-                "valid_from" to feeAlteration.validFrom,
-                "valid_to" to feeAlteration.validTo,
-                "notes" to feeAlteration.notes,
-                "updated_by" to feeAlteration.updatedBy
-            )
-
-        )
+        .bind("id", feeAlteration.id)
+        .bind("person_id", feeAlteration.personId)
+        .bind("type", feeAlteration.type.toString())
+        .bind("amount", feeAlteration.amount)
+        .bind("is_absolute", feeAlteration.isAbsolute)
+        .bind("valid_from", feeAlteration.validFrom)
+        .bind("valid_to", feeAlteration.validTo)
+        .bind("notes", feeAlteration.notes)
+        .bind("updated_by", feeAlteration.updatedBy)
 
     handlingExceptions { update.execute() }
 }

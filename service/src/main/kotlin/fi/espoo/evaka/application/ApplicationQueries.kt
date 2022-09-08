@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
+import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
@@ -170,20 +171,18 @@ fun Database.Read.fetchApplicationSummaries(
     authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization,
     canReadServiceWorkerNotes: Boolean
 ): Paged<ApplicationSummary> {
-    val params = mapOf(
-        "page" to page,
-        "pageSize" to pageSize,
-        "area" to areas.toTypedArray(),
-        "units" to units.toTypedArray(),
-        "authorizedUnitsForApplicationsWithoutAssistanceNeed" to authorizedUnitsForApplicationsWithoutAssistanceNeed.ids?.toTypedArray(),
-        "authorizedUnitsForApplicationsWithAssistanceNeed" to authorizedUnitsForApplicationsWithAssistanceNeed.ids?.toTypedArray(),
-        "documentType" to type.toApplicationType(),
-        "preschoolType" to preschoolType.toTypedArray(),
-        "status" to statuses.map { it.toStatus() }.toTypedArray(),
-        "distinctions" to distinctions.map { it.toString() }.toTypedArray(),
-        "dateType" to dateType.map { it.toString() }.toTypedArray(),
-        "periodStart" to periodStart,
-        "periodEnd" to periodEnd,
+    val params = listOf(
+        Binding.of("page", page),
+        Binding.of("pageSize", pageSize),
+        Binding.of("area", areas),
+        Binding.of("units", units),
+        Binding.of("authorizedUnitsForApplicationsWithoutAssistanceNeed", authorizedUnitsForApplicationsWithoutAssistanceNeed.ids),
+        Binding.of("authorizedUnitsForApplicationsWithAssistanceNeed", authorizedUnitsForApplicationsWithAssistanceNeed.ids),
+        Binding.of("documentType", type.toApplicationType()),
+        Binding.of("preschoolType", preschoolType),
+        Binding.of("status", statuses),
+        Binding.of("periodStart", periodStart),
+        Binding.of("periodEnd", periodEnd),
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("child"), searchTerms)
@@ -352,7 +351,8 @@ fun Database.Read.fetchApplicationSummaries(
 
     val applicationSummaries = createQuery(paginatedSql)
         .bind("today", today)
-        .bindMap(params + freeTextParams)
+        .addBindings(params)
+        .addBindings(freeTextParams)
         .mapToPaged(pageSize, "total") { row ->
             val status = row.mapColumn<ApplicationStatus>("application_status")
             ApplicationSummary(

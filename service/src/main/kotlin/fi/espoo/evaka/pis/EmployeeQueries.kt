@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -229,9 +230,9 @@ fun getEmployeesPaged(
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQueryForColumns(listOf("employee"), listOf("first_name", "last_name"), searchTerm)
 
-    val params = mapOf(
-        "offset" to (page - 1) * pageSize,
-        "pageSize" to pageSize
+    val params = listOf(
+        Binding.of("offset", (page - 1) * pageSize),
+        Binding.of("pageSize", pageSize),
     )
 
     val conditions = listOfNotNull(
@@ -263,7 +264,8 @@ ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
     """.trimIndent()
     return tx.createQuery(sql)
-        .bindMap(params + freeTextParams)
+        .addBindings(params)
+        .addBindings(freeTextParams)
         .mapToPaged(pageSize)
 }
 

@@ -126,7 +126,7 @@ class Database(private val jdbi: Jdbi) {
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
         fun createQuery(fragment: QueryFragment<*>): Query = Query(handle.createQuery(fragment.sql)).apply {
-            addBindings(fragment.bindings.asSequence().map { it.toPair() })
+            addBindings(fragment.bindings)
         }
 
         fun setLockTimeout(duration: Duration) = handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
@@ -201,14 +201,21 @@ class Database(private val jdbi: Jdbi) {
             return self()
         }
 
-        fun addBinding(name: String, binding: Binding<*>): This {
-            raw.bindByType(name, binding.value, binding.type)
+        fun addBinding(binding: Binding<*>): This {
+            raw.bindByType(binding.name, binding.value, binding.type)
             return self()
         }
 
-        fun addBindings(bindings: Sequence<Pair<String, Binding<*>>>): This {
-            for ((name, binding) in bindings) {
-                raw.bindByType(name, binding.value, binding.type)
+        fun addBindings(bindings: Iterable<Binding<*>>): This {
+            for (binding in bindings) {
+                raw.bindByType(binding.name, binding.value, binding.type)
+            }
+            return self()
+        }
+
+        fun addBindings(bindings: Sequence<Binding<*>>): This {
+            for (binding in bindings) {
+                raw.bindByType(binding.name, binding.value, binding.type)
             }
             return self()
         }
@@ -225,11 +232,6 @@ class Database(private val jdbi: Jdbi) {
 
         fun bindKotlin(name: String, value: Any): This {
             raw.bindKotlin(name, value)
-            return self()
-        }
-
-        fun bindMap(map: Map<String, *>): This {
-            raw.bindMap(map)
             return self()
         }
     }
@@ -297,10 +299,10 @@ internal data class ThreadId(val id: Long = Thread.currentThread().id) {
     fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
 }
 
-data class Binding<T>(val value: T, val type: QualifiedType<T>) {
+data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>) {
     companion object {
-        inline fun <reified T> of(value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()) =
-            Binding(value, createQualifiedType(*qualifiers))
+        inline fun <reified T> of(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()) =
+            Binding(name, value, createQualifiedType(*qualifiers))
     }
 }
 
@@ -313,10 +315,10 @@ data class Binding<T>(val value: T, val type: QualifiedType<T>) {
 data class QueryFragment<@Suppress("unused") Tag>(
     @Language("sql")
     val sql: String,
-    val bindings: Map<String, Binding<out Any?>> = emptyMap()
+    val bindings: List<Binding<out Any?>> = emptyList()
 ) {
     inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): QueryFragment<Tag> =
-        bind(name, Binding.of(value, qualifiers))
+        bind(Binding.of(name, value, qualifiers))
 
-    fun <T> bind(name: String, binding: Binding<T>): QueryFragment<Tag> = copy(bindings = bindings + (name to binding))
+    fun <T> bind(binding: Binding<T>): QueryFragment<Tag> = copy(bindings = bindings + binding)
 }

@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -83,7 +84,7 @@ enum class ApplicationDateType {
     ARRIVAL
 }
 
-enum class ApplicationStatusOption {
+enum class ApplicationStatusOption : DatabaseEnum {
     SENT,
     WAITING_PLACEMENT,
     WAITING_UNIT_CONFIRMATION,
@@ -93,6 +94,8 @@ enum class ApplicationStatusOption {
     REJECTED,
     ACTIVE,
     CANCELLED;
+
+    override val sqlType: String = "application_status_type"
 
     fun toStatus(): ApplicationStatus = when (this) {
         SENT -> ApplicationStatus.SENT

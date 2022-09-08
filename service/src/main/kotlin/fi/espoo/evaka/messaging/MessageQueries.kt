@@ -182,12 +182,6 @@ data class ReceivedMessageResultItem(
 )
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
-    val params = mapOf(
-        "accountId" to accountId,
-        "offset" to (page - 1) * pageSize,
-        "pageSize" to pageSize
-    )
-
     // language=SQL
     val sql = """
 WITH
@@ -263,7 +257,9 @@ SELECT
     """.trimIndent()
 
     return createQuery(sql)
-        .bindMap(params)
+        .bind("accountId", accountId)
+        .bind("offset", (page - 1) * pageSize)
+        .bind("pageSize", pageSize)
         .mapTo<ReceivedMessageResultItem>()
         .groupBy { it.id }
         .map { (threadId, threads) ->
@@ -489,12 +485,6 @@ ORDER BY type, name  -- groups first
 }
 
 fun Database.Read.getMessagesSentByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<SentMessage> {
-    val params = mapOf(
-        "accountId" to accountId,
-        "offset" to (page - 1) * pageSize,
-        "pageSize" to pageSize
-    )
-
     // language=SQL
     val sql = """
 WITH pageable_messages AS (
@@ -554,7 +544,9 @@ ORDER BY msg.sent_at DESC
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bindMap(params)
+        .bind("accountId", accountId)
+        .bind("offset", (page - 1) * pageSize)
+        .bind("pageSize", pageSize)
         .mapToPaged(pageSize)
 }
 

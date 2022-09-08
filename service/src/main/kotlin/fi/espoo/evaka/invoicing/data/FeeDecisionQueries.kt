@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
@@ -284,17 +285,17 @@ fun Database.Read.searchFeeDecisions(
         FeeDecisionSortParam.FINAL_PRICE -> "sum"
     }
 
-    val params = mapOf(
-        "page" to page,
-        "pageSize" to pageSize,
-        "status" to statuses.map { it.toString() }.toTypedArray(),
-        "area" to areas.toTypedArray(),
-        "unit" to unit,
-        "espooPostOffice" to "ESPOO",
-        "start_date" to startDate,
-        "end_date" to endDate,
-        "finance_decision_handler" to financeDecisionHandlerId,
-        "firstPlacementStartDate" to LocalDate.now().withDayOfMonth(1)
+    val params = listOf(
+        Binding.of("page", page),
+        Binding.of("pageSize", pageSize),
+        Binding.of("status", statuses),
+        Binding.of("area", areas),
+        Binding.of("unit", unit),
+        Binding.of("espooPostOffice", "ESPOO"),
+        Binding.of("start_date", startDate),
+        Binding.of("end_date", endDate),
+        Binding.of("finance_decision_handler", financeDecisionHandlerId),
+        Binding.of("firstPlacementStartDate", LocalDate.now().withDayOfMonth(1)),
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -412,7 +413,9 @@ fun Database.Read.searchFeeDecisions(
         """.trimIndent()
 
     return createQuery(sql)
-        .bindMap(params + freeTextParams + numberParams)
+        .addBindings(params)
+        .addBindings(freeTextParams)
+        .addBindings(numberParams)
         .mapToPaged<FeeDecisionSummary>(pageSize)
         .let { it.copy(data = it.data.merge()) }
 }

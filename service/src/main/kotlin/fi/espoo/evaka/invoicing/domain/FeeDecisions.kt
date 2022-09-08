@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
@@ -123,12 +124,14 @@ data class FeeAlterationWithEffect(
     val effect: Int
 )
 
-enum class FeeDecisionStatus {
+enum class FeeDecisionStatus : DatabaseEnum {
     DRAFT,
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,
     ANNULLED;
+
+    override val sqlType: String = "fee_decision_status"
 
     companion object {
         /**
