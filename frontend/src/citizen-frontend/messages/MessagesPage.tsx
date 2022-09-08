@@ -18,7 +18,6 @@ import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../localization'
-import { headerHeightDesktop } from '../navigation/const'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
@@ -26,10 +25,6 @@ import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
 import { getReceivers, sendMessage } from './api'
 import { MessageContext } from './state'
-
-const FullHeightContainer = styled(Container)`
-  height: calc(100vh - ${headerHeightDesktop}px);
-`
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;
@@ -78,7 +73,7 @@ export default React.memo(function MessagesPage() {
   )
 
   return (
-    <FullHeightContainer>
+    <Container>
       <UnwrapResult result={combine(accountId, receivers)}>
         {([id, receivers]) => (
           <>
@@ -116,6 +111,6 @@ export default React.memo(function MessagesPage() {
           </>
         )}
       </UnwrapResult>
-    </FullHeightContainer>
+    </Container>
   )
 })
