@@ -82,9 +82,11 @@ const PermissionToShare = React.memo(function PermissionToShare() {
 })
 
 const VasuTable = React.memo(function VasuTable({
-  summaries
+  summaries,
+  permissionToShareRequired
 }: {
   summaries: VasuDocumentSummary[]
+  permissionToShareRequired: boolean
 }) {
   const i18n = useTranslation()
   const user = useUser()
@@ -108,7 +110,7 @@ const VasuTable = React.memo(function VasuTable({
                 labels={i18n.children.vasu.states}
               />
             </StateTd>
-            {vasu.permissionToShareRequired && (
+            {permissionToShareRequired && (
               <PermissionTd data-qa={`permission-to-share-needed-${vasu.id}`}>
                 {!vasu.guardiansThatHaveGivenPermissionToShare.some(
                   (guardianId) => guardianId === user?.id
@@ -154,6 +156,7 @@ export default React.memo(function VasuAndLeopsSection({
 
   const { showVasuDisclaimer, showLeopsDisclaimer } = useMemo(() => {
     const requiresPermission = vasus
+      .map((vasu) => vasu.data)
       .getOrElse([])
       .filter(
         (vasu) =>
@@ -194,7 +197,7 @@ export default React.memo(function VasuAndLeopsSection({
           )}
         </PaddingBox>
       )}
-      {renderResult(vasus, (items) =>
+      {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
             <Gap size="s" />
@@ -218,7 +221,7 @@ export default React.memo(function VasuAndLeopsSection({
                   <Link to={`/vasu/${vasu.id}`} data-qa="vasu-link">
                     {`${vasu.name}`}
                   </Link>
-                  {vasu.permissionToShareRequired &&
+                  {permissionToShareRequired &&
                     !vasu.guardiansThatHaveGivenPermissionToShare.some(
                       (guardianId) => guardianId === user?.id
                     ) && (
@@ -230,7 +233,10 @@ export default React.memo(function VasuAndLeopsSection({
               ))}
             </MobileAndTablet>
             <Desktop>
-              <VasuTable summaries={items} />
+              <VasuTable
+                summaries={items}
+                permissionToShareRequired={permissionToShareRequired}
+              />
             </Desktop>
           </>
         )

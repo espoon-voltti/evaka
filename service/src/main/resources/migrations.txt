@@ -264,4 +264,3 @@ V263__child_absences_function.sql
 V264__fridge_partner_self_foreign_key.sql
 V265__finance_decisions_partner_constraint.sql
 V266__trim_external_staff_names.sql
-V267__vasu_permission_to_share_required.sql

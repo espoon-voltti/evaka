@@ -38,15 +38,23 @@ class VasuControllerCitizen(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: ChildId
-    ): List<VasuDocumentSummary> {
+    ): CitizenGetVasuDocumentSummariesResponse {
         Audit.ChildVasuDocumentsReadByGuardian.log(targetId = childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getVasuDocumentSummaries(childId).filter { it.publishedAt != null }
+                CitizenGetVasuDocumentSummariesResponse(
+                    data = tx.getVasuDocumentSummaries(childId).filter { it.publishedAt != null },
+                    permissionToShareRequired = featureConfig.curriculumDocumentPermissionToShareRequired
+                )
             }
         }
     }
+
+    data class CitizenGetVasuDocumentSummariesResponse(
+        val data: List<VasuDocumentSummary>,
+        val permissionToShareRequired: Boolean,
+    )
 
     @GetMapping("/children/unread-count")
     fun getGuardianUnreadVasuCount(
@@ -57,10 +65,12 @@ class VasuControllerCitizen(
         return db.connect { dbc ->
             dbc.read { tx ->
                 val children = tx.getGuardianDependants(PersonId(user.rawId()))
+                if (!featureConfig.curriculumDocumentPermissionToShareRequired) {
+                    return@read children.associate { child -> child.id to 0 }
+                }
                 children.associate { child ->
                     child.id to tx.getVasuDocumentSummaries(child.id)
                         .filter { it.publishedAt != null }
-                        .filter { doc -> doc.permissionToShareRequired }
                         .filterNot { doc -> doc.guardiansThatHaveGivenPermissionToShare.contains(PersonId(user.evakaUserId.raw)) }
                         .size
                 }
@@ -88,7 +98,7 @@ class VasuControllerCitizen(
                 val doc = tx.getLatestPublishedVasuDocument(id) ?: throw NotFound("document $id not found")
                 CitizenGetVasuDocumentResponse(
                     vasu = doc.redact(),
-                    permissionToShareRequired = doc.permissionToShareRequired,
+                    permissionToShareRequired = featureConfig.curriculumDocumentPermissionToShareRequired,
                     guardianHasGivenPermissionToShare = doc.basics.guardians.find { it.id.raw == user.rawId() }?.hasGivenPermissionToShare ?: false
                 )
             }

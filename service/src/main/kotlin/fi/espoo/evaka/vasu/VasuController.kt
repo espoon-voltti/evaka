@@ -68,7 +68,7 @@ class VasuController(
                     throw BadRequest("Template is not currently valid")
                 }
 
-                tx.insertVasuDocument(childId, template, featureConfig.curriculumDocumentPermissionToShareRequired)
+                tx.insertVasuDocument(childId, template)
             }
         }
     }

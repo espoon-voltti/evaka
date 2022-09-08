@@ -36,6 +36,14 @@ export interface CitizenGetVasuDocumentResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuControllerCitizen.CitizenGetVasuDocumentSummariesResponse
+*/
+export interface CitizenGetVasuDocumentSummariesResponse {
+  data: VasuDocumentSummary[]
+  permissionToShareRequired: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuTemplateController.CopyTemplateRequest
 */
 export interface CopyTemplateRequest {
@@ -114,7 +122,6 @@ export interface VasuDocument {
   id: UUID
   language: VasuLanguage
   modifiedAt: HelsinkiDateTime
-  permissionToShareRequired: boolean
   templateName: string
   templateRange: FiniteDateRange
   type: CurriculumType
@@ -159,7 +166,6 @@ export interface VasuDocumentSummary {
   id: UUID
   modifiedAt: HelsinkiDateTime
   name: string
-  permissionToShareRequired: boolean
   publishedAt: HelsinkiDateTime | null
   type: CurriculumType
 }

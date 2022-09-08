@@ -5,8 +5,8 @@
 import { client } from 'citizen-frontend/api-client'
 import { Failure, Result, Success } from 'lib-common/api'
 import {
-  VasuDocumentEvent,
-  VasuDocumentSummary
+  CitizenGetVasuDocumentSummariesResponse,
+  VasuDocumentEvent
 } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -21,22 +21,25 @@ const mapVasuDocumentEvent = (
 
 export async function getChildVasuSummaries(
   childId: UUID
-): Promise<Result<VasuDocumentSummary[]>> {
+): Promise<Result<CitizenGetVasuDocumentSummariesResponse>> {
   return client
-    .get<JsonOf<VasuDocumentSummary[]>>(
+    .get<JsonOf<CitizenGetVasuDocumentSummariesResponse>>(
       `/citizen/vasu/children/${childId}/vasu-summaries`
     )
     .then((res) =>
-      Success.of(
-        res.data.map(({ events, modifiedAt, publishedAt, ...rest }) => ({
-          ...rest,
-          events: events.map(mapVasuDocumentEvent),
-          modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-          publishedAt: publishedAt
-            ? HelsinkiDateTime.parseIso(publishedAt)
-            : null
-        }))
-      )
+      Success.of({
+        data: res.data.data.map(
+          ({ events, modifiedAt, publishedAt, ...rest }) => ({
+            ...rest,
+            events: events.map(mapVasuDocumentEvent),
+            modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+            publishedAt: publishedAt
+              ? HelsinkiDateTime.parseIso(publishedAt)
+              : null
+          })
+        ),
+        permissionToShareRequired: res.data.permissionToShareRequired
+      })
     )
     .catch((e) => Failure.fromError(e))
 }

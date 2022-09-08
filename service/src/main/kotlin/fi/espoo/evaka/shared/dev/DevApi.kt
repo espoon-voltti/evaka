@@ -1066,7 +1066,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction { tx ->
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(body.childId, template, featureConfig.curriculumDocumentPermissionToShareRequired)
+                tx.insertVasuDocument(body.childId, template)
             }
         }
     }
