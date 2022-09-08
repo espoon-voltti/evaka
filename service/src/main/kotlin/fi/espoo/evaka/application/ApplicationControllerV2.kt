@@ -274,6 +274,7 @@ class ApplicationControllerV2(
     fun getApplicationDetails(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ApplicationResponse {
         Audit.ApplicationRead.log(targetId = applicationId)
@@ -302,7 +303,7 @@ class ApplicationControllerV2(
                     allAttachments.filter { attachment -> permissions[attachment.id]?.isPermitted() ?: false }
                 }
 
-                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, applicationId)
+                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, clock, applicationId)
 
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),

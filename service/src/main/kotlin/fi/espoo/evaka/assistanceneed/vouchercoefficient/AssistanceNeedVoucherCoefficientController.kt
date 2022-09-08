@@ -58,7 +58,7 @@ class AssistanceNeedVoucherCoefficientController(
                 tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
                     AssistanceNeedVoucherCoefficientResponse(
                         voucherCoefficient = it,
-                        permittedActions = accessControl.getPermittedActions(tx, user, it.id)
+                        permittedActions = accessControl.getPermittedActions(tx, user, clock, it.id)
                     )
                 }
             }

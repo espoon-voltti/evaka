@@ -37,6 +37,7 @@ class DailyServiceTimesController(
     fun getDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
@@ -47,7 +48,7 @@ class DailyServiceTimesController(
                     DailyServiceTimesResponse(
                         it,
                         permittedActions = accessControl.getPermittedActions(
-                            tx, user, it.id
+                            tx, user, clock, it.id
                         )
                     )
                 }

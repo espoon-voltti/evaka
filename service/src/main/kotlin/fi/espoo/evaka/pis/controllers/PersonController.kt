@@ -60,6 +60,7 @@ class PersonController(
     fun getPerson(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable personId: PersonId
     ): PersonResponse {
         Audit.PersonDetailsRead.log(targetId = personId)
@@ -69,7 +70,7 @@ class PersonController(
                 tx.getPersonById(personId)?.let {
                     PersonResponse(
                         PersonJSON.from(it),
-                        accessControl.getPermittedActions(tx, user, personId)
+                        accessControl.getPermittedActions(tx, user, clock, personId)
                     )
                 }
             }

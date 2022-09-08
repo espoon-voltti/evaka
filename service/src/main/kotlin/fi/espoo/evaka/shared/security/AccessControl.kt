@@ -197,13 +197,15 @@ class AccessControl(
     inline fun <T, reified A> getPermittedActions(
         tx: Database.Read,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         target: T
-    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, RealEvakaClock(), A::class.java, setOf(target)).values.first()
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, clock, A::class.java, setOf(target)).values.first()
     inline fun <T, reified A> getPermittedActions(
         tx: Database.Read,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         targets: Iterable<T>
-    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, RealEvakaClock(), A::class.java, targets.toSet())
+    ) where A : Action.ScopedAction<T>, A : Enum<A> = getPermittedActions(tx, user, clock, A::class.java, targets.toSet())
 
     fun <T, A> getPermittedActions(
         tx: Database.Read,

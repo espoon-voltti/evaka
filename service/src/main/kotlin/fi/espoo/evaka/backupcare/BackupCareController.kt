@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -36,6 +37,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun getForChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("childId") childId: ChildId
     ): ChildBackupCaresResponse {
         Audit.ChildBackupCareRead.log(targetId = childId)
@@ -45,7 +47,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 dbc.read { tx ->
                     val backupCares = tx.getBackupCaresForChild(childId)
                     val backupCareIds = backupCares.map { bc -> bc.id }
-                    val permittedActions = accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(tx, user, backupCareIds)
+                    val permittedActions = accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(tx, user, clock, backupCareIds)
                     backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
                 }
             }

@@ -101,6 +101,7 @@ class DaycareController(
     fun getDaycare(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId
     ): DaycareResponse {
         Audit.UnitRead.log(targetId = daycareId)
@@ -109,7 +110,7 @@ class DaycareController(
             dbc.read { tx ->
                 tx.getDaycare(daycareId)?.let { daycare ->
                     val groups = tx.getDaycareGroupSummaries(daycareId)
-                    val permittedActions = accessControl.getPermittedActions<GroupId, Action.Group>(tx, user, groups.map { it.id })
+                    val permittedActions = accessControl.getPermittedActions<GroupId, Action.Group>(tx, user, clock, groups.map { it.id })
                     DaycareResponse(
                         daycare,
                         groups.map {
@@ -120,7 +121,7 @@ class DaycareController(
                                 permittedActions = permittedActions[it.id]!!
                             )
                         },
-                        accessControl.getPermittedActions(tx, user, daycareId)
+                        accessControl.getPermittedActions(tx, user, clock, daycareId)
                     )
                 }
             }

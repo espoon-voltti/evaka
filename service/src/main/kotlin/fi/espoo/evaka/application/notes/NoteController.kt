@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -30,6 +31,7 @@ class NoteController(private val accessControl: AccessControl) {
     fun getNotes(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): List<ApplicationNoteResponse> {
         Audit.NoteRead.log(targetId = applicationId)
@@ -47,7 +49,7 @@ class NoteController(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 val notes = notesQuery(tx)
                 val permittedActions = accessControl
-                    .getPermittedActions<ApplicationNoteId, Action.ApplicationNote>(tx, user, notes.map { it.id })
+                    .getPermittedActions<ApplicationNoteId, Action.ApplicationNote>(tx, user, clock, notes.map { it.id })
 
                 notes.map {
                     ApplicationNoteResponse(

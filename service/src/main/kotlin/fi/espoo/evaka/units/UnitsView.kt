@@ -67,7 +67,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
     fun getUnitViewData(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam(
@@ -96,10 +96,10 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                         unitId
                     )
                 ) tx.getTerminatedPlacements(
-                    evakaClock.today(),
+                    clock.today(),
                     unitId,
-                    evakaClock.today().minusWeeks(terminatedPlacementsViewWeeks),
-                    evakaClock.today()
+                    clock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                    clock.today()
                 ) else emptyList()
                 val caretakers = Caretakers(
                     unitCaretakers = tx.getUnitStats(unitId, from, to),
@@ -130,11 +130,12 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     missingGroupPlacements = missingGroupPlacements,
                     recentlyTerminatedPlacements = recentlyTerminatedPlacements,
                     caretakers = caretakers,
-                    permittedBackupCareActions = accessControl.getPermittedActions(tx, user, backupCareIds),
-                    permittedPlacementActions = accessControl.getPermittedActions(tx, user, placementIds),
+                    permittedBackupCareActions = accessControl.getPermittedActions(tx, user, clock, backupCareIds),
+                    permittedPlacementActions = accessControl.getPermittedActions(tx, user, clock, placementIds),
                     permittedGroupPlacementActions = accessControl.getPermittedActions(
                         tx,
                         user,
+                        clock,
                         placements.flatMap { placement ->
                             placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
                         }
@@ -143,17 +144,17 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                 )
 
                 if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
-                    val unitOccupancies = getUnitOccupancies(tx, evakaClock.now(), unitId, period, acl.getAuthorizedUnits(user))
-                    val groupOccupancies = getGroupOccupancies(tx, evakaClock.today(), unitId, period, acl.getAuthorizedUnits(user))
+                    val unitOccupancies = getUnitOccupancies(tx, clock.now(), unitId, period, acl.getAuthorizedUnits(user))
+                    val groupOccupancies = getGroupOccupancies(tx, clock.today(), unitId, period, acl.getAuthorizedUnits(user))
                     val placementProposals = tx.getPlacementPlans(
-                        evakaClock.today(),
+                        clock.today(),
                         unitId,
                         null,
                         null,
                         listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
                     )
                     val placementPlans = tx.getPlacementPlans(
-                        evakaClock.today(),
+                        clock.today(),
                         unitId,
                         null,
                         null,

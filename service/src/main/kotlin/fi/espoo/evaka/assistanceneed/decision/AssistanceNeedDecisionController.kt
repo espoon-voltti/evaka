@@ -74,6 +74,7 @@ class AssistanceNeedDecisionController(
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecisionResponse {
         Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
@@ -84,7 +85,7 @@ class AssistanceNeedDecisionController(
 
                 AssistanceNeedDecisionResponse(
                     decision,
-                    permittedActions = accessControl.getPermittedActions(tx, user, id),
+                    permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
                     hasMissingFields = hasMissingFields(decision)
                 )
             }
@@ -169,6 +170,7 @@ class AssistanceNeedDecisionController(
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
         Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
@@ -179,6 +181,7 @@ class AssistanceNeedDecisionController(
                 val permittedActions = accessControl.getPermittedActions<AssistanceNeedDecisionId, Action.AssistanceNeedDecision>(
                     tx,
                     user,
+                    clock,
                     decisions.map { it.id }
                 )
                 decisions.map {

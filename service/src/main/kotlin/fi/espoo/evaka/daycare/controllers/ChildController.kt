@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ChildController(private val accessControl: AccessControl, private val featureConfig: FeatureConfig) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ChildResponse {
+    fun getChild(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, Action.Child.READ, childId)
         return db.connect { dbc ->
@@ -46,8 +47,8 @@ class ChildController(private val accessControl: AccessControl, private val feat
                     ?: throw NotFound("Child $childId not found")
                 ChildResponse(
                     person = PersonJSON.from(child),
-                    permittedActions = accessControl.getPermittedActions(tx, user, childId),
-                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId),
+                    permittedActions = accessControl.getPermittedActions(tx, user, clock, childId),
+                    permittedPersonActions = accessControl.getPermittedActions(tx, user, clock, childId),
                     assistanceNeedVoucherCoefficientsEnabled = !featureConfig.valueDecisionCapacityFactorEnabled
                 )
             }

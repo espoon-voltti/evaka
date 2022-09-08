@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -57,6 +58,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun getParentships(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
     ): List<ParentshipWithPermittedActions> {
@@ -78,7 +80,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                     childId = childId,
                     includeConflicts = true
                 )
-                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, parentships.map { it.id })
+                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, clock, parentships.map { it.id })
                 parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
