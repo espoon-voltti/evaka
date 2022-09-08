@@ -292,7 +292,11 @@ export default {
       start: 'Alkaa',
       end: 'Päättyy',
       absent: 'Poissa',
-      dayOff: 'Vapaapäivä'
+      dayOff: 'Vapaapäivä',
+      saveErrors: {
+        failure: 'Tallennus epäonnistui',
+        NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'
+      }
     },
     absenceModal: {
       title: 'Ilmoita poissaolo',

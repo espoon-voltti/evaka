@@ -139,7 +139,9 @@ const groupChildren = (
     groupBy(
       allChildren
         .filter((childInfo) =>
-          date.isBetween(childInfo.placementMinStart, childInfo.placementMaxEnd)
+          childInfo.placements.some((placement) =>
+            date.isBetween(placement.start, placement.end)
+          )
         )
         .map<DailyChildGroupElement>((childInfo) => {
           const child = reservedChildren.find(

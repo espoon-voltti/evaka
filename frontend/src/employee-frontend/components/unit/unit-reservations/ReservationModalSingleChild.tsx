@@ -92,8 +92,8 @@ export default React.memo(function ReservationModalSingleChild({
 
   const [showAllErrors, setShowAllErrors] = useState(false)
   const validationResult = useMemo(
-    () => validateForm([reservableDates], formData),
-    [formData]
+    () => validateForm({ [child.id]: [reservableDates] }, formData),
+    [child.id, formData]
   )
 
   const shiftCareRange = useMemo(() => {

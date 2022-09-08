@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DailyReservationData,
@@ -27,6 +26,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -49,12 +49,13 @@ import {
 } from './CalendarModal'
 import { postReservations } from './api'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
+import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
 interface Props {
   onClose: () => void
   onReload: () => void
   availableChildren: ReservationChild[]
-  reservableDays: FiniteDateRange[]
+  reservableDays: Record<string, FiniteDateRange[]>
   firstReservableDate: LocalDate
   existingReservations: DailyReservationData[]
 }
@@ -108,18 +109,20 @@ export default React.memo(function ReservationModal({
 
   const isInvalidDate = useCallback(
     (date: LocalDate) =>
-      reservableDays.some((r) => r.includes(date))
+      availableChildren.some((child) =>
+        reservableDays[child.id].some((r) => r.includes(date))
+      )
         ? null
         : i18n.validationErrors.unselectableDate,
-    [reservableDays, i18n]
+    [availableChildren, reservableDays, i18n]
   )
 
   const { minDate, maxDate } = useMemo(
     () => ({
-      minDate: minBy(reservableDays, (range) => range.start)?.start,
-      maxDate: maxBy(reservableDays, (range) => range.end)?.end
+      minDate: getEarliestReservableDate(availableChildren, reservableDays),
+      maxDate: getLatestReservableDate(availableChildren, reservableDays)
     }),
-    [reservableDays]
+    [availableChildren, reservableDays]
   )
 
   const selectedRange = useMemo(() => {
@@ -153,6 +156,17 @@ export default React.memo(function ReservationModal({
         )
     )
   }, [availableChildren, selectedRange])
+
+  const [saveError, setSaveError] = useState<string | undefined>()
+  const showSaveError = useCallback(
+    (reason: Failure<void>) => {
+      reason.errorCode === 'NON_RESERVABLE_DAYS' &&
+        setSaveError(
+          i18n.calendar.reservationModal.saveErrors.NON_RESERVABLE_DAYS
+        )
+    },
+    [i18n, setSaveError]
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -234,10 +248,8 @@ export default React.memo(function ReservationModal({
                   width="auto"
                   ariaLabel={i18n.common.openExpandingInfo}
                   info={
-                    reservableDays.length > 0
-                      ? i18n.calendar.reservationModal.dateRangeInfo(
-                          reservableDays[0].end
-                        )
+                    Object.keys(reservableDays).length > 0
+                      ? i18n.calendar.reservationModal.dateRangeInfo(maxDate)
                       : i18n.calendar.reservationModal.noReservableDays
                   }
                   inlineChildren
@@ -291,6 +303,15 @@ export default React.memo(function ReservationModal({
                 )}
               </CalendarModalSection>
             </div>
+            <Gap size="m" />
+            {saveError !== undefined && (
+              <AlertBox
+                title={i18n.calendar.reservationModal.saveErrors.failure}
+                message={saveError}
+                wide
+                noMargin
+              />
+            )}
             <CalendarModalButtons>
               <Button
                 onClick={onClose}
@@ -312,6 +333,9 @@ export default React.memo(function ReservationModal({
                 onSuccess={() => {
                   onReload()
                   onClose()
+                }}
+                onFailure={(reason) => {
+                  showSaveError(reason)
                 }}
                 data-qa="modal-okBtn"
               />

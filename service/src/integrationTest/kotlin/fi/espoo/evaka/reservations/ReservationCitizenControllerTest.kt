@@ -98,26 +98,24 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             listOf(
                 // Sorted by date of birth, oldest child first
                 ReservationChild(
-                    testChild_2.id,
-                    testChild_2.firstName,
-                    testChild_2.lastName,
-                    "",
-                    null,
-                    testDate,
-                    testDate.plusDays(1),
-                    setOf(1, 2, 3, 4, 5),
-                    false
+                    id = testChild_2.id,
+                    firstName = testChild_2.firstName,
+                    lastName = testChild_2.lastName,
+                    preferredName = "",
+                    imageId = null,
+                    placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
+                    maxOperationalDays = setOf(1, 2, 3, 4, 5),
+                    inShiftCareUnit = false
                 ),
                 ReservationChild(
-                    testChild_1.id,
-                    testChild_1.firstName,
-                    testChild_2.lastName,
-                    "",
-                    null,
-                    testDate,
-                    testDate.plusDays(1),
-                    setOf(1, 2, 3, 4, 5),
-                    false
+                    id = testChild_1.id,
+                    firstName = testChild_1.firstName,
+                    lastName = testChild_1.lastName,
+                    preferredName = "",
+                    imageId = null,
+                    placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
+                    maxOperationalDays = setOf(1, 2, 3, 4, 5),
+                    inShiftCareUnit = false
                 ),
             ),
             res.children

@@ -57,7 +57,7 @@ export type ReservationFormDataForValidation = Omit<
 > & { endDate: LocalDate | null; startDate: LocalDate | null }
 
 export function validateForm(
-  reservableDays: FiniteDateRange[],
+  reservableDays: Record<string, FiniteDateRange[]>,
   { startDate, endDate, ...formData }: ReservationFormDataForValidation
 ): ValidationResult {
   const errors: ReservationErrors = {}
@@ -68,13 +68,21 @@ export function validateForm(
 
   if (startDate === null) {
     errors['startDate'] = 'required'
-  } else if (!reservableDays.some((r) => r.includes(startDate))) {
+  } else if (
+    !formData.selectedChildren.some((childId) =>
+      reservableDays[childId].some((r) => r.includes(startDate))
+    )
+  ) {
     errors['startDate'] = 'validDate'
   }
 
   if (endDate === null) {
     errors['endDate'] = 'required'
-  } else if (!reservableDays.some((r) => r.includes(endDate))) {
+  } else if (
+    !formData.selectedChildren.some((childId) =>
+      reservableDays[childId].some((r) => r.includes(endDate))
+    )
+  ) {
     errors['endDate'] = 'validDate'
   } else if (startDate && endDate.isBefore(startDate)) {
     errors['endDate'] = 'dateTooEarly'

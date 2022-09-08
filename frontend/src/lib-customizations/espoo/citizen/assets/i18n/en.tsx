@@ -295,7 +295,11 @@ const en: Translations = {
       start: 'Start',
       end: 'End',
       absent: 'Absent',
-      dayOff: 'Day off'
+      dayOff: 'Day off',
+      saveErrors: {
+        failure: 'Could not save',
+        NON_RESERVABLE_DAYS: 'Some of the selected days cannot be reserved'
+      }
     },
     absenceModal: {
       title: 'Report absence',
