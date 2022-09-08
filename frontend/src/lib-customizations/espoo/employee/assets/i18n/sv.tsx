@@ -55,7 +55,7 @@ export const sv = {
       guardiansHeardOn: 'Datum för hörande av vårdnadshavare',
       guardiansHeard: 'Vårdnadshavare som hörts och förfaringssätt vid hörande',
       guardiansHeardInfo:
-        'Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här hur och när hen har kallats för att höras och hur och när barnets plan för småbarnspedagogiken getts kännedom (till vårdnadshavaren). Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt att företräda sig själv åt en annan förmyndare.',
+        'Anteckna hur vårdnadshavaren har konsulterats (t.ex. möte, distanskontakt, skriftligt svar från vårdnadshavaren). Om vårdnadshavaren inte har konsulterats, anteckna här, hur och när hen har kallats för att höras och hur och när barnets plan för småbarnspedagogiken getts till kännedom (till vårdnadshavaren). Alla barnets vårdnadshavare bör ha möjlighet att bli hörda. Vårdnadshavaren kan vid behov ge fullmakt åt en annan förmyndare att företräda sig själv.',
       viewOfTheGuardians: 'Vårdnadshavarnas syn på det rekommenderade stödet',
       viewOfTheGuardiansInfo:
         'Anteckna vårdnadshavarnas syn på det stöd som erbjuds barnet.',
@@ -71,7 +71,8 @@ export const sv = {
         specialAssistance: 'Särskilt stöd'
       },
       startDate: 'Beslutet angående är i kraft',
-      startDateIndefiniteInfo: 'Beslutet gäller från angivet startdatum.',
+      startDateIndefiniteInfo:
+        'Beslutet träder i kraft från angivet startdatum.',
       startDateInfo:
         'Barnets stöd ses över närhelst behovet ändras och minst en gång per år.',
       endDate: 'Beslutet i kraft till',
@@ -109,8 +110,8 @@ export const sv = {
       appealInstructions: (
         <>
           <P>
-            En part som missnöjd med beslutet kan göra en skriftlig begäran om
-            omprövning.
+            En part som är missnöjd med beslutet kan göra en skriftlig begäran
+            om omprövning.
           </P>
           <H3>Rätt att begära omprövning</H3>
           <P>
@@ -164,8 +165,8 @@ export const sv = {
             </li>
             <li>Vilket beslut som omprövas</li>
             <li>
-              Vilka delar av beslutet som du anser ska omprövas och vilken
-              ändring som söks
+              Vilka delar av beslutet som ska omprövas och vilken ändring som
+              söks
             </li>
             <li>På vilka grunder omprövningen begärs</li>
           </ul>

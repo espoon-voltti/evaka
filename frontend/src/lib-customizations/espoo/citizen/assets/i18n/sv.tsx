@@ -1974,8 +1974,8 @@ const sv: Translations = {
           appealInstructions: (
             <>
               <P>
-                En part som missnöjd med beslutet kan göra en skriftlig begäran
-                om omprövning.
+                En part som är missnöjd med beslutet kan göra en skriftlig
+                begäran om omprövning.
               </P>
               <H3>Rätt att begära omprövning</H3>
               <P>
@@ -2031,8 +2031,8 @@ const sv: Translations = {
                 </li>
                 <li>Vilket beslut som omprövas</li>
                 <li>
-                  Vilka delar av beslutet som du anser ska omprövas och vilken
-                  ändring som söks
+                  Vilka delar av beslutet som ska omprövas och vilken ändring
+                  som söks
                 </li>
                 <li>På vilka grunder omprövningen begärs</li>
               </ul>
