@@ -47,6 +47,7 @@ import AssistanceNeedDecisionEditPage from './components/child-information/assis
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
+import EmployeeNicknamePage from './components/employee/EmployeeNicknamePage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import EmployeePage from './components/employees/EmployeePage'
 import EmployeesPage from './components/employees/EmployeesPage'
@@ -570,6 +571,14 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.employeePinCode}>
                         <EmployeePinCodePage />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/nickname"
+                    element={
+                      <EmployeeRoute title={i18n.titles.nickname}>
+                        <EmployeeNicknamePage />
                       </EmployeeRoute>
                     }
                   />

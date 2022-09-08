@@ -75,6 +75,14 @@ export interface Employee {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeNicknames
+*/
+export interface EmployeeNicknames {
+  possibleNicknames: string[]
+  selectedNickname: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeUpdate
 */
 export interface EmployeeUpdate {

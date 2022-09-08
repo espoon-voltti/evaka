@@ -147,6 +147,37 @@ class EmployeeController(private val accessControl: AccessControl) {
             }
         }
     }
+
+    data class EmployeeNicknames(
+        val selectedNickname: String?,
+        val possibleNicknames: List<String>
+    )
+    @GetMapping("/nickname")
+    fun getEmployeeNickNames(
+        db: Database,
+        user: AuthenticatedUser
+    ): EmployeeNicknames {
+        Audit.EmployeesNicknameRead.log()
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                EmployeeNicknames(
+                    selectedNickname = employee.nickname,
+                    possibleNicknames = possibleNicknames(employee)
+                )
+            }
+        }
+    }
+
+    private fun possibleNicknames(employee: Employee): List<String> {
+        val fullFirstNames = employee.firstName.split("\\s+".toRegex())
+        val splitTwoPartNames = fullFirstNames
+            .filter { it.contains('-') }
+            .map { it.split("\\-+".toRegex()) }
+            .flatten()
+
+        return fullFirstNames + splitTwoPartNames
+    }
 }
 
 data class PinCode(val pin: String)

@@ -150,6 +150,7 @@ enum class Audit(
     EmployeeRead("evaka.employee.read", securityEvent = true),
     EmployeeUpdate("evaka.employee.update", securityEvent = true, securityLevel = "high"),
     EmployeesRead("evaka.employees.read", securityEvent = true),
+    EmployeesNicknameRead("evaka.employees.nickname.read"),
     EndedPlacementsReportRead("evaka.ended-placements-report.read"),
     FamilyConflictReportRead("evaka.family-conflict-report.read"),
     FamilyContactReportRead("evaka.family-contact-report.read"),

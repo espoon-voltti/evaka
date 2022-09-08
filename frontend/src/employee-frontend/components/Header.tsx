@@ -408,6 +408,15 @@ export default React.memo(function Header() {
                   {i18n.pinCode.link}
                 </Link>
               )}
+
+              <Link
+                to="/nickname"
+                onClick={closeUserPopup}
+                data-qa="user-popup-nickname"
+              >
+                {i18n.nickname.popupLink}
+              </Link>
+
               <LogoutLink
                 data-qa="logout-btn"
                 href={logoutUrl}
