@@ -119,7 +119,7 @@ class RealtimeStaffAttendanceController(
         val externalAttendances: List<UpsertExternalAttendance>
     ) {
         fun isArrivedBeforeDeparted() =
-            staffAttendances.all { it.departed == null || it.arrived < it.departed } ||
+            staffAttendances.all { it.departed == null || it.arrived < it.departed } &&
                 externalAttendances.all { it.departed == null || it.arrived < it.departed }
     }
 
