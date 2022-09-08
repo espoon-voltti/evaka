@@ -5,8 +5,9 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.shared.db.DatabaseEnum
 
-enum class PlacementType {
+enum class PlacementType : DatabaseEnum {
     CLUB,
     DAYCARE,
     DAYCARE_PART_TIME,
@@ -44,6 +45,8 @@ enum class PlacementType {
             AbsenceCategory.NONBILLABLE
         )
     }
+
+    override val sqlType: String = "placement_type"
 
     companion object {
         fun invoiced() = values().filter { it.isInvoiced() }
