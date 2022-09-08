@@ -37,11 +37,11 @@ class AwsConfig {
             .credentialsProvider(credentialsProvider)
             .build()
 
-        for (bucket in env.allBuckets()) {
+        val existingBuckets = client.listBuckets().buckets().map { it.name()!! }
+        for (bucket in env.allBuckets().filterNot { existingBuckets.contains(it) }) {
             val request = CreateBucketRequest.builder().bucket(bucket).build()
             client.createBucket(request)
         }
-
         return client
     }
 
