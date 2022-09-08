@@ -24,10 +24,13 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -35,6 +38,8 @@ import kotlin.test.assertTrue
 class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
     private lateinit var childId: ChildId
     private lateinit var assistanceNeedDecisionId: AssistanceNeedDecisionId
+
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
     private fun beforeEach() {
@@ -99,9 +104,9 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
             daycareId
         }
         val unitSupervisor = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, assistanceNeedDecisionId))
+        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, assistanceNeedDecisionId))
 
         val staff = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.STAFF))
-        assertFalse(accessControl.hasPermissionFor(staff, action, assistanceNeedDecisionId))
+        assertFalse(accessControl.hasPermissionFor(staff, clock, action, assistanceNeedDecisionId))
     }
 }

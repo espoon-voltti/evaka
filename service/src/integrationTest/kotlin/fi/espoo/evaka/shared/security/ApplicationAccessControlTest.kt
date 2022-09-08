@@ -24,11 +24,14 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -37,6 +40,8 @@ class ApplicationAccessControlTest : AccessControlTest() {
     private lateinit var childId: ChildId
     private lateinit var applicationId: ApplicationId
     private lateinit var daycareId: DaycareId
+
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
     private fun beforeEach() {
@@ -68,8 +73,8 @@ class ApplicationAccessControlTest : AccessControlTest() {
         rules.add(action, IsCitizen(allowWeakLogin = false).ownerOfApplication())
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
-        assertTrue(accessControl.hasPermissionFor(creatorCitizen, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, action, applicationId))
+        assertTrue(accessControl.hasPermissionFor(creatorCitizen, clock, action, applicationId))
+        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, applicationId))
     }
 
     @Test
@@ -78,8 +83,8 @@ class ApplicationAccessControlTest : AccessControlTest() {
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPreferredUnitOfApplication())
         val unitSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
         val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, action, applicationId))
+        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
+        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
     }
 
     @Test
@@ -93,7 +98,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
         }
         val unitSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
         val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, action, applicationId))
+        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
+        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
     }
 }

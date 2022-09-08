@@ -39,10 +39,11 @@ class ChildController(private val accessControl: AccessControl, private val feat
                     ?.hideNonPermittedPersonData(
                         includeInvoiceAddress = accessControl.hasPermissionFor(
                             user,
+                            clock,
                             Action.Person.READ_INVOICE_ADDRESS,
                             childId
                         ),
-                        includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, childId)
+                        includeOphOid = accessControl.hasPermissionFor(user, clock, Action.Person.READ_OPH_OID, childId)
                     )
                     ?: throw NotFound("Child $childId not found")
                 ChildResponse(

@@ -189,7 +189,7 @@ class ApplicationControllerV2(
     fun getApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
     ): Paged<ApplicationSummary> {
         Audit.ApplicationSearch.log()
@@ -213,12 +213,12 @@ class ApplicationControllerV2(
         }
 
         val canReadServiceWorkerNotes =
-            accessControl.hasPermissionFor(user, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
+            accessControl.hasPermissionFor(user, clock, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationSummaries(
-                    today = evakaClock.today(),
+                    today = clock.today(),
                     page = body.page ?: 1,
                     pageSize = body.pageSize ?: 100,
                     sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,

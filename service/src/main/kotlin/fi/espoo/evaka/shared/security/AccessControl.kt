@@ -50,8 +50,8 @@ class AccessControl(
         dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.assert()
     }
 
-    fun hasPermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->
-        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.isPermitted()
+    fun hasPermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->
+        dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.isPermitted()
     }
 
     fun checkPermissionFor(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction, allowedToAdmin: Boolean = true): AccessControlDecision {
@@ -100,11 +100,11 @@ class AccessControl(
         }
     }
 
-    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T): Boolean =
-        hasPermissionFor(user, action, listOf(target))
-    fun <T> hasPermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
+    fun <T> hasPermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>, target: T): Boolean =
+        hasPermissionFor(user, clock, action, listOf(target))
+    fun <T> hasPermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>, targets: Iterable<T>): Boolean = Database(jdbi).connect { dbc ->
         dbc.read { tx ->
-            checkPermissionFor(tx, user, RealEvakaClock(), action, targets).values.all { it.isPermitted() }
+            checkPermissionFor(tx, user, clock, action, targets).values.all { it.isPermitted() }
         }
     }
 

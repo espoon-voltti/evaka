@@ -41,11 +41,12 @@ class FamilyController(
     fun getFamilyByPerson(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
         Audit.PisFamilyRead.log(targetId = id)
         accessControl.requirePermissionFor(user, Action.Person.READ_FAMILY_OVERVIEW, id)
-        val includeIncome = accessControl.hasPermissionFor(user, Action.Person.READ_INCOME, id)
+        val includeIncome = accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
 
         return db.connect { dbc ->
             dbc.read {

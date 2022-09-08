@@ -86,12 +86,14 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                 val backupCares = tx.getBackupCaresForDaycare(unitId, period)
                 val missingGroupPlacements = if (accessControl.hasPermissionFor(
                         user,
+                        clock,
                         Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
                         unitId
                     )
                 ) getMissingGroupPlacements(tx, unitId) else emptyList()
                 val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(
                         user,
+                        clock,
                         Action.Unit.READ_TERMINATED_PLACEMENTS,
                         unitId
                     )
@@ -119,7 +121,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     }.toSet()
 
                 val capacities =
-                    if (accessControl.hasPermissionFor(user, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
+                    if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
                         tx.getUnitChildrenCapacities(unitId, from)
                     else listOf()
 
@@ -143,7 +145,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     unitChildrenCapacityFactors = capacities
                 )
 
-                if (accessControl.hasPermissionFor(user, Action.Unit.READ_DETAILED, unitId)) {
+                if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_DETAILED, unitId)) {
                     val unitOccupancies = getUnitOccupancies(tx, clock.now(), unitId, period, acl.getAuthorizedUnits(user))
                     val groupOccupancies = getGroupOccupancies(tx, clock.today(), unitId, period, acl.getAuthorizedUnits(user))
                     val placementProposals = tx.getPlacementPlans(

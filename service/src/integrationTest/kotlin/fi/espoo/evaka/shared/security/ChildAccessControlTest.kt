@@ -18,17 +18,22 @@ import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ChildAccessControlTest : AccessControlTest() {
     private lateinit var childId: ChildId
+
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
     private fun beforeEach() {
@@ -47,9 +52,9 @@ class ChildAccessControlTest : AccessControlTest() {
         }
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
-        assertTrue(accessControl.hasPermissionFor(guardianCitizen, action, childId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, action, childId))
-        assertFalse(accessControl.hasPermissionFor(guardianCitizen.copy(authLevel = CitizenAuthLevel.WEAK), action, childId))
+        assertTrue(accessControl.hasPermissionFor(guardianCitizen, clock, action, childId))
+        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, childId))
+        assertFalse(accessControl.hasPermissionFor(guardianCitizen.copy(authLevel = CitizenAuthLevel.WEAK), clock, action, childId))
     }
 
     @Test
@@ -63,10 +68,10 @@ class ChildAccessControlTest : AccessControlTest() {
             daycareId
         }
         val unitSupervisor = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, action, childId))
+        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, childId))
 
         val staff = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.STAFF))
-        assertFalse(accessControl.hasPermissionFor(staff, action, childId))
+        assertFalse(accessControl.hasPermissionFor(staff, clock, action, childId))
     }
 
     @Test
@@ -81,9 +86,9 @@ class ChildAccessControlTest : AccessControlTest() {
             Pair(daycareId, otherDaycareId)
         }
         val unitMobile = createTestMobile(daycareId)
-        assertTrue(accessControl.hasPermissionFor(unitMobile, action, childId))
+        assertTrue(accessControl.hasPermissionFor(unitMobile, clock, action, childId))
 
         val otherMobile = createTestMobile(otherDaycareId)
-        assertFalse(accessControl.hasPermissionFor(otherMobile, action, childId))
+        assertFalse(accessControl.hasPermissionFor(otherMobile, clock, action, childId))
     }
 }

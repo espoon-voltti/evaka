@@ -9,9 +9,12 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -21,22 +24,23 @@ class StaticActionRuleTest : AccessControlTest() {
     private val weakCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.WEAK)
     private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
     @Test
     fun `IsCitizen permits only strongly authenticated citizen if allowWeakLogin = false`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = false).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, action))
-        assertFalse(accessControl.hasPermissionFor(weakCitizen, action))
-        assertFalse(accessControl.hasPermissionFor(employee, action))
+        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
+        assertFalse(accessControl.hasPermissionFor(weakCitizen, clock, action))
+        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
     }
 
     @Test
     fun `IsCitizen permits any citizen if allowWeakLogin = true`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = true).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, action))
-        assertTrue(accessControl.hasPermissionFor(weakCitizen, action))
-        assertFalse(accessControl.hasPermissionFor(employee, action))
+        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
+        assertTrue(accessControl.hasPermissionFor(weakCitizen, clock, action))
+        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
     }
 
     @Test
@@ -46,7 +50,7 @@ class StaticActionRuleTest : AccessControlTest() {
         val permittedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN))
         val deniedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))
 
-        assertTrue(accessControl.hasPermissionFor(permittedEmployee, action))
-        assertFalse(accessControl.hasPermissionFor(deniedEmployee, action))
+        assertTrue(accessControl.hasPermissionFor(permittedEmployee, clock, action))
+        assertFalse(accessControl.hasPermissionFor(deniedEmployee, clock, action))
     }
 }

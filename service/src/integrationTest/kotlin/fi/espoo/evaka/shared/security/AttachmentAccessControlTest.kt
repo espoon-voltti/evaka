@@ -14,14 +14,19 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AttachmentAccessControlTest : AccessControlTest() {
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
     @Test
     fun `HasGlobalRole andAttachmentWasUploadedByAnyEmployee`() {
         val permittedEmployee = createTestEmployee(setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN))
@@ -33,12 +38,12 @@ class AttachmentAccessControlTest : AccessControlTest() {
 
         val uploaderEmployee = createTestEmployee(emptySet())
         val employeeAttachmentId = insertApplicationAttachment(uploaderEmployee)
-        assertTrue(accessControl.hasPermissionFor(permittedEmployee, action, employeeAttachmentId))
-        assertFalse(accessControl.hasPermissionFor(deniedEmployee, action, employeeAttachmentId))
+        assertTrue(accessControl.hasPermissionFor(permittedEmployee, clock, action, employeeAttachmentId))
+        assertFalse(accessControl.hasPermissionFor(deniedEmployee, clock, action, employeeAttachmentId))
 
         val uploaderCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         val citizenAttachmentId = insertApplicationAttachment(uploaderCitizen)
-        assertFalse(accessControl.hasPermissionFor(permittedEmployee, action, citizenAttachmentId))
+        assertFalse(accessControl.hasPermissionFor(permittedEmployee, clock, action, citizenAttachmentId))
     }
 
     @Test
@@ -49,9 +54,9 @@ class AttachmentAccessControlTest : AccessControlTest() {
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
         val attachmentId = insertApplicationAttachment(uploaderCitizen)
-        assertTrue(accessControl.hasPermissionFor(uploaderCitizen, action, attachmentId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, action, attachmentId))
-        assertFalse(accessControl.hasPermissionFor(uploaderCitizen.copy(authLevel = CitizenAuthLevel.WEAK), action, attachmentId))
+        assertTrue(accessControl.hasPermissionFor(uploaderCitizen, clock, action, attachmentId))
+        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, attachmentId))
+        assertFalse(accessControl.hasPermissionFor(uploaderCitizen.copy(authLevel = CitizenAuthLevel.WEAK), clock, action, attachmentId))
     }
 
     private fun insertApplicationAttachment(user: AuthenticatedUser) = db.transaction { tx ->

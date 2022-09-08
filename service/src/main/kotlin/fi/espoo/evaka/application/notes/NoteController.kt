@@ -35,7 +35,7 @@ class NoteController(private val accessControl: AccessControl) {
         @PathVariable applicationId: ApplicationId
     ): List<ApplicationNoteResponse> {
         Audit.NoteRead.log(targetId = applicationId)
-        val notesQuery: (Database.Read) -> List<ApplicationNote> = if (accessControl.hasPermissionFor(user, Action.Application.READ_NOTES, applicationId)) {
+        val notesQuery: (Database.Read) -> List<ApplicationNote> = if (accessControl.hasPermissionFor(user, clock, Action.Application.READ_NOTES, applicationId)) {
             { tx: Database.Read -> tx.getApplicationNotes(applicationId) }
         } else {
             accessControl

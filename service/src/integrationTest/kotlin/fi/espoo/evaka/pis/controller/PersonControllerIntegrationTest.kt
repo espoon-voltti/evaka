@@ -18,8 +18,11 @@ import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -29,6 +32,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired
     lateinit var controller: PersonController
 
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
     @Test
     fun `Search finds person by first and last name`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
@@ -37,6 +42,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName} ${person.lastName}",
                 orderBy = "first_name",
@@ -55,6 +61,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\t${person.lastName}",
                 orderBy = "first_name",
@@ -73,6 +80,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u00A0${person.lastName}",
                 orderBy = "first_name",
@@ -93,6 +101,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u3000${person.lastName}",
                 orderBy = "first_name",

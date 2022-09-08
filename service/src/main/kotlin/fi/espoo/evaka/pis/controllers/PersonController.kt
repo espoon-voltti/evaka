@@ -81,6 +81,7 @@ class PersonController(
     fun getPersonIdentity(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): PersonJSON {
         Audit.PersonDetailsRead.log(targetId = personId)
@@ -89,10 +90,11 @@ class PersonController(
             ?.hideNonPermittedPersonData(
                 includeInvoiceAddress = accessControl.hasPermissionFor(
                     user,
+                    clock,
                     Action.Person.READ_INVOICE_ADDRESS,
                     personId
                 ),
-                includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, personId)
+                includeOphOid = accessControl.hasPermissionFor(user, clock, Action.Person.READ_OPH_OID, personId)
             )
             ?.let { PersonJSON.from(it) }
             ?: throw NotFound()
@@ -126,6 +128,7 @@ class PersonController(
     fun findBySearchTerms(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody body: SearchPersonBody
     ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
@@ -137,7 +140,7 @@ class PersonController(
                     body.searchTerm,
                     body.orderBy,
                     body.sortDirection,
-                    restricted = !accessControl.hasPermissionFor(user, Action.Global.SEARCH_PEOPLE_UNRESTRICTED)
+                    restricted = !accessControl.hasPermissionFor(user, clock, Action.Global.SEARCH_PEOPLE_UNRESTRICTED)
                 )
             }
         }
@@ -147,6 +150,7 @@ class PersonController(
     fun updatePersonDetails(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId,
         @RequestBody data: PersonPatch
     ): PersonJSON {
@@ -155,7 +159,7 @@ class PersonController(
 
         val userEditablePersonData = data
             .let {
-                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) it
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) it
                 else it.copy(
                     invoiceRecipientName = null,
                     invoicingStreetAddress = null,
@@ -165,7 +169,7 @@ class PersonController(
                 )
             }
             .let {
-                if (accessControl.hasPermissionFor(user, Action.Person.UPDATE_OPH_OID, personId)) it
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_OPH_OID, personId)) it
                 else it.copy(ophPersonOid = null)
             }
 
