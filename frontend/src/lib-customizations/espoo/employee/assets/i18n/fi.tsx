@@ -1200,7 +1200,7 @@ export const fi = {
     },
     transitions: {
       guardiansWillBeNotified:
-        'Huoltajalle/huoltajille lähetetään sähköpostiin viesti, että eVakaan on julkaistu uusi dokumentti.',
+        'Suunnitelma julkaistaan huoltajien nähtäväksi eVakassa.',
       vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille',
       PUBLISHED: {
         buttonText: 'Julkaise suunnitelma',
