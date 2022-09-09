@@ -51,7 +51,7 @@ fun <T : AsyncJobPayload> Database.Transaction.claimJob(now: HelsinkiDateTime, j
 WITH claimed_job AS (
   SELECT id
   FROM async_job
-  WHERE run_at < :now
+  WHERE run_at <= :now
   AND retry_count > 0
   AND completed_at IS NULL
   AND type = ANY(:jobTypes)
