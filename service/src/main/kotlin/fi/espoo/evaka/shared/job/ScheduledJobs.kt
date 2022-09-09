@@ -10,7 +10,6 @@ import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
-import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
@@ -55,7 +54,6 @@ class ScheduledJobs(
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
-    private val voucherValueDecisionService: VoucherValueDecisionService,
     private val koskiUpdateService: KoskiUpdateService,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
