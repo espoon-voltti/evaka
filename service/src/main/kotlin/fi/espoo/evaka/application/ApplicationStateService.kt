@@ -235,16 +235,16 @@ class ApplicationStateService(
             val preferredUnit =
                 tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
-            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)), runAt = clock.now())
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
-            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)), runAt = clock.now())
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.PRESCHOOL) {
             val sentWithinPreschoolApplicationPeriod = tx.sentWithinPreschoolApplicationPeriod(sentDate)
-            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)), runAt = clock.now())
         }
 
         tx.updateApplicationStatus(application.id, SENT)
@@ -269,7 +269,7 @@ class ApplicationStateService(
 
         tx.setCheckedByAdminToDefault(applicationId, application.form)
 
-        asyncJobRunner.plan(tx, listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)), runAt = clock.now())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
@@ -345,7 +345,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        finalizeDecisions(tx, user, application)
+        finalizeDecisions(tx, user, clock, application)
     }
 
     fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
@@ -428,7 +428,7 @@ class ApplicationStateService(
             .mapTo<ApplicationId>()
             .toList()
 
-        validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, it) }
+        validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
     }
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
@@ -487,10 +487,11 @@ class ApplicationStateService(
 
         // everything validated now!
 
-        tx.markDecisionAccepted(user, decision.id, requestedStartDate)
+        tx.markDecisionAccepted(user, clock, decision.id, requestedStartDate)
 
         placementPlanService.applyPlacementPlan(
             tx,
+            clock,
             application,
             plan.unitId,
             plan.type,
@@ -500,7 +501,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
-            if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application, requestedStartDate)
+            if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, clock, application, requestedStartDate)
             tx.updateApplicationStatus(application.id, ACTIVE)
         }
     }
@@ -520,12 +521,12 @@ class ApplicationStateService(
             throw BadRequest("Decision is not pending")
         }
 
-        tx.markDecisionRejected(user, decisionId)
+        tx.markDecisionRejected(user, clock, decisionId)
 
         val alsoReject = if (decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)) {
             decisions.find { it.type === DecisionType.PRESCHOOL_DAYCARE && it.status == DecisionStatus.PENDING }
         } else null
-        alsoReject?.let { tx.markDecisionRejected(user, it.id) }
+        alsoReject?.let { tx.markDecisionRejected(user, clock, it.id) }
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
@@ -745,11 +746,11 @@ class ApplicationStateService(
         }
     }
 
-    private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
+    private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, application: ApplicationDetails) {
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         if (decisionDrafts.any { it.planned }) {
-            decisionService.finalizeDecisions(tx, user, application.id, sendBySfi)
+            decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
             tx.updateApplicationStatus(application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
         }
     }
@@ -770,7 +771,7 @@ class ApplicationStateService(
     private fun livesInSameAddress(residenceCode1: String?, residenceCode2: String?): Boolean =
         !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
-    private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
+    private fun setHighestFeeForUser(tx: Database.Transaction, clock: EvakaClock, application: ApplicationDetails, validFrom: LocalDate) {
         val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, application.guardianId)
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
@@ -798,8 +799,8 @@ class ApplicationStateService(
                 applicationId = application.id
             ).let { validateIncome(it, incomeTypes) }
             tx.splitEarlierIncome(validIncome.personId, period)
-            tx.upsertIncome(mapper, validIncome, EvakaUserId(application.guardianId.raw))
-            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
+            tx.upsertIncome(clock, mapper, validIncome, EvakaUserId(application.guardianId.raw))
+            asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)), runAt = clock.now())
         }
     }
 }

@@ -44,14 +44,14 @@ AND type = ANY(:jobTypes)
         .mapTo<Int>()
         .one()
 
-fun <T : AsyncJobPayload> Database.Transaction.claimJob(jobTypes: Collection<AsyncJobType<out T>>): ClaimedJobRef<out T>? =
+fun <T : AsyncJobPayload> Database.Transaction.claimJob(now: HelsinkiDateTime, jobTypes: Collection<AsyncJobType<out T>>): ClaimedJobRef<out T>? =
     createUpdate(
         // language=SQL
         """
 WITH claimed_job AS (
   SELECT id
   FROM async_job
-  WHERE run_at < now()
+  WHERE run_at < :now
   AND retry_count > 0
   AND completed_at IS NULL
   AND type = ANY(:jobTypes)
@@ -62,13 +62,14 @@ WITH claimed_job AS (
 UPDATE async_job
 SET
   retry_count = greatest(0, retry_count - 1),
-  run_at = now() + retry_interval,
-  claimed_at = now(),
+  run_at = :now + retry_interval,
+  claimed_at = :now,
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
 """
     ).bind("jobTypes", jobTypes.map { it.name })
+        .bind("now", now)
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(
@@ -83,7 +84,7 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
         .findOne()
         .orElse(null)
 
-fun <T : AsyncJobPayload> Database.Transaction.startJob(job: ClaimedJobRef<T>): T? = createUpdate(
+fun <T : AsyncJobPayload> Database.Transaction.startJob(job: ClaimedJobRef<T>, now: HelsinkiDateTime): T? = createUpdate(
     // language=SQL
     """
 WITH started_job AS (
@@ -94,24 +95,26 @@ WITH started_job AS (
   FOR UPDATE
 )
 UPDATE async_job
-SET started_at = clock_timestamp()
+SET started_at = :now
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
 """
 ).bindKotlin(job)
+    .bind("now", now)
     .executeAndReturnGeneratedKeys()
     .map { row -> row.getColumn("payload", QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)) }
     .findOne()
     .orElse(null)
 
-fun Database.Transaction.completeJob(job: ClaimedJobRef<*>) = createUpdate(
+fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) = createUpdate(
     // language=SQL
     """
 UPDATE async_job
-SET completed_at = clock_timestamp()
+SET completed_at = :now
 WHERE id = :jobId
 """
 ).bindKotlin(job)
+    .bind("now", now)
     .execute()
 
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int = createUpdate(

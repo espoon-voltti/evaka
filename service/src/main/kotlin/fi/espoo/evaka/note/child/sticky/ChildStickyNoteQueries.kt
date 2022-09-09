@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
 fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> = createQuery(
@@ -73,18 +74,19 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateChildStickyNote(id: ChildStickyNoteId, note: ChildStickyNoteBody): ChildStickyNote {
+fun Database.Transaction.updateChildStickyNote(clock: EvakaClock, id: ChildStickyNoteId, note: ChildStickyNoteBody): ChildStickyNote {
     return createUpdate(
         """
 UPDATE child_sticky_note SET
     note = :note,
     expires = :expires,
-    modified_at = now()
+    modified_at = :now
 WHERE id = :id
 RETURNING *
         """.trimIndent()
     )
         .bind("id", id)
+        .bind("now", clock.now())
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildStickyNote>()

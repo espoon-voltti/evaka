@@ -71,7 +71,7 @@ class ScheduledJobTriggerController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
+                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1, runAt = clock.now())
             }
         }
     }

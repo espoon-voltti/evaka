@@ -126,7 +126,7 @@ class FeeDecisionController(
                     clock.now(),
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
-                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
+                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) }, runAt = clock.now())
             }
         }
     }
@@ -135,7 +135,7 @@ class FeeDecisionController(
     fun setSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
-        db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
+        db.connect { dbc -> dbc.transaction { service.setSent(it, clock, feeDecisionIds) } }
     }
 
     @GetMapping("/pdf/{decisionId}")

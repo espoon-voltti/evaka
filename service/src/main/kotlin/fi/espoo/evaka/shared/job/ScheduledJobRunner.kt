@@ -10,6 +10,7 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
@@ -56,7 +57,7 @@ class ScheduledJobRunner(
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = retryCount)
+            asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(job)), retryCount = retryCount, runAt = HelsinkiDateTime.now())
         }
         asyncJobRunner.wakeUp()
     }

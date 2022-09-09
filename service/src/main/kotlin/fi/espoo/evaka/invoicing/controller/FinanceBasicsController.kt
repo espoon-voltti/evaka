@@ -72,7 +72,7 @@ class FinanceBasicsController(
                 }
 
                 mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)), runAt = clock.now())
             }
         }
     }
@@ -92,7 +92,7 @@ class FinanceBasicsController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)), runAt = clock.now())
             }
         }
     }

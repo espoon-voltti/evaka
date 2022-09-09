@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 
@@ -17,6 +18,7 @@ class MessageService(
 ) {
     fun createMessageThreadsForRecipientGroups(
         tx: Database.Transaction,
+        clock: EvakaClock,
         title: String,
         content: String,
         type: MessageType,
@@ -34,6 +36,7 @@ class MessageService(
                     val threadId = tx.insertThread(type, title, urgent)
                     val messageId =
                         tx.insertMessage(
+                            clock = clock,
                             contentId = contentId,
                             threadId = threadId,
                             sender = sender,
@@ -49,6 +52,7 @@ class MessageService(
 
     fun replyToThread(
         db: Database.Connection,
+        clock: EvakaClock,
         replyToMessageId: MessageId,
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
@@ -66,7 +70,7 @@ class MessageService(
         val message = db.transaction { tx ->
             val recipientNames = tx.getAccountNames(recipientAccountIds)
             val contentId = tx.insertMessageContent(content, senderAccount)
-            val messageId = tx.insertMessage(contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
+            val messageId = tx.insertMessage(clock, contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             tx.getMessage(messageId)

@@ -41,7 +41,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val runAt = db.read { it.createQuery("SELECT run_at FROM async_job").mapTo<HelsinkiDateTime>().one() }
 
-        val ref = db.transaction { it.claimJob(listOf(jobType))!! }
+        val ref = db.transaction { it.claimJob(HelsinkiDateTime.now(), listOf(jobType))!! }
         assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) = db.read {
             it.createQuery("SELECT run_at, retry_count FROM async_job").mapTo<Retry>().one()
@@ -50,10 +50,10 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1233, retryCount)
 
         db.transaction { tx ->
-            val payload = tx.startJob(ref)!!
+            val payload = tx.startJob(ref, HelsinkiDateTime.now())!!
             assertEquals(TestJob(id), payload)
 
-            tx.completeJob(ref)
+            tx.completeJob(ref, HelsinkiDateTime.now())
         }
 
         val completedAt =
@@ -74,21 +74,21 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val h2 = handles[2].begin()
 
             // Two jobs in the db -> only two claims should succeed
-            val job0 = Database.Transaction.wrap(h0).claimJob(listOf(jobType))!!
-            val job1 = Database.Transaction.wrap(h1).claimJob(listOf(jobType))!!
+            val job0 = Database.Transaction.wrap(h0).claimJob(HelsinkiDateTime.now(), listOf(jobType))!!
+            val job1 = Database.Transaction.wrap(h1).claimJob(HelsinkiDateTime.now(), listOf(jobType))!!
             assertNotEquals(job0.jobId, job1.jobId)
-            assertNull(Database.Transaction.wrap(h2).claimJob(listOf(jobType)))
+            assertNull(Database.Transaction.wrap(h2).claimJob(HelsinkiDateTime.now(), listOf(jobType)))
 
             h1.rollback()
 
             // Handle 1 rolled back -> job 1 should now be available
-            val job2 = Database.Transaction.wrap(h2).claimJob(listOf(jobType))!!
+            val job2 = Database.Transaction.wrap(h2).claimJob(HelsinkiDateTime.now(), listOf(jobType))!!
             assertEquals(job1.jobId, job2.jobId)
 
-            Database.Transaction.wrap(h0).completeJob(job0)
+            Database.Transaction.wrap(h0).completeJob(job0, HelsinkiDateTime.now())
             h0.commit()
 
-            Database.Transaction.wrap(h2).completeJob(job2)
+            Database.Transaction.wrap(h2).completeJob(job2, HelsinkiDateTime.now())
             h2.commit()
         } finally {
             handles.forEach { it.close() }

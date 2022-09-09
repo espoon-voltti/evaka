@@ -49,7 +49,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.upsertFeeAlteration(feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.evakaUserId))
+                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.evakaUserId))
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -57,7 +57,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                             feeAlteration.personId,
                             DateRange(feeAlteration.validFrom, feeAlteration.validTo)
                         )
-                    )
+                    ),
+                    runAt = clock.now()
                 )
             }
         }
@@ -70,13 +71,13 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val existing = tx.getFeeAlteration(feeAlterationId)
-                tx.upsertFeeAlteration(feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId))
+                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId))
 
                 val expandedPeriod = existing?.let {
                     DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
                 } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)), runAt = clock.now())
             }
         }
     }
@@ -98,7 +99,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                                 existing.personId,
                                 DateRange(existing.validFrom, existing.validTo)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
             }

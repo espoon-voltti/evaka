@@ -1065,21 +1065,21 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/vasu/doc")
-    fun createVasuDocument(db: Database, @RequestBody body: PostVasuDocBody): VasuDocumentId {
+    fun createVasuDocument(db: Database, clock: EvakaClock, @RequestBody body: PostVasuDocBody): VasuDocumentId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(body.childId, template)
+                tx.insertVasuDocument(clock, body.childId, template)
             }
         }
     }
 
     @PostMapping("/vasu/doc/publish/{documentId}")
-    fun publishVasuDocument(db: Database, @PathVariable documentId: VasuDocumentId) {
+    fun publishVasuDocument(db: Database, clock: EvakaClock, @PathVariable documentId: VasuDocumentId) {
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.publishVasuDocument(documentId)
+                tx.publishVasuDocument(clock, documentId)
             }
         }
     }

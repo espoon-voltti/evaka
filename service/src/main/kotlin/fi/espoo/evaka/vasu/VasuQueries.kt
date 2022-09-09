@@ -10,12 +10,13 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
-fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemplate): VasuDocumentId {
+fun Database.Transaction.insertVasuDocument(clock: EvakaClock, childId: ChildId, template: VasuTemplate): VasuDocumentId {
     val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
         .bind("id", childId)
         .mapTo<VasuChild>(qualifiers = emptyArray())
@@ -46,10 +47,11 @@ fun Database.Transaction.insertVasuDocument(childId: ChildId, template: VasuTemp
     val documentId = createQuery(
         """
         INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
-        VALUES (:childId, :basics, :templateId, now())
+        VALUES (:childId, :basics, :templateId, :now)
         RETURNING id
         """.trimIndent()
     )
+        .bind("now", clock.now())
         .bind("childId", childId)
         .bind("basics", basics)
         .bind("templateId", template.id)
@@ -160,6 +162,7 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
 }
 
 fun Database.Transaction.updateVasuDocumentMaster(
+    clock: EvakaClock,
     id: VasuDocumentId,
     content: VasuContent,
     childLanguage: ChildLanguage?
@@ -175,30 +178,33 @@ fun Database.Transaction.updateVasuDocumentMaster(
     createUpdate(
         """
         UPDATE curriculum_document SET
-            modified_at = now(),
+            modified_at = :now,
             basics = basics || jsonb_build_object('childLanguage', :childLanguage::jsonb)
         WHERE id = :id
         """.trimIndent()
     )
+        .bind("now", clock.now())
         .bind("id", id)
         .bind("childLanguage", childLanguage)
         .updateExactlyOne()
 }
 
-fun Database.Transaction.publishVasuDocument(id: VasuDocumentId) {
+fun Database.Transaction.publishVasuDocument(clock: EvakaClock, id: VasuDocumentId) {
     // language=sql
     val insertContentSql = """
         INSERT INTO curriculum_content (document_id, published_at, content)
-        SELECT vc.document_id, now(), vc.content
+        SELECT vc.document_id, :now, vc.content
         FROM curriculum_content vc
         WHERE vc.document_id = :id AND master
     """.trimIndent()
 
     createUpdate(insertContentSql)
+        .bind("now", clock.now())
         .bind("id", id)
         .updateExactlyOne()
 
-    createUpdate("UPDATE curriculum_document SET modified_at = now() WHERE id = :id")
+    createUpdate("UPDATE curriculum_document SET modified_at = :now WHERE id = :id")
+        .bind("now", clock.now())
         .bind("id", id)
         .updateExactlyOne()
 }

@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.controllers.Wrapper
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.BeforeEach
@@ -45,6 +46,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = testChild_1.id
+    private val clock = RealEvakaClock()
 
     private val testFeeAlteration = FeeAlteration(
         id = FeeAlterationId(UUID.randomUUID()),
@@ -70,7 +72,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `getFeeAlterations works with single fee alteration in DB`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
             .asUser(user)
@@ -91,7 +93,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             testFeeAlteration
         )
         db.transaction { tx ->
-            feeAlterations.forEach { tx.upsertFeeAlteration(it) }
+            feeAlterations.forEach { tx.upsertFeeAlteration(clock, it) }
         }
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
@@ -132,7 +134,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `updateFeeAlterations works with valid fee alteration`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(amount = 100)
         http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
@@ -153,7 +155,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `updateFeeAlterations throws with invalid date rage`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
         val (_, response, _) = http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
@@ -167,8 +169,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `delete works with existing fee alteration`() {
         val deletedId = FeeAlterationId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.upsertFeeAlteration(testFeeAlteration)
-            tx.upsertFeeAlteration(testFeeAlteration.copy(id = deletedId))
+            tx.upsertFeeAlteration(clock, testFeeAlteration)
+            tx.upsertFeeAlteration(clock, testFeeAlteration.copy(id = deletedId))
         }
 
         http.delete("/fee-alterations/$deletedId")
@@ -186,7 +188,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `delete does nothing with non-existent id`() {
-        db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
+        db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         http.delete("/fee-alterations/${UUID.randomUUID()}")
             .asUser(user)

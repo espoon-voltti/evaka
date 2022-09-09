@@ -46,6 +46,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
             dbc.transaction {
                 parentshipService.createParentship(
                     it,
+                    clock,
                     body.childId,
                     body.headOfChildId,
                     body.startDate,
@@ -114,7 +115,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
         return db.connect { dbc ->
             dbc.transaction {
-                parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+                parentshipService.updateParentshipDuration(it, clock, id, body.startDate, body.endDate)
             }
         }
     }
@@ -129,7 +130,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.RETRY, parentshipId)
 
-        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, parentshipId) } }
+        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) } }
     }
 
     @DeleteMapping("/{id}")
@@ -150,7 +151,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
             }
 
-            dbc.transaction { parentshipService.deleteParentship(it, id) }
+            dbc.transaction { parentshipService.deleteParentship(it, clock, id) }
         }
     }
 

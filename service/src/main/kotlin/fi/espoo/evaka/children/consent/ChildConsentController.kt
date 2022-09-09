@@ -79,7 +79,7 @@ class ChildConsentController(
                     if (consent.given == null) {
                         tx.deleteChildConsentEmployee(childId, consent.type)
                     } else {
-                        tx.upsertChildConsentEmployee(childId, consent.type, consent.given, user.id, clock.now())
+                        tx.upsertChildConsentEmployee(clock, childId, consent.type, consent.given, user.id, clock.now())
                     }
                 }
             }
@@ -99,7 +99,7 @@ class ChildConsentController(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 body.filter { featureConfig.enabledChildConsentTypes.contains(it.type) }.forEach { consent ->
-                    if (consent.given == null || !tx.insertChildConsentCitizen(childId, consent.type, consent.given, user.id)) {
+                    if (consent.given == null || !tx.insertChildConsentCitizen(clock, childId, consent.type, consent.given, user.id)) {
                         throw Forbidden("Citizens may not modify consent that has already been given.")
                     }
                 }

@@ -60,7 +60,7 @@ class ChildDailyNoteController(
         Audit.ChildDailyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(clock, noteId, body) } }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")

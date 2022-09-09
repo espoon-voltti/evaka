@@ -32,12 +32,12 @@ class InvoicingAsyncJobs(
         val decisionId = msg.decisionId
         feeService.createFeeDecisionPdf(tx, decisionId)
         logger.info { "Successfully created fee decision pdf (id: $decisionId)." }
-        asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeDecisionPdfGenerated(decisionId)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeDecisionPdfGenerated(decisionId)), runAt = clock.now())
     }
 
     fun runSendFeeDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
-        feeService.sendDecision(tx, decisionId).let { sent ->
+        feeService.sendDecision(tx, clock, decisionId).let { sent ->
             logger.info {
                 if (sent) "Successfully sent fee decision msg to suomi.fi (id: $decisionId)."
                 else "Marked fee decision as requiring manual sending (id: $decisionId)."
@@ -49,12 +49,12 @@ class InvoicingAsyncJobs(
         val decisionId = msg.decisionId
         valueDecisionService.createDecisionPdf(tx, decisionId)
         logger.info { "Successfully created voucher value decision pdf (id: $decisionId)." }
-        asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyVoucherValueDecisionPdfGenerated(decisionId)))
+        asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyVoucherValueDecisionPdfGenerated(decisionId)), runAt = clock.now())
     }
 
     fun runSendVoucherValueDecisionPdf(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
-        valueDecisionService.sendDecision(tx, decisionId).let { sent ->
+        valueDecisionService.sendDecision(tx, clock, decisionId).let { sent ->
             logger.info {
                 if (sent) "Successfully sent voucher value decision msg to suomi.fi (id: $decisionId)."
                 else "Marked voucher value decision as requiring manual sending (id: $decisionId)."

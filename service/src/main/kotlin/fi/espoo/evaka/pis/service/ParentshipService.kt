@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -30,6 +31,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
 
     fun createParentship(
         tx: Database.Transaction,
+        clock: EvakaClock,
         childId: ChildId,
         headOfChildId: PersonId,
         startDate: LocalDate,
@@ -38,13 +40,13 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         tx.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
         return try {
             tx.createParentship(childId, headOfChildId, startDate, endDate, false)
-                .also { tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
+                .also { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    fun updateParentshipDuration(tx: Database.Transaction, id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Parentship {
+    fun updateParentshipDuration(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Parentship {
         val oldParentship = tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
@@ -55,6 +57,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
 
         tx.sendFamilyUpdatedMessage(
+            clock,
             oldParentship.headOfChildId,
             minOf(startDate, oldParentship.startDate),
             maxOf(endDate, oldParentship.endDate)
@@ -63,13 +66,14 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryParentship(tx: Database.Transaction, id: ParentshipId) {
+    fun retryParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
         try {
             tx.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
                     tx.retryParentship(it.id)
                     tx.sendFamilyUpdatedMessage(
+                        clock,
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
                         endDate = it.endDate
@@ -80,19 +84,19 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun deleteParentship(tx: Database.Transaction, id: ParentshipId) {
+    fun deleteParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
         val parentship = tx.getParentship(id)
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
         with(parentship) {
-            tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate)
+            tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
         }
     }
 
-    private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: PersonId, startDate: LocalDate, endDate: LocalDate) {
+    private fun Database.Transaction.sendFamilyUpdatedMessage(clock: EvakaClock, adultId: PersonId, startDate: LocalDate, endDate: LocalDate) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(this, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))))
+        asyncJobRunner.plan(this, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))), runAt = clock.now())
     }
 }
 

@@ -83,10 +83,10 @@ class IncomeController(
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                 tx.splitEarlierIncome(validIncome.personId, period)
-                tx.upsertIncome(mapper, validIncome, user.evakaUserId)
+                tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
                 tx.associateIncomeAttachments(user.evakaUserId, id, income.attachments.map { it.id })
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)), runAt = clock.now())
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)), runAt = clock.now())
                 id
             }
         }
@@ -108,14 +108,14 @@ class IncomeController(
                 val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
-                tx.upsertIncome(mapper, validIncome, user.evakaUserId)
+                tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
 
                 val expandedPeriod = existing?.let {
                     DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
                 } ?: DateRange(income.validFrom, income.validTo)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, expandedPeriod)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)), runAt = clock.now())
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, expandedPeriod)), runAt = clock.now())
             }
         }
     }
@@ -137,8 +137,8 @@ class IncomeController(
                 }
                 tx.deleteIncome(incomeId)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)))
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)), runAt = clock.now())
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)), runAt = clock.now())
             }
         }
     }

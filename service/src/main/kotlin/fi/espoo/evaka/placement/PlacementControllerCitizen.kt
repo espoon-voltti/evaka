@@ -113,7 +113,7 @@ class PlacementControllerCitizen(
                 }
 
                 tx.cancelAllActiveTransferApplicationsAfterDate(childId, terminationDate)
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(terminationDate, null))))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(terminationDate, null))), runAt = clock.now())
             }
         }
     }

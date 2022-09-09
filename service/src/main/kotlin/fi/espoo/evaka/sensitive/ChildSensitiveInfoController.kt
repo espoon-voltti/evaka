@@ -32,6 +32,6 @@ class ChildSensitiveInfoController(
 
         ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
 
-        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(childId) ?: throw NotFound("Child not found") } }
+        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found") } }
     }
 }

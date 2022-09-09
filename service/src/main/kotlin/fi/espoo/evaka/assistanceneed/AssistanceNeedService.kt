@@ -13,12 +13,13 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 
 @Service
 class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
+    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction { tx ->
                 validateBases(data, tx.getAssistanceBasisOptions().map { it.value })
@@ -26,6 +27,7 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 tx.insertAssistanceNeed(user, childId, data).also {
                     notifyAssistanceNeedUpdated(
                         tx,
+                        clock,
                         AssistanceNeedChildRange(childId, DateRange(data.startDate, data.endDate))
                     )
                 }
@@ -39,13 +41,14 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         return db.transaction { it.getAssistanceNeedsByChild(childId) }
     }
 
-    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
+    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction { tx ->
                 validateBases(data, tx.getAssistanceBasisOptions().map { it.value })
                 tx.updateAssistanceNeed(user, id, data).also {
                     notifyAssistanceNeedUpdated(
                         tx,
+                        clock,
                         AssistanceNeedChildRange(it.childId, DateRange(it.startDate, it.endDate))
                     )
                 }
@@ -55,10 +58,10 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun deleteAssistanceNeed(db: Database.Connection, id: AssistanceNeedId) {
+    fun deleteAssistanceNeed(db: Database.Connection, clock: EvakaClock, id: AssistanceNeedId) {
         db.transaction { tx ->
             val childRange = tx.deleteAssistanceNeed(id)
-            notifyAssistanceNeedUpdated(tx, childRange)
+            notifyAssistanceNeedUpdated(tx, clock, childRange)
         }
     }
 
@@ -74,10 +77,11 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    private fun notifyAssistanceNeedUpdated(tx: Database.Transaction, childRange: AssistanceNeedChildRange) {
+    private fun notifyAssistanceNeedUpdated(tx: Database.Transaction, clock: EvakaClock, childRange: AssistanceNeedChildRange) {
         asyncJobRunner.plan(
             tx,
-            listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange))
+            listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange)),
+            runAt = clock.now()
         )
     }
 }

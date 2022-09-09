@@ -65,7 +65,7 @@ class ServiceNeedController(
                     confirmedAt = HelsinkiDateTime.now()
                 )
                     .let { id -> tx.getServiceNeedChildRange(id) }
-                    .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
+                    .let { notifyServiceNeedUpdated(tx, clock, asyncJobRunner, it) }
             }
         }
     }
@@ -103,6 +103,7 @@ class ServiceNeedController(
                 )
                 notifyServiceNeedUpdated(
                     tx,
+                    clock,
                     asyncJobRunner,
                     ServiceNeedChildRange(
                         childId = oldRange.childId,
@@ -130,7 +131,7 @@ class ServiceNeedController(
             dbc.transaction { tx ->
                 val childRange = tx.getServiceNeedChildRange(id)
                 tx.deleteServiceNeed(id)
-                notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
+                notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
             }
         }
     }

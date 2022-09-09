@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -43,6 +44,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     private val generator: InvoiceGenerator = InvoiceGenerator(draftInvoiceGenerator)
     private val invoiceService =
         InvoiceService(InvoiceIntegrationClient.MockClient(defaultJsonMapper()), TestInvoiceProductProvider(), featureConfig)
+    private val clock = RealEvakaClock()
 
     @BeforeEach
     fun beforeEach() {
@@ -78,6 +80,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null
@@ -100,6 +103,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null
@@ -125,6 +129,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null
@@ -147,6 +152,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null
@@ -390,6 +396,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null
@@ -418,6 +425,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             invoiceService.sendInvoices(
                 it,
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
+                clock,
                 invoices.map { it.id },
                 null,
                 null

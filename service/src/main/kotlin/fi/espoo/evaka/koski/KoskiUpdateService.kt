@@ -35,7 +35,7 @@ class KoskiUpdateService(
             db.transaction { tx ->
                 val requests = tx.getPendingStudyRights(clock.today(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
-                asyncJobRunner.plan(tx, requests.map { AsyncJob.UploadToKoski(it) }, retryCount = 1)
+                asyncJobRunner.plan(tx, requests.map { AsyncJob.UploadToKoski(it) }, retryCount = 1, runAt = clock.now())
             }
         }
     }

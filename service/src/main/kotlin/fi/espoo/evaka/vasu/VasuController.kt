@@ -69,7 +69,7 @@ class VasuController(
                     throw BadRequest("Template is not currently valid")
                 }
 
-                tx.insertVasuDocument(childId, template)
+                tx.insertVasuDocument(clock, childId, template)
             }
         }
     }
@@ -194,7 +194,7 @@ class VasuController(
                     }
                 )
 
-                tx.updateVasuDocumentMaster(id, transformedFollowupsVasu.content, body.childLanguage)
+                tx.updateVasuDocumentMaster(clock, id, transformedFollowupsVasu.content, body.childLanguage)
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
@@ -249,7 +249,7 @@ class VasuController(
                 validateStateTransition(eventType = body.eventType, currentState = currentState)
 
                 if (events.contains(PUBLISHED)) {
-                    tx.publishVasuDocument(id)
+                    tx.publishVasuDocument(clock, id)
                 }
 
                 if (events.contains(MOVED_TO_CLOSED)) {

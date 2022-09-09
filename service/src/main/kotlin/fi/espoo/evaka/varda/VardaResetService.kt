@@ -44,7 +44,7 @@ class VardaResetService(
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
-    fun planVardaReset(db: Database.Connection, addNewChildren: Boolean, maxChildren: Int = 1000) {
+    fun planVardaReset(db: Database.Connection, clock: EvakaClock, addNewChildren: Boolean, maxChildren: Int = 1000) {
         logger.info("VardaUpdate: starting reset process")
         val resetChildIds = db.transaction { it.getVardaChildrenToReset(limit = maxChildren, addNewChildren = addNewChildren) }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children (max was $maxChildren)")
@@ -53,7 +53,8 @@ class VardaResetService(
             asyncJobRunner.plan(
                 tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) },
                 retryCount = 2,
-                retryInterval = Duration.ofMinutes(10)
+                retryInterval = Duration.ofMinutes(10),
+                runAt = clock.now()
             )
         }
     }
@@ -68,7 +69,7 @@ class VardaResetService(
         deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
     }
 
-    fun planResetByVardaChildrenErrorReport(db: Database.Connection, organizerId: Long, limit: Int) {
+    fun planResetByVardaChildrenErrorReport(db: Database.Connection, clock: EvakaClock, organizerId: Long, limit: Int) {
         try {
             val errorReport = client.getVardaChildrenErrorReport(organizerId)
             logger.info("VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows")
@@ -86,7 +87,8 @@ class VardaResetService(
                 asyncJobRunner.plan(
                     tx, childrenWithoutId.map { VardaAsyncJob.DeleteVardaChild(it) },
                     retryCount = 2,
-                    retryInterval = Duration.ofMinutes(1)
+                    retryInterval = Duration.ofMinutes(1),
+                    runAt = clock.now()
                 )
             }
         } catch (e: Exception) {

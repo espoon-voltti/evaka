@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
@@ -184,7 +185,7 @@ class FeeDecisionService(
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
 
-    fun sendDecision(tx: Database.Transaction, id: FeeDecisionId): Boolean {
+    fun sendDecision(tx: Database.Transaction, clock: EvakaClock, id: FeeDecisionId): Boolean {
         val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
@@ -230,18 +231,18 @@ class FeeDecisionService(
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
-        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)))
-        tx.setFeeDecisionSent(listOf(decision.id))
+        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)), runAt = clock.now())
+        tx.setFeeDecisionSent(clock, listOf(decision.id))
 
         return true
     }
 
-    fun setSent(tx: Database.Transaction, ids: List<FeeDecisionId>) {
+    fun setSent(tx: Database.Transaction, clock: EvakaClock, ids: List<FeeDecisionId>) {
         val decisions = tx.getDetailedFeeDecisionsByIds(ids)
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
-        tx.setFeeDecisionSent(ids)
+        tx.setFeeDecisionSent(clock, ids)
     }
 
     fun getFeeDecisionPdfResponse(dbc: Database.Connection, decisionId: FeeDecisionId): ResponseEntity<Any> {

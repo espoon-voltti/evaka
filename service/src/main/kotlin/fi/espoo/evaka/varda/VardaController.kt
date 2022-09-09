@@ -30,19 +30,21 @@ class VardaController(
     @PostMapping("/reset-children")
     fun resetChildren(
         db: Database,
+        clock: EvakaClock,
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        db.connect { dbc -> vardaResetService.planVardaReset(dbc, addNewChildren = addNewChildren, maxChildren = limit) }
+        db.connect { dbc -> vardaResetService.planVardaReset(dbc, clock, addNewChildren = addNewChildren, maxChildren = limit) }
     }
 
     @PostMapping("/reset-by-report/{organizerId}")
     fun resetChildrenByReport(
         db: Database,
+        clock: EvakaClock,
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int,
     ) {
-        db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, organizerId = organizerId, limit = limit) }
+        db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, clock, organizerId = organizerId, limit = limit) }
     }
 
     @PostMapping("/mark-child-for-reset/{childId}")

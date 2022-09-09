@@ -118,7 +118,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun dvvUpdate(db: Database.Connection, clock: EvakaClock) {
-        dvvModificationsBatchRefreshService.scheduleBatch(db)
+        dvvModificationsBatchRefreshService.scheduleBatch(db, clock)
     }
 
     fun koskiUpdate(db: Database.Connection, clock: EvakaClock) {
@@ -130,7 +130,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaReset(db: Database.Connection, clock: EvakaClock) {
-        vardaResetService.planVardaReset(db, addNewChildren = true)
+        vardaResetService.planVardaReset(db, clock, addNewChildren = true)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

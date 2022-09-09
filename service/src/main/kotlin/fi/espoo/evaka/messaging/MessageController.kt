@@ -158,6 +158,7 @@ class MessageController(
             dbc.transaction { tx ->
                 messageService.createMessageThreadsForRecipientGroups(
                     tx,
+                    clock,
                     title = body.title,
                     content = body.content,
                     sender = accountId,
@@ -247,6 +248,7 @@ class MessageController(
 
             messageService.replyToThread(
                 db = dbc,
+                clock = clock,
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,
@@ -266,7 +268,7 @@ class MessageController(
         Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.transaction { it.markThreadRead(accountId, threadId) }
+            dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
     }
 

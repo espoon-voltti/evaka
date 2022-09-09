@@ -274,7 +274,7 @@ class PersonController(
         accessControl.requirePermissionFor(user, clock, Action.Person.MERGE, setOf(body.master, body.duplicate))
         db.connect { dbc ->
             dbc.transaction { tx ->
-                mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
+                mergeService.mergePeople(tx, clock, master = body.master, duplicate = body.duplicate)
             }
         }
     }

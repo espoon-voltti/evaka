@@ -78,6 +78,7 @@ class FridgeFamilyService(
                     db.transaction { tx ->
                         parentshipService.createParentship(
                             tx,
+                            clock,
                             childId = child.id,
                             headOfChildId = personId,
                             startDate = startDate,

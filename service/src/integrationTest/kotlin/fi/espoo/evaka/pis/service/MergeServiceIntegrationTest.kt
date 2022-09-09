@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -140,7 +141,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, countBefore)
 
         db.transaction {
-            mergeService.mergePeople(it, adultId, adultIdDuplicate)
+            mergeService.mergePeople(it, RealEvakaClock(), adultId, adultIdDuplicate)
         }
 
         val countAfter = db.read {
@@ -187,7 +188,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, countBefore)
 
         db.transaction {
-            mergeService.mergePeople(it, childId, childIdDuplicate)
+            mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate)
         }
 
         val countAfter = db.read {
@@ -218,6 +219,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
+                RealEvakaClock(),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
@@ -233,7 +235,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         db.transaction {
-            mergeService.mergePeople(it, senderId, senderIdDuplicate)
+            mergeService.mergePeople(it, RealEvakaClock(), senderId, senderIdDuplicate)
             mergeService.deleteEmptyPerson(it, senderIdDuplicate)
         }
 
@@ -266,6 +268,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
+                RealEvakaClock(),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
@@ -281,7 +284,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         db.transaction {
-            mergeService.mergePeople(it, receiverId, receiverIdDuplicate)
+            mergeService.mergePeople(it, RealEvakaClock(), receiverId, receiverIdDuplicate)
             mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
         }
 
@@ -327,7 +330,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction {
-            mergeService.mergePeople(it, childId, childIdDuplicate)
+            mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate)
         }
 
         verify(asyncJobRunnerMock).plan(
@@ -360,7 +363,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction {
-            mergeService.mergePeople(it, person.id, duplicate.id)
+            mergeService.mergePeople(it, RealEvakaClock(), person.id, duplicate.id)
             mergeService.deleteEmptyPerson(it, duplicate.id)
         }
         db.read {

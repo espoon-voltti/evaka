@@ -40,7 +40,8 @@ class AssistanceNeedController(
         return db.connect { dbc ->
             assistanceNeedService.createAssistanceNeed(
                 dbc,
-                user = user,
+                user,
+                clock,
                 childId = childId,
                 data = body
             )
@@ -93,7 +94,8 @@ class AssistanceNeedController(
         return db.connect { dbc ->
             assistanceNeedService.updateAssistanceNeed(
                 dbc,
-                user = user,
+                user,
+                clock,
                 id = assistanceNeedId,
                 data = body
             )
@@ -109,7 +111,7 @@ class AssistanceNeedController(
     ) {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeed.DELETE, assistanceNeedId)
-        db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, assistanceNeedId) }
+        db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, clock, assistanceNeedId) }
     }
 
     @GetMapping("/assistance-basis-options")

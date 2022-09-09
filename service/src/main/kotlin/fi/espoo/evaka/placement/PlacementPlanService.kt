@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
@@ -187,6 +188,7 @@ class PlacementPlanService(
 
     fun applyPlacementPlan(
         tx: Database.Transaction,
+        clock: EvakaClock,
         application: ApplicationDetails,
         unitId: DaycareId,
         type: PlacementType,
@@ -214,7 +216,8 @@ class PlacementPlanService(
             tx,
             timeline.ranges().map {
                 AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange())
-            }.asIterable()
+            }.asIterable(),
+            runAt = clock.now()
         )
     }
 

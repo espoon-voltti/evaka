@@ -12,14 +12,15 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getCurrentPlacementForChild
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 
-fun Database.Read.getChildSensitiveInfo(childId: ChildId): ChildSensitiveInformation? {
+fun Database.Read.getChildSensitiveInfo(clock: EvakaClock, childId: ChildId): ChildSensitiveInformation? {
     val person = getPersonById(childId) ?: return null
 
-    val placementType = getCurrentPlacementForChild(childId)?.let { it.type }
+    val placementType = getCurrentPlacementForChild(clock, childId)?.let { it.type }
     val child = getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
-    val familyContacts = fetchFamilyContacts(childId)
+    val familyContacts = fetchFamilyContacts(clock, childId)
 
     return ChildSensitiveInformation(
         id = person.id,

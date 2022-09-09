@@ -55,7 +55,7 @@ class ChildStickyNoteController(
 
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")

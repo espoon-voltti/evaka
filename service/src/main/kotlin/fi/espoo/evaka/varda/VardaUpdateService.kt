@@ -61,7 +61,7 @@ class VardaUpdateService(
 
         logger.info("VardaUpdate: starting update process")
 
-        updateUnits(db, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
+        updateUnits(db, clock, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
 
         planVardaChildrenUpdate(db, clock)
     }
@@ -83,6 +83,7 @@ class VardaUpdateService(
                 serviceNeedDiffsByChild.values.map {
                     VardaAsyncJob.UpdateVardaChild(it)
                 },
+                runAt = clock.now(),
                 retryCount = 2,
                 retryInterval = Duration.ofMinutes(10)
             )

@@ -59,7 +59,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
 
-        db.connect { dbc -> dbc.transaction { it.upsertAbsences(absences, user.evakaUserId) } }
+        db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock, absences, user.evakaUserId) } }
     }
 
     @PostMapping("/{groupId}/delete")

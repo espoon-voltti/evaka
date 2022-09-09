@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.result.RowView
@@ -370,7 +371,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
         .execute()
 }
 
-fun Database.Transaction.setDraftsSent(invoices: List<InvoiceDetailed>, sentBy: EvakaUserId) {
+fun Database.Transaction.setDraftsSent(clock: EvakaClock, invoices: List<InvoiceDetailed>, sentBy: EvakaUserId) {
     if (invoices.isEmpty()) return
 
     val batch = prepareBatch(
@@ -380,7 +381,7 @@ SET
     number = :number,
     invoice_date = :invoiceDate,
     due_date = :dueDate,
-    sent_at = now(),
+    sent_at = :now,
     sent_by = :sentBy,
     status = :status::invoice_status
 WHERE id = :id
@@ -389,6 +390,7 @@ WHERE id = :id
     invoices.forEach {
         batch
             .bind("id", it.id)
+            .bind("now", clock.now())
             .bind("invoiceDate", it.invoiceDate)
             .bind("dueDate", it.dueDate)
             .bind("number", it.number)

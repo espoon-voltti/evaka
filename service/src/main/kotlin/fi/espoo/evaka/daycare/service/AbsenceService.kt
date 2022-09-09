@@ -273,20 +273,21 @@ data class AbsenceUpsert(
 )
 
 // database functions
-fun Database.Transaction.upsertAbsences(absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId) {
+fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId) {
     //language=SQL
     val sql =
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by)
         VALUES (:childId, :date, :category, :absenceType, :modifiedBy)
         ON CONFLICT (child_id, date, category)
-            DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = now()
+            DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = :now
         """.trimIndent()
 
     val batch = prepareBatch(sql)
     for (absence in absences) {
         batch
             .bindKotlin(absence)
+            .bind("now", clock.now())
             .bind("modifiedBy", modifiedBy)
             .add()
     }

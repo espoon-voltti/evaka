@@ -119,7 +119,7 @@ class VasuTemplateController(
         Audit.VasuTemplateRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(validOnly) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }
     }
 
     @GetMapping("/{id}")

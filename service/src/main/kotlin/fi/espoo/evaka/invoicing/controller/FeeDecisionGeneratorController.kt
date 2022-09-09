@@ -40,13 +40,14 @@ class FeeDecisionGeneratorController(
         db.connect { dbc ->
             generateAllStartingFrom(
                 dbc,
+                clock,
                 LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),
                 data.targetHeads.filterNotNull().distinct()
             )
         }
     }
 
-    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<PersonId>) {
-        db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
+    private fun generateAllStartingFrom(db: Database.Connection, clock: EvakaClock, starting: LocalDate, targetHeads: List<PersonId>) {
+        db.transaction { planFinanceDecisionGeneration(it, clock, asyncJobRunner, DateRange(starting, null), targetHeads) }
     }
 }

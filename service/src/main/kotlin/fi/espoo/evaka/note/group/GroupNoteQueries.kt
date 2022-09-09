@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 
 fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
     return getGroupNotesForGroups(listOf(groupId))
@@ -47,18 +48,19 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateGroupNote(id: GroupNoteId, note: GroupNoteBody): GroupNote {
+fun Database.Transaction.updateGroupNote(clock: EvakaClock, id: GroupNoteId, note: GroupNoteBody): GroupNote {
     return createUpdate(
         """
 UPDATE group_note SET
     note = :note,
     expires = :expires,
-    modified_at = now()
+    modified_at = :now
 WHERE id = :id
 RETURNING *
         """.trimIndent()
     )
         .bind("id", id)
+        .bind("now", clock.now())
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<GroupNote>()

@@ -287,7 +287,9 @@ fun Database.Read.searchFeeDecisions(
         FeeDecisionSortParam.FINAL_PRICE -> "sum"
     }
 
-    val params = listOf(
+    val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
+
+    val params = listOfNotNull(
         Binding.of("page", page),
         Binding.of("pageSize", pageSize),
         Binding.of("status", statuses),
@@ -298,6 +300,7 @@ fun Database.Read.searchFeeDecisions(
         Binding.of("end_date", endDate),
         Binding.of("finance_decision_handler", financeDecisionHandlerId),
         Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
+        if (retroactiveOnly) Binding.of("now", clock.now()) else null
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -309,8 +312,6 @@ fun Database.Read.searchFeeDecisions(
 
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
 
-    val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
-
     val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
 
     val (numberQuery, numberParams) = disjointNumberQuery("decision", "decision_number", numberParamsRaw)
@@ -321,7 +322,7 @@ fun Database.Read.searchFeeDecisions(
         if (unit != null) "part.placement_unit_id = :unit" else null,
         if (withNullHours) "part.service_need_missing" else null,
         if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
-        if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, now()))" else null,
+        if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, :now))" else null,
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
@@ -569,19 +570,20 @@ fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: FeeDecisionId
         .execute()
 }
 
-fun Database.Transaction.setFeeDecisionSent(ids: List<FeeDecisionId>) {
+fun Database.Transaction.setFeeDecisionSent(clock: EvakaClock, ids: List<FeeDecisionId>) {
     val sql =
         """
         UPDATE fee_decision
         SET
             status = :status::fee_decision_status,
-            sent_at = NOW()
+            sent_at = :now
         WHERE id = :id
     """
 
     val batch = prepareBatch(sql)
     ids.forEach { id ->
         batch
+            .bind("now", clock.now())
             .bind("id", id)
             .bind("status", FeeDecisionStatus.SENT.toString())
             .add()

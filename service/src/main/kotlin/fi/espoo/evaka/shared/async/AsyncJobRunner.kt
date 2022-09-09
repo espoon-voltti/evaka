@@ -83,7 +83,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         payloads: Iterable<T>,
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
-        runAt: HelsinkiDateTime = HelsinkiDateTime.now()
+        runAt: HelsinkiDateTime
     ) {
         payloads.forEach { payload ->
             tx.insertJob(
@@ -136,7 +136,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
             activeWorkerCount.incrementAndGet()
             try {
                 do {
-                    val job = db.transaction { it.claimJob(handlers.keys) }
+                    val job = db.transaction { it.claimJob(clock.now(), handlers.keys) }
                     if (job != null) {
                         runPendingJob(db, clock, job)
                     }
@@ -162,13 +162,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
             val completed = db.transaction { tx ->
                 tx.setLockTimeout(Duration.ofSeconds(5))
                 val registration = handlers[job.jobType] ?: throw IllegalStateException("No handler found for ${job.jobType}")
-                tx.startJob(job)?.let { msg ->
+                tx.startJob(job, clock.now())?.let { msg ->
                     msg.user?.let {
                         MdcKey.USER_ID.set(it.rawId().toString())
                         MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                     }
                     registration.run(Database(jdbi), clock, msg)
-                    tx.completeJob(job)
+                    tx.completeJob(job, clock.now())
                     true
                 } ?: false
             }

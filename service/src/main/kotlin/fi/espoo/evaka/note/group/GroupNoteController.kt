@@ -48,7 +48,7 @@ class GroupNoteController(
         Audit.GroupNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }
     }
 
     @DeleteMapping("/group-notes/{noteId}")

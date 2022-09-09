@@ -285,7 +285,7 @@ fun sendVoucherValueDecisions(
     tx.deleteValueDecisions(emptyDecisions.map { it.id })
     val validIds = validDecisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
-    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
+    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) }, runAt = now)
 }
 
 enum class VoucherValueDecisionSortParam {

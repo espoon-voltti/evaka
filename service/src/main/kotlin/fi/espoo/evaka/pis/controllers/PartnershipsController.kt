@@ -65,7 +65,8 @@ class PartnershipsController(
                                 body.person1Id,
                                 DateRange(body.startDate, body.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
         }
@@ -121,7 +122,8 @@ class PartnershipsController(
                                 partnership.partners.first().id,
                                 DateRange(partnership.startDate, partnership.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
         }
@@ -147,7 +149,8 @@ class PartnershipsController(
                                 it.partners.first().id,
                                 DateRange(it.startDate, it.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
             }
@@ -174,7 +177,8 @@ class PartnershipsController(
                                 it.id,
                                 DateRange(partnership.startDate, partnership.endDate)
                             )
-                        }
+                        },
+                        runAt = clock.now()
                     )
                 }
             }

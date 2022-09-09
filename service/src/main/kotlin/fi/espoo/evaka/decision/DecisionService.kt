@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.langWithDefault
@@ -59,11 +60,12 @@ class DecisionService(
     fun finalizeDecisions(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         applicationId: ApplicationId,
         sendAsMessage: Boolean
     ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId)
-        asyncJobRunner.plan(tx, decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) })
+        asyncJobRunner.plan(tx, decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) }, runAt = clock.now())
         return decisionIds
     }
 
@@ -177,7 +179,7 @@ class DecisionService(
             logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
 
-    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: DecisionId) {
+    fun deliverDecisionToGuardians(tx: Database.Transaction, clock: EvakaClock, decisionId: DecisionId) {
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
@@ -190,7 +192,7 @@ class DecisionService(
             ?: error("Guardian not found with id: ${application.guardianId}")
 
         if (currentVtjGuardianIds.contains(applicationGuardian.id)) {
-            deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentKey!!)
+            deliverDecisionToGuardian(tx, clock, decision, applicationGuardian, decision.documentKey!!)
         } else {
             logger.warn("Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current VTJ guardian")
         }
@@ -205,6 +207,7 @@ class DecisionService(
             if (currentVtjGuardianIds.contains(application.otherGuardianId)) {
                 deliverDecisionToGuardian(
                     tx,
+                    clock,
                     decision,
                     otherGuardian,
                     decision.otherGuardianDocumentKey
@@ -217,6 +220,7 @@ class DecisionService(
 
     fun deliverDecisionToGuardian(
         tx: Database.Transaction,
+        clock: EvakaClock,
         decision: Decision,
         guardian: PersonDTO,
         documentKey: String
@@ -247,7 +251,7 @@ class DecisionService(
             messageContent = messageProvider.getDecisionContent(langWithDefault(lang))
         )
 
-        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)))
+        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)), runAt = clock.now())
     }
 
     fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {

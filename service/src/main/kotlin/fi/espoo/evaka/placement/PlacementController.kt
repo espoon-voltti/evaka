@@ -140,7 +140,8 @@ class PlacementController(
 
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate))),
+                    runAt = clock.now()
                 )
             }
         }
@@ -171,7 +172,8 @@ class PlacementController(
                                 maxOf(body.endDate, oldPlacement.endDate)
                             )
                         )
-                    )
+                    ),
+                    runAt = clock.now()
                 )
             }
         }
@@ -196,7 +198,8 @@ class PlacementController(
                                 it.childId,
                                 DateRange(it.startDate, it.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
             }

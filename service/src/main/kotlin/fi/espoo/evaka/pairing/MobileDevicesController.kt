@@ -95,13 +95,14 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun pinLogin(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {
         Audit.PinLogin.log(targetId = params.employeeId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
-                    tx.markEmployeeLastLogin(params.employeeId)
+                    tx.markEmployeeLastLogin(clock, params.employeeId)
                     tx.resetEmployeePinFailureCount(params.employeeId)
                     tx.getEmployeeUser(params.employeeId)
                         ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }

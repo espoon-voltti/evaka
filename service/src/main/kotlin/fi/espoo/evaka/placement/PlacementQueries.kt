@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
@@ -99,16 +100,17 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
         .list()
 }
 
-fun Database.Read.getCurrentPlacementForChild(childId: ChildId): Placement? {
+fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
     return createQuery(
         """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by
 FROM placement p
 WHERE p.child_id = :childId
-AND daterange(p.start_date, p.end_date, '[]') @> now()::date
+AND daterange(p.start_date, p.end_date, '[]') @> :today
         """.trimIndent()
     )
         .bind("childId", childId)
+        .bind("today", clock.today())
         .mapTo<Placement>()
         .firstOrNull()
 }

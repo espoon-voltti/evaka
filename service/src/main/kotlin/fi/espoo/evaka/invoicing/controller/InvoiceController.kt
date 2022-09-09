@@ -121,7 +121,7 @@ class InvoiceController(
         accessControl.requirePermissionFor(user, clock, Action.Invoice.SEND, invoiceIds)
         db.connect { dbc ->
             dbc.transaction {
-                service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
+                service.sendInvoices(it, user, clock, invoiceIds, invoiceDate, dueDate)
             }
         }
     }
@@ -138,7 +138,7 @@ class InvoiceController(
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
                 accessControl.requirePermissionFor(user, clock, Action.Invoice.SEND, invoiceIds)
-                service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
+                service.sendInvoices(tx, user, clock, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
     }

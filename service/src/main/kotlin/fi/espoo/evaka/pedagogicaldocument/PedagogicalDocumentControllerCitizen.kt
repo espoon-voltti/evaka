@@ -58,7 +58,7 @@ class PedagogicalDocumentControllerCitizen(
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.PedagogicalDocument.READ, documentId)
         return db.connect { dbc ->
-            dbc.transaction { it.markDocumentReadByGuardian(documentId, user.id) }
+            dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
     }
 
@@ -74,16 +74,17 @@ class PedagogicalDocumentControllerCitizen(
     }
 }
 
-private fun Database.Transaction.markDocumentReadByGuardian(documentId: PedagogicalDocumentId, guardianId: PersonId) =
+private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, documentId: PedagogicalDocumentId, guardianId: PersonId) =
     this.createUpdate(
         """
             INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
-            VALUES (:documentId, :personId, now())
+            VALUES (:documentId, :personId, :now)
             ON CONFLICT(pedagogical_document_id, person_id) DO NOTHING;
         """.trimIndent()
     )
         .bind("documentId", documentId)
         .bind("personId", guardianId)
+        .bind("now", clock.now())
         .execute()
 
 private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Map<ChildId, Int> =
