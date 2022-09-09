@@ -20,6 +20,7 @@ export default React.memo(function FollowupQuestion({
   translations,
   questionNumber
 }: FollowupQuestionProps) {
+  const nonEmptyEntries = value.filter((entry) => entry.text.trim() !== '')
   return (
     <FollowupQuestionContainer data-qa="vasu-followup-question">
       <H2>{title}</H2>
@@ -28,9 +29,9 @@ export default React.memo(function FollowupQuestion({
       }${name}`}</Label>
 
       <div>
-        {value.length > 0 ? (
+        {nonEmptyEntries.length > 0 ? (
           <ul>
-            {value.map((entry, ix) => (
+            {nonEmptyEntries.map((entry, ix) => (
               <li key={ix}>
                 {entry.date.format()}: {entry.text}
               </li>

@@ -206,11 +206,15 @@ export default React.memo(function FollowupQuestion({
           ))
         ) : (
           <ul>
-            {value.map((entry, ix) => (
-              <li key={ix} data-qa="follow-up-entry">
-                {entry.date.format()}: {entry.text}
-              </li>
-            ))}
+            {/* Render items with non-empty text. It's not allowed to remove an item
+            to retain the creator/editor info. */}
+            {value
+              .filter((entry) => entry.text.trim() !== '')
+              .map((entry, ix) => (
+                <li key={ix} data-qa="follow-up-entry">
+                  {entry.date.format()}: {entry.text}
+                </li>
+              ))}
           </ul>
         )}
       </div>
