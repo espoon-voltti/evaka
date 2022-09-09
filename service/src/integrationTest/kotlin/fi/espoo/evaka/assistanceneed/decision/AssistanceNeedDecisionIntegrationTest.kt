@@ -10,16 +10,20 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
@@ -29,7 +33,10 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
+import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import mu.KotlinLogging
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -413,6 +420,85 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `decision maker options returns 200 with employees`() {
+        val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        val decisionMakers = getDecisionMakerOptions(assistanceNeedDecision.id)
+
+        assertThat(decisionMakers)
+            .extracting({ it.id }, { it.lastName }, { it.firstName })
+            .contains(
+                Tuple(testDecisionMaker_1.id, testDecisionMaker_1.lastName, testDecisionMaker_1.firstName),
+                Tuple(testDecisionMaker_2.id, testDecisionMaker_2.lastName, testDecisionMaker_2.firstName),
+                Tuple(testDecisionMaker_3.id, testDecisionMaker_3.lastName, testDecisionMaker_3.firstName),
+            )
+    }
+
+    @Test
+    fun `decision maker options returns 404 when assistance decision doesn't exist`() {
+        whenGetDecisionMakerOptionsThenExpectStatus(
+            AssistanceNeedDecisionId(UUID.randomUUID()),
+            assistanceWorker,
+            HttpStatus.NOT_FOUND
+        )
+    }
+
+    @Test
+    fun `decision maker options returns 403 when user doesn't have access`() {
+        whenGetDecisionMakerOptionsThenExpectStatus(
+            AssistanceNeedDecisionId(UUID.randomUUID()),
+            decisionMaker,
+            HttpStatus.FORBIDDEN
+        )
+    }
+
+    @Test
+    fun `decision maker options returns employees with given roles`() {
+        val directorId = db.transaction { tx ->
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = EmployeeId(UUID.randomUUID()),
+                    firstName = "Fia",
+                    lastName = "Finance",
+                    roles = setOf(UserRole.FINANCE_ADMIN),
+                )
+            )
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = EmployeeId(UUID.randomUUID()),
+                    firstName = "Dirk",
+                    lastName = "Director",
+                    roles = setOf(UserRole.DIRECTOR),
+                )
+            )
+        }
+        val assistanceDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
+            AssistanceNeedDecisionRequest(
+                decision = testDecision
+            )
+        )
+
+        val decisionMakers = db.read { tx ->
+            assistanceNeedDecisionService.getDecisionMakerOptions(
+                tx,
+                assistanceDecision.id,
+                setOf(UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR)
+            )
+        }
+
+        assertThat(decisionMakers)
+            .extracting({ it.id }, { it.lastName }, { it.firstName })
+            .containsExactly(
+                Tuple(directorId, "Director", "Dirk"),
+                Tuple(unitSupervisorOfTestDaycare.id, "Supervisor", "Sammy"),
+            )
+    }
+
+    @Test
     fun `End date cannot be changed unless assistance services for time is selected`() {
         val assistanceNeedDecision = whenPostAssistanceNeedDecisionThenExpectSuccess(
             AssistanceNeedDecisionRequest(
@@ -680,6 +766,27 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     ) {
         val (_, res) = http.post("/assistance-need-decision/$id/update-decision-maker")
             .jsonBody(jsonMapper.writeValueAsString(request))
+            .asUser(user)
+            .response()
+
+        assertEquals(statusCode.value(), res.statusCode)
+    }
+
+    private fun getDecisionMakerOptions(id: AssistanceNeedDecisionId): List<Employee> {
+        val (_, res, data) = http.get("/assistance-need-decision/$id/decision-maker-option")
+            .asUser(assistanceWorker)
+            .responseObject<List<Employee>>(jsonMapper)
+
+        assertEquals(200, res.statusCode)
+        return data.get()
+    }
+
+    private fun whenGetDecisionMakerOptionsThenExpectStatus(
+        id: AssistanceNeedDecisionId,
+        user: AuthenticatedUser,
+        statusCode: HttpStatus = HttpStatus.OK
+    ) {
+        val (_, res) = http.get("/assistance-need-decision/$id/decision-maker-option")
             .asUser(user)
             .response()
 

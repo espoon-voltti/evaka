@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.children.consent.ChildConsentType
+import fi.espoo.evaka.shared.auth.UserRole
 
 data class FeatureConfig(
     /** Does capacity factor affect voucher value decisions?
@@ -86,6 +87,12 @@ data class FeatureConfig(
 
     /** Controls whether permission to share is required for curriculum documents */
     val curriculumDocumentPermissionToShareRequired: Boolean,
+
+    /** Employees with given user roles to show as options for assistance decision makers.
+     *
+     * May contain global and unit scoped roles (empty = all roles are visible).
+     */
+    val assistanceDecisionMakerRoles: Set<UserRole> = emptySet(),
 
     /** The number of days citizens can move daycare start forward */
     val requestedStartUpperLimit: Int

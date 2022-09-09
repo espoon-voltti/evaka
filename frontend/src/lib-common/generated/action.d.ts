@@ -143,6 +143,7 @@ export type AssistanceNeedDecision =
   | 'DELETE'
   | 'MARK_AS_OPENED'
   | 'READ'
+  | 'READ_DECISION_MAKER_OPTIONS'
   | 'SEND'
   | 'UPDATE'
   | 'UPDATE_DECISION_MAKER'
