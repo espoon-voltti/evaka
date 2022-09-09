@@ -113,8 +113,8 @@ class AssistanceNeedController(
     }
 
     @GetMapping("/assistance-basis-options")
-    fun getAssistanceBasisOptions(db: Database, user: AuthenticatedUser): List<AssistanceBasisOption> {
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
+    fun getAssistanceBasisOptions(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<AssistanceBasisOption> {
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return db.connect { dbc -> assistanceNeedService.getAssistanceBasisOptions(dbc) }
     }
 }

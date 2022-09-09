@@ -132,11 +132,11 @@ class ApplicationControllerV2(
     fun createPaperApplication(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
     ): ApplicationId {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_PAPER_APPLICATION)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PAPER_APPLICATION)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -174,7 +174,7 @@ class ApplicationControllerV2(
                 applicationStateService.initializeApplicationForm(
                     tx,
                     user,
-                    evakaClock.today(),
+                    clock.today(),
                     id,
                     body.type,
                     guardian,
@@ -250,10 +250,11 @@ class ApplicationControllerV2(
     fun getGuardianApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "guardianId") guardianId: PersonId
     ): List<PersonApplicationSummary> {
         Audit.ApplicationRead.log(targetId = guardianId)
-        accessControl.requirePermissionFor(user, Action.Global.READ_PERSON_APPLICATION)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSON_APPLICATION)
 
         return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }
     }

@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -28,9 +29,10 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<HolidayPeriod> {
         Audit.HolidayPeriodsList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
     }
 
@@ -38,10 +40,11 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     fun getHolidayPeriod(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: HolidayPeriodId,
     ): HolidayPeriod {
         Audit.HolidayPeriodRead.log(id)
-        accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIOD)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIOD)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriod(id) } } ?: throw NotFound()
     }
 
@@ -49,10 +52,11 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     fun createHolidayPeriod(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: HolidayPeriodBody
     ): HolidayPeriod {
         Audit.HolidayPeriodCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_HOLIDAY_PERIOD)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_PERIOD)
         return db.connect { dbc ->
             dbc.transaction {
                 try {
@@ -68,11 +72,12 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     fun updateHolidayPeriod(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: HolidayPeriodId,
         @RequestBody body: HolidayPeriodBody
     ) {
         Audit.HolidayPeriodUpdate.log(id)
-        accessControl.requirePermissionFor(user, Action.Global.UPDATE_HOLIDAY_PERIOD)
+        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_HOLIDAY_PERIOD)
         db.connect { dbc ->
             dbc.transaction {
                 try {
@@ -88,10 +93,11 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     fun deleteHolidayPeriod(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: HolidayPeriodId
     ) {
         Audit.HolidayPeriodDelete.log(id)
-        accessControl.requirePermissionFor(user, Action.Global.DELETE_HOLIDAY_PERIOD)
+        accessControl.requirePermissionFor(user, clock, Action.Global.DELETE_HOLIDAY_PERIOD)
         db.connect { dbc -> dbc.transaction { it.deleteHolidayPeriod(id) } }
     }
 }

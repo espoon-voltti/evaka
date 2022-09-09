@@ -81,7 +81,7 @@ class FeeDecisionController(
         @RequestBody body: SearchFeeDecisionRequest
     ): Paged<FeeDecisionSummary> {
         Audit.FeeDecisionSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_FEE_DECISIONS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_FEE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)

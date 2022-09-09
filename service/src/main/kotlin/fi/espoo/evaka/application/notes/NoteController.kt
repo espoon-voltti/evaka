@@ -117,11 +117,12 @@ class NoteController(private val accessControl: AccessControl) {
     fun updateServiceWorkerNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest
     ) {
         Audit.ServiceWorkerNoteUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

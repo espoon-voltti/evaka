@@ -70,10 +70,11 @@ class DaycareController(
     @GetMapping("/features")
     fun getFeatures(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<UnitFeatures> {
         Audit.UnitFeaturesRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_UNIT_FEATURES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_UNIT_FEATURES)
         return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }
     }
 
@@ -312,10 +313,11 @@ class DaycareController(
     fun createDaycare(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody fields: DaycareFields
     ): CreateDaycareResponse {
         Audit.UnitCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_UNIT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_UNIT)
         fields.validate()
         return CreateDaycareResponse(
             db.connect { dbc ->

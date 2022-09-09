@@ -40,10 +40,11 @@ class VasuTemplateController(
     fun postTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
         Audit.VasuTemplateCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_VASU_TEMPLATE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_VASU_TEMPLATE)
 
         return db.connect { dbc ->
             dbc.transaction {
@@ -112,10 +113,11 @@ class VasuTemplateController(
     fun getTemplates(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_VASU_TEMPLATE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(validOnly) } }
     }

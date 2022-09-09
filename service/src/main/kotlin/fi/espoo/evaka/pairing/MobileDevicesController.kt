@@ -45,9 +45,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun getMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
         return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
     }
 

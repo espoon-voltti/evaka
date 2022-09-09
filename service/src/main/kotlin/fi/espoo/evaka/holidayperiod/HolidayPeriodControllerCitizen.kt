@@ -40,9 +40,10 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
     ): List<HolidayPeriod> {
         Audit.HolidayPeriodsList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
     }
 
@@ -50,13 +51,13 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun getActiveQuestionnaires(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
     ): List<ActiveQuestionnaire> {
         Audit.HolidayPeriodsList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(evakaClock.today()) ?: return@read listOf()
+                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
 
                 val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
                 val eligibleChildren = if (continuousPlacementPeriod != null) {

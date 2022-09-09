@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -24,10 +25,11 @@ class ServiceNeedReport(private val acl: AccessControlList, private val accessCo
     fun getServiceNeedReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {
         Audit.ServiceNeedReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

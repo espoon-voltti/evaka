@@ -74,18 +74,18 @@ class VoucherValueDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest,
-        evakaClock: EvakaClock
     ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
             dbc
                 .read { tx ->
                     tx.searchValueDecisions(
-                        evakaClock,
+                        clock,
                         body.page,
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,

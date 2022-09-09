@@ -121,10 +121,11 @@ class IncomeStatementController(
     fun getIncomeStatementsAwaitingHandler(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
         Audit.IncomeStatementsAwaitingHandler.log()
-        accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
+        accessControl.requirePermissionFor(user, clock, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(

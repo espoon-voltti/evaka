@@ -144,8 +144,8 @@ class IncomeController(
     }
 
     @GetMapping("/types")
-    fun getTypes(user: AuthenticatedUser): Map<String, IncomeType> {
-        accessControl.requirePermissionFor(user, Action.Global.READ_INCOME_TYPES)
+    fun getTypes(user: AuthenticatedUser, clock: EvakaClock): Map<String, IncomeType> {
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_INCOME_TYPES)
         return incomeTypesProvider.get()
     }
 }

@@ -55,7 +55,7 @@ class PairingsController(
             is PostPairingReq.Unit ->
                 accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
             is PostPairingReq.Employee -> {
-                accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
+                accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
                 if (user.id != body.employeeId) throw Forbidden()
             }
         }

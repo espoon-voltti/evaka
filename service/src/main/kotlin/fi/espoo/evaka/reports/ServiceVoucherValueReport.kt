@@ -41,11 +41,12 @@ class ServiceVoucherValueReportController(
     fun getServiceVoucherValuesForAllUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
     ): ServiceVoucherReport {
-        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_VOUCHER_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_VOUCHER_REPORT)
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.connect { dbc ->

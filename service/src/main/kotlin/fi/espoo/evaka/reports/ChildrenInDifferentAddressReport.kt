@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,10 +26,11 @@ class ChildrenInDifferentAddressReportController(
     @GetMapping("/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

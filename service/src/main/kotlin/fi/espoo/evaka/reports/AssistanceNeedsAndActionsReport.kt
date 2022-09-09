@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.json.Json
@@ -32,10 +33,11 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
     fun getAssistanceNeedReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
         Audit.AssistanceNeedsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

@@ -49,10 +49,10 @@ class PersonController(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
     @PostMapping
-    fun createEmpty(db: Database, user: AuthenticatedUser, evakaClock: EvakaClock): PersonIdentityResponseJSON {
+    fun createEmpty(db: Database, user: AuthenticatedUser, clock: EvakaClock): PersonIdentityResponseJSON {
         Audit.PersonCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON)
-        return db.connect { dbc -> dbc.transaction { createEmptyPerson(it, evakaClock) } }
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON)
+        return db.connect { dbc -> dbc.transaction { createEmptyPerson(it, clock) } }
             .let { PersonIdentityResponseJSON.from(it) }
     }
 
@@ -134,7 +134,7 @@ class PersonController(
         @RequestBody body: SearchPersonBody
     ): List<PersonSummary> {
         Audit.PersonDetailsSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_PEOPLE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_PEOPLE)
         return db.connect { dbc ->
             dbc.read {
                 it.searchPeople(
@@ -241,10 +241,11 @@ class PersonController(
     fun getOrCreatePersonBySsn(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: GetOrCreatePersonBySsnRequest
     ): PersonJSON {
         Audit.PersonDetailsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON_FROM_VTJ)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON_FROM_VTJ)
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
@@ -282,10 +283,11 @@ class PersonController(
     fun createPerson(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: CreatePersonBody
     ): PersonId {
         Audit.PersonCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON)
         return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
     }
 

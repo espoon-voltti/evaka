@@ -39,7 +39,7 @@ class PaymentController(private val accessControl: AccessControl, private val pa
     @PostMapping("/create-drafts")
     fun createDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         Audit.PaymentsCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_PAYMENTS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_DRAFT_PAYMENTS)
         db.connect { dbc -> dbc.transaction { tx -> createPaymentDrafts(tx) } }
     }
 

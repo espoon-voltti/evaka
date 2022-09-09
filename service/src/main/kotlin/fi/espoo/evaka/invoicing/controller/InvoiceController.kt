@@ -65,10 +65,11 @@ class InvoiceController(
     fun searchInvoices(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchInvoicesRequest
     ): Paged<InvoiceSummary> {
         Audit.InvoicesSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_INVOICES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
@@ -92,9 +93,9 @@ class InvoiceController(
     }
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(db: Database, user: AuthenticatedUser) {
+    fun createDraftInvoices(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         Audit.InvoicesCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_DRAFT_INVOICES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_DRAFT_INVOICES)
         db.connect { dbc -> dbc.transaction { generator.createAndStoreAllDraftInvoices(it) } }
     }
 
@@ -184,8 +185,8 @@ class InvoiceController(
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): Wrapper<InvoiceCodes> {
-        accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_CODES)
+    fun getInvoiceCodes(db: Database, user: AuthenticatedUser, clock: EvakaClock): Wrapper<InvoiceCodes> {
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_CODES)
         return Wrapper(db.connect { dbc -> dbc.read { service.getInvoiceCodes(it) } })
     }
 }

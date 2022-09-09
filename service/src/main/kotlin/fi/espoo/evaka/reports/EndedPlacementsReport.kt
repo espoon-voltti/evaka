@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,11 +22,12 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
     fun getEndedPlacementsReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<EndedPlacementsReportRow> {
         Audit.EndedPlacementsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ENDED_PLACEMENTS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ENDED_PLACEMENTS_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 

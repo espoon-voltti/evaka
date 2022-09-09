@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -25,10 +26,11 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
     fun getChildAgeLanguageReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ChildAgeLanguageReportRow> {
         Audit.ChildAgeLanguageReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

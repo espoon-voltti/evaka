@@ -41,16 +41,16 @@ import org.springframework.web.bind.annotation.RestController
 class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
-    fun getEmployees(db: Database, user: AuthenticatedUser): List<Employee> {
+    fun getEmployees(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
         Audit.EmployeesRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_EMPLOYEES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_EMPLOYEES)
         return db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email }
     }
 
     @GetMapping("/finance-decision-handler")
-    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser): List<Employee> {
+    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
         Audit.EmployeesRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_FINANCE_DECISION_HANDLERS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FINANCE_DECISION_HANDLERS)
         return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email }
     }
 
@@ -100,9 +100,9 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): Employee {
+    fun createEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody employee: NewEmployee): Employee {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_EMPLOYEE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_EMPLOYEE)
         return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
     }
 
@@ -136,10 +136,11 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun searchEmployees(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest
     ): Paged<EmployeeWithDaycareRoles> {
         Audit.EmployeesRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_EMPLOYEES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_EMPLOYEES)
         return db.connect { dbc ->
             dbc.read { tx ->
                 getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")

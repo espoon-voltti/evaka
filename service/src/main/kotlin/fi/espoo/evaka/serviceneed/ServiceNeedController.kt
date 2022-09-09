@@ -138,10 +138,11 @@ class ServiceNeedController(
     @GetMapping("/service-needs/options")
     fun getServiceNeedOptions(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<ServiceNeedOption> {
         Audit.ServiceNeedOptionsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_NEED_OPTIONS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
         return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }
     }

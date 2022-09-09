@@ -75,9 +75,9 @@ class DecisionController(
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database, user: AuthenticatedUser): List<DecisionUnit> {
+    fun getDecisionUnits(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DecisionUnit> {
         Audit.UnitRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_DECISION_UNITS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
         return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
     }
 

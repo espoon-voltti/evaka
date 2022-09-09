@@ -38,9 +38,9 @@ class FinanceBasicsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database, user: AuthenticatedUser): List<FeeThresholdsWithId> {
+    fun getFeeThresholds(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_FEE_THRESHOLDS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }
     }
@@ -49,10 +49,11 @@ class FinanceBasicsController(
     fun createFeeThresholds(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_FEE_THRESHOLDS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
         db.connect { dbc ->

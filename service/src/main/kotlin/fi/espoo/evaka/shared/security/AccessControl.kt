@@ -45,8 +45,8 @@ class AccessControl(
         )
     }
 
-    fun requirePermissionFor(user: AuthenticatedUser, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
-        dbc.read { tx -> checkPermissionFor(tx, user, RealEvakaClock(), action) }.assert()
+    fun requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
+        dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.assert()
     }
 
     fun hasPermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction): Boolean = Database(jdbi).connect { dbc ->

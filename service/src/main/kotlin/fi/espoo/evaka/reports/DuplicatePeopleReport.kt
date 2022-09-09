@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.json.Json
@@ -19,9 +20,9 @@ import java.time.LocalDate
 @RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser): List<DuplicatePeopleReportRow> {
+    fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DuplicatePeopleReportRow> {
         Audit.DuplicatePeopleReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

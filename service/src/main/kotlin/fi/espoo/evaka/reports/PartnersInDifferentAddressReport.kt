@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,10 +25,11 @@ class PartnersInDifferentAddressReportController(
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<PartnersInDifferentAddressReportRow> {
         Audit.PartnersInDifferentAddressReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

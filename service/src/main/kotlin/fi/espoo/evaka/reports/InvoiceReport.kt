@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -33,10 +34,11 @@ class InvoiceReportController(private val accessControl: AccessControl) {
     fun getInvoiceReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {
         Audit.InvoicesReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_INVOICE_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

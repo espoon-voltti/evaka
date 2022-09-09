@@ -46,10 +46,11 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     @GetMapping("/reports/assistance-need-decisions/unread-count")
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock,
     ): Int {
         Audit.AssistanceNeedDecisionsReportUnreadCount.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
 
         return db.connect { dbc ->
             dbc.read {
