@@ -60,7 +60,7 @@ class VardaResetService(
 
     fun resetVardaChildByAsyncJob(db: Database.Connection, clock: EvakaClock, msg: VardaAsyncJob.ResetVardaChild) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
-        resetVardaChild(db, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
+        resetVardaChild(db, clock, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
     }
 
     fun deleteVardaChildByAsyncJob(db: Database.Connection, clock: EvakaClock, msg: VardaAsyncJob.DeleteVardaChild) {
@@ -95,10 +95,10 @@ class VardaResetService(
     }
 }
 
-private fun resetVardaChild(db: Database.Connection, client: VardaClient, childId: ChildId, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
+private fun resetVardaChild(db: Database.Connection, clock: EvakaClock, client: VardaClient, childId: ChildId, feeDecisionMinDate: LocalDate, municipalOrganizerOid: String) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
-            val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(childId) }
+            val childServiceNeeds = db.read { it.getServiceNeedsForVardaByChild(clock, childId) }
             logger.info("VardaUpdate: found ${childServiceNeeds.size} service needs for child $childId to be sent")
             childServiceNeeds.forEachIndexed { idx, serviceNeedId ->
                 logger.info("VardaUpdate: sending service need $serviceNeedId for child $childId (${idx + 1}/${childServiceNeeds.size})")

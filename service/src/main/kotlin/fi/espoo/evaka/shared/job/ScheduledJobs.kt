@@ -126,7 +126,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        vardaUpdateService.startVardaUpdate(db)
+        vardaUpdateService.startVardaUpdate(db, clock)
     }
 
     fun vardaReset(db: Database.Connection, clock: EvakaClock) {
@@ -134,7 +134,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { it.removeOldDrafts(attachmentsController::deleteAttachment) }
+        db.transaction { it.removeOldDrafts(clock, attachmentsController::deleteAttachment) }
     }
 
     fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {
@@ -148,7 +148,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
-        pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db)
+        pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db, clock)
     }
 
     fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {

@@ -52,7 +52,7 @@ class PendingDecisionEmailService(
         val decisionIds: List<DecisionId>
     )
 
-    fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
+    fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
             tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND claimed_by IS NULL")
                 .execute()
@@ -64,14 +64,15 @@ SELECT id, application_id
 FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
-AND (d.sent_date < current_date - INTERVAL '1 week' AND d.sent_date > current_date - INTERVAL '2 month')
+AND (d.sent_date < :today - INTERVAL '1 week' AND d.sent_date > :today - INTERVAL '2 month')
 AND d.pending_decision_emails_sent_count < 2
-AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < current_date - INTERVAL '1 week'))
+AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < :today - INTERVAL '1 week'))
 SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
 FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
 GROUP BY application.guardian_id
 """
             )
+                .bind("today", clock.today())
                 .mapTo<GuardianDecisions>()
                 .list()
 

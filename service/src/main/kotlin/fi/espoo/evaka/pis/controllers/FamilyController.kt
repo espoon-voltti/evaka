@@ -50,7 +50,7 @@ class FamilyController(
 
         return db.connect { dbc ->
             dbc.read {
-                val overview = familyOverviewService.getFamilyByAdult(it, id)
+                val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
                 if (includeIncome) overview
                 else overview?.copy(
                     headOfFamily = overview.headOfFamily.copy(income = null),

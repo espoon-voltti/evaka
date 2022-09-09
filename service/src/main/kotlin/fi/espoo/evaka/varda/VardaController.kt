@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,9 +21,10 @@ class VardaController(
 ) {
     @PostMapping("/run-update-all")
     fun runFullVardaUpdate(
-        db: Database
+        db: Database,
+        clock: EvakaClock
     ) {
-        db.connect { dbc -> vardaUpdateService.startVardaUpdate(dbc) }
+        db.connect { dbc -> vardaUpdateService.startVardaUpdate(dbc, clock) }
     }
 
     @PostMapping("/reset-children")

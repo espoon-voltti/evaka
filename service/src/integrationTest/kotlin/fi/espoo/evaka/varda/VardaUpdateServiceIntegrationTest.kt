@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultClub
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPreschool
@@ -129,7 +130,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
 
         val childId = db.read { it.getChildIdByServiceNeedId(snId) }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 1, 0, 0)
         assertEquals(snId, diffs.get(childId)?.additions?.get(0))
@@ -141,7 +142,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         val option = snDefaultPreschool.copy(updated = since)
         createServiceNeed(db, since, option)
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
         assertEquals(0, diffs.keys.size)
     }
 
@@ -161,7 +162,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 0)
         assertEquals(snId, diffs.get(childId)?.updates?.get(0))
@@ -199,7 +200,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 1)
         assertEquals(changedServiceNeedId, diffs.get(childId)?.updates?.get(0))
@@ -229,7 +230,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
             )
         }
 
-        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, evakaEnv.feeDecisionMinDate)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs[childId], 0, 0, 1)
         assertEquals(deletedSnId, diffs[childId]?.deletes?.get(0))
@@ -374,7 +375,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.minusDays(81).toLocalDate(), PlacementType.DAYCARE, testDaycareNotInvoiced.id)
         createServiceNeed(db, since, snDefaultPreschool, testChild_1, since.minusDays(80).toLocalDate(), since.minusDays(61).toLocalDate(), PlacementType.PRESCHOOL, testDaycareNotInvoiced.id)
         createServiceNeed(db, since, snDefaultClub, testChild_1, since.minusDays(60).toLocalDate(), since.minusDays(40).toLocalDate(), PlacementType.CLUB, testDaycareNotInvoiced.id)
-        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
         assertEquals(1, serviceNeeds.size)
         assertEquals(id, serviceNeeds.first())
     }
@@ -384,7 +385,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
-        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
         assertEquals(1, serviceNeeds.size)
         assertEquals(id, serviceNeeds.first())
     }
@@ -394,7 +395,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, since.plusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
-        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
         assertEquals(0, serviceNeeds.size)
     }
 
@@ -403,7 +404,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         db.transaction { it.insertVardaChild(testChild_1.id) }
         val since = HelsinkiDateTime.now()
         createServiceNeed(db, since, snDefaultDaycare.copy(daycareHoursPerWeek = 0), testChild_1, since.minusDays(100).toLocalDate(), since.plusDays(200).toLocalDate(), PlacementType.DAYCARE, testDaycare.id)
-        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(testChild_1.id) }
+        val serviceNeeds = db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
         assertEquals(0, serviceNeeds.size)
     }
 
@@ -889,7 +890,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
 
     // TODO: find a way to run update process through async job mechanism in tests (ie. use correct varda client)
     private fun updateChildData(db: Database.Connection, vardaClient: VardaClient, feeDecisionMinDate: LocalDate) {
-        getChildrenToUpdate(db, feeDecisionMinDate).entries.forEach {
+        getChildrenToUpdate(db, RealEvakaClock(), feeDecisionMinDate).entries.forEach {
             updateVardaChild(db, vardaClient, it.value, feeDecisionMinDate, ophEnv.organizerOid)
         }
     }

@@ -882,12 +882,13 @@ fun Database.Transaction.deleteApplication(id: ApplicationId) {
     createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit) {
+fun Database.Transaction.removeOldDrafts(clock: EvakaClock, deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit) {
     val thresholdDays = 31
 
     // language=SQL
     val applicationIds =
-        createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
+        createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < :today - :thresholdDays""")
+            .bind("today", clock.today())
             .bind("thresholdDays", thresholdDays)
             .mapTo<ApplicationId>()
             .toList()

@@ -33,13 +33,13 @@ class PartnersInDifferentAddressReportController(
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user))
+                it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
             }
         }
     }
 }
 
-private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization): List<PartnersInDifferentAddressReportRow> {
+private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization, clock: EvakaClock): List<PartnersInDifferentAddressReportRow> {
     // language=sql
     val sql =
         """
@@ -65,7 +65,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE
             (:units::uuid[] IS NULL OR u.id = ANY(:units)) AND
-            daterange(fp1.start_date, fp1.end_date, '[]') @> current_date AND
+            daterange(fp1.start_date, fp1.end_date, '[]') @> :today AND
             fp1.conflict = false AND 
             p1.residence_code <> p2.residence_code AND
             p1.residence_code IS NOT NULL AND
@@ -81,6 +81,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """.trimIndent()
     return createQuery(sql)
+        .bind("today", clock.today())
         .bind("units", authorizedUnits.ids)
         .mapTo<PartnersInDifferentAddressReportRow>()
         .toList()

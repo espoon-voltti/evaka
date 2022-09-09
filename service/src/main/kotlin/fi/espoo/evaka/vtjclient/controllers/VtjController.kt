@@ -55,7 +55,7 @@ class VtjController(
                 val (userDetails, ssn, children) = when (person.identity) {
                     is ExternalIdentifier.NoID ->
                         Triple(
-                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user)),
+                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
                             (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                             emptyList()
                         )
@@ -63,7 +63,7 @@ class VtjController(
                         personService.getPersonWithChildren(tx, user, personId)
                             ?.let {
                                 Triple(
-                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)),
+                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
                                     it.socialSecurityNumber!!,
                                     it.children.map { Child.from(it) }
                                 )
