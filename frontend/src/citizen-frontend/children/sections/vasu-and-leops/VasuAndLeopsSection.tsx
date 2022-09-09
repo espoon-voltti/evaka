@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -22,7 +22,7 @@ import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
-import { Dimmed, P } from 'lib-components/typography'
+import { Dimmed } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
@@ -154,27 +154,6 @@ export default React.memo(function VasuAndLeopsSection({
 
   const user = useUser()
 
-  const { showVasuDisclaimer, showLeopsDisclaimer } = useMemo(() => {
-    const requiresPermission = vasus
-      .map((vasu) => vasu.data)
-      .getOrElse([])
-      .filter(
-        (vasu) =>
-          !vasu.guardiansThatHaveGivenPermissionToShare.some(
-            (guardianId) => guardianId === user?.id
-          )
-      )
-
-    return {
-      showVasuDisclaimer: requiresPermission.some(
-        (vasu) => vasu.type === 'DAYCARE'
-      ),
-      showLeopsDisclaimer: requiresPermission.some(
-        (vasu) => vasu.type === 'PRESCHOOL'
-      )
-    }
-  }, [vasus, user])
-
   const { unreadVasuDocumentsCount } = useContext(ChildrenContext)
 
   return (
@@ -187,16 +166,6 @@ export default React.memo(function VasuAndLeopsSection({
       data-qa="collapsible-vasu"
       contentPadding="zero"
     >
-      {(showVasuDisclaimer || showLeopsDisclaimer) && (
-        <PaddingBox>
-          {showVasuDisclaimer && (
-            <P>{i18n.children.vasu.sharingVasuDisclaimer}</P>
-          )}
-          {showLeopsDisclaimer && (
-            <P>{i18n.children.vasu.sharingLeopsDisclaimer}</P>
-          )}
-        </PaddingBox>
-      )}
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
