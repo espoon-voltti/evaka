@@ -138,13 +138,16 @@ describe('Vasu document page', () => {
     test('Fill the basic info section', async () => {
       const vasuEditPage = await editDocument()
       const basicInfo = vasuEditPage.basicInfoSection
-      expect(await basicInfo.childName).toEqual(
+      await waitUntilEqual(
+        () => basicInfo.childName,
         `${child.firstName} ${child.lastName}`
       )
-      expect(await basicInfo.childDateOfBirth).toEqual(
+      await waitUntilEqual(
+        () => basicInfo.childDateOfBirth,
         LocalDate.parseIso(child.dateOfBirth).format()
       )
-      expect(await basicInfo.placement(0)).toEqual(
+      await waitUntilEqual(
+        () => basicInfo.placement(0),
         `${daycareFixture.name} (${
           daycareGroupFixture.name
         }) ${LocalDate.parseIso(
@@ -154,10 +157,12 @@ describe('Vasu document page', () => {
         ).format()}`
       )
       const [firstGuardian, secondGuardian] = child.guardians ?? []
-      expect(await basicInfo.guardian(0)).toEqual(
+      await waitUntilEqual(
+        () => basicInfo.guardian(0),
         `${firstGuardian.firstName} ${firstGuardian.lastName}`
       )
-      expect(await basicInfo.guardian(1)).toEqual(
+      await waitUntilEqual(
+        () => basicInfo.guardian(1),
         `${secondGuardian.firstName} ${secondGuardian.lastName}`
       )
       await basicInfo.additionalContactInfoInput.fill(
