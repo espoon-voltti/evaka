@@ -438,12 +438,15 @@ describe('Vasu document page', () => {
 
       test('Adding a followup comment renders it on the page', async () => {
         const vasuEditPage = await editDocument()
+        await vasuEditPage.addFollowup()
         await vasuEditPage.inputFollowupWithDateComment(
           'This is a followup',
           '01.04.2020',
           0,
           0
         )
+
+        await vasuEditPage.addFollowup()
         await vasuEditPage.inputFollowupWithDateComment(
           'A second one',
           '09.10.2021',

@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext } from 'react'
 import styled, { css } from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Followup, FollowupEntry } from 'lib-common/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -24,68 +25,32 @@ import { QuestionProps } from './question-props'
 
 const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
   entry,
-  date,
-  textValue,
   onChange,
   'data-qa': dataQa
 }: {
-  entry?: FollowupEntry
-  date: LocalDate | null
-  textValue: string
-  onChange: (date: LocalDate | null, textValue: string) => void
+  entry: FollowupEntry
+  onChange: (date: LocalDate, textValue: string) => void
   'data-qa': string
 }) {
-  const { user } = useContext(UserContext)
   const { i18n } = useTranslation()
-
-  const currentUserCaption = useMemo(
-    () => `${LocalDate.todayInHelsinkiTz().format()} ${user?.name ?? ''}`,
-    [user]
-  )
-
-  const [internalDate, setInternalDate] = useState<LocalDate | null>(
-    date ?? LocalDate.todayInHelsinkiTz()
-  )
-
-  useEffect(() => {
-    if (
-      date !== null &&
-      (internalDate === null || !internalDate.isEqual(date))
-    ) {
-      setInternalDate(date)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date])
 
   return (
     <div>
       <FixedSpaceRow alignItems="flex-end" spacing="s">
         <DatePicker
           locale="fi"
-          date={internalDate}
-          onChange={(date) => {
-            setInternalDate(date)
-            if (textValue.length > 0 && date) {
-              onChange(date, textValue)
-            }
+          required
+          date={entry.date}
+          onChange={(newDate) => {
+            if (newDate !== null) onChange(newDate, entry.text)
           }}
-          info={
-            !internalDate
-              ? {
-                  status: 'warning',
-                  text: i18n.validationErrors.required
-                }
-              : undefined
-          }
           errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched
           data-qa={`${dataQa}-date`}
         />
         <TextArea
-          value={textValue}
-          onChange={(textValue) =>
-            internalDate && onChange(internalDate, textValue)
-          }
+          value={entry.text}
+          onChange={(newTextValue) => onChange(entry.date, newTextValue)}
           data-qa={`${dataQa}-input`}
           placeholder={
             entry ? undefined : i18n.vasu.newFollowUpEntryPlaceholder
@@ -93,23 +58,17 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
         />
       </FixedSpaceRow>
       <Gap size="xxs" />
-      {(entry || textValue.length > 0) && (
-        <InformationText data-qa={`${dataQa}-meta`}>
-          {entry
-            ? `${entry.createdDate?.toLocalDate().format() ?? ''} ${
-                entry.authorName
-              }${
-                textValue !== entry.text
-                  ? `, ${i18n.vasu.edited} ${currentUserCaption}`
-                  : entry.edited
-                  ? `, ${i18n.vasu.edited} ${entry.edited.editedAt.format()} ${
-                      entry.edited.editorName
-                    }`
-                  : ''
+      <InformationText data-qa={`${dataQa}-meta`}>
+        {`${entry.createdDate?.toLocalDate().format() ?? ''} ${
+          entry.authorName
+        }${
+          entry.edited
+            ? `, ${i18n.vasu.edited} ${entry.edited.editedAt.format()} ${
+                entry.edited.editorName
               }`
-            : currentUserCaption}
-        </InformationText>
-      )}
+            : ''
+        }`}
+      </InformationText>
     </div>
   )
 })
@@ -124,17 +83,9 @@ export default React.memo(function FollowupQuestion({
   question: { title, name, value, info, continuesNumbering },
   questionNumber
 }: FollowupQuestionProps) {
-  const entries = useMemo(
-    () =>
-      [...value, undefined].map((entry) => ({
-        entry,
-        date: entry?.date ?? null,
-        textValue: entry?.text ?? ''
-      })),
-    [value]
-  )
-
+  const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
+  if (!user) return null
 
   return (
     <FollowupQuestionContainer
@@ -150,60 +101,63 @@ export default React.memo(function FollowupQuestion({
 
       <div>
         {onChange ? (
-          entries.map(({ entry, date, textValue }, ix) => (
-            <FollowupEntryEditor
-              key={ix}
-              entry={entry}
-              date={date}
-              textValue={textValue}
-              data-qa={`follow-up-${ix}`}
-              onChange={(date, text) =>
-                onChange?.(
-                  entries
-                    .map((entry, i) => {
+          <>
+            {value.map((entry, ix) => (
+              <FollowupEntryEditor
+                key={ix}
+                entry={entry}
+                data-qa={`follow-up-${ix}`}
+                onChange={(date, text) =>
+                  onChange(
+                    value.map((entry, i) => {
                       if (i !== ix) {
-                        return entry.entry
+                        return entry
                       }
 
-                      if (entry.entry) {
-                        const authorEditingInGracePeriod =
-                          !entry.entry.createdDate ||
-                          (HelsinkiDateTime.now().timestamp -
-                            entry.entry.createdDate.timestamp <
-                            15 * 60 * 1000 &&
-                            entry.entry.authorId === user?.id)
+                      const now = HelsinkiDateTime.now()
+                      const today = now.toLocalDate()
 
-                        return {
-                          ...entry.entry,
-                          date,
-                          text,
-                          edited: !authorEditingInGracePeriod
+                      const isAuthor = entry.authorId === user.id
+                      const inGracePeriod =
+                        !entry.createdDate ||
+                        now.isBefore(entry.createdDate.addMinutes(15))
+
+                      return {
+                        ...entry,
+                        date,
+                        text,
+                        edited:
+                          !isAuthor || !inGracePeriod
                             ? {
-                                editorId: user?.id,
-                                editorName: user?.name,
-                                editedAt: LocalDate.todayInHelsinkiTz()
+                                editorId: user.id,
+                                editorName: user.name,
+                                editedAt: today
                               }
-                            : entry.entry.edited
-                        }
+                            : entry.edited
                       }
-
-                      if (text.length > 0) {
-                        return {
-                          date,
-                          text,
-                          authorId: user?.id,
-                          authorName: user?.name,
-                          createdDate: HelsinkiDateTime.now()
-                        }
-                      }
-
-                      return undefined
                     })
-                    .filter((entry): entry is FollowupEntry => !!entry)
-                )
+                  )
+                }
+              />
+            ))}
+            <Gap size="s" />
+            <AddButton
+              text={i18n.common.add}
+              onClick={() =>
+                onChange([
+                  ...value,
+                  {
+                    date: LocalDate.todayInHelsinkiTz(),
+                    text: '',
+                    authorId: user.id,
+                    authorName: user.name,
+                    createdDate: HelsinkiDateTime.now()
+                  }
+                ])
               }
+              data-qa="followup-add-btn"
             />
-          ))
+          </>
         ) : (
           <ul>
             {/* Render items with non-empty text. It's not allowed to remove an item

@@ -99,6 +99,10 @@ export class VasuEditPage extends VasuPageCommon {
     }
   }
 
+  #followupAddBtn = this.page
+    .findByDataQa('vasu-followup-question')
+    .findByDataQa('followup-add-btn')
+
   readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
   readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
 
@@ -117,6 +121,10 @@ export class VasuEditPage extends VasuPageCommon {
 
   async setMultiSelectQuestionOptionText(key: string, text: string) {
     await this.#multiSelectQuestionOptionTextInput(key).fill(text)
+  }
+
+  async addFollowup() {
+    await this.#followupAddBtn.click()
   }
 
   async inputFollowupWithDateComment(
