@@ -3655,6 +3655,7 @@ export const fi = {
     title: 'Kutsumanimi',
     description:
       'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
-    select: 'Valitse kutsumanimi'
+    select: 'Valitse kutsumanimi',
+    confirm: 'Vahvista'
   }
 }

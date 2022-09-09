@@ -171,7 +171,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     data class EmployeeNicknameUpdateRequest(
-        val nickname: String
+        val nickname: String?
     )
     @PostMapping("/nickname")
     fun setEmployeeNickname(
@@ -183,9 +183,13 @@ class EmployeeController(private val accessControl: AccessControl) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
-                if (possibleNicknames(employee).contains(body.nickname)) {
-                    tx.setEmployeeNickname(EmployeeId(user.rawId()), body.nickname)
-                } else throw NotFound("Given nickname not found")
+                if (body.nickname == null) {
+                    tx.setEmployeeNickname(EmployeeId(user.rawId()), null)
+                } else {
+                    if (possibleNicknames(employee).contains(body.nickname)) {
+                        tx.setEmployeeNickname(EmployeeId(user.rawId()), body.nickname)
+                    } else throw NotFound("Given nickname not found")
+                }
             }
         }
     }

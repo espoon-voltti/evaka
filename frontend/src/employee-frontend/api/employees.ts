@@ -5,7 +5,10 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
-import { EmployeeNicknames } from 'lib-common/generated/api-types/pis'
+import {
+  EmployeeNicknames,
+  EmployeeNicknameUpdateRequest
+} from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -103,5 +106,14 @@ export function getPossibleNicknames(): Promise<Result<EmployeeNicknames>> {
   return client
     .get<JsonOf<EmployeeNicknames>>('/employee/nickname')
     .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function setEmployeeNickname(
+  nickname: EmployeeNicknameUpdateRequest
+): Promise<Result<void>> {
+  return client
+    .post('/employee/nickname', nickname)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
