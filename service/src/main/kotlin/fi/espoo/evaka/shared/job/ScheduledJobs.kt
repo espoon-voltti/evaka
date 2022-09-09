@@ -22,17 +22,13 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
 import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 
-enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
+enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock) -> Unit) {
     CancelOutdatedTransferApplications(ScheduledJobs::cancelOutdatedTransferApplications),
     DvvUpdate(ScheduledJobs::dvvUpdate),
     EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
@@ -65,14 +61,14 @@ class ScheduledJobs(
 ) {
 
     init {
-        asyncJobRunner.registerHandler { db, _: EvakaClock, msg: AsyncJob.RunScheduledJob ->
+        asyncJobRunner.registerHandler { db, clock: EvakaClock, msg: AsyncJob.RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
-            msg.job.fn(this, db)
+            msg.job.fn(this, db, clock)
         }
     }
 
-    fun endOfDayAttendanceUpkeep(db: Database.Connection) {
+    fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(
                 // language=SQL
@@ -86,28 +82,28 @@ WITH attendances_to_end AS (
         -- No placement to this unit anymore, as of today
         NOT EXISTS (
             SELECT 1 FROM placement p
-            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND current_date BETWEEN bc.start_date AND bc.end_date
+            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND :today BETWEEN bc.start_date AND bc.end_date
             WHERE
                 p.child_id = ca.child_id AND
                 (p.unit_id = ca.unit_id OR bc.unit_id = ca.unit_id) AND
-                current_date BETWEEN p.start_date AND p.end_date
+                :today BETWEEN p.start_date AND p.end_date
         )
     )
 )
 UPDATE child_attendance SET end_time = '23:59'::time
 WHERE id IN (SELECT id FROM attendances_to_end)
                 """.trimIndent()
-            ).execute()
+            ).bind("today", clock.today()).execute()
         }
     }
 
-    fun endOfDayStaffAttendanceUpkeep(db: Database.Connection) {
+    fun endOfDayStaffAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
-            it.addMissingStaffAttendanceDepartures(HelsinkiDateTime.now())
+            it.addMissingStaffAttendanceDepartures(clock.now())
         }
     }
 
-    fun endOfDayReservationUpkeep(db: Database.Connection) {
+    fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(
                 // language=SQL
@@ -123,29 +119,29 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         }
     }
 
-    fun dvvUpdate(db: Database.Connection) {
+    fun dvvUpdate(db: Database.Connection, clock: EvakaClock) {
         dvvModificationsBatchRefreshService.scheduleBatch(db)
     }
 
-    fun koskiUpdate(db: Database.Connection) {
-        koskiUpdateService.scheduleKoskiUploads(db, RealEvakaClock(), KoskiSearchParams())
+    fun koskiUpdate(db: Database.Connection, clock: EvakaClock) {
+        koskiUpdateService.scheduleKoskiUploads(db, clock, KoskiSearchParams())
     }
 
-    fun vardaUpdate(db: Database.Connection) {
+    fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
         vardaUpdateService.startVardaUpdate(db)
     }
 
-    fun vardaReset(db: Database.Connection) {
+    fun vardaReset(db: Database.Connection, clock: EvakaClock) {
         vardaResetService.planVardaReset(db, addNewChildren = true)
     }
 
-    fun removeOldDraftApplications(db: Database.Connection) {
+    fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {
         db.transaction { it.removeOldDrafts(attachmentsController::deleteAttachment) }
     }
 
-    fun cancelOutdatedTransferApplications(db: Database.Connection) {
+    fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {
         val canceledApplications = db.transaction {
-            val applicationIds = it.cancelOutdatedSentTransferApplications(RealEvakaClock())
+            val applicationIds = it.cancelOutdatedSentTransferApplications(clock)
             applicationIds
         }
         logger.info {
@@ -153,37 +149,37 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         }
     }
 
-    fun sendPendingDecisionReminderEmails(db: Database.Connection) {
+    fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
         pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db)
     }
 
-    fun freezeVoucherValueReports(db: Database.Connection) {
+    fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {
+        val now = clock.now()
         db.transaction {
             freezeVoucherValueReportRows(
                 it,
-                LocalDate.now(europeHelsinki).year,
-                LocalDate.now(europeHelsinki).monthValue,
-                HelsinkiDateTime.now()
+                now.year,
+                now.month.value,
+                now
             )
         }
     }
 
-    fun removeExpiredNotes(db: Database.Connection) {
-        db.transaction { it.deleteExpiredNotes(HelsinkiDateTime.now()) }
+    fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { it.deleteExpiredNotes(clock.now()) }
     }
 
-    fun removeOldAsyncJobs(db: Database.Connection) {
-        val now = HelsinkiDateTime.now()
-        db.removeOldAsyncJobs(now)
+    fun removeOldAsyncJobs(db: Database.Connection, clock: EvakaClock) {
+        db.removeOldAsyncJobs(clock.now())
     }
 
-    fun inactivePeopleCleanup(db: Database.Connection) {
-        db.transaction { cleanUpInactivePeople(it, LocalDate.now(europeHelsinki)) }
+    fun inactivePeopleCleanup(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { cleanUpInactivePeople(it, clock.today()) }
     }
 
-    fun inactiveEmployeesRoleReset(db: Database.Connection) {
+    fun inactiveEmployeesRoleReset(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
-            val ids = it.clearRolesForInactiveEmployees(HelsinkiDateTime.now())
+            val ids = it.clearRolesForInactiveEmployees(clock.now())
             logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
         }
     }

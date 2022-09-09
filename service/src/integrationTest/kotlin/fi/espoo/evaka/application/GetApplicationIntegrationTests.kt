@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
@@ -228,7 +229,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             assertEquals(3, data.size)
         }
 
-        scheduledJobs.removeOldDraftApplications(db)
+        scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.transaction { tx ->
             val data =

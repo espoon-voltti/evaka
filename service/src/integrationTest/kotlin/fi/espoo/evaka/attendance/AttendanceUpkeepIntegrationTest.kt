@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -48,7 +49,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -74,7 +75,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -109,7 +110,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -143,7 +144,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)
@@ -184,7 +185,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        scheduledJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db, RealEvakaClock())
 
         val attendanceEndTimes = getAttendanceEndTimes()
         assertEquals(1, attendanceEndTimes.size)

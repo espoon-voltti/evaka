@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testAdult_1
@@ -89,7 +90,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         }
 
-        scheduledJobs.endOfDayReservationUpkeep(db)
+        scheduledJobs.endOfDayReservationUpkeep(db, RealEvakaClock())
 
         val reservations = db.read { tx ->
             tx.createQuery("""SELECT id FROM attendance_reservation""").mapTo<AttendanceReservationId>().toSet()

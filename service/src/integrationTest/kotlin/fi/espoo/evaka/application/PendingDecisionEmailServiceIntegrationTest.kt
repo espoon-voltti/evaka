@@ -178,7 +178,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     private fun runPendingDecisionEmailAsyncJobs(clock: EvakaClock = RealEvakaClock()): Int {
-        scheduledJobs.sendPendingDecisionReminderEmails(db)
+        scheduledJobs.sendPendingDecisionReminderEmails(db, clock)
         val jobCount = asyncJobRunner.getPendingJobCount()
         asyncJobRunner.runPendingJobsSync(clock)
 

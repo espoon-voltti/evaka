@@ -93,7 +93,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
         }
 
-        scheduledJobs.removeOldDraftApplications(db)
+        scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.read {
             assertNull(it.fetchApplicationDetails(id_to_be_deleted))
@@ -116,7 +116,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -127,7 +127,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createNormalApplication(ApplicationType.DAYCARE, preferredStartDate)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -140,7 +140,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -153,7 +153,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
         createPlacement(PlacementType.DAYCARE_FIVE_YEAR_OLDS, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -166,7 +166,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.plusMonths(1), preferredStartDate.plusMonths(2))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -179,7 +179,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -192,7 +192,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusMonths(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -205,7 +205,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now())
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -218,7 +218,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusDays(2))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -231,7 +231,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -245,7 +245,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -258,7 +258,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PREPARATORY, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -271,7 +271,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL_DAYCARE, dateRange)
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -298,7 +298,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, RealEvakaClock(), applicationId)
         }
 
-        scheduledJobs.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.WAITING_CONFIRMATION, applicationStatus)
@@ -331,7 +331,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             val notesBeforeCleanup = it.getChildStickyNotesForChild(testChild_1.id)
             assertEquals(2, notesBeforeCleanup.size)
         }
-        scheduledJobs.removeExpiredNotes(db)
+        scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
         db.read {
             val notesAfterCleanup = it.getChildStickyNotesForChild(testChild_1.id)
@@ -366,7 +366,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
 
-        scheduledJobs.removeExpiredNotes(db)
+        scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
         db.read {
             val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
@@ -435,7 +435,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
 
-        scheduledJobs.removeExpiredNotes(db)
+        scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
         db.read {
             val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
