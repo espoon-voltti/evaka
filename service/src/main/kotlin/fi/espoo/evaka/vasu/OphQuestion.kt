@@ -440,6 +440,10 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Tämä varhaiskasvatussuunnitelma luovutetaan huoltajan/huoltajien luvalla"
                         VasuLanguage.SV -> "Barnets plan kan med vårdnadshavares tillstånd överföras till"
                     },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Lapsen vaihtaessa toiseen kaupungin varhaiskasvatusyksikköön, lapsen varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirtyvät uuteen yksikköön (koskee myös ostopalveluna järjestettävää varhaiskasvatusta). Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle taholle pyydämme huoltajilta luvan. Lapsen siirtyessä yksityisen palveluntuottajan tai toisen kunnan järjestämään varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman huoltajan lupaa, mikäli tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (Varhaiskasvatuslaki 41 §:n 3 mom.). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (Varhaiskasvatuslaki 40 §:n 3 mom., perusopetuslaki 41 §:n 3 mom.). Luovuttamisesta informoidaan huoltajaa etukäteen."
+                        VasuLanguage.SV -> "Då barnets plats inom småbarnspedagogik byts till en annan av stads enheter för småbarnspedagogik överförs barnets plan och andra handlingar för småbarnspedagogik till den nya enheten (gäller även stads köpavtalsenheter). Om barnets plan lämnas över till en utomstående aktör bes vårdnadshavarnas samtycke. Om ett barn övergår till småbarnspedagogik i annan kommun eller till privat anordnare ska barnets plan lämnas över till den nya anordnaren av småbarnspedagogik, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik för barnet (lag om småbarnspedagogik 40 § och 41 §). Barnets plan ska även lämnas över till anordnare av förskoleundervisning och grundläggande utbildning om uppgifterna är nödvändiga för att anordna undervisningen för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 41 §)  Vårdnadshavare informeras på förhand om överföringen."
+                    },
                     options = listOf(
                         QuestionOption(
                             key = "Tulevaan esiopetusryhmään",
@@ -1114,6 +1118,10 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     name = when (lang) {
                         VasuLanguage.FI -> "Tämä oppimissuunnitelma luovutetaan huoltajan/huoltajien luvalla"
                         VasuLanguage.SV -> "Barnets plan kan med vårdnadshavares tillstånd överföras till"
+                    },
+                    info = when (lang) {
+                        VasuLanguage.FI -> "Lapsen esiopetuksen oppimissuunnitelma siirretään lapsen tulevaan kouluun esiopetusvuoden keväällä. Siirrosta sovitaan tapauskohtaisesti huoltajien kanssa käytävässä keskustelussa. Esiopetuksen oppimissuunnitelman luovuttamisesta muille tahoille pyydetään huoltajilta lupa. Oppimissuunnitelma voidaan kuitenkin luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §:n 3 mom., perusopetuslaki 40 §:n 4 mom. ja 41 §:n 4 mom.)."
+                        VasuLanguage.SV -> "Barnets plan för lärande i förskolan kan lämnas över till den nya anordnaren av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 40 § och 41 §)."
                     },
                     options = listOf(
                         QuestionOption(
