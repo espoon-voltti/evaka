@@ -110,7 +110,8 @@ export interface AssistanceNeedDecisionChild {
 */
 export interface AssistanceNeedDecisionCitizenListItem {
   assistanceLevels: AssistanceLevel[]
-  decisionMade: LocalDate | null
+  childId: UUID
+  decisionMade: LocalDate
   id: UUID
   isUnread: boolean
   selectedUnit: UnitInfoBasics | null

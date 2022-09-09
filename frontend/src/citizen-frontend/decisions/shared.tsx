@@ -22,7 +22,7 @@ import { Decision } from './types'
 
 export const Status = styled.span`
   text-transform: uppercase;
-  color: ${colors.grayscale.g100}
+  color: ${colors.grayscale.g100};
   font-size: 16px;
   font-weight: ${fontWeights.normal};
 `
@@ -76,3 +76,6 @@ type ComparableDecision = Decision | DecisionSummary
 export const sortDecisions = <T extends ComparableDecision>(
   decisions: T[]
 ): T[] => orderBy(decisions, (d) => d.sentDate.toSystemTzDate(), 'desc')
+
+export const applicationDecisionIsUnread = (decision: DecisionSummary) =>
+  decision.status === 'PENDING'

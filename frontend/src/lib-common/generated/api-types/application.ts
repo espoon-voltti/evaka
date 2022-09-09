@@ -58,6 +58,7 @@ export interface ApplicationAttachment {
 */
 export interface ApplicationDecisions {
   applicationId: UUID
+  childId: UUID
   childName: string
   decisions: DecisionSummary[]
 }
@@ -377,6 +378,7 @@ export interface DecisionDraftJSON {
 */
 export interface DecisionSummary {
   decisionId: UUID
+  id: UUID
   resolved: LocalDate | null
   sentDate: LocalDate
   status: DecisionStatus

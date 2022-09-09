@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
+import { AssistanceNeedDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -62,5 +64,24 @@ export async function rejectDecision(
       body
     )
     .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAssistanceNeedDecisions(): Promise<
+  Result<AssistanceNeedDecisionCitizenListItem[]>
+> {
+  return client
+    .get<JsonOf<AssistanceNeedDecisionCitizenListItem[]>>(
+      `/citizen/assistance-need-decisions`
+    )
+    .then(({ data }) =>
+      Success.of(
+        data.map((decision) => ({
+          ...decision,
+          decisionMade: LocalDate.parseIso(decision.decisionMade),
+          validityPeriod: DateRange.parseJson(decision.validityPeriod)
+        }))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }

@@ -24,8 +24,9 @@ class AssistanceNeedDecisionCitizenController(
     private val accessControl: AccessControl,
     private val assistanceNeedDecisionService: AssistanceNeedDecisionService
 ) {
+    // TODO: remove after 16.9.2022
     @GetMapping("/children/{childId}/assistance-need-decisions")
-    fun getAssistanceNeedDecisions(
+    fun getChildAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
@@ -38,6 +39,17 @@ class AssistanceNeedDecisionCitizenController(
                 tx.getAssistanceNeedDecisionsByChildIdForCitizen(childId, user.id)
             }
         }
+    }
+
+    @GetMapping("/assistance-need-decisions")
+    fun getAssistanceNeedDecisions(
+        db: Database,
+        user: AuthenticatedUser.Citizen
+    ): List<AssistanceNeedDecisionCitizenListItem> {
+        Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
+
+        return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}")

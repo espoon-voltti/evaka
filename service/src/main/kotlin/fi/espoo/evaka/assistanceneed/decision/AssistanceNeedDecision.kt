@@ -235,10 +235,11 @@ data class AssistanceNeedDecisionChild(
 
 data class AssistanceNeedDecisionCitizenListItem(
     val id: AssistanceNeedDecisionId,
+    val childId: ChildId,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
 
-    val decisionMade: LocalDate?,
+    val decisionMade: LocalDate,
     @Nested("selected_unit")
     val selectedUnit: UnitInfoBasics?,
 

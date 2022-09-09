@@ -8,14 +8,6 @@ import { Page } from '../../utils/page'
 export default class CitizenDecisionsPage {
   constructor(private readonly page: Page) {}
 
-  #decisionChildName = (applicationId: string) =>
-    this.page.find(`[data-qa="title-decision-child-name-${applicationId}"]`)
-  #decisionType = (decisionId: string) =>
-    this.page.find(`[data-qa="title-decision-type-${decisionId}"]`)
-  #decisionSentDate = (decisionId: string) =>
-    this.page.find(`[data-qa="decision-sent-date-${decisionId}"]`)
-  #decisionStatus = (decisionId: string) =>
-    this.page.find(`[data-qa="decision-status-${decisionId}"]`)
   #decisionResponseButton = (applicationId: string) =>
     this.page
       .findAll(`[data-qa="button-confirm-decisions-${applicationId}"]`)
@@ -26,28 +18,28 @@ export default class CitizenDecisionsPage {
   }
 
   async assertApplicationDecision(
-    applicationId: string,
+    childId: string,
     decisionId: string,
-    expectedChildName: string,
-    expectedType: string,
+    expectedTitle: string,
     expectedSentDate: string,
     expectedStatus: string
   ) {
+    const decision = this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findByDataQa(`application-decision-${decisionId}`)
     await waitUntilEqual(
-      () => this.#decisionChildName(applicationId).innerText,
-      expectedChildName
+      () => decision.findByDataQa('title-decision-type').innerText,
+      expectedTitle
     )
     await waitUntilEqual(
-      () => this.#decisionType(decisionId).innerText,
-      expectedType
-    )
-    await waitUntilEqual(
-      () => this.#decisionSentDate(decisionId).innerText,
+      () => decision.findByDataQa('decision-sent-date').innerText,
       expectedSentDate
     )
     await waitUntilEqual(
       async () =>
-        (await this.#decisionStatus(decisionId).innerText).toLowerCase(),
+        (
+          await decision.findByDataQa('decision-status').innerText
+        ).toLowerCase(),
       expectedStatus.toLowerCase()
     )
   }
@@ -57,6 +49,78 @@ export default class CitizenDecisionsPage {
     const responsePage = new CitizenDecisionResponsePage(this.page)
     await responsePage.assertPageTitle()
     return responsePage
+  }
+
+  async openAssistanceDecisionCollapsible(childId: string, decisionId: string) {
+    const decision = this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findByDataQa(`assistance-decision-${decisionId}`)
+
+    if ((await decision.getAttribute('data-status')) === 'closed') {
+      await decision.click()
+    }
+  }
+
+  async openAssistanceDecision(childId: string, decisionId: string) {
+    await this.openAssistanceDecisionCollapsible(childId, decisionId)
+    await this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findByDataQa(`assistance-decision-${decisionId}`)
+      .findByDataQa('open-decision')
+      .click()
+  }
+
+  async assertAssistanceDecision(
+    childId: string,
+    decisionId: string,
+    contents: {
+      assistanceLevel: string
+      selectedUnit: string
+      validityPeriod: string
+      decisionMade: string
+      status: string
+    }
+  ) {
+    await this.openAssistanceDecisionCollapsible(childId, decisionId)
+    const decision = this.page
+      .findByDataQa(`child-decisions-${childId}`)
+      .findByDataQa(`assistance-decision-${decisionId}`)
+    await waitUntilEqual(
+      () => decision.findByDataQa('assistance-level').textContent,
+      contents.assistanceLevel
+    )
+    await waitUntilEqual(
+      () => decision.findByDataQa('selected-unit').textContent,
+      contents.selectedUnit
+    )
+    await waitUntilEqual(
+      () => decision.findByDataQa('validity-period').textContent,
+      contents.validityPeriod
+    )
+    await waitUntilEqual(
+      () => decision.findByDataQa('decision-made').textContent,
+      contents.decisionMade
+    )
+    await waitUntilEqual(
+      () => decision.findByDataQa('decision-status').textContent,
+      contents.status
+    )
+  }
+
+  async assertUnreadAssistanceNeedDecisions(childId: string, count: number) {
+    await waitUntilEqual(
+      () =>
+        this.page
+          .findByDataQa(`child-decisions-${childId}`)
+          .findAllByDataQa('count-indicator')
+          .count(),
+      count
+    )
+  }
+
+  async assertNoChildDecisions(childId: string) {
+    await this.page.findByDataQa('decisions-page').waitUntilVisible()
+    await this.page.findByDataQa(`child-decisions-${childId}`).waitUntilHidden()
   }
 }
 

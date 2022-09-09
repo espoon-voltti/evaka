@@ -15,8 +15,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getChildren } from './api'
-import { getAssistanceNeedDecisionUnreadCounts } from './sections/assistance-need-decision/api'
+import { getChildren, getAssistanceNeedDecisionUnreadCounts } from './api'
 import {
   getChildConsentNotifications,
   getChildConsents
@@ -139,11 +138,6 @@ export const ChildrenContextProvider = React.memo(
           counts[id] = (counts[id] ?? 0) + count
         })
 
-      unreadAssistanceNeedDecisionCounts
-        .getOrElse<UnreadAssistanceNeedDecisionItem[]>([])
-        .forEach(({ childId, count }) => {
-          counts[childId] = (counts[childId] ?? 0) + count
-        })
       addCounts(unreadPedagogicalDocumentsCount.getOrElse({}))
       addCounts(unreadVasuDocumentsCount.getOrElse({}))
       addCounts(childConsentNotifications.getOrElse({}))
@@ -151,7 +145,6 @@ export const ChildrenContextProvider = React.memo(
       return counts
     }, [
       childConsentNotifications,
-      unreadAssistanceNeedDecisionCounts,
       unreadPedagogicalDocumentsCount,
       unreadVasuDocumentsCount
     ])

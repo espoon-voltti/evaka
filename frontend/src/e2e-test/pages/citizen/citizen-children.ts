@@ -21,12 +21,7 @@ export class CitizenChildPage {
   }
 
   async openCollapsible(
-    collapsible:
-      | 'termination'
-      | 'assistance-need-decisions'
-      | 'consents'
-      | 'pedagogical-documents'
-      | 'vasu'
+    collapsible: 'termination' | 'consents' | 'pedagogical-documents' | 'vasu'
   ) {
     await this.page.findByDataQa(`collapsible-${collapsible}`).click()
   }
@@ -80,60 +75,6 @@ export class CitizenChildPage {
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')
     )
-  }
-
-  async getAssistanceNeedDecisionRow(nth: number) {
-    const row = this.page
-      .findAllByDataQa('assistance-need-decision-row')
-      .nth(nth)
-
-    return {
-      assistanceLevel: await row.findByDataQa('assistance-level').innerText,
-      validityPeriod: await row.findByDataQa('validity-period').innerText,
-      selectedUnit: await row.findByDataQa('selected-unit').innerText,
-      decisionMade: await row.findByDataQa('decision-made').innerText,
-      status: await row
-        .findAllByDataQa('status')
-        .first()
-        .getAttribute('data-qa-status')
-    }
-  }
-
-  async getAssistanceNeedDecisionRowCount() {
-    return this.page.findAllByDataQa('assistance-need-decision-row').count()
-  }
-
-  async assistanceNeedDecisionRowClick(nth: number) {
-    return this.page
-      .findAllByDataQa('assistance-need-decision-row')
-      .nth(nth)
-      .click()
-  }
-
-  async assertUnreadAssistanceNeedDecisions(count: number) {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa('collapsible-assistance-need-decisions')
-          .findByDataQa('count-indicator').innerText,
-      count.toString()
-    )
-  }
-
-  async assertAssistanceNeedDecisionRowUnread(nth: number) {
-    await this.page
-      .findAllByDataQa('assistance-need-decision-row')
-      .nth(nth)
-      .findByDataQa('unopened-indicator')
-      .waitUntilVisible()
-  }
-
-  async assertNotAssistanceNeedDecisionRowUnread(nth: number) {
-    await this.page
-      .findAllByDataQa('assistance-need-decision-row')
-      .nth(nth)
-      .findByDataQa('unopened-indicator')
-      .waitUntilHidden()
   }
 
   readonly evakaProfilePicYes = new Radio(
