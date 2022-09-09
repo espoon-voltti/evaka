@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -37,10 +38,11 @@ class DecisionController(
     fun getDecisionsByGuardian(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("id") guardianId: PersonId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = guardianId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_DECISIONS, guardianId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
         return DecisionListResponse(decisions)
     }
@@ -49,10 +51,11 @@ class DecisionController(
     fun getDecisionsByChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("id") childId: ChildId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_DECISIONS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
         return DecisionListResponse(decisions)
     }
@@ -61,10 +64,11 @@ class DecisionController(
     fun getDecisionsByApplication(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.READ_DECISIONS, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISIONS, applicationId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
 
         return DecisionListResponse(decisions)
@@ -81,10 +85,11 @@ class DecisionController(
     fun downloadDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<Any> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
-        accessControl.requirePermissionFor(user, Action.Decision.DOWNLOAD_PDF, decisionId)
+        accessControl.requirePermissionFor(user, clock, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
             val decision = dbc.transaction { tx ->

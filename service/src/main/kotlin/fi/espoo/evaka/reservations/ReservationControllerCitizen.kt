@@ -39,12 +39,12 @@ class ReservationControllerCitizen(
     fun getReservations(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_RESERVATIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
         val range = try {
             FiniteDateRange(from, to)
@@ -61,7 +61,7 @@ class ReservationControllerCitizen(
                 val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDayRanges =
-                    getReservableDays(evakaClock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                    getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
                 val reservableDays = children.associate { child ->
                     Pair(
                         child.id,

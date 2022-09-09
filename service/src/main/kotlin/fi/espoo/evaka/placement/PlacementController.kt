@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
@@ -53,6 +54,7 @@ class PlacementController(
     fun getPlacements(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
         @RequestParam(value = "childId", required = false) childId: ChildId? = null,
         @RequestParam(
@@ -66,8 +68,8 @@ class PlacementController(
     ): Set<DaycarePlacementWithDetails> {
         Audit.PlacementSearch.log(targetId = daycareId ?: childId)
         when {
-            daycareId != null -> accessControl.requirePermissionFor(user, Action.Unit.READ_PLACEMENT, daycareId)
-            childId != null -> accessControl.requirePermissionFor(user, Action.Child.READ_PLACEMENT, childId)
+            daycareId != null -> accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT, daycareId)
+            childId != null -> accessControl.requirePermissionFor(user, clock, Action.Child.READ_PLACEMENT, childId)
             else -> throw BadRequest("daycareId or childId is required")
         }
 
@@ -90,6 +92,7 @@ class PlacementController(
     fun getPlacementPlans(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
         @RequestParam(
             value = "from",
@@ -98,7 +101,7 @@ class PlacementController(
         @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): List<PlacementPlanDetails> {
         Audit.PlacementPlanSearch.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
         return db.connect { dbc -> dbc.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) } }
     }
@@ -107,10 +110,11 @@ class PlacementController(
     fun createPlacement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: PlacementCreateRequestBody
     ) {
         Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.CREATE_PLACEMENT, body.unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_PLACEMENT, body.unitId)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
@@ -146,11 +150,12 @@ class PlacementController(
     fun updatePlacementById(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
     ) {
         Audit.PlacementUpdate.log(targetId = placementId)
-        accessControl.requirePermissionFor(user, Action.Placement.UPDATE, placementId)
+        accessControl.requirePermissionFor(user, clock, Action.Placement.UPDATE, placementId)
 
         val aclAuth = acl.getAuthorizedUnits(user)
         db.connect { dbc ->
@@ -176,9 +181,10 @@ class PlacementController(
     fun deletePlacement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("placementId") placementId: PlacementId
     ) {
-        accessControl.requirePermissionFor(user, Action.Placement.DELETE, placementId)
+        accessControl.requirePermissionFor(user, clock, Action.Placement.DELETE, placementId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -203,11 +209,12 @@ class PlacementController(
     fun createGroupPlacement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
     ): GroupPlacementId {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
-        accessControl.requirePermissionFor(user, Action.Placement.CREATE_GROUP_PLACEMENT, placementId)
+        accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_GROUP_PLACEMENT, placementId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -225,10 +232,11 @@ class PlacementController(
     fun deleteGroupPlacement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ) {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
-        accessControl.requirePermissionFor(user, Action.GroupPlacement.DELETE, groupPlacementId)
+        accessControl.requirePermissionFor(user, clock, Action.GroupPlacement.DELETE, groupPlacementId)
 
         db.connect { dbc -> dbc.transaction { it.deleteGroupPlacement(groupPlacementId) } }
     }
@@ -237,11 +245,12 @@ class PlacementController(
     fun transferGroupPlacement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
     ) {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
-        accessControl.requirePermissionFor(user, Action.GroupPlacement.UPDATE, groupPlacementId)
+        accessControl.requirePermissionFor(user, clock, Action.GroupPlacement.UPDATE, groupPlacementId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -254,10 +263,11 @@ class PlacementController(
     fun getChildPlacementPeriods(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable adultId: PersonId
     ): List<FiniteDateRange> {
         Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_CHILD_PLACEMENT_PERIODS, adultId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_CHILD_PLACEMENT_PERIODS, adultId)
 
         return db.connect { dbc ->
             dbc.read { tx ->

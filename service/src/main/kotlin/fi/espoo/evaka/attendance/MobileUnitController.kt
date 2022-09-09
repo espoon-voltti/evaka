@@ -31,16 +31,16 @@ class MobileUnitController(private val accessControl: AccessControl) {
     fun getUnitInfo(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): UnitInfo {
         Audit.UnitRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_INFO, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchUnitInfo(
                     unitId,
-                    evakaClock.today(),
+                    clock.today(),
                 )
             }
         }

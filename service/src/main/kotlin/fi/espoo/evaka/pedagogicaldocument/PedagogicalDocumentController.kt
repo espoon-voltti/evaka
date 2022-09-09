@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -33,10 +34,11 @@ class PedagogicalDocumentController(
     fun createPedagogicalDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(body.childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId)
         return db.connect {
             it.transaction { tx ->
                 tx.createDocument(user, body).also {
@@ -50,11 +52,12 @@ class PedagogicalDocumentController(
     fun updatePedagogicalDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
         Audit.PedagogicalDocumentUpdate.log(documentId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.UPDATE, documentId)
+        accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.UPDATE, documentId)
         return db.connect {
             it.transaction { tx ->
                 tx.updateDocument(user, body, documentId).also {
@@ -68,10 +71,11 @@ class PedagogicalDocumentController(
     fun getChildPedagogicalDocuments(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
         Audit.PedagogicalDocumentRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
         return db.connect { dbc ->
             dbc.read {
                 it.findPedagogicalDocumentsByChild(childId)
@@ -83,10 +87,11 @@ class PedagogicalDocumentController(
     fun deletePedagogicalDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId)
-        accessControl.requirePermissionFor(user, Action.PedagogicalDocument.DELETE, documentId)
+        accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.DELETE, documentId)
         return db.connect { dbc ->
             dbc.transaction {
                 it.deleteDocument(documentId)

@@ -106,7 +106,7 @@ class DaycareController(
         @PathVariable daycareId: DaycareId
     ): DaycareResponse {
         Audit.UnitRead.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ, daycareId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getDaycare(daycareId)?.let { daycare ->
@@ -133,12 +133,13 @@ class DaycareController(
     fun getGroups(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
     ): List<DaycareGroup> {
         Audit.UnitGroupsSearch.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_GROUPS, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
         return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }
     }
 
@@ -146,11 +147,12 @@ class DaycareController(
     fun createGroup(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
     ): DaycareGroup {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.CREATE_GROUP, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_GROUP, daycareId)
 
         return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }
     }
@@ -164,12 +166,13 @@ class DaycareController(
     fun updateGroup(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ) {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.UPDATE, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE, groupId)
 
         db.connect { dbc -> dbc.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) } }
     }
@@ -178,11 +181,12 @@ class DaycareController(
     fun deleteGroup(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ) {
         Audit.UnitGroupsDelete.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.DELETE, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE, groupId)
 
         db.connect { dbc -> dbc.transaction { daycareService.deleteGroup(it, groupId) } }
     }
@@ -191,11 +195,12 @@ class DaycareController(
     fun getCaretakers(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ): CaretakersResponse {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.READ_CARETAKERS, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.READ_CARETAKERS, groupId)
 
         return db.connect { dbc ->
             dbc.read {
@@ -212,12 +217,13 @@ class DaycareController(
     fun createCaretakers(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ) {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.CREATE_CARETAKERS, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CARETAKERS, groupId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -236,13 +242,14 @@ class DaycareController(
     fun updateCaretakers(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
         @PathVariable id: DaycareCaretakerId,
         @RequestBody body: CaretakerRequest
     ) {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Group.UPDATE_CARETAKERS, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_CARETAKERS, groupId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -262,12 +269,13 @@ class DaycareController(
     fun removeCaretakers(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
         @PathVariable id: DaycareCaretakerId
     ) {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Group.DELETE_CARETAKERS, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_CARETAKERS, groupId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -284,11 +292,12 @@ class DaycareController(
     fun updateDaycare(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
     ): Daycare {
         Audit.UnitUpdate.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.UPDATE, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE, daycareId)
         fields.validate()
         return db.connect { dbc ->
             dbc.transaction {

@@ -39,7 +39,7 @@ class NoteController(private val accessControl: AccessControl) {
             { tx: Database.Read -> tx.getApplicationNotes(applicationId) }
         } else {
             accessControl
-                .requirePermissionFor(user, Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES, applicationId)
+                .requirePermissionFor(user, clock, Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES, applicationId)
                 .let {
                     { tx: Database.Read -> tx.getApplicationSpecialEducationTeacherNotes(applicationId) }
                 }
@@ -65,11 +65,12 @@ class NoteController(private val accessControl: AccessControl) {
     fun createNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
     ): ApplicationNote {
         Audit.NoteCreate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.CREATE_NOTE, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_NOTE, applicationId)
 
         return db.connect { dbc ->
             dbc.transaction {
@@ -82,11 +83,12 @@ class NoteController(private val accessControl: AccessControl) {
     fun updateNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("noteId") noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
     ) {
         Audit.NoteUpdate.log(targetId = noteId)
-        accessControl.requirePermissionFor(user, Action.ApplicationNote.UPDATE, noteId)
+        accessControl.requirePermissionFor(user, clock, Action.ApplicationNote.UPDATE, noteId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -99,10 +101,11 @@ class NoteController(private val accessControl: AccessControl) {
     fun deleteNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("noteId") noteId: ApplicationNoteId
     ) {
         Audit.NoteDelete.log(targetId = noteId)
-        accessControl.requirePermissionFor(user, Action.ApplicationNote.DELETE, noteId)
+        accessControl.requirePermissionFor(user, clock, Action.ApplicationNote.DELETE, noteId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.deleteApplicationNote(noteId)

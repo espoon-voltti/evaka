@@ -390,6 +390,7 @@ class DevApi(
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
     fun rejectDecisionByCitizen(
         db: Database,
+        clock: EvakaClock,
         @PathVariable id: DecisionId,
     ) {
         db.connect { dbc ->
@@ -400,6 +401,7 @@ class DevApi(
                 applicationStateService.rejectDecision(
                     tx,
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
+                    clock,
                     application.id,
                     id,
                 )
@@ -748,7 +750,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                actionFn.invoke(tx, fakeAdmin, applicationId)
+                actionFn.invoke(tx, fakeAdmin, clock, applicationId)
             }
         }
         runAllAsyncJobs(clock)

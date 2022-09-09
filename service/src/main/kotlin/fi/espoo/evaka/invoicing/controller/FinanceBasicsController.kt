@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
@@ -79,11 +80,12 @@ class FinanceBasicsController(
     fun updateFeeThresholds(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.FeeThresholds.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.FeeThresholds.UPDATE, id)
 
         validateFeeThresholds(thresholds)
         db.connect { dbc ->

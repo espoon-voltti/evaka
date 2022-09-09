@@ -262,10 +262,11 @@ class ApplicationControllerV2(
     fun getChildApplicationSummaries(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "childId") childId: ChildId
     ): List<PersonApplicationSummary> {
         Audit.ApplicationRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_APPLICATION, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_APPLICATION, childId)
 
         return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }
     }
@@ -291,7 +292,7 @@ class ApplicationControllerV2(
                     else ->
                         Action.Application.READ
                 }
-                accessControl.requirePermissionFor(user, action, applicationId)
+                accessControl.requirePermissionFor(user, clock, action, applicationId)
 
                 val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
                 val guardians =
@@ -320,12 +321,12 @@ class ApplicationControllerV2(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.UPDATE, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -335,7 +336,7 @@ class ApplicationControllerV2(
                     applicationId,
                     application,
                     user.evakaUserId,
-                    evakaClock.today()
+                    clock.today()
                 )
             }
         }
@@ -345,7 +346,7 @@ class ApplicationControllerV2(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
         db.connect { dbc ->
@@ -353,8 +354,8 @@ class ApplicationControllerV2(
                 applicationStateService.sendApplication(
                     it,
                     user,
+                    clock,
                     applicationId,
-                    evakaClock.today()
                 )
             }
         }
@@ -364,10 +365,11 @@ class ApplicationControllerV2(
     fun getPlacementPlanDraft(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): PlacementPlanDraft {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
         return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }
     }
 
@@ -375,10 +377,11 @@ class ApplicationControllerV2(
     fun getDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): DecisionDraftJSON {
         Audit.DecisionDraftRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.READ_DECISION_DRAFT, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISION_DRAFT, applicationId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -436,11 +439,12 @@ class ApplicationControllerV2(
     fun updateDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ) {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
     }
@@ -449,6 +453,7 @@ class ApplicationControllerV2(
     fun acceptPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "unitId") unitId: DaycareId
     ) {
         db.connect { dbc ->
@@ -456,6 +461,7 @@ class ApplicationControllerV2(
                 applicationStateService.confirmPlacementProposalChanges(
                     it,
                     user,
+                    clock,
                     unitId
                 )
             }
@@ -466,6 +472,7 @@ class ApplicationControllerV2(
     fun simpleBatchAction(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
     ) {
@@ -482,7 +489,7 @@ class ApplicationControllerV2(
         val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
         db.connect { dbc ->
             dbc.transaction { tx ->
-                body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, applicationId) }
+                body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, clock, applicationId) }
             }
         }
     }
@@ -491,11 +498,12 @@ class ApplicationControllerV2(
     fun createPlacementPlan(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ) {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
-        accessControl.requirePermissionFor(user, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -513,6 +521,7 @@ class ApplicationControllerV2(
     fun respondToPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ) {
@@ -521,6 +530,7 @@ class ApplicationControllerV2(
                 applicationStateService.respondToPlacementProposal(
                     it,
                     user,
+                    clock,
                     applicationId,
                     body.status,
                     body.reason,
@@ -534,6 +544,7 @@ class ApplicationControllerV2(
     fun acceptDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ) {
@@ -542,6 +553,7 @@ class ApplicationControllerV2(
                 applicationStateService.acceptDecision(
                     it,
                     user,
+                    clock,
                     applicationId,
                     body.decisionId,
                     body.requestedStartDate
@@ -554,17 +566,13 @@ class ApplicationControllerV2(
     fun rejectDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.rejectDecision(
-                    it,
-                    user,
-                    applicationId,
-                    body.decisionId
-                )
+                applicationStateService.rejectDecision(it, user, clock, applicationId, body.decisionId)
             }
         }
     }
@@ -573,6 +581,7 @@ class ApplicationControllerV2(
     fun simpleAction(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ) {
@@ -590,7 +599,7 @@ class ApplicationControllerV2(
         )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, applicationId) } }
+        db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, clock, applicationId) } }
     }
 }
 

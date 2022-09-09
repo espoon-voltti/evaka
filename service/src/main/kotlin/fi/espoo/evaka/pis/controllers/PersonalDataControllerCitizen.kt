@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
@@ -22,9 +23,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen/personal-data")
 class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
     @PutMapping
-    fun updatePersonalData(db: Database, user: AuthenticatedUser.Citizen, @RequestBody body: PersonalDataUpdate) {
+    fun updatePersonalData(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock, @RequestBody body: PersonalDataUpdate) {
         Audit.PersonalDataUpdate.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.UPDATE_PERSONAL_DATA, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.UPDATE_PERSONAL_DATA, user.id)
 
         db.connect { dbc ->
             dbc.transaction {

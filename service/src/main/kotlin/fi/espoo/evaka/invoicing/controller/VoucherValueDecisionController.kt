@@ -108,10 +108,11 @@ class VoucherValueDecisionController(
     fun getDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
     ): Wrapper<VoucherValueDecisionDetailed> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return Wrapper(res)
@@ -121,10 +122,11 @@ class VoucherValueDecisionController(
     fun getHeadOfFamilyDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
         return db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
     }
 
@@ -175,10 +177,11 @@ class VoucherValueDecisionController(
     fun getDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
         Audit.FeeDecisionPdfRead.log(targetId = decisionId)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, decisionId)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, decisionId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -205,11 +208,12 @@ class VoucherValueDecisionController(
     fun setType(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
     ) {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, uuid)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
     }
 
@@ -222,7 +226,7 @@ class VoucherValueDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) } }
     }
 }

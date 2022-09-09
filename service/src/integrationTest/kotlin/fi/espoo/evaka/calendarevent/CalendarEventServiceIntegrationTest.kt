@@ -147,7 +147,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, testDaycare.id,
+            dbInstance(), admin, clock, testDaycare.id,
             today, today.plusDays(4)
         )[0]
 
@@ -171,7 +171,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, testDaycare.id,
+            dbInstance(), admin, clock, testDaycare.id,
             today, today.plusDays(5)
         )[0]
 
@@ -195,7 +195,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, testDaycare.id,
+            dbInstance(), admin, clock, testDaycare.id,
             today, today.plusDays(5)
         )[0]
 
@@ -221,15 +221,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.modifyCalendarEvent(
             dbInstance(),
             admin,
+            clock,
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(4)
             )[0].id,
             CalendarEventUpdateForm(title = "Updated title", description = "desc, updated")
         )
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, testDaycare.id,
+            dbInstance(), admin, clock, testDaycare.id,
             today, today.plusDays(4)
         )[0]
 
@@ -251,15 +252,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.deleteCalendarEvent(
             dbInstance(),
             admin,
+            clock,
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(4)
             )[0].id
         )
 
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(4)
             ).isEmpty()
         )
@@ -297,6 +299,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val guardianEvents = this.calendarEventController.getCitizenCalendarEvents(
             dbInstance(),
             guardian,
+            clock,
             today,
             today.plusDays(10)
         )
@@ -358,6 +361,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val event = this.calendarEventController.getCitizenCalendarEvents(
             dbInstance(),
             guardian,
+            clock,
             today,
             today.plusDays(10)
         ).first()
@@ -396,6 +400,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             this.calendarEventController.getCitizenCalendarEvents(
                 dbInstance(),
                 guardian,
+                clock,
                 today.minusDays(10),
                 today.plusDays(10)
             ).isEmpty()
@@ -417,6 +422,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             this.calendarEventController.getCitizenCalendarEvents(
                 dbInstance(),
                 guardian,
+                clock,
                 today.minusDays(10),
                 today.plusDays(10)
             ).isEmpty()
@@ -438,6 +444,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             this.calendarEventController.getCitizenCalendarEvents(
                 dbInstance(),
                 guardian,
+                clock,
                 today.minusDays(10),
                 today.plusDays(10)
             ).isEmpty()
@@ -468,6 +475,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             this.calendarEventController.getCitizenCalendarEvents(
                 dbInstance(),
                 guardian,
+                clock,
                 placementStart.minusDays(50),
                 placementStart.plusDays(50)
             ).isEmpty()
@@ -497,12 +505,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(testDaycare2.id, null, FiniteDateRange(placementStart.plusDays(10), placementStart.plusDays(20)))
         )
 
         val guardianEvents = this.calendarEventController.getCitizenCalendarEvents(
-            dbInstance(), guardian,
+            dbInstance(), guardian, clock,
             placementStart, placementStart.plusDays(50)
         )
 
@@ -555,10 +564,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.placementController.deletePlacement(dbInstance(), admin, placementId)
+        this.placementController.deletePlacement(dbInstance(), admin, clock, placementId)
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -578,12 +587,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.placementController.updatePlacementById(
             dbInstance(),
             admin,
+            clock,
             placementId,
             PlacementUpdateRequestBody(startDate = today.plusDays(10), endDate = placementEnd)
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -601,13 +611,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
-            dbInstance(), admin,
+            dbInstance(), admin, clock,
             placementId,
             PlacementUpdateRequestBody(startDate = placementStart, endDate = today.minusDays(1))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -625,12 +635,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deleteGroupPlacement(
-            dbInstance(), admin,
+            dbInstance(), admin, clock,
             groupPlacementId
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -648,13 +658,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
-            dbInstance(), admin,
+            dbInstance(), admin, clock,
             groupPlacementId,
             GroupTransferRequestBody(groupId = groupId2, startDate = today),
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -672,13 +682,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
-            dbInstance(), admin,
+            dbInstance(), admin, clock,
             groupPlacementId,
             GroupTransferRequestBody(groupId = groupId2, startDate = today.plusDays(5))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isNotEmpty()
         )
@@ -697,12 +707,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = null, period = FiniteDateRange(today, today.plusDays(10)))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -722,12 +733,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = null, period = FiniteDateRange(today.minusDays(10), today))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isNotEmpty()
         )
@@ -746,18 +758,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = null, period = FiniteDateRange(today.plusDays(10), today.plusDays(20)))
         )
         this.backupCareController.update(
             dbInstance(),
             admin,
+            clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
             BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(20)), null)
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -777,18 +791,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = null, period = FiniteDateRange(today.minusDays(10), today))
         )
         this.backupCareController.update(
             dbInstance(),
             admin,
+            clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
             BackupCareUpdateRequest(FiniteDateRange(today.minusDays(10), today.plusDays(20)), null)
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )
@@ -800,6 +816,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = unit2GroupId, period = FiniteDateRange(today, today.plusDays(10)))
         )
@@ -819,6 +836,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.update(
             dbInstance(),
             admin,
+            clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
             BackupCareUpdateRequest(FiniteDateRange(today.plusDays(8), today.plusDays(10)), null)
         )
@@ -826,6 +844,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             this.calendarEventController.getUnitCalendarEvents(
                 dbInstance(),
                 admin,
+                clock,
                 testDaycare2.id,
                 today,
                 today.plusDays(5)
@@ -839,6 +858,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = unit2GroupId, period = FiniteDateRange(today, today.plusDays(10)))
         )
@@ -853,12 +873,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.update(
             dbInstance(),
             admin,
+            clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
             BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(1)), null)
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare2.id,
+                dbInstance(), admin, clock, testDaycare2.id,
                 today,
                 today.plusDays(5)
             ).isEmpty()
@@ -871,6 +892,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.createForChild(
             dbInstance(),
             admin,
+            clock,
             testChild_1.id,
             NewBackupCare(unitId = testDaycare2.id, groupId = unit2GroupId, period = FiniteDateRange(today, today.plusDays(10)))
         )
@@ -885,11 +907,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.backupCareController.delete(
             dbInstance(),
             admin,
+            clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id }
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare2.id,
+                dbInstance(), admin, clock, testDaycare2.id,
                 today,
                 today.plusDays(5)
             ).isEmpty()
@@ -921,7 +944,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, testDaycare.id,
+                dbInstance(), admin, clock, testDaycare.id,
                 today, today.plusDays(5)
             ).isEmpty()
         )

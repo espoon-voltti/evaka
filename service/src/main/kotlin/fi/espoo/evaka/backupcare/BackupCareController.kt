@@ -41,7 +41,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("childId") childId: ChildId
     ): ChildBackupCaresResponse {
         Audit.ChildBackupCareRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_CARE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_CARE, childId)
         return ChildBackupCaresResponse(
             db.connect { dbc ->
                 dbc.read { tx ->
@@ -58,11 +58,12 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun createForChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: NewBackupCare
     ): BackupCareCreateResponse {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_CARE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
             val id = db.connect {
                     dbc ->
@@ -86,11 +87,12 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun update(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ) {
         Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
-        accessControl.requirePermissionFor(user, Action.BackupCare.UPDATE, backupCareId)
+        accessControl.requirePermissionFor(user, clock, Action.BackupCare.UPDATE, backupCareId)
         try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -154,10 +156,11 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun delete(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") backupCareId: BackupCareId
     ) {
         Audit.BackupCareDelete.log(targetId = backupCareId)
-        accessControl.requirePermissionFor(user, Action.BackupCare.DELETE, backupCareId)
+        accessControl.requirePermissionFor(user, clock, Action.BackupCare.DELETE, backupCareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val backupCare = tx.getBackupCare(backupCareId)
@@ -173,12 +176,13 @@ class BackupCareController(private val accessControl: AccessControl) {
     fun getForDaycare(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): UnitBackupCaresResponse {
         Audit.DaycareBackupCareRead.log(targetId = daycareId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_BACKUP_CARE, daycareId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
         return UnitBackupCaresResponse(backupCares)
     }

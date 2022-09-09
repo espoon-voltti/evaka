@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
@@ -45,10 +46,11 @@ class ServiceNeedController(
     fun postServiceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
-        accessControl.requirePermissionFor(user, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
+        accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -79,11 +81,12 @@ class ServiceNeedController(
     fun putServiceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
     ) {
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.ServiceNeed.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -117,10 +120,11 @@ class ServiceNeedController(
     fun deleteServiceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: ServiceNeedId
     ) {
         Audit.PlacementServiceNeedDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.ServiceNeed.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.DELETE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

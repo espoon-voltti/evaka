@@ -31,11 +31,12 @@ class AssistanceNeedController(
     fun createAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
             assistanceNeedService.createAssistanceNeed(
                 dbc,
@@ -54,7 +55,7 @@ class AssistanceNeedController(
         @PathVariable childId: ChildId
     ): List<AssistanceNeedResponse> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
             val relevantPreschoolPlacements = dbc.read { tx ->
                 tx.getPlacementsForChild(childId).filter {
@@ -83,11 +84,12 @@ class AssistanceNeedController(
     fun updateAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeed.UPDATE, assistanceNeedId)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeed.UPDATE, assistanceNeedId)
         return db.connect { dbc ->
             assistanceNeedService.updateAssistanceNeed(
                 dbc,
@@ -102,10 +104,11 @@ class AssistanceNeedController(
     fun deleteAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ) {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeed.DELETE, assistanceNeedId)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeed.DELETE, assistanceNeedId)
         db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, assistanceNeedId) }
     }
 

@@ -124,7 +124,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val dependants = controller.getPersonDependants(Database(jdbi), admin, guardianId)
+        val dependants = controller.getPersonDependants(Database(jdbi), admin, clock, guardianId)
         assertEquals(3, dependants.size)
 
         val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
@@ -134,7 +134,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
         }
 
-        assertEquals(2, controller.getPersonDependants(Database(jdbi), admin, guardianId).size)
+        assertEquals(2, controller.getPersonDependants(Database(jdbi), admin, clock, guardianId).size)
     }
 
     @Test
@@ -149,7 +149,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val guardians = controller.getPersonGuardians(Database(jdbi), admin, childId)
+        val guardians = controller.getPersonGuardians(Database(jdbi), admin, clock, childId)
         assertEquals(2, guardians.size)
 
         val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
@@ -159,7 +159,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
         }
 
-        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, childId).size)
+        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, clock, childId).size)
     }
 
     private fun createPerson(): PersonDTO {

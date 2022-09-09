@@ -14,9 +14,9 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
@@ -42,7 +42,6 @@ data class ReplyToMessageBody(
 @RestController
 @RequestMapping("/messages")
 class MessageController(
-    private val acl: AccessControlList,
     private val accessControl: AccessControl,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
@@ -59,10 +58,11 @@ class MessageController(
     fun getAccountsByDevice(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        accessControl.requirePermissionFor(user, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
         return if (user.employeeId != null) {
             db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
         } else setOf()
@@ -120,10 +120,11 @@ class MessageController(
     fun getUnreadMessagesByUnit(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
         Audit.MessagingUnreadMessagesRead.log()
-        accessControl.requirePermissionFor(user, Action.Unit.READ_UNREAD_MESSAGES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_UNREAD_MESSAGES, unitId)
         return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }
     }
 
@@ -264,10 +265,11 @@ class MessageController(
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
         return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }
     }
 

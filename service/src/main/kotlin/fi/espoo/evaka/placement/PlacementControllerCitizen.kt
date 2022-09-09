@@ -42,22 +42,22 @@ class PlacementControllerCitizen(
     fun getPlacements(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
         Audit.PlacementSearch.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_PLACEMENT, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT, childId)
 
         return db.connect { dbc ->
             ChildPlacementResponse(
                 placements = mapToTerminatablePlacements(
                     dbc.read {
                         it.getCitizenChildPlacements(
-                            evakaClock.today(),
+                            clock.today(),
                             childId
                         )
                     },
-                    evakaClock.today()
+                    clock.today()
                 )
             )
         }

@@ -76,7 +76,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitDataResponse {
         Audit.UnitView.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_BASIC, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BASIC, unitId)
 
         val period = FiniteDateRange(from, to)
         return db.connect { dbc ->

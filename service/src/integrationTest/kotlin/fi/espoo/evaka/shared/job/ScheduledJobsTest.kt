@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_5
@@ -294,7 +295,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
                 )
             )
-            applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, applicationId)
+            applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, RealEvakaClock(), applicationId)
         }
 
         scheduledJobs.cancelOutdatedTransferApplications(db)

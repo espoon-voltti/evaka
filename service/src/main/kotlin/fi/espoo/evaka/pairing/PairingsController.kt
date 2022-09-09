@@ -53,7 +53,7 @@ class PairingsController(
         Audit.PairingInit.log(targetId = body.id)
         when (body) {
             is PostPairingReq.Unit ->
-                accessControl.requirePermissionFor(user, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
+                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
             is PostPairingReq.Employee -> {
                 accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
                 if (user.id != body.employeeId) throw Forbidden()
@@ -112,6 +112,7 @@ class PairingsController(
     fun postPairingResponse(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
@@ -120,7 +121,7 @@ class PairingsController(
             val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
             try {
                 when {
-                    unitId != null -> accessControl.requirePermissionFor(user, Action.Pairing.POST_RESPONSE, id)
+                    unitId != null -> accessControl.requirePermissionFor(user, clock, Action.Pairing.POST_RESPONSE, id)
                     employeeId != null ->
                         if (user.id != employeeId) throw Forbidden()
                     else -> error("Pairing unitId and employeeId were null")

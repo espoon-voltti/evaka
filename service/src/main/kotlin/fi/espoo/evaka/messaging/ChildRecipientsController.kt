@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,10 +25,11 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     fun getRecipients(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Recipient> {
         Audit.MessagingBlocklistRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_CHILD_RECIPIENTS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
         return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }
     }
@@ -39,12 +41,13 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     fun editRecipient(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @PathVariable personId: PersonId,
         @RequestBody body: EditRecipientRequest
     ) {
         Audit.MessagingBlocklistEdit.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

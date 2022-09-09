@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -54,9 +55,9 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser.Employee, @PathVariable(value = "id") id: EmployeeId): Employee {
+    fun getEmployee(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId): Employee {
         Audit.EmployeeRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Employee.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Employee.READ, id)
         return db.connect { dbc -> dbc.read { it.getEmployee(id) } } ?: throw NotFound()
     }
 
@@ -67,11 +68,12 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun updateEmployee(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: EmployeeUpdate
     ) {
         Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
-        accessControl.requirePermissionFor(user, Action.Employee.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.Employee.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -87,10 +89,11 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun getEmployeeDetails(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId
     ): EmployeeWithDaycareRoles {
         Audit.EmployeeRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Employee.READ_DETAILS, id)
+        accessControl.requirePermissionFor(user, clock, Action.Employee.READ_DETAILS, id)
 
         return db.connect { dbc -> dbc.read { it.getEmployeeWithRoles(id) } }
             ?: throw NotFound("employee $id not found")
@@ -104,9 +107,9 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: EmployeeId) {
+    fun deleteEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId) {
         Audit.EmployeeDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Employee.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.Employee.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
     }
 

@@ -36,24 +36,25 @@ class StaffAttendanceController(
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): UnitStaffAttendance {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
-        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, evakaClock.today()) }
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
+        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today()) }
     }
 
     @GetMapping("/group/{groupId}")
     fun getAttendancesByGroup(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): Wrapper<StaffAttendanceForDates> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.READ_STAFF_ATTENDANCES, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.READ_STAFF_ATTENDANCES, groupId)
         val result = db.connect { dbc -> staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId) }
         return Wrapper(result)
     }
@@ -62,11 +63,12 @@ class StaffAttendanceController(
     fun upsertStaffAttendance(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.UPDATE_STAFF_ATTENDANCES, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_STAFF_ATTENDANCES, groupId)
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }

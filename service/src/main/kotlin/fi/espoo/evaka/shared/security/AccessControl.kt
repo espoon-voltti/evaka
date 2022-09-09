@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
@@ -92,8 +91,8 @@ class AccessControl(
         return permittedActions
     }
 
-    fun <T> requirePermissionFor(user: AuthenticatedUser, action: Action.ScopedAction<T>, target: T) =
-        requirePermissionFor(user, RealEvakaClock(), action, listOf(target))
+    fun <T> requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>, target: T) =
+        requirePermissionFor(user, clock, action, listOf(target))
     fun <T> requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>, targets: Iterable<T>) = Database(jdbi).connect { dbc ->
         dbc.read { tx ->
             checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }

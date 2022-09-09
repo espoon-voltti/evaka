@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -26,11 +27,12 @@ class GroupNoteController(
     fun createGroupNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
     ): GroupNoteId {
         Audit.GroupNoteCreate.log(groupId)
-        ac.requirePermissionFor(user, Action.Group.CREATE_NOTE, groupId)
+        ac.requirePermissionFor(user, clock, Action.Group.CREATE_NOTE, groupId)
 
         return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }
     }
@@ -39,11 +41,12 @@ class GroupNoteController(
     fun updateGroupNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable noteId: GroupNoteId,
         @RequestBody body: GroupNoteBody
     ): GroupNote {
         Audit.GroupNoteUpdate.log(noteId, noteId)
-        ac.requirePermissionFor(user, Action.GroupNote.UPDATE, noteId)
+        ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.updateGroupNote(noteId, body) } }
     }
@@ -52,10 +55,11 @@ class GroupNoteController(
     fun deleteGroupNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable noteId: GroupNoteId
     ) {
         Audit.GroupNoteDelete.log(noteId)
-        ac.requirePermissionFor(user, Action.GroupNote.DELETE, noteId)
+        ac.requirePermissionFor(user, clock, Action.GroupNote.DELETE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }
     }

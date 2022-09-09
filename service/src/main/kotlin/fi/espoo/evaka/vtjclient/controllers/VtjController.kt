@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlCitizen
@@ -38,10 +39,11 @@ class VtjController(
     internal fun getDetails(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
         Audit.VtjRequest.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()

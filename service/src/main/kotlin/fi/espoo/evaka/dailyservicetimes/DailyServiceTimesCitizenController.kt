@@ -25,10 +25,11 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     @GetMapping("/daily-service-time-notifications")
     fun getDailyServiceTimeNotifications(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
     ): List<DailyServiceTimeNotification> {
         Audit.ChildDailyServiceTimeNotificationsRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
 
         return db.connect { dbc -> dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) } }
     }

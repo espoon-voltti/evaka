@@ -35,17 +35,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
-        ac.requirePermissionFor(user, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
+        ac.requirePermissionFor(user, clock, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {
                 CurrentDayStaffAttendanceResponse(
-                    staff = it.getStaffAttendances(unitId, evakaClock.now()),
-                    extraAttendances = it.getExternalStaffAttendances(unitId, evakaClock.now())
+                    staff = it.getStaffAttendances(unitId, clock.now()),
+                    extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
                 )
             }
         }
@@ -62,21 +62,21 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     fun markArrival(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest
     ) {
         Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
 
-        ac.requirePermissionFor(user, Action.Group.MARK_ARRIVAL, body.groupId)
+        ac.requirePermissionFor(user, clock, Action.Group.MARK_ARRIVAL, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
         try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
-                    val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, evakaClock.now())
+                    val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                     val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
-                    val attendances = createAttendancesFromArrival(evakaClock.now(), plannedAttendances, ongoingAttendance, body)
+                    val attendances = createAttendancesFromArrival(clock.now(), plannedAttendances, ongoingAttendance, body)
                     val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
                     attendances.forEach { attendance ->
                         tx.upsertStaffAttendance(
@@ -107,20 +107,20 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     fun markDeparture(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureCreate.log()
 
-        ac.requirePermissionFor(user, Action.Group.MARK_DEPARTURE, body.groupId)
+        ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, evakaClock.now())
+                val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                 val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                     ?: throw BadRequest("No ongoing staff attendance found")
-                val attendances = createAttendancesFromDeparture(evakaClock.now(), plannedAttendances, ongoingAttendance, body)
+                val attendances = createAttendancesFromDeparture(clock.now(), plannedAttendances, ongoingAttendance, body)
                 val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
                 attendances.forEach { attendance ->
                     tx.upsertStaffAttendance(
@@ -146,14 +146,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     fun markExternalArrival(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
         Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
-        ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
+        ac.requirePermissionFor(user, clock, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
 
-        val arrivedTimeHDT = evakaClock.now().withTime(body.arrived)
-        val nowHDT = evakaClock.now()
+        val arrivedTimeHDT = clock.now().withTime(body.arrived)
+        val nowHDT = clock.now()
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
         return db.connect { dbc ->
@@ -178,19 +178,19 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     fun markExternalDeparture(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {
         Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
 
         db.connect { dbc ->
             // todo: convert to action auth
-            val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId, evakaClock.now()) }
+            val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
                 ?: throw NotFound("attendance not found")
-            ac.requirePermissionFor(user, Action.Group.MARK_EXTERNAL_DEPARTURE, attendance.groupId)
+            ac.requirePermissionFor(user, clock, Action.Group.MARK_EXTERNAL_DEPARTURE, attendance.groupId)
 
-            val departedTimeHDT = evakaClock.now().withTime(body.time)
-            val nowHDT = evakaClock.now()
+            val departedTimeHDT = clock.now().withTime(body.time)
+            val nowHDT = clock.now()
             val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
             dbc.transaction {

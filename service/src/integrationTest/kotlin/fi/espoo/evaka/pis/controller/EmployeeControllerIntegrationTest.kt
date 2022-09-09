@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
@@ -60,7 +61,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val responseCreate = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
         assertEquals(1, employeeController.getEmployees(Database(jdbi), user).size)
 
-        val responseGet = employeeController.getEmployee(Database(jdbi), user, responseCreate.id)
+        val responseGet = employeeController.getEmployee(Database(jdbi), user, RealEvakaClock(), responseCreate.id)
         assertEquals(1, employeeController.getEmployees(Database(jdbi), user).size)
         assertEquals(responseCreate.id, responseGet.id)
     }
@@ -70,7 +71,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body = employeeController.createEmployee(Database(jdbi), user, requestFromEmployee(employee1))
 
-        employeeController.deleteEmployee(Database(jdbi), user, body.id)
+        employeeController.deleteEmployee(Database(jdbi), user, RealEvakaClock(), body.id)
 
         assertEquals(0, employeeController.getEmployees(Database(jdbi), user).size)
     }

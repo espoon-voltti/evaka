@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,11 +26,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun createForChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
     ): ChildBackupPickupCreateResponse {
         Audit.ChildBackupPickupCreate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_BACKUP_PICKUP, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_PICKUP, childId)
         return ChildBackupPickupCreateResponse(db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } })
     }
 
@@ -37,10 +39,11 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun getForChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("childId") childId: ChildId
     ): List<ChildBackupPickup> {
         Audit.ChildBackupPickupRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_BACKUP_PICKUP, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_PICKUP, childId)
         return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }
     }
 
@@ -48,11 +51,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun update(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
     ) {
         Audit.ChildBackupPickupUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.BackupPickup.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.BackupPickup.UPDATE, id)
         db.connect { dbc -> dbc.transaction { tx -> tx.updateBackupPickup(id, body) } }
     }
 
@@ -60,10 +64,11 @@ class BackupPickupController(private val accessControl: AccessControl) {
     fun delete(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") id: BackupPickupId
     ) {
         Audit.ChildBackupPickupDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.BackupPickup.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.BackupPickup.DELETE, id)
         db.connect { dbc -> dbc.transaction { tx -> tx.deleteBackupPickup(id) } }
     }
 }

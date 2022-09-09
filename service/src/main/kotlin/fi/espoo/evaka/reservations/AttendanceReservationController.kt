@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -41,12 +42,13 @@ class AttendanceReservationController(private val ac: AccessControl) {
     fun getAttendanceReservations(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitAttendanceReservations {
         Audit.UnitAttendanceReservationsRead.log(targetId = unitId, objectId = from)
-        ac.requirePermissionFor(user, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
+        ac.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val dateRange = FiniteDateRange(from, to)
         return db.connect { dbc ->
@@ -84,13 +86,12 @@ class AttendanceReservationController(private val ac: AccessControl) {
     fun postReservations(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
         val distinctChildIds = body.map { it.childId }.toSet()
         Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
-        distinctChildIds.forEach { childId ->
-            ac.requirePermissionFor(user, Action.Child.CREATE_ATTENDANCE_RESERVATION, childId)
-        }
+        ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, distinctChildIds)
 
         db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
     }

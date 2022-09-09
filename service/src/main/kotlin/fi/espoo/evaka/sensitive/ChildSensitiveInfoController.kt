@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -24,11 +25,12 @@ class ChildSensitiveInfoController(
     fun getSensitiveInfo(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildSensitiveInformation {
         Audit.ChildSensitiveInfoRead.log(targetId = childId)
 
-        ac.requirePermissionFor(user, Action.Child.READ_SENSITIVE_INFO, childId)
+        ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
 
         return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(childId) ?: throw NotFound("Child not found") } }
     }

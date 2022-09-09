@@ -150,9 +150,9 @@ class InvoiceController(
     }
 
     @GetMapping("/{id}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable id: InvoiceId): Wrapper<InvoiceDetailed> {
+    fun getInvoice(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable id: InvoiceId): Wrapper<InvoiceDetailed> {
         Audit.InvoicesRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Invoice.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Invoice.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
             ?: throw NotFound("No invoice found with given ID ($id)")
         return Wrapper(res)
@@ -162,10 +162,11 @@ class InvoiceController(
     fun getHeadOfFamilyInvoices(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable uuid: PersonId
     ): Wrapper<List<Invoice>> {
         Audit.InvoicesRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INVOICES, uuid)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICES, uuid)
         return Wrapper(db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } })
     }
 
@@ -173,11 +174,12 @@ class InvoiceController(
     fun putInvoice(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: InvoiceId,
         @RequestBody invoice: Invoice
     ) {
         Audit.InvoicesUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Invoice.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.Invoice.UPDATE, id)
         db.connect { dbc -> dbc.transaction { service.updateInvoice(it, id, invoice) } }
     }
 

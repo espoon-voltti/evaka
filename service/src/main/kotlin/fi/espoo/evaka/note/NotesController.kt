@@ -34,17 +34,17 @@ class NotesController(
     fun getNotesByGroup(
         user: AuthenticatedUser,
         db: Database,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
         Audit.NotesByGroupRead.log(groupId)
-        ac.requirePermissionFor(user, Action.Group.READ_NOTES, groupId)
+        ac.requirePermissionFor(user, clock, Action.Group.READ_NOTES, groupId)
 
         return db.connect { dbc ->
             dbc.read {
                 NotesByGroupResponse(
-                    childDailyNotes = it.getChildDailyNotesInGroup(groupId, evakaClock.today()),
-                    childStickyNotes = it.getChildStickyNotesForGroup(groupId, evakaClock.today()),
+                    childDailyNotes = it.getChildDailyNotesInGroup(groupId, clock.today()),
+                    childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),
                     groupNotes = it.getGroupNotesForGroup(groupId)
                 )
             }

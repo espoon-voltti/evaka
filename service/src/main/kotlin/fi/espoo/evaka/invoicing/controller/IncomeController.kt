@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -56,18 +57,18 @@ class IncomeController(
     private val filesBucket = bucketEnv.attachments
 
     @GetMapping
-    fun getIncome(db: Database, user: AuthenticatedUser, @RequestParam personId: PersonId): Wrapper<List<Income>> {
+    fun getIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): Wrapper<List<Income>> {
         Audit.PersonIncomeRead.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME, personId)
 
         val incomes = db.connect { dbc -> dbc.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId) } }
         return Wrapper(incomes)
     }
 
     @PostMapping
-    fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): IncomeId {
+    fun createIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody income: Income): IncomeId {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
-        accessControl.requirePermissionFor(user, Action.Person.CREATE_INCOME, income.personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INCOME, income.personId)
         val period = try {
             DateRange(income.validFrom, income.validTo)
         } catch (e: Exception) {
@@ -95,11 +96,12 @@ class IncomeController(
     fun updateIncome(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
     ) {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
-        accessControl.requirePermissionFor(user, Action.Income.UPDATE, incomeId)
+        accessControl.requirePermissionFor(user, clock, Action.Income.UPDATE, incomeId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -119,9 +121,9 @@ class IncomeController(
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: IncomeId) {
+    fun deleteIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable incomeId: IncomeId) {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
-        accessControl.requirePermissionFor(user, Action.Income.DELETE, incomeId)
+        accessControl.requirePermissionFor(user, clock, Action.Income.DELETE, incomeId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

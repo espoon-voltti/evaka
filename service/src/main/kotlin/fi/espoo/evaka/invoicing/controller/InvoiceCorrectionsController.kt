@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -36,10 +37,11 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
     fun getPersonInvoiceCorrections(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable personId: PersonId
     ): List<InvoiceCorrection> {
         Audit.InvoiceCorrectionsRead.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INVOICE_CORRECTIONS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICE_CORRECTIONS, personId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.createQuery(
@@ -70,10 +72,11 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
     fun createInvoiceCorrection(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody body: NewInvoiceCorrection
     ) {
         Audit.InvoiceCorrectionsCreate.log(targetId = body.headOfFamilyId, objectId = body.childId)
-        accessControl.requirePermissionFor(user, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate(
@@ -92,10 +95,11 @@ VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPri
     fun deleteInvoiceCorrection(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId
     ) {
         Audit.InvoiceCorrectionsDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.InvoiceCorrection.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.DELETE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 try {
@@ -124,11 +128,12 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
     fun updateNote(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId,
         @RequestBody body: NoteUpdateBody
     ) {
         Audit.InvoiceCorrectionsNoteUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.InvoiceCorrection.UPDATE_NOTE, id)
+        accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.UPDATE_NOTE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
