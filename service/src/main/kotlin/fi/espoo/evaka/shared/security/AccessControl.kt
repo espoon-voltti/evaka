@@ -24,8 +24,7 @@ class AccessControl(
     private val actionRuleMapping: ActionRuleMapping,
     private val jdbi: Jdbi
 ) {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Employee): EmployeeFeatures {
-        val clock = RealEvakaClock()
+    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Employee, clock: EvakaClock): EmployeeFeatures {
         return EmployeeFeatures(
             applications = checkPermissionFor(tx, user, clock, Action.Global.APPLICATIONS_PAGE).isPermitted(),
             employees = checkPermissionFor(tx, user, clock, Action.Global.EMPLOYEES_PAGE).isPermitted(),
