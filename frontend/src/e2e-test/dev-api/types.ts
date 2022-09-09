@@ -179,8 +179,9 @@ export interface EmployeeDetail {
   firstName: string
   lastName: string
   externalId: string
-  email?: string
   roles: UserRole[]
+  email?: string
+  nickname?: string
 }
 
 export interface Application {

@@ -365,6 +365,10 @@ export class Select extends Element {
   get selectedOption(): Promise<string> {
     return this.#input.locator.inputValue()
   }
+
+  get allOptions(): Promise<string[]> {
+    return this.#input.findAll('option').allInnerTexts()
+  }
 }
 
 export class Combobox extends Element {
