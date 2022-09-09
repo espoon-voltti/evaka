@@ -9,17 +9,16 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -36,24 +35,39 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
+    final val placementStart = LocalDate.of(2021, 1, 1)
+    final val placementEnd = placementStart.plusDays(200)
+
+    final val backupCareStart = placementStart.plusDays(1)
+    final val backupCareEnd = placementStart.plusDays(10)
+
+    lateinit var placementId: PlacementId
+
     @BeforeEach
     private fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            placementId = tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare2.id,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
         }
     }
 
     @Test
     fun testUpdate() {
         val groupId = db.transaction { tx -> tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-        val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+        val period = FiniteDateRange(backupCareStart, backupCareEnd)
         val id = createBackupCareAndAssert(period = period)
-        val changedPeriod = period.copy(end = LocalDate.of(2020, 7, 7))
+        val changedPeriod = period.copy(end = backupCareEnd.plusDays(4))
         val (_, res, _) = http.post("/backup-cares/$id")
             .jsonBody(
                 jsonMapper.writeValueAsString(
@@ -86,7 +100,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     NewBackupCare(
                         unitId = testDaycare.id,
                         groupId = null,
-                        period = FiniteDateRange(LocalDate.of(2020, 7, 31), LocalDate.of(2020, 8, 1))
+                        period = FiniteDateRange(backupCareStart.plusDays(1), backupCareStart.plusDays(4))
                     )
                 )
             )
@@ -118,7 +132,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         id = groupId,
                         name = groupName
                     ),
-                    period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+                    period = FiniteDateRange(backupCareStart, backupCareEnd)
                 )
             ),
             backupCares
@@ -128,21 +142,12 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun testUnitBackupCare() {
         val groupName = "Test Group"
-        val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-        val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2020, 7, 3), period.end)
+        val period = FiniteDateRange(backupCareStart, backupCareEnd)
+        val serviceNeedPeriod = FiniteDateRange(period.start.plusDays(1), period.end)
         val groupId = db.transaction { tx ->
             tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
         }
         db.transaction { tx ->
-            val placementId = tx.insertTestPlacement(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    type = PlacementType.DAYCARE,
-                    unitId = testDaycare2.id,
-                    startDate = period.start.minusYears(1),
-                    endDate = period.end.plusYears(1)
-                )
-            )
             tx.insertTestServiceNeed(
                 confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 period = serviceNeedPeriod,
@@ -179,18 +184,58 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     ),
                     period = period,
                     serviceNeeds = setOf(),
-                    missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
+                    missingServiceNeedDays = ChronoUnit.DAYS.between(backupCareStart, serviceNeedPeriod.start).toInt()
                 )
             ),
             backupCares
         )
     }
 
+    @Test
+    fun `backup care must be created during a placement`() {
+        val (_, res, _) = http.post("/children/${testChild_1.id}/backup-cares")
+            .jsonBody(
+                jsonMapper.writeValueAsString(
+                    NewBackupCare(
+                        unitId = testDaycare.id,
+                        groupId = null,
+                        period = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
+                    )
+                )
+            )
+            .asUser(serviceWorker)
+            .response()
+        assertNotEquals(200, res.statusCode)
+        assertEquals(0, db.read { r -> r.getBackupCaresForChild(testChild_1.id).size })
+    }
+
+    @Test
+    fun `backup care must be during a placement when modifying range`() {
+        val groupId = db.transaction { tx -> tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+        val id = createBackupCareAndAssert(groupId = groupId)
+
+        val newPeriod = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
+        val (_, res, _) = http.post("/backup-cares/$id")
+            .jsonBody(
+                jsonMapper.writeValueAsString(
+                    BackupCareUpdateRequest(
+                        groupId = groupId,
+                        period = newPeriod
+                    )
+                )
+            )
+            .asUser(serviceWorker)
+            .response()
+
+        assertNotEquals(200, res.statusCode)
+        assertNotEquals(newPeriod, db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period })
+    }
+
     private fun createBackupCareAndAssert(
         childId: ChildId = testChild_1.id,
         unitId: DaycareId = testDaycare.id,
         groupId: GroupId? = null,
-        period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+        period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd)
     ): BackupCareId {
         val (_, res, result) = http.post("/children/$childId/backup-cares")
             .jsonBody(

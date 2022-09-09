@@ -27,7 +27,6 @@ import { fontWeights } from 'lib-components/typography'
 
 import {
   createBackupCare,
-  getChildBackupCares,
   updateBackupCare
 } from '../../../api/child/backup-care'
 import { getUnits, Unit } from '../../../api/daycare'
@@ -79,7 +78,8 @@ export default function BackupCareForm({
 }: Props): JSX.Element {
   const { i18n } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
-  const { backupCares, setBackupCares } = useContext(ChildContext)
+  const { backupCares, consecutivePlacementRanges, loadBackupCares } =
+    useContext(ChildContext)
 
   const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
 
@@ -115,6 +115,16 @@ export default function BackupCareForm({
       errors.push(i18n.validationError.invertedDateRange)
     else if (isDateRangeOverlappingWithExisting(form, existing))
       errors.push(i18n.validationError.existingDateRangeError)
+    else if (
+      !consecutivePlacementRanges.some((placementRange) =>
+        placementRange.contains(
+          new FiniteDateRange(form.startDate, form.endDate)
+        )
+      )
+    )
+      errors.push(
+        i18n.childInformation.backupCares.validationNoMatchingPlacement
+      )
 
     return errors
   }
@@ -153,10 +163,8 @@ export default function BackupCareForm({
 
   const submitSuccess = useCallback(() => {
     clearUiMode()
-    void getChildBackupCares(childId).then((backupCares) =>
-      setBackupCares(backupCares)
-    )
-  }, [childId, clearUiMode, setBackupCares])
+    return loadBackupCares()
+  }, [clearUiMode, loadBackupCares])
 
   const options = useMemo(
     () =>
@@ -206,7 +214,7 @@ export default function BackupCareForm({
           </div>
         </FormField>
         {formErrors.map((error, index) => (
-          <div className="error" key={index}>
+          <div className="error" key={index} data-qa="form-error">
             {error}
           </div>
         ))}

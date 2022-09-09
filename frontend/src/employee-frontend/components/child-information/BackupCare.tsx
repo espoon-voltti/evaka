@@ -5,14 +5,12 @@
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useEffect, useState } from 'react'
 
-import { Loading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
-import { getChildBackupCares } from '../../api/child/backup-care'
 import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
 import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
 import { ChildContext } from '../../state'
@@ -26,20 +24,15 @@ export interface Props {
 
 export default function BackupCare({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { backupCares, setBackupCares, permittedActions } =
+  const { backupCares, loadBackupCares, permittedActions } =
     useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
 
   useEffect(() => {
-    void getChildBackupCares(id).then((backupCares) => {
-      setBackupCares(backupCares)
-    })
-    return () => {
-      setBackupCares(Loading.of())
-    }
-  }, [id, setBackupCares])
+    void loadBackupCares()
+  }, [id, loadBackupCares])
 
   return (
     <CollapsibleContentArea

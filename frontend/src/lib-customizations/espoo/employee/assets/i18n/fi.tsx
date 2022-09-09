@@ -1061,7 +1061,9 @@ export const fi = {
       serviceNeedMissingTooltip2: 'päivältä.',
       deletePlacement: {
         btn: 'Poista sijoitus',
-        confirmTitle: 'Haluatko varmasti perua tämän sijoituksen?'
+        confirmTitle: 'Haluatko varmasti perua tämän sijoituksen?',
+        hasDependingBackupCares:
+          'Lapsen varasijoitus on riippuvainen tästä sijoituksesta, joten tämän sijoituksen poistaminen voi muuttaa tai poistaa varasijoituksen.'
       },
       createPlacement: {
         btn: 'Luo uusi sijoitus',
@@ -1081,7 +1083,9 @@ export const fi = {
       },
       warning: {
         overlap: 'Ajalle on jo sijoitus',
-        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi'
+        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi',
+        backupCareDepends:
+          'Varasijoitus on riippuvainen tästä sijoituksesta, ja muutettu aikaväli voi poistaa tai muttaa varasijoitusta.'
       },
       serviceNeeds: {
         title: 'Sijoituksen palveluntarpeet',
@@ -1124,7 +1128,9 @@ export const fi = {
       editing: 'muokkauksessa',
       create: 'Luo uusi varasijoitus',
       dateRange: 'Varasijoitus ajalle',
-      unit: 'Yksikkö'
+      unit: 'Yksikkö',
+      validationNoMatchingPlacement:
+        'Varasijoitus ei ole minkään lapsen sijoituksen aikana.'
     },
     backupPickups: {
       title: 'Varahakijat',

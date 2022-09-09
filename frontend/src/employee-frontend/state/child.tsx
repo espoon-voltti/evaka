@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import React, {
   createContext,
   useCallback,
@@ -10,7 +11,9 @@ import React, {
   useState
 } from 'react'
 
+import { getChildBackupCares } from 'employee-frontend/api/child/backup-care'
 import { Loading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
@@ -34,10 +37,11 @@ export interface ChildState {
   loadPlacements: () => void
   parentships: Result<ParentshipWithPermittedActions[]>
   backupCares: Result<ChildBackupCareResponse[]>
-  setBackupCares: (request: Result<ChildBackupCareResponse[]>) => void
+  loadBackupCares: () => Promise<Result<unknown>>
   guardians: Result<PersonJSON[]>
   reloadPermittedActions: () => void
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
+  consecutivePlacementRanges: FiniteDateRange[]
 }
 
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
@@ -50,10 +54,11 @@ const defaultState: ChildState = {
   loadPlacements: () => undefined,
   parentships: Loading.of(),
   backupCares: Loading.of(),
-  setBackupCares: () => undefined,
+  loadBackupCares: () => Promise.resolve(Loading.of()),
   guardians: Loading.of(),
   reloadPermittedActions: () => undefined,
-  assistanceNeedVoucherCoefficientsEnabled: Loading.of()
+  assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
+  consecutivePlacementRanges: []
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -135,10 +140,47 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
         : Loading.of(),
     [id, permittedActions]
   )
-  const [backupCares, setBackupCares] = useState<
-    Result<ChildBackupCareResponse[]>
-  >(defaultState.backupCares)
+
+  const [backupCares, loadBackupCares] = useApiState(
+    () => getChildBackupCares(id),
+    [id]
+  )
+
   const [guardians] = useApiState(() => getPersonGuardians(id), [id])
+
+  const consecutivePlacementRanges = useMemo(
+    () =>
+      placements
+        .map((p) =>
+          sortBy(p, (placement) =>
+            placement.startDate.toSystemTzDate().getTime()
+          ).reduce((prev, curr) => {
+            const currentRange = new FiniteDateRange(
+              curr.startDate,
+              curr.endDate
+            )
+            const fittingExistingIndex = prev.findIndex((range) =>
+              range.adjacentTo(currentRange)
+            )
+
+            if (fittingExistingIndex > -1) {
+              const fittingExisting = prev[fittingExistingIndex]
+
+              const newRange = fittingExisting.leftAdjacentTo(currentRange)
+                ? fittingExisting.withEnd(curr.endDate)
+                : fittingExisting.withStart(curr.startDate)
+
+              const copy = Array.from(prev)
+              copy[fittingExistingIndex] = newRange
+              return copy
+            }
+
+            return [...prev, currentRange]
+          }, [] as FiniteDateRange[])
+        )
+        .getOrElse([]),
+    [placements]
+  )
 
   const value = useMemo(
     (): ChildState => ({
@@ -149,10 +191,11 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       loadPlacements,
       parentships,
       backupCares,
-      setBackupCares,
+      loadBackupCares,
       guardians,
       reloadPermittedActions,
-      assistanceNeedVoucherCoefficientsEnabled
+      assistanceNeedVoucherCoefficientsEnabled,
+      consecutivePlacementRanges
     }),
     [
       person,
@@ -164,7 +207,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       backupCares,
       guardians,
       reloadPermittedActions,
-      assistanceNeedVoucherCoefficientsEnabled
+      assistanceNeedVoucherCoefficientsEnabled,
+      consecutivePlacementRanges,
+      loadBackupCares
     ]
   )
 

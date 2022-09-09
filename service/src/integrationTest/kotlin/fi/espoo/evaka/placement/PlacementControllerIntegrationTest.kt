@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.ResponseResultOf
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     final val childId = testChild_1.id
@@ -546,6 +549,100 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(403)
+    }
+
+    @Test
+    fun `moving placement end date moves backup care end date`() {
+        db.transaction { tx ->
+            tx.insertTestBackUpCare(childId, testDaycare2.id, placementEnd.minusDays(5), placementEnd.minusDays(1))
+        }
+
+        val newEnd = placementEnd.minusDays(1)
+
+        val body = PlacementUpdateRequestBody(
+            startDate = placementStart,
+            endDate = newEnd
+        )
+        val (_, res, _) = http.put("/placements/${testPlacement.id}")
+            .objectBody(bodyObject = body, mapper = jsonMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        assertEquals(200, res.statusCode)
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(childId) }
+        assertEquals(1, backupCares.size)
+        assertEquals(newEnd, backupCares[0].period.end)
+    }
+
+    @Test
+    fun `moving placement start date moves backup care start date`() {
+        db.transaction { tx ->
+            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart, placementStart.plusDays(4))
+        }
+
+        val newStart = placementStart.plusDays(2)
+
+        val body = PlacementUpdateRequestBody(
+            startDate = newStart,
+            endDate = placementEnd
+        )
+        val (_, res, _) = http.put("/placements/${testPlacement.id}")
+            .objectBody(bodyObject = body, mapper = jsonMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        assertEquals(200, res.statusCode)
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(childId) }
+        assertEquals(1, backupCares.size)
+        assertEquals(newStart, backupCares[0].period.start)
+    }
+
+    @Test
+    fun `can move end date of later of two consecutive placements`() {
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = childId,
+                unitId = daycareId,
+                startDate = placementStart.minusDays(10),
+                endDate = placementStart.minusDays(1)
+            )
+            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart.minusDays(8), placementStart.plusDays(4))
+        }
+
+        val newEnd = placementStart.plusDays(2)
+
+        val body = PlacementUpdateRequestBody(
+            startDate = placementStart,
+            endDate = newEnd
+        )
+        val (_, res, _) = http.put("/placements/${testPlacement.id}")
+            .objectBody(bodyObject = body, mapper = jsonMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        assertEquals(200, res.statusCode)
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(childId) }
+        assertEquals(1, backupCares.size)
+        assertEquals(newEnd, backupCares[0].period.end)
+    }
+
+    @Test
+    fun `deleting placement deletes backup care`() {
+        db.transaction { tx ->
+            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart.plusDays(1), placementStart.plusDays(5))
+        }
+
+        val (_, res, _) = http.delete("/placements/${testPlacement.id}")
+            .asUser(serviceWorker)
+            .response()
+
+        assertEquals(200, res.statusCode)
+
+        val backupCares = db.transaction { it.getBackupCaresForChild(childId) }
+        assertEquals(0, backupCares.size)
     }
 
     private fun createGroupPlacement(

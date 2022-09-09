@@ -9,6 +9,8 @@ import {
   Page as PlaywrightPage
 } from 'playwright'
 
+import LocalDate from 'lib-common/local-date'
+
 import { EvakaBrowserContextOptions, newBrowserContext } from '../browser'
 
 import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
@@ -267,8 +269,8 @@ export class DatePicker extends Element {
 export class DatePickerDeprecated extends Element {
   #input = new TextInput(this.find('input'))
 
-  async fill(text: string) {
-    await this.#input.fill(text)
+  async fill(text: string | LocalDate) {
+    await this.#input.fill(typeof text === 'string' ? text : text.format())
     await this.#input.press('Enter')
   }
 }

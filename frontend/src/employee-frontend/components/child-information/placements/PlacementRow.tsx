@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { ChildContext } from 'employee-frontend/state'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -94,6 +95,7 @@ export default React.memo(function PlacementRow({
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
+  const { backupCares, loadBackupCares } = useContext(ChildContext)
 
   const expandedAtStart = isActiveDateRange(
     placement.startDate,
@@ -147,8 +149,14 @@ export default React.memo(function PlacementRow({
   )
 
   const submitUpdate = useCallback(
-    () => updatePlacement(placement.id, form),
-    [placement.id, form]
+    () =>
+      updatePlacement(placement.id, form).then((res) => {
+        if (res.isSuccess) {
+          return loadBackupCares()
+        }
+        return res
+      }),
+    [placement.id, form, loadBackupCares]
   )
 
   function submitDelete() {
@@ -160,14 +168,68 @@ export default React.memo(function PlacementRow({
     })
   }
 
+  const [conflictBackupCare, setConflictBackupCare] = useState(false)
+
+  const dependingBackupCares = useMemo(
+    () =>
+      backupCares
+        .map((backups) =>
+          backups.filter(({ backupCare }) =>
+            new FiniteDateRange(
+              placement.startDate,
+              placement.endDate
+            ).overlaps(backupCare.period)
+          )
+        )
+        .getOrElse([]),
+    [backupCares, placement]
+  )
+
   function calculateOverlapWarnings(startDate: LocalDate, endDate: LocalDate) {
-    checkOverlaps({ startDate, endDate }, placement)
-      ? startDate === placement.startDate
-        ? setEndDateWarning(true)
-        : setStartDateWarning(true)
-      : startDate === placement.startDate
-      ? setEndDateWarning(false)
-      : setStartDateWarning(false)
+    if (checkOverlaps({ startDate, endDate }, placement)) {
+      if (startDate === placement.startDate) {
+        setEndDateWarning(true)
+      } else {
+        setStartDateWarning(true)
+      }
+    } else {
+      if (startDate === placement.startDate) {
+        setEndDateWarning(false)
+      } else {
+        setStartDateWarning(false)
+      }
+    }
+
+    const range = new FiniteDateRange(startDate, endDate)
+
+    if (
+      dependingBackupCares.some(({ backupCare }) =>
+        backupCare.period.contains(range)
+      )
+    ) {
+      // a depending backup care has this placement in the middle, so it cannot be modified
+      setConflictBackupCare(true)
+    } else if (
+      dependingBackupCares.some(
+        ({ backupCare }) =>
+          placement.startDate <= backupCare.period.start &&
+          startDate > backupCare.period.start
+      )
+    ) {
+      // the start date was moved from before a backup care to after its start
+      setConflictBackupCare(true)
+    } else if (
+      dependingBackupCares.some(
+        ({ backupCare }) =>
+          placement.endDate >= backupCare.period.end &&
+          endDate < backupCare.period.end
+      )
+    ) {
+      // the end date was moved from after a backup care to before its end
+      setConflictBackupCare(true)
+    } else {
+      setConflictBackupCare(false)
+    }
   }
 
   const currentGroupPlacement = placement.groupPlacements.find((gp) =>
@@ -251,25 +313,45 @@ export default React.memo(function PlacementRow({
           <DataLabel>{i18n.childInformation.placements.endDate}</DataLabel>
           <DataValue data-qa="placement-details-end-date">
             {editing ? (
-              <DatepickerContainer>
-                <CompactDatePicker
-                  date={form.endDate}
-                  onChange={(endDate) => {
-                    setForm({ ...form, endDate })
-                    calculateOverlapWarnings(placement.startDate, endDate)
-                  }}
-                  type="full-width"
-                  data-qa="placement-end-date-input"
-                />
-                {endDateWarning ? (
-                  <WarningContainer>
-                    <InputWarning
-                      text={i18n.childInformation.placements.warning.overlap}
-                      iconPosition="after"
+              <div>
+                <div>
+                  <DatepickerContainer>
+                    <CompactDatePicker
+                      date={form.endDate}
+                      onChange={(endDate) => {
+                        setForm({ ...form, endDate })
+                        calculateOverlapWarnings(placement.startDate, endDate)
+                      }}
+                      type="full-width"
+                      data-qa="placement-end-date-input"
+                      aria-labelledby="placement-details-end-date"
                     />
-                  </WarningContainer>
-                ) : null}
-              </DatepickerContainer>
+                    {endDateWarning ? (
+                      <WarningContainer>
+                        <InputWarning
+                          text={
+                            i18n.childInformation.placements.warning.overlap
+                          }
+                          iconPosition="after"
+                        />
+                      </WarningContainer>
+                    ) : null}
+                  </DatepickerContainer>
+                </div>
+                <div>
+                  {conflictBackupCare && (
+                    <WarningContainer>
+                      <InputWarning
+                        text={
+                          i18n.childInformation.placements.warning
+                            .backupCareDepends
+                        }
+                        iconPosition="after"
+                      />
+                    </WarningContainer>
+                  )}
+                </div>
+              </div>
             ) : (
               placement.endDate.format()
             )}
@@ -364,6 +446,12 @@ export default React.memo(function PlacementRow({
       {confirmingDelete && (
         <InfoModal
           title={i18n.childInformation.placements.deletePlacement.confirmTitle}
+          text={
+            dependingBackupCares.length > 0
+              ? i18n.childInformation.placements.deletePlacement
+                  .hasDependingBackupCares
+              : undefined
+          }
           type="warning"
           icon={faQuestion}
           resolve={{
@@ -383,6 +471,7 @@ export default React.memo(function PlacementRow({
 const DatepickerContainer = styled.div`
   display: flex;
   flex-direction: column;
+  width: fit-content;
 `
 
 const WarningContainer = styled.div`

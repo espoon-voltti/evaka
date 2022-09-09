@@ -84,13 +84,11 @@ function Toolbar({
   const { roles } = useContext(UserContext)
 
   const editAllowed: boolean =
-    editable ||
-    (editableFor === undefined && editable === undefined) ||
-    (editableFor !== undefined && requireRole(roles, ...editableFor))
+    editable !== false &&
+    (editableFor === undefined || requireRole(roles, ...editableFor))
   const deleteAllowed: boolean =
-    deletable ||
-    (deletableFor === undefined && deletable === undefined) ||
-    (deletableFor !== undefined && requireRole(roles, ...deletableFor))
+    deletable !== false &&
+    (deletableFor === undefined || requireRole(roles, ...deletableFor))
 
   return (
     <ToolbarWrapper data-qa={dataQa}>

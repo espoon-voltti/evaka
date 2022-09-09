@@ -54,6 +54,15 @@ beforeEach(async () => {
     })
     .save()
 
+  await Fixture.placement()
+    .with({
+      childId,
+      unitId,
+      startDate: LocalDate.of(2020, 1, 1).formatIso(),
+      endDate: LocalDate.of(2020, 6, 1).formatIso()
+    })
+    .save()
+
   page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
@@ -297,9 +306,9 @@ describe('Child information - backup care', () => {
 
   test('backup care for a child can be added and removed', async () => {
     await section.createBackupCare(
-      fixtures.daycareFixture,
-      '01.02.2020',
-      '03.02.2020'
+      fixtures.daycareFixture.name,
+      LocalDate.of(2020, 2, 1),
+      LocalDate.of(2020, 2, 3)
     )
     await waitUntilEqual(
       () => section.getBackupCares(),
@@ -312,6 +321,34 @@ describe('Child information - backup care', () => {
     )
     await section.deleteBackupCare(0)
     await waitUntilEqual(() => section.getBackupCares(), [])
+  })
+
+  test('error is shown if no placement is during the requested range', async () => {
+    await section.fillNewBackupCareFields(
+      fixtures.daycareFixture.name,
+      LocalDate.of(2020, 1, 5),
+      LocalDate.of(2020, 9, 5)
+    )
+    await section.assertError(
+      'Varasijoitus ei ole minkään lapsen sijoituksen aikana.'
+    )
+  })
+
+  test('error is shown if no placement is during the modified range', async () => {
+    await section.createBackupCare(
+      fixtures.daycareFixture.name,
+      LocalDate.of(2020, 1, 2),
+      LocalDate.of(2020, 2, 3)
+    )
+
+    await section.fillExistingBackupCareRow(
+      0,
+      LocalDate.of(2020, 5, 4),
+      LocalDate.of(2020, 8, 11)
+    )
+    await section.assertError(
+      'Varasijoitus ei ole minkään lapsen sijoituksen aikana.'
+    )
   })
 })
 

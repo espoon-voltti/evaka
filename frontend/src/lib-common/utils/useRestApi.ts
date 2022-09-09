@@ -69,7 +69,7 @@ export function useRestApi<F extends ApiFunction>(
 export function useApiState<T, Deps extends DependencyList>(
   f: () => Promise<Result<T>>,
   deps: Deps
-): [Result<T>, () => Promise<void>] {
+): [Result<T>, () => Promise<Result<T>>] {
   const [state, setState] = useState<Result<T>>(Loading.of())
 
   const currentRef = useRef(0)
@@ -84,9 +84,15 @@ export function useApiState<T, Deps extends DependencyList>(
     const api = withStaleCancellation(f)
     setState((prev) => (prev.isSuccess ? prev.reloading() : Loading.of()))
     const loadIdx = ++currentRef.current
-    await api().then((result) => {
-      if (currentRef.current === loadIdx && !isCancelled(result))
+    return await api().then<Result<T>>((result) => {
+      if (currentRef.current === loadIdx && !isCancelled(result)) {
         setState(result)
+        return result
+      }
+
+      return Failure.of({
+        message: 'Cancelled'
+      })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
