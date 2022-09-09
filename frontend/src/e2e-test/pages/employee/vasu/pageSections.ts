@@ -10,14 +10,24 @@ class SimpleTextAreaSection extends Element {
 }
 
 export class BasicInfoSection extends SimpleTextAreaSection {
-  readonly childName = this.findByDataQa('vasu-basic-info-child-name').innerText
-  readonly childDateOfBirth = this.findByDataQa('vasu-basic-info-child-dob')
-    .innerText
-  placement = (nth: number) =>
-    this.findAllByDataQa('vasu-basic-info-placement').nth(nth).innerText
-  guardian = (nth: number) =>
-    this.findAllByDataQa('vasu-basic-info-guardian').nth(nth).innerText
-  readonly additionalContactInfoInput = new TextInput(this.textareas.nth(0))
+  get childName() {
+    return this.findByDataQa('vasu-basic-info-child-name').innerText
+  }
+
+  get childDateOfBirth() {
+    return this.findByDataQa('vasu-basic-info-child-dob').innerText
+  }
+
+  placement(nth: number) {
+    return this.findAllByDataQa('vasu-basic-info-placement').nth(nth).innerText
+  }
+
+  guardian(nth: number) {
+    return this.findAllByDataQa('vasu-basic-info-guardian').nth(nth).innerText
+  }
+
+  additionalContactInfoInput = new TextInput(this.textareas.nth(0))
+
   get additionalContactInfo() {
     return this.values.nth(0).innerText
   }
@@ -57,15 +67,15 @@ export class AuthoringSection extends SimpleTextAreaSection {
     '[data-qa="value-or-no-record"]'
   ).nth(1)
 
-  get primaryValue(): Promise<string> {
+  get primaryValue() {
     return this.#primaryValue.innerText
   }
 
-  get otherFieldsCount(): Promise<number> {
+  get otherFieldsCount() {
     return this.#otherFieldsRows.count()
   }
 
-  get otherValues(): Promise<string> {
+  get otherValues() {
     return this.#otherFieldsValues.innerText
   }
 
@@ -82,8 +92,13 @@ export class CooperationSection extends SimpleTextAreaSection {
   collaboratorsInput = new TextInput(this.textareas.nth(0))
   methodsOfCooperationInput = new TextInput(this.textareas.nth(1))
 
-  collaborators = this.values.nth(0).innerText
-  methodsOfCooperation = this.values.nth(1).innerText
+  get collaborators() {
+    return this.values.nth(0).innerText
+  }
+
+  get methodsOfCooperation() {
+    return this.values.nth(1).innerText
+  }
 }
 
 export class VasuGoalsSection extends SimpleTextAreaSection {
@@ -91,9 +106,17 @@ export class VasuGoalsSection extends SimpleTextAreaSection {
   specialNeedsEstimationInput = new TextInput(this.textareas.nth(1))
   otherObservationsInput = new TextInput(this.textareas.nth(2))
 
-  goalsRealization = this.values.nth(0).innerText
-  specialNeedsEstimation = this.values.nth(1).innerText
-  otherObservations = this.values.nth(2).innerText
+  get goalsRealization() {
+    return this.values.nth(0).innerText
+  }
+
+  get specialNeedsEstimation() {
+    return this.values.nth(1).innerText
+  }
+
+  get otherObservations() {
+    return this.values.nth(2).innerText
+  }
 }
 
 export class GoalsSection extends SimpleTextAreaSection {
@@ -106,15 +129,41 @@ export class GoalsSection extends SimpleTextAreaSection {
   actionsInput = new TextInput(this.textareas.nth(6))
   otherInput = new TextInput(this.textareas.nth(7))
 
-  childsStrengths = this.values.nth(0).innerText
-  languageViews = this.values.nth(1).innerText
-  pedagogicalSupport = this.values.nth(2).innerText
-  structuralSupport = this.values.nth(3).innerText
-  therapeuticSupport = this.values.nth(4).innerText
-  staffGoals = this.values.nth(5).innerText
-  actions = this.values.nth(6).innerText
-  supportLevel = this.values.nth(7).innerText
-  other = this.values.nth(8).innerText
+  get childsStrengths() {
+    return this.values.nth(0).innerText
+  }
+
+  get languageViews() {
+    return this.values.nth(1).innerText
+  }
+
+  get pedagogicalSupport() {
+    return this.values.nth(2).innerText
+  }
+
+  get structuralSupport() {
+    return this.values.nth(3).innerText
+  }
+
+  get therapeuticSupport() {
+    return this.values.nth(4).innerText
+  }
+
+  get staffGoals() {
+    return this.values.nth(5).innerText
+  }
+
+  get actions() {
+    return this.values.nth(6).innerText
+  }
+
+  get supportLevel() {
+    return this.values.nth(7).innerText
+  }
+
+  get other() {
+    return this.values.nth(8).innerText
+  }
 
   supportLevelOptions = (key: string) =>
     this.findByDataQa(`radio-group-date-question-option-${key}`)
@@ -130,12 +179,18 @@ export class GoalsSection extends SimpleTextAreaSection {
 
 export class OtherSection extends SimpleTextAreaSection {
   otherInput = new TextInput(this.textareas.nth(0))
-  other = this.values.nth(0).innerText
+
+  get other() {
+    return this.values.nth(0).innerText
+  }
 }
 
 export class OtherDocsAndPlansSection extends SimpleTextAreaSection {
   otherDocsInput = new TextInput(this.textareas.nth(0))
-  otherDocs = this.values.nth(0).innerText
+
+  get otherDocs() {
+    return this.values.nth(0).innerText
+  }
 }
 
 export class InfoSharedToSection extends Element {
@@ -152,13 +207,23 @@ export class DiscussionSection extends SimpleTextAreaSection {
   presentInput = new TextInput(this.textareas.nth(0))
   collaborationAndOpinionInput = new TextInput(this.textareas.nth(1))
 
-  date = this.values.nth(0).innerText
-  present = this.values.nth(1).innerText
-  collaborationAndOpinion = this.values.nth(2).innerText
+  get date() {
+    return this.values.nth(0).innerText
+  }
+
+  get present() {
+    return this.values.nth(1).innerText
+  }
+
+  get collaborationAndOpinion() {
+    return this.values.nth(2).innerText
+  }
 }
 
 export class EvaluationSection extends SimpleTextAreaSection {
   descriptionInput = new TextInput(this.textareas.nth(0))
 
-  description = this.values.nth(0).innerText
+  get description() {
+    return this.values.nth(0).innerText
+  }
 }
