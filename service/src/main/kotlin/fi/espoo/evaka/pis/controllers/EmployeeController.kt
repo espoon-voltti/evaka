@@ -16,6 +16,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
+import fi.espoo.evaka.pis.setEmployeeNickname
 import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.EmployeeId
@@ -157,7 +158,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser
     ): EmployeeNicknames {
-        Audit.EmployeesNicknameRead.log()
+        Audit.EmployeeNicknameRead.log()
         return db.connect { dbc ->
             dbc.read { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
@@ -165,6 +166,26 @@ class EmployeeController(private val accessControl: AccessControl) {
                     selectedNickname = employee.nickname,
                     possibleNicknames = possibleNicknames(employee)
                 )
+            }
+        }
+    }
+
+    data class EmployeeNicknameUpdateRequest(
+        val nickname: String
+    )
+    @PostMapping("/nickname")
+    fun setEmployeeNickname(
+        db: Database,
+        user: AuthenticatedUser,
+        @RequestBody body: EmployeeNicknameUpdateRequest
+    ) {
+        Audit.EmployeNicknameUpdate.log()
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                if (possibleNicknames(employee).contains(body.nickname)) {
+                    tx.setEmployeeNickname(EmployeeId(user.rawId()), body.nickname)
+                } else throw NotFound("Given nickname not found")
             }
         }
     }
