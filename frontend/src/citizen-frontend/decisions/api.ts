@@ -4,19 +4,17 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { ApplicationDecisions } from 'lib-common/generated/api-types/application'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  ApplicationDecisions,
+  DecisionWithValidStartDatePeriod
+} from 'lib-common/generated/api-types/application'
 import { AssistanceNeedDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
-
-import {
-  Decision,
-  deserializeApplicationDecisions,
-  deserializeDecision
-} from './types'
 
 export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {
   return client
@@ -26,12 +24,43 @@ export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
+function deserializeApplicationDecisions(
+  json: JsonOf<ApplicationDecisions>
+): ApplicationDecisions {
+  return {
+    ...json,
+    decisions: json.decisions.map((decision) => ({
+      ...decision,
+      sentDate: LocalDate.parseIso(decision.sentDate),
+      resolved: LocalDate.parseNullableIso(decision.resolved)
+    }))
+  }
+}
+
 export async function getApplicationDecisions(
   applicationId: UUID
-): Promise<Result<Decision[]>> {
+): Promise<Result<DecisionWithValidStartDatePeriod[]>> {
   return client
-    .get<JsonOf<Decision[]>>(`/citizen/applications/${applicationId}/decisions`)
-    .then((res) => res.data.map(deserializeDecision))
+    .get<JsonOf<DecisionWithValidStartDatePeriod[]>>(
+      `/citizen/applications/${applicationId}/decisions`
+    )
+    .then((res) =>
+      res.data.map(({ decision, validRequestedStartDatePeriod }) => ({
+        decision: {
+          ...decision,
+          startDate: LocalDate.parseIso(decision.startDate),
+          endDate: LocalDate.parseIso(decision.endDate),
+          sentDate: LocalDate.parseIso(decision.sentDate),
+          requestedStartDate: LocalDate.parseNullableIso(
+            decision.requestedStartDate
+          ),
+          resolved: LocalDate.parseNullableIso(decision.resolved)
+        },
+        validRequestedStartDatePeriod: FiniteDateRange.parseJson(
+          validRequestedStartDatePeriod
+        )
+      }))
+    )
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

@@ -457,7 +457,7 @@ class ApplicationStateService(
             throw BadRequest("Primary decision must be accepted first")
         }
 
-        if (!decision.validRequestedStartDatePeriod().includes(requestedStartDate)) {
+        if (!decision.validRequestedStartDatePeriod(featureConfig).includes(requestedStartDate)) {
             throw BadRequest(
                 "Invalid start date $requestedStartDate for ${decision.type} [${decision.startDate}, ${decision.endDate}]",
                 "decision.validation.invalid-requested-start-date"

@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
@@ -30,18 +31,18 @@ data class Decision(
     val requestedStartDate: LocalDate?,
     val resolved: LocalDate?
 ) {
-    fun validRequestedStartDatePeriod() = FiniteDateRange(
+    fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) = FiniteDateRange(
         startDate,
         minOf(
             endDate,
             startDate.plusDays(
                 when (this.type) {
-                    DecisionType.CLUB -> 14
-                    DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME -> 14
+                    DecisionType.CLUB -> featureConfig.requestedStartUpperLimit
+                    DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME -> featureConfig.requestedStartUpperLimit
                     DecisionType.PRESCHOOL -> 0
-                    DecisionType.PRESCHOOL_DAYCARE -> 14
+                    DecisionType.PRESCHOOL_DAYCARE -> featureConfig.requestedStartUpperLimit
                     DecisionType.PREPARATORY_EDUCATION -> 0
-                }
+                }.toLong()
             )
         )
     )

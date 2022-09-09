@@ -20,7 +20,6 @@ import {
   validate
 } from 'lib-common/form-validation'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { DecisionType } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -45,15 +44,6 @@ export const minPreferredStartDate = (
 
 export const maxPreferredStartDate = (): LocalDate => {
   return LocalDate.todayInSystemTz().addYears(1)
-}
-
-export const maxDecisionStartDate = (
-  startDate: LocalDate,
-  type: DecisionType
-): LocalDate => {
-  return ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(type)
-    ? startDate
-    : startDate.addDays(14)
 }
 
 export const isValidPreferredStartDate = (

@@ -86,4 +86,7 @@ data class FeatureConfig(
 
     /** Controls whether permission to share is required for curriculum documents */
     val curriculumDocumentPermissionToShareRequired: Boolean,
+
+    /** The number of days citizens can move daycare start forward */
+    val requestedStartUpperLimit: Int
 )
