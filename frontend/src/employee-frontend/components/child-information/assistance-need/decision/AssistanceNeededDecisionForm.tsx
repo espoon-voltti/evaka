@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, SetStateAction } from 'react'
+import React, { SetStateAction, useCallback, useMemo } from 'react'
 
 import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Employee } from 'employee-frontend/types/employee'
+import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import { Result } from 'lib-common/api'
 import {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
@@ -106,6 +108,7 @@ interface EmployeeSelectProps {
   'data-qa'?: string
   info?: InputInfo
   titleInfo?: InputInfo
+  disabled?: boolean
 }
 
 const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
@@ -120,7 +123,8 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
   onChange,
   'data-qa': dataQa,
   info,
-  titleInfo
+  titleInfo,
+  disabled
 }: EmployeeSelectProps) {
   return (
     <FixedSpaceRow>
@@ -144,6 +148,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
           data-qa={dataQa ? `${dataQa}-select` : undefined}
           info={info}
           clearable
+          disabled={disabled}
         />
       </FixedSpaceColumn>
       <FixedSpaceColumn spacing="zero">
@@ -195,6 +200,8 @@ export interface FieldInfos {
 }
 
 type AssistanceNeedDecisionFormProps = {
+  status: AutosaveStatus
+  decisionMakerOptions: Result<Employee[]>
   formState: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
     SetStateAction<AssistanceNeedDecisionForm | undefined>
@@ -204,6 +211,8 @@ type AssistanceNeedDecisionFormProps = {
 }
 
 export default React.memo(function AssistanceNeedDecisionForm({
+  status,
+  decisionMakerOptions,
   formState,
   setFormState,
   fieldInfos,
@@ -604,58 +613,64 @@ export default React.memo(function AssistanceNeedDecisionForm({
       <P noMargin>{t.jurisdictionText}</P>
 
       <H2>{t.personsResponsible}</H2>
-      {renderResult(employees, (employees) => (
-        <FixedSpaceColumn>
-          <EmployeeSelectWithTitle
-            employeeLabel={t.preparator}
-            employees={employees}
-            selectedEmployee={
-              employees.find(
-                (employee) => employee.id === formState.preparedBy1?.employeeId
-              ) || null
-            }
-            titleLabel={t.title}
-            selectedTitle={formState.preparedBy1?.title ?? ''}
-            onChange={(employee, title, phoneNumber) =>
-              setFieldVal({
-                preparedBy1: {
-                  employeeId: employee?.id ?? null,
-                  title,
-                  phoneNumber
-                }
-              })
-            }
-            phoneLabel={t.tel}
-            selectedPhone={formState.preparedBy1?.phoneNumber}
-            hasPhoneField
-            info={fieldInfos.preparator}
-            titleInfo={fieldInfos.preparator1Title}
-            data-qa="prepared-by-1"
-          />
-          <EmployeeSelectWithTitle
-            employeeLabel={t.preparator}
-            employees={employees}
-            selectedEmployee={
-              employees.find(
-                (employee) => employee.id === formState.preparedBy2?.employeeId
-              ) || null
-            }
-            titleLabel={t.title}
-            selectedTitle={formState.preparedBy2?.title ?? ''}
-            onChange={(employee, title, phoneNumber) =>
-              setFieldVal({
-                preparedBy2: {
-                  employeeId: employee?.id ?? null,
-                  title,
-                  phoneNumber
-                }
-              })
-            }
-            phoneLabel={t.tel}
-            selectedPhone={formState.preparedBy2?.phoneNumber}
-            hasPhoneField
-            titleInfo={fieldInfos.preparator2Title}
-          />
+      <FixedSpaceColumn>
+        {renderResult(employees, (employees) => (
+          <>
+            <EmployeeSelectWithTitle
+              employeeLabel={t.preparator}
+              employees={employees}
+              selectedEmployee={
+                employees.find(
+                  (employee) =>
+                    employee.id === formState.preparedBy1?.employeeId
+                ) || null
+              }
+              titleLabel={t.title}
+              selectedTitle={formState.preparedBy1?.title ?? ''}
+              onChange={(employee, title, phoneNumber) =>
+                setFieldVal({
+                  preparedBy1: {
+                    employeeId: employee?.id ?? null,
+                    title,
+                    phoneNumber
+                  }
+                })
+              }
+              phoneLabel={t.tel}
+              selectedPhone={formState.preparedBy1?.phoneNumber}
+              hasPhoneField
+              info={fieldInfos.preparator}
+              titleInfo={fieldInfos.preparator1Title}
+              data-qa="prepared-by-1"
+            />
+            <EmployeeSelectWithTitle
+              employeeLabel={t.preparator}
+              employees={employees}
+              selectedEmployee={
+                employees.find(
+                  (employee) =>
+                    employee.id === formState.preparedBy2?.employeeId
+                ) || null
+              }
+              titleLabel={t.title}
+              selectedTitle={formState.preparedBy2?.title ?? ''}
+              onChange={(employee, title, phoneNumber) =>
+                setFieldVal({
+                  preparedBy2: {
+                    employeeId: employee?.id ?? null,
+                    title,
+                    phoneNumber
+                  }
+                })
+              }
+              phoneLabel={t.tel}
+              selectedPhone={formState.preparedBy2?.phoneNumber}
+              hasPhoneField
+              titleInfo={fieldInfos.preparator2Title}
+            />
+          </>
+        ))}
+        {renderResult(decisionMakerOptions, (employees) => (
           <EmployeeSelectWithTitle
             employeeLabel={t.decisionMaker}
             employees={employees}
@@ -678,9 +693,10 @@ export default React.memo(function AssistanceNeedDecisionForm({
             data-qa="decision-maker"
             info={fieldInfos.decisionMaker}
             titleInfo={fieldInfos.decisionMakerTitle}
+            disabled={status.state !== 'clean'}
           />
-        </FixedSpaceColumn>
-      ))}
+        ))}
+      </FixedSpaceColumn>
 
       <P>{t.disclaimer}</P>
     </FixedSpaceColumn>

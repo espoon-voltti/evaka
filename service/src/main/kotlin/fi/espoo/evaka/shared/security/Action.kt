@@ -355,6 +355,10 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class AssistanceNeedDecision(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>) : ScopedAction<AssistanceNeedDecisionId> {
+        READ_DECISION_MAKER_OPTIONS(
+            HasGlobalRole(SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()
+        ),
         UPDATE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()),
         DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()),
         READ(

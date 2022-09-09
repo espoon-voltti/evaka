@@ -4,10 +4,12 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,6 +34,8 @@ data class AssistanceNeedDecisionRequest(
 
 @RestController
 class AssistanceNeedDecisionController(
+    private val assistanceNeedDecisionService: AssistanceNeedDecisionService,
+    private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
@@ -317,6 +321,26 @@ class AssistanceNeedDecisionController(
                         )
                     ).toForm(),
                     true
+                )
+            }
+        }
+    }
+
+    @GetMapping("/assistance-need-decision/{id}/decision-maker-option")
+    fun getAssistanceDecisionMakerOptions(
+        @PathVariable id: AssistanceNeedDecisionId,
+        clock: EvakaClock,
+        user: AuthenticatedUser,
+        db: Database
+    ): List<Employee> {
+        Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(targetId = id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS, id)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                assistanceNeedDecisionService.getDecisionMakerOptions(
+                    tx,
+                    id,
+                    featureConfig.assistanceDecisionMakerRoles
                 )
             }
         }

@@ -12,7 +12,9 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
-import { Failure } from 'lib-common/api'
+import { Employee } from 'employee-frontend/types/employee'
+import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
+import { Failure, Result } from 'lib-common/api'
 import {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionLanguage
@@ -90,7 +92,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const { i18n } = useTranslation()
 
-  const { formState, setFormState, status, forceSave } =
+  const { decisionMakerOptions, formState, setFormState, status, forceSave } =
     useAssistanceNeedDecision(id)
 
   const navigate = useNavigate()
@@ -264,6 +266,8 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
               )}
               <I18nContext.Provider value={formLanguageState}>
                 <DecisionContents
+                  status={status}
+                  decisionMakerOptions={decisionMakerOptions}
                   child={child}
                   formState={formState}
                   setFormState={setFormState}
@@ -381,12 +385,16 @@ const FlexGap = styled.div`
 `
 
 const DecisionContents = React.memo(function DecisionContents({
+  status,
+  decisionMakerOptions,
   child,
   formState,
   setFormState,
   fieldInfos,
   onStartDateMissing
 }: {
+  status: AutosaveStatus
+  decisionMakerOptions: Result<Employee[]>
   child: PersonJSON
   formState?: AssistanceNeedDecisionForm
   setFormState: React.Dispatch<
@@ -420,6 +428,8 @@ const DecisionContents = React.memo(function DecisionContents({
       </FixedSpaceRow>
       {formState && (
         <AssistanceNeededDecisionForm
+          status={status}
+          decisionMakerOptions={decisionMakerOptions}
           formState={formState}
           setFormState={setFormState}
           fieldInfos={fieldInfos}

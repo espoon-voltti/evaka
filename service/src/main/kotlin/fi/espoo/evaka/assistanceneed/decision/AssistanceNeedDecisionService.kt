@@ -11,6 +11,9 @@ import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pis.Employee
+import fi.espoo.evaka.pis.getEmployees
+import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.getChildGuardians
@@ -21,6 +24,7 @@ import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -204,6 +208,19 @@ class AssistanceNeedDecisionService(
                     setVariable("hasAssistanceServices", decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))
                 }
             )
+        )
+    }
+
+    fun getDecisionMakerOptions(tx: Database.Read, id: AssistanceNeedDecisionId, roles: Set<UserRole>): List<Employee> {
+        val assistanceDecision = tx.getAssistanceNeedDecisionById(id)
+        // original implementation
+        if (roles.isEmpty()) {
+            return tx.getEmployees().sortedBy { it.email }
+        }
+        return tx.getEmployeesByRoles(
+            globalRoles = roles.filter { it.isGlobalRole() },
+            unitScopedRoles = roles.filter { it.isUnitScopedRole() },
+            unitId = assistanceDecision.selectedUnit?.id
         )
     }
 }
