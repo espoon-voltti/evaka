@@ -400,6 +400,11 @@ export class MultiSelect extends Element {
     await this.#input.click()
   }
 
+  async selectFirst() {
+    await this.click()
+    await this.findAll(`[data-qa="option"]`).first().click()
+  }
+
   async fillAndSelectFirst(text: string) {
     await this.#input.fill(text)
     await this.findAll(`[data-qa="option"]`).first().click()
