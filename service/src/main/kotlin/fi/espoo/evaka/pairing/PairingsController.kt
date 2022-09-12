@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -46,15 +47,15 @@ class PairingsController(
     fun postPairing(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody body: PostPairingReq
     ): Pairing {
         Audit.PairingInit.log(targetId = body.id)
-        @Suppress("DEPRECATION")
         when (body) {
             is PostPairingReq.Unit ->
-                accessControl.requirePermissionFor(user, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
+                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
             is PostPairingReq.Employee -> {
-                accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
+                accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
                 if (user.id != body.employeeId) throw Forbidden()
             }
         }
@@ -62,8 +63,8 @@ class PairingsController(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 when (body) {
-                    is PostPairingReq.Unit -> tx.initPairing(unitId = body.unitId)
-                    is PostPairingReq.Employee -> tx.initPairing(employeeId = body.employeeId)
+                    is PostPairingReq.Unit -> tx.initPairing(clock, unitId = body.unitId)
+                    is PostPairingReq.Employee -> tx.initPairing(clock, employeeId = body.employeeId)
                 }.also {
                     asyncJobRunner.plan(
                         tx = tx,
@@ -89,10 +90,11 @@ class PairingsController(
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
         db: Database,
+        clock: EvakaClock,
         @RequestBody body: PostPairingChallengeReq
     ): Pairing {
         Audit.PairingChallenge.log(targetId = body.challengeKey)
-        return db.connect { dbc -> dbc.transaction { it.challengePairing(body.challengeKey) } }
+        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }
     }
 
     /**
@@ -110,6 +112,7 @@ class PairingsController(
     fun postPairingResponse(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
@@ -118,7 +121,7 @@ class PairingsController(
             val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
             try {
                 when {
-                    unitId != null -> accessControl.requirePermissionFor(user, Action.Pairing.POST_RESPONSE, id)
+                    unitId != null -> accessControl.requirePermissionFor(user, clock, Action.Pairing.POST_RESPONSE, id)
                     employeeId != null ->
                         if (user.id != employeeId) throw Forbidden()
                     else -> error("Pairing unitId and employeeId were null")

@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,20 +25,21 @@ class PartnersInDifferentAddressReportController(
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<PartnersInDifferentAddressReportRow> {
         Audit.PartnersInDifferentAddressReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user))
+                it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
             }
         }
     }
 }
 
-private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization): List<PartnersInDifferentAddressReportRow> {
+private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization, clock: EvakaClock): List<PartnersInDifferentAddressReportRow> {
     // language=sql
     val sql =
         """
@@ -63,7 +65,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE
             (:units::uuid[] IS NULL OR u.id = ANY(:units)) AND
-            daterange(fp1.start_date, fp1.end_date, '[]') @> current_date AND
+            daterange(fp1.start_date, fp1.end_date, '[]') @> :today AND
             fp1.conflict = false AND 
             p1.residence_code <> p2.residence_code AND
             p1.residence_code IS NOT NULL AND
@@ -79,6 +81,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """.trimIndent()
     return createQuery(sql)
+        .bind("today", clock.today())
         .bind("units", authorizedUnits.ids)
         .mapTo<PartnersInDifferentAddressReportRow>()
         .toList()

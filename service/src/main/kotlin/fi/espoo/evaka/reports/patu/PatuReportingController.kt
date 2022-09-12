@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -31,11 +32,12 @@ class PatuReportingController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     fun sendPatuReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         Audit.PatuReportSend.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEND_PATU_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEND_PATU_REPORT)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val range = DateRange(from, to)

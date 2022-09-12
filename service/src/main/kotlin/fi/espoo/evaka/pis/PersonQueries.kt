@@ -383,13 +383,14 @@ private val toPersonDTO: (RowView) -> PersonDTO = { row ->
     )
 }
 
-fun Database.Transaction.markPersonLastLogin(id: PersonId) = createUpdate(
+fun Database.Transaction.markPersonLastLogin(clock: EvakaClock, id: PersonId) = createUpdate(
     """
 UPDATE person 
-SET last_login = now()
+SET last_login = :now
 WHERE id = :id
     """.trimIndent()
 ).bind("id", id)
+    .bind("now", clock.now())
     .execute()
 
 data class PersonReference(

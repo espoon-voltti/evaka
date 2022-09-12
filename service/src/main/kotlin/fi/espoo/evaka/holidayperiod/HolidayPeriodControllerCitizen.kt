@@ -40,9 +40,10 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
     ): List<HolidayPeriod> {
         Audit.HolidayPeriodsList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
     }
 
@@ -50,13 +51,13 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun getActiveQuestionnaires(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
     ): List<ActiveQuestionnaire> {
         Audit.HolidayPeriodsList.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(evakaClock.today()) ?: return@read listOf()
+                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
 
                 val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
                 val eligibleChildren = if (continuousPlacementPeriod != null) {
@@ -86,18 +87,18 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     fun answerFixedPeriodQuestionnaire(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodsBody
     ) {
         val childIds = body.fixedPeriods.keys
         Audit.HolidayAbsenceCreate.log(id, childIds.toSet().joinToString())
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE, childIds)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE, childIds)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val questionnaire = tx.getFixedPeriodQuestionnaire(id)
-                    ?.also { if (!it.active.includes(evakaClock.today())) throw BadRequest("Questionnaire is not open") }
+                    ?.also { if (!it.active.includes(clock.today())) throw BadRequest("Questionnaire is not open") }
                     ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren = tx.getChildrenWithContinuousPlacement(

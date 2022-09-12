@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -33,12 +34,13 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun getUnitCalendarEvents(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): List<CalendarEvent> {
         Audit.UnitCalendarEventsRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_CALENDAR_EVENTS, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CALENDAR_EVENTS, unitId)
 
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -59,16 +61,17 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun createCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestBody body: CalendarEventForm
     ) {
         Audit.CalendarEventCreate.log(targetId = body.unitId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                accessControl.requirePermissionFor(user, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
+                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
 
                 if (body.tree != null) {
-                    accessControl.requirePermissionFor(user, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
+                    accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
 
                     val unitGroupIds = tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
 
@@ -97,10 +100,11 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun deleteCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: CalendarEventId
     ) {
         Audit.CalendarEventDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.CalendarEvent.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx -> tx.deleteCalendarEvent(id) }
         }
@@ -110,11 +114,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun modifyCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: CalendarEventId,
         @RequestBody body: CalendarEventUpdateForm
     ) {
         Audit.CalendarEventUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.CalendarEvent.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx -> tx.updateCalendarEvent(id, body) }
         }
@@ -124,11 +129,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
     fun getCitizenCalendarEvents(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): List<CitizenCalendarEvent> {
         Audit.UnitCalendarEventsRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_CALENDAR_EVENTS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CALENDAR_EVENTS, user.id)
 
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")

@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeedDecision(

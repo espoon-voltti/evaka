@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -32,10 +33,11 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun getMobileDevices(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_MOBILE_DEVICES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_DEVICES, unitId)
         return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }
     }
 
@@ -43,9 +45,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun getMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock
     ): List<MobileDevice> {
         Audit.MobileDevicesList.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
         return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
     }
 
@@ -67,11 +70,12 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun putMobileDeviceName(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
     ) {
         Audit.MobileDevicesRename.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.MobileDevice.UPDATE_NAME, id)
+        accessControl.requirePermissionFor(user, clock, Action.MobileDevice.UPDATE_NAME, id)
         db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
     }
 
@@ -79,10 +83,11 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun deleteMobileDevice(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: MobileDeviceId
     ) {
         Audit.MobileDevicesDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.MobileDevice.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.MobileDevice.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteDevice(id) } }
     }
 
@@ -90,13 +95,14 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun pinLogin(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {
         Audit.PinLogin.log(targetId = params.employeeId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
-                    tx.markEmployeeLastLogin(params.employeeId)
+                    tx.markEmployeeLastLogin(clock, params.employeeId)
                     tx.resetEmployeePinFailureCount(params.employeeId)
                     tx.getEmployeeUser(params.employeeId)
                         ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }

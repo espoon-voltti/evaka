@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -212,7 +213,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
@@ -243,7 +244,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence)
 
         val result = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
@@ -264,7 +265,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
@@ -282,7 +283,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val result = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
@@ -299,7 +300,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence)
 
         var result = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
@@ -313,7 +314,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
 
         result = db.transaction { tx ->
-            tx.upsertAbsences(listOf(updatedAbsence), EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), listOf(updatedAbsence), EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.children[0].absences.getValue(absenceDate)
@@ -333,7 +334,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val absences = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId, absenceDate.year, absenceDate.monthValue)
         }
         assertEquals(initialAbsenceList.size, absences.size)
@@ -354,7 +355,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val absences = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId2, absenceDate.year, absenceDate.monthValue)
         }
         assertEquals(0, absences.size)
@@ -370,7 +371,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
         val absences = db.transaction { tx ->
-            tx.upsertAbsences(initialAbsenceList, EvakaUserId(testUserId.raw))
+            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
             absenceService.getAbsencesByChild(tx, childId, 2019, 9)
         }
         assertEquals(1, absences.size)
@@ -662,7 +663,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 AbsenceType.OTHER_ABSENCE,
                 placementStart.plusDays(1)
             )
-            it.upsertAbsences(listOf(absence), EvakaUserId(testUserId.raw))
+            it.upsertAbsences(RealEvakaClock(), listOf(absence), EvakaUserId(testUserId.raw))
         }
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -34,12 +35,13 @@ class IncomeStatementController(
     fun getIncomeStatements(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfPerson.log(personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.connect { dbc ->
             dbc.read {
                 it.readIncomeStatementsForPerson(
@@ -56,12 +58,13 @@ class IncomeStatementController(
     fun getChildIncomeStatements(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
         Audit.IncomeStatementsOfChild.log(user.id, childId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, PersonId(childId.raw))
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, PersonId(childId.raw))
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -74,11 +77,12 @@ class IncomeStatementController(
     fun getIncomeStatement(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         Audit.IncomeStatementReadOfPerson.log(incomeStatementId, personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.connect { dbc ->
             dbc.read {
                 it.readIncomeStatementForPerson(
@@ -96,11 +100,12 @@ class IncomeStatementController(
     fun setHandled(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
         Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
+        accessControl.requirePermissionFor(user, clock, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateIncomeStatementHandled(
@@ -116,10 +121,11 @@ class IncomeStatementController(
     fun getIncomeStatementsAwaitingHandler(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
         Audit.IncomeStatementsAwaitingHandler.log()
-        accessControl.requirePermissionFor(user, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
+        accessControl.requirePermissionFor(user, clock, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(
@@ -139,10 +145,11 @@ class IncomeStatementController(
     fun getIncomeStatementChildren(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable guardianId: PersonId
     ): List<ChildBasicInfo> {
         Audit.IncomeStatementsOfChild.log()
-        accessControl.requirePermissionFor(user, Action.Person.READ_INCOME_STATEMENTS, guardianId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, guardianId)
         return db.connect { dbc ->
             dbc.read {
                 it.getIncomeStatementChildrenByGuardian(guardianId)

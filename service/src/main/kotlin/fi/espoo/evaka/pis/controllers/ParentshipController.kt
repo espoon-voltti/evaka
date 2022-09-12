@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -35,15 +36,17 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun createParentship(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: ParentshipRequest
     ) {
         Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
-        accessControl.requirePermissionFor(user, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
 
         db.connect { dbc ->
             dbc.transaction {
                 parentshipService.createParentship(
                     it,
+                    clock,
                     body.childId,
                     body.headOfChildId,
                     body.startDate,
@@ -57,6 +60,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun getParentships(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
     ): List<ParentshipWithPermittedActions> {
@@ -69,7 +73,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         val personId = headOfChildId ?: childId
             ?: error("One of parameters headOfChildId and childId should be validated not to be null")
 
-        accessControl.requirePermissionFor(user, Action.Person.READ_PARENTSHIPS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARENTSHIPS, personId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -78,7 +82,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                     childId = childId,
                     includeConflicts = true
                 )
-                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, parentships.map { it.id })
+                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, clock, parentships.map { it.id })
                 parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
@@ -88,10 +92,11 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun getParentship(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId
     ): Parentship {
         Audit.ParentShipsRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Parentship.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Parentship.READ, id)
 
         return db.connect { dbc -> dbc.read { it.getParentship(id) } }
             ?: throw NotFound()
@@ -101,15 +106,16 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun updateParentship(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
     ) {
         Audit.ParentShipsUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Parentship.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.Parentship.UPDATE, id)
 
         return db.connect { dbc ->
             dbc.transaction {
-                parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+                parentshipService.updateParentshipDuration(it, clock, id, body.startDate, body.endDate)
             }
         }
     }
@@ -118,18 +124,20 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     fun retryPartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") parentshipId: ParentshipId
     ) {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
-        accessControl.requirePermissionFor(user, Action.Parentship.RETRY, parentshipId)
+        accessControl.requirePermissionFor(user, clock, Action.Parentship.RETRY, parentshipId)
 
-        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, parentshipId) } }
+        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) } }
     }
 
     @DeleteMapping("/{id}")
     fun deleteParentship(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId
     ) {
         Audit.ParentShipsDelete.log(targetId = id)
@@ -138,12 +146,12 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
             val parentship = dbc.transaction { it.getParentship(id) }
 
             if (parentship?.conflict == false) {
-                accessControl.requirePermissionFor(user, Action.Parentship.DELETE, id)
+                accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE, id)
             } else {
-                accessControl.requirePermissionFor(user, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
+                accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
             }
 
-            dbc.transaction { parentshipService.deleteParentship(it, id) }
+            dbc.transaction { parentshipService.deleteParentship(it, clock, id) }
         }
     }
 

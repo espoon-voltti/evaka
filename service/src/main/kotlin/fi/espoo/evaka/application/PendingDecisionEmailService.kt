@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -44,7 +43,7 @@ class PendingDecisionEmailService(
 
     fun doSendPendingDecisionsEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
-        sendPendingDecisionEmail(db, msg)
+        sendPendingDecisionEmail(db, clock, msg)
     }
 
     data class GuardianDecisions(
@@ -52,7 +51,7 @@ class PendingDecisionEmailService(
         val decisionIds: List<DecisionId>
     )
 
-    fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
+    fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
             tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND claimed_by IS NULL")
                 .execute()
@@ -64,14 +63,15 @@ SELECT id, application_id
 FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
-AND (d.sent_date < current_date - INTERVAL '1 week' AND d.sent_date > current_date - INTERVAL '2 month')
+AND (d.sent_date < :today - INTERVAL '1 week' AND d.sent_date > :today - INTERVAL '2 month')
 AND d.pending_decision_emails_sent_count < 2
-AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < current_date - INTERVAL '1 week'))
+AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < :today - INTERVAL '1 week'))
 SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
 FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
 GROUP BY application.guardian_id
 """
             )
+                .bind("today", clock.today())
                 .mapTo<GuardianDecisions>()
                 .list()
 
@@ -97,7 +97,7 @@ GROUP BY application.guardian_id
                                         decisionIds = pendingDecision.decisionIds
                                     )
                                 ),
-                                runAt = HelsinkiDateTime.now(),
+                                runAt = clock.now(),
                                 retryCount = 3,
                                 retryInterval = Duration.ofHours(1)
                             )
@@ -114,7 +114,7 @@ GROUP BY application.guardian_id
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(db: Database.Connection, pendingDecision: AsyncJob.SendPendingDecisionEmail) {
+    fun sendPendingDecisionEmail(db: Database.Connection, clock: EvakaClock, pendingDecision: AsyncJob.SendPendingDecisionEmail) {
         db.transaction { tx ->
             logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
             val lang = getLanguage(pendingDecision.language)
@@ -133,10 +133,11 @@ GROUP BY application.guardian_id
                 tx.createUpdate(
                     """
 UPDATE decision
-SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
+SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = :now
 WHERE id = :id
                     """.trimIndent()
                 )
+                    .bind("now", clock.now())
                     .bind("id", decisionId)
                     .execute()
             }

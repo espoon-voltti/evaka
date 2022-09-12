@@ -24,6 +24,9 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
@@ -37,6 +40,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -225,7 +229,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             assertEquals(3, data.size)
         }
 
-        scheduledJobs.removeOldDraftApplications(db)
+        scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.transaction { tx ->
             val data =
@@ -293,9 +297,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         uploadAttachment(applicationId, endUser, AttachmentType.URGENCY)
         uploadAttachment(applicationId, endUser, AttachmentType.EXTENDED_CARE)
         val today = LocalDate.of(2021, 1, 1)
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->
-            stateService.sendApplication(tx, serviceWorker, applicationId, today)
-            stateService.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            stateService.sendApplication(tx, serviceWorker, clock, applicationId)
+            stateService.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             stateService.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -305,7 +310,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31))
                 )
             )
-            stateService.sendPlacementProposal(tx, serviceWorker, applicationId)
+            stateService.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         return applicationId
     }

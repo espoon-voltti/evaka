@@ -37,12 +37,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getAbsencesByGroupAndMonth(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): AbsenceGroup {
         Audit.AbsenceRead.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.READ_ABSENCES, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Group.READ_ABSENCES, groupId)
         return db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }
     }
 
@@ -50,26 +51,28 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun upsertAbsences(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.CREATE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
+        accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
 
-        db.connect { dbc -> dbc.transaction { it.upsertAbsences(absences, user.evakaUserId) } }
+        db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock, absences, user.evakaUserId) } }
     }
 
     @PostMapping("/{groupId}/delete")
     fun deleteAbsences(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
     ) {
         Audit.AbsenceUpdate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, Action.Group.DELETE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
+        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_ABSENCES, groupId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
     }
@@ -80,11 +83,12 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun deleteAbsence(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: DeleteChildAbsenceBody
     ) {
         Audit.AbsenceDelete.log(targetId = childId, objectId = body.date)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_ABSENCE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, childId)
         db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
     }
 
@@ -92,12 +96,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getAbsencesByChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ABSENCES, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ABSENCES, childId)
         return db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }
     }
 
@@ -105,11 +110,11 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     fun getFutureAbsencesByChild(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, evakaClock, childId) } }
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_FUTURE_ABSENCES, childId)
+        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, clock, childId) } }
     }
 }

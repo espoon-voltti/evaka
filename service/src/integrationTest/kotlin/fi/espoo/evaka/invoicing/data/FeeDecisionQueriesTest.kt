@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.config.defaultJsonMapper
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -32,7 +34,6 @@ import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -111,7 +112,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
             tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), false, false)
+            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = HelsinkiDateTime.now(), false, false)
 
             val result = tx.getFeeDecision(testDecisions[0].id)!!
             assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
@@ -164,7 +165,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
 
             tx.upsertFeeDecisions(listOf(draft))
-            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now(), true, forceUseDaycareHandler)
+            tx.approveFeeDecisionDraftsForSending(listOf(draft.id), testDecisionMaker_1.id, approvedAt = HelsinkiDateTime.now(), true, forceUseDaycareHandler)
 
             tx.getFeeDecision(draft.id)!!
         }
@@ -182,7 +183,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.upsertFeeDecisions(decisions)
 
-            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now(), false, false)
+            tx.approveFeeDecisionDraftsForSending(decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = HelsinkiDateTime.now(), false, false)
 
             val result = tx.getFeeDecisionsByIds(decisions.map { it.id }).sortedBy { it.decisionNumber }
             with(result[0]) {
@@ -230,6 +231,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {
         val result = db.read { tx ->
             tx.searchFeeDecisions(
+                clock = RealEvakaClock(),
                 searchTerms = searchTerms,
                 page = 0,
                 pageSize = 100,

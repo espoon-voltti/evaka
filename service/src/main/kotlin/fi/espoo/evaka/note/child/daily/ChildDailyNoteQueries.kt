@@ -9,8 +9,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 
 fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
@@ -75,7 +75,7 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateChildDailyNote(id: ChildDailyNoteId, note: ChildDailyNoteBody): ChildDailyNote {
+fun Database.Transaction.updateChildDailyNote(clock: EvakaClock, id: ChildDailyNoteId, note: ChildDailyNoteBody): ChildDailyNote {
     return createUpdate(
         """
 UPDATE child_daily_note SET
@@ -85,12 +85,13 @@ UPDATE child_daily_note SET
     sleeping_minutes = :sleepingMinutes,
     reminders = :reminders::child_daily_note_reminder[],
     reminder_note = :reminderNote,
-    modified_at = now()
+    modified_at = :now
 WHERE id = :id
 RETURNING *
         """.trimIndent()
     )
         .bind("id", id)
+        .bind("now", clock.now())
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDailyNote>()

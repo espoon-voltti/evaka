@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.stereotype.Component
@@ -41,7 +42,7 @@ class InvoiceService(
     private val productProvider: InvoiceProductProvider,
     private val featureConfig: FeatureConfig,
 ) {
-    fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
+    fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
         val seriesStart = featureConfig.invoiceNumberSeriesStart
 
         val invoices = tx.getInvoicesByIds(invoiceIds)
@@ -62,7 +63,7 @@ class InvoiceService(
         }
 
         val sendResult = integrationClient.send(updatedInvoices)
-        tx.setDraftsSent(sendResult.succeeded, user.evakaUserId)
+        tx.setDraftsSent(clock, sendResult.succeeded, user.evakaUserId)
         tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
         tx.saveCostCenterFields(sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id })
         tx.markInvoicedCorrectionsAsComplete()

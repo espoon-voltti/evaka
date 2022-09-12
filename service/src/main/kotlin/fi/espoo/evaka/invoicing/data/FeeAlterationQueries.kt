@@ -9,9 +9,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
-fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
+fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: FeeAlteration) {
     val sql =
         """
             INSERT INTO fee_alteration (
@@ -35,7 +36,7 @@ fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
                 :valid_to,
                 :notes,
                 :updated_by,
-                now()
+                :now
             ) ON CONFLICT (id) DO UPDATE SET
                 type = :type::fee_alteration_type,
                 amount = :amount,
@@ -44,10 +45,11 @@ fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
                 valid_to = :valid_to,
                 notes = :notes,
                 updated_by = :updated_by,
-                updated_at = now()
+                updated_at = :now
         """
 
     val update = createUpdate(sql)
+        .bind("now", clock.now())
         .bind("id", feeAlteration.id)
         .bind("person_id", feeAlteration.personId)
         .bind("type", feeAlteration.type.toString())

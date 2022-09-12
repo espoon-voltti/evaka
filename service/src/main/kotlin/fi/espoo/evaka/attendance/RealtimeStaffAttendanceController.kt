@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -42,12 +43,13 @@ class RealtimeStaffAttendanceController(
     fun getAttendances(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
         Audit.StaffAttendanceRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {
@@ -129,11 +131,12 @@ class RealtimeStaffAttendanceController(
     fun upsertStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         if (!body.isArrivedBeforeDeparted()) {
             throw BadRequest("Arrival time must be before departure time for all entries")
@@ -189,13 +192,14 @@ class RealtimeStaffAttendanceController(
     fun upsertDailyStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -226,11 +230,12 @@ class RealtimeStaffAttendanceController(
     fun deleteStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceId
     ) {
         Audit.StaffAttendanceDelete.log(targetId = attendanceId)
-        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -243,11 +248,12 @@ class RealtimeStaffAttendanceController(
     fun deleteExternalStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceExternalId
     ) {
         Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
-        accessControl.requirePermissionFor(user, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

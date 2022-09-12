@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -30,10 +31,11 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
         Audit.AttendanceReservationReportRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

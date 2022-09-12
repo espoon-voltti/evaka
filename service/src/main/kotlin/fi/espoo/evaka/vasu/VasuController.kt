@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class VasuController(
@@ -49,11 +49,12 @@ class VasuController(
     fun createDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentId {
         Audit.VasuDocumentCreate.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_VASU_DOCUMENT, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -68,7 +69,7 @@ class VasuController(
                     throw BadRequest("Template is not currently valid")
                 }
 
-                tx.insertVasuDocument(childId, template)
+                tx.insertVasuDocument(clock, childId, template)
             }
         }
     }
@@ -77,10 +78,11 @@ class VasuController(
     fun getVasuSummariesByChild(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<VasuDocumentSummary> {
         Audit.ChildVasuDocumentsRead.log(childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_VASU_DOCUMENT, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_VASU_DOCUMENT, childId)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuDocumentSummaries(childId) } }
     }
@@ -93,10 +95,11 @@ class VasuController(
     fun getDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): VasuDocument {
         Audit.VasuDocumentRead.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuDocument.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuDocument.READ, id)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -134,11 +137,12 @@ class VasuController(
     fun putDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
     ) {
         Audit.VasuDocumentUpdate.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuDocument.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuDocument.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -175,7 +179,7 @@ class VasuController(
                                             storedEntry.edited
                                         else
                                             FollowupEntryEditDetails(
-                                                editedAt = LocalDate.now(),
+                                                editedAt = clock.today(),
                                                 editorId = EmployeeId(user.rawId()),
                                                 editorName = null
                                             ),
@@ -190,7 +194,7 @@ class VasuController(
                     }
                 )
 
-                tx.updateVasuDocumentMaster(id, transformedFollowupsVasu.content, body.childLanguage)
+                tx.updateVasuDocumentMaster(clock, id, transformedFollowupsVasu.content, body.childLanguage)
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
@@ -215,6 +219,7 @@ class VasuController(
     fun updateDocumentState(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
@@ -228,12 +233,12 @@ class VasuController(
 
         events.forEach { eventType ->
             when (eventType) {
-                PUBLISHED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_PUBLISHED, id)
-                MOVED_TO_READY -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_READY, id)
-                RETURNED_TO_READY -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_RETURNED_TO_READY, id)
-                MOVED_TO_REVIEWED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_REVIEWED, id)
-                RETURNED_TO_REVIEWED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED, id)
-                MOVED_TO_CLOSED -> accessControl.requirePermissionFor(user, Action.VasuDocument.EVENT_MOVED_TO_CLOSED, id)
+                PUBLISHED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_PUBLISHED, id)
+                MOVED_TO_READY -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_READY, id)
+                RETURNED_TO_READY -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_RETURNED_TO_READY, id)
+                MOVED_TO_REVIEWED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_REVIEWED, id)
+                RETURNED_TO_REVIEWED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED, id)
+                MOVED_TO_CLOSED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_CLOSED, id)
             }.exhaust()
         }
 
@@ -244,7 +249,7 @@ class VasuController(
                 validateStateTransition(eventType = body.eventType, currentState = currentState)
 
                 if (events.contains(PUBLISHED)) {
-                    tx.publishVasuDocument(id)
+                    tx.publishVasuDocument(clock, id)
                 }
 
                 if (events.contains(MOVED_TO_CLOSED)) {

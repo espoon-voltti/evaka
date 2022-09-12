@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlCitizen
@@ -38,10 +39,11 @@ class VtjController(
     internal fun getDetails(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
         Audit.VtjRequest.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()
@@ -53,7 +55,7 @@ class VtjController(
                 val (userDetails, ssn, children) = when (person.identity) {
                     is ExternalIdentifier.NoID ->
                         Triple(
-                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user)),
+                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
                             (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
                             emptyList()
                         )
@@ -61,7 +63,7 @@ class VtjController(
                         personService.getPersonWithChildren(tx, user, personId)
                             ?.let {
                                 Triple(
-                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user)),
+                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
                                     it.socialSecurityNumber!!,
                                     it.children.map { Child.from(it) }
                                 )

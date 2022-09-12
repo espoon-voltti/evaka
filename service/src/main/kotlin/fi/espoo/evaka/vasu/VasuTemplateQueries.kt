@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Transaction.insertVasuTemplate(
@@ -46,7 +47,7 @@ fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
         .firstOrNull()
 }
 
-fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary> {
+fun Database.Read.getVasuTemplates(clock: EvakaClock, validOnly: Boolean): List<VasuTemplateSummary> {
     return createQuery(
         """
         SELECT 
@@ -57,9 +58,12 @@ fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary
             language,
             (SELECT count(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
         FROM curriculum_template ct
-        ${if (validOnly) "WHERE valid @> NOW()::date" else ""}
+        ${if (validOnly) "WHERE valid @> :today" else ""}
     """
     )
+        .apply {
+            if (validOnly) bind("today", clock.today())
+        }
         .mapTo<VasuTemplateSummary>()
         .list()
 }

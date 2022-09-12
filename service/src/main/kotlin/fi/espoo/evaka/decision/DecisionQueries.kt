@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
@@ -258,7 +259,7 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
         .first()
 }
 
-fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, decisionId: DecisionId, requestedStartDate: LocalDate) {
+fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, clock: EvakaClock, decisionId: DecisionId, requestedStartDate: LocalDate) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
@@ -270,18 +271,19 @@ SET
   status = 'ACCEPTED',
   requested_start_date = :requestedStartDate,
   resolved_by = :userId,
-  resolved = now()
+  resolved = :now
 WHERE id = :id
 AND status = 'PENDING'
         """.trimIndent()
     )
         .bind("id", decisionId)
+        .bind("now", clock.now())
         .bind("userId", user.evakaUserId)
         .bind("requestedStartDate", requestedStartDate)
         .execute()
 }
 
-fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, decisionId: DecisionId) {
+fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, clock: EvakaClock, decisionId: DecisionId) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }
@@ -292,12 +294,13 @@ UPDATE decision
 SET
   status = 'REJECTED',
   resolved_by = :userId,
-  resolved = now()
+  resolved = :now
 WHERE id = :id
 AND status = 'PENDING'
         """.trimIndent()
     )
         .bind("id", decisionId)
+        .bind("now", clock.now())
         .bind("userId", user.evakaUserId)
         .execute()
 }

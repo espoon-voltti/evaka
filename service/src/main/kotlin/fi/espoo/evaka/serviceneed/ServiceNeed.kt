@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
@@ -233,9 +234,10 @@ fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: Placement
     }
 }
 
-fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner<AsyncJob>, childRange: ServiceNeedChildRange) {
+fun notifyServiceNeedUpdated(tx: Database.Transaction, clock: EvakaClock, asyncJobRunner: AsyncJobRunner<AsyncJob>, childRange: ServiceNeedChildRange) {
     asyncJobRunner.plan(
         tx,
-        listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange()))
+        listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange())),
+        runAt = clock.now()
     )
 }

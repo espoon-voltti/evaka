@@ -178,7 +178,6 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -391,6 +390,7 @@ class DevApi(
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
     fun rejectDecisionByCitizen(
         db: Database,
+        clock: EvakaClock,
         @PathVariable id: DecisionId,
     ) {
         db.connect { dbc ->
@@ -401,6 +401,7 @@ class DevApi(
                 applicationStateService.rejectDecision(
                     tx,
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
+                    clock,
                     application.id,
                     id,
                 )
@@ -749,7 +750,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                actionFn.invoke(tx, fakeAdmin, applicationId)
+                actionFn.invoke(tx, fakeAdmin, clock, applicationId)
             }
         }
         runAllAsyncJobs(clock)
@@ -793,9 +794,10 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     @PostMapping("/mobile/pairings/challenge")
     fun postPairingChallenge(
         db: Database,
+        clock: EvakaClock,
         @RequestBody body: PairingsController.PostPairingChallengeReq
     ): Pairing {
-        return db.connect { dbc -> dbc.transaction { it.challengePairing(body.challengeKey) } }
+        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }
     }
 
     @PostMapping("/mobile/pairings/{id}/response")
@@ -813,13 +815,14 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     @PostMapping("/mobile/pairings")
     fun postPairing(
         db: Database,
+        clock: EvakaClock,
         @RequestBody body: PairingsController.PostPairingReq
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction {
                 when (body) {
-                    is PairingsController.PostPairingReq.Unit -> it.initPairing(unitId = body.unitId)
-                    is PairingsController.PostPairingReq.Employee -> it.initPairing(employeeId = body.employeeId)
+                    is PairingsController.PostPairingReq.Unit -> it.initPairing(clock, unitId = body.unitId)
+                    is PairingsController.PostPairingReq.Employee -> it.initPairing(clock, employeeId = body.employeeId)
                 }
             }
         }
@@ -1062,21 +1065,21 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/vasu/doc")
-    fun createVasuDocument(db: Database, @RequestBody body: PostVasuDocBody): VasuDocumentId {
+    fun createVasuDocument(db: Database, clock: EvakaClock, @RequestBody body: PostVasuDocBody): VasuDocumentId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val template = tx.getVasuTemplate(body.templateId)
                     ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(body.childId, template)
+                tx.insertVasuDocument(clock, body.childId, template)
             }
         }
     }
 
     @PostMapping("/vasu/doc/publish/{documentId}")
-    fun publishVasuDocument(db: Database, @PathVariable documentId: VasuDocumentId) {
+    fun publishVasuDocument(db: Database, clock: EvakaClock, @PathVariable documentId: VasuDocumentId) {
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.publishVasuDocument(documentId)
+                tx.publishVasuDocument(clock, documentId)
             }
         }
     }
@@ -1703,8 +1706,8 @@ data class PlacementPlan(
 data class DevApplicationWithForm(
     val id: ApplicationId,
     val type: ApplicationType,
-    val createdDate: OffsetDateTime?,
-    val modifiedDate: OffsetDateTime?,
+    val createdDate: HelsinkiDateTime?,
+    val modifiedDate: HelsinkiDateTime?,
     var sentDate: LocalDate?,
     var dueDate: LocalDate?,
     val status: ApplicationStatus,
@@ -1721,10 +1724,10 @@ data class DevApplicationWithForm(
 data class DevApplicationForm(
     val id: UUID? = UUID.randomUUID(),
     val applicationId: ApplicationId,
-    val createdDate: OffsetDateTime? = OffsetDateTime.now(),
+    val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val revision: Int,
     val document: DaycareFormV0,
-    val updated: OffsetDateTime? = OffsetDateTime.now()
+    val updated: HelsinkiDateTime? = HelsinkiDateTime.now()
 )
 
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)

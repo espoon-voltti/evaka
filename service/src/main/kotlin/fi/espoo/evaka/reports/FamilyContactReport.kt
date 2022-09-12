@@ -26,15 +26,15 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
     fun getFamilyContactsReport(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getFamilyContacts(evakaClock.today(), unitId)
+                it.getFamilyContacts(clock.today(), unitId)
             }
         }
     }

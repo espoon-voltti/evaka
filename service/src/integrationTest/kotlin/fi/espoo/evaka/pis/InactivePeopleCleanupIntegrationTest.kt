@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -259,7 +260,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(contentId, threadId, employeeAccount, listOf("recipient name"))
+            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, employeeAccount, listOf("recipient name"))
             tx.insertRecipients(setOf(personAccount), messageId)
         }
 
@@ -278,7 +279,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", personAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(contentId, threadId, personAccount, listOf("employee name"))
+            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, personAccount, listOf("employee name"))
             tx.insertRecipients(setOf(employeeAccount), messageId)
         }
 

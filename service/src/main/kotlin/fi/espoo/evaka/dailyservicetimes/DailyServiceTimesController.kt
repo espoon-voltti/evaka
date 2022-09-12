@@ -37,17 +37,18 @@ class DailyServiceTimesController(
     fun getDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getChildDailyServiceTimes(childId).map {
                     DailyServiceTimesResponse(
                         it,
                         permittedActions = accessControl.getPermittedActions(
-                            tx, user, it.id
+                            tx, user, clock, it.id
                         )
                     )
                 }
@@ -58,22 +59,22 @@ class DailyServiceTimesController(
     @PostMapping("/children/{childId}/daily-service-times")
     fun postDailyServiceTimes(
         db: Database,
-        evakaClock: EvakaClock,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: DailyServiceTimes
     ) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
 
-        if (body.validityPeriod.start.isBefore(evakaClock.today())) {
+        if (body.validityPeriod.start.isBefore(clock.today())) {
             throw BadRequest("New daily service times cannot be added in the past")
         }
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
-                this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), evakaClock)
+                this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), clock)
             }
         }
     }
@@ -81,18 +82,18 @@ class DailyServiceTimesController(
     @PutMapping("/daily-service-times/{id}")
     fun putDailyServiceTimes(
         db: Database,
-        evakaClock: EvakaClock,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimes
     ) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.DailyServiceTime.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateChildDailyServiceTimes(id, body)
-                this.deleteCollidingReservationsAndNotify(tx, id, evakaClock)
+                this.deleteCollidingReservationsAndNotify(tx, id, clock)
             }
         }
     }
@@ -101,10 +102,11 @@ class DailyServiceTimesController(
     fun deleteDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId
     ) {
         Audit.ChildDailyServiceTimesDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.DailyServiceTime.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.deleteChildDailyServiceTimes(id) } }
     }

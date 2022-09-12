@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -42,6 +43,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private val parent = testAdult_1
     private val child = testChild_1
 
+    private val clock = RealEvakaClock()
     private val unitSupervisorId = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
@@ -82,9 +84,9 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val endDate = startDate.plusDays(200)
         val reqBody =
             ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
-        controller.createParentship(Database(jdbi), user, reqBody)
+        controller.createParentship(Database(jdbi), user, clock, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
+        val getResponse = controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
         with(getResponse.first().data) {
             assertNotNull(this.id)
             assertEquals(parent.id, this.headOfChildId)
@@ -93,7 +95,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = child.id).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size)
     }
 
     fun `can add a sibling parentship and fetch parentships`(user: AuthenticatedUser) {
@@ -106,9 +108,9 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val endDate = startDate.plusDays(200)
         val reqBody =
             ParentshipController.ParentshipRequest(parent.id, sibling.id, startDate, endDate)
-        controller.createParentship(Database(jdbi), user, reqBody)
+        controller.createParentship(Database(jdbi), user, clock, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, headOfChildId = parent.id)
+        val getResponse = controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
         assertEquals(2, getResponse.size)
         getResponse
             .map { it.data }
@@ -122,7 +124,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(endDate, it.endDate)
             }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, headOfChildId = child.id).size)
+        assertEquals(0, controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size)
     }
 
     @Test
@@ -148,10 +150,10 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        controller.updateParentship(Database(jdbi), user, parentship.id, requestBody)
+        controller.updateParentship(Database(jdbi), user, clock, parentship.id, requestBody)
 
         // child1 should have new dates
-        val fetched1 = controller.getParentship(Database(jdbi), user, parentship.id)
+        val fetched1 = controller.getParentship(Database(jdbi), user, clock, parentship.id)
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -184,7 +186,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             }
         }
 
-        controller.deleteParentship(Database(jdbi), user, parentship.id)
+        controller.deleteParentship(Database(jdbi), user, clock, parentship.id)
         db.read { r ->
             assertEquals(1, r.getParentships(headOfChildId = parent.id, childId = null).size)
         }
@@ -202,7 +204,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(2, tx.getParentships(headOfChildId = parent.id, childId = null).size)
             }
         }
-        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, parentship.id) }
+        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, clock, parentship.id) }
     }
 
     @Test
@@ -211,7 +213,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, headOfChildId = parent.id) }
+        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id) }
     }
 
     @Test
@@ -223,7 +225,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        assertThrows<Forbidden> { controller.updateParentship(Database(jdbi), user, parentship.id, requestBody) }
+        assertThrows<Forbidden> { controller.updateParentship(Database(jdbi), user, clock, parentship.id, requestBody) }
     }
 
     @Test
@@ -232,7 +234,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val parentship = db.transaction { tx ->
             tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, parentship.id) }
+        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, clock, parentship.id) }
     }
 
     @Test
@@ -244,7 +246,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             child.dateOfBirth.minusDays(1),
             child.dateOfBirth.plusYears(1)
         )
-        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, request) }
+        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, clock, request) }
     }
 
     @Test
@@ -256,6 +258,6 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             child.dateOfBirth,
             child.dateOfBirth.plusYears(18)
         )
-        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, request) }
+        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, clock, request) }
     }
 }

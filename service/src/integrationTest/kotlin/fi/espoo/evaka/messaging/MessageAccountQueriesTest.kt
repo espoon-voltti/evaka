@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -157,7 +158,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(contentId, threadId, employeeAccount, allAccounts.map { it.name })
+            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, employeeAccount, allAccounts.map { it.name })
             tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }
 

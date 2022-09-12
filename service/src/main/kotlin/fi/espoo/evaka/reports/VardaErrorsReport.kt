@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -20,10 +21,11 @@ class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/varda-errors")
     fun getVardaErrors(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<VardaErrorReportRow> {
         Audit.VardaReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_VARDA_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_VARDA_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

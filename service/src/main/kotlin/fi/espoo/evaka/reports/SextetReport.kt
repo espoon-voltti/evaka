@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,11 +23,12 @@ class SextetReportController(private val accessControl: AccessControl) {
     fun getApplicationsReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam placementType: PlacementType
     ): List<SextetReportRow> {
         Audit.SextetReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_SEXTET_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SEXTET_REPORT)
 
         return db.connect { dbc ->
             dbc.read {

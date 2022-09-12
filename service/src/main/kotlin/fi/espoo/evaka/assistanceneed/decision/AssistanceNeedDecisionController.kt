@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 data class AssistanceNeedDecisionRequest(
     val decision: AssistanceNeedDecisionForm
@@ -39,11 +39,12 @@ class AssistanceNeedDecisionController(
     fun createAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ): AssistanceNeedDecision {
         Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 var decision: AssistanceNeedDecisionForm = body.decision.copy(
@@ -74,17 +75,18 @@ class AssistanceNeedDecisionController(
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecisionResponse {
         Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
                 AssistanceNeedDecisionResponse(
                     decision,
-                    permittedActions = accessControl.getPermittedActions(tx, user, id),
+                    permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
                     hasMissingFields = hasMissingFields(decision)
                 )
             }
@@ -95,11 +97,12 @@ class AssistanceNeedDecisionController(
     fun updateAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
@@ -130,10 +133,11 @@ class AssistanceNeedDecisionController(
     fun sendAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionSend.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.SEND, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.SEND, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
@@ -155,7 +159,7 @@ class AssistanceNeedDecisionController(
                 tx.updateAssistanceNeedDecision(
                     id,
                     decision.copy(
-                        sentForDecision = LocalDate.now(),
+                        sentForDecision = clock.today(),
                         status = AssistanceNeedDecisionStatus.DRAFT
                     ).toForm(),
                     false
@@ -168,16 +172,18 @@ class AssistanceNeedDecisionController(
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
         Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
                 val permittedActions = accessControl.getPermittedActions<AssistanceNeedDecisionId, Action.AssistanceNeedDecision>(
                     tx,
                     user,
+                    clock,
                     decisions.map { it.id }
                 )
                 decisions.map {
@@ -191,10 +197,11 @@ class AssistanceNeedDecisionController(
     fun deleteAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (!tx.deleteAssistanceNeedDecision(id)) {
@@ -208,11 +215,12 @@ class AssistanceNeedDecisionController(
     fun decideAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionDecide.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.DECIDE, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DECIDE, id)
 
         if (body.status == AssistanceNeedDecisionStatus.DRAFT) {
             throw BadRequest("Assistance need decisions cannot be decided to be a draft")
@@ -241,7 +249,7 @@ class AssistanceNeedDecisionController(
                 tx.decideAssistanceNeedDecision(
                     id,
                     body.status,
-                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else LocalDate.now(),
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else clock.today(),
                     if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
                     else tx.getChildGuardians(decision.child.id)
                 )
@@ -253,7 +261,8 @@ class AssistanceNeedDecisionController(
                             AsyncJob.SendAssistanceNeedDecisionEmail(id),
                             AsyncJob.CreateAssistanceNeedDecisionPdf(id),
                             AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
             }
@@ -264,10 +273,11 @@ class AssistanceNeedDecisionController(
     fun markAssistanceNeedDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.MARK_AS_OPENED, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.MARK_AS_OPENED, id)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -280,11 +290,12 @@ class AssistanceNeedDecisionController(
     fun updateAssistanceNeedDecisionDecisionMaker(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER, id)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER, id)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->

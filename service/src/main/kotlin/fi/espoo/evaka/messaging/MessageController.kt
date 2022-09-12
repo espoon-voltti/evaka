@@ -14,11 +14,10 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,16 +41,15 @@ data class ReplyToMessageBody(
 @RestController
 @RequestMapping("/messages")
 class MessageController(
-    private val acl: AccessControlList,
     private val accessControl: AccessControl,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee): Set<AuthorizedMessageAccount> {
+    fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
         return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) } }
     }
 
@@ -59,10 +57,11 @@ class MessageController(
     fun getAccountsByDevice(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        accessControl.requirePermissionFor(user, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
         return if (user.employeeId != null) {
             db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
         } else setOf()
@@ -72,13 +71,14 @@ class MessageController(
     fun getReceivedMessages(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(accountId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
         }
     }
@@ -87,13 +87,14 @@ class MessageController(
     fun getSentMessages(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log(accountId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
         }
     }
@@ -102,9 +103,10 @@ class MessageController(
     fun getUnreadMessages(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.ACCESS_MESSAGING)
+        accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getUnreadMessagesCounts(
@@ -120,10 +122,11 @@ class MessageController(
     fun getUnreadMessagesByUnit(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
         Audit.MessagingUnreadMessagesRead.log()
-        accessControl.requirePermissionFor(user, Action.Unit.READ_UNREAD_MESSAGES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_UNREAD_MESSAGES, unitId)
         return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }
     }
 
@@ -142,18 +145,20 @@ class MessageController(
     fun createMessage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingNewMessageWrite.log(accountId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
 
-            checkAuthorizedRecipients(dbc, accountId, body.recipientAccountIds)
+            checkAuthorizedRecipients(dbc, clock, accountId, body.recipientAccountIds)
             val groupedRecipients = dbc.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
             dbc.transaction { tx ->
                 messageService.createMessageThreadsForRecipientGroups(
                     tx,
+                    clock,
                     title = body.title,
                     content = body.content,
                     sender = accountId,
@@ -173,11 +178,12 @@ class MessageController(
     fun getDrafts(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> {
         Audit.MessagingDraftsRead.log(accountId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.getDrafts(accountId) }
         }
     }
@@ -186,11 +192,12 @@ class MessageController(
     fun initDraft(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
     ): MessageDraftId {
         Audit.MessagingCreateDraft.log(accountId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.initDraft(accountId) }
         }
     }
@@ -199,13 +206,14 @@ class MessageController(
     fun upsertDraft(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
         @RequestBody content: UpdatableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.updateDraft(accountId, draftId, content) }
         }
     }
@@ -214,12 +222,13 @@ class MessageController(
     fun deleteDraft(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
     ) {
         Audit.MessagingDeleteDraft.log(accountId, draftId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx -> tx.deleteDraft(accountId, draftId) }
         }
     }
@@ -228,16 +237,18 @@ class MessageController(
     fun replyToThread(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(accountId, messageId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
 
             messageService.replyToThread(
                 db = dbc,
+                clock = clock,
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,
@@ -250,13 +261,14 @@ class MessageController(
     fun markThreadRead(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable threadId: MessageThreadId,
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
         return db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, accountId)
-            dbc.transaction { it.markThreadRead(accountId, threadId) }
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
     }
 
@@ -264,30 +276,33 @@ class MessageController(
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
         return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }
     }
 
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         accountId: MessageAccountId
     ) {
-        accessControl.requirePermissionFor(user, Action.Global.ACCESS_MESSAGING)
+        accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
         db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)!!) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
     private fun checkAuthorizedRecipients(
         db: Database.Connection,
+        clock: EvakaClock,
         accountId: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>
     ) {
         db.read {
-            it.isEmployeeAccountAuthorizedToSendTo(RealEvakaClock(), accountId, recipientAccountIds)
+            it.isEmployeeAccountAuthorizedToSendTo(clock, accountId, recipientAccountIds)
         } || throw Forbidden("Not authorized to send to the given recipients")
     }
 

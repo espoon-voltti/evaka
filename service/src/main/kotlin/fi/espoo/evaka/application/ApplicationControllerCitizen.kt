@@ -49,10 +49,11 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/by-guardian")
     fun getGuardianApplications(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): List<ApplicationsOfChild> {
         Audit.ApplicationRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_APPLICATIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATIONS, user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
@@ -78,10 +79,11 @@ class ApplicationControllerCitizen(
     fun getApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Application.READ, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ, applicationId)
 
         val application = db.connect { dbc ->
             dbc.transaction { tx ->
@@ -99,11 +101,11 @@ class ApplicationControllerCitizen(
     fun createApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: CreateApplicationBody
     ): ApplicationId {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_APPLICATION, body.childId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_APPLICATION, body.childId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -126,7 +128,7 @@ class ApplicationControllerCitizen(
                     childId = body.childId,
                     origin = ApplicationOrigin.ELECTRONIC
                 ).also {
-                    applicationStateService.initializeApplicationForm(tx, user, evakaClock.today(), it, body.type, guardian, child)
+                    applicationStateService.initializeApplicationForm(tx, user, clock.today(), it, body.type, guardian, child)
                 }
             }
         }
@@ -136,10 +138,11 @@ class ApplicationControllerCitizen(
     fun getChildDuplicateApplications(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -159,17 +162,17 @@ class ApplicationControllerCitizen(
     fun getChildPlacementStatusByApplicationType(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 ApplicationType.values()
                     .map { type ->
-                        type to tx.activePlacementExists(childId = childId, type = type, today = evakaClock.today())
+                        type to tx.activePlacementExists(childId = childId, type = type, today = clock.today())
                     }
                     .toMap()
             }
@@ -180,12 +183,12 @@ class ApplicationControllerCitizen(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPDATE, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -194,7 +197,7 @@ class ApplicationControllerCitizen(
                     user,
                     applicationId,
                     applicationForm,
-                    evakaClock.today()
+                    clock.today()
                 )
             }
         }
@@ -204,12 +207,12 @@ class ApplicationControllerCitizen(
     fun saveApplicationAsDraft(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPDATE, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -218,7 +221,7 @@ class ApplicationControllerCitizen(
                     user,
                     applicationId,
                     applicationForm,
-                    evakaClock.today(),
+                    clock.today(),
                     asDraft = true
                 )
             }
@@ -229,10 +232,11 @@ class ApplicationControllerCitizen(
     fun deleteUnprocessedApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
         Audit.ApplicationDelete.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Application.DELETE, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.DELETE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -251,16 +255,16 @@ class ApplicationControllerCitizen(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, applicationId, evakaClock.today()) } }
+        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, clock, applicationId) } }
     }
 
     @GetMapping("/decisions")
-    fun getDecisions(db: Database, user: AuthenticatedUser.Citizen): List<ApplicationDecisions> {
+    fun getDecisions(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ApplicationDecisions> {
         Audit.DecisionRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_DECISIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DECISIONS, user.id)
         return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
     }
 
@@ -268,10 +272,11 @@ class ApplicationControllerCitizen(
     fun getApplicationDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): List<Decision> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Application.READ_DECISIONS, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ_DECISIONS, applicationId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -285,6 +290,7 @@ class ApplicationControllerCitizen(
     fun acceptDecision(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ) {
@@ -294,6 +300,7 @@ class ApplicationControllerCitizen(
                 applicationStateService.acceptDecision(
                     it,
                     user,
+                    clock,
                     applicationId,
                     body.decisionId,
                     body.requestedStartDate,
@@ -306,13 +313,14 @@ class ApplicationControllerCitizen(
     fun rejectDecision(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ) {
         // note: applicationStateService handles logging and authorization
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.rejectDecision(it, user, applicationId, body.decisionId)
+                applicationStateService.rejectDecision(it, user, clock, applicationId, body.decisionId)
             }
         }
     }
@@ -321,10 +329,11 @@ class ApplicationControllerCitizen(
     fun downloadDecisionPdf(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable id: DecisionId
     ): ResponseEntity<Any> {
         Audit.DecisionDownloadPdf.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Decision.DOWNLOAD_PDF, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
             val decision = dbc.transaction { tx -> tx.getDecision(id) } ?: throw NotFound("Decision $id does not exist")
@@ -335,10 +344,11 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/by-guardian/notifications")
     fun getGuardianApplicationNotifications(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): Int {
         Audit.ApplicationReadNotifications.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS, user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationNotificationCountForCitizen(user.id)

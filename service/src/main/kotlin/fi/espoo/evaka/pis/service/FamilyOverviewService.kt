@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.result.RowView
 import org.springframework.stereotype.Service
@@ -25,7 +26,7 @@ class FamilyOverviewService(
     private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider
 ) {
-    fun getFamilyByAdult(tx: Database.Read, adultId: PersonId): FamilyOverview? {
+    fun getFamilyByAdult(tx: Database.Read, clock: EvakaClock, adultId: PersonId): FamilyOverview? {
         val sql =
             """
 WITH adult_ids AS
@@ -40,7 +41,7 @@ WITH adult_ids AS
         AND fp1.person_id != fp2.person_id 
         AND fp1.conflict = false 
         AND fp2.conflict = false
-    WHERE fp1.person_id = :id AND daterange(fp1.start_date, fp1.end_date, '[]') @> current_date
+    WHERE fp1.person_id = :id AND daterange(fp1.start_date, fp1.end_date, '[]') @> :today
 )
 SELECT 
     p.id,
@@ -56,7 +57,7 @@ SELECT
     i.data as income_data
 FROM person p 
 JOIN adult_ids a on p.id = a.id
-LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> current_date
+LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> :today
 
 UNION
 
@@ -75,13 +76,14 @@ SELECT
 FROM fridge_child fc
 JOIN adult_ids a ON fc.head_of_child = a.id 
 JOIN person p ON fc.child_id = p.id
-LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> current_date
-WHERE daterange(fc.start_date, fc.end_date, '[]') @> current_date
+LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> :today
+WHERE daterange(fc.start_date, fc.end_date, '[]') @> :today
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
         val familyMembersNow =
             tx.createQuery(sql)
+                .bind("today", clock.today())
                 .bind("id", adultId)
                 .map { row -> toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider) }
 

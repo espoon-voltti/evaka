@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 
 private val questionnaireSelect = """

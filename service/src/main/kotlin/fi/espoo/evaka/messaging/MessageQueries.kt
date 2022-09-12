@@ -61,11 +61,11 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<Un
         .mapTo<UnreadCountByAccountAndGroup>().toSet()
 }
 
-fun Database.Transaction.markThreadRead(accountId: MessageAccountId, threadId: MessageThreadId): Int {
+fun Database.Transaction.markThreadRead(clock: EvakaClock, accountId: MessageAccountId, threadId: MessageThreadId): Int {
     // language=SQL
     val sql = """
 UPDATE message_recipients rec
-SET read_at = now()
+SET read_at = :now
 FROM message msg
 WHERE rec.message_id = msg.id
   AND msg.thread_id = :threadId
@@ -74,12 +74,14 @@ WHERE rec.message_id = msg.id
     """.trimIndent()
 
     return this.createUpdate(sql)
+        .bind("now", clock.now())
         .bind("accountId", accountId)
         .bind("threadId", threadId)
         .execute()
 }
 
 fun Database.Transaction.insertMessage(
+    clock: EvakaClock,
     contentId: MessageContentId,
     threadId: MessageThreadId,
     sender: MessageAccountId,
@@ -89,12 +91,13 @@ fun Database.Transaction.insertMessage(
     // language=SQL
     val insertMessageSql = """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
-        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, now(), :recipientNames
+        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, :now, :recipientNames
         FROM message_account_name_view name_view
         WHERE name_view.id = :senderId
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
+        .bind("now", clock.now())
         .bind("contentId", contentId)
         .bind("threadId", threadId)
         .bind("repliesToId", repliesToMessageId)

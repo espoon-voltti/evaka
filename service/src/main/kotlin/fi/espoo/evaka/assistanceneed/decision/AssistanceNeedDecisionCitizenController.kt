@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -29,10 +30,11 @@ class AssistanceNeedDecisionCitizenController(
     fun getChildAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionCitizenListItem> {
         Audit.ChildAssistanceNeedDecisionsListCitizen.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -44,10 +46,11 @@ class AssistanceNeedDecisionCitizenController(
     @GetMapping("/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): List<AssistanceNeedDecisionCitizenListItem> {
         Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
 
         return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }
     }
@@ -56,10 +59,11 @@ class AssistanceNeedDecisionCitizenController(
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
         Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
@@ -77,10 +81,11 @@ class AssistanceNeedDecisionCitizenController(
     fun getAssistanceNeedDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): ResponseEntity<Any> {
         Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
         return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
     }
 
@@ -88,10 +93,11 @@ class AssistanceNeedDecisionCitizenController(
     fun markAssistanceNeedDecisionAsRead(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Citizen.AssistanceNeedDecision.MARK_AS_READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.MARK_AS_READ, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
@@ -102,10 +108,11 @@ class AssistanceNeedDecisionCitizenController(
     @GetMapping("/children/assistance-need-decisions/unread-counts")
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
     ): List<UnreadAssistanceNeedDecisionItem> {
         Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id)

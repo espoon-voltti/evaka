@@ -47,11 +47,10 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -110,6 +109,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     private val today: LocalDate = LocalDate.of(2020, 2, 16)
     private val now: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))
+    private val clock = MockEvakaClock(now)
 
     @BeforeEach
     private fun beforeEach() {
@@ -237,7 +237,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
 
         db.read {
@@ -262,7 +262,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.read {
             // then
@@ -296,7 +296,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         // then
         assertDueDate(applicationId, null) // missing attachment
@@ -348,7 +348,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         // then
         assertDueDate(applicationId, now.plusDays(14 + 3).toLocalDate()) // attachments received after application sent
@@ -375,7 +375,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.read {
             // then
@@ -407,7 +407,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.read {
             // then
@@ -438,7 +438,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
 
         db.read {
@@ -471,7 +471,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
 
         db.read {
@@ -491,11 +491,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.read {
             // then
@@ -514,11 +514,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.read {
             // then
@@ -536,11 +536,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -561,11 +561,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = LocalDate.of(2020, 8, 1),
                 guardianEmail = ""
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -584,11 +584,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 hasAdditionalInfo = true,
                 applicationId = applicationId
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -607,12 +607,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.setVerified(tx, serviceWorker, applicationId)
+            service.setVerified(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -622,7 +622,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.setUnverified(tx, serviceWorker, applicationId)
+            service.setUnverified(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -637,11 +637,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId, today)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -655,12 +655,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.cancelApplication(tx, serviceWorker, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -674,12 +674,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.returnToSent(tx, serviceWorker, applicationId)
+            service.returnToSent(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -697,8 +697,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -755,8 +755,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -813,8 +813,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -887,8 +887,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -962,8 +962,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -977,7 +977,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.cancelPlacementPlan(tx, serviceWorker, applicationId)
+            service.cancelPlacementPlan(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -1044,7 +1044,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         )
 
     private fun sendDecisionsWithoutProposalTest(
-        clock: EvakaClock = RealEvakaClock(),
         child: DevPerson,
         applier: DevPerson,
         secondDecisionTo: DevPerson?,
@@ -1059,8 +1058,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -1071,7 +1070,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         // when
         db.transaction { tx ->
-            service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId)
         }
         asyncJobRunner.runPendingJobsSync(clock)
         asyncJobRunner.runPendingJobsSync(clock)
@@ -1122,8 +1121,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -1135,7 +1134,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 )
             )
             // when
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -1156,8 +1155,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -1168,11 +1167,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
-            service.withdrawPlacementProposal(tx, serviceWorker, applicationId)
+            service.withdrawPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.read { tx ->
             // then
@@ -1195,8 +1194,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -1207,19 +1206,19 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
             )
-            service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
+            service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
-        val clock = RealEvakaClock()
         asyncJobRunner.runPendingJobsSync(clock)
         asyncJobRunner.runPendingJobsSync(clock)
         sfiAsyncJobRunner.runPendingJobsSync(clock)
@@ -1251,8 +1250,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 guardian = testAdult_1, applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -1272,19 +1271,19 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     planned = false
                 )
             }.let { updates -> decisionDraftService.updateDecisionDrafts(tx, applicationId, updates) }
-            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+            service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
             )
-            service.confirmPlacementProposalChanges(tx, serviceWorker, testDaycare.id)
+            service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
-        val clock = RealEvakaClock()
         asyncJobRunner.runPendingJobsSync(clock)
         asyncJobRunner.runPendingJobsSync(clock)
         sfiAsyncJobRunner.runPendingJobsSync(clock)
@@ -1320,6 +1319,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.rejectDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id
             )
@@ -1354,6 +1354,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1361,6 +1362,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.rejectDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id
             )
@@ -1400,6 +1402,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1430,7 +1433,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            tx.upsertIncome(mapper, earlierIndefinite, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1439,6 +1442,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1470,7 +1474,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, earlierIncome, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1479,6 +1483,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1510,7 +1515,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = null
             )
-            tx.upsertIncome(mapper, laterIndefiniteIncome, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, laterIndefiniteIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1519,6 +1524,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1550,7 +1556,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusMonths(7),
                 validTo = mainPeriod.start.minusMonths(5)
             )
-            tx.upsertIncome(mapper, earlierIncome, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1559,6 +1565,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1592,7 +1599,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = mainPeriod.start.plusMonths(6)
             )
-            tx.upsertIncome(mapper, laterIncome, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, laterIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1601,6 +1608,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1632,7 +1640,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            tx.upsertIncome(mapper, earlierIndefinite, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions(preferredStartDate = null)
 
@@ -1641,6 +1649,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1670,7 +1679,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start,
                 validTo = null
             )
-            tx.upsertIncome(mapper, sameDayIncomeIndefinite, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, sameDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1679,6 +1688,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1709,7 +1719,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start,
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, sameDayIncome, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, sameDayIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1718,6 +1728,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1749,7 +1760,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = null
             )
-            tx.upsertIncome(mapper, dayBeforeIncomeIndefinite, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, dayBeforeIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1758,6 +1769,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1790,7 +1802,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.plusDays(1),
                 validTo = null
             )
-            tx.upsertIncome(mapper, nextDayIncomeIndefinite, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, nextDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1799,6 +1811,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1830,7 +1843,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            tx.upsertIncome(mapper, incomeDayBefore, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, incomeDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1839,6 +1852,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1870,7 +1884,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnSameDay, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIncomeEndingOnSameDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1879,6 +1893,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1910,7 +1925,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.plusDays(1)
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnNextDay, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIncomeEndingOnNextDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1919,6 +1934,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1950,7 +1966,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.minusDays(1)
             )
-            tx.upsertIncome(mapper, earlierIncomeEndingOnDayBefore, financeUser.evakaUserId)
+            tx.upsertIncome(clock, mapper, earlierIncomeEndingOnDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1959,6 +1975,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -1987,6 +2004,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 user,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -1994,6 +2012,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.rejectDecision(
                 tx,
                 user,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
             )
@@ -2016,6 +2035,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.acceptDecision(
                     tx,
                     user,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start,
@@ -2036,6 +2056,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.rejectDecision(
                     tx,
                     user,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
@@ -2053,6 +2074,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -2060,6 +2082,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                 connectedPeriod.start
@@ -2104,6 +2127,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -2129,6 +2153,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -2154,6 +2179,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.acceptDecision(
                     tx,
                     serviceWorker,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                     mainPeriod.start
@@ -2170,6 +2196,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -2181,6 +2208,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.acceptDecision(
                     tx,
                     serviceWorker,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start
@@ -2197,6 +2225,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.rejectDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id
             )
@@ -2207,6 +2236,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.acceptDecision(
                     tx,
                     serviceWorker,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start
@@ -2223,6 +2253,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.acceptDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
@@ -2234,6 +2265,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.rejectDecision(
                     tx,
                     serviceWorker,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id
                 )
@@ -2249,6 +2281,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.rejectDecision(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id
             )
@@ -2259,6 +2292,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.rejectDecision(
                     tx,
                     serviceWorker,
+                    clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id
                 )
@@ -2279,8 +2313,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = preferredStartDate,
                 serviceNeedOption = serviceNeedOption
             )
-            service.sendApplication(tx, serviceWorker, applicationId, today)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -2291,7 +2325,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId)
         }
     }
 }

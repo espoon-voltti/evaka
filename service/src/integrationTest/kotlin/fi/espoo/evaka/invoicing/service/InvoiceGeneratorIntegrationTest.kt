@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
@@ -4808,6 +4809,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun insertAbsences(childId: ChildId, absenceDays: List<Pair<LocalDate, AbsenceType>>) {
         db.transaction { tx ->
             tx.upsertAbsences(
+                RealEvakaClock(),
                 absenceDays.map { (date, type) ->
                     AbsenceUpsert(
                         absenceType = type,

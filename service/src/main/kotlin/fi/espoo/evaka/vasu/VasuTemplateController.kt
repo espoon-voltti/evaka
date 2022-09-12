@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -39,10 +40,11 @@ class VasuTemplateController(
     fun postTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
         Audit.VasuTemplateCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_VASU_TEMPLATE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_VASU_TEMPLATE)
 
         return db.connect { dbc ->
             dbc.transaction {
@@ -61,11 +63,12 @@ class VasuTemplateController(
     fun editTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
     ) {
         Audit.VasuTemplateEdit.log()
-        accessControl.requirePermissionFor(user, Action.VasuTemplate.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -85,11 +88,12 @@ class VasuTemplateController(
     fun copyTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
     ): VasuTemplateId {
         Audit.VasuTemplateCopy.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuTemplate.COPY, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.COPY, id)
 
         return db.connect { dbc ->
             dbc.transaction {
@@ -109,22 +113,24 @@ class VasuTemplateController(
     fun getTemplates(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_VASU_TEMPLATE)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(validOnly) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }
     }
 
     @GetMapping("/{id}")
     fun getTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
         Audit.VasuTemplateRead.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuTemplate.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } } ?: throw NotFound("template $id not found")
     }
@@ -133,10 +139,11 @@ class VasuTemplateController(
     fun deleteTemplate(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ) {
         Audit.VasuTemplateDelete.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuTemplate.DELETE, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.deleteUnusedVasuTemplate(id) } }
     }
@@ -145,11 +152,12 @@ class VasuTemplateController(
     fun putTemplateContent(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent
     ) {
         Audit.VasuTemplateUpdate.log(id)
-        accessControl.requirePermissionFor(user, Action.VasuTemplate.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction { tx ->

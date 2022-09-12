@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -58,7 +59,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
-        val body = childController.getAdditionalInfo(Database(jdbi), user, childId)
+        val body = childController.getAdditionalInfo(Database(jdbi), user, RealEvakaClock(), childId)
 
         assertEquals(child.additionalInformation.diet, body.diet)
         assertEquals(child.additionalInformation.additionalInfo, body.additionalInfo)

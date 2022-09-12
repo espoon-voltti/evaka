@@ -13,10 +13,10 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.json.Json
 
 data class NewEmployee(
@@ -82,16 +82,17 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(employeeNumber: String
         .bind("externalId", externalId)
         .updateNoneOrOne()
 
-fun Database.Transaction.loginEmployee(employee: NewEmployee): Employee = createUpdate(
+fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, last_login)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], now())
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :now)
 ON CONFLICT (external_id) DO UPDATE
-SET last_login = now(), first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
+SET last_login = :now, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
 RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     """.trimIndent()
 ).bindKotlin("employee", employee)
+    .bind("now", clock.now())
     .executeAndReturnGeneratedKeys()
     .mapTo<Employee>()
     .first()
@@ -156,13 +157,14 @@ $where
 """
 )
 
-fun Database.Transaction.markEmployeeLastLogin(id: EmployeeId) = createUpdate(
+fun Database.Transaction.markEmployeeLastLogin(clock: EvakaClock, id: EmployeeId) = createUpdate(
     """
 UPDATE employee 
-SET last_login = now()
+SET last_login = :now
 WHERE id = :id
     """.trimIndent()
 ).bind("id", id)
+    .bind("now", clock.now())
     .execute()
 
 fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? = createEmployeeUserQuery("WHERE id = :id")

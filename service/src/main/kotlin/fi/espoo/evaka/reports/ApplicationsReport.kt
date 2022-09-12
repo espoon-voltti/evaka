@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -26,11 +27,12 @@ class ApplicationsReportController(private val accessControl: AccessControl, pri
     fun getApplicationsReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<ApplicationsReportRow> {
         Audit.ApplicationsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_APPLICATIONS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.connect { dbc ->

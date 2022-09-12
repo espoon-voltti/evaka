@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -123,7 +124,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
     private fun updateUnits() {
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
-        updateUnits(db, vardaClient, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl)
+        updateUnits(db, RealEvakaClock(), vardaClient, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl)
     }
 }
 

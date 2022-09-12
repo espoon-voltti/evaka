@@ -31,15 +31,17 @@ class AssistanceNeedController(
     fun createAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.CREATE_ASSISTANCE_NEED, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
             assistanceNeedService.createAssistanceNeed(
                 dbc,
-                user = user,
+                user,
+                clock,
                 childId = childId,
                 data = body
             )
@@ -54,7 +56,7 @@ class AssistanceNeedController(
         @PathVariable childId: ChildId
     ): List<AssistanceNeedResponse> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ASSISTANCE_NEED, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
             val relevantPreschoolPlacements = dbc.read { tx ->
                 tx.getPlacementsForChild(childId).filter {
@@ -68,12 +70,12 @@ class AssistanceNeedController(
                         placement.startDate.isBefore(it.startDate) || placement.startDate == it.startDate
                     }
                 }
-                val decisions = accessControl.checkPermissionFor(dbc, user, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, prePreschool.map { it.id })
+                val decisions = dbc.read { tx -> accessControl.checkPermissionFor(tx, user, clock, Action.AssistanceNeed.READ_PRE_PRESCHOOL_ASSISTANCE_NEED, prePreschool.map { it.id }) }
                 allAssistanceNeeds.filter { decisions[it.id]?.isPermitted() ?: true }
             }
             val assistanceNeedIds = assistanceNeeds.map { it.id }
             val permittedActions = dbc.read { tx ->
-                accessControl.getPermittedActions<AssistanceNeedId, Action.AssistanceNeed>(tx, user, assistanceNeedIds)
+                accessControl.getPermittedActions<AssistanceNeedId, Action.AssistanceNeed>(tx, user, clock, assistanceNeedIds)
             }
             assistanceNeeds.map { AssistanceNeedResponse(it, permittedActions[it.id] ?: emptySet()) }
         }
@@ -83,15 +85,17 @@ class AssistanceNeedController(
     fun updateAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
         Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeed.UPDATE, assistanceNeedId)
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeed.UPDATE, assistanceNeedId)
         return db.connect { dbc ->
             assistanceNeedService.updateAssistanceNeed(
                 dbc,
-                user = user,
+                user,
+                clock,
                 id = assistanceNeedId,
                 data = body
             )
@@ -102,16 +106,17 @@ class AssistanceNeedController(
     fun deleteAssistanceNeed(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ) {
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
-        accessControl.requirePermissionFor(user, Action.AssistanceNeed.DELETE, assistanceNeedId)
-        db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, assistanceNeedId) }
+        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeed.DELETE, assistanceNeedId)
+        db.connect { dbc -> assistanceNeedService.deleteAssistanceNeed(dbc, clock, assistanceNeedId) }
     }
 
     @GetMapping("/assistance-basis-options")
-    fun getAssistanceBasisOptions(db: Database, user: AuthenticatedUser): List<AssistanceBasisOption> {
-        accessControl.requirePermissionFor(user, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
+    fun getAssistanceBasisOptions(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<AssistanceBasisOption> {
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
         return db.connect { dbc -> assistanceNeedService.getAssistanceBasisOptions(dbc) }
     }
 }

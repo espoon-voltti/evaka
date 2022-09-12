@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -29,25 +30,26 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ChildController(private val accessControl: AccessControl, private val featureConfig: FeatureConfig) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): ChildResponse {
+    fun getChild(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val child = tx.getPersonById(childId)
                     ?.hideNonPermittedPersonData(
                         includeInvoiceAddress = accessControl.hasPermissionFor(
                             user,
+                            clock,
                             Action.Person.READ_INVOICE_ADDRESS,
                             childId
                         ),
-                        includeOphOid = accessControl.hasPermissionFor(user, Action.Person.READ_OPH_OID, childId)
+                        includeOphOid = accessControl.hasPermissionFor(user, clock, Action.Person.READ_OPH_OID, childId)
                     )
                     ?: throw NotFound("Child $childId not found")
                 ChildResponse(
                     person = PersonJSON.from(child),
-                    permittedActions = accessControl.getPermittedActions(tx, user, childId),
-                    permittedPersonActions = accessControl.getPermittedActions(tx, user, childId),
+                    permittedActions = accessControl.getPermittedActions(tx, user, clock, childId),
+                    permittedPersonActions = accessControl.getPermittedActions(tx, user, clock, childId),
                     assistanceNeedVoucherCoefficientsEnabled = !featureConfig.valueDecisionCapacityFactorEnabled
                 )
             }
@@ -55,9 +57,9 @@ class ChildController(private val accessControl: AccessControl, private val feat
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: ChildId): AdditionalInformation {
+    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): AdditionalInformation {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_ADDITIONAL_INFO, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ADDITIONAL_INFO, childId)
         return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }
     }
 
@@ -65,11 +67,12 @@ class ChildController(private val accessControl: AccessControl, private val feat
     fun updateAdditionalInfo(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation
     ) {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
         db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
     }
 

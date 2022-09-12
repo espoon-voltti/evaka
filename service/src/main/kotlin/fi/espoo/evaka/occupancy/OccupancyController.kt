@@ -41,18 +41,18 @@ class OccupancyController(
     fun getOccupancyPeriods(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): OccupancyResponse {
         Audit.OccupancyRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_OCCUPANCIES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
 
         val occupancies = db.connect { dbc ->
             dbc.read {
-                it.calculateOccupancyPeriods(evakaClock.today(), unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
+                it.calculateOccupancyPeriods(clock.today(), unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
             }
         }
 
@@ -67,7 +67,7 @@ class OccupancyController(
     fun getOccupancyPeriodsSpeculated(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable applicationId: ApplicationId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -76,8 +76,8 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?,
     ): OccupancyResponseSpeculated {
         Audit.OccupancySpeculatedRead.log(targetId = Pair(unitId, applicationId))
-        accessControl.requirePermissionFor(user, Action.Unit.READ_OCCUPANCIES, unitId)
-        accessControl.requirePermissionFor(user, Action.Application.READ, applicationId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Application.READ, applicationId)
 
         val period = FiniteDateRange(from, to)
         val preschoolDaycarePeriod = if (preschoolDaycareFrom != null && preschoolDaycareTo != null) {
@@ -112,7 +112,7 @@ class OccupancyController(
 
                 val (threeMonths, sixMonths) = calculateSpeculatedMaxOccupancies(
                     tx,
-                    evakaClock.today(),
+                    clock.today(),
                     acl.getAuthorizedUnits(user),
                     unitId,
                     speculatedPlacements,
@@ -133,19 +133,19 @@ class OccupancyController(
     fun getOccupancyPeriodsOnGroups(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): List<OccupancyResponseGroupLevel> {
         Audit.OccupancyRead.log(targetId = unitId)
-        accessControl.requirePermissionFor(user, Action.Unit.READ_OCCUPANCIES, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
 
         val occupancies = db.connect { dbc ->
             dbc.read {
                 it.calculateOccupancyPeriodsGroupLevel(
-                    evakaClock.today(),
+                    clock.today(),
                     unitId,
                     FiniteDateRange(from, to),
                     type,

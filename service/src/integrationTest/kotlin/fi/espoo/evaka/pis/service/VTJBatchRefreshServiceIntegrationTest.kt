@@ -94,6 +94,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
             any(),
+            any(),
             eq(testChild_1.id),
             eq(testAdult_1.id),
             eq(LocalDate.now()),
@@ -152,6 +153,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(testAdult_1.id))
         verify(parentshipService).createParentship(
+            any(),
             any(),
             eq(testChild_1.id),
             eq(testAdult_1.id),

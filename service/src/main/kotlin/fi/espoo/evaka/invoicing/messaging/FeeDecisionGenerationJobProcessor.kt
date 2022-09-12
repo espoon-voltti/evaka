@@ -28,7 +28,7 @@ class FeeDecisionGenerationJobProcessor(
 
     fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
         logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
-        db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, msg.dateRange, listOf()) }
+        db.transaction { planFinanceDecisionGeneration(it, clock, asyncJobRunner, msg.dateRange, listOf()) }
     }
 
     fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {
@@ -46,6 +46,7 @@ class FeeDecisionGenerationJobProcessor(
 
 fun planFinanceDecisionGeneration(
     tx: Database.Transaction,
+    clock: EvakaClock,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     dateRange: DateRange,
     targetHeadsOfFamily: List<PersonId>
@@ -59,5 +60,5 @@ fun planFinanceDecisionGeneration(
             .list()
     }
 
-    asyncJobRunner.plan(tx, heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) })
+    asyncJobRunner.plan(tx, heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) }, runAt = clock.now())
 }

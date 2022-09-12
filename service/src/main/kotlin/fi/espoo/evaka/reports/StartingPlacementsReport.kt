@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -23,11 +24,12 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
     fun getStartingPlacementsReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
     ): List<StartingPlacementsRow> {
         Audit.StartingPlacementsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)

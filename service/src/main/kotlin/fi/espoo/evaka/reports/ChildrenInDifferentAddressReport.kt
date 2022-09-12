@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,20 +26,21 @@ class ChildrenInDifferentAddressReportController(
     @GetMapping("/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        clock: EvakaClock
     ): List<ChildrenInDifferentAddressReportRow> {
         Audit.ChildrenInDifferentAddressReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user))
+                it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
             }
         }
     }
 }
 
-private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: AclAuthorization): List<ChildrenInDifferentAddressReportRow> {
+private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: AclAuthorization, clock: EvakaClock): List<ChildrenInDifferentAddressReportRow> {
     val units = authorizedUnits.ids
     // language=sql
     val sql =
@@ -59,13 +61,13 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
         JOIN person p ON p.id = fc.head_of_child
         JOIN person ch ON ch.id = fc.child_id
         JOIN placement pl ON pl.child_id = fc.child_id
-          AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
+          AND daterange(pl.start_date, pl.end_date, '[]') @> :today
           AND pl.type != 'CLUB'::placement_type
         JOIN daycare u ON u.id = pl.unit_id
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE
             (:units::uuid[] IS NULL OR u.id = ANY(:units)) AND
-            daterange(fc.start_date, fc.end_date, '[]') @> current_date AND
+            daterange(fc.start_date, fc.end_date, '[]') @> :today AND
             fc.conflict = false AND
             p.residence_code <> ch.residence_code AND
             p.residence_code IS NOT NULL AND
@@ -81,6 +83,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: Acl
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """.trimIndent()
     return createQuery(sql)
+        .bind("today", clock.today())
         .bind("units", units)
         .mapTo<ChildrenInDifferentAddressReportRow>()
         .toList()

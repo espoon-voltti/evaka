@@ -73,7 +73,6 @@ import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
 import org.springframework.core.io.ClassPathResource
@@ -520,7 +519,7 @@ data class DevIncome(
     val effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
     val isEntrepreneur: Boolean = false,
     val worksAtEcha: Boolean = false,
-    val updatedAt: Instant = Instant.now(),
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val updatedBy: EvakaUserId
 )
 
@@ -564,7 +563,7 @@ data class DevFeeAlteration(
     val validTo: LocalDate?,
     val notes: String = "",
     val updatedBy: EvakaUserId,
-    val updatedAt: Instant = Instant.now()
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
 fun Database.Transaction.insertTestFeeAlteration(feeAlteration: DevFeeAlteration) {
@@ -634,7 +633,7 @@ fun Database.Transaction.insertTestPlacementPlan(
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     preschoolDaycareStartDate: LocalDate? = null,
     preschoolDaycareEndDate: LocalDate? = null,
-    updated: Instant = Instant.now(),
+    updated: HelsinkiDateTime = HelsinkiDateTime.now(),
     deleted: Boolean? = false
 ): PlacementPlanId {
     createUpdate(
@@ -668,9 +667,9 @@ data class TestDecision(
     val status: DecisionStatus = DecisionStatus.PENDING,
     val requestedStartDate: LocalDate? = null,
     val resolvedBy: UUID? = null,
-    val resolved: Instant? = resolvedBy?.let { Instant.ofEpochSecond(1546300800) }, // 2019-01-01 midnight
+    val resolved: HelsinkiDateTime? = resolvedBy?.let { HelsinkiDateTime.from(Instant.ofEpochSecond(1546300800)) }, // 2019-01-01 midnight
     val pendingDecisionEmailsSentCount: Int? = 0,
-    val pendingDecisionEmailSent: Instant? = null
+    val pendingDecisionEmailSent: HelsinkiDateTime? = null
 )
 
 fun Database.Transaction.insertTestDecision(decision: TestDecision) = insertTestDataRow(

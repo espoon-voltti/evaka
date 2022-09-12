@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -128,7 +129,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Newest thread", thread.title)
 
         // when the thread is marked read for person 1
-        db.transaction { it.markThreadRead(person1Account, thread1Id) }
+        db.transaction { it.markThreadRead(RealEvakaClock(), person1Account, thread1Id) }
 
         // then the message has correct readAt
         val person1Threads = db.read {
@@ -156,6 +157,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val recipients = listOf(employee1Account)
             val contentId = it.insertMessageContent(content = "Just replying here", sender = person1Account)
             val messageId = it.insertMessage(
+                RealEvakaClock(),
                 contentId = contentId,
                 threadId = thread2Id,
                 sender = person1Account,
@@ -308,6 +310,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val participants2 = db.transaction { tx ->
             val contentId = tx.insertMessageContent("foo", person2Account)
             val messageId = tx.insertMessage(
+                RealEvakaClock(),
                 contentId = contentId,
                 threadId = threadId,
                 sender = person2Account,
@@ -470,7 +473,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
 
         // when employee reads the message
-        db.transaction { it.markThreadRead(employee1Account, thread1) }
+        db.transaction { it.markThreadRead(RealEvakaClock(), employee1Account, thread1) }
 
         // then the thread does not count towards unread messages
         assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount })
@@ -486,7 +489,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(2, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
 
         // when person two reads a thread
-        db.transaction { it.markThreadRead(person2Account, thread2) }
+        db.transaction { it.markThreadRead(RealEvakaClock(), person2Account, thread2) }
 
         // then unread count goes down by one
         assertEquals(0, db.read { it.getUnreadMessagesCounts(setOf(employee1Account)).first().unreadCount })
@@ -505,6 +508,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false)
             val messageId =
                 tx.insertMessage(
+                    RealEvakaClock(),
                     contentId = contentId,
                     threadId = threadId,
                     sender = sender,

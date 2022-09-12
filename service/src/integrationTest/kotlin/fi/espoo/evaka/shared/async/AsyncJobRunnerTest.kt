@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
 import org.junit.jupiter.api.AfterEach
@@ -55,7 +56,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `planned jobs are not saved if the transaction gets rolled back`() {
         assertThrows<LetsRollbackException> {
             db.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(TestJob(UUID.randomUUID())))
+                asyncJobRunner.plan(tx, listOf(TestJob(UUID.randomUUID())), runAt = HelsinkiDateTime.now())
                 throw LetsRollbackException()
             }
         }
@@ -74,7 +75,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(AuthenticatedUser.SystemInternalUser.rawId().toString(), MdcKey.USER_ID.get())
             assertEquals(AuthenticatedUser.SystemInternalUser.rawIdHash.toString(), MdcKey.USER_ID_HASH.get())
         }
-        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
         future.get(0, TimeUnit.SECONDS)
     }
@@ -83,7 +84,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `pending jobs can be executed manually`() {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         future.get(0, TimeUnit.SECONDS)
     }
@@ -92,7 +93,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `pending jobs are executed in the background if AsyncJobRunner has been started`() {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         asyncJobRunner.start(pollingInterval = Duration.ofSeconds(1))
         future.get(10, TimeUnit.SECONDS)
     }
@@ -103,7 +104,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         asyncJobRunner.start(pollingInterval = Duration.ofDays(1))
         TimeUnit.MILLISECONDS.sleep(100)
-        db.transaction { asyncJobRunner.plan(it, listOf(job)) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         future.get(10, TimeUnit.SECONDS)
     }
 
@@ -111,7 +112,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `failed jobs get retried`() {
         val job = TestJob()
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
-        db.transaction { asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO) }
+        db.transaction { asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO, runAt = HelsinkiDateTime.now()) }
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }

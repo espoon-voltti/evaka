@@ -38,6 +38,7 @@ class SystemController(private val personService: PersonService, private val acc
     fun citizenLogin(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
         @RequestBody request: CitizenLoginRequest
     ): CitizenUser {
         return db.connect { dbc ->
@@ -49,7 +50,7 @@ class SystemController(private val personService: PersonService, private val acc
                         ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
                     )?.let { CitizenUser(it.id) }
                     ?: error("No person found with ssn")
-                tx.markPersonLastLogin(citizen.id)
+                tx.markPersonLastLogin(clock, citizen.id)
                 tx.upsertCitizenUser(citizen.id)
                 citizen
             }
@@ -62,6 +63,7 @@ class SystemController(private val personService: PersonService, private val acc
     fun employeeLogin(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
         @RequestBody request: EmployeeLoginRequest
     ): EmployeeUser {
         return db.connect { dbc ->
@@ -69,7 +71,7 @@ class SystemController(private val personService: PersonService, private val acc
                 if (request.employeeNumber != null) {
                     it.updateExternalIdByEmployeeNumber(request.employeeNumber, request.externalId)
                 }
-                val inserted = it.loginEmployee(request.toNewEmployee())
+                val inserted = it.loginEmployee(clock, request.toNewEmployee())
                 val roles = it.getEmployeeRoles(inserted.id)
                 val employee = EmployeeUser(
                     id = inserted.id,
@@ -104,7 +106,7 @@ class SystemController(private val personService: PersonService, private val acc
                         lastName = employeeUser.lastName,
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
-                        accessibleFeatures = accessControl.getPermittedFeatures(tx, AuthenticatedUser.Employee(employeeUser)),
+                        accessibleFeatures = accessControl.getPermittedFeatures(tx, AuthenticatedUser.Employee(employeeUser), clock),
                         permittedGlobalActions = accessControl.getPermittedGlobalActions(tx, AuthenticatedUser.Employee(employeeUser), clock)
                     )
                 }

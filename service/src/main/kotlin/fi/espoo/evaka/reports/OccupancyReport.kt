@@ -34,7 +34,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
     fun getOccupancyUnitReport(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam(required = false) careAreaId: AreaId?,
         @RequestParam(required = false) providerType: ProviderType?,
@@ -43,7 +43,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         @RequestParam month: Int
     ): List<OccupancyUnitReportResultRow> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        accessControl.requirePermissionFor(user, Action.Global.READ_OCCUPANCY_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
@@ -51,7 +51,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.calculateUnitOccupancyReport(
-                    evakaClock.today(),
+                    clock.today(),
                     careAreaId,
                     providerType,
                     unitTypes,
@@ -67,7 +67,7 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
     fun getOccupancyGroupReport(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam(required = false) careAreaId: AreaId?,
         @RequestParam(required = false) providerType: ProviderType?,
@@ -76,14 +76,14 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         @RequestParam month: Int
     ): List<OccupancyGroupReportResultRow> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        accessControl.requirePermissionFor(user, Action.Global.READ_OCCUPANCY_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.calculateGroupOccupancyReport(
-                    evakaClock.today(),
+                    clock.today(),
                     careAreaId,
                     providerType,
                     unitTypes,

@@ -26,7 +26,7 @@ class FridgeFamilyService(
         updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, clock, msg.personId)
     }
 
-    fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, evakaClock: EvakaClock, personId: PersonId) {
+    fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, personId: PersonId) {
         logger.info("Refreshing $personId from VTJ")
         val head = db.transaction {
             personService.getPersonWithChildren(
@@ -39,7 +39,7 @@ class FridgeFamilyService(
         if (head != null) {
             logger.info("Person to refresh has ${head.children.size} children")
 
-            val partner = db.read { getPartnerId(it, personId) }
+            val partner = db.read { getPartnerId(it, clock, personId) }
                 ?.also { logger.info("Person has fridge partner $it") }
                 ?.let { partnerId ->
                     db.transaction {
@@ -56,14 +56,14 @@ class FridgeFamilyService(
 
             val children = head.children + (partner?.children ?: emptyList())
 
-            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, personId) }
+            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, clock, personId) }
             logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
 
             val newChildrenInSameAddress = children
                 .asSequence()
                 .distinct()
                 .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                .filter { child -> child.dateOfBirth.isAfter(evakaClock.today().minusYears(18)) }
+                .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
                 .filter { livesInSameAddress(it.address, head.address) }
                 .filter { !currentFridgeChildren.contains(it.id) }
                 .toList()
@@ -72,12 +72,13 @@ class FridgeFamilyService(
             newChildrenInSameAddress.forEach { child ->
                 try {
                     val startDate =
-                        if (childShouldBeAddedToFamilyStartingFromBirthday(evakaClock.today(), child.dateOfBirth))
+                        if (childShouldBeAddedToFamilyStartingFromBirthday(clock.today(), child.dateOfBirth))
                             child.dateOfBirth
-                        else evakaClock.today()
+                        else clock.today()
                     db.transaction { tx ->
                         parentshipService.createParentship(
                             tx,
+                            clock,
                             childId = child.id,
                             headOfChildId = personId,
                             startDate = startDate,
@@ -93,27 +94,27 @@ class FridgeFamilyService(
         }
     }
 
-    fun getPartnerId(tx: Database.Read, personId: PersonId): PersonId? {
+    fun getPartnerId(tx: Database.Read, clock: EvakaClock, personId: PersonId): PersonId? {
         // language=sql
         val sql =
             """
             SELECT p2.person_id AS partner_id
             FROM fridge_partner p1
             LEFT OUTER JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.person_id != p2.person_id
-            WHERE p1.person_id = :personId AND daterange(p1.start_date, p1.end_date, '[]') @> current_date AND p1.conflict = false AND p2.conflict = false
+            WHERE p1.person_id = :personId AND daterange(p1.start_date, p1.end_date, '[]') @> :today AND p1.conflict = false AND p2.conflict = false
             """.trimIndent()
 
-        return tx.createQuery(sql).bind("personId", personId).mapTo<PersonId>().firstOrNull()
+        return tx.createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<PersonId>().firstOrNull()
     }
 
-    private fun getCurrentFridgeChildren(tx: Database.Read, personId: PersonId): Set<ChildId> {
+    private fun getCurrentFridgeChildren(tx: Database.Read, clock: EvakaClock, personId: PersonId): Set<ChildId> {
         // language=sql
         val sql =
             """
             SELECT child_id FROM fridge_child 
-            WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> current_date AND conflict = false
+            WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> :today AND conflict = false
             """.trimIndent()
-        return tx.createQuery(sql).bind("personId", personId).mapTo<ChildId>().list().toHashSet()
+        return tx.createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<ChildId>().list().toHashSet()
     }
 
     private fun livesInSameAddress(address1: PersonAddressDTO, address2: PersonAddressDTO): Boolean {

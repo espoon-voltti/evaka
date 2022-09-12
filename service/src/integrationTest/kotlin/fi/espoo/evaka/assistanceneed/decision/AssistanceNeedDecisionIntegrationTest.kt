@@ -502,6 +502,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `Decision PDF generation is successful`() {
         val pdf = assistanceNeedDecisionService.generatePdf(
+            sentDate = LocalDate.now(),
             AssistanceNeedDecision(
                 validityPeriod = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2023, 1, 1)),
                 status = AssistanceNeedDecisionStatus.ACCEPTED,

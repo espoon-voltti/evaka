@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
 import java.util.UUID
@@ -16,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 
 val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
-fun updateUnits(db: Database.Connection, client: VardaClient, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String) {
+fun updateUnits(db: Database.Connection, clock: EvakaClock, client: VardaClient, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String) {
     val units = db.read { getNewOrStaleUnits(it, ophMunicipalityCode, ophMunicipalOrganizerIdUrl, client.sourceSystem) }
     logger.info { "VardaUpdate: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
@@ -24,7 +25,7 @@ fun updateUnits(db: Database.Connection, client: VardaClient, ophMunicipalityCod
             val response =
                 if (unit.vardaUnitId == null) client.createUnit(unit.toVardaUnitRequest())
                 else client.updateUnit(unit.toVardaUnitRequest())
-            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
+            db.transaction { setUnitUploaded(it, clock, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
         } catch (e: Exception) {
             logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
         }
@@ -79,17 +80,18 @@ fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunici
         .toList()
 }
 
-fun setUnitUploaded(tx: Database.Transaction, vardaUnit: VardaUnit) {
+fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: VardaUnit) {
     //language=SQL
     val sql =
         """
     INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
-    VALUES (:evakaDaycareId, :vardaUnitId, now())
+    VALUES (:evakaDaycareId, :vardaUnitId, :now)
     ON CONFLICT (evaka_daycare_id)
-    DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = now();
+    DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = :now;
         """.trimIndent()
 
     tx.createUpdate(sql)
+        .bind("now", clock.now())
         .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
         .bind("vardaUnitId", vardaUnit.vardaUnitId)
         .execute()

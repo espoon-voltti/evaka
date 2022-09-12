@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -46,6 +47,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val partner = testAdult_2
 
     private val unitSupervisorId = EmployeeId(UUID.randomUUID())
+    private val clock = RealEvakaClock()
 
     @BeforeEach
     fun init() {
@@ -105,9 +107,9 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         val endDate = startDate.plusDays(200)
         val reqBody =
             PartnershipsController.PartnershipRequest(person.id, partner.id, startDate, endDate)
-        controller.createPartnership(Database(jdbi), user, reqBody)
+        controller.createPartnership(Database(jdbi), user, clock, reqBody)
 
-        val getResponse = controller.getPartnerships(Database(jdbi), user, person.id)
+        val getResponse = controller.getPartnerships(Database(jdbi), user, clock, person.id)
         assertEquals(1, getResponse.size)
         with(getResponse.first()) {
             assertNotNull(this.id)
@@ -145,7 +147,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             }
         }
 
-        controller.deletePartnership(Database(jdbi), user, partnership1.id)
+        controller.deletePartnership(Database(jdbi), user, clock, partnership1.id)
         db.read { r ->
             assertEquals(1, r.getPartnershipsForPerson(person.id).size)
         }
@@ -181,10 +183,10 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
-        controller.updatePartnership(Database(jdbi), user, partnership1.id, requestBody)
+        controller.updatePartnership(Database(jdbi), user, clock, partnership1.id, requestBody)
 
         // partnership1 should have new dates
-        val fetched1 = controller.getPartnership(Database(jdbi), user, partnership1.id)
+        val fetched1 = controller.getPartnership(Database(jdbi), user, clock, partnership1.id)
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -207,7 +209,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         val newEndDate = LocalDate.now().plusDays(600)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
         assertThrows<Conflict> {
-            controller.updatePartnership(Database(jdbi), user, partnership1.id, requestBody)
+            controller.updatePartnership(Database(jdbi), user, clock, partnership1.id, requestBody)
         }
     }
 
@@ -219,7 +221,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         }
 
         assertThrows<Forbidden> {
-            controller.getPartnerships(Database(jdbi), user, person.id)
+            controller.getPartnerships(Database(jdbi), user, clock, person.id)
         }
     }
 
@@ -232,7 +234,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             PartnershipsController.PartnershipRequest(person.id, partner.id, startDate, endDate)
 
         assertThrows<Forbidden> {
-            controller.createPartnership(Database(jdbi), user, reqBody)
+            controller.createPartnership(Database(jdbi), user, clock, reqBody)
         }
     }
 
@@ -246,7 +248,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         val requestBody =
             PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
-            controller.updatePartnership(Database(jdbi), user, partnership.id, requestBody)
+            controller.updatePartnership(Database(jdbi), user, clock, partnership.id, requestBody)
         }
     }
 
@@ -258,7 +260,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         }
 
         assertThrows<Forbidden> {
-            controller.deletePartnership(Database(jdbi), user, partnership.id)
+            controller.deletePartnership(Database(jdbi), user, clock, partnership.id)
         }
     }
 }

@@ -74,18 +74,18 @@ class VoucherValueDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest,
-        evakaClock: EvakaClock
     ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
             dbc
                 .read { tx ->
                     tx.searchValueDecisions(
-                        evakaClock,
+                        clock,
                         body.page,
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
@@ -108,10 +108,11 @@ class VoucherValueDecisionController(
     fun getDecision(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
     ): Wrapper<VoucherValueDecisionDetailed> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, id)
         val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return Wrapper(res)
@@ -121,10 +122,11 @@ class VoucherValueDecisionController(
     fun getHeadOfFamilyDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
         return db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
     }
 
@@ -132,11 +134,11 @@ class VoucherValueDecisionController(
     fun sendDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, decisionIds)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, decisionIds)
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -144,7 +146,7 @@ class VoucherValueDecisionController(
                     asyncJobRunner = asyncJobRunner,
                     user = user,
                     evakaEnv = evakaEnv,
-                    now = evakaClock.now(),
+                    now = clock.now(),
                     ids = decisionIds,
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
@@ -156,17 +158,17 @@ class VoucherValueDecisionController(
     fun markSent(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, ids)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
                     throw BadRequest("Voucher value decision cannot be marked sent")
-                tx.markVoucherValueDecisionsSent(ids, evakaClock.now())
+                tx.markVoucherValueDecisionsSent(ids, clock.now())
             }
         }
     }
@@ -175,10 +177,11 @@ class VoucherValueDecisionController(
     fun getDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
         Audit.FeeDecisionPdfRead.log(targetId = decisionId)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.READ, decisionId)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, decisionId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -205,11 +208,12 @@ class VoucherValueDecisionController(
     fun setType(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
     ) {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.VoucherValueDecision.UPDATE, uuid)
+        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
     }
 
@@ -222,7 +226,7 @@ class VoucherValueDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) } }
     }
 }
@@ -281,7 +285,7 @@ fun sendVoucherValueDecisions(
     tx.deleteValueDecisions(emptyDecisions.map { it.id })
     val validIds = validDecisions.map { it.id }
     tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
-    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) })
+    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) }, runAt = now)
 }
 
 enum class VoucherValueDecisionSortParam {

@@ -38,6 +38,8 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -65,6 +68,8 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     private lateinit var acl: AccessControlList
     private lateinit var accessControl: AccessControl
+
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeAll
     fun before() {
@@ -110,8 +115,8 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
-        assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
-        assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
+        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
+        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
     }
 
     @ParameterizedTest(name = "{0}")
@@ -122,14 +127,14 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
 
         assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
-        assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
-        assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
+        assertFalse(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
+        assertFalse(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
 
         db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
-        assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
-        assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
+        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
+        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
     }
 
     @Test

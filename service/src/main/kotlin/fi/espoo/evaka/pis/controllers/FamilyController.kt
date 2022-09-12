@@ -41,15 +41,16 @@ class FamilyController(
     fun getFamilyByPerson(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
         Audit.PisFamilyRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.READ_FAMILY_OVERVIEW, id)
-        val includeIncome = accessControl.hasPermissionFor(user, Action.Person.READ_INCOME, id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_FAMILY_OVERVIEW, id)
+        val includeIncome = accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
 
         return db.connect { dbc ->
             dbc.read {
-                val overview = familyOverviewService.getFamilyByAdult(it, id)
+                val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
                 if (includeIncome) overview
                 else overview?.copy(
                     headOfFamily = overview.headOfFamily.copy(income = null),
@@ -64,25 +65,26 @@ class FamilyController(
     fun getFamilyContactSummary(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam(value = "childId", required = true) childId: ChildId
     ): List<FamilyContact> {
         Audit.FamilyContactsRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.READ_FAMILY_CONTACTS, childId)
-        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(childId) } }
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_FAMILY_CONTACTS, childId)
+        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(clock, childId) } }
     }
 
     @PostMapping("/contacts")
     fun updateFamilyContactDetails(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: FamilyContactUpdate
     ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT_DETAILS, body.childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_DETAILS, body.childId)
         db.connect { dbc ->
             dbc.transaction {
-                if (!it.isFamilyContactForChild(evakaClock.today(), body.childId, body.contactPersonId)) {
+                if (!it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)) {
                     throw BadRequest("Invalid child or contact person")
                 }
                 personService.patchUserDetails(
@@ -101,14 +103,14 @@ class FamilyController(
     fun updateFamilyContactPriority(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: FamilyContactPriorityUpdate
     ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        accessControl.requirePermissionFor(user, Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY, body.childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY, body.childId)
         db.connect { dbc ->
             dbc.transaction {
-                if (!it.isFamilyContactForChild(evakaClock.today(), body.childId, body.contactPersonId)) {
+                if (!it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)) {
                     throw BadRequest("Invalid child or contact person")
                 }
                 it.updateFamilyContactPriority(
@@ -203,7 +205,7 @@ SELECT EXISTS (
         .one()
 }
 
-fun Database.Read.fetchFamilyContacts(childId: ChildId): List<FamilyContact> {
+fun Database.Read.fetchFamilyContacts(clock: EvakaClock, childId: ChildId): List<FamilyContact> {
     // language=sql
     val sql =
         """
@@ -218,10 +220,10 @@ WITH contact AS (
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE EXISTS ( -- is either head of child or their partner
         SELECT 1 FROM fridge_child fc
-        WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> now()::date AND (
+        WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
             fc.head_of_child = p.id OR EXISTS(
                 SELECT 1 FROM fridge_partner_view fp
-                WHERE fp.person_id = fc.head_of_child AND fp.partner_person_id = p.id AND daterange(fp.start_date, fp.end_date, '[]') @> now()::date
+                WHERE fp.person_id = fc.head_of_child AND fp.partner_person_id = p.id AND daterange(fp.start_date, fp.end_date, '[]') @> :today
             )
         )
     )
@@ -234,13 +236,13 @@ WITH contact AS (
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE EXISTS (
         SELECT 1 FROM fridge_child fc1
-        WHERE fc1.child_id = :id AND daterange(fc1.start_date, fc1.end_date, '[]') @> now()::date AND EXISTS (
+        WHERE fc1.child_id = :id AND daterange(fc1.start_date, fc1.end_date, '[]') @> :today AND EXISTS (
             SELECT 1 FROM fridge_child fc2
             WHERE
                 fc2.head_of_child = fc1.head_of_child
                 AND fc2.child_id = p.id
                 AND fc2.child_id <> fc1.child_id
-                AND daterange(fc1.start_date, fc1.end_date, '[]') @> now()::date
+                AND daterange(fc1.start_date, fc1.end_date, '[]') @> :today
         )
     )
 
@@ -254,13 +256,13 @@ WITH contact AS (
         EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id) -- is a guardian
         AND NOT EXISTS ( -- but is neither head of child nor their partner
             SELECT 1 FROM fridge_child fc
-            WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> now()::date AND (
+            WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
                 fc.head_of_child = p.id OR EXISTS (
                     SELECT 1 FROM fridge_partner_view fp
                     WHERE
                         fp.person_id = fc.head_of_child
                         AND fp.partner_person_id = p.id
-                        AND daterange(fp.start_date, fp.end_date, '[]') @> now()::date
+                        AND daterange(fp.start_date, fp.end_date, '[]') @> :today
                 )
             )
         )
@@ -279,6 +281,7 @@ ORDER BY priority ASC, role_order ASC
 
     return addDefaultPriorities(
         createQuery(sql)
+            .bind("today", clock.today())
             .bind("id", childId)
             .mapTo<FamilyContact>()
             .toList()

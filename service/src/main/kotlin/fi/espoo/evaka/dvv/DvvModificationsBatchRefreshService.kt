@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -30,7 +29,7 @@ class DvvModificationsBatchRefreshService(
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 
-    fun scheduleBatch(db: Database.Connection): Int {
+    fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
             tx.deleteOldJobs()
 
@@ -44,7 +43,7 @@ class DvvModificationsBatchRefreshService(
                         requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
                     )
                 ),
-                runAt = HelsinkiDateTime.now(),
+                runAt = clock.now(),
                 retryCount = 10
             )
 

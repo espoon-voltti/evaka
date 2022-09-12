@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -25,11 +26,12 @@ class DecisionsReportController(private val accessControl: AccessControl) {
     fun getDecisionsReport(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<DecisionsReportRow> {
         Audit.DecisionsReportRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_DECISIONS_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.connect { dbc ->

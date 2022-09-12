@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
@@ -31,11 +32,12 @@ class ChildDailyNoteController(
     fun createChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
         Audit.ChildDailyNoteCreate.log(childId)
-        ac.requirePermissionFor(user, Action.Child.CREATE_DAILY_NOTE, childId)
+        ac.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_NOTE, childId)
 
         try {
             return db.connect { dbc -> dbc.transaction { it.createChildDailyNote(childId, body) } }
@@ -51,23 +53,25 @@ class ChildDailyNoteController(
     fun updateChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable noteId: ChildDailyNoteId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNote {
         Audit.ChildDailyNoteUpdate.log(noteId, noteId)
-        ac.requirePermissionFor(user, Action.ChildDailyNote.UPDATE, noteId)
+        ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(clock, noteId, body) } }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")
     fun deleteChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable noteId: ChildDailyNoteId
     ) {
         Audit.ChildDailyNoteDelete.log(noteId)
-        ac.requirePermissionFor(user, Action.ChildDailyNote.DELETE, noteId)
+        ac.requirePermissionFor(user, clock, Action.ChildDailyNote.DELETE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.deleteChildDailyNote(noteId) } }
     }

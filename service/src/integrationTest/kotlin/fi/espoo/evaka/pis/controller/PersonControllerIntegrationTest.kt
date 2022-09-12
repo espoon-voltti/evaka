@@ -18,8 +18,11 @@ import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -29,6 +32,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired
     lateinit var controller: PersonController
 
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
     @Test
     fun `Search finds person by first and last name`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
@@ -37,6 +42,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName} ${person.lastName}",
                 orderBy = "first_name",
@@ -55,6 +61,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\t${person.lastName}",
                 orderBy = "first_name",
@@ -73,6 +80,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u00A0${person.lastName}",
                 orderBy = "first_name",
@@ -93,6 +101,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val response = controller.findBySearchTerms(
             Database(jdbi),
             user,
+            clock,
             SearchPersonBody(
                 searchTerm = "${person.firstName}\u3000${person.lastName}",
                 orderBy = "first_name",
@@ -115,7 +124,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val dependants = controller.getPersonDependants(Database(jdbi), admin, guardianId)
+        val dependants = controller.getPersonDependants(Database(jdbi), admin, clock, guardianId)
         assertEquals(3, dependants.size)
 
         val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
@@ -125,7 +134,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
         }
 
-        assertEquals(2, controller.getPersonDependants(Database(jdbi), admin, guardianId).size)
+        assertEquals(2, controller.getPersonDependants(Database(jdbi), admin, clock, guardianId).size)
     }
 
     @Test
@@ -140,7 +149,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val guardians = controller.getPersonGuardians(Database(jdbi), admin, childId)
+        val guardians = controller.getPersonGuardians(Database(jdbi), admin, clock, childId)
         assertEquals(2, guardians.size)
 
         val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
@@ -150,7 +159,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.execute("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
         }
 
-        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, childId).size)
+        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, clock, childId).size)
     }
 
     private fun createPerson(): PersonDTO {

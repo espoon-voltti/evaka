@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -38,7 +37,7 @@ class DvvModificationsService(
                 personModifications.tietoryhmat.map { infoGroup ->
                     try {
                         when (infoGroup) {
-                            is DeathDvvInfoGroup -> handleDeath(db, personModifications.henkilotunnus, infoGroup)
+                            is DeathDvvInfoGroup -> handleDeath(db, clock, personModifications.henkilotunnus, infoGroup)
                             is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(
                                 db,
                                 personModifications.henkilotunnus,
@@ -81,7 +80,7 @@ class DvvModificationsService(
                 asyncJobRunner.plan(
                     tx,
                     payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
-                    runAt = HelsinkiDateTime.now()
+                    runAt = clock.now()
                 )
             }
 
@@ -99,7 +98,7 @@ class DvvModificationsService(
         return result.dvvModifications.size
     }
 
-    private fun handleDeath(db: Database.Connection, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
+    private fun handleDeath(db: Database.Connection, clock: EvakaClock, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
         if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
         db.transaction { tx ->
@@ -109,8 +108,8 @@ class DvvModificationsService(
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
 
                 endFamilyRelations(tx, person.id, dateOfDeath)
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))), runAt = clock.now())
+                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))), runAt = clock.now())
             }
         }
     }

@@ -77,10 +77,11 @@ class FeeDecisionController(
     fun search(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest
     ): Paged<FeeDecisionSummary> {
         Audit.FeeDecisionSearch.log()
-        accessControl.requirePermissionFor(user, Action.Global.SEARCH_FEE_DECISIONS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_FEE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
@@ -88,6 +89,7 @@ class FeeDecisionController(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.searchFeeDecisions(
+                    clock,
                     body.page,
                     body.pageSize,
                     body.sortBy ?: FeeDecisionSortParam.STATUS,
@@ -110,36 +112,36 @@ class FeeDecisionController(
     fun confirmDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val confirmedDecisions = service.confirmDrafts(
                     tx,
                     user,
                     feeDecisionIds,
-                    evakaClock.now(),
+                    clock.now(),
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler
                 )
-                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) })
+                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) }, runAt = clock.now())
             }
         }
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
+    fun setSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, feeDecisionIds)
-        db.connect { dbc -> dbc.transaction { service.setSent(it, feeDecisionIds) } }
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
+        db.connect { dbc -> dbc.transaction { service.setSent(it, clock, feeDecisionIds) } }
     }
 
     @GetMapping("/pdf/{decisionId}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable decisionId: FeeDecisionId): ResponseEntity<Any> {
+    fun getDecisionPdf(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable decisionId: FeeDecisionId): ResponseEntity<Any> {
         Audit.FeeDecisionPdfRead.log(targetId = decisionId)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, decisionId)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, decisionId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -162,9 +164,9 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): Wrapper<FeeDecisionDetailed> {
+    fun getDecision(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable uuid: FeeDecisionId): Wrapper<FeeDecisionDetailed> {
         Audit.FeeDecisionRead.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.READ, uuid)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, uuid)
         val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return Wrapper(res)
@@ -174,10 +176,11 @@ class FeeDecisionController(
     fun getHeadOfFamilyFeeDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: PersonId
     ): Wrapper<List<FeeDecision>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.READ_FEE_DECISIONS, id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_FEE_DECISIONS, id)
         return Wrapper(
             db.connect { dbc ->
                 dbc.read {
@@ -191,11 +194,12 @@ class FeeDecisionController(
     fun generateRetroactiveDecisions(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
     }
 
@@ -203,11 +207,12 @@ class FeeDecisionController(
     fun setType(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
     ) {
         Audit.FeeDecisionSetType.log(targetId = uuid)
-        accessControl.requirePermissionFor(user, Action.FeeDecision.UPDATE, uuid)
+        accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
     }
 }

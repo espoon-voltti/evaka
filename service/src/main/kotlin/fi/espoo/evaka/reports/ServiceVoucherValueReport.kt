@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
@@ -40,11 +41,12 @@ class ServiceVoucherValueReportController(
     fun getServiceVoucherValuesForAllUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
     ): ServiceVoucherReport {
-        accessControl.requirePermissionFor(user, Action.Global.READ_SERVICE_VOUCHER_REPORT)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_VOUCHER_REPORT)
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.connect { dbc ->
@@ -62,11 +64,12 @@ class ServiceVoucherValueReportController(
     fun getServiceVoucherValuesForUnit(
         db: Database,
         user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ServiceVoucherUnitReport {
-        accessControl.requirePermissionFor(user, Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT, unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT, unitId)
 
         return db.connect { dbc ->
             dbc.read { tx ->

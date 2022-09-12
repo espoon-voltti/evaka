@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -41,10 +42,11 @@ class PartnershipsController(
     fun createPartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: PartnershipRequest
     ) {
         Audit.PartnerShipsCreate.log(targetId = body.person1Id)
-        accessControl.requirePermissionFor(user, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
+        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
 
         db.connect { dbc ->
             dbc
@@ -63,7 +65,8 @@ class PartnershipsController(
                                 body.person1Id,
                                 DateRange(body.startDate, body.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
         }
@@ -73,10 +76,11 @@ class PartnershipsController(
     fun getPartnerships(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<Partnership> {
         Audit.PartnerShipsRead.log(targetId = personId)
-        accessControl.requirePermissionFor(user, Action.Person.READ_PARTNERSHIPS, personId)
+        accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARTNERSHIPS, personId)
 
         return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }
     }
@@ -85,10 +89,11 @@ class PartnershipsController(
     fun getPartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
-        accessControl.requirePermissionFor(user, Action.Partnership.READ, partnershipId)
+        accessControl.requirePermissionFor(user, clock, Action.Partnership.READ, partnershipId)
 
         return db.connect { dbc -> dbc.read { it.getPartnership(partnershipId) } }
             ?: throw NotFound()
@@ -98,11 +103,12 @@ class PartnershipsController(
     fun updatePartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
     ) {
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
-        accessControl.requirePermissionFor(user, Action.Partnership.UPDATE, partnershipId)
+        accessControl.requirePermissionFor(user, clock, Action.Partnership.UPDATE, partnershipId)
 
         return db.connect { dbc ->
             dbc
@@ -116,7 +122,8 @@ class PartnershipsController(
                                 partnership.partners.first().id,
                                 DateRange(partnership.startDate, partnership.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
         }
@@ -126,10 +133,11 @@ class PartnershipsController(
     fun retryPartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
-        accessControl.requirePermissionFor(user, Action.Partnership.RETRY, partnershipId)
+        accessControl.requirePermissionFor(user, clock, Action.Partnership.RETRY, partnershipId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -141,7 +149,8 @@ class PartnershipsController(
                                 it.partners.first().id,
                                 DateRange(it.startDate, it.endDate)
                             )
-                        )
+                        ),
+                        runAt = clock.now()
                     )
                 }
             }
@@ -152,10 +161,11 @@ class PartnershipsController(
     fun deletePartnership(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
-        accessControl.requirePermissionFor(user, Action.Partnership.DELETE, partnershipId)
+        accessControl.requirePermissionFor(user, clock, Action.Partnership.DELETE, partnershipId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -167,7 +177,8 @@ class PartnershipsController(
                                 it.id,
                                 DateRange(partnership.startDate, partnership.endDate)
                             )
-                        }
+                        },
+                        runAt = clock.now()
                     )
                 }
             }

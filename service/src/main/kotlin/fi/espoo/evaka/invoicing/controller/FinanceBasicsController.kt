@@ -15,10 +15,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.jdbi.v3.core.JdbiException
-import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.Nested
 import org.postgresql.util.PSQLState
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,9 +38,9 @@ class FinanceBasicsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database, user: AuthenticatedUser): List<FeeThresholdsWithId> {
+    fun getFeeThresholds(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.READ_FEE_THRESHOLDS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }
     }
@@ -49,10 +49,11 @@ class FinanceBasicsController(
     fun createFeeThresholds(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsCreate.log()
-        accessControl.requirePermissionFor(user, Action.Global.CREATE_FEE_THRESHOLDS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
         db.connect { dbc ->
@@ -71,7 +72,7 @@ class FinanceBasicsController(
                 }
 
                 mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)), runAt = clock.now())
             }
         }
     }
@@ -80,17 +81,18 @@ class FinanceBasicsController(
     fun updateFeeThresholds(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
-        accessControl.requirePermissionFor(user, Action.FeeThresholds.UPDATE, id)
+        accessControl.requirePermissionFor(user, clock, Action.FeeThresholds.UPDATE, id)
 
         validateFeeThresholds(thresholds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)))
+                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)), runAt = clock.now())
             }
         }
     }

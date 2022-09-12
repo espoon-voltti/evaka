@@ -7,6 +7,7 @@ package fi.espoo.evaka.setting
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,16 +21,16 @@ import org.springframework.web.bind.annotation.RestController
 class SettingController(private val accessControl: AccessControl) {
 
     @GetMapping
-    fun getSettings(db: Database, user: AuthenticatedUser): Map<SettingType, String> {
+    fun getSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock): Map<SettingType, String> {
         Audit.SettingsRead.log()
-        accessControl.requirePermissionFor(user, Action.Global.UPDATE_SETTINGS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
         return db.connect { dbc -> dbc.read { tx -> tx.getSettings() } }
     }
 
     @PutMapping
-    fun setSettings(db: Database, user: AuthenticatedUser, @RequestBody settings: Map<SettingType, String>) {
+    fun setSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody settings: Map<SettingType, String>) {
         Audit.SettingsUpdate.log()
-        accessControl.requirePermissionFor(user, Action.Global.UPDATE_SETTINGS)
+        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
         return db.connect { dbc -> dbc.transaction { tx -> tx.setSettings(settings) } }
     }
 }

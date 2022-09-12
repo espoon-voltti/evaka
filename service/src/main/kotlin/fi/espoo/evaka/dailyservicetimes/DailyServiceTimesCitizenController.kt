@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,10 +25,11 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     @GetMapping("/daily-service-time-notifications")
     fun getDailyServiceTimeNotifications(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
     ): List<DailyServiceTimeNotification> {
         Audit.ChildDailyServiceTimeNotificationsRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
 
         return db.connect { dbc -> dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) } }
     }
@@ -36,10 +38,11 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     fun dismissDailyServiceTimeNotification(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @RequestBody body: List<DailyServiceTimeNotificationId>
     ) {
         Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = body)
-        accessControl.requirePermissionFor(user, Action.Citizen.DailyServiceTimeNotification.DISMISS, body)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.DailyServiceTimeNotification.DISMISS, body)
 
         db.connect { dbc -> dbc.transaction { tx -> tx.deleteDailyServiceTimesNotifications(body) } }
     }

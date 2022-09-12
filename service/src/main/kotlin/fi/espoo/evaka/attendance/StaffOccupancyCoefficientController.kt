@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,10 +27,11 @@ class StaffOccupancyCoefficientController(
     fun getOccupancyCoefficients(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestParam unitId: DaycareId,
     ): List<StaffOccupancyCoefficient> {
         Audit.StaffOccupancyCoefficientRead.log(unitId)
-        ac.requirePermissionFor(user, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
+        ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
         return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }
     }
 
@@ -37,10 +39,11 @@ class StaffOccupancyCoefficientController(
     fun upsertOccupancyCoefficient(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @RequestBody body: OccupancyCoefficientUpsert,
     ) {
         Audit.StaffOccupancyCoefficientUpsert.log(body.unitId, body.employeeId)
-        ac.requirePermissionFor(user, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
+        ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
         db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
     }
 }

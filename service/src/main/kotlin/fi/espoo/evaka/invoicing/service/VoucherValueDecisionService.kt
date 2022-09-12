@@ -26,7 +26,7 @@ import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.langWithDefault
@@ -60,7 +60,7 @@ class VoucherValueDecisionService(
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun sendDecision(tx: Database.Transaction, decisionId: VoucherValueDecisionId): Boolean {
+    fun sendDecision(tx: Database.Transaction, clock: EvakaClock, decisionId: VoucherValueDecisionId): Boolean {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -102,10 +102,11 @@ class VoucherValueDecisionService(
                         messageContent = messageContent
                     )
                 )
-            )
+            ),
+            runAt = clock.now()
         )
 
-        tx.markVoucherValueDecisionsSent(listOf(decision.id), HelsinkiDateTime.now())
+        tx.markVoucherValueDecisionsSent(listOf(decision.id), clock.now())
 
         return true
     }

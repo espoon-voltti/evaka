@@ -62,12 +62,13 @@ class MessageControllerCitizen(
     fun markThreadRead(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.transaction { it.markThreadRead(accountId, threadId) }
+            dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
     }
 
@@ -116,6 +117,7 @@ class MessageControllerCitizen(
     fun replyToThread(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
@@ -125,6 +127,7 @@ class MessageControllerCitizen(
 
             messageService.replyToThread(
                 db = dbc,
+                clock = clock,
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,
@@ -137,13 +140,13 @@ class MessageControllerCitizen(
     fun newMessage(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val validReceivers = dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) }
+            val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId) }
             val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
                 dbc.transaction { tx ->
@@ -151,6 +154,7 @@ class MessageControllerCitizen(
                     val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false)
                     val messageId =
                         tx.insertMessage(
+                            clock = clock,
                             contentId = contentId,
                             threadId = threadId,
                             sender = accountId,

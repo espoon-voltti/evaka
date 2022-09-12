@@ -30,14 +30,14 @@ class ChildStickyNoteController(
     fun createChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
         Audit.ChildStickyNoteCreate.log(childId)
-        ac.requirePermissionFor(user, Action.Child.CREATE_STICKY_NOTE, childId)
+        ac.requirePermissionFor(user, clock, Action.Child.CREATE_STICKY_NOTE, childId)
 
-        validateExpiration(evakaClock, body.expires)
+        validateExpiration(clock, body.expires)
 
         return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }
     }
@@ -46,26 +46,27 @@ class ChildStickyNoteController(
     fun updateChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
-        evakaClock: EvakaClock,
+        clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNote {
         Audit.ChildStickyNoteUpdate.log(noteId, noteId)
-        ac.requirePermissionFor(user, Action.ChildStickyNote.UPDATE, noteId)
+        ac.requirePermissionFor(user, clock, Action.ChildStickyNote.UPDATE, noteId)
 
-        validateExpiration(evakaClock, body.expires)
+        validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
     fun deleteChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId
     ) {
         Audit.ChildStickyNoteDelete.log(noteId)
-        ac.requirePermissionFor(user, Action.ChildStickyNote.DELETE, noteId)
+        ac.requirePermissionFor(user, clock, Action.ChildStickyNote.DELETE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }
     }

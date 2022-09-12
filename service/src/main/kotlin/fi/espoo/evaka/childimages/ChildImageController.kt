@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
@@ -42,11 +43,12 @@ class ChildImageController(
     fun putImage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile
     ) {
         Audit.ChildImageUpload.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.UPLOAD_IMAGE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.UPLOAD_IMAGE, childId)
 
         val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
 
@@ -63,10 +65,11 @@ class ChildImageController(
     fun deleteImage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ) {
         Audit.ChildImageDelete.log(targetId = childId)
-        accessControl.requirePermissionFor(user, Action.Child.DELETE_IMAGE, childId)
+        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_IMAGE, childId)
 
         db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
     }
@@ -75,10 +78,11 @@ class ChildImageController(
     fun getImage(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable imageId: ChildImageId
     ): ResponseEntity<Any> {
         Audit.ChildImageDownload.log(targetId = imageId)
-        accessControl.requirePermissionFor(user, Action.ChildImage.DOWNLOAD, imageId)
+        accessControl.requirePermissionFor(user, clock, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
         return documentClient.responseInline(bucket, key, null)

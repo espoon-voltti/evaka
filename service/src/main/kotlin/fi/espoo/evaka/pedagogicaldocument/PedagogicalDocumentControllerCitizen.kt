@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -51,12 +52,13 @@ class PedagogicalDocumentControllerCitizen(
     fun markPedagogicalDocumentRead(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
-        accessControl.requirePermissionFor(user, Action.Citizen.PedagogicalDocument.READ, documentId)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.PedagogicalDocument.READ, documentId)
         return db.connect { dbc ->
-            dbc.transaction { it.markDocumentReadByGuardian(documentId, user.id) }
+            dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
     }
 
@@ -72,16 +74,17 @@ class PedagogicalDocumentControllerCitizen(
     }
 }
 
-private fun Database.Transaction.markDocumentReadByGuardian(documentId: PedagogicalDocumentId, guardianId: PersonId) =
+private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, documentId: PedagogicalDocumentId, guardianId: PersonId) =
     this.createUpdate(
         """
             INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
-            VALUES (:documentId, :personId, now())
+            VALUES (:documentId, :personId, :now)
             ON CONFLICT(pedagogical_document_id, person_id) DO NOTHING;
         """.trimIndent()
     )
         .bind("documentId", documentId)
         .bind("personId", guardianId)
+        .bind("now", clock.now())
         .execute()
 
 private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Map<ChildId, Int> =

@@ -10,9 +10,9 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.Instant
 import java.time.LocalDate
 
@@ -106,7 +106,7 @@ WHERE evaka_service_need_id = :serviceNeedId
     .bind("errors", errors)
     .execute()
 
-fun Database.Read.getEvakaServiceNeedChanges(feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
+fun Database.Read.getEvakaServiceNeedChanges(clock: EvakaClock, feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
     createQuery(
         """
 WITH potential_missing_varda_service_needs AS (
@@ -127,7 +127,7 @@ WITH potential_missing_varda_service_needs AS (
         AND d.upload_children_to_varda = true
         AND sno.daycare_hours_per_week >= 1
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
-        AND sn.start_date <= current_date
+        AND sn.start_date <= :today
         AND vrc.reset_timestamp IS NOT NULL
 ), service_need_fee_decision AS (
     SELECT
@@ -189,6 +189,7 @@ FROM varda_service_need vsn
 WHERE update_failed = true       
         """.trimIndent()
     )
+        .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
         .mapTo<ChangedChildServiceNeed>()
@@ -370,6 +371,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
     .list().isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
+    clock: EvakaClock,
     childId: ChildId
 ): List<ServiceNeedId> {
     // language=SQL
@@ -384,10 +386,11 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
         AND sno.daycare_hours_per_week >= 1
-        AND sn.start_date <= current_date
+        AND sn.start_date <= :today
         """.trimIndent()
 
     return createQuery(sql)
+        .bind("today", clock.today())
         .bind("childId", childId)
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .mapTo<ServiceNeedId>()
@@ -464,7 +467,7 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boo
         .list()
 }
 
-fun Database.Read.calculateDeletedChildServiceNeeds(): Map<ChildId, List<ServiceNeedId>> =
+fun Database.Read.calculateDeletedChildServiceNeeds(clock: EvakaClock): Map<ChildId, List<ServiceNeedId>> =
     this.createQuery(
         """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
@@ -482,11 +485,12 @@ WHERE
   p.type = ANY(:vardaPlacementTypes::placement_type[])
   AND d.upload_children_to_varda = true
   AND sno.daycare_hours_per_week >= 1
-  AND sn.start_date <= current_date
+  AND sn.start_date <= :today
 )
 GROUP BY evaka_child_id
         """.trimIndent()
     )
+        .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<List<ServiceNeedId>>("service_need_ids") }
         .toMap()

@@ -466,7 +466,7 @@ FROM daily_service_time dst
 JOIN employee_child_daycare_acl(:today) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = :userId
-  AND lower(dst.validity_period) > current_date
+  AND lower(dst.validity_period) > :today
             """.trimIndent()
         )
             .bind("today", now.toLocalDate())

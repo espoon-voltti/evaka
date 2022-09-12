@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
-import org.jdbi.v3.core.kotlin.bindKotlin
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime

@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
@@ -53,6 +54,7 @@ WHERE g.guardian_id = :guardianId AND EXISTS(
         .mapValues { it.value.filterNotNull() }
 
 fun Database.Transaction.upsertChildConsentEmployee(
+    clock: EvakaClock,
     childId: ChildId,
     type: ChildConsentType,
     given: Boolean,
@@ -64,9 +66,10 @@ fun Database.Transaction.upsertChildConsentEmployee(
 INSERT INTO child_consent (child_id, type, given, given_by_employee, given_at)
 VALUES (:childId, :type, :given, :givenBy, :givenAt)
 ON CONFLICT (child_id, type)
-DO UPDATE SET given = :given, given_by_guardian = NULL, given_by_employee = :givenBy, given_at = now()
+DO UPDATE SET given = :given, given_by_guardian = NULL, given_by_employee = :givenBy, given_at = :now
         """.trimIndent()
     )
+        .bind("now", clock.now())
         .bind("childId", childId)
         .bind("type", type)
         .bind("given", given)
@@ -91,6 +94,7 @@ WHERE child_id = :childId AND type = :type
 }
 
 fun Database.Transaction.insertChildConsentCitizen(
+    clock: EvakaClock,
     childId: ChildId,
     type: ChildConsentType,
     given: Boolean,
@@ -99,11 +103,12 @@ fun Database.Transaction.insertChildConsentCitizen(
     this.createQuery(
         """
 INSERT INTO child_consent (child_id, type, given, given_by_guardian, given_at)
-VALUES (:childId, :type, :given, :givenBy, now())
+VALUES (:childId, :type, :given, :givenBy, :now)
 ON CONFLICT DO NOTHING
 RETURNING id
         """.trimIndent()
     )
+        .bind("now", clock.now())
         .bind("childId", childId)
         .bind("type", type)
         .bind("given", given)

@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -24,8 +25,8 @@ class ScheduledJobTriggerController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping(produces = ["text/html"])
-    fun form(user: AuthenticatedUser): String {
-        accessControl.requirePermissionFor(user, Action.Global.TRIGGER_SCHEDULED_JOBS)
+    fun form(user: AuthenticatedUser, clock: EvakaClock): String {
+        accessControl.requirePermissionFor(user, clock, Action.Global.TRIGGER_SCHEDULED_JOBS)
 
         // language=html
         return """
@@ -65,12 +66,12 @@ class ScheduledJobTriggerController(
     }
 
     @PostMapping
-    fun trigger(user: AuthenticatedUser, db: Database, @RequestBody body: TriggerBody) {
-        accessControl.requirePermissionFor(user, Action.Global.TRIGGER_SCHEDULED_JOBS)
+    fun trigger(user: AuthenticatedUser, db: Database, clock: EvakaClock, @RequestBody body: TriggerBody) {
+        accessControl.requirePermissionFor(user, clock, Action.Global.TRIGGER_SCHEDULED_JOBS)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1)
+                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1, runAt = clock.now())
             }
         }
     }

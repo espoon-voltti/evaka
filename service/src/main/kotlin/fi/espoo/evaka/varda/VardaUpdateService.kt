@@ -56,14 +56,14 @@ class VardaUpdateService(
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
-    fun startVardaUpdate(db: Database.Connection) {
+    fun startVardaUpdate(db: Database.Connection, clock: EvakaClock) {
         val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
         logger.info("VardaUpdate: starting update process")
 
-        updateUnits(db, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
+        updateUnits(db, clock, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
 
-        planVardaChildrenUpdate(db)
+        planVardaChildrenUpdate(db, clock)
     }
 
     /*
@@ -72,8 +72,8 @@ class VardaUpdateService(
             - For each new service need, IF related fee data exists, add all related data to varda
             - For each modified service need, delete old related data from varda and add new
      */
-    fun planVardaChildrenUpdate(db: Database.Connection) {
-        val serviceNeedDiffsByChild = getChildrenToUpdate(db, feeDecisionMinDate)
+    fun planVardaChildrenUpdate(db: Database.Connection, clock: EvakaClock) {
+        val serviceNeedDiffsByChild = getChildrenToUpdate(db, clock, feeDecisionMinDate)
 
         logger.info("VardaUpdate: will update ${serviceNeedDiffsByChild.entries.size} children")
 
@@ -83,6 +83,7 @@ class VardaUpdateService(
                 serviceNeedDiffsByChild.values.map {
                     VardaAsyncJob.UpdateVardaChild(it)
                 },
+                runAt = clock.now(),
                 retryCount = 2,
                 retryInterval = Duration.ofMinutes(10)
             )
@@ -96,9 +97,9 @@ class VardaUpdateService(
     }
 }
 
-fun getChildrenToUpdate(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
+fun getChildrenToUpdate(db: Database.Connection, clock: EvakaClock, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
     val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
-    val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, feeDecisionMinDate)
+    val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, clock, feeDecisionMinDate)
         .filter { includedChildIds.contains(it.key) }
     return serviceNeedDiffsByChild
 }
@@ -387,10 +388,10 @@ private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDa
     return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
 }
 
-fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
-    val evakaServiceNeedDeletionsByChild = db.read { it.calculateDeletedChildServiceNeeds() }
+fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, clock: EvakaClock, feeDecisionMinDate: LocalDate): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
+    val evakaServiceNeedDeletionsByChild = db.read { it.calculateDeletedChildServiceNeeds(clock) }
 
-    val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(feeDecisionMinDate) }
+    val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(clock, feeDecisionMinDate) }
         .groupBy { it.evakaChildId }
 
     val additionsAndChangesToVardaByChild = evakaServiceNeedChangesByChild.entries.associate { evakaServiceNeedChangesForChild ->

@@ -8,21 +8,22 @@ import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
 
 @Service
 class AccessControlCitizen(
     val citizenCalendarEnv: CitizenCalendarEnv
 ) {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Citizen): CitizenFeatures {
+    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Citizen, clock: EvakaClock): CitizenFeatures {
         return CitizenFeatures(
-            messages = tx.citizenHasAccessToMessaging(user.id),
-            reservations = tx.citizenHasAccessToReservations(user.id, citizenCalendarEnv.calendarOpenBeforePlacementDays),
-            childDocumentation = tx.citizenHasAccessToChildDocumentation(user.id)
+            messages = tx.citizenHasAccessToMessaging(clock, user.id),
+            reservations = tx.citizenHasAccessToReservations(clock, user.id, citizenCalendarEnv.calendarOpenBeforePlacementDays),
+            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, user.id)
         )
     }
 
-    private fun Database.Read.citizenHasAccessToMessaging(personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToMessaging(clock: EvakaClock, personId: PersonId): Boolean {
         // language=sql
         val sql = """
 WITH child_placements AS (
@@ -31,7 +32,7 @@ WITH child_placements AS (
     JOIN placement pl
     ON g.child_id = pl.child_id
     WHERE guardian_id = :personId
-    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> :today
     AND NOT EXISTS (
         SELECT 1
         FROM messaging_blocklist
@@ -46,8 +47,8 @@ WITH child_placements AS (
     JOIN placement pl
     ON fg.child_id = pl.child_id
     WHERE head_of_child = :personId
-    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
-    AND Daterange(fg.start_date, fg.end_date, '[]') @> current_date
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> :today
+    AND Daterange(fg.start_date, fg.end_date, '[]') @> :today
     AND fg.conflict = false
     AND NOT EXISTS (
         SELECT 1
@@ -65,38 +66,39 @@ SELECT EXISTS (
     WHERE 'MESSAGING' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
-        return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
+        return createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToReservations(personId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
+    private fun Database.Read.citizenHasAccessToReservations(clock: EvakaClock, personId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (
     SELECT 1
     FROM guardian g
-    JOIN placement pl ON g.child_id = pl.child_id AND Daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> current_date
+    JOIN placement pl ON g.child_id = pl.child_id AND Daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> :today
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
         return createQuery(sql)
+            .bind("today", clock.today())
             .bind("personId", personId)
             .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
             .mapTo<Boolean>()
             .first()
     }
 
-    private fun Database.Read.citizenHasAccessToChildDocumentation(personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToChildDocumentation(clock: EvakaClock, personId: PersonId): Boolean {
         // language=sql
         val sql = """
 SELECT EXISTS (
     SELECT 1
     FROM guardian g
-    JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+    JOIN placement pl ON g.child_id = pl.child_id AND Daterange(pl.start_date, pl.end_date, '[]') @> :today
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
         """.trimIndent()
-        return createQuery(sql).bind("personId", personId).mapTo<Boolean>().first()
+        return createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<Boolean>().first()
     }
 }

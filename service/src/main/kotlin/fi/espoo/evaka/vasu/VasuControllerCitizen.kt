@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -88,10 +89,11 @@ class VasuControllerCitizen(
     fun getDocument(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): CitizenGetVasuDocumentResponse {
         Audit.VasuDocumentReadByGuardian.log(id, user.rawId())
-        accessControl.requirePermissionFor(user, Action.Citizen.VasuDocument.READ, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.VasuDocument.READ, id)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -109,10 +111,11 @@ class VasuControllerCitizen(
     fun givePermissionToShare(
         db: Database,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ) {
         Audit.VasuDocumentGivePermissionToShareByGuardian.log(id, user.rawId())
-        accessControl.requirePermissionFor(user, Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE, id)
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE, id)
 
         return db.connect { dbc ->
             dbc.transaction { it.setVasuGuardianHasGivenPermissionToShare(id, PersonId(user.rawId())) }
