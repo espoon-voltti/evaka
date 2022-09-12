@@ -28,7 +28,7 @@ const FooterContainer = styled.div`
 export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
 
-  const { vasu, content, translations } = useVasu(id)
+  const { vasu, content, permittedActions, translations } = useVasu(id)
 
   const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
 
@@ -66,6 +66,7 @@ export default React.memo(function VasuPage() {
             <VasuStateTransitionButtons
               childId={vasu.basics.child.id}
               documentId={vasu.id}
+              permittedActions={permittedActions}
               state={vasu.documentState}
             />
           )}

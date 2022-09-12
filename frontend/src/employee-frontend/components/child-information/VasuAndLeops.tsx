@@ -257,7 +257,9 @@ export default React.memo(function VasuAndLeops({
   const allowCreation = useMemo(
     () =>
       vasus
-        .map((docs) => docs.every((doc) => doc.documentState === 'CLOSED'))
+        .map((docs) =>
+          docs.every(({ data: doc }) => doc.documentState === 'CLOSED')
+        )
         .getOrElse(false),
     [vasus]
   )
@@ -299,7 +301,7 @@ export default React.memo(function VasuAndLeops({
         {renderResult(vasus, (vasus) => (
           <Table>
             <Tbody>
-              {vasus.map((vasu) => (
+              {vasus.map(({ data: vasu, permittedActions }) => (
                 <Tr key={vasu.id}>
                   <Td>
                     <InlineButton
@@ -334,6 +336,7 @@ export default React.memo(function VasuAndLeops({
                       <InlineButton
                         onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
                         text={i18n.common.edit}
+                        disabled={!permittedActions.includes('UPDATE')}
                       />
                     )}
                   </Td>

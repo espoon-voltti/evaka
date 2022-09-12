@@ -4,12 +4,13 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import {
   UpdateDocumentRequest,
-  VasuDocument,
   VasuDocumentEvent,
   VasuDocumentEventType,
-  VasuDocumentSummary
+  VasuDocumentSummaryWithPermittedActions,
+  VasuDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -28,30 +29,29 @@ const mapVasuDocumentEvent = (
 })
 
 const mapVasuDocumentResponse = ({
-  events,
-  modifiedAt,
-  templateRange,
-  basics,
-  content,
-  ...rest
-}: JsonOf<VasuDocument>): VasuDocument => ({
-  ...rest,
-  content: mapVasuContent(content),
-  events: events.map(mapVasuDocumentEvent),
-  modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-  templateRange: FiniteDateRange.parseJson(templateRange),
-  basics: {
-    ...basics,
-    child: {
-      ...basics.child,
-      dateOfBirth: LocalDate.parseIso(basics.child.dateOfBirth)
-    },
-    placements:
-      basics.placements?.map((pl) => ({
-        ...pl,
-        range: FiniteDateRange.parseJson(pl.range)
-      })) ?? null
-  }
+  data: { events, modifiedAt, templateRange, basics, content, ...rest },
+  permittedActions
+}: JsonOf<VasuDocumentWithPermittedActions>): VasuDocumentWithPermittedActions => ({
+  data: {
+    ...rest,
+    content: mapVasuContent(content),
+    events: events.map(mapVasuDocumentEvent),
+    modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+    templateRange: FiniteDateRange.parseJson(templateRange),
+    basics: {
+      ...basics,
+      child: {
+        ...basics.child,
+        dateOfBirth: LocalDate.parseIso(basics.child.dateOfBirth)
+      },
+      placements:
+        basics.placements?.map((pl) => ({
+          ...pl,
+          range: FiniteDateRange.parseJson(pl.range)
+        })) ?? null
+    }
+  },
+  permittedActions
 })
 
 export async function createVasuDocument(
@@ -66,28 +66,49 @@ export async function createVasuDocument(
 
 export async function getVasuDocumentSummaries(
   childId: UUID
-): Promise<Result<VasuDocumentSummary[]>> {
+): Promise<Result<VasuDocumentSummaryWithPermittedActions[]>> {
   return client
-    .get<JsonOf<VasuDocumentSummary[]>>(`/children/${childId}/vasu-summaries`)
+    .get<JsonOf<VasuDocumentSummaryWithPermittedActions[]>>(
+      `/children/${childId}/vasu-summaries`
+    )
     .then((res) =>
       Success.of(
-        res.data.map(({ events, modifiedAt, publishedAt, ...rest }) => ({
-          ...rest,
-          events: events.map(mapVasuDocumentEvent),
-          modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-          publishedAt: publishedAt
-            ? HelsinkiDateTime.parseIso(publishedAt)
-            : null
-        }))
+        res.data.map(
+          ({
+            data: { events, modifiedAt, publishedAt, ...rest },
+            permittedActions
+          }) => ({
+            data: {
+              ...rest,
+              events: events.map(mapVasuDocumentEvent),
+              modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+              publishedAt: publishedAt
+                ? HelsinkiDateTime.parseIso(publishedAt)
+                : null
+            },
+            permittedActions
+          })
+        )
       )
     )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
+export async function getVasuDocument(
+  id: UUID
+): Promise<Result<VasuDocumentWithPermittedActions>> {
   return client
-    .get<JsonOf<VasuDocument>>(`/vasu/${id}`)
+    .get<JsonOf<VasuDocumentWithPermittedActions>>(`/vasu/${id}`)
     .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getPermittedActions(
+  id: UUID
+): Promise<Result<Action.VasuDocument[]>> {
+  return client
+    .get<JsonOf<Action.VasuDocument[]>>(`/vasu/${id}/permitted-actions`)
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 

@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 
@@ -168,6 +169,22 @@ export interface VasuDocumentSummary {
   name: string
   publishedAt: HelsinkiDateTime | null
   type: CurriculumType
+}
+
+/**
+* Generated from fi.espoo.evaka.vasu.VasuController.VasuDocumentSummaryWithPermittedActions
+*/
+export interface VasuDocumentSummaryWithPermittedActions {
+  data: VasuDocumentSummary
+  permittedActions: Action.VasuDocument[]
+}
+
+/**
+* Generated from fi.espoo.evaka.vasu.VasuController.VasuDocumentWithPermittedActions
+*/
+export interface VasuDocumentWithPermittedActions {
+  data: VasuDocument
+  permittedActions: Action.VasuDocument[]
 }
 
 /**
