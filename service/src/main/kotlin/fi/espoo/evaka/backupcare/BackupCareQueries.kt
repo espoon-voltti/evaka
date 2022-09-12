@@ -186,7 +186,6 @@ fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, ol
             .execute()
 
         createUpdate(
-            // language=SQL
             """
             UPDATE backup_care
             SET start_date = :endDate + INTERVAL '1 day'
@@ -202,11 +201,13 @@ fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, ol
             """
             DELETE FROM backup_care
             WHERE child_id = :childId
-               -- delete backup cares that were previously wholly contained within the range but would no longer
-              AND (daterange(start_date, end_date, '[]') @> :oldRange AND NOT(daterange(start_date, end_date, '[]') @> :newRange))
-               -- also delete backup cares that would have reversed validity period after shrinking
-               OR (start_date BETWEEN :oldStart AND :newStart AND :newStart > end_date)
-               OR (end_date BETWEEN :newEnd AND :oldEnd AND :newEnd < start_date)
+            AND (
+                -- delete backup cares that were previously wholly contained within the range but would no longer
+                (daterange(start_date, end_date, '[]') @> :oldRange AND NOT (daterange(start_date, end_date, '[]') @> :newRange))
+                -- also delete backup cares that would have reversed validity period after shrinking
+                OR (start_date BETWEEN :oldStart AND :newStart AND :newStart > end_date)
+                OR (end_date BETWEEN :newEnd AND :oldEnd AND :newEnd < start_date)
+            )
             """.trimIndent()
         )
             .bind("childId", childId)
