@@ -326,7 +326,10 @@ fun Database.Read.searchFeeDecisions(
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> lower(valid_during)" else null,
+        if ((startDate != null || endDate != null) && searchByStartDate)
+        // valid_during overlaps but does not extend to the left of search range
+        // = start date of valid_during is included in the search range
+            "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))" else null,
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
         if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null
     )
