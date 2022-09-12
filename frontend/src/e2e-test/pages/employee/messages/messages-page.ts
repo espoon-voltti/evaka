@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { FileInput, TextInput, Page, Checkbox } from '../../../utils/page'
+import {
+  FileInput,
+  TextInput,
+  Page,
+  Checkbox,
+  MultiSelect
+} from '../../../utils/page'
 
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
@@ -14,7 +20,9 @@ export default class MessagesPage {
     '[data-qa="close-message-editor-btn"]'
   )
   #discardMessageButton = this.page.find('[data-qa="discard-draft-btn"]')
-  #receiverSelection = this.page.find('[data-qa="select-receiver"]')
+  #receiverSelection = new MultiSelect(
+    this.page.find('[data-qa="select-receiver"]')
+  )
   #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
   #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
   #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
@@ -100,12 +108,11 @@ export default class MessagesPage {
     await waitUntilTrue(() => this.isEditorVisible())
     await this.#inputTitle.fill(message.title)
     await this.#inputContent.fill(message.content)
-    await this.#receiverSelection.click()
 
     if (message.receiver) {
-      await this.page.findText(message.receiver).click()
+      await this.#receiverSelection.fillAndSelectFirst(message.receiver)
     } else {
-      await this.page.keyboard.press('Enter')
+      await this.#receiverSelection.selectFirst()
     }
     if (message.urgent ?? false) {
       await this.#urgent.check()
