@@ -79,8 +79,8 @@ const features: Features = {
       messageAttachments: true,
       personalDetailsPage: false,
       mobileMessages: false,
-      leops: false,
-      citizenVasu: false,
+      leops: true,
+      citizenVasu: true,
       assistanceNeedDecisions: false,
       assistanceNeedDecisionsLanguageSelect: false,
       staffAttendanceTypes: false
