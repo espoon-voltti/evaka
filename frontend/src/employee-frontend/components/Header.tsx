@@ -203,9 +203,16 @@ export default React.memo(function Header() {
             isGroupMessageAccount
           )
           return (personal.length > 0 ? personal : group).reduce(
-            (sum, { account: { id: accountId } }) =>
-              sum +
-              (counts.find((c) => c.accountId === accountId)?.unreadCount || 0),
+            (sum, { account: { id: accountId } }) => {
+              const accountCounts = counts.find(
+                (c) => c.accountId === accountId
+              )
+              return (
+                sum +
+                (accountCounts?.unreadCount ?? 0) +
+                (accountCounts?.unreadCopyCount ?? 0)
+              )
+            },
             0
           )
         })

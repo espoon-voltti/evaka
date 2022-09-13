@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -26,15 +27,16 @@ class MessageService(
         sender: MessageAccountId,
         recipientGroups: Set<Set<MessageAccountId>>,
         recipientNames: List<String>,
-        attachmentIds: Set<AttachmentId> = setOf()
-    ): List<MessageThreadId> =
+        attachmentIds: Set<AttachmentId> = setOf(),
+        staffCopyRecipients: Set<MessageAccountId>
+    ) =
         // for each recipient group, create a thread, message and message_recipients while re-using content
         tx.insertMessageContent(content, sender)
             .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
                 val now = clock.now()
                 recipientGroups.map {
-                    val threadId = tx.insertThread(type, title, urgent)
+                    val threadId = tx.insertThread(type, title, urgent, isCopy = false)
                     val messageId =
                         tx.insertMessage(
                             now = now,
@@ -46,6 +48,20 @@ class MessageService(
                     tx.insertRecipients(it, messageId)
                     notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
                     threadId
+                }
+
+                if (staffCopyRecipients.isNotEmpty()) {
+                    // a separate copy for staff
+                    val threadId = tx.insertThread(type, title, urgent, isCopy = true)
+                    val messageId =
+                        tx.insertMessage(
+                            now = now,
+                            contentId = contentId,
+                            threadId = threadId,
+                            sender = sender,
+                            recipientNames = recipientNames
+                        )
+                    tx.insertRecipients(staffCopyRecipients, messageId)
                 }
             }
 
@@ -59,9 +75,10 @@ class MessageService(
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ): ThreadReply {
-        val (threadId, type, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
+        val (threadId, type, isCopy, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")
 
+        if (isCopy) throw BadRequest("Message copies cannot be replied to")
         if (type == MessageType.BULLETIN && !senders.contains(senderAccount)) throw Forbidden("Only the author can reply to bulletin")
 
         val previousParticipants = recipients + senders

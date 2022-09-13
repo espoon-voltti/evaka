@@ -3327,7 +3327,8 @@ export const fi = {
       names: {
         RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
-        DRAFTS: 'Luonnokset'
+        DRAFTS: 'Luonnokset',
+        COPIES: 'Johtajan/kaupungin tiedotteet'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
@@ -3336,7 +3337,8 @@ export const fi = {
       titles: {
         RECEIVED: 'Saapuneet viestit',
         SENT: 'Lähetetyt viestit',
-        DRAFTS: 'Luonnokset'
+        DRAFTS: 'Luonnokset',
+        COPIES: 'Johtajan/kaupungin tiedotteet'
       }
     },
     types: {

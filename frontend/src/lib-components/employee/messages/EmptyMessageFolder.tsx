@@ -28,7 +28,7 @@ export default React.memo(function EmptyMessagesFolder({
       ) : (
         <>
           <FontAwesomeIcon icon={faFolderOpen} size="7x" color={iconColor} />
-          <H3>{text}</H3>
+          <H3 data-qa="empty-inbox-text">{text}</H3>
         </>
       )}
     </EmptyThreadViewContainer>

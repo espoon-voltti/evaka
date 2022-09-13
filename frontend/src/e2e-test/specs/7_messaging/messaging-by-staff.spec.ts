@@ -24,9 +24,11 @@ import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
 let staffPage: Page
+let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
 let staff: EmployeeDetail
+let unitSupervisor: EmployeeDetail
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
@@ -38,6 +40,10 @@ beforeEach(async () => {
     await Fixture.employeeStaff(fixtures.daycareFixture.id)
       .withGroupAcl(daycareGroupFixture.id)
       .save()
+  ).data
+
+  unitSupervisor = (
+    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
   ).data
 
   const unitId = fixtures.daycareFixture.id
@@ -55,18 +61,47 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id
     })
     .save()
-  await upsertMessageAccounts()
+
+  await Fixture.placement()
+    .with({
+      childId: fixtures.enduserChildFixtureKaarina.id,
+      unitId
+    })
+    .save()
+    .then((placement) =>
+      Fixture.groupPlacement()
+        .with({
+          daycarePlacementId: placement.data.id,
+          daycareGroupId: daycareGroupFixture.id
+        })
+        .save()
+    )
+
   await insertGuardianFixtures([
     {
       childId: childId,
       guardianId: fixtures.enduserGuardianFixture.id
     }
   ])
+
+  await insertGuardianFixtures([
+    {
+      childId: fixtures.enduserChildFixtureKaarina.id,
+      guardianId: fixtures.enduserGuardianFixture.id
+    }
+  ])
+
+  await upsertMessageAccounts()
 })
 
 async function initStaffPage() {
   staffPage = await Page.open()
   await employeeLogin(staffPage, staff)
+}
+
+async function initUnitSupervisorPage() {
+  unitSupervisorPage = await Page.open()
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
 }
 
 async function initCitizenPage() {
@@ -115,4 +150,55 @@ describe('Sending and receiving messages', () => {
       })
     })
   }
+})
+
+describe('Staff copies', () => {
+  test('Message sent by supervisor to the whole unit creates a copy for the staff', async () => {
+    await initUnitSupervisorPage()
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const message = {
+      title: 'Ilmoitus',
+      content: 'Ilmoituksen sisältö',
+      receiver: fixtures.daycareFixture.name
+    }
+    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+
+    await initStaffPage()
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    await new MessagesPage(staffPage).assertCopyContent(
+      message.title,
+      message.content
+    )
+  })
+
+  test('Message sent by supervisor to a single child does not create a copy for the staff', async () => {
+    await initUnitSupervisorPage()
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const message = {
+      title: 'Ilmoitus',
+      content: 'Ilmoituksen sisältö',
+      receiver: fixtures.enduserChildFixtureKaarina.firstName
+    }
+    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+
+    await initStaffPage()
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    await new MessagesPage(staffPage).assertNoCopies()
+  })
+
+  test('Message sent by supervisor from a group account to a single child does not create a copy for the staff', async () => {
+    await initUnitSupervisorPage()
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const message = {
+      title: 'Ilmoitus',
+      content: 'Ilmoituksen sisältö',
+      sender: `${fixtures.daycareFixture.name} - ${daycareGroupFixture.name}`,
+      receiver: daycareGroupFixture.name
+    }
+    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+
+    await initStaffPage()
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    await new MessagesPage(staffPage).assertNoCopies()
+  })
 })

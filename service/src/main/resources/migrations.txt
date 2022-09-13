@@ -266,3 +266,4 @@ V265__finance_decisions_partner_constraint.sql
 V266__trim_external_staff_names.sql
 V267__calendar_events.sql
 V268__employee_preferred_first_name.sql
+V269__message_thread_is_copy.sql

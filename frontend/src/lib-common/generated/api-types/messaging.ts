@@ -91,6 +91,28 @@ export interface MessageAccount {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageCopy
+*/
+export interface MessageCopy {
+  attachments: MessageAttachment[]
+  content: string
+  messageId: UUID
+  readAt: HelsinkiDateTime | null
+  recipientAccountType: AccountType
+  recipientId: UUID
+  recipientName: string
+  recipientNames: string[]
+  senderAccountType: AccountType
+  senderId: UUID
+  senderName: string
+  sentAt: HelsinkiDateTime
+  threadId: UUID
+  title: string
+  type: MessageType
+  urgent: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageReceiver
 */
 export interface MessageReceiver {
@@ -203,6 +225,7 @@ export interface ThreadReply {
 */
 export interface UnreadCountByAccount {
   accountId: UUID
+  unreadCopyCount: number
   unreadCount: number
 }
 
@@ -212,6 +235,7 @@ export interface UnreadCountByAccount {
 export interface UnreadCountByAccountAndGroup {
   accountId: UUID
   groupId: UUID
+  unreadCopyCount: number
   unreadCount: number
 }
 

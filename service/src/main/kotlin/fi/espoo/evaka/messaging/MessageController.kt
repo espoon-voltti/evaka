@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCount: Int)
-data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unreadCount: Int, val groupId: GroupId)
+data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCopyCount: Int, val unreadCount: Int)
+data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unreadCount: Int, val unreadCopyCount: Int, val groupId: GroupId)
 
 data class ReplyToMessageBody(
     val content: String,
@@ -80,6 +80,22 @@ class MessageController(
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        }
+    }
+
+    @GetMapping("/{accountId}/copies")
+    fun getMessageCopies(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam pageSize: Int,
+        @RequestParam page: Int,
+    ): Paged<MessageCopy> {
+        Audit.MessagingReceivedMessagesRead.log(accountId)
+        return db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
         }
     }
 
@@ -148,15 +164,28 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody,
-    ): List<MessageThreadId> {
+    ) {
         Audit.MessagingNewMessageWrite.log(accountId)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx ->
                 val messageRecipients =
                     tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today()).toSet()
 
-                if (messageRecipients.isEmpty()) return@transaction listOf()
+                if (messageRecipients.isEmpty()) return@transaction
+
+                val staffCopyRecipients = if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
+                    tx.getStaffCopyRecipients(
+                        accountId,
+                        body.recipients.mapNotNull {
+                            if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw) else null
+                        },
+                        body.recipients.mapNotNull {
+                            if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw) else null
+                        },
+                        clock.today()
+                    )
+                } else setOf()
 
                 val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
                 messageService.createMessageThreadsForRecipientGroups(
@@ -170,9 +199,9 @@ class MessageController(
                     recipientNames = body.recipientNames,
                     recipientGroups = groupedRecipients,
                     attachmentIds = body.attachmentIds,
-                ).also {
-                    if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
-                }
+                    staffCopyRecipients = staffCopyRecipients
+                )
+                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
             }
         }
     }

@@ -28,11 +28,13 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Se
     // language=SQL
     val sql = """
         SELECT 
-        acc.id as account_id,
-        SUM(CASE WHEN m.id IS NOT NULL AND m.read_at IS NULL THEN 1 ELSE 0 END) as unread_count
+            acc.id as account_id,
+            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
+            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
         FROM message_account acc
-        LEFT JOIN message_recipients m
-        ON m.recipient_id = acc.id
+        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
+        LEFT JOIN message m ON mr.message_id = m.id
+        LEFT JOIN message_thread mt ON m.thread_id = mt.id
         WHERE acc.id = ANY(:accountIds)
         GROUP BY acc.id
     """.trimIndent()
@@ -48,9 +50,12 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<Un
         SELECT
             acc.id as account_id,
             acc.daycare_group_id as group_id,
-            SUM(CASE WHEN m.id IS NOT NULL AND m.read_at IS NULL THEN 1 ELSE 0 END) as unread_count
+            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
+            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
         FROM message_account acc
-        LEFT JOIN message_recipients m ON m.recipient_id = acc.id
+        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
+        LEFT JOIN message m ON mr.message_id = m.id
+        LEFT JOIN message_thread mt ON m.thread_id = mt.id
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
         WHERE acc.active = true
         GROUP BY acc.id, acc.daycare_group_id
@@ -136,14 +141,16 @@ fun Database.Transaction.insertRecipients(
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
-    urgent: Boolean
+    urgent: Boolean,
+    isCopy: Boolean
 ): MessageThreadId {
     // language=SQL
-    val insertThreadSql = "INSERT INTO message_thread (message_type, title, urgent) VALUES (:messageType, :title, :urgent) RETURNING id"
+    val insertThreadSql = "INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id"
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
         .bind("urgent", urgent)
+        .bind("isCopy", isCopy)
         .mapTo<MessageThreadId>()
         .one()
 }
@@ -225,6 +232,7 @@ threads AS (
             FROM participated_messages rec
             WHERE rec.thread_id = t.id
             AND (rec.recipient_id = :accountId OR ${if (isCitizen) "rec.sender_id = :accountId" else "false"}))
+    AND NOT t.is_copy
     GROUP BY id, message_type, title, last_message
     ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
@@ -297,6 +305,74 @@ SELECT
                 )
             )
         }
+        .mapToPaged(pageSize)
+}
+
+data class MessageCopy(
+    val threadId: MessageThreadId,
+    val messageId: MessageId,
+    val title: String,
+    val type: MessageType,
+    val urgent: Boolean,
+    val sentAt: HelsinkiDateTime,
+    val content: String,
+    val senderId: MessageAccountId,
+    val senderName: String,
+    val senderAccountType: AccountType,
+    val readAt: HelsinkiDateTime? = null,
+    val recipientId: MessageAccountId,
+    val recipientName: String,
+    val recipientAccountType: AccountType,
+    val recipientNames: List<String>,
+    @Json
+    val attachments: List<MessageAttachment>
+)
+
+fun Database.Read.getMessageCopiesByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<MessageCopy> {
+    // language=SQL
+    val sql = """
+SELECT
+    COUNT(*) OVER () AS count,
+    t.id AS thread_id,
+    m.id AS message_id,
+    t.title,
+    t.message_type AS type,
+    t.urgent,
+    m.sent_at,
+    m.sender_name,
+    m.sender_id,
+    sender_acc.type AS sender_account_type,
+    m.content_id,
+    c.content,
+    rec.read_at,
+    rec.recipient_id,
+    acc.account_name recipient_name,
+    recipient_acc.type AS recipient_account_type,
+    m.recipient_names,
+    (
+        SELECT coalesce(jsonb_agg(json_build_object(
+           'id', att.id,
+           'name', att.name,
+           'contentType', att.content_type
+        )), '[]'::jsonb)
+        FROM attachment att WHERE att.message_content_id = m.content_id
+    ) AS attachments
+FROM message_recipients rec
+JOIN message m ON rec.message_id = m.id
+JOIN message_content c ON m.content_id = c.id
+JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+JOIN message_account sender_acc ON sender_acc.id = m.sender_id
+JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
+JOIN message_thread t ON m.thread_id = t.id
+WHERE rec.recipient_id = :accountId AND t.is_copy
+ORDER BY m.sent_at DESC
+LIMIT :pageSize OFFSET :offset
+"""
+
+    return createQuery(sql)
+        .bind("accountId", accountId)
+        .bind("offset", (page - 1) * pageSize)
+        .bind("pageSize", pageSize)
         .mapToPaged(pageSize)
 }
 
@@ -556,6 +632,7 @@ ORDER BY msg.sent_at DESC
 data class ThreadWithParticipants(
     val threadId: MessageThreadId,
     val type: MessageType,
+    val isCopy: Boolean,
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>
 )
@@ -565,6 +642,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
         SELECT
             t.id AS threadId,
             t.message_type AS type,
+            t.is_copy,
             (SELECT array_agg(m2.sender_id)) as senders,
             (SELECT array_agg(rec.recipient_id)) as recipients
             FROM message m
@@ -747,4 +825,29 @@ fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestam
         .bind("id", id)
         .bind("timestamp", timestamp)
         .execute()
+}
+
+fun Database.Read.getStaffCopyRecipients(
+    senderId: MessageAccountId,
+    unitIds: List<DaycareId>,
+    groupIds: List<GroupId>,
+    date: LocalDate
+): Set<MessageAccountId> {
+    return this.createQuery(
+        """
+SELECT receiver_acc.id
+FROM message_account sender_acc
+JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id
+JOIN daycare u ON u.id = acl.daycare_id
+JOIN daycare_group g ON u.id = g.daycare_id
+JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
+WHERE sender_acc.id = :senderId AND (u.id = ANY(:unitIds) OR g.id = ANY(:groupIds))
+"""
+    )
+        .bind("senderId", senderId)
+        .bind("unitIds", unitIds)
+        .bind("groupIds", groupIds)
+        .bind("date", date)
+        .mapTo<MessageAccountId>()
+        .toSet()
 }

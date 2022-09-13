@@ -151,7 +151,7 @@ class MessageControllerCitizen(
             if (allReceiversValid) {
                 dbc.transaction { tx ->
                     val contentId = tx.insertMessageContent(body.content, accountId)
-                    val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false)
+                    val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false, isCopy = false)
                     val messageId =
                         tx.insertMessage(
                             now = clock.now(),

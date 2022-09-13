@@ -18,7 +18,8 @@ import {
   AuthorizedMessageAccount,
   SentMessage,
   ThreadReply,
-  UnreadCountByAccount
+  UnreadCountByAccount,
+  MessageCopy
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
@@ -29,6 +30,7 @@ import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
 
 import {
+  getMessageCopies,
   getMessageDrafts,
   getMessagingAccounts,
   getReceivedMessages,
@@ -58,6 +60,7 @@ export interface MessagesState {
   receivedMessages: Result<MessageThread[]>
   sentMessages: Result<SentMessage[]>
   messageDrafts: Result<DraftContent[]>
+  messageCopies: Result<MessageCopy[]>
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
@@ -83,6 +86,7 @@ const defaultState: MessagesState = {
   receivedMessages: Loading.of(),
   sentMessages: Loading.of(),
   messageDrafts: Loading.of(),
+  messageCopies: Loading.of(),
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
@@ -167,6 +171,9 @@ export const MessageContextProvider = React.memo(
     const [sentMessages, setSentMessages] = useState<Result<SentMessage[]>>(
       Loading.of()
     )
+    const [messageCopies, setMessageCopies] = useState<Result<MessageCopy[]>>(
+      Loading.of()
+    )
 
     const setReceivedMessagesResult = useCallback(
       (result: Result<Paged<MessageThread>>) => {
@@ -195,6 +202,20 @@ export const MessageContextProvider = React.memo(
     )
     const loadSentMessages = useRestApi(getSentMessages, setSentMessagesResult)
 
+    const setMessageCopiesResult = useCallback(
+      (result: Result<Paged<MessageCopy>>) => {
+        setMessageCopies(result.map((r) => r.data))
+        if (result.isSuccess) {
+          setPages(result.value.pages)
+        }
+      },
+      []
+    )
+    const loadMessageCopies = useRestApi(
+      getMessageCopies,
+      setMessageCopiesResult
+    )
+
     // load messages if account, view or page changes
     const loadMessages = useCallback(() => {
       if (!selectedAccount) {
@@ -209,11 +230,15 @@ export const MessageContextProvider = React.memo(
           break
         case 'DRAFTS':
           void loadMessageDrafts(selectedAccount.account.id)
+          break
+        case 'COPIES':
+          void loadMessageCopies(selectedAccount.account.id, page, PAGE_SIZE)
       }
     }, [
       loadMessageDrafts,
       loadReceivedMessages,
       loadSentMessages,
+      loadMessageCopies,
       page,
       selectedAccount
     ])
@@ -293,6 +318,7 @@ export const MessageContextProvider = React.memo(
         receivedMessages,
         sentMessages,
         messageDrafts,
+        messageCopies,
         selectedThread,
         selectThread,
         replyState,
@@ -313,6 +339,7 @@ export const MessageContextProvider = React.memo(
         receivedMessages,
         sentMessages,
         messageDrafts,
+        messageCopies,
         selectedThread,
         selectThread,
         replyState,

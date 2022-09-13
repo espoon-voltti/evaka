@@ -4,14 +4,16 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
+  deserializeMessageCopy,
   deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging/message'
 import {
+  AuthorizedMessageAccount,
   DraftContent,
+  MessageCopy,
   MessageReceiversResponse,
   MessageThread,
-  AuthorizedMessageAccount,
   PostMessageBody,
   ReplyToMessageBody,
   SentMessage,
@@ -79,6 +81,21 @@ export async function getReceivedMessages(
         ...data,
         data: data.data.map((d) => deserializeMessageThread(d))
       })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getMessageCopies(
+  accountId: UUID,
+  page: number,
+  pageSize: number
+): Promise<Result<Paged<MessageCopy>>> {
+  return client
+    .get<JsonOf<Paged<MessageCopy>>>(`/messages/${accountId}/copies`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) =>
+      Success.of({ ...data, data: data.data.map(deserializeMessageCopy) })
     )
     .catch((e) => Failure.fromError(e))
 }
