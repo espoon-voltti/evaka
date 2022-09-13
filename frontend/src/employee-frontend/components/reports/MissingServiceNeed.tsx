@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -19,6 +18,7 @@ import {
   DatePickerClearableDeprecated,
   DatePickerDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
+import { Gap } from 'lib-components/white-space'
 
 import {
   getMissingServiceNeedReport,
@@ -27,6 +27,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
@@ -44,31 +45,33 @@ const Wrapper = styled.div`
 
 export default React.memo(function MissingServiceNeed() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<MissingServiceNeedReportRow[]>>(
-    Loading.of()
-  )
   const [filters, setFilters] = useState<MissingServiceNeedReportFilters>({
     startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
     endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
+  const [rows] = useApiState(
+    () => getMissingServiceNeedReport(filters),
+    [filters]
+  )
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: MissingServiceNeedReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = useCallback(
+    (row: MissingServiceNeedReportRow): boolean => {
+      return !(
+        displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+      )
+    },
+    [displayFilters.careArea]
+  )
 
   useEffect(() => {
-    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getMissingServiceNeedReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows: MissingServiceNeedReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  const filteredRows = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)),
+    [rows, displayFilter]
   )
 
   return (
@@ -133,53 +136,61 @@ export default React.memo(function MissingServiceNeed() {
           </Wrapper>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
-          <>
-            <ReportDownload
-              data={filteredRows}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Lapsen sukunimi', key: 'lastName' },
-                { label: 'Lapsen etunimi', key: 'firstName' },
-                { label: 'Puutteellisia päiviä', key: 'daysWithoutServiceNeed' }
-              ]}
-              filename={`Puuttuvat palveluntarpeet ${filters.startDate.formatIso()}-${
-                filters.endDate?.formatIso() ?? ''
-              }.csv`}
-            />
-            <TableScrollable>
-              <Thead>
-                <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
-                  <Th>{i18n.reports.common.childName}</Th>
-                  <Th>
-                    {i18n.reports.missingServiceNeed.daysWithoutServiceNeed}
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredRows.map((row: MissingServiceNeedReportRow) => (
-                  <Tr key={`${row.unitId}:${row.childId}`}>
-                    <Td>{row.careAreaName}</Td>
-                    <Td>
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Td>
-                    <Td>
-                      <Link to={`/child-information/${row.childId}`}>
-                        {row.lastName} {row.firstName}
-                      </Link>
-                    </Td>
-                    <Td>{row.daysWithoutServiceNeed}</Td>
+        {renderResult(filteredRows, (filteredRows) =>
+          filteredRows.length > 0 ? (
+            <>
+              <ReportDownload
+                data={filteredRows}
+                headers={[
+                  { label: 'Palvelualue', key: 'careAreaName' },
+                  { label: 'Yksikön nimi', key: 'unitName' },
+                  { label: 'Lapsen sukunimi', key: 'lastName' },
+                  { label: 'Lapsen etunimi', key: 'firstName' },
+                  {
+                    label: 'Puutteellisia päiviä',
+                    key: 'daysWithoutServiceNeed'
+                  }
+                ]}
+                filename={`Puuttuvat palveluntarpeet ${filters.startDate.formatIso()}-${
+                  filters.endDate?.formatIso() ?? ''
+                }.csv`}
+              />
+              <TableScrollable>
+                <Thead>
+                  <Tr>
+                    <Th>{i18n.reports.common.careAreaName}</Th>
+                    <Th>{i18n.reports.common.unitName}</Th>
+                    <Th>{i18n.reports.common.childName}</Th>
+                    <Th>
+                      {i18n.reports.missingServiceNeed.daysWithoutServiceNeed}
+                    </Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </TableScrollable>
-            <RowCountInfo rowCount={filteredRows.length} />
-          </>
+                </Thead>
+                <Tbody>
+                  {filteredRows.map((row: MissingServiceNeedReportRow) => (
+                    <Tr key={`${row.unitId}:${row.childId}`}>
+                      <Td>{row.careAreaName}</Td>
+                      <Td>
+                        <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
+                      </Td>
+                      <Td>
+                        <Link to={`/child-information/${row.childId}`}>
+                          {row.lastName} {row.firstName}
+                        </Link>
+                      </Td>
+                      <Td>{row.daysWithoutServiceNeed}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </TableScrollable>
+              <RowCountInfo rowCount={filteredRows.length} />
+            </>
+          ) : (
+            <>
+              <Gap size="L" />
+              <div>{i18n.common.noResults}</div>
+            </>
+          )
         )}
       </ContentArea>
     </Container>
