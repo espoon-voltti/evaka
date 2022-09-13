@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../utils'
-import { Page, Radio, TextInput } from '../../utils/page'
+import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
 
 export class CitizenChildPage {
   constructor(private readonly page: Page) {}
@@ -56,7 +56,9 @@ export class CitizenChildPage {
 
   async submitTermination(nth = 0) {
     await this.page.findAll('text=Irtisano paikka').nth(nth).click()
-    await this.page.findByDataQa('modal-okBtn').click()
+    const modalOkButton = new AsyncButton(this.page.findByDataQa('modal-okBtn'))
+    await modalOkButton.click()
+    await modalOkButton.waitUntilHidden()
   }
 
   getTerminatablePlacements(): Promise<string[]> {
