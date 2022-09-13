@@ -135,7 +135,7 @@ class MessageController(
         val content: String,
         val type: MessageType,
         val urgent: Boolean,
-        val recipientAccountIds: Set<MessageAccountId>,
+        val recipients: Set<MessageRecipient>,
         val recipientNames: List<String>,
         val attachmentIds: Set<AttachmentId> = setOf(),
         val draftId: MessageDraftId? = null
@@ -152,10 +152,13 @@ class MessageController(
         Audit.MessagingNewMessageWrite.log(accountId)
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
-
-            checkAuthorizedRecipients(dbc, clock, accountId, body.recipientAccountIds)
-            val groupedRecipients = dbc.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
             dbc.transaction { tx ->
+                val messageRecipients =
+                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today()).toSet()
+
+                if (messageRecipients.isEmpty()) return@transaction listOf()
+
+                val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
                 messageService.createMessageThreadsForRecipientGroups(
                     tx,
                     clock,
@@ -293,17 +296,6 @@ class MessageController(
         accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
         db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)!!) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
-    }
-
-    private fun checkAuthorizedRecipients(
-        db: Database.Connection,
-        clock: EvakaClock,
-        accountId: MessageAccountId,
-        recipientAccountIds: Set<MessageAccountId>
-    ) {
-        db.read {
-            it.isEmployeeAccountAuthorizedToSendTo(clock, accountId, recipientAccountIds)
-        } || throw Forbidden("Not authorized to send to the given recipients")
     }
 
     fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {

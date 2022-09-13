@@ -98,16 +98,6 @@ export interface MessageReceiver {
   childFirstName: string
   childId: UUID
   childLastName: string
-  receiverPersons: MessageReceiverPerson[]
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageReceiverPerson
-*/
-export interface MessageReceiverPerson {
-  accountId: UUID
-  receiverFirstName: string
-  receiverLastName: string
 }
 
 /**
@@ -118,6 +108,22 @@ export interface MessageReceiversResponse {
   groupName: string
   receivers: MessageReceiver[]
 }
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageRecipient
+*/
+export interface MessageRecipient {
+  id: UUID
+  type: MessageRecipientType
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageRecipientType
+*/
+export type MessageRecipientType =
+  | 'UNIT'
+  | 'GROUP'
+  | 'CHILD'
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageThread
@@ -144,8 +150,8 @@ export interface PostMessageBody {
   attachmentIds: UUID[]
   content: string
   draftId: UUID | null
-  recipientAccountIds: UUID[]
   recipientNames: string[]
+  recipients: MessageRecipient[]
   title: string
   type: MessageType
   urgent: boolean

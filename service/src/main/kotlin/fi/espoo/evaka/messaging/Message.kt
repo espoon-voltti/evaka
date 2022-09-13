@@ -8,6 +8,7 @@ import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -67,8 +68,7 @@ data class MessageReceiver(
     val childId: ChildId,
     val childFirstName: String,
     val childLastName: String,
-    val childDateOfBirth: LocalDate,
-    val receiverPersons: List<MessageReceiverPerson>
+    val childDateOfBirth: LocalDate
 )
 
 enum class AccountType {
@@ -98,8 +98,10 @@ data class AuthorizedMessageAccount(
     val daycareGroup: Group?
 )
 
-data class MessageReceiverPerson(
-    val accountId: MessageAccountId,
-    val receiverFirstName: String,
-    val receiverLastName: String
-)
+enum class MessageRecipientType {
+    UNIT,
+    GROUP,
+    CHILD
+}
+
+data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>)

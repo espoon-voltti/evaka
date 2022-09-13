@@ -5,7 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.attachment.MessageAttachment
-import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
@@ -17,7 +17,7 @@ data class DraftContent(
     val title: String,
     val content: String,
     val urgent: Boolean,
-    val recipientIds: Set<MessageAccountId>,
+    val recipientIds: Set<Id<*>>,
     val recipientNames: List<String>,
     @Json
     val attachments: List<MessageAttachment>,
@@ -28,6 +28,6 @@ data class UpdatableDraftContent(
     val title: String,
     val content: String,
     val urgent: Boolean,
-    val recipientIds: Set<MessageAccountId>,
+    val recipientIds: Set<Id<*>>,
     val recipientNames: List<String>,
 )

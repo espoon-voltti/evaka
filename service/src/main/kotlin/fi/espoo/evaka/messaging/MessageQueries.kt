@@ -584,12 +584,9 @@ data class MessageReceiversResult(
     val childId: ChildId,
     val groupId: GroupId,
     val groupName: String,
-    val childFirstName: String,
-    val childLastName: String,
-    val childDateOfBirth: LocalDate,
-    val accountId: MessageAccountId,
-    val receiverFirstName: String,
-    val receiverLastName: String
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate
 )
 
 fun Database.Read.getReceiversForNewMessage(
@@ -641,30 +638,22 @@ fun Database.Read.getReceiversForNewMessage(
                 AND child_id = bc.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
-        ), receivers AS (
-            SELECT DISTINCT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
-            FROM children c
-            JOIN guardian g ON g.child_id = c.child_id
-            WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl
-                WHERE bl.child_id = c.child_id
-                AND bl.blocked_recipient = g.guardian_id
-            )
         )
-        SELECT
-            acc.id account_id,
-            r.group_id,
-            r.group_name,
-            p.first_name receiver_first_name,
-            p.last_name receiver_last_name,
-            r.child_id,
-            c.first_name child_first_name,
-            c.last_name child_last_name,
-            c.date_of_birth child_date_of_birth
-        FROM receivers r
-        JOIN person p ON r.receiver_id = p.id
-        JOIN person c ON r.child_id = c.id
-        JOIN message_account acc ON p.id = acc.person_id
+        SELECT DISTINCT
+            c.child_id,
+            c.group_id,
+            c.group_name,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth
+        FROM children c
+        JOIN person p ON c.child_id = p.id
+        WHERE EXISTS (
+            SELECT 1
+            FROM guardian g
+            LEFT JOIN messaging_blocklist bl ON g.guardian_id = bl.blocked_recipient AND c.child_id = bl.child_id
+            WHERE g.child_id = c.child_id AND bl.id IS NULL
+        )
     """.trimIndent()
 
     return this.createQuery(sql)
@@ -678,71 +667,74 @@ fun Database.Read.getReceiversForNewMessage(
             MessageReceiversResponse(
                 groupId = groupId,
                 groupName = receiverChildren.first().groupName,
-                receivers = receiverChildren.groupBy { it.childId }
-                    .map { (childId, receivers) ->
+                receivers = receiverChildren
+                    .map { child ->
                         MessageReceiver(
-                            childId = childId,
-                            childFirstName = receivers.first().childFirstName,
-                            childLastName = receivers.first().childLastName,
-                            childDateOfBirth = receivers.first().childDateOfBirth,
-                            receiverPersons = receivers.map {
-                                MessageReceiverPerson(
-                                    accountId = it.accountId,
-                                    receiverFirstName = it.receiverFirstName,
-                                    receiverLastName = it.receiverLastName
-                                )
-                            }
+                            childId = child.childId,
+                            childFirstName = child.firstName,
+                            childLastName = child.lastName,
+                            childDateOfBirth = child.dateOfBirth
                         )
                     }
             )
         }
 }
 
-fun Database.Read.isEmployeeAccountAuthorizedToSendTo(clock: EvakaClock, senderId: MessageAccountId, accountIds: Set<MessageAccountId>): Boolean {
-    // language=SQL
-    val sql = """
-        WITH children AS (
-            SELECT child_id
-            FROM child_daycare_acl(:today)
-            JOIN mobile_device_daycare_acl_view USING (daycare_id)
-            WHERE mobile_device_id = (SELECT message_account.employee_id FROM message_account WHERE message_account.id = :senderId)
-            
-            UNION ALL
-            
-            SELECT child_id
-            FROM employee_child_daycare_acl(:today)
-            WHERE employee_id = (SELECT message_account.employee_id FROM message_account WHERE message_account.id = :senderId)
+fun Database.Read.getMessageAccountsForRecipients(
+    accountId: MessageAccountId,
+    recipients: Set<MessageRecipient>,
+    date: LocalDate
+): List<MessageAccountId> {
+    val groupedRecipients = recipients.groupBy { it.type }
+    return this.createQuery(
+        """
+WITH sender AS (
+    SELECT daycare_group_id, employee_id FROM message_account WHERE id = :senderId
+), children AS (
+    SELECT pl.child_id
+    FROM realized_placement_all(:date) pl
+    JOIN daycare d ON pl.unit_id = d.id
+    WHERE (pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
+    AND EXISTS (
+        SELECT 1
+        FROM child_daycare_acl(:date)
+        JOIN mobile_device_daycare_acl_view USING (daycare_id)
+        WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
+        AND child_id = pl.child_id
 
-            UNION ALL
+        UNION ALL
 
-            SELECT child_id
-            FROM daycare_group_placement
-            JOIN placement ON daycare_placement_id = placement.id
-            WHERE daycare_group_id = (SELECT message_account.daycare_group_id FROM message_account WHERE message_account.id = :senderId)
-            AND :today BETWEEN daycare_group_placement.start_date AND daycare_group_placement.end_date
-        ), receivers AS (
-            SELECT DISTINCT g.guardian_id AS receiver_id
-            FROM children c
-            JOIN guardian g ON g.child_id = c.child_id
-            WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl
-                WHERE bl.child_id = c.child_id
-                AND bl.blocked_recipient = g.guardian_id
-            )
-        )
-        SELECT COUNT(*)
-        FROM receivers r
-        JOIN message_account acc ON acc.person_id = r.receiver_id AND acc.id = ANY(:accountIds)
-    """.trimIndent()
+        SELECT 1
+        FROM employee_child_daycare_acl(:date)
+        WHERE employee_id = (SELECT sender.employee_id FROM sender)
+        AND child_id = pl.child_id
 
-    val numAccounts = createQuery(sql)
-        .bind("today", clock.today())
-        .bind("senderId", senderId)
-        .bind("accountIds", accountIds)
-        .mapTo<Int>()
-        .one()
+        UNION ALL
 
-    return numAccounts == accountIds.size
+        SELECT 1
+        FROM sender
+        WHERE pl.group_id = sender.daycare_group_id
+    )
+    AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+)
+SELECT DISTINCT acc.id
+FROM children c
+JOIN guardian g ON g.child_id = c.child_id
+JOIN message_account acc ON g.guardian_id = acc.person_id
+WHERE NOT EXISTS (
+    SELECT 1 FROM messaging_blocklist bl
+    WHERE bl.child_id = c.child_id
+    AND bl.blocked_recipient = g.guardian_id
+)
+"""
+    )
+        .bind("senderId", accountId)
+        .bind("date", date)
+        .bind("unitRecipients", groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf())
+        .bind("groupRecipients", groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf())
+        .bind("childRecipients", groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf())
+        .mapTo<MessageAccountId>()
+        .toList()
 }
 
 fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestamp: HelsinkiDateTime) {
