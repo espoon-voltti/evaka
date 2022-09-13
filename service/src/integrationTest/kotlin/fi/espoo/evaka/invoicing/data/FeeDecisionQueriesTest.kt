@@ -200,7 +200,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `searchIgnoresAccent`() {
         db.transaction { tx ->
-            tx.upsertFeeDecisions(testDecisions)
             tx.upsertFeeDecisions(
                 listOf(
                     createFeeDecisionFixture(
