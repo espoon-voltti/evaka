@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import Loader from 'lib-components/atoms/Loader'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -27,6 +26,7 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
+import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 
@@ -44,31 +44,33 @@ const Wrapper = styled.div`
 
 export default React.memo(function MissingServiceNeed() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<MissingServiceNeedReportRow[]>>(
-    Loading.of()
-  )
   const [filters, setFilters] = useState<MissingServiceNeedReportFilters>({
     startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
     endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
+  const [rows] = useApiState(
+    () => getMissingServiceNeedReport(filters),
+    [filters]
+  )
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: MissingServiceNeedReportRow): boolean => {
-    return !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    )
-  }
+  const displayFilter = useCallback(
+    (row: MissingServiceNeedReportRow): boolean => {
+      return !(
+        displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+      )
+    },
+    [displayFilters.careArea]
+  )
 
   useEffect(() => {
-    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getMissingServiceNeedReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows: MissingServiceNeedReportRow[] = useMemo(
-    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  const filteredRows = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)),
+    [rows, displayFilter]
   )
 
   return (
@@ -133,9 +135,7 @@ export default React.memo(function MissingServiceNeed() {
           </Wrapper>
         </FilterRow>
 
-        {rows.isLoading && <Loader />}
-        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {rows.isSuccess && (
+        {renderResult(filteredRows, (filteredRows) => (
           <>
             <ReportDownload
               data={filteredRows}
@@ -180,7 +180,7 @@ export default React.memo(function MissingServiceNeed() {
             </TableScrollable>
             <RowCountInfo rowCount={filteredRows.length} />
           </>
-        )}
+        ))}
       </ContentArea>
     </Container>
   )
