@@ -49,7 +49,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `two people with partially matching first names are matched`() {
+    fun `two people with partially matching first names and white spaces in names are matched`() {
         val firstName = "Dup Licate"
         val lastName = "Person"
         val dateOfBirth = LocalDate.of(1970, 1, 1)
@@ -61,7 +61,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             ssn = ssn
         )
         val personWithoutSsn =
-            personWithSsn.copy(id = PersonId(UUID.randomUUID()), firstName = firstName.split(" ")[0], ssn = null)
+            personWithSsn.copy(id = PersonId(UUID.randomUUID()), firstName = firstName.split(" ")[0] + " ", ssn = null, lastName = " " + lastName)
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)

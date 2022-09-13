@@ -43,9 +43,9 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
                 p.id,
                 p.social_security_number,
                 concat(
-                    lower(unaccent(last_name)),
+                    lower(trim(unaccent(last_name))),
                     ',',
-                    split_part(lower(unaccent(first_name)), ' ', 1),
+                    split_part(trim(lower(unaccent(first_name))), ' ', 1),
                     ',',
                     date_of_birth
                 ) AS key
