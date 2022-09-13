@@ -21,6 +21,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { formatCents, parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
+import { stringToInt } from 'lib-common/utils/number'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Combobox, {
@@ -237,6 +238,11 @@ const NarrowInput = styled(InputField)`
   max-width: 80px;
 `
 
+function validateAmount(text: string): number | undefined {
+  const int = stringToInt(text)
+  return int === undefined || int <= 0 ? undefined : int
+}
+
 const AmountInput = React.memo(function AmountInput({
   value,
   onChange
@@ -247,25 +253,23 @@ const AmountInput = React.memo(function AmountInput({
   const [stringValue, setStringValue] = useState(value ? value.toString() : '')
   const [invalid, setInvalid] = useState(false)
 
+  const amount = useMemo(() => validateAmount(stringValue), [stringValue])
   useEffect(() => {
-    const parsed = Number(stringValue)
-    if (!Number.isNaN(parsed)) {
-      onChange(parsed)
+    if (amount !== undefined && amount !== value) {
+      onChange(amount)
       setInvalid(false)
+    } else {
+      setInvalid(true)
     }
-  }, [stringValue]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [amount, value, onChange])
 
   return (
     <NarrowInput
       inputMode="numeric"
       value={stringValue}
       onChange={setStringValue}
-      onBlur={() => {
-        if (!stringValue || Number.isNaN(stringValue)) {
-          setInvalid(true)
-        }
-      }}
       data-qa="input-amount"
+      hideErrorsBeforeTouched
       info={invalid ? { status: 'warning', text: 'Tarkista' } : undefined}
     />
   )
