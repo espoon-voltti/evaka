@@ -377,7 +377,6 @@ export interface DecisionDraftJSON {
 * Generated from fi.espoo.evaka.application.DecisionSummary
 */
 export interface DecisionSummary {
-  decisionId: UUID
   id: UUID
   resolved: LocalDate | null
   sentDate: LocalDate
