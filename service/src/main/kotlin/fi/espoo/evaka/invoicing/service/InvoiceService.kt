@@ -73,6 +73,10 @@ class InvoiceService(
         val original = tx.getInvoice(uuid)
             ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
+        if (invoice.rows.any { it.amount <= 0 }) {
+            throw BadRequest("Invoice rows amounts must be positive")
+        }
+
         val updated = when (original.status) {
             InvoiceStatus.DRAFT -> original.copy(
                 rows = invoice.rows.map { row -> if (row.id == null) row.copy(id = InvoiceRowId(UUID.randomUUID())) else row }
