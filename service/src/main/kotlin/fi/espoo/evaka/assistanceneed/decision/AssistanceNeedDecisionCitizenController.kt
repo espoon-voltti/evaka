@@ -5,7 +5,6 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -25,24 +24,6 @@ class AssistanceNeedDecisionCitizenController(
     private val accessControl: AccessControl,
     private val assistanceNeedDecisionService: AssistanceNeedDecisionService
 ) {
-    // TODO: remove after 16.9.2022
-    @GetMapping("/children/{childId}/assistance-need-decisions")
-    fun getChildAssistanceNeedDecisions(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId
-    ): List<AssistanceNeedDecisionCitizenListItem> {
-        Audit.ChildAssistanceNeedDecisionsListCitizen.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
-
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getAssistanceNeedDecisionsByChildIdForCitizen(childId, user.id)
-            }
-        }
-    }
-
     @GetMapping("/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
