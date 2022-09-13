@@ -18,6 +18,7 @@ import {
   DatePickerClearableDeprecated,
   DatePickerDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
+import { Gap } from 'lib-components/white-space'
 
 import {
   getMissingServiceNeedReport,
@@ -135,52 +136,62 @@ export default React.memo(function MissingServiceNeed() {
           </Wrapper>
         </FilterRow>
 
-        {renderResult(filteredRows, (filteredRows) => (
-          <>
-            <ReportDownload
-              data={filteredRows}
-              headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
-                { label: 'Yksikön nimi', key: 'unitName' },
-                { label: 'Lapsen sukunimi', key: 'lastName' },
-                { label: 'Lapsen etunimi', key: 'firstName' },
-                { label: 'Puutteellisia päiviä', key: 'daysWithoutServiceNeed' }
-              ]}
-              filename={`Puuttuvat palveluntarpeet ${filters.startDate.formatIso()}-${
-                filters.endDate?.formatIso() ?? ''
-              }.csv`}
-            />
-            <TableScrollable>
-              <Thead>
-                <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
-                  <Th>{i18n.reports.common.childName}</Th>
-                  <Th>
-                    {i18n.reports.missingServiceNeed.daysWithoutServiceNeed}
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredRows.map((row: MissingServiceNeedReportRow) => (
-                  <Tr key={`${row.unitId}:${row.childId}`}>
-                    <Td>{row.careAreaName}</Td>
-                    <Td>
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Td>
-                    <Td>
-                      <Link to={`/child-information/${row.childId}`}>
-                        {row.lastName} {row.firstName}
-                      </Link>
-                    </Td>
-                    <Td>{row.daysWithoutServiceNeed}</Td>
+        {renderResult(filteredRows, (filteredRows) =>
+          filteredRows.length > 0 ? (
+            <>
+              <ReportDownload
+                data={filteredRows}
+                headers={[
+                  { label: 'Palvelualue', key: 'careAreaName' },
+                  { label: 'Yksikön nimi', key: 'unitName' },
+                  { label: 'Lapsen sukunimi', key: 'lastName' },
+                  { label: 'Lapsen etunimi', key: 'firstName' },
+                  {
+                    label: 'Puutteellisia päiviä',
+                    key: 'daysWithoutServiceNeed'
+                  }
+                ]}
+                filename={`Puuttuvat palveluntarpeet ${filters.startDate.formatIso()}-${
+                  filters.endDate?.formatIso() ?? ''
+                }.csv`}
+              />
+              <TableScrollable>
+                <Thead>
+                  <Tr>
+                    <Th>{i18n.reports.common.careAreaName}</Th>
+                    <Th>{i18n.reports.common.unitName}</Th>
+                    <Th>{i18n.reports.common.childName}</Th>
+                    <Th>
+                      {i18n.reports.missingServiceNeed.daysWithoutServiceNeed}
+                    </Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </TableScrollable>
-            <RowCountInfo rowCount={filteredRows.length} />
-          </>
-        ))}
+                </Thead>
+                <Tbody>
+                  {filteredRows.map((row: MissingServiceNeedReportRow) => (
+                    <Tr key={`${row.unitId}:${row.childId}`}>
+                      <Td>{row.careAreaName}</Td>
+                      <Td>
+                        <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
+                      </Td>
+                      <Td>
+                        <Link to={`/child-information/${row.childId}`}>
+                          {row.lastName} {row.firstName}
+                        </Link>
+                      </Td>
+                      <Td>{row.daysWithoutServiceNeed}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </TableScrollable>
+              <RowCountInfo rowCount={filteredRows.length} />
+            </>
+          ) : (
+            <>
+              <Gap size="L" />
+              <div>{i18n.common.noResults}</div>
+            </>
+          )
+        )}
       </ContentArea>
     </Container>
   )
