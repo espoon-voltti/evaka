@@ -157,6 +157,24 @@ const layouts: Layouts<typeof components> = {
     { component: 'income', open: false },
     { component: 'child-consents', open: false }
   ],
+  ['DIRECTOR']: [
+    { component: 'family-contacts', open: false },
+    { component: 'guardiansAndParents', open: false },
+    { component: 'message-blocklist', open: false },
+    { component: 'placements', open: false },
+    { component: 'backup-care', open: false },
+    { component: 'daily-service-times', open: false },
+    { component: 'vasuAndLeops' as keyof typeof components, open: false },
+    {
+      component: 'pedagogicalDocuments' as keyof typeof components,
+      open: false
+    },
+    { component: 'assistance', open: false },
+    { component: 'applications', open: false },
+    { component: 'fee-alterations', open: false },
+    { component: 'income', open: false },
+    { component: 'child-consents', open: false }
+  ],
   ['SERVICE_WORKER']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
