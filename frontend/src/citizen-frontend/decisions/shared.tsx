@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import orderBy from 'lodash/orderBy'
 import styled from 'styled-components'
 
 import { DecisionSummary } from 'lib-common/generated/api-types/application'
@@ -17,8 +16,6 @@ import {
   faPlay,
   faTimes
 } from 'lib-icons'
-
-import { Decision } from './types'
 
 export const Status = styled.span`
   text-transform: uppercase;
@@ -70,12 +67,6 @@ export const applicationStatusIcon: {
     color: colors.main.m1
   }
 }
-
-type ComparableDecision = Decision | DecisionSummary
-
-export const sortDecisions = <T extends ComparableDecision>(
-  decisions: T[]
-): T[] => orderBy(decisions, (d) => d.sentDate.toSystemTzDate(), 'desc')
 
 export const applicationDecisionIsUnread = (decision: DecisionSummary) =>
   decision.status === 'PENDING'

@@ -17,11 +17,13 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -41,6 +43,7 @@ import java.time.LocalDate
 @RequestMapping("/citizen")
 class ApplicationControllerCitizen(
     private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val personService: PersonService
@@ -268,20 +271,27 @@ class ApplicationControllerCitizen(
         return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
     }
 
+    data class DecisionWithValidStartDatePeriod(
+        val decision: Decision,
+        val validRequestedStartDatePeriod: FiniteDateRange
+    )
+
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): List<Decision> {
+    ): List<DecisionWithValidStartDatePeriod> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ_DECISIONS, applicationId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationDetails(applicationId) ?: throw NotFound("Application not found")
-                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+                tx.getDecisionsByApplication(applicationId, AclAuthorization.All).map {
+                    DecisionWithValidStartDatePeriod(it, it.validRequestedStartDatePeriod(featureConfig))
+                }
             }
         }
     }

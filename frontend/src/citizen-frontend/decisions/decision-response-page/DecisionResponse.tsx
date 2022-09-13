@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { Failure } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Decision } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -26,16 +28,15 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
-import { maxDecisionStartDate } from '../../applications/editor/validations'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
 import { acceptDecision, rejectDecision } from '../api'
 import { decisionStatusIcon, Status } from '../shared'
-import { Decision } from '../types'
 
 interface SingleDecisionProps {
   decision: Decision
+  validRequestedStartDatePeriod: FiniteDateRange
   blocked: boolean
   rejectCascade: boolean
   refreshDecisionList: () => void
@@ -44,6 +45,7 @@ interface SingleDecisionProps {
 
 export default React.memo(function DecisionResponse({
   decision,
+  validRequestedStartDatePeriod,
   blocked,
   rejectCascade,
   refreshDecisionList,
@@ -62,9 +64,8 @@ export default React.memo(function DecisionResponse({
     type: decisionType
   } = decision
   const [acceptChecked, setAcceptChecked] = useState<boolean>(true)
-  const [requestedStartDate, setRequestedStartDate] = useState(
-    LocalDate.parseFiOrNull(startDate)
-  )
+  const [requestedStartDate, setRequestedStartDate] =
+    useState<LocalDate | null>(startDate)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [displayCascadeWarning, setDisplayCascadeWarning] =
     useState<boolean>(false)
@@ -133,11 +134,6 @@ export default React.memo(function DecisionResponse({
     }
   }, [startDate, decisionType]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const parsedStartDate = useMemo(
-    () => LocalDate.parseFiOrNull(startDate) ?? undefined,
-    [startDate]
-  )
-
   return (
     <div data-qa={`decision-${decision.id}`}>
       <H2 data-qa="title-decision-type">
@@ -155,7 +151,7 @@ export default React.memo(function DecisionResponse({
         <span data-qa="decision-unit">{getUnitName()}</span>
         <Label>{t.decisions.applicationDecisions.period}</Label>
         <span data-qa="decision-period">
-          {startDate} - {endDate}
+          {startDate.format()} - {endDate.format()}
         </span>
         <Label>{t.decisions.applicationDecisions.sentDate}</Label>
         <span data-qa="decision-sent-date">{sentDate.format()}</span>
@@ -190,17 +186,14 @@ export default React.memo(function DecisionResponse({
                     {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
                       decisionType
                     ) ? (
-                      <div>{startDate}</div>
+                      <div>{startDate.format()}</div>
                     ) : (
                       <DatePickerContainer onClick={(e) => e.stopPropagation()}>
                         <DatePicker
                           date={requestedStartDate}
                           onChange={(date) => setRequestedStartDate(date)}
-                          minDate={parsedStartDate}
-                          maxDate={
-                            parsedStartDate &&
-                            maxDecisionStartDate(parsedStartDate, decisionType)
-                          }
+                          minDate={validRequestedStartDatePeriod.start}
+                          maxDate={validRequestedStartDatePeriod.end}
                           locale={lang}
                           info={
                             dateErrorMessage !== ''

@@ -386,6 +386,14 @@ export interface DecisionSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.DecisionWithValidStartDatePeriod
+*/
+export interface DecisionWithValidStartDatePeriod {
+  decision: Decision
+  validRequestedStartDatePeriod: FiniteDateRange
+}
+
+/**
 * Generated from fi.espoo.evaka.application.FutureAddress
 */
 export interface FutureAddress {

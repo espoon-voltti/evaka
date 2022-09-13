@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -23,8 +25,6 @@ import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { getApplicationDecisions } from '../api'
-import { sortDecisions } from '../shared'
-import { Decision } from '../types'
 
 import DecisionResponse from './DecisionResponse'
 
@@ -45,14 +45,18 @@ export default React.memo(function DecisionResponseList() {
   useTitle(t, t.decisions.title)
 
   const unconfirmedDecisionsCount = decisionsRequest.isSuccess
-    ? decisionsRequest.value.filter(({ status }) => status === 'PENDING').length
+    ? decisionsRequest.value.filter(
+        ({ decision: { status } }) => status === 'PENDING'
+      ).length
     : 0
 
   const handleReturnToPreviousPage = () => {
     const warnAboutMissingResponse =
       decisionsRequest.isSuccess &&
       decisionsRequest.value.length > 1 &&
-      !!decisionsRequest.value.find((d) => d.status === 'PENDING')
+      !!decisionsRequest.value.find(
+        ({ decision: { status } }) => status === 'PENDING'
+      )
 
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
@@ -87,9 +91,12 @@ export default React.memo(function DecisionResponseList() {
                 ) : null}
                 <Gap size="L" />
                 {sortDecisions(decisions).map((decision, i) => (
-                  <React.Fragment key={decision.id}>
+                  <React.Fragment key={decision.decision.id}>
                     <DecisionResponse
-                      decision={decision}
+                      decision={decision.decision}
+                      validRequestedStartDatePeriod={
+                        decision.validRequestedStartDatePeriod
+                      }
                       blocked={isDecisionBlocked(decision, decisions)}
                       rejectCascade={isRejectCascaded(decision, decisions)}
                       refreshDecisionList={loadDecisions}
@@ -139,16 +146,32 @@ export default React.memo(function DecisionResponseList() {
   )
 })
 
-const isDecisionBlocked = (decision: Decision, allDecisions: Decision[]) =>
+const sortDecisions = (
+  decisions: DecisionWithValidStartDatePeriod[]
+): DecisionWithValidStartDatePeriod[] =>
+  orderBy(
+    decisions,
+    ({ decision: { sentDate } }) => sentDate.toSystemTzDate(),
+    'desc'
+  )
+
+const isDecisionBlocked = (
+  { decision }: DecisionWithValidStartDatePeriod,
+  allDecisions: DecisionWithValidStartDatePeriod[]
+) =>
   decision.type === 'PRESCHOOL_DAYCARE' &&
   allDecisions.find(
-    (decision) =>
-      ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
-      decision.status !== 'ACCEPTED'
+    ({ decision: { type, status } }) =>
+      ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(type) &&
+      status !== 'ACCEPTED'
   ) !== undefined
 
-const isRejectCascaded = (decision: Decision, allDecisions: Decision[]) =>
+const isRejectCascaded = (
+  { decision }: DecisionWithValidStartDatePeriod,
+  allDecisions: DecisionWithValidStartDatePeriod[]
+) =>
   ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
   allDecisions.find(
-    (d) => d.type === 'PRESCHOOL_DAYCARE' && d.status === 'PENDING'
+    ({ decision: { type, status } }) =>
+      type === 'PRESCHOOL_DAYCARE' && status === 'PENDING'
   ) !== undefined

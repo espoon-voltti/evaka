@@ -130,6 +130,7 @@ class EspooConfig {
         useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
         enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
         curriculumDocumentPermissionToShareRequired = true,
+        requestedStartUpperLimit = 14,
     )
 
     @Bean
