@@ -2211,9 +2211,8 @@ const sv: Translations = {
       </P>
       <ul>
         <li>
-          I navigeringen på sidan Meddelanden med tangentbordet eller
-          skärmläsaren måste förflyttningar och element som ska markeras ännu
-          korrigeras.
+          Tjänstens datum- och flervalsfält är inte optimerade för att användas
+          med skärmläsare
         </li>
         <li>
           Det går inte att navigera på serviceenhetskartan med
