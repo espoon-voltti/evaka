@@ -320,13 +320,12 @@ describe('Citizen children page', () => {
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${daycare1FirstTermination.format()}`
       )
       await assertToggledPlacements([])
-
       await childPage.togglePlacement(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, voimassa ${daycare1FirstTermination.format()}`
       )
       await childPage.fillTerminationDate(mockedDate, 0)
       await childPage.submitTermination(0)
-      await childPage.assertTerminatablePlacementCount(1)
+      await childPage.assertTerminatablePlacementCount(0)
       await assertTerminatedPlacements(
         `Varhaiskasvatus, Alkuräjähdyksen päiväkoti, viimeinen läsnäolopäivä: ${mockedDate.format()}`
       )
