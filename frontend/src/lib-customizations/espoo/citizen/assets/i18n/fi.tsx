@@ -2182,6 +2182,10 @@ export default {
       </P>
       <ul>
         <li>
+          Palvelun päivämäärävalitsinta ja monivalintojen alasvetovalikkoa ei
+          ole optimoitu käytettäväksi ruudunlukijalla.
+        </li>
+        <li>
           Palvelun yksikkökartassa ei pysty liikkumaan
           näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
           näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen

@@ -2110,8 +2110,8 @@ const en: Translations = {
       </P>
       <ul>
         <li>
-          Navigating on the Messages page using the keyboard or screen reader
-          still requires revision for part of moving and targeted elements.
+          Date pickers and multi-select dropdowns in the service are not
+          optimised to be used with a screen reader.
         </li>
         <li>
           The service’s unit map cannot be navigated using the keyboard/screen
