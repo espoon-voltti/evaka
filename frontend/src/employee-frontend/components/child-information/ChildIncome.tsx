@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
+import { ChildContext } from 'employee-frontend/state'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'lib-common/types'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -20,6 +21,7 @@ interface Props {
 export default React.memo(function ChildIncome({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
+  const { permittedActions } = useContext(ChildContext)
 
   return (
     <CollapsibleContentArea
@@ -34,7 +36,7 @@ export default React.memo(function ChildIncome({ id, startOpen }: Props) {
       <IncomeStatements personId={id} />
       <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
-      <Incomes personId={id} />
+      <Incomes personId={id} permittedActions={permittedActions} />
     </CollapsibleContentArea>
   )
 })

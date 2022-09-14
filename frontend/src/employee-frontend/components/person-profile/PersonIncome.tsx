@@ -6,6 +6,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine, Failure, Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -45,6 +46,7 @@ interface Props {
 
 export default React.memo(function PersonIncome({ id, open }: Props) {
   const { i18n } = useTranslation()
+  const { permittedActions } = useContext(PersonContext)
 
   const [children] = useApiState(
     () => getGuardianIncomeStatementChildren(id),
@@ -76,7 +78,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
       ))}
       <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
-      <Incomes personId={id} />
+      <Incomes personId={id} permittedActions={permittedActions} />
     </CollapsibleSection>
   )
 })
@@ -112,9 +114,11 @@ export const IncomeStatements = React.memo(function IncomeStatements({
 })
 
 export const Incomes = React.memo(function Incomes({
-  personId
+  personId,
+  permittedActions
 }: {
   personId: UUID
+  permittedActions: Set<Action.Person> | Set<Action.Child | Action.Person>
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -149,7 +153,7 @@ export const Incomes = React.memo(function Incomes({
   useEffect(() => {
     if (incomes.isSuccess && childPlacementPeriods.isSuccess) {
       const missingIncomePeriodsString = getMissingIncomePeriodsString(
-        incomes.value,
+        incomes.value.map((income) => income.data),
         childPlacementPeriods.value,
         i18n.common.and.toLowerCase()
       )
@@ -199,15 +203,17 @@ export const Incomes = React.memo(function Incomes({
         combine(incomes, incomeTypeOptions),
         ([incomes, incomeTypeOptions]) => (
           <>
-            <AddButtonRow
-              text={i18n.personProfile.income.add}
-              onClick={() => {
-                toggleIncomeRow('new')
-                setEditing('new')
-              }}
-              disabled={!!editing}
-              data-qa="add-income-button"
-            />
+            {permittedActions.has('CREATE_INCOME') && (
+              <AddButtonRow
+                text={i18n.personProfile.income.add}
+                onClick={() => {
+                  toggleIncomeRow('new')
+                  setEditing('new')
+                }}
+                disabled={!!editing}
+                data-qa="add-income-button"
+              />
+            )}
             <Gap size="m" />
             <IncomeList
               incomes={incomes}

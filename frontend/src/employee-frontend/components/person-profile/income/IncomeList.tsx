@@ -12,14 +12,19 @@ import { faQuestion } from 'lib-icons'
 
 import { IncomeTypeOptions } from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
-import { Income, IncomeBody, IncomeId } from '../../../types/income'
+import {
+  Income,
+  IncomeBody,
+  IncomeId,
+  IncomeWithPermittedActions
+} from '../../../types/income'
 
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import IncomeItemHeader from './IncomeItemHeader'
 
 interface Props {
-  incomes: Income[]
+  incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void
@@ -92,6 +97,7 @@ const IncomeList = React.memo(function IncomeList({
             editable={!editing}
             startEditing={() => undefined}
             startDeleting={() => undefined}
+            permittedActions={['UPDATE', 'DELETE']}
           />
           <Gap size="m" />
           <IncomeItemEditor
@@ -105,7 +111,7 @@ const IncomeList = React.memo(function IncomeList({
           <Gap size="m" />
         </div>
       )}
-      {incomes.map((item: Income) => (
+      {incomes.map(({ data: item, permittedActions }) => (
         <div key={item.id} data-qa="income-list-item">
           {deleting === item.id ? renderDeleteModal(item) : null}
           <IncomeItemHeader
@@ -118,6 +124,7 @@ const IncomeList = React.memo(function IncomeList({
             toggleable
             startEditing={() => setEditing(item.id)}
             startDeleting={() => setDeleting(item.id)}
+            permittedActions={permittedActions}
           />
           {isRowOpen(item.id) ? (
             <>

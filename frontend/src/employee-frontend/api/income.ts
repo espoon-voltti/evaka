@@ -10,22 +10,34 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { Income, IncomeOption, IncomeBody } from '../types/income'
+import {
+  Income,
+  IncomeOption,
+  IncomeBody,
+  IncomeWithPermittedActions
+} from '../types/income'
 
 import { client } from './client'
 
-export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
+export async function getIncomes(
+  personId: UUID
+): Promise<Result<IncomeWithPermittedActions[]>> {
   return client
-    .get<JsonOf<Response<Income[]>>>(`/incomes?personId=${personId}`)
+    .get<JsonOf<Response<IncomeWithPermittedActions[]>>>(
+      `/incomes?personId=${personId}`
+    )
     .then((res) => res.data.data)
     .then((incomes) =>
-      incomes.map((income) => ({
-        ...income,
-        validFrom: LocalDate.parseIso(income.validFrom),
-        validTo: income.validTo
-          ? LocalDate.parseIso(income.validTo)
-          : undefined,
-        updatedAt: HelsinkiDateTime.parseIso(income.updatedAt)
+      incomes.map(({ data: income, permittedActions }) => ({
+        data: {
+          ...income,
+          validFrom: LocalDate.parseIso(income.validFrom),
+          validTo: income.validTo
+            ? LocalDate.parseIso(income.validTo)
+            : undefined,
+          updatedAt: HelsinkiDateTime.parseIso(income.updatedAt)
+        },
+        permittedActions
       }))
     )
     .then((v) => Success.of(v))

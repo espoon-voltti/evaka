@@ -4,6 +4,7 @@
 
 import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
+import { Action } from 'lib-common/generated/action'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -33,6 +34,11 @@ export interface Income extends IncomeBody {
   updatedBy: string
   applicationId: UUID | null
   notes: string
+}
+
+export interface IncomeWithPermittedActions {
+  data: Income
+  permittedActions: Action.Income[]
 }
 
 export interface IncomeOption {
