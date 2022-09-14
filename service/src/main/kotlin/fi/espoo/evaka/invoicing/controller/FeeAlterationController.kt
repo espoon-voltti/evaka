@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -37,11 +36,26 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
-    fun getFeeAlterations(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): Wrapper<List<FeeAlteration>> {
+    fun getFeeAlterations(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): List<FeeAlterationWithPermittedActions> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FEE_ALTERATIONS, personId)
-        return Wrapper(db.connect { dbc -> dbc.read { it.getFeeAlterationsForPerson(personId) } })
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val feeAlterations = tx.getFeeAlterationsForPerson(personId)
+                val permittedActions =
+                    accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
+                        tx, user, clock,
+                        feeAlterations.mapNotNull { it.id }
+                    )
+                feeAlterations.map { FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+            }
+        }
     }
+
+    data class FeeAlterationWithPermittedActions(
+        val data: FeeAlteration,
+        val permittedActions: Set<Action.FeeAlteration>
+    )
 
     @PostMapping
     fun createFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeAlteration: FeeAlteration) {

@@ -4,6 +4,8 @@
 
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -22,7 +24,6 @@ import {
 } from '../../api/child/fee-alteration'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { FeeAlteration } from '../../types/fee-alteration'
 import { renderResult } from '../async-rendering'
 
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
@@ -40,6 +41,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
+  const { permittedActions } = useContext<ChildState>(ChildContext)
   const [feeAlterations, loadFeeAlterations] = useApiState(
     () => getFeeAlterations(id),
     [id]
@@ -71,14 +73,16 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
         paddingVertical="L"
         data-qa="fee-alteration-collapsible"
       >
-        <AddButtonRow
-          text={i18n.childInformation.feeAlteration.create}
-          onClick={() => {
-            toggleUiMode(newFeeAlterationUiMode)
-            scrollToRef(refSectionTop)
-          }}
-          disabled={uiMode === newFeeAlterationUiMode}
-        />
+        {permittedActions.has('CREATE_FEE_ALTERATION') && (
+          <AddButtonRow
+            text={i18n.childInformation.feeAlteration.create}
+            onClick={() => {
+              toggleUiMode(newFeeAlterationUiMode)
+              scrollToRef(refSectionTop)
+            }}
+            disabled={uiMode === newFeeAlterationUiMode}
+          />
+        )}
         <Gap size="m" />
         {uiMode === newFeeAlterationUiMode ? (
           <FeeAlterationEditor
@@ -119,6 +123,7 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
           resolve={{
             action: () =>
               deleted &&
+              deleted.id !== null &&
               deleteFeeAlteration(deleted.id).then((res) => {
                 setDeleted(undefined)
                 if (res.isSuccess) {

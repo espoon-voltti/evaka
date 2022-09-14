@@ -6,6 +6,10 @@ import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import {
+  FeeAlteration,
+  FeeAlterationWithPermittedActions
+} from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -14,12 +18,11 @@ import { Label } from 'lib-components/typography'
 import { faPen, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { FeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationEditor from './FeeAlterationEditor'
 
 interface Props {
-  feeAlterations: FeeAlteration[]
+  feeAlterations: FeeAlterationWithPermittedActions[]
   toggleEditing: (id: UUID) => void
   isEdited: (id: UUID) => boolean
   cancel: () => void
@@ -47,8 +50,8 @@ export default React.memo(function FeeAlterationList({
       columnGap="L"
       data-qa="fee-alteration-list"
     >
-      {feeAlterations.map((feeAlteration) =>
-        isEdited(feeAlteration.id) ? (
+      {feeAlterations.map(({ data: feeAlteration, permittedActions }) =>
+        feeAlteration.id !== null && isEdited(feeAlteration.id) ? (
           <EditorWrapper key={feeAlteration.id}>
             <FeeAlterationEditor
               key={feeAlteration.id}
@@ -75,16 +78,24 @@ export default React.memo(function FeeAlterationList({
                 <span>{feeAlteration.notes}</span>
               </FixedSpaceRow>
               <FixedSpaceRow>
-                <IconButton
-                  icon={faPen}
-                  onClick={() => toggleEditing(feeAlteration.id)}
-                  aria-label={i18n.common.edit}
-                />
-                <IconButton
-                  icon={faTrash}
-                  onClick={() => toggleDeleteModal(feeAlteration)}
-                  aria-label={i18n.common.remove}
-                />
+                {permittedActions.includes('UPDATE') && (
+                  <IconButton
+                    icon={faPen}
+                    onClick={() => {
+                      if (feeAlteration.id !== null) {
+                        toggleEditing(feeAlteration.id)
+                      }
+                    }}
+                    aria-label={i18n.common.edit}
+                  />
+                )}
+                {permittedActions.includes('DELETE') && (
+                  <IconButton
+                    icon={faTrash}
+                    onClick={() => toggleDeleteModal(feeAlteration)}
+                    aria-label={i18n.common.remove}
+                  />
+                )}
               </FixedSpaceRow>
             </FixedSpaceRow>
           </Fragment>
