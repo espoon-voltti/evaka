@@ -35,7 +35,6 @@ import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import mu.KotlinLogging
-import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -429,13 +428,15 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val decisionMakers = getDecisionMakerOptions(assistanceNeedDecision.id)
 
-        assertThat(decisionMakers)
-            .extracting({ it.id }, { it.lastName }, { it.firstName })
-            .contains(
+        assertEquals(
+            listOf(
                 Tuple(testDecisionMaker_1.id, testDecisionMaker_1.lastName, testDecisionMaker_1.firstName),
                 Tuple(testDecisionMaker_2.id, testDecisionMaker_2.lastName, testDecisionMaker_2.firstName),
                 Tuple(testDecisionMaker_3.id, testDecisionMaker_3.lastName, testDecisionMaker_3.firstName),
-            )
+                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName),
+            ),
+            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
+        )
     }
 
     @Test
@@ -490,12 +491,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         }
 
-        assertThat(decisionMakers)
-            .extracting({ it.id }, { it.lastName }, { it.firstName })
-            .containsExactly(
+        assertEquals(
+            listOf(
                 Tuple(directorId, "Director", "Dirk"),
-                Tuple(unitSupervisorOfTestDaycare.id, "Supervisor", "Sammy"),
-            )
+                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName),
+            ),
+            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
+        )
     }
 
     @Test
@@ -532,7 +534,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             assistanceNeedDecision.id
         )
 
-        val updatedDecisionWithAssistanceServices = whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
+        val updatedDecisionWithAssistanceServices =
+            whenGetAssistanceNeedDecisionThenExpectSuccess(assistanceNeedDecision.id)
         assertEquals(updatedDecisionWithAssistanceServices.validityPeriod.end, end)
 
         whenPutAssistanceNeedDecisionThenExpectSuccess(
@@ -681,7 +684,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return result.get()
     }
 
-    private fun whenPutAssistanceNeedDecisionThenExpectSuccess(request: AssistanceNeedDecisionRequest, decisionId: AssistanceNeedDecisionId) {
+    private fun whenPutAssistanceNeedDecisionThenExpectSuccess(
+        request: AssistanceNeedDecisionRequest,
+        decisionId: AssistanceNeedDecisionId
+    ) {
         val (_, res) = http.put("/assistance-need-decision/$decisionId")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)
@@ -723,7 +729,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(statusCode.value(), res.statusCode)
     }
 
-    private fun whenPutAssistanceNeedDecisionThenExpectForbidden(request: AssistanceNeedDecisionRequest, decisionId: AssistanceNeedDecisionId) {
+    private fun whenPutAssistanceNeedDecisionThenExpectForbidden(
+        request: AssistanceNeedDecisionRequest,
+        decisionId: AssistanceNeedDecisionId
+    ) {
         val (_, res) = http.put("/assistance-need-decision/$decisionId")
             .jsonBody(jsonMapper.writeValueAsString(request))
             .asUser(assistanceWorker)

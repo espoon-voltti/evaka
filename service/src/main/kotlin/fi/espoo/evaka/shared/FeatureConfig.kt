@@ -90,9 +90,9 @@ data class FeatureConfig(
 
     /** Employees with given user roles to show as options for assistance decision makers.
      *
-     * May contain global and unit scoped roles (empty = all roles are visible).
+     * May contain global and unit scoped roles (null = all roles are visible).
      */
-    val assistanceDecisionMakerRoles: Set<UserRole> = emptySet(),
+    val assistanceDecisionMakerRoles: Set<UserRole>?,
 
     /** The number of days citizens can move daycare start forward */
     val requestedStartUpperLimit: Int

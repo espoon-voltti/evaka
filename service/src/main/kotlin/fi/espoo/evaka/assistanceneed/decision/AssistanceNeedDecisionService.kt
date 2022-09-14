@@ -211,17 +211,13 @@ class AssistanceNeedDecisionService(
         )
     }
 
-    fun getDecisionMakerOptions(tx: Database.Read, id: AssistanceNeedDecisionId, roles: Set<UserRole>): List<Employee> {
+    fun getDecisionMakerOptions(tx: Database.Read, id: AssistanceNeedDecisionId, roles: Set<UserRole>?): List<Employee> {
         val assistanceDecision = tx.getAssistanceNeedDecisionById(id)
-        // original implementation
-        if (roles.isEmpty()) {
-            return tx.getEmployees().sortedBy { it.email }
+        return if (roles == null) {
+            tx.getEmployees().sortedBy { it.email }
+        } else {
+            tx.getEmployeesByRoles(roles, assistanceDecision.selectedUnit?.id)
         }
-        return tx.getEmployeesByRoles(
-            globalRoles = roles.filter { it.isGlobalRole() },
-            unitScopedRoles = roles.filter { it.isUnitScopedRole() },
-            unitId = assistanceDecision.selectedUnit?.id
-        )
     }
 }
 
