@@ -372,6 +372,14 @@ export interface InvoiceCorrection {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.InvoiceCorrectionWithPermittedActions
+*/
+export interface InvoiceCorrectionWithPermittedActions {
+  data: InvoiceCorrection
+  permittedActions: Action.InvoiceCorrection[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceDaycare
 */
 export interface InvoiceDaycare {

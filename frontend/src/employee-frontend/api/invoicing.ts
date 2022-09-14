@@ -15,7 +15,7 @@ import {
   FeeDecisionSummary,
   Invoice,
   InvoiceCodes,
-  InvoiceCorrection,
+  InvoiceCorrectionWithPermittedActions,
   InvoiceDetailed,
   InvoiceDistinctiveParams,
   InvoiceSortParam,
@@ -550,13 +550,18 @@ export async function createRetroactiveValueDecisions(
 
 export async function getPersonInvoiceCorrections(
   personId: UUID
-): Promise<Result<InvoiceCorrection[]>> {
+): Promise<Result<InvoiceCorrectionWithPermittedActions[]>> {
   return client
-    .get<JsonOf<InvoiceCorrection[]>>(`/invoice-corrections/${personId}`)
+    .get<JsonOf<InvoiceCorrectionWithPermittedActions[]>>(
+      `/invoice-corrections/${personId}`
+    )
     .then(({ data }) =>
-      data.map((json) => ({
-        ...json,
-        period: FiniteDateRange.parseJson(json.period)
+      data.map(({ data: json, permittedActions }) => ({
+        data: {
+          ...json,
+          period: FiniteDateRange.parseJson(json.period)
+        },
+        permittedActions
       }))
     )
     .then((res) => Success.of(res))

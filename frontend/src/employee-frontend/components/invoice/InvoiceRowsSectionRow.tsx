@@ -14,6 +14,7 @@ import React, {
 import styled, { useTheme } from 'styled-components'
 
 import { UpdateStateFn } from 'lib-common/form-state'
+import { Action } from 'lib-common/generated/action'
 import {
   InvoiceDaycare,
   ProductWithName
@@ -52,6 +53,7 @@ export interface InvoiceRowStub {
 
 interface Props {
   row: InvoiceRowStub
+  permittedActions: Action.InvoiceCorrection[]
   update: UpdateStateFn<InvoiceRowStub>
   remove: (() => void) | undefined
   products: ProductWithName[]
@@ -75,6 +77,7 @@ function InvoiceRowSectionRow({
     price,
     note
   },
+  permittedActions,
   update,
   remove,
   editable,
@@ -191,7 +194,7 @@ function InvoiceRowSectionRow({
           {note !== null || addNote ? (
             <Tooltip tooltip={note}>
               <IconButtonWrapper margin={editable}>
-                {addNote ? (
+                {addNote && permittedActions.includes('UPDATE_NOTE') ? (
                   <IconButton
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     onClick={addNote}
@@ -206,7 +209,7 @@ function InvoiceRowSectionRow({
               </IconButtonWrapper>
             </Tooltip>
           ) : null}
-          {remove ? (
+          {remove && permittedActions.includes('DELETE') ? (
             <IconButtonWrapper margin={editable}>
               <IconButton
                 icon={faTrash}
