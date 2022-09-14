@@ -245,6 +245,11 @@ export type GroupPlacement =
   | 'DELETE'
   | 'UPDATE'
 
+export type Income =
+  | 'DELETE'
+  | 'UPDATE'
+  | 'UPLOAD_ATTACHMENT'
+
 export type MobileDevice =
   | 'DELETE'
   | 'UPDATE_NAME'

@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.controller
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attachment.associateIncomeAttachments
 import fi.espoo.evaka.attachment.deleteAttachment
 import fi.espoo.evaka.invoicing.data.deleteIncome
@@ -57,13 +58,32 @@ class IncomeController(
     private val filesBucket = bucketEnv.attachments
 
     @GetMapping
-    fun getIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): Wrapper<List<Income>> {
+    fun getIncome(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam personId: PersonId
+    ): Wrapper<List<IncomeWithPermittedActions>> {
         Audit.PersonIncomeRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME, personId)
 
-        val incomes = db.connect { dbc -> dbc.read { it.getIncomesForPerson(mapper, incomeTypesProvider, personId) } }
+        val incomes = db.connect { dbc ->
+            dbc.read { tx ->
+                val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
+                val permittedActions = accessControl.getPermittedActions<IncomeId, Action.Income>(
+                    tx,
+                    user,
+                    clock,
+                    incomes.mapNotNull { it.id }
+                )
+                incomes.map { IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+            }
+        }
         return Wrapper(incomes)
     }
+
+    @ExcludeCodeGen
+    data class IncomeWithPermittedActions(val data: Income, val permittedActions: Set<Action.Income>)
 
     @PostMapping
     fun createIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody income: Income): IncomeId {

@@ -6,6 +6,7 @@ import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
+import { Action } from 'lib-common/generated/action'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -45,6 +46,7 @@ interface Props {
   toggleable?: boolean
   startEditing: () => void
   startDeleting: () => void
+  permittedActions: Action.Income[]
   children?: JSX.Element[] | JSX.Element
 }
 
@@ -55,6 +57,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
   editable,
   toggleable,
   startEditing,
+  permittedActions,
   startDeleting
 }: Props) {
   const { i18n } = useTranslation()
@@ -74,25 +77,29 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
         </Title>
       </ItemTitle>
       <Row>
-        <Button
-          icon={faPen}
-          onClick={() => {
-            startEditing()
-            !isOpen && toggle()
-          }}
-          disabled={!editable}
-          data-qa="edit-income-item"
-          aria-label={i18n.common.edit}
-        />
-        <Button
-          icon={faTrash}
-          onClick={() => {
-            startDeleting()
-          }}
-          disabled={!editable}
-          data-qa="delete-income-item"
-          aria-label={i18n.common.remove}
-        />
+        {permittedActions.includes('UPDATE') && (
+          <Button
+            icon={faPen}
+            onClick={() => {
+              startEditing()
+              !isOpen && toggle()
+            }}
+            disabled={!editable}
+            data-qa="edit-income-item"
+            aria-label={i18n.common.edit}
+          />
+        )}
+        {permittedActions.includes('DELETE') && (
+          <Button
+            icon={faTrash}
+            onClick={() => {
+              startDeleting()
+            }}
+            disabled={!editable}
+            data-qa="delete-income-item"
+            aria-label={i18n.common.remove}
+          />
+        )}
         <ToggleButton
           icon={isOpen ? faChevronUp : faChevronDown}
           onClick={toggle}

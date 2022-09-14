@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.IncomeController
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
@@ -49,7 +50,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<List<Income>>>(json)
+    private fun deserializeResult(json: String) =
+        jsonMapper.readValue<Wrapper<List<IncomeController.IncomeWithPermittedActions>>>(json)
+            .data.map { it.data }
 
     @BeforeEach
     fun beforeEach() {
@@ -79,7 +82,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(listOf(), deserializeResult(result.get()).data)
+        assertEqualEnough(listOf(), deserializeResult(result.get()))
     }
 
     @Test
@@ -94,7 +97,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(testIncome.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -118,7 +121,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             incomes.map { it.copy(updatedBy = financeUserName) },
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -138,7 +141,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(testIncome.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -235,7 +238,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(income.copy(data = emptyMap(), updatedBy = financeUserName)),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -266,7 +269,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(updated.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -324,7 +327,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(updated.copy(data = emptyMap(), updatedBy = financeUserName)),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -341,7 +344,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .responseString()
         assertEquals(200, responseBeforeUpdate.statusCode)
 
-        val beforeUpdate = deserializeResult(resultBeforeUpdate.get()).data.first()
+        val beforeUpdate = deserializeResult(resultBeforeUpdate.get()).first()
         assertNotNull(beforeUpdate.applicationId)
 
         val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
@@ -356,7 +359,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .responseString()
         assertEquals(200, responseAfterUpdate.statusCode)
 
-        val afterUpdate = deserializeResult(resultAfterUpdate.get()).data.first()
+        val afterUpdate = deserializeResult(resultAfterUpdate.get()).first()
         assertNull(afterUpdate.applicationId)
     }
 
