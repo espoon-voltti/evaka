@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Employee } from 'employee-frontend/types/employee'
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import {
@@ -146,5 +147,23 @@ export function updateAssistanceNeedDecisionDecisionMaker(
   return client
     .post(`/assistance-need-decision/${id}/update-decision-maker`, { title })
     .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getAssistanceDecisionMakerOptions(
+  id: UUID
+): Promise<Result<Employee[]>> {
+  return client
+    .get<JsonOf<Employee[]>>(
+      `/assistance-need-decision/${id}/decision-maker-option`
+    )
+    .then((res) =>
+      res.data.map((data) => ({
+        ...data,
+        created: HelsinkiDateTime.parseIso(data.created),
+        updated: HelsinkiDateTime.parseIso(data.updated)
+      }))
+    )
+    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

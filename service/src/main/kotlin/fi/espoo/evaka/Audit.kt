@@ -70,6 +70,7 @@ enum class Audit(
     ChildAssistanceNeedDecisionGetUnreadCountCitizen("evaka.citizen.child.assistance-need-decision.get-unread-count"),
     ChildAssistanceNeedDecisionMarkReadCitizen("evaka.citizen.child.assistance-need-decision.mark-as-read"),
     ChildAssistanceNeedDecisionRead("evaka.child.assistance-need-decision.read"),
+    ChildAssistanceNeedDecisionReadDecisionMakerOptions("evaka.child.assistance-need-decision.read-decision-maker-options"),
     ChildAssistanceNeedDecisionReadCitizen("evaka.citizen.child.assistance-need-decision.read"),
     ChildAssistanceNeedDecisionUpdate("evaka.child.assistance-need-decision.update"),
     ChildAssistanceNeedDecisionsList("evaka.child.assistance-need-decision.list"),

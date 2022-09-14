@@ -4,6 +4,7 @@
 
 import React, { SetStateAction, useCallback, useEffect, useState } from 'react'
 
+import { Employee } from 'employee-frontend/types/employee'
 import {
   AutosaveStatus,
   useAutosave
@@ -11,10 +12,16 @@ import {
 import { Result } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getAssistanceNeedDecision, putAssistanceNeedDecision } from './api'
+import {
+  getAssistanceDecisionMakerOptions,
+  getAssistanceNeedDecision,
+  putAssistanceNeedDecision
+} from './api'
 
 export type AssistanceNeedDecisionInfo = {
+  decisionMakerOptions: Result<Employee[]>
   formState: AssistanceNeedDecisionForm | undefined
   setFormState: React.Dispatch<
     SetStateAction<AssistanceNeedDecisionForm | undefined>
@@ -44,10 +51,20 @@ export function useAssistanceNeedDecision(
     [id]
   )
 
+  const [decisionMakerOptions, reloadDecisionMakerOptions] = useApiState(
+    () => getAssistanceDecisionMakerOptions(id),
+    [id]
+  )
+
   const { status, setDirty, forceSave } = useAutosave({
     load: loadDecision,
     onLoaded: setFormState,
-    save: putAssistanceNeedDecision,
+    save: (id: UUID, decision: AssistanceNeedDecisionForm) =>
+      putAssistanceNeedDecision(id, decision).then((result) =>
+        reloadDecisionMakerOptions()
+          .then(() => result)
+          .catch(() => result)
+      ),
     getSaveParameters
   })
 
@@ -57,6 +74,7 @@ export function useAssistanceNeedDecision(
   }, [setDirty, formState])
 
   return {
+    decisionMakerOptions,
     formState,
     setFormState,
     status,

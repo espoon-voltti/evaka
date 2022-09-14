@@ -390,3 +390,39 @@ WHERE id = ANY(:ids)
         .toList()
         .map { it.id to it.name }
         .toMap()
+
+fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?): List<Employee> {
+    val globalRoles = roles.filter { it.isGlobalRole() }
+    val unitScopedRoles = roles.filter { it.isUnitScopedRole() }
+    return if (unitId == null) {
+        createQuery(
+            """
+SELECT id, first_name, last_name, email, external_id, created, updated
+FROM employee
+WHERE roles && :globalRoles::user_role[]
+ORDER BY last_name, first_name
+        """
+        )
+            .bind("globalRoles", globalRoles)
+            .mapTo<Employee>()
+            .toList()
+    } else {
+        createQuery(
+            """
+SELECT id, first_name, last_name, email, external_id, created, updated
+FROM employee
+WHERE roles && :globalRoles::user_role[] OR id IN (
+    SELECT employee_id
+    FROM daycare_acl
+    WHERE daycare_id = :unitId AND role = ANY(:unitScopedRoles::user_role[])
+)
+ORDER BY last_name, first_name
+        """
+        )
+            .bind("globalRoles", globalRoles)
+            .bind("unitScopedRoles", unitScopedRoles)
+            .bind("unitId", unitId)
+            .mapTo<Employee>()
+            .toList()
+    }
+}
