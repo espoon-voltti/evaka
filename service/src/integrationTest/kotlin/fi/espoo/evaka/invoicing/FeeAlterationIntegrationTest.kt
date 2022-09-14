@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.EvakaUserId
@@ -35,7 +36,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         )
     }
 
-    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<List<FeeAlteration>>>(json)
+    private fun deserializeResult(json: String) =
+        jsonMapper.readValue<List<FeeAlterationController.FeeAlterationWithPermittedActions>>(json)
+            .map { it.data }
 
     @BeforeEach
     fun setup() {
@@ -67,7 +70,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(listOf(), deserializeResult(result.get()).data)
+        assertEqualEnough(listOf(), deserializeResult(result.get()))
     }
 
     @Test
@@ -79,7 +82,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()).data)
+        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()))
     }
 
     @Test
@@ -101,7 +104,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(feeAlterations, deserializeResult(result.get()).data)
+        assertEqualEnough(feeAlterations, deserializeResult(result.get()))
     }
 
     @Test
@@ -118,7 +121,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         assertEqualEnough(
             listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -149,7 +152,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
         assertEqualEnough(
             listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            deserializeResult(result.get()).data
+            deserializeResult(result.get())
         )
     }
 
@@ -182,8 +185,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEquals(1, deserializeResult(result.get()).data.size)
-        assertFalse(deserializeResult(result.get()).data.any { it.id == deletedId })
+        assertEquals(1, deserializeResult(result.get()).size)
+        assertFalse(deserializeResult(result.get()).any { it.id == deletedId })
     }
 
     @Test
@@ -199,6 +202,6 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()).data)
+        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()))
     }
 }

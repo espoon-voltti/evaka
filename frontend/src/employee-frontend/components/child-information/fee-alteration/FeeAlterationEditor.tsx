@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { Result, Success } from 'lib-common/api'
+import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
@@ -17,10 +18,7 @@ import { Gap } from 'lib-components/white-space'
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
 import { useTranslation } from '../../../state/i18n'
-import {
-  FeeAlteration,
-  PartialFeeAlteration
-} from '../../../types/fee-alteration'
+import { PartialFeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 

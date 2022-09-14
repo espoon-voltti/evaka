@@ -216,6 +216,10 @@ export type DailyServiceTime =
 
 export type Decision = 'DOWNLOAD_PDF'
 
+export type FeeAlteration =
+  | 'DELETE'
+  | 'UPDATE'
+
 export type Group =
   | 'CREATE_ABSENCES'
   | 'CREATE_CALENDAR_EVENT'
