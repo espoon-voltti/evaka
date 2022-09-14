@@ -575,6 +575,18 @@ const CreateEventModal = React.memo(function CreateEventModal({
       rejectAction={() => onClose(false)}
       rejectLabel={i18n.common.cancel}
     >
+      <Label>{i18n.unit.calendar.events.create.attendees}</Label>
+      <Gap size="xs" />
+      <TreeDropdown
+        tree={form.attendees}
+        onChange={(tree) => updateForm('attendees', tree)}
+        data-qa="attendees"
+        labels={i18n.common.treeDropdown}
+        placeholder={i18n.common.treeDropdown.placeholder}
+      />
+
+      <Gap size="s" />
+
       <Label>{i18n.unit.calendar.events.create.eventTitle}</Label>
       <InputField
         value={form.title}
@@ -599,18 +611,6 @@ const CreateEventModal = React.memo(function CreateEventModal({
         errorTexts={i18n.validationErrors}
         locale={lang}
         required={true}
-      />
-
-      <Gap size="s" />
-
-      <Label>{i18n.unit.calendar.events.create.attendees}</Label>
-      <Gap size="xs" />
-      <TreeDropdown
-        tree={form.attendees}
-        onChange={(tree) => updateForm('attendees', tree)}
-        data-qa="attendees"
-        labels={i18n.common.treeDropdown}
-        placeholder={i18n.common.treeDropdown.placeholder}
       />
 
       {childrenWithMissingPlacement.length > 0 && (
