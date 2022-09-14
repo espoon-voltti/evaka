@@ -7,6 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { PersonContext } from 'employee-frontend/state/person'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -39,6 +40,7 @@ export default React.memo(function PersonVoucherValueDecisions({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { permittedActions } = useContext(PersonContext)
   const [voucherValueDecisions, reloadDecisions] = useApiState(
     () => getPersonVoucherValueDecisions(id),
     [id]
@@ -64,12 +66,14 @@ export default React.memo(function PersonVoucherValueDecisions({
           loadDecisions={reloadDecisions}
         />
       ) : null}
-      <AddButtonRow
-        data-qa="create-retroactive-value-decisions"
-        text={i18n.personProfile.voucherValueDecisions.createRetroactive}
-        onClick={openRetroactiveDecisionsModal}
-        disabled={!!uiMode}
-      />
+      {permittedActions.has('GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS') && (
+        <AddButtonRow
+          data-qa="create-retroactive-value-decisions"
+          text={i18n.personProfile.voucherValueDecisions.createRetroactive}
+          onClick={openRetroactiveDecisionsModal}
+          disabled={!!uiMode}
+        />
+      )}
       {renderResult(voucherValueDecisions, (voucherValueDecisions) => (
         <Table data-qa="table-of-voucher-value-decisions">
           <Thead>
