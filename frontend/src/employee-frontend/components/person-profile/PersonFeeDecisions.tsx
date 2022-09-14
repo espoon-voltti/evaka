@@ -7,6 +7,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { PersonContext } from 'employee-frontend/state/person'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -39,6 +40,7 @@ interface Props {
 export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const { permittedActions } = useContext(PersonContext)
   const [feeDecisions, reloadFeeDecisions] = useApiState(
     () => getPersonFeeDecisions(id),
     [id]
@@ -64,12 +66,14 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
           loadDecisions={reloadFeeDecisions}
         />
       ) : null}
-      <AddButtonRow
-        text={i18n.personProfile.feeDecisions.createRetroactive}
-        onClick={openRetroactiveDecisionsModal}
-        disabled={!!uiMode}
-        data-qa="create-retroactive-fee-decision-button"
-      />
+      {permittedActions.has('GENERATE_RETROACTIVE_FEE_DECISIONS') && (
+        <AddButtonRow
+          text={i18n.personProfile.feeDecisions.createRetroactive}
+          onClick={openRetroactiveDecisionsModal}
+          disabled={!!uiMode}
+          data-qa="create-retroactive-fee-decision-button"
+        />
+      )}
       {renderResult(feeDecisions, (feeDecisions) => (
         <Table data-qa="table-of-fee-decisions">
           <Thead>
