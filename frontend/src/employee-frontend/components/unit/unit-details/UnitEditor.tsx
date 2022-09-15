@@ -378,9 +378,6 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
-  if (form.invoicedByMunicipality && !form.financeDecisionHandlerId) {
-    errors.push(i18n.unitEditor.error.financeDecisionHandler)
-  }
   if (
     form.openingDate != null &&
     form.closingDate != null &&
