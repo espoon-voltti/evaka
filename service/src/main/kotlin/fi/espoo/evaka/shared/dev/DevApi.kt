@@ -1668,7 +1668,7 @@ data class DevParentship(
 
 data class DevEmployee(
     val id: EmployeeId = EmployeeId(UUID.randomUUID()),
-    val nickname: String? = null,
+    val preferredFirstName: String? = null,
     val firstName: String = "Test",
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",

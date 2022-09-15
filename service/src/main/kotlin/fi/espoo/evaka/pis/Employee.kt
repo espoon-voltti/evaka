@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 data class Employee(
     val id: EmployeeId,
-    val nickname: String?,
+    val preferredFirstName: String?,
     val firstName: String,
     val lastName: String,
     val email: String?,

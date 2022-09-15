@@ -265,4 +265,4 @@ V264__fridge_partner_self_foreign_key.sql
 V265__finance_decisions_partner_constraint.sql
 V266__trim_external_staff_names.sql
 V267__calendar_events.sql
-V268__employee_nickname.sql
+V268__employee_preferred_first_name.sql

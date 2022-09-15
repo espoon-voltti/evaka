@@ -16,7 +16,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
-import fi.espoo.evaka.pis.setEmployeeNickname
+import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.EmployeeId
@@ -149,52 +149,52 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
     }
 
-    data class EmployeeNicknames(
-        val selectedNickname: String?,
-        val possibleNicknames: List<String>
+    data class EmployeePreferredFirstName(
+        val preferredFirstName: String?,
+        val preferredFirstNameOptions: List<String>
     )
-    @GetMapping("/nickname")
-    fun getEmployeeNickNames(
+    @GetMapping("/preferred-first-name")
+    fun getEmployeePreferredFirstName(
         db: Database,
         user: AuthenticatedUser
-    ): EmployeeNicknames {
-        Audit.EmployeeNicknameRead.log()
+    ): EmployeePreferredFirstName {
+        Audit.EmployeePreferredFirstNameRead.log()
         return db.connect { dbc ->
             dbc.read { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
-                EmployeeNicknames(
-                    selectedNickname = employee.nickname,
-                    possibleNicknames = possibleNicknames(employee)
+                EmployeePreferredFirstName(
+                    preferredFirstName = employee.preferredFirstName,
+                    preferredFirstNameOptions = possiblePreferredFirstNames(employee)
                 )
             }
         }
     }
 
-    data class EmployeeNicknameUpdateRequest(
-        val nickname: String?
+    data class EmployeeSetPreferredFirstNameUpdateRequest(
+        val preferredFirstName: String?
     )
-    @PostMapping("/nickname")
-    fun setEmployeeNickname(
+    @PostMapping("/preferred-first-name")
+    fun setEmployeePreferredFirstName(
         db: Database,
         user: AuthenticatedUser,
-        @RequestBody body: EmployeeNicknameUpdateRequest
+        @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest
     ) {
-        Audit.EmployeNicknameUpdate.log()
+        Audit.EmployePreferredFirstNameUpdate.log()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
-                if (body.nickname == null) {
-                    tx.setEmployeeNickname(EmployeeId(user.rawId()), null)
+                if (body.preferredFirstName == null) {
+                    tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), null)
                 } else {
-                    if (possibleNicknames(employee).contains(body.nickname)) {
-                        tx.setEmployeeNickname(EmployeeId(user.rawId()), body.nickname)
-                    } else throw NotFound("Given nickname not found")
+                    if (possiblePreferredFirstNames(employee).contains(body.preferredFirstName)) {
+                        tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), body.preferredFirstName)
+                    } else throw NotFound("Given preferred first name is not allowed")
                 }
             }
         }
     }
 
-    private fun possibleNicknames(employee: Employee): List<String> {
+    private fun possiblePreferredFirstNames(employee: Employee): List<String> {
         val fullFirstNames = employee.firstName.split("\\s+".toRegex())
         val splitTwoPartNames = fullFirstNames
             .filter { it.contains('-') }

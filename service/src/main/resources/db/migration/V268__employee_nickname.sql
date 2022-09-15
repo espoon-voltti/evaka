@@ -1,1 +1,0 @@
-ALTER TABLE employee ADD column nickname text;

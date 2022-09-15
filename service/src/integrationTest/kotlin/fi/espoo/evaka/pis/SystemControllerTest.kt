@@ -98,7 +98,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             firstName = "Teppo", lastName = "Testaaja", email = null
         )
         db.transaction { tx ->
-            tx.insertTestEmployee(DevEmployee(id = employeeId, externalId = externalId, roles = setOf(UserRole.FINANCE_ADMIN), nickname = "Kutsumanimi"))
+            tx.insertTestEmployee(DevEmployee(id = employeeId, externalId = externalId, roles = setOf(UserRole.FINANCE_ADMIN), preferredFirstName = "Kutsumanimi"))
         }
 
         val (_, res, result) = http.post("/system/employee-login")

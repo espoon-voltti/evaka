@@ -30,7 +30,7 @@ data class NewEmployee(
 
 data class EmployeeUser(
     val id: EmployeeId,
-    val nickname: String? = null,
+    val preferredFirstName: String? = null,
     val firstName: String,
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
@@ -90,7 +90,7 @@ INSERT INTO employee (first_name, last_name, email, external_id, employee_number
 VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :now)
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = :now, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
-RETURNING id, nickname, first_name, last_name, email, external_id, created, updated, roles
+RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles
     """.trimIndent()
 ).bindKotlin("employee", employee)
     .bind("now", clock.now())
@@ -121,7 +121,7 @@ WHERE id = :id
 private fun Database.Read.searchEmployees(id: EmployeeId? = null, externalId: ExternalId? = null) = createQuery(
     // language=SQL
     """
-SELECT e.id, nickname, first_name, last_name, email, external_id, e.created, e.updated, roles
+SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles
 FROM employee e
 WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
     """.trimIndent()
@@ -132,7 +132,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.exte
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) = createQuery(
     // language=SQL
     """
-SELECT DISTINCT e.id, e.nickname, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (:id::uuid IS NULL OR e.id = :id)
@@ -148,7 +148,7 @@ fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? = s
 
 private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
-SELECT id, nickname, first_name, last_name, email, employee.roles AS global_roles, (
+SELECT id, preferred_first_name, first_name, last_name, email, employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id
@@ -250,7 +250,7 @@ SELECT
     id,
     created,
     updated,
-    nickname,
+    preferred_first_name,
     first_name,
     last_name,
     email,
@@ -393,10 +393,10 @@ WHERE id = ANY(:ids)
         .map { it.id to it.name }
         .toMap()
 
-fun Database.Transaction.setEmployeeNickname(employeeId: EmployeeId, nickname: String?) =
-    createUpdate("UPDATE employee SET nickname = :nickname WHERE id = :employeeId")
+fun Database.Transaction.setEmployeePreferredFirstName(employeeId: EmployeeId, preferredFirstName: String?) =
+    createUpdate("UPDATE employee SET preferred_first_name = :preferredFirstName WHERE id = :employeeId")
         .bind("employeeId", employeeId)
-        .bind("nickname", nickname)
+        .bind("preferredFirstName", preferredFirstName)
         .execute()
 
 fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?): List<Employee> {

@@ -24,7 +24,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name
 fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) = createUpdate(
     """
 INSERT INTO evaka_user (id, type, employee_id, name)
-SELECT id, 'EMPLOYEE', id, last_name || ' ' || coalesce(nickname, first_name)
+SELECT id, 'EMPLOYEE', id, last_name || ' ' || coalesce(preferred_first_name, first_name)
 FROM employee
 WHERE id = :id
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
