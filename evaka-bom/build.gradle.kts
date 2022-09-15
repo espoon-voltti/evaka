@@ -59,7 +59,7 @@ dependencies {
         api("org.thymeleaf:thymeleaf:3.0.15.RELEASE")
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
-        api("org.yaml:snakeyaml:1.31")
+        api("org.yaml:snakeyaml:1.32")
         api("redis.clients:jedis:4.2.3")
     }
 
