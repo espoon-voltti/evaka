@@ -37,7 +37,7 @@ export const fi = {
     createUnit: 'Luo uusi yksikkö',
     personalMobileDevices: 'Johtajan eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
-    nickname: 'Kutsumanimen hallinta',
+    preferredFirstName: 'Kutsumanimen hallinta',
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
     vasuTemplates: 'Vasu-pohjat',
@@ -3650,7 +3650,7 @@ export const fi = {
     conditionContinuousPlacement:
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
   },
-  nickname: {
+  preferredFirstName: {
     popupLink: 'Kutsumanimi',
     title: 'Kutsumanimi',
     description:

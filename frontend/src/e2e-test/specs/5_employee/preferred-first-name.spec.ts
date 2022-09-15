@@ -7,7 +7,7 @@ import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
-import { EmployeeNickname } from '../../pages/employee/nickname'
+import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -15,7 +15,7 @@ import { employeeLogin } from '../../utils/user'
 let admin: EmployeeDetail
 let page: Page
 let nav: EmployeeNav
-let nicknamePage: EmployeeNickname
+let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
 const firstName = 'Matti-Teppo Seppo'
 
 beforeEach(async () => {
@@ -32,27 +32,31 @@ beforeEach(async () => {
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
-  nicknamePage = new EmployeeNickname(page)
-  await nav.openAndClickDropdownMenuItem('nickname')
+  employeePreferredFirstNamePage = new EmployeePreferredFirstNamePage(page)
+  await nav.openAndClickDropdownMenuItem('preferred-first-name')
 })
 
-describe('Employee nickname', () => {
-  test('nickname can be set', async () => {
-    await nicknamePage.assertSelectedNickname('Matti-Teppo')
-    await nicknamePage.assertAvailableNicknames([
+describe('Employee preferred first name', () => {
+  test('preferred first name can be set', async () => {
+    await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
+      'Matti-Teppo'
+    )
+    await employeePreferredFirstNamePage.assertPreferredFirstNameOptions([
       'Matti-Teppo',
       'Matti',
       'Teppo',
       'Seppo'
     ])
 
-    await nicknamePage.selectNickname('Teppo')
-    await nicknamePage.confirm()
+    await employeePreferredFirstNamePage.preferredFirstName('Teppo')
+    await employeePreferredFirstNamePage.confirm()
     await waitUntilEqual(
       () => page.findByDataQa('username').textContent,
       'Teppo Sorsa'
     )
 
-    await nicknamePage.assertSelectedNickname('Teppo')
+    await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
+      'Teppo'
+    )
   })
 })

@@ -6,8 +6,8 @@ import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import {
-  EmployeeNicknames,
-  EmployeeNicknameUpdateRequest
+  EmployeePreferredFirstName,
+  EmployeeSetPreferredFirstNameUpdateRequest
 } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -102,18 +102,20 @@ export function getPersonalMobileDevices(): Promise<Result<MobileDevice[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export function getPossibleNicknames(): Promise<Result<EmployeeNicknames>> {
+export function getEmployeePreferredFirstName(): Promise<
+  Result<EmployeePreferredFirstName>
+> {
   return client
-    .get<JsonOf<EmployeeNicknames>>('/employee/nickname')
+    .get<JsonOf<EmployeePreferredFirstName>>('/employee/preferred-first-name')
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
 
-export function setEmployeeNickname(
-  nickname: EmployeeNicknameUpdateRequest
+export function setEmployeePreferredFirstName(
+  preferredFirstName: EmployeeSetPreferredFirstNameUpdateRequest
 ): Promise<Result<void>> {
   return client
-    .post('/employee/nickname', nickname)
+    .post('/employee/preferred-first-name', preferredFirstName)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

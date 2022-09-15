@@ -24,7 +24,7 @@ export default class EmployeeNav {
       | 'finance-basics'
       | 'vasu-templates'
       | 'holiday-periods'
-      | 'nickname'
+      | 'preferred-first-name'
   ) {
     await this.#userNameBtn.click()
     return this.page.findByDataQa(`user-popup-${item}`).click()

@@ -410,11 +410,11 @@ export default React.memo(function Header() {
               )}
 
               <Link
-                to="/nickname"
+                to="/preferred-first-name"
                 onClick={closeUserPopup}
-                data-qa="user-popup-nickname"
+                data-qa="user-popup-preferred-first-name"
               >
-                {i18n.nickname.popupLink}
+                {i18n.preferredFirstName.popupLink}
               </Link>
 
               <LogoutLink
