@@ -2817,7 +2817,7 @@ export const fi = {
     attendanceReservationByChild: {
       title: 'Lapsikohtaiset läsnäoloajat',
       description:
-        'Raportti listaa lapsikohtaisesti huoltajien ilmoittamat lähtö- ja tuloajat. Raportti on saatavilla ryhmä ja yksikkökohtaisesti.',
+        'Raportti listaa lapsikohtaisesti huoltajien ilmoittamat lähtö- ja tuloajat. Raportti on saatavilla ryhmä- ja yksikkökohtaisesti.',
       ungrouped: 'Ryhmää odottavat lapset',
       orderByOptions: {
         start: 'Tuloaika',
