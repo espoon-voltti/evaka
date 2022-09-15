@@ -4,8 +4,11 @@
 
 package fi.espoo.evaka.reports
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
+import fi.espoo.evaka.shared.AttendanceReservationId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
@@ -40,6 +44,26 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.getAttendanceReservationReport(start, end, unitId, groupIds?.ifEmpty { null })
+            }
+        }
+    }
+
+    @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
+    fun getAttendanceReservationReportByUnitAndChild(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
+        @PathVariable unitId: DaycareId,
+        @RequestParam(required = false) groupIds: List<GroupId>?,
+        db: Database,
+        clock: EvakaClock,
+        user: AuthenticatedUser
+    ): List<AttendanceReservationReportByChildRow> {
+        Audit.AttendanceReservationReportRead.log(targetId = unitId)
+        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                tx.getAttendanceReservationReportByChild(start, end, unitId, groupIds?.ifEmpty { null })
             }
         }
     }
@@ -126,4 +150,78 @@ data class AttendanceReservationReportRow(
     val childCount: Int,
     val capacityFactor: Double,
     val staffCountRequired: Double
+)
+
+private fun Database.Read.getAttendanceReservationReportByChild(
+    start: LocalDate,
+    end: LocalDate,
+    unitId: DaycareId,
+    groupIds: List<GroupId>?
+): List<AttendanceReservationReportByChildRow> {
+    val sql = """
+        WITH reservations AS (
+          SELECT
+            CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
+            ar.id,
+            ar.date,
+            ar.start_time,
+            ar.end_time,
+            p.id AS child_id,
+            p.last_name AS child_last_name,
+            p.first_name AS child_first_name,
+            bc.id IS NOT NULL AS is_backup_care
+          FROM attendance_reservation ar
+          JOIN person p ON p.id = ar.child_id
+          JOIN placement pl ON pl.child_id = p.id AND ar.date BETWEEN pl.start_date AND pl.end_date
+          LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND ar.date BETWEEN dgp.start_date AND dgp.end_date
+          LEFT JOIN backup_care bc ON bc.child_id = p.id AND ar.date BETWEEN bc.start_date AND bc.end_date
+          JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
+          WHERE u.id = :unitId AND ar.date BETWEEN :start AND :end
+            AND (:groupIds::uuid[] IS NULL OR coalesce(bc.group_id, dgp.daycare_group_id) = ANY(:groupIds))
+            AND extract(isodow FROM ar.date) = ANY(u.operation_days)
+        ), groups AS (
+          SELECT dg.id, dg.name, d.operation_days
+          FROM daycare_group dg
+          JOIN daycare d ON d.id = dg.daycare_id
+          WHERE d.id = :unitId
+          UNION
+          SELECT NULL, NULL, operation_days
+          FROM daycare WHERE id = :unitId
+        )
+        SELECT
+          ${if (groupIds != null) "g.id AS group_id, g.name AS group_name" else "NULL AS group_id, NULL as group_name"},
+          r.id AS reservation_id,
+          r.date AS reservation_date,
+          r.start_time AS reservation_start_time,
+          r.end_time AS reservation_end_time,
+          r.child_id,
+          r.child_last_name,
+          r.child_first_name,
+          r.is_backup_care
+        FROM groups g
+        JOIN reservations r ON (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
+        WHERE (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
+    """.trimIndent()
+    return createQuery(sql)
+        .bind("start", start)
+        .bind("end", end)
+        .bind("unitId", unitId)
+        .bind("groupIds", groupIds)
+        .mapTo<AttendanceReservationReportByChildRow>()
+        .toList()
+}
+
+data class AttendanceReservationReportByChildRow(
+    val groupId: GroupId?,
+    val groupName: String?,
+    val reservationId: AttendanceReservationId,
+    val reservationDate: LocalDate,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    val reservationStartTime: LocalTime,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    val reservationEndTime: LocalTime,
+    val childId: ChildId,
+    val childLastName: String,
+    val childFirstName: String,
+    val isBackupCare: Boolean,
 )

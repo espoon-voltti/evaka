@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
 import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceBasisOption } from './assistanceneed'
@@ -73,6 +74,22 @@ export interface AssistanceNeedsAndActionsReportRow {
   unitName: string
   unitProviderType: ProviderType
   unitType: UnitType
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildRow
+*/
+export interface AttendanceReservationReportByChildRow {
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  groupId: UUID | null
+  groupName: string | null
+  isBackupCare: boolean
+  reservationDate: LocalDate
+  reservationEndTime: LocalTime
+  reservationId: UUID
+  reservationStartTime: LocalTime
 }
 
 /**

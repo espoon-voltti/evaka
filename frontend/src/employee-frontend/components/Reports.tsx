@@ -396,6 +396,24 @@ export default React.memo(function Reports() {
               </Description>
             </ReportItem>
           )}
+          {user?.permittedGlobalActions.has(
+            'READ_ATTENDANCE_RESERVATION_REPORT'
+          ) && (
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon size="L" color={colors.main.m2} content={faCar} />
+                <LinkTitle
+                  to="/reports/attendance-reservation-by-child"
+                  data-qa="report-attendance-reservation-by-child"
+                >
+                  {i18n.reports.attendanceReservationByChild.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.attendanceReservationByChild.description}
+              </Description>
+            </ReportItem>
+          )}
           {user?.permittedGlobalActions.has('READ_SEXTET_REPORT') && (
             <ReportItem>
               <TitleRow>

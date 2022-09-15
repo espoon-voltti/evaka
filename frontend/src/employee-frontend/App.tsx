@@ -63,6 +63,7 @@ import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDe
 import AssistanceNeedDecisionsReportDecision from './components/reports/AssistanceNeedDecisionsReportDecision'
 import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import AttendanceReservation from './components/reports/AttendanceReservation'
+import AttendanceReservationByChild from './components/reports/AttendanceReservationByChild'
 import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
 import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
 import ReportDecisions from './components/reports/Decisions'
@@ -497,6 +498,14 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <AttendanceReservation />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/attendance-reservation-by-child"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <AttendanceReservationByChild />
                       </EmployeeRoute>
                     }
                   />

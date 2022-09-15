@@ -2704,6 +2704,7 @@ export const fi = {
     title: 'Raportit',
     downloadButton: 'Lataa raportti',
     common: {
+      orderBy: 'Järjestys',
       total: 'Yhteensä',
       totalShort: 'Yht',
       careAreaName: 'Palvelualue',
@@ -2812,6 +2813,18 @@ export const fi = {
       ungrouped: 'Ryhmää odottavat lapset',
       capacityFactor: 'Lask',
       staffCountRequired: 'Hlökunta'
+    },
+    attendanceReservationByChild: {
+      title: 'Lapsikohtaiset läsnäoloajat',
+      description:
+        'Raportti listaa lapsikohtaisesti huoltajien ilmoittamat lähtö- ja tuloajat. Raportti on saatavilla ryhmä- ja yksikkökohtaisesti.',
+      ungrouped: 'Ryhmää odottavat lapset',
+      orderByOptions: {
+        start: 'Tuloaika',
+        end: 'Lähtöaika'
+      },
+      reservationStartTime: 'Tulo',
+      reservationEndTime: 'Lähtö'
     },
     duplicatePeople: {
       title: 'Monistuneet kuntalaiset',
