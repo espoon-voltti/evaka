@@ -9,9 +9,10 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { User } from 'lib-common/api-types/employee-auth'
 import {
   InvoiceSortParam,
-  InvoiceSummary,
+  InvoiceSummaryResponse,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
@@ -42,8 +43,9 @@ import { StatusIconContainer } from '../common/StatusIconContainer'
 import { InvoicesActions } from './invoices-state'
 
 interface Props {
+  user: User | undefined
   actions: InvoicesActions
-  invoices?: Result<InvoiceSummary[]>
+  invoices?: Result<InvoiceSummaryResponse[]>
   refreshInvoices: () => Promise<void>
   total?: number
   pages?: number
@@ -57,6 +59,7 @@ interface Props {
 }
 
 export default React.memo(function Invoices({
+  user,
   actions,
   invoices,
   refreshInvoices,
@@ -77,24 +80,26 @@ export default React.memo(function Invoices({
 
   return (
     <div className="invoices">
-      <RefreshInvoices>
-        {refreshResult.isFailure ? (
-          <RefreshError>{i18n.common.error.unknown}</RefreshError>
-        ) : null}
-        <InlineButton
-          icon={faSync}
-          disabled={refreshResult.isLoading}
-          onClick={() => {
-            setRefreshResult(Loading.of())
-            refreshInvoices()
-              .then(() => setRefreshResult(Success.of()))
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-              .catch((err) => setRefreshResult(Failure.of(err)))
-          }}
-          text={i18n.invoices.buttons.createInvoices}
-          data-qa="create-invoices"
-        />
-      </RefreshInvoices>
+      {user?.permittedGlobalActions.has('CREATE_DRAFT_INVOICES') && (
+        <RefreshInvoices>
+          {refreshResult.isFailure ? (
+            <RefreshError>{i18n.common.error.unknown}</RefreshError>
+          ) : null}
+          <InlineButton
+            icon={faSync}
+            disabled={refreshResult.isLoading}
+            onClick={() => {
+              setRefreshResult(Loading.of())
+              refreshInvoices()
+                .then(() => setRefreshResult(Success.of()))
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                .catch((err) => setRefreshResult(Failure.of(err)))
+            }}
+            text={i18n.invoices.buttons.createInvoices}
+            data-qa="create-invoices"
+          />
+        </RefreshInvoices>
+      )}
       <TitleRowContainer>
         <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
         {invoices?.isSuccess && (
@@ -116,12 +121,14 @@ export default React.memo(function Invoices({
       {invoices?.isSuccess && (
         <>
           <ResultsContainer>
-            <Checkbox
-              checked={allInvoicesToggle}
-              label={i18n.invoices.table.toggleAll}
-              onChange={actions.allInvoicesToggle}
-              disabled={allInvoicesToggleDisabled}
-            />
+            {showCheckboxes && (
+              <Checkbox
+                checked={allInvoicesToggle}
+                label={i18n.invoices.table.toggleAll}
+                onChange={actions.allInvoicesToggle}
+                disabled={allInvoicesToggleDisabled}
+              />
+            )}
           </ResultsContainer>
           <Gap size="m" />
           <Table data-qa="table-of-invoices">
@@ -206,7 +213,7 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
 
   const allChecked =
     invoices
-      ?.map((is) => is.length > 0 && is.every((i) => checked[i.id]))
+      ?.map((is) => is.length > 0 && is.every((i) => checked[i.data.id]))
       .getOrElse(false) ?? false
 
   const isSorted = (column: InvoiceSortParam) =>
@@ -281,62 +288,64 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
   Props,
   'actions' | 'showCheckboxes' | 'checked' | 'allInvoicesToggle'
 > & {
-  invoices: InvoiceSummary[]
+  invoices: InvoiceSummaryResponse[]
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
   return (
     <Tbody>
-      {invoices.map((item: InvoiceSummary) => (
-        <Tr
-          key={item.id}
-          onClick={() => navigate(`/finance/invoices/${item.id}`)}
-          data-qa="table-invoice-row"
-        >
-          <Td>
-            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
-          </Td>
-          <Td>
-            <ChildrenCell
-              people={uniqBy(
-                item.rows.map(({ child }) => child),
-                ({ id }) => id
-              )}
-            />
-          </Td>
-          <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
-          <Td data-qa="invoice-created-at">
-            {item.createdAt?.toLocalDate().format() ?? ''}
-          </Td>
-          <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
-          <Td>
-            {item.headOfFamily.restrictedDetailsEnabled && (
-              <Tooltip
-                tooltip={`${i18n.personProfile.restrictedDetails}`}
-                position="right"
-              >
-                <StatusIconContainer color={colors.status.danger}>
-                  <FontAwesomeIcon icon={faExclamation} inverse />
-                </StatusIconContainer>
-              </Tooltip>
-            )}
-          </Td>
-          <Td>{i18n.invoice.status[item.status]}</Td>
-          {showCheckboxes ? (
-            <Td onClick={(e) => e.stopPropagation()}>
-              <Checkbox
-                hiddenLabel
-                label=""
-                checked={!!checked[item.id] || allInvoicesToggle}
-                disabled={allInvoicesToggle}
-                onChange={() => actions.toggleChecked(item.id)}
-                data-qa="toggle-invoice"
+      {invoices.map(
+        ({ data: item, permittedActions }: InvoiceSummaryResponse) => (
+          <Tr
+            key={item.id}
+            onClick={() => navigate(`/finance/invoices/${item.id}`)}
+            data-qa="table-invoice-row"
+          >
+            <Td>
+              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+            </Td>
+            <Td>
+              <ChildrenCell
+                people={uniqBy(
+                  item.rows.map(({ child }) => child),
+                  ({ id }) => id
+                )}
               />
             </Td>
-          ) : null}
-        </Tr>
-      ))}
+            <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
+            <Td data-qa="invoice-created-at">
+              {item.createdAt?.toLocalDate().format() ?? ''}
+            </Td>
+            <Td data-qa="invoice-total">{formatCents(item.totalPrice)}</Td>
+            <Td>
+              {item.headOfFamily.restrictedDetailsEnabled && (
+                <Tooltip
+                  tooltip={`${i18n.personProfile.restrictedDetails}`}
+                  position="right"
+                >
+                  <StatusIconContainer color={colors.status.danger}>
+                    <FontAwesomeIcon icon={faExclamation} inverse />
+                  </StatusIconContainer>
+                </Tooltip>
+              )}
+            </Td>
+            <Td>{i18n.invoice.status[item.status]}</Td>
+            {showCheckboxes && permittedActions.includes('SEND') ? (
+              <Td onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  hiddenLabel
+                  label=""
+                  checked={!!checked[item.id] || allInvoicesToggle}
+                  disabled={allInvoicesToggle}
+                  onChange={() => actions.toggleChecked(item.id)}
+                  data-qa="toggle-invoice"
+                />
+              </Td>
+            ) : null}
+          </Tr>
+        )
+      )}
     </Tbody>
   )
 })

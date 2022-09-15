@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import {
   PersonDetailed,
   InvoiceCodes,
@@ -71,6 +72,8 @@ const emptyInvoiceRow = (
 
 interface Props {
   rows: InvoiceRowDetailed[]
+  permittedActions: Action.Invoice[]
+  permittedCorrectionActions: Record<string, Action.InvoiceCorrection[]>
   updateRows: (rows: InvoiceRowDetailed[]) => void
   invoiceCodes: Result<InvoiceCodes>
   editable: boolean
@@ -106,6 +109,8 @@ const TotalPriceTh = styled(Th)`
 
 export default React.memo(function InvoiceRowsSection({
   rows,
+  permittedActions,
+  permittedCorrectionActions,
   updateRows,
   invoiceCodes,
   editable
@@ -216,6 +221,12 @@ export default React.memo(function InvoiceRowsSection({
                     <InvoiceRowsSectionRow
                       key={firstRow.id || ''}
                       row={firstRow}
+                      permittedActions={
+                        firstRow.correctionId !== null
+                          ? permittedCorrectionActions[firstRow.correctionId] ??
+                            []
+                          : []
+                      }
                       update={updateInvoiceRow(updateRows, rows, firstRow)}
                       remove={
                         editable
@@ -234,6 +245,11 @@ export default React.memo(function InvoiceRowsSection({
                       <InvoiceRowsSectionRow
                         key={index}
                         row={row}
+                        permittedActions={
+                          row.correctionId !== null
+                            ? permittedCorrectionActions[row.correctionId] ?? []
+                            : []
+                        }
                         update={updateInvoiceRow(updateRows, rows, row)}
                         remove={
                           editable
@@ -251,12 +267,14 @@ export default React.memo(function InvoiceRowsSection({
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                <InlineButton
-                  disabled={!editable}
-                  onClick={getAddInvoiceRow(firstRow)}
-                  data-qa="invoice-button-add-row"
-                  text={i18n.invoice.form.rows.addRow}
-                />
+                {permittedActions.includes('UPDATE') && (
+                  <InlineButton
+                    disabled={!editable}
+                    onClick={getAddInvoiceRow(firstRow)}
+                    data-qa="invoice-button-add-row"
+                    text={i18n.invoice.form.rows.addRow}
+                  />
+                )}
                 <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
               </div>
             )

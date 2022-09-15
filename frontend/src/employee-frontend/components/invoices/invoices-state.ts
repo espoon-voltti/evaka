@@ -15,7 +15,7 @@ import {
 import { Paged, Result } from 'lib-common/api'
 import {
   InvoiceSortParam,
-  InvoiceSummary,
+  InvoiceSummaryResponse,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -36,7 +36,7 @@ type State = {
   page: number
   sortBy: InvoiceSortParam
   sortDirection: SortDirection
-  invoices: Record<number, Result<InvoiceSummary[]>>
+  invoices: Record<number, Result<InvoiceSummaryResponse[]>>
   invoiceTotals?: { total: number; pages: number }
   checkedInvoices: Record<string, true>
   allInvoicesToggle: boolean
@@ -93,7 +93,7 @@ const useActions = (setState: Dispatch<SetStateAction<State>>) =>
           const checked: Record<string, true> = currentPage
             .map((page) =>
               Object.fromEntries(
-                page.map((invoice) => [invoice.id, true as const])
+                page.map((invoice) => [invoice.data.id, true as const])
               )
             )
             .getOrElse({})
@@ -121,7 +121,7 @@ export function useInvoicesState() {
   const actions = useActions(setState)
 
   const setInvoicesResult = useCallback(
-    (result: Result<Paged<InvoiceSummary>>) => {
+    (result: Result<Paged<InvoiceSummaryResponse>>) => {
       setState((previousState) => ({
         ...previousState,
         invoices: {

@@ -32,6 +32,8 @@ type Props = {
   actions: InvoicesActions
   reloadInvoices: () => void
   status: InvoiceStatus
+  canSend: boolean
+  canDelete: boolean
   checkedInvoices: Record<string, true>
   checkedAreas: string[]
   allInvoicesToggle: boolean
@@ -41,6 +43,8 @@ const Actions = React.memo(function Actions({
   actions,
   reloadInvoices,
   status,
+  canSend,
+  canDelete,
   checkedInvoices,
   checkedAreas,
   allInvoicesToggle
@@ -65,29 +69,33 @@ const Actions = React.memo(function Actions({
           <Gap size="s" horizontal />
         </>
       ) : null}
-      <AsyncButton
-        text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
-        disabled={checkedIds.length === 0}
-        onClick={() => deleteInvoices(checkedIds)}
-        onSuccess={() => {
-          setError(undefined)
-          actions.clearChecked()
-          reloadInvoices()
-        }}
-        onFailure={() => setError(i18n.common.error.unknown)}
-        data-qa="delete-invoices"
-      />
+      {canDelete && (
+        <AsyncButton
+          text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
+          disabled={checkedIds.length === 0}
+          onClick={() => deleteInvoices(checkedIds)}
+          onSuccess={() => {
+            setError(undefined)
+            actions.clearChecked()
+            reloadInvoices()
+          }}
+          onFailure={() => setError(i18n.common.error.unknown)}
+          data-qa="delete-invoices"
+        />
+      )}
       <Gap size="s" horizontal />
-      <Button
-        primary
-        disabled={
-          (!allInvoicesToggle && checkedIds.length === 0) ||
-          (allInvoicesToggle && checkedAreas.length === 0)
-        }
-        text={i18n.invoices.buttons.sendInvoice(checkedIds.length)}
-        onClick={actions.openModal}
-        data-qa="open-send-invoices-dialog"
-      />
+      {canSend && (
+        <Button
+          primary
+          disabled={
+            (!allInvoicesToggle && checkedIds.length === 0) ||
+            (allInvoicesToggle && checkedAreas.length === 0)
+          }
+          text={i18n.invoices.buttons.sendInvoice(checkedIds.length)}
+          onClick={actions.openModal}
+          data-qa="open-send-invoices-dialog"
+        />
+      )}
     </StickyActionBar>
   ) : null
 })

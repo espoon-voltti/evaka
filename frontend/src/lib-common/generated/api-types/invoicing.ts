@@ -411,6 +411,15 @@ export interface InvoiceDetailed {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceDetailedResponse
+*/
+export interface InvoiceDetailedResponse {
+  data: InvoiceDetailed
+  permittedActions: Action.Invoice[]
+  permittedCorrectionActions: Record<string, Action.InvoiceCorrection[]>
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
 */
 export type InvoiceDistinctiveParams =
@@ -514,6 +523,14 @@ export interface InvoiceSummary {
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceSummaryResponse
+*/
+export interface InvoiceSummaryResponse {
+  data: InvoiceSummary
+  permittedActions: Action.Invoice[]
 }
 
 /**
