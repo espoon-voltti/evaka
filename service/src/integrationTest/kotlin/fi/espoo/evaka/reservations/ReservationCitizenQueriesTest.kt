@@ -7,13 +7,14 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.getAbsencesByChildByRange
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -256,7 +257,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(monday, reservations.first())
 
         // and 1st absence has been removed
-        val absences = db.read { it.getAbsencesByChildByRange(testChild_1.id, FiniteDateRange(monday, monday.plusDays(1))) }
+        val absences = db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, monday.plusDays(1))) }
         assertEquals(1, absences.size)
         assertEquals(monday.plusDays(1), absences.first().date)
     }
@@ -308,7 +309,7 @@ class ReservationCitizenQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, reservations.size)
 
         // and 1st absence has been removed
-        val absences = db.read { it.getAbsencesByChildByRange(testChild_1.id, FiniteDateRange(monday, wednesday)) }
+        val absences = db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, wednesday)) }
         assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
         assertEquals(listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE), absences.map { it.absenceType })
     }
