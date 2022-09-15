@@ -201,7 +201,7 @@ export default class MessagesPage {
 
   async assertNoDrafts() {
     await this.#draftMessagesBoxRow.click()
-    await this.#draftMessage.waitUntilHidden()
+    await this.#emptyInboxText.waitUntilVisible()
   }
 
   async assertCopyContent(title: string, content: string) {
