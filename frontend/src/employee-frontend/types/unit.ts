@@ -12,7 +12,7 @@ import { UUID } from 'lib-common/types'
 import { DayOfWeek } from './index'
 
 export interface Unit extends Omit<Daycare, 'operationDays'> {
-  operationDays: DayOfWeek[] | null
+  operationDays: DayOfWeek[]
 }
 
 export interface UnitFiltersType {

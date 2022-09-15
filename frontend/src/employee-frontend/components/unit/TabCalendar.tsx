@@ -27,6 +27,7 @@ import { faChevronLeft, faChevronRight, faCalendarAlt } from 'lib-icons'
 import { getDaycareGroups, UnitData } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
+import { DayOfWeek } from '../../types'
 import { requireRole } from '../../utils/roles'
 import { UUID_REGEX } from '../../utils/validation/validations'
 import Absences from '../absences/Absences'
@@ -72,7 +73,7 @@ const TopHorizontalLine = styled(HorizontalLine)`
   margin-top: 0;
 `
 
-const getWeekDateRange = (date: LocalDate, operationalDays: number[]) => {
+const getWeekDateRange = (date: LocalDate, operationalDays: DayOfWeek[]) => {
   const start = date.startOfWeek()
   return new FiniteDateRange(
     start,
@@ -128,13 +129,12 @@ export default React.memo(function TabCalendar() {
     mode
   })
 
-  const operationalDays = useMemo(
-    () =>
-      unitInformation
-        .map(({ daycare }) => daycare.operationDays)
-        .getOrElse(null) ?? [1, 2, 3, 4, 5],
-    [unitInformation]
-  )
+  const operationalDays = useMemo((): DayOfWeek[] => {
+    const days = unitInformation
+      .map(({ daycare }) => daycare.operationDays)
+      .getOrElse([])
+    return days.length === 0 ? [1, 2, 3, 4, 5] : days
+  }, [unitInformation])
 
   // Before changing the week, the current week's data should be saved
   // because it is possible the user has started adding an overnight
@@ -143,11 +143,11 @@ export default React.memo(function TabCalendar() {
   // are stored here, and added in the row components.
   const weekSavingFns = useRef<WeekSavingFns>(new Map())
 
-  const [week, setWeek] = useState({
+  const [week, setWeek] = useState(() => ({
     dateRange: getWeekDateRange(selectedDate, operationalDays),
     saved: true,
     savingPromise: Promise.resolve()
-  })
+  }))
 
   useEffect(() => {
     let cancelled = false
