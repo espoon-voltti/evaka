@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -37,6 +38,7 @@ export default React.memo(function DailyServiceTimesSection({
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
+  const { permittedActions } = useContext<ChildState>(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -82,17 +84,19 @@ export default React.memo(function DailyServiceTimesSection({
           {i18n.childInformation.dailyServiceTimes.info2}
         </P>
 
-        <FixedSpaceRow justifyContent="flex-end">
-          <AddButton
-            flipped
-            text={i18n.childInformation.dailyServiceTimes.create}
-            onClick={() => {
-              setCreationFormOpen(true)
-            }}
-            disabled={creationFormOpen}
-            data-qa="create-daily-service-times"
-          />
-        </FixedSpaceRow>
+        {permittedActions.has('CREATE_DAILY_SERVICE_TIME') && (
+          <FixedSpaceRow justifyContent="flex-end">
+            <AddButton
+              flipped
+              text={i18n.childInformation.dailyServiceTimes.create}
+              onClick={() => {
+                setCreationFormOpen(true)
+              }}
+              disabled={creationFormOpen}
+              data-qa="create-daily-service-times"
+            />
+          </FixedSpaceRow>
+        )}
 
         {creationFormOpen && (
           <>
