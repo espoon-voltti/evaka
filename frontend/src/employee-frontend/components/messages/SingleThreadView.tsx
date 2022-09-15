@@ -15,9 +15,11 @@ import styled from 'styled-components'
 
 import {
   Message,
+  MessageChild,
   MessageThread,
   MessageType
 } from 'lib-common/generated/api-types/messaging'
+import { formatPreferredName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -82,9 +84,11 @@ const MessageContent = styled.div`
 
 function SingleMessage({
   message,
+  messageChildren,
   index
 }: {
   message: Message
+  messageChildren: MessageChild[]
   type?: MessageType
   title?: string
   index: number
@@ -92,7 +96,14 @@ function SingleMessage({
   return (
     <MessageContainer>
       <TitleRow>
-        <Bold>{message.sender.name}</Bold>
+        <Bold>
+          {message.sender.name}
+          {messageChildren.length > 0
+            ? ` (${messageChildren
+                .map((ch) => `${ch.lastName} ${formatPreferredName(ch)}`)
+                .join(', ')})`
+            : ''}
+        </Bold>
         <InformationText>{message.sentAt.format()}</InformationText>
       </TitleRow>
       <InformationText>
@@ -150,7 +161,7 @@ interface Props {
 export function SingleThreadView({
   accountId,
   goBack,
-  thread: { id: threadId, messages, title, type, urgent },
+  thread: { id: threadId, messages, title, type, urgent, children },
   view
 }: Props) {
   const { i18n } = useTranslation()
@@ -230,7 +241,12 @@ export function SingleThreadView({
                 />
               </div>
             )}
-            <SingleMessage key={message.id} message={message} index={idx} />
+            <SingleMessage
+              key={message.id}
+              message={message}
+              messageChildren={children}
+              index={idx}
+            />
           </React.Fragment>
         ))}
         {canReply &&

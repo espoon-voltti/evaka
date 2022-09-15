@@ -354,6 +354,7 @@ const sv: Translations = {
     messageEditor: {
       newMessage: 'Nytt Meddelande',
       recipients: 'Mottagare',
+      children: 'Meddelandet angår',
       subject: 'Ämne',
       message: 'Meddelande',
       deleteDraft: 'Ta bort utkast',

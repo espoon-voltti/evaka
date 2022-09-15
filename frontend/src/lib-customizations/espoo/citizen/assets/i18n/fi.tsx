@@ -354,6 +354,7 @@ export default {
     messageEditor: {
       newMessage: 'Uusi viesti',
       recipients: 'Vastaanottajat',
+      children: 'Viesti koskee',
       subject: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',

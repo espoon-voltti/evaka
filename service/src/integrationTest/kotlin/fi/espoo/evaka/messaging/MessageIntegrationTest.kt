@@ -348,13 +348,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             it.createDaycareGroupMessageAccount(groupId1)
         }
         // Group account and the employee personal account
-        assertEquals(getCitizenReceivers(person1).size, 2)
+        assertEquals(getCitizenReceivers(person1).messageAccounts.size, 2)
 
         // When a supervisor works as staff, her account is deactivated
         db.transaction {
             it.deactivateEmployeeMessageAccount(employee1Id)
         }
-        assertEquals(getCitizenReceivers(person1).size, 1)
+        assertEquals(getCitizenReceivers(person1).messageAccounts.size, 1)
     }
 
     @Test
@@ -859,11 +859,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         .asUser(user)
         .responseObject<List<MessageReceiversResponse>>(jsonMapper).third.get()
 
-    private fun getCitizenReceivers(user: AuthenticatedUser): List<MessageAccount> = http.get(
+    private fun getCitizenReceivers(user: AuthenticatedUser): MessageControllerCitizen.GetReceiversResponse = http.get(
         "/citizen/messages/receivers"
     )
         .asUser(user)
-        .responseObject<List<MessageAccount>>(jsonMapper).third.get()
+        .responseObject<MessageControllerCitizen.GetReceiversResponse>(jsonMapper).third.get()
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }

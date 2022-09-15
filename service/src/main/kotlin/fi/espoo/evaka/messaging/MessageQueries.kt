@@ -138,6 +138,19 @@ fun Database.Transaction.insertRecipients(
     batch.execute()
 }
 
+fun Database.Transaction.insertMessageThreadChildren(
+    childIds: Set<ChildId>,
+    threadId: MessageThreadId,
+) {
+    // language=SQL
+    val insertChildrenSql =
+        "INSERT INTO message_thread_children (thread_id, child_id) VALUES (:threadId, :childId)"
+
+    val batch = this.prepareBatch(insertChildrenSql)
+    childIds.forEach { batch.bind("threadId", threadId).bind("childId", it).add() }
+    batch.execute()
+}
+
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
@@ -187,6 +200,8 @@ data class ReceivedMessageResultItem(
     val recipientId: MessageAccountId,
     val recipientName: String,
     val recipientAccountType: AccountType,
+    @Json
+    val children: List<MessageChild>,
     @Json
     val attachments: List<MessageAttachment>
 )
@@ -256,6 +271,17 @@ SELECT
     msg.recipient_account_type,
     (
         SELECT coalesce(jsonb_agg(json_build_object(
+             'childId', ch.child_id,
+             'firstName', p.first_name,
+             'lastName', p.last_name,
+             'preferredName', p.preferred_name
+            )), '[]'::jsonb)
+        FROM message_thread_children ch
+        JOIN person p ON p.id = ch.child_id
+        WHERE ch.thread_id = t.id
+    ) AS children,
+    (
+        SELECT coalesce(jsonb_agg(json_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
@@ -281,6 +307,7 @@ SELECT
                     type = threads[0].type,
                     title = threads[0].title,
                     urgent = threads[0].urgent,
+                    children = threads[0].children,
                     messages = threads
                         .groupBy { it.messageId }
                         .map { (messageId, messages) ->
@@ -440,7 +467,13 @@ fun Database.Read.getMessage(id: MessageId): Message {
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): List<MessageAccount> {
+fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): Map<MessageAccount, List<ChildId>> {
+    data class MessageAccountWithChildId(
+        val id: MessageAccountId,
+        val name: String,
+        val type: AccountType,
+        val childId: ChildId
+    )
     // language=SQL
     val sql = """
 WITH backup_care_placements AS (
@@ -517,24 +550,24 @@ WITH backup_care_placements AS (
     )    
 ),
 relevant_placements AS (
-    SELECT p.id, p.unit_id
+    SELECT p.id, p.unit_id, p.child_id
     FROM placements p
     
     UNION 
     
-    SELECT bc.id, bc.unit_id
+    SELECT bc.id, bc.unit_id, bc.child_id
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.account_name AS name, 'PERSONAL' AS type
-    FROM (SELECT DISTINCT unit_id FROM relevant_placements) p
+    SELECT acc.id, acc_name.account_name AS name, 'PERSONAL' AS type, p.child_id
+    FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_name_view acc_name ON acc_name.id = acc.id
     WHERE active IS TRUE
 ),
 group_accounts AS (
-    SELECT acc.id, g.name, 'GROUP' AS type
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
     FROM placements p
     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND :today BETWEEN dgp.start_date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
@@ -542,25 +575,25 @@ group_accounts AS (
     
     UNION ALL
 
-         SELECT acc.id, g.name, 'GROUP' AS type
-         FROM backup_care_placements p
-                  JOIN daycare_group g ON g.id = p.group_id
-                  JOIN message_account acc on g.id = acc.daycare_group_id
+    SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
+    FROM backup_care_placements p
+    JOIN daycare_group g ON g.id = p.group_id
+    JOIN message_account acc on g.id = acc.daycare_group_id
 ),
 mixed_accounts AS (
-    SELECT id, name, type FROM personal_accounts
+    SELECT id, name, type, child_id FROM personal_accounts
     UNION ALL
-    SELECT id, name, type FROM group_accounts
+    SELECT id, name, type, child_id FROM group_accounts
 )
-SELECT id, name, type FROM mixed_accounts
+SELECT id, name, type, child_id FROM mixed_accounts
 ORDER BY type, name  -- groups first
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("accountId", accountId)
         .bind("today", today)
-        .mapTo<MessageAccount>()
-        .toList()
+        .mapTo<MessageAccountWithChildId>()
+        .groupBy({ MessageAccount(it.id, it.name, it.type) }, { it.childId })
 }
 
 fun Database.Read.getMessagesSentByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<SentMessage> {

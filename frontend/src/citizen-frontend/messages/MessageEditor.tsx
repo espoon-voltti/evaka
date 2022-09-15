@@ -2,21 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
+import { renderResult } from 'citizen-frontend/async-rendering'
+import { ChildrenContext } from 'citizen-frontend/children/state'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
-  MessageAccount
+  GetReceiversResponse
 } from 'lib-common/generated/api-types/messaging'
+import { formatPreferredName } from 'lib-common/names'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
+import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -29,14 +40,15 @@ import { useTranslation } from '../localization'
 const emptyMessage: CitizenMessageBody = {
   title: '',
   content: '',
-  recipients: []
+  recipients: [],
+  children: []
 }
 
 const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
   !!(msg.recipients.length && msg.content && msg.title)
 
 interface Props {
-  receiverOptions: MessageAccount[]
+  receiverOptions: GetReceiversResponse
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
   onSuccess: () => void
   onFailure: () => void
@@ -61,6 +73,30 @@ export default React.memo(function MessageEditor({
 
   const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
+
+  const { children } = useContext(ChildrenContext)
+
+  const childIds = useMemo(
+    () =>
+      message.recipients.length === 0
+        ? receiverOptions.messageAccountsToChildren.values
+        : message.recipients.flatMap(
+            (acc) => receiverOptions.messageAccountsToChildren[acc.id]
+          ),
+    [message.recipients, receiverOptions]
+  )
+
+  useEffect(
+    function autoselectOnlyChild() {
+      if (childIds && childIds.length === 1) {
+        setMessage((message) => ({
+          ...message,
+          children: [childIds[0]]
+        }))
+      }
+    },
+    [childIds]
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -90,7 +126,7 @@ export default React.memo(function MessageEditor({
               <MultiSelect
                 placeholder={i18n.messages.messageEditor.search}
                 value={message.recipients}
-                options={receiverOptions}
+                options={receiverOptions.messageAccounts}
                 onChange={(change) =>
                   setMessage((message) => ({
                     ...message,
@@ -105,6 +141,41 @@ export default React.memo(function MessageEditor({
               />
             </label>
 
+            <Gap size="s" />
+            <label>
+              <Bold>{i18n.messages.messageEditor.children}</Bold>
+              {renderResult(children, (children) => (
+                <FixedSpaceFlexWrap horizontalSpacing="xs">
+                  {childIds &&
+                    childIds.length > 1 &&
+                    children
+                      .filter((child) => childIds.includes(child.id))
+                      .map((child) => (
+                        <SelectionChip
+                          key={child.id}
+                          text={formatPreferredName(child)}
+                          selected={message.children.includes(child.id)}
+                          onChange={(selected) => {
+                            if (selected) {
+                              setMessage((message) => ({
+                                ...message,
+                                children: [...message.children, child.id]
+                              }))
+                            } else {
+                              setMessage((message) => ({
+                                ...message,
+                                children: message.children.filter(
+                                  (id) => id !== child.id
+                                )
+                              }))
+                            }
+                          }}
+                          data-qa={`child-${child.id}`}
+                        />
+                      ))}
+                </FixedSpaceFlexWrap>
+              ))}
+            </label>
             <Gap size="s" />
 
             <label>

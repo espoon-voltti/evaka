@@ -17,20 +17,25 @@ import {
   Message,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
+import { formatPreferredName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceFlexWrap
+} from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
+import colors, { theme } from 'lib-customizations/common'
 
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
@@ -139,7 +144,7 @@ interface Props {
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id: threadId, messages, title, type, urgent }
+  thread: { id: threadId, messages, title, type, urgent, children }
 }: Props) {
   const i18n = useTranslation()
   const { sendReply, replyState, setReplyContent, getReplyContent } =
@@ -199,14 +204,22 @@ export default React.memo(function ThreadView({
     }),
     [i18n]
   )
+
   return (
     <ThreadContainer data-qa="thread-reader">
       <StickyTitleRow ref={stickyTitleRowRef}>
-        <MessageCharacteristics
-          type={type}
-          urgent={urgent}
-          labels={i18n.messages.types}
-        />
+        <FixedSpaceFlexWrap>
+          <MessageCharacteristics
+            type={type}
+            urgent={urgent}
+            labels={i18n.messages.types}
+          />
+          {children.map((child) => (
+            <StaticChip key={child.childId} color={theme.colors.main.m2}>
+              {formatPreferredName(child) || ''}
+            </StaticChip>
+          ))}
+        </FixedSpaceFlexWrap>
         <H2 noMargin data-qa="thread-reader-title">
           {title}
         </H2>

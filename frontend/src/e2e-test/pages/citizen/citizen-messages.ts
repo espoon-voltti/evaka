@@ -92,16 +92,45 @@ export default class CitizenMessagesPage {
     await waitUntilTrue(() => this.#sendReplyButton.disabled)
   }
 
-  async sendNewMessage(title: string, content: string, receivers: string[]) {
+  async clickNewMessage() {
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())
+  }
+
+  async selectNewMessageRecipients(recipients: string[]) {
+    await this.#receiverSelection.click()
+    for (const recipient of recipients) {
+      await this.page.findTextExact(recipient).click()
+    }
+    await this.#receiverSelection.click()
+  }
+
+  async typeMessage(title: string, content: string) {
     await this.#inputTitle.fill(title)
     await this.#inputContent.fill(content)
-    await this.#receiverSelection.click()
-    for (const receiver of receivers) {
-      await this.page.findTextExact(receiver).click()
-    }
+  }
+
+  async clickSendMessage() {
     await this.#sendMessageButton.click()
+  }
+
+  async selectMessageChildren(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.page.findByDataQa(`child-${childId}`).click()
+    }
+  }
+
+  async assertChildrenSelectable(childIds: string[]) {
+    for (const childId of childIds) {
+      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
+    }
+  }
+
+  async sendNewMessage(title: string, content: string, recipients: string[]) {
+    await this.clickNewMessage()
+    await this.typeMessage(title, content)
+    await this.selectNewMessageRecipients(recipients)
+    await this.clickSendMessage()
     await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))
   }
 }
