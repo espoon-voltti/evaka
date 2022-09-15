@@ -29,68 +29,65 @@ import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDates
 import fi.espoo.evaka.user.EvakaUserType
 import org.jdbi.v3.core.mapper.Nested
-import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
 
-@Service
-class AbsenceService {
-    fun getAbsencesByMonth(tx: Database.Read, groupId: GroupId, year: Int, month: Int): AbsenceGroup {
-        val range = FiniteDateRange.ofMonth(year, Month.of(month))
+fun getAbsencesInGroupByMonth(tx: Database.Read, groupId: GroupId, year: Int, month: Int): AbsenceGroup {
+    val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
-        val daycare = tx.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
-        val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
-        val placementList = tx.getPlacementsByRange(groupId, range)
-        val absenceList = tx.getAbsencesByRange(groupId, range).groupBy { it.childId }.toMap()
-        val backupCareList = tx.getBackupCaresAffectingGroup(groupId, range).groupBy { it.childId }.toMap()
-        val reservations = tx.getGroupReservations(groupId, range).groupBy { it.childId }.toMap()
-        val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
-        val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
+    val daycare = tx.getDaycare(tx.getDaycareIdByGroup(groupId))
+        ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
+    val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
+    val placementList = tx.getPlacementsByRange(groupId, range)
+    val absenceList = tx.getAbsencesByRange(groupId, range).groupBy { it.childId }.toMap()
+    val backupCareList = tx.getBackupCaresAffectingGroup(groupId, range).groupBy { it.childId }.toMap()
+    val reservations = tx.getGroupReservations(groupId, range).groupBy { it.childId }.toMap()
+    val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
+    val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-        val operationalDays = operationalDates(range.dates(), daycare.operationDays, tx.getHolidays(range))
-        val setOfOperationalDays = operationalDays.toSet()
+    val operationalDays = operationalDates(range.dates(), daycare.operationDays, tx.getHolidays(range))
+    val setOfOperationalDays = operationalDays.toSet()
 
-        val children = placementList.map { (child, placements) ->
-            val placementDateRanges = placements.map { it.dateRange }
-            val supplementedReservations = supplementReservationsWithDailyServiceTimes(
-                placementDateRanges,
-                setOfOperationalDays,
-                reservations[child.id],
-                dailyServiceTimes[child.id]?.map { it.times },
-                absenceList[child.id]
-            )
+    val children = placementList.map { (child, placements) ->
+        val placementDateRanges = placements.map { it.dateRange }
+        val supplementedReservations = supplementReservationsWithDailyServiceTimes(
+            placementDateRanges,
+            setOfOperationalDays,
+            reservations[child.id],
+            dailyServiceTimes[child.id]?.map { it.times },
+            absenceList[child.id]
+        )
 
-            AbsenceChild(
-                child = child,
-                placements = range.dates().mapNotNull { date ->
-                    placements.find { it.dateRange.includes(date) }?.let { date to it.categories }
-                }.toMap(),
-                absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
-                backupCares = backupCareList[child.id]?.flatMap {
-                    it.period.dates().map { date -> date to true }
-                }?.toMap() ?: mapOf(),
-                reservationTotalHours = sumOfHours(supplementedReservations, placementDateRanges, range),
-                attendanceTotalHours = attendances[child.id]
-                    ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                    ?.let { sumOfHours(it, placementDateRanges, range) }
-            )
-        }
-
-        return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays.toList())
+        AbsenceChild(
+            child = child,
+            placements = range.dates().mapNotNull { date ->
+                placements.find { it.dateRange.includes(date) }?.let { date to it.categories }
+            }.toMap(),
+            absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
+            backupCares = backupCareList[child.id]?.flatMap {
+                it.period.dates().map { date -> date to true }
+            }?.toMap() ?: mapOf(),
+            reservationTotalHours = sumOfHours(supplementedReservations, placementDateRanges, range),
+            attendanceTotalHours = attendances[child.id]
+                ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
+                ?.let { sumOfHours(it, placementDateRanges, range) }
+        )
     }
 
-    fun getAbsencesByChild(tx: Database.Read, childId: ChildId, year: Int, month: Int): List<Absence> {
-        val range = FiniteDateRange.ofMonth(year, Month.of(month))
-        return tx.getAbsencesByChildByRange(childId, range)
-    }
+    return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays.toList())
+}
 
-    fun getFutureAbsencesByChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
-        val period = DateRange(evakaClock.today().plusDays(1), null)
-        return tx.getAbsencesByChildByRange(childId, period)
-    }
+fun getAbsencesOfChildByMonth(tx: Database.Read, childId: ChildId, year: Int, month: Int): List<Absence> {
+    val range = FiniteDateRange.ofMonth(year, Month.of(month))
+    return tx.getAbsencesByChildByRange(childId, range)
+}
+
+fun getFutureAbsencesOfChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
+    val period = DateRange(evakaClock.today().plusDays(1), null)
+    return tx.getAbsencesByChildByRange(childId, period)
 }
 
 private fun supplementReservationsWithDailyServiceTimes(
@@ -125,22 +122,25 @@ private fun supplementReservationsWithDailyServiceTimes(
     val reservedDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
 
     val dailyServiceTimeRanges =
-        if (dailyServiceTimesList == null || dailyServiceTimesList.isEmpty()) listOf()
+        if (dailyServiceTimesList.isNullOrEmpty()) listOf()
         else placementDateRanges
             .flatMap { it.dates() }
             .filterNot { reservedDates.contains(it) }
             .filterNot { absenceDates.contains(it) }
             .filter { unitOperationalDays.contains(it) }
             .mapNotNull { date ->
-                val dailyServiceTimes = dailyServiceTimesList.find { it.validityPeriod.includes(date) } ?: return@mapNotNull null
+                val dailyServiceTimes =
+                    dailyServiceTimesList.find { it.validityPeriod.includes(date) } ?: return@mapNotNull null
 
                 val times = when (dailyServiceTimes) {
                     is DailyServiceTimes.RegularTimes ->
                         dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
+
                     is DailyServiceTimes.IrregularTimes -> {
                         val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
                         if (times != null) times.start to times.end else null
                     }
+
                     is DailyServiceTimes.VariableTimes -> null
                 }
 
@@ -246,18 +246,25 @@ data class AbsenceWithModifierInfo(
 enum class AbsenceType : DatabaseEnum {
     /** A normal absence that has been informed to the staff */
     OTHER_ABSENCE,
+
     /** An absence caused by sickness */
     SICKLEAVE,
+
     /** A planned shift work absence or contract based absence */
     PLANNED_ABSENCE,
+
     /** An absence that has not been informed to the staff */
     UNKNOWN_ABSENCE,
+
     /** A forced absence (e.g. the daycare is closed) */
     FORCE_MAJEURE,
+
     /** An absence because of a parent leave */
     PARENTLEAVE,
+
     /** An absence during a holiday season that fulfils specific requirements for being free of charge */
     FREE_ABSENCE,
+
     /** An absence during a holiday season that warrants to charge a fine */
     UNAUTHORIZED_ABSENCE,
     ;
@@ -467,7 +474,10 @@ fun Database.Read.getAbsencesByChildByRange(childId: ChildId, range: DateRange):
         .list()
 }
 
-private fun Database.Read.getBackupCaresAffectingGroup(groupId: GroupId, period: FiniteDateRange): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingGroup(
+    groupId: GroupId,
+    period: FiniteDateRange
+): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """
