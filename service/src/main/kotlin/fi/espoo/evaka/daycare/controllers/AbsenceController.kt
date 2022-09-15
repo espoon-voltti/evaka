@@ -8,10 +8,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
-import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.daycare.service.deleteChildAbsences
+import fi.espoo.evaka.daycare.service.getAbsencesInGroupByMonth
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
+import fi.espoo.evaka.daycare.service.getFutureAbsencesOfChild
 import fi.espoo.evaka.daycare.service.upsertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -32,9 +34,9 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/absences")
-class AbsenceController(private val absenceService: AbsenceService, private val accessControl: AccessControl) {
+class AbsenceController(private val accessControl: AccessControl) {
     @GetMapping("/{groupId}")
-    fun getAbsencesByGroupAndMonth(
+    fun absencesInGroupByMonth(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -44,7 +46,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): AbsenceGroup {
         Audit.AbsenceRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.READ_ABSENCES, groupId)
-        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }
+        return db.connect { dbc -> dbc.read { getAbsencesInGroupByMonth(it, groupId, year, month) } }
     }
 
     @PostMapping("/{groupId}")
@@ -93,7 +95,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     }
 
     @GetMapping("/by-child/{childId}")
-    fun getAbsencesByChild(
+    fun absencesOfChild(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -103,11 +105,11 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }
+        return db.connect { dbc -> dbc.read { getAbsencesOfChildByMonth(it, childId, year, month) } }
     }
 
     @GetMapping("/by-child/{childId}/future")
-    fun getFutureAbsencesByChild(
+    fun futureAbsencesOfChild(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -115,6 +117,6 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): List<Absence> {
         Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, clock, childId) } }
+        return db.connect { dbc -> dbc.read { getFutureAbsencesOfChild(it, clock, childId) } }
     }
 }
