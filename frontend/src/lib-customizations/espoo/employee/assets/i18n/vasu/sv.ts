@@ -13,7 +13,7 @@ export const sv: typeof fi = {
       guardians: 'Vårdnadshavare eller annan laglig företrädare',
       placements: {
         DAYCARE: 'Enhet och grupp inom småbarnspedagogiken',
-        PRESCHOOL: 'Enhet inom förskoleundervisningen och grupp'
+        PRESCHOOL: 'Enhet och grupp inom förskoleundervisningen'
       },
       // TODO: Leops in Swedish
       childLanguage: {
