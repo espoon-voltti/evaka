@@ -76,6 +76,10 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         return if (start <= end) FiniteDateRange(start, end) else null
     }
 
+    fun intersection(other: DateRange): FiniteDateRange? {
+        return other.intersection(this)
+    }
+
     fun complement(other: FiniteDateRange): List<FiniteDateRange> {
         return when {
             !other.overlaps(this) -> listOf(this)
@@ -144,8 +148,15 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 
     fun intersection(other: DateRange): DateRange? {
         val start = maxOf(this.start, other.start)
-        val end = if (this.end == null || other.end == null) null else minOf(this.end, other.end)
-        return if (start <= end) DateRange(start, end) else null
+        val end =
+            if (this.end != null && other.end != null) minOf(this.end, other.end)
+            else this.end ?: other.end
+        return if (end == null || start <= end) DateRange(start, end) else null
+    }
+
+    fun intersection(other: FiniteDateRange): FiniteDateRange? {
+        val result = intersection(other.asDateRange())
+        return if (result == null) null else FiniteDateRange(result.start, result.end!!)
     }
 
     companion object {
@@ -180,6 +191,7 @@ fun <T> mergePeriods(
                         when {
                             equals(lastValue, value) && periodsCanMerge(lastPeriod, period) ->
                                 periods.dropLast(1) + (minimalCover(lastPeriod, period) to value)
+
                             else -> periods + (period to value)
                         }
                     }

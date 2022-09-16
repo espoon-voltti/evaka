@@ -187,14 +187,16 @@ class TimeTest {
 
         assertEquals(listOf(DateRange(LocalDate.of(2019, 1, 1), null) to 1), result)
     }
+}
 
+class FiniteDateRangeTest {
     @Test
-    fun `FiniteDateRange intersection and overlaps returns null and false if there is no overlap`() {
+    fun `intersection and overlaps return null and false if there is no overlap`() {
         //   1234
         // A --
         // B   --
-        val a = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 2))
-        val b = FiniteDateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 4))
+        val a = testRange(1, 2)
+        val b = testRange(3, 4)
         assertNull(a.intersection(b))
         assertNull(b.intersection(a))
         assertFalse(a.overlaps(b))
@@ -203,8 +205,8 @@ class TimeTest {
         //   12345
         // C --
         // D    --
-        val c = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 2))
-        val d = FiniteDateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
+        val c = testRange(1, 2)
+        val d = testRange(4, 5)
         assertNull(c.intersection(d))
         assertNull(d.intersection(c))
         assertFalse(c.overlaps(d))
@@ -212,14 +214,14 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange intersection and overlaps works`() {
+    fun `intersection and overlaps work`() {
         //   1234
         // A ---
         // B  ---
         // X  --
-        val a = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3))
-        val b = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        val x = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
+        val a = testRange(1, 3)
+        val b = testRange(2, 4)
+        val x = testRange(2, 3)
         assertEquals(x, a.intersection(b))
         assertEquals(x, b.intersection(a))
         assertTrue(a.overlaps(b))
@@ -229,9 +231,9 @@ class TimeTest {
         // C ---
         // D   ---
         // Y   -
-        val c = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3))
-        val d = FiniteDateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 5))
-        val y = FiniteDateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 3))
+        val c = testRange(1, 3)
+        val d = testRange(3, 5)
+        val y = testRange(3, 3)
         assertEquals(y, c.intersection(d))
         assertEquals(y, d.intersection(c))
         assertTrue(c.overlaps(d))
@@ -239,12 +241,12 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange durationInDays returns 1 for one day periods`() {
+    fun `durationInDays returns 1 for one day periods`() {
         assertEquals(1, LocalDate.of(2019, 1, 1).toFiniteDateRange().durationInDays())
     }
 
     @Test
-    fun `FiniteDateRange complement - no overlap`() {
+    fun `complement - no overlap`() {
         val period = testRange(1, 15)
         val other = testRange(16, 31)
         val complement = period.complement(other)
@@ -252,15 +254,15 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange complement - full overlap`() {
+    fun `complement - full overlap`() {
         val period = testRange(1, 31)
         val other = testRange(1, 31)
         val complement = period.complement(other)
-        assertEquals(emptyList<FiniteDateRange>(), complement)
+        assertEquals(emptyList(), complement)
     }
 
     @Test
-    fun `FiniteDateRange complement - overlap start`() {
+    fun `complement - overlap start`() {
         val period = testRange(1, 31)
         val other = testRange(1, 15)
         val complement = period.complement(other)
@@ -268,7 +270,7 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange complement - overlap end`() {
+    fun `complement - overlap end`() {
         val period = testRange(1, 31)
         val other = testRange(15, 31)
         val complement = period.complement(other)
@@ -276,7 +278,7 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange complement - overlap middle`() {
+    fun `complement - overlap middle`() {
         val period = testRange(1, 31)
         val other = testRange(10, 20)
         val complement = period.complement(other)
@@ -284,7 +286,7 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange complement multiple`() {
+    fun `complement multiple`() {
         val period = testRange(1, 31)
         val other1 = testRange(1, 5)
         val other2 = testRange(8, 15)
@@ -294,11 +296,115 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange complement none`() {
+    fun `complement none`() {
         val period = testRange(1, 31)
         val complement = period.complement(emptyList())
         assertEquals(listOf(testRange(1, 31)), complement)
     }
 
     private fun testRange(from: Int, to: Int) = FiniteDateRange(LocalDate.of(2019, 1, from), LocalDate.of(2019, 1, to))
+}
+
+class DateRangeTest {
+    @Test
+    fun `intersection and overlaps return null and false if there is no overlap`() {
+        //   1234
+        // A --
+        // B   --
+        val a = testRange(1, 2)
+        val b = testRange(3, 4)
+        assertNull(a.intersection(b))
+        assertNull(b.intersection(a))
+        assertFalse(a.overlaps(b))
+        assertFalse(b.overlaps(a))
+
+        //   12345
+        // C --
+        // D    --
+        val c = testRange(1, 2)
+        val d = testRange(4, null)
+        assertNull(c.intersection(d))
+        assertNull(d.intersection(c))
+        assertFalse(c.overlaps(d))
+        assertFalse(d.overlaps(c))
+
+        //   12345
+        // E --
+        // F   ---+
+        val e = testRange(1, 2)
+        val f = testRange(3, null)
+        assertNull(e.intersection(f))
+        assertNull(f.intersection(e))
+        assertFalse(e.overlaps(f))
+        assertFalse(f.overlaps(e))
+    }
+
+    @Test
+    fun `intersection and overlaps work with finite ranges`() {
+        //   1234
+        // A ---
+        // B  ---
+        // X  --
+        val a = testRange(1, 3)
+        val b = testRange(2, 4)
+        val x = testRange(2, 3)
+        assertEquals(x, a.intersection(b))
+        assertEquals(x, b.intersection(a))
+        assertTrue(a.overlaps(b))
+        assertTrue(b.overlaps(a))
+
+        //   12345
+        // C ---
+        // D   ---
+        // Y   -
+        val c = testRange(1, 3)
+        val d = testRange(3, 5)
+        val y = testRange(3, 3)
+        assertEquals(y, c.intersection(d))
+        assertEquals(y, d.intersection(c))
+        assertTrue(c.overlaps(d))
+        assertTrue(d.overlaps(c))
+    }
+
+    @Test
+    fun `intersection and overlaps work with infinite ranges`() {
+        //   12345
+        // A ---
+        // B   ---+
+        // X   -
+        val a = testRange(1, 3)
+        val b = testRange(3, null)
+        val x = testRange(3, 3)
+        assertEquals(x, a.intersection(b))
+        assertEquals(x, b.intersection(a))
+        assertTrue(a.overlaps(b))
+        assertTrue(b.overlaps(a))
+
+        //   12345
+        // C ---
+        // D   ---+
+        // Y   -
+        val c = testRange(1, 3)
+        val d = testRange(3, null)
+        val y = testRange(3, 3)
+        assertEquals(y, c.intersection(d))
+        assertEquals(y, d.intersection(c))
+        assertTrue(c.overlaps(d))
+        assertTrue(d.overlaps(c))
+
+        //   12345
+        // E -----+
+        // F   ---+
+        // Z   ---+
+        val e = testRange(1, null)
+        val f = testRange(3, null)
+        val z = testRange(3, null)
+        assertEquals(z, e.intersection(f))
+        assertEquals(z, f.intersection(e))
+        assertTrue(e.overlaps(f))
+        assertTrue(f.overlaps(e))
+    }
+
+    private fun testRange(from: Int, to: Int?) =
+        DateRange(LocalDate.of(2019, 1, from), if (to == null) null else LocalDate.of(2019, 1, to))
 }
