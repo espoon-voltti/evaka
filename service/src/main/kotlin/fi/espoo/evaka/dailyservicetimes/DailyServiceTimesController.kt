@@ -29,7 +29,7 @@ class DailyServiceTimesController(
 ) {
 
     data class DailyServiceTimesResponse(
-        val dailyServiceTimes: DailyServiceTimesWithId,
+        val dailyServiceTimes: DailyServiceTimes,
         val permittedActions: Set<Action.DailyServiceTime>
     )
 
@@ -63,7 +63,7 @@ class DailyServiceTimesController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: DailyServiceTimes
+        @RequestBody body: DailyServiceTimesValue
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
 
@@ -88,7 +88,7 @@ class DailyServiceTimesController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
-        @RequestBody body: DailyServiceTimes
+        @RequestBody body: DailyServiceTimesValue
     ) {
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
 

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
@@ -556,9 +556,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - daily service times are used to generate missing reservations when none are found`() {
         insertGroupPlacement(childId)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            DateRange(placementStart, null)
+        val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+            validityPeriod = DateRange(placementStart, null),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -573,7 +573,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId,
             placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 11))
         )
-        val dailyServiceTimes = DailyServiceTimes.IrregularTimes(
+        val dailyServiceTimes = DailyServiceTimesValue.IrregularTimes(
             monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
             tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
             wednesday = null,
@@ -593,9 +593,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - daily service times with inverted start and end`() {
         insertGroupPlacement(childId)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)),
-            validityPeriod = DateRange(placementStart, null)
+        val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+            validityPeriod = DateRange(placementStart, null),
+            regularTimes = TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)),
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -613,9 +613,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
             .toList()
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
-            DateRange(placementStart, null)
+        val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+            validityPeriod = DateRange(placementStart, null),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -633,9 +633,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 to HelsinkiDateTime.of(placementPeriod.end, LocalTime.of(9, 0))
         )
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
-            DateRange(placementStart, null)
+        val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+            validityPeriod = DateRange(placementStart, null),
+            regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -675,9 +675,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 to HelsinkiDateTime.of(placementStart.plusDays(1), LocalTime.of(17, 0))
         )
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            DateRange(placementStart, null)
+        val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+            validityPeriod = DateRange(placementStart, null),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -699,21 +699,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         insertDailyServiceTimes(
             childId,
-            DailyServiceTimes.RegularTimes(
-                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                DateRange(placementStart, LocalDate.of(2019, 8, 10))
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(placementStart, LocalDate.of(2019, 8, 10)),
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
             )
         )
         insertDailyServiceTimes(
             childId,
-            DailyServiceTimes.RegularTimes(
-                TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)),
-                DateRange(LocalDate.of(2019, 8, 13), LocalDate.of(2019, 8, 20))
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(LocalDate.of(2019, 8, 13), LocalDate.of(2019, 8, 20)),
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)),
             )
         )
         insertDailyServiceTimes(
             childId,
-            DailyServiceTimes.IrregularTimes(
+            DailyServiceTimesValue.IrregularTimes(
                 monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
                 wednesday = TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
@@ -956,7 +956,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
     }
 
-    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimes) {
+    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimesValue) {
         db.transaction { tx -> tx.createChildDailyServiceTimes(childId, dailyServiceTimes) }
     }
 }

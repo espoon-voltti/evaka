@@ -82,7 +82,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `adding a new daily service time creates a notification for both guardians`() {
         createDailyServiceTime(
             testChild_1.id,
-            DailyServiceTimes.RegularTimes(
+            DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
                 regularTimes = tenToNoonRange
             )
@@ -101,7 +101,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `one guardian dismissing their daily service time update notification does not affect other's`() {
         createDailyServiceTime(
             testChild_1.id,
-            DailyServiceTimes.RegularTimes(
+            DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
                 regularTimes = tenToNoonRange
             )
@@ -133,7 +133,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
         createDailyServiceTime(
             testChild_1.id,
-            DailyServiceTimes.RegularTimes(
+            DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
                 regularTimes = tenToNoonRange
             )
@@ -148,7 +148,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `updating a daily service time creates a new notification`() {
         createDailyServiceTime(
             testChild_1.id,
-            DailyServiceTimes.RegularTimes(
+            DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
                 regularTimes = tenToNoonRange
             )
@@ -161,7 +161,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(1, times.size)
         updateDailyServiceTime(
             times[0].dailyServiceTimes.id,
-            DailyServiceTimes.RegularTimes(
+            DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
                 regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
             )
@@ -172,7 +172,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
     }
 
-    private fun createDailyServiceTime(childId: ChildId, dailyServiceTime: DailyServiceTimes) {
+    private fun createDailyServiceTime(childId: ChildId, dailyServiceTime: DailyServiceTimesValue) {
         val (_, res, _) = http.post("/children/$childId/daily-service-times")
             .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
             .asUser(admin)
@@ -182,7 +182,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(200, res.statusCode)
     }
 
-    private fun updateDailyServiceTime(id: DailyServiceTimesId, dailyServiceTime: DailyServiceTimes) {
+    private fun updateDailyServiceTime(id: DailyServiceTimesId, dailyServiceTime: DailyServiceTimesValue) {
         val (_, res, _) = http.put("/daily-service-times/$id")
             .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
             .asUser(admin)

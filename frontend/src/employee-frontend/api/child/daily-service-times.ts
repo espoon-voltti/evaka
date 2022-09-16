@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
 import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
@@ -39,7 +39,7 @@ export async function getChildDailyServiceTimes(
 
 export async function createChildDailyServiceTimes(
   childId: UUID,
-  data: DailyServiceTimes
+  data: DailyServiceTimesValue
 ): Promise<Result<void>> {
   return client
     .post(`/children/${childId}/daily-service-times`, data)
@@ -49,7 +49,7 @@ export async function createChildDailyServiceTimes(
 
 export async function putChildDailyServiceTimes(
   id: UUID,
-  data: DailyServiceTimes
+  data: DailyServiceTimesValue
 ): Promise<Result<void>> {
   return client
     .put(`/daily-service-times/${id}`, data)

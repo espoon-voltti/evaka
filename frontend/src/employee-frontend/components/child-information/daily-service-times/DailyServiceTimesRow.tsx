@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import { Action } from 'lib-common/generated/action'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -30,7 +30,7 @@ export default React.memo(function DailyServiceTimesRow({
   isEditing,
   id
 }: {
-  times: DailyServiceTimes
+  times: DailyServiceTimesValue
   permittedActions: Action.DailyServiceTime[]
   onDelete: () => void
   onEdit: (open: boolean) => void
@@ -170,7 +170,11 @@ const weekdays = [
 ] as const
 
 const DailyServiceTimesReadOnly = React.memo(
-  function DailyServiceTimesReadOnly({ times }: { times: DailyServiceTimes }) {
+  function DailyServiceTimesReadOnly({
+    times
+  }: {
+    times: DailyServiceTimesValue
+  }) {
     const { i18n } = useTranslation()
 
     switch (times.type) {

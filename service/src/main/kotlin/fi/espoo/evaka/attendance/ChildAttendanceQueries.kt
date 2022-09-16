@@ -5,7 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
@@ -84,7 +84,7 @@ data class ChildBasics(
     val lastName: String,
     val preferredName: String?,
     val dateOfBirth: LocalDate,
-    val dailyServiceTimes: DailyServiceTimesWithId?,
+    val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
@@ -240,6 +240,26 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         .mapTo<ChildBasicsRow>()
         .map { it.toChildBasics() }
         .list()
+}
+
+private data class ChildDate(
+    val childId: ChildId,
+    val date: LocalDate,
+)
+
+fun Database.Read.getChildrenAttendancesByPeriod(childIds: Set<ChildId>, period: FiniteDateRange): Map<ChildId, List<LocalDate>> {
+    return createQuery(
+        """
+        SELECT child_id, date
+        FROM child_attendance
+        WHERE between_start_and_end(:period, date)
+        AND child_id = ANY(:childIds)
+    """
+    )
+        .bind("period", period)
+        .bind("childIds", childIds)
+        .mapTo<ChildDate>()
+        .groupBy({ it.childId }, { it.date })
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {

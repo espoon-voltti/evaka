@@ -6,7 +6,7 @@ package fi.espoo.evaka.attendance
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -215,7 +215,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has regular daily service times`() {
-        val testTimes = DailyServiceTimes.RegularTimes(
+        val testTimes = DailyServiceTimesValue.RegularTimes(
             regularTimes = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
             validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
         )
@@ -231,7 +231,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has irregular daily service times`() {
-        val testTimes = DailyServiceTimes.IrregularTimes(
+        val testTimes = DailyServiceTimesValue.IrregularTimes(
             monday = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
             tuesday = TimeRange(LocalTime.of(8, 16), LocalTime.of(17, 19)),
             wednesday = TimeRange(LocalTime.of(8, 17), LocalTime.of(17, 19)),

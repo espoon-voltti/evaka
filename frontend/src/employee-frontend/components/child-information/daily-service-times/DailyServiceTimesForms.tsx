@@ -12,7 +12,10 @@ import {
 } from 'employee-frontend/api/child/daily-service-times'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
-import { DailyServiceTimes, TimeRange } from 'lib-common/api-types/child/common'
+import {
+  DailyServiceTimesValue,
+  TimeRange
+} from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
@@ -115,7 +118,7 @@ function requireOrThrow<T>(value: T | undefined): T {
 
 function formDataToRequest(
   formData: IntervalFormData
-): OmitInUnion<DailyServiceTimes, 'validityPeriod'> {
+): OmitInUnion<DailyServiceTimesValue, 'validityPeriod'> {
   const type = requireOrThrow(formData.type)
 
   switch (type) {
@@ -287,7 +290,7 @@ export const DailyServiceTimesModificationForm = React.memo(
   }: {
     onClose: (shouldRefresh: boolean) => void
     id: UUID
-    initialData: DailyServiceTimes
+    initialData: DailyServiceTimesValue
   }) {
     const { i18n } = useTranslation()
 

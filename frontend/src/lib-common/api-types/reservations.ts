@@ -7,7 +7,7 @@ import { TimeRange } from '../generated/api-types/reservations'
 import { JsonOf } from '../json'
 import LocalDate from '../local-date'
 
-import { DailyServiceTimes } from './child/common'
+import { DailyServiceTimesValue } from './child/common'
 
 export interface UnitAttendanceReservations {
   unit: string
@@ -35,7 +35,7 @@ export interface ChildRecordOfDay {
   reservation: TimeRange | null
   attendance: AttendanceTimes | null
   absence: { type: AbsenceType } | null
-  dailyServiceTimes: DailyServiceTimes | null
+  dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
 }
 

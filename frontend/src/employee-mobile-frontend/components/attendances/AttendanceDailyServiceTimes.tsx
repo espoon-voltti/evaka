@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import { AttendanceReservation } from 'lib-common/generated/api-types/attendance'
 
 import { useTranslation } from '../../state/i18n'
@@ -14,7 +14,7 @@ import { Reservations } from './Reservations'
 import { ServiceTime } from './components'
 
 interface Props {
-  times: DailyServiceTimes | null
+  times: DailyServiceTimesValue | null
   reservations: AttendanceReservation[]
 }
 

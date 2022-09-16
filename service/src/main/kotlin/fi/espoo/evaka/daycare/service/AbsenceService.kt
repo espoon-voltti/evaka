@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
@@ -85,7 +85,7 @@ private fun supplementReservationsWithDailyServiceTimes(
     placementDateRanges: List<FiniteDateRange>,
     unitOperationalDays: Set<LocalDate>,
     reservations: List<ChildReservation>?,
-    dailyServiceTimesList: List<DailyServiceTimes>?,
+    dailyServiceTimesList: List<DailyServiceTimesValue>?,
     absences: List<AbsenceWithModifierInfo>?
 ): List<HelsinkiDateTimeRange> {
     val absenceDates = absences?.map { it.date }?.toSet() ?: setOf()
@@ -124,15 +124,15 @@ private fun supplementReservationsWithDailyServiceTimes(
                     dailyServiceTimesList.find { it.validityPeriod.includes(date) } ?: return@mapNotNull null
 
                 val times = when (dailyServiceTimes) {
-                    is DailyServiceTimes.RegularTimes ->
+                    is DailyServiceTimesValue.RegularTimes ->
                         dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
 
-                    is DailyServiceTimes.IrregularTimes -> {
+                    is DailyServiceTimesValue.IrregularTimes -> {
                         val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
                         if (times != null) times.start to times.end else null
                     }
 
-                    is DailyServiceTimes.VariableTimes -> null
+                    is DailyServiceTimesValue.VariableTimes -> null
                 }
 
                 times?.let { (start, end) ->

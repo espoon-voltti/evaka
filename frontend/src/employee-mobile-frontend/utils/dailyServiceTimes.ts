@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  DailyServiceTimes,
+  DailyServiceTimesValue,
   isIrregular,
   isRegular,
   isVariableTime,
@@ -28,7 +28,7 @@ function getToday(): DayName | undefined {
 }
 
 export function getTodaysServiceTimes(
-  times: DailyServiceTimes | null
+  times: DailyServiceTimesValue | null
 ): TimeRange | 'not_today' | 'not_set' | 'variable_times' {
   if (times === null) return 'not_set'
 

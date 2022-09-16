@@ -5,7 +5,8 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.backupcare.GroupBackupCare
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
@@ -14,8 +15,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -300,20 +299,30 @@ AND EXISTS (
 fun Database.Read.getGroupDailyServiceTimes(
     groupId: GroupId,
     dateRange: FiniteDateRange
-): Map<ChildId, List<DailyServiceTimesWithId>> = createQuery(
+): Map<ChildId, List<DailyServiceTimes>> = createQuery(
     """
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT st.* FROM daily_service_time st
-WHERE EXISTS (SELECT 1 FROM all_placements p WHERE st.child_id = p.child_id)
+SELECT
+    id,
+    child_id,
+    validity_period,
+    type,
+    regular_times,
+    monday_times,
+    tuesday_times,
+    wednesday_times,
+    thursday_times,
+    friday_times,
+    saturday_times,
+    sunday_times
+FROM daily_service_time dst
+WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
 """
 )
     .bind("groupId", groupId)
     .bind("dateRange", dateRange)
-    .map { rv ->
-        rv.mapColumn<ChildId>("child_id") to toDailyServiceTimes(rv.mapRow())
-    }
-    .toList()
-    .groupBy { it.first }
-    .mapValues { it.value.map { it.second } }
+    .mapTo<DailyServiceTimeRow>()
+    .map { toDailyServiceTimes(it) }
+    .groupBy { it.childId }

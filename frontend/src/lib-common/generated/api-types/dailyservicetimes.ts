@@ -7,7 +7,7 @@
 
 import LocalDate from '../../local-date'
 import { Action } from '../action'
-import { DailyServiceTimes } from '../../api-types/child/common'
+import { DailyServiceTimesValue } from '../../api-types/child/common'
 import { UUID } from '../../types'
 
 /**
@@ -20,17 +20,18 @@ export interface DailyServiceTimeNotification {
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 */
-export interface DailyServiceTimesResponse {
-  dailyServiceTimes: DailyServiceTimesWithId
-  permittedActions: Action.DailyServiceTime[]
+export interface DailyServiceTimes {
+  childId: UUID
+  id: UUID
+  times: DailyServiceTimesValue
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
 */
-export interface DailyServiceTimesWithId {
-  id: UUID
-  times: DailyServiceTimes
+export interface DailyServiceTimesResponse {
+  dailyServiceTimes: DailyServiceTimes
+  permittedActions: Action.DailyServiceTime[]
 }

@@ -29,7 +29,7 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "fi.espoo.evaka.shared.domain.HelsinkiDateTime" to TSMapping("HelsinkiDateTime", "import HelsinkiDateTime from '../../helsinki-date-time'"),
     "fi.espoo.evaka.shared.domain.FiniteDateRange" to TSMapping("FiniteDateRange", "import FiniteDateRange from '../../finite-date-range'"),
     "fi.espoo.evaka.shared.domain.DateRange" to TSMapping("DateRange", "import DateRange from '../../date-range'"),
-    "fi.espoo.evaka.dailyservicetimes.DailyServiceTimes" to TSMapping("DailyServiceTimes", "import { DailyServiceTimes } from '../../api-types/child/common'"),
+    "fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue" to TSMapping("DailyServiceTimesValue", "import { DailyServiceTimesValue } from '../../api-types/child/common'"),
     "fi.espoo.evaka.vasu.VasuQuestion" to TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
     "fi.espoo.evaka.invoicing.domain.DecisionIncome" to TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
     "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string"),
