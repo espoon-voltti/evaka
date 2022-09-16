@@ -154,7 +154,7 @@ class MessageControllerCitizen(
                     val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false)
                     val messageId =
                         tx.insertMessage(
-                            clock = clock,
+                            now = clock.now(),
                             contentId = contentId,
                             threadId = threadId,
                             sender = accountId,

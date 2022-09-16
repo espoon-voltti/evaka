@@ -32,11 +32,12 @@ class MessageService(
         tx.insertMessageContent(content, sender)
             .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
+                val now = clock.now()
                 recipientGroups.map {
                     val threadId = tx.insertThread(type, title, urgent)
                     val messageId =
                         tx.insertMessage(
-                            clock = clock,
+                            now = now,
                             contentId = contentId,
                             threadId = threadId,
                             sender = sender,
@@ -70,7 +71,7 @@ class MessageService(
         val message = db.transaction { tx ->
             val recipientNames = tx.getAccountNames(recipientAccountIds)
             val contentId = tx.insertMessageContent(content, senderAccount)
-            val messageId = tx.insertMessage(clock, contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
+            val messageId = tx.insertMessage(clock.now(), contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             tx.getMessage(messageId)

@@ -81,7 +81,7 @@ WHERE rec.message_id = msg.id
 }
 
 fun Database.Transaction.insertMessage(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     contentId: MessageContentId,
     threadId: MessageThreadId,
     sender: MessageAccountId,
@@ -97,7 +97,7 @@ fun Database.Transaction.insertMessage(
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
-        .bind("now", clock.now())
+        .bind("now", now)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
         .bind("repliesToId", repliesToMessageId)
